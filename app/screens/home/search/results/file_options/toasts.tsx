@@ -24,10 +24,10 @@ const styles = StyleSheet.create({
 });
 
 type Props = {
-    action: string;
-    fileInfo: FileInfo;
+    action: GalleryAction;
+    fileInfo: FileInfo | undefined;
     setAction: (action: GalleryAction) => void;
-    setSelectedItemNumber?: (index: number | undefined) => void;
+    setSelectedItemNumber: (index: number | undefined) => void;
 }
 const Toasts = ({
     action,

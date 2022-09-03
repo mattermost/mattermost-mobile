@@ -4,19 +4,24 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import OptionItem from '@components/option_item';
+import {GalleryAction} from '@typings/screens/gallery';
 
 import {useHandleFileOptions} from '../hooks';
 
 type Props = {
+    action: GalleryAction;
     canDownloadFiles?: boolean;
     enablePublicLink?: boolean;
     fileInfo: FileInfo;
+    setAction: (action: GalleryAction) => void;
     setSelectedItemNumber: (index: number | undefined) => void;
 }
 const OptionMenus = ({
+    action,
     canDownloadFiles,
     enablePublicLink,
     fileInfo,
+    setAction,
     setSelectedItemNumber,
 }: Props) => {
     const intl = useIntl();
@@ -26,8 +31,10 @@ const OptionMenus = ({
         handleDownload,
         handlePermalink,
     } = useHandleFileOptions({
+        action,
         postId: fileInfo.post_id,
         setSelectedItemNumber,
+        setAction,
     });
 
     return (

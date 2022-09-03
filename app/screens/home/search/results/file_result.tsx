@@ -6,6 +6,7 @@ import {Dimensions, StyleSheet, View} from 'react-native';
 
 import File from '@components/files/file';
 import {useIsTablet} from '@hooks/device';
+import {GalleryAction} from '@typings/screens/gallery';
 import {getViewPortWidth} from '@utils/images';
 
 import TabletOptions from './file_options/tablet_options';
@@ -18,6 +19,7 @@ const styles = StyleSheet.create({
 });
 
 type Props = {
+    action: GalleryAction;
     canDownloadFiles: boolean;
     channelName: string | undefined;
     fileInfo: FileInfo;
@@ -27,6 +29,7 @@ type Props = {
     onPress: (idx: number) => void;
     optionSelected: boolean;
     publicLinkEnabled: boolean;
+    setAction: (action: GalleryAction) => void;
     setSelectedItemNumber: (value: number | undefined) => void;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
 }
@@ -34,6 +37,7 @@ type Props = {
 const galleryIdentifier = 'search-files-location';
 
 const FileResult = ({
+    action,
     canDownloadFiles,
     channelName,
     fileInfo,
@@ -43,6 +47,7 @@ const FileResult = ({
     onPress,
     optionSelected,
     publicLinkEnabled,
+    setAction,
     setSelectedItemNumber,
     updateFileForGallery,
 }: Props) => {
@@ -94,11 +99,13 @@ const FileResult = ({
                 />
                 {isTablet && isOpen &&
                     <TabletOptions
+                        action={action}
                         canDownloadFiles={canDownloadFiles}
                         fileInfo={fileInfo}
                         optionSelected={optionSelected}
                         openUp={openUp}
                         publicLinkEnabled={publicLinkEnabled}
+                        setAction={setAction}
                         setSelectedItemNumber={setSelectedItemNumber}
                         xOffset={xOffset}
                         yOffset={yOffset}

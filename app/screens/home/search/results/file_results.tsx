@@ -11,6 +11,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import {GalleryAction} from '@typings/screens/gallery';
 import {isImage, isVideo} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {TabTypes} from '@utils/search';
@@ -19,7 +20,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {
     useChannelNames,
     useFileInfosIndexes,
-    useHandleFileOptions,
     useNumberItems,
     useOrderedFileInfos,
     useOrderedGalleryItems,
@@ -56,6 +56,7 @@ const FileResults = ({
     const [selectedItemNumber, setSelectedItemNumber] = useState<number | undefined>(undefined);
     const [lastViewedIndex, setLastViewedIndex] = useState<number | undefined>(undefined);
     const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
+    const [action, setAction] = useState<GalleryAction>('none');
 
     const containerStyle = useMemo(() => ({top: fileInfos.length ? 8 : 0}), [fileInfos]);
     const numOptions = useNumberItems(canDownloadFiles, publicLinkEnabled);
@@ -67,12 +68,8 @@ const FileResults = ({
 
     const onPreviewPress = useCallback(preventDoubleTap((idx: number) => {
         openGalleryAtIndex(galleryIdentifier, idx, orderedGalleryItems);
-    }), [orderedFileInfos]);
+    }), [orderedGalleryItems]);
 
-    const {action, setAction} = useHandleFileOptions({
-        postId: lastViewedFileInfo?.post_id,
-        setSelectedItemNumber,
-    });
     const onOptionsPress = useCallback((item: number) => {
         setLastViewedIndex(item);
         setLastViewedFileInfo(orderedFileInfos[item]);
@@ -83,17 +80,15 @@ const FileResults = ({
         }
 
         showMobileOptionsBottomSheet({
+            action,
+            setAction,
             fileInfo: orderedFileInfos[item],
             insets,
             numOptions,
             setSelectedItemNumber,
             theme,
         });
-    }, [
-        canDownloadFiles,
-        isTablet, numOptions, orderedFileInfos, publicLinkEnabled,
-        selectedItemNumber, theme,
-    ]);
+    }, [isTablet, numOptions, orderedFileInfos, selectedItemNumber, theme]);
 
     // This effect handles the case where a user has the FileOptions Modal
     // open and the server changes the ability to download files or copy public
@@ -123,6 +118,7 @@ const FileResults = ({
         const isSingleImage = orderedFileInfos.length === 1 && (isImage(orderedFileInfos[0]) || isVideo(orderedFileInfos[0]));
         return (
             <FileResult
+                action={action}
                 canDownloadFiles={canDownloadFiles}
                 channelName={channelNames[item.channel_id!]}
                 fileInfo={item}
@@ -132,6 +128,7 @@ const FileResults = ({
                 onPress={onPreviewPress}
                 optionSelected={optionSelected(item)}
                 publicLinkEnabled={publicLinkEnabled}
+                setAction={setAction}
                 setSelectedItemNumber={setSelectedItemNumber}
                 updateFileForGallery={updateFileForGallery}
             />
@@ -176,7 +173,7 @@ const FileResults = ({
             />
             <Toasts
                 action={action}
-                fileInfo={orderedFileInfos[lastViewedIndex!]}
+                fileInfo={lastViewedFileInfo}
                 setAction={setAction}
                 setSelectedItemNumber={setSelectedItemNumber}
             />

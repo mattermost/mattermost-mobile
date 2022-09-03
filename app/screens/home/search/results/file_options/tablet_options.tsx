@@ -5,6 +5,7 @@ import {Overlay} from 'react-native-elements';
 
 import {ITEM_HEIGHT} from '@components/option_item';
 import {useTheme} from '@context/theme';
+import {GalleryAction} from '@typings/screens/gallery';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {useNumberItems} from './hooks';
@@ -28,22 +29,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const openDownMargin = 64;
 
 type Props = {
+    action: GalleryAction;
     canDownloadFiles: boolean;
     fileInfo: FileInfo;
     openUp?: boolean;
     optionSelected?: boolean;
     publicLinkEnabled: boolean;
+    setAction: (action: GalleryAction) => void;
     setSelectedItemNumber: (index: number | undefined) => void;
     xOffset?: number;
     yOffset?: number;
 }
 const TabletOptions = ({
+    action,
     canDownloadFiles,
     fileInfo,
     openUp = false,
     optionSelected,
     publicLinkEnabled,
     setIsOpen,
+    setAction,
     setSelectedItemNumber,
     xOffset,
     yOffset,
@@ -79,6 +84,8 @@ const TabletOptions = ({
                 ]}
             >
                 <OptionMenus
+                    action={action}
+                    setAction={setAction}
                     fileInfo={fileInfo}
                     setSelectedItemNumber={setSelectedItemNumber}
                 />

@@ -1,41 +1,50 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback, useMemo, useState} from 'react';
+import {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 
 import {showPermalink} from '@actions/remote/permalink';
 import {useServerUrl} from '@app/context/server';
 import {ChannelModel} from '@app/database/models/server';
+import {useIsTablet} from '@app/hooks/device';
 import {useImageAttachments} from '@app/hooks/files';
 import {dismissBottomSheet} from '@app/screens/navigation';
 import {GalleryAction} from '@typings/screens/gallery';
 import {fileToGalleryItem} from '@utils/gallery';
 
 type Props = {
+    action: GalleryAction;
     postId?: string | undefined;
+    setAction: (action: GalleryAction) => void;
     setSelectedItemNumber: (value: number | undefined) => void;
 }
 
 export const useHandleFileOptions = ({
+    action,
     postId,
+    setAction,
     setSelectedItemNumber,
 }: Props) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
-    const [action, setAction] = useState<GalleryAction>('none');
+    const isTablet = useIsTablet();
 
     const handleDownload = useCallback(() => {
-        dismissBottomSheet();
+        if (isTablet) {
+            dismissBottomSheet();
+        }
         setAction('downloading');
         setSelectedItemNumber?.(undefined);
-    }, [setSelectedItemNumber]);
+    }, [setSelectedItemNumber, setAction]);
 
     const handleCopyLink = useCallback(() => {
-        dismissBottomSheet();
+        if (isTablet) {
+            dismissBottomSheet();
+        }
         setAction('copying');
         setSelectedItemNumber?.(undefined);
-    }, [setSelectedItemNumber]);
+    }, [setSelectedItemNumber, setAction]);
 
     const handlePermalink = useCallback(() => {
         if (postId) {
@@ -51,11 +60,8 @@ export const useHandleFileOptions = ({
             handleCopyLink,
             handleDownload,
             handlePermalink,
-            action,
-            postId,
-            setAction,
         };
-    }, [action, setAction, setSelectedItemNumber]);
+    }, [action, handleCopyLink, handleDownload, handlePermalink, postId, setAction, setSelectedItemNumber]);
 };
 
 export const useNumberItems = (canDownloadFiles: boolean, publicLinkEnabled: boolean) => {
