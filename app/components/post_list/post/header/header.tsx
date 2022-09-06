@@ -131,7 +131,7 @@ const Header = (props: HeaderProps) => {
                         style={style.time}
                         testID='post_header.date_time'
                     />
-                    {isPostPriorityEnabled && post.props?.priority && (
+                    {Boolean(isPostPriorityEnabled && post.props?.priority) && (
                         <View style={style.postPriority}>
                             <PostPriorityLabel
                                 label={post.props?.priority}

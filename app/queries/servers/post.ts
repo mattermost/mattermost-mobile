@@ -5,11 +5,10 @@ import {Database, Model, Q, Query} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Config, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 
 import {queryPreferencesByCategoryAndName} from './preference';
-import {observeConfig} from './system';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -65,15 +64,6 @@ export const getPostById = async (database: Database, postId: string) => {
     } catch {
         return undefined;
     }
-};
-
-export const observeIsPostPriorityEnabled = (database: Database) => {
-    const config = observeConfig(database);
-    return config.pipe(
-        switchMap(
-            (cfg) => of$(cfg?.FeatureFlagPostPriority === Config.TRUE && cfg?.PostPriority === Config.TRUE),
-        ),
-    );
 };
 
 export const observePost = (database: Database, postId: string) => {
