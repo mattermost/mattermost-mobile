@@ -9,7 +9,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions, Preferences} from '@constants';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {queryPostsBetween} from '@queries/servers/post';
+import {observeIsPostPriorityEnabled, queryPostsBetween} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue} from '@queries/servers/system';
@@ -168,6 +168,7 @@ const withPost = withObservables(
             isJumboEmoji,
             isLastReply,
             isPostAddChannelMember,
+            isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
             post: post.observe(),
             thread: isCRTEnabled ? observeThreadById(database, post.id) : of$(undefined),
             hasReactions,

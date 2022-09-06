@@ -32,7 +32,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'flex-end',
             minWidth: 40,
             paddingTop: 2,
-            paddingBottom: 10,
             flex: 1,
         },
         replyText: {

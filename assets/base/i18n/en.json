@@ -701,6 +701,8 @@
   "post_info.system": "System",
   "post_message_view.edited": "(edited)",
   "post.options.title": "Options",
+  "post_priority.label.important": "IMPORTANT",
+  "post_priority.label.urgent": "URGENT",
   "post.reactions.title": "Reactions",
   "posts_view.newMsg": "New Messages",
   "public_link_copied": "Link copied to clipboard",
