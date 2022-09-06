@@ -6,8 +6,8 @@ import {useIntl} from 'react-intl';
 import {TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import FormattedText from '@components/formatted_text';
 import {setStatus} from '@actions/remote/user';
+import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import StatusLabel from '@components/status_label';
 import UserStatusIndicator from '@components/user_status';

@@ -14,7 +14,7 @@ import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import MarkAsUnreadOption from './options/mark_as_unread_option';
@@ -123,7 +123,7 @@ const ThreadOptions = ({
             closeButtonId={THREAD_OPTIONS_BUTTON}
             componentId={Screens.THREAD_OPTIONS}
             initialSnapIndex={0}
-            snapPoints={[((options.length + 2) * ITEM_HEIGHT + 34), 10]}
+            snapPoints={[(((options.length + 2) * ITEM_HEIGHT) + 34), 10]}
             testID='thread_options'
         />
     );
