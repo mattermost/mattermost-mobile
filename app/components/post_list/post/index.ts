@@ -9,10 +9,10 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions, Preferences} from '@constants';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {observeIsPostPriorityEnabled, queryPostsBetween} from '@queries/servers/post';
+import {queryPostsBetween} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
-import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeIsPostPriorityEnabled, observeConfigBooleanValue} from '@queries/servers/system';
 import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
