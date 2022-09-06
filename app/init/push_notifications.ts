@@ -25,7 +25,7 @@ import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
-import {showOverlay} from '@screens/navigation';
+import {dismissOverlay, showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
@@ -125,6 +125,9 @@ class PushNotifications {
                     serverName,
                     serverUrl,
                 };
+
+                // Dismiss the screen if it's already visible or else it blocks the navigation
+                await dismissOverlay(screen);
 
                 showOverlay(screen, passProps);
             }
