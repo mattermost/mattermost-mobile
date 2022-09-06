@@ -17,6 +17,12 @@ const style = StyleSheet.create({
         height: 16,
         paddingHorizontal: 4,
     },
+    urgent: {
+        backgroundColor: '#D24B4E',
+    },
+    important: {
+        backgroundColor: '#5D89EA',
+    },
     label: {
         color: '#fff',
         ...typography('Body', 25, 'SemiBold'),
@@ -39,11 +45,11 @@ const PostPriorityLabel = ({label}: Props) => {
     let iconName = '';
     let labelText = '';
     if (label === PostPriorityTypes.URGENT) {
-        containerStyle.push({backgroundColor: '#D24B4E'});
+        containerStyle.push(style.urgent);
         iconName = 'alert-outline';
         labelText = intl.formatMessage({id: 'post_priority.label.urgent', defaultMessage: 'URGENT'});
     } else {
-        containerStyle.push({backgroundColor: '#5D89EA'});
+        containerStyle.push(style.important);
         iconName = 'alert-circle-outline';
         labelText = intl.formatMessage({id: 'post_priority.label.important', defaultMessage: 'IMPORTANT'});
     }
