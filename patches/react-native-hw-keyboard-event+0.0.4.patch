@@ -1,16 +1,22 @@
 diff --git a/node_modules/react-native-hw-keyboard-event/android/build.gradle b/node_modules/react-native-hw-keyboard-event/android/build.gradle
-index a70aace..6443899 100644
+index a70aace..9c2c876 100644
 --- a/node_modules/react-native-hw-keyboard-event/android/build.gradle
 +++ b/node_modules/react-native-hw-keyboard-event/android/build.gradle
-@@ -4,7 +4,7 @@ android {
-     compileSdkVersion 28
+@@ -1,11 +1,11 @@
+ apply plugin: 'com.android.library'
+ 
+ android {
+-    compileSdkVersion 28
++    compileSdkVersion rootProject.hasProperty('compileSdkVersion') ? rootProject.compileSdkVersion : 28
  
      defaultConfig {
 -        minSdkVersion 16
+-        targetSdkVersion 28
 +        minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : 21
-         targetSdkVersion 28
++        targetSdkVersion rootProject.hasProperty('targetSdkVersion') ? rootProject.targetSdkVersion : 28
          versionCode 1
          versionName "1.0"
+         ndk {
 diff --git a/node_modules/react-native-hw-keyboard-event/index.d.ts b/node_modules/react-native-hw-keyboard-event/index.d.ts
 index 91999f1..116b725 100644
 --- a/node_modules/react-native-hw-keyboard-event/index.d.ts

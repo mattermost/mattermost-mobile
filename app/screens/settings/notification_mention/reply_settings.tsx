@@ -29,6 +29,7 @@ const ReplySettings = ({replyNotificationType, setReplyNotificationType}: ReplyS
                 action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_start_participate', defaultMessage: 'Threads that I start or participate in'})}
                 selected={replyNotificationType === 'any'}
+                testID='mention_notification_settings.threads_start_participate.option'
                 type='select'
                 value='any'
             />
@@ -37,6 +38,7 @@ const ReplySettings = ({replyNotificationType, setReplyNotificationType}: ReplyS
                 action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_start', defaultMessage: 'Threads that I start'})}
                 selected={replyNotificationType === 'root'}
+                testID='mention_notification_settings.threads_start.option'
                 type='select'
                 value='root'
             />
@@ -45,6 +47,7 @@ const ReplySettings = ({replyNotificationType, setReplyNotificationType}: ReplyS
                 action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_mentions', defaultMessage: 'Mentions in threads'})}
                 selected={replyNotificationType === 'never'}
+                testID='mention_notification_settings.threads_mentions.option'
                 type='select'
                 value='never'
             />

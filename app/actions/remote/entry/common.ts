@@ -3,16 +3,16 @@
 
 import {Model} from '@nozbe/watermelondb';
 
-import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
-import {fetchNewThreads} from '@actions/remote/thread';
+import {fetchAndSwitchToThread, fetchNewThreads} from '@actions/remote/thread';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
@@ -22,14 +22,18 @@ import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
-import {prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
+import {getMyChannel, prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
-import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
+import {getConfig, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {deleteMyTeams, getAvailableTeamIds, getMyTeamById, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
+import {getIsCRTEnabled} from '@queries/servers/thread';
+import NavigationStore from '@store/navigation_store';
 import {isDMorGM} from '@utils/channel';
 import {getMemberChannelsFromGQLQuery, gqlToClientChannelMembership} from '@utils/graphql';
+import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
+import {emitNotificationError} from '@utils/notification';
 import {processIsCRTEnabled} from '@utils/thread';
 
 import {fetchGroupsForMember} from '../groups';
@@ -480,5 +484,63 @@ export async function verifyPushProxy(serverUrl: string) {
         }
     } catch (err) {
         // Do nothing
+    }
+}
+
+export async function handleNotificationNavigation(serverUrl: string, selectedChannelId: string, selectedTeamId: string, notificationChannelId: string, notificationTeamId: string, rootId = '') {
+    try {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const myChannel = await getMyChannel(database, selectedChannelId);
+        const myTeam = await getMyTeamById(database, selectedTeamId);
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        const isThreadNotification = isCRTEnabled && Boolean(rootId);
+
+        let switchedToScreen = false;
+        let switchedToChannel = false;
+        if (myChannel && myTeam) {
+            if (isThreadNotification) {
+                await fetchAndSwitchToThread(serverUrl, rootId, true);
+            } else {
+                switchedToChannel = true;
+                await switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
+            }
+            switchedToScreen = true;
+        }
+
+        if (!switchedToScreen) {
+            const isTabletDevice = await isTablet();
+            if (isTabletDevice || (notificationChannelId === selectedChannelId)) {
+                // Make switch again to get the missing data and make sure the team is the correct one
+                switchedToScreen = true;
+                if (isThreadNotification) {
+                    await fetchAndSwitchToThread(serverUrl, rootId, true);
+                } else {
+                    switchedToChannel = true;
+                    await switchToChannelById(serverUrl, notificationChannelId, notificationTeamId);
+                }
+            } else if (notificationTeamId !== selectedTeamId || notificationChannelId !== selectedChannelId) {
+                // If in the end the selected team or channel is different than the one from the notification
+                // we switch again
+                await setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
+            }
+        }
+
+        if (notificationTeamId !== selectedTeamId) {
+            emitNotificationError('Team');
+        } else if (notificationChannelId !== selectedChannelId) {
+            emitNotificationError('Channel');
+        }
+
+        // Waiting for the screen to display fixes a race condition when fetching and storing data
+        if (switchedToChannel) {
+            await NavigationStore.waitUntilScreenHasLoaded(Screens.CHANNEL);
+        } else if (switchedToScreen && isThreadNotification) {
+            await NavigationStore.waitUntilScreenHasLoaded(Screens.THREAD);
+        }
+
+        return {};
+    } catch (error) {
+        return {error};
     }
 }

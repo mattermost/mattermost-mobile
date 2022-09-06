@@ -184,35 +184,59 @@ const About = ({config, license}: AboutProps) => {
             </View>
             <View style={styles.infoContainer}>
                 <View style={styles.group}>
-                    <Text style={styles.leftHeading}>
+                    <Text
+                        style={styles.leftHeading}
+                        testID='about.app_version.title'
+                    >
                         {intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version:'})}
                     </Text>
-                    <Text style={styles.rightHeading}>
+                    <Text
+                        style={styles.rightHeading}
+                        testID='about.app_version.value'
+                    >
                         {intl.formatMessage({id: 'settings.about.build', defaultMessage: '{version} (Build {number})'},
                             {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()})}
                     </Text>
                 </View>
                 <View style={styles.group}>
-                    <Text style={styles.leftHeading}>
+                    <Text
+                        style={styles.leftHeading}
+                        testID='about.server_version.title'
+                    >
                         {intl.formatMessage({id: 'settings.about.server.version.desc', defaultMessage: 'Server Version:'})}
                     </Text>
-                    <Text style={styles.rightHeading}>
+                    <Text
+                        style={styles.rightHeading}
+                        testID='about.server_version.value'
+                    >
                         {intl.formatMessage({id: serverVersion.id, defaultMessage: serverVersion.defaultMessage}, serverVersion.values)}
                     </Text>
                 </View>
                 <View style={styles.group}>
-                    <Text style={styles.leftHeading}>
+                    <Text
+                        style={styles.leftHeading}
+                        testID='about.database.title'
+                    >
                         {intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database:'})}
                     </Text>
-                    <Text style={styles.rightHeading}>
+                    <Text
+                        style={styles.rightHeading}
+                        testID='about.database.value'
+                    >
                         {intl.formatMessage({id: 'settings.about.database.value', defaultMessage: `${config.SQLDriverName}`})}
                     </Text>
                 </View>
                 <View style={styles.group}>
-                    <Text style={styles.leftHeading}>
+                    <Text
+                        style={styles.leftHeading}
+                        testID='about.database_schema_version.title'
+                    >
                         {intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version:'})}
                     </Text>
-                    <Text style={styles.rightHeading}>
+                    <Text
+                        style={styles.rightHeading}
+                        testID='about.database_schema_version.value'
+                    >
                         {intl.formatMessage({
                             id: 'settings.about.database.schema.value',
                             defaultMessage: `${config.SchemaVersion}`,

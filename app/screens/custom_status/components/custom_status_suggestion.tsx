@@ -76,6 +76,7 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
     }, []);
 
     const showCustomStatus = Boolean(duration && duration !== 'date_and_time' && isExpirySupported);
+    const customStatusSuggestionTestId = `custom_status.custom_status_suggestion.${text}`;
 
     const clearButton =
         handleClear && expires_at ? (
@@ -85,19 +86,22 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
                     theme={theme}
                     iconName='close'
                     size={18}
-                    testID='custom_status_suggestion.clear.button'
+                    testID={`${customStatusSuggestionTestId}.clear.button`}
                 />
             </View>
         ) : null;
 
     return (
         <TouchableOpacity
-            testID={`custom_status_suggestion.${text}`}
             onPress={handleClick}
+            testID={customStatusSuggestionTestId}
         >
             <View style={style.container}>
                 {emoji && (
-                    <View style={style.iconContainer}>
+                    <View
+                        style={style.iconContainer}
+                        testID={`${customStatusSuggestionTestId}.custom_status_emoji.${emoji}`}
+                    >
                         <Emoji
                             emojiName={emoji}
                             size={20}
@@ -112,6 +116,7 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
                                     text={text}
                                     theme={theme}
                                     textStyle={style.customStatusText}
+                                    testID={`${customStatusSuggestionTestId}.custom_status_text`}
                                 />
                             </View>
                         )}
@@ -121,6 +126,7 @@ const CustomStatusSuggestion = ({duration, emoji, expires_at, handleClear, handl
                                     text={intl.formatMessage(CST[duration!])}
                                     theme={theme}
                                     textStyle={style.customStatusDuration}
+                                    testID={`${customStatusSuggestionTestId}.custom_status_duration.${duration}`}
                                 />
                             </View>
                         )}

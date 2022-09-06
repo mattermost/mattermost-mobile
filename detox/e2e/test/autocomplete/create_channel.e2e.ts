@@ -61,7 +61,7 @@ describe('Autocomplete - Create Channel', () => {
         await expect(Autocomplete.sectionAtMentionList).toBeVisible();
     });
 
-    it('MM-T4904_2 - should render channel mention autocomplete in header input', async () => {
+    it('MM-T4904_2 - should render channel mention autocomplete in header input -- KNOWN ISSUE: MM-46650', async () => {
         // * Verify channel mention list is not displayed
         await expect(Autocomplete.sectionChannelMentionList).not.toBeVisible();
 

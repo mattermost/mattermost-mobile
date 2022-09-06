@@ -7,8 +7,8 @@ import {expect} from 'detox';
 
 class EmojiPickerScreen {
     testID = {
+        emojiPickerScreenPrefix: 'emoji_picker.',
         emojiPickerScreen: 'emoji_picker.screen',
-        emojiPickerPrefix: 'emoji_picker.',
         closeButton: 'close.emoji_picker.button',
     };
 
@@ -16,10 +16,10 @@ class EmojiPickerScreen {
     closeButton = element(by.id(this.testID.closeButton));
 
     // convenience props
-    searchBar = SearchBar.getSearchBar(this.testID.emojiPickerPrefix);
-    searchInput = SearchBar.getSearchInput(this.testID.emojiPickerPrefix);
-    cancelButton = SearchBar.getCancelButton(this.testID.emojiPickerPrefix);
-    clearButton = SearchBar.getClearButton(this.testID.emojiPickerPrefix);
+    searchBar = SearchBar.getSearchBar(this.testID.emojiPickerScreenPrefix);
+    searchInput = SearchBar.getSearchInput(this.testID.emojiPickerScreenPrefix);
+    cancelButton = SearchBar.getCancelButton(this.testID.emojiPickerScreenPrefix);
+    clearButton = SearchBar.getClearButton(this.testID.emojiPickerScreenPrefix);
 
     toBeVisible = async () => {
         await expect(this.emojiPickerScreen).toBeVisible();

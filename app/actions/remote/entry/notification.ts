@@ -1,25 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {switchToChannelById} from '@actions/remote/channel';
-import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {Preferences, Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {getMyChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {getCommonSystemValues, getConfig, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {getMyTeamById} from '@queries/servers/team';
-import {getIsCRTEnabled} from '@queries/servers/thread';
+import {getCommonSystemValues, getConfig, getCurrentTeamId, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
-import {emitNotificationError} from '@utils/notification';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
-import {deferredAppEntryActions, entry, syncOtherServers} from './common';
+import {deferredAppEntryActions, entry, handleNotificationNavigation, syncOtherServers} from './common';
 import {graphQLCommon} from './gql_common';
 
 export async function pushNotificationEntry(serverUrl: string, notification: NotificationWithData) {
@@ -64,7 +57,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     const config = await getConfig(database);
     let result;
     if (config?.FeatureFlagGraphQL === 'true') {
-        result = await graphQLCommon(serverUrl, true, teamId, channelId);
+        result = await graphQLCommon(serverUrl, true, teamId, channelId, rootId, false, true);
         if (result.error) {
             logDebug('Error using GraphQL, trying REST', result.error);
             result = restNotificationEntry(serverUrl, teamId, channelId, rootId, isDirectChannel);
@@ -106,60 +99,14 @@ const restNotificationEntry = async (serverUrl: string, teamId: string, channelI
         }
     }
 
-    const myChannel = await getMyChannel(database, channelId);
-    const myTeam = await getMyTeamById(database, teamId);
-    const isCRTEnabled = await getIsCRTEnabled(database);
-    const isThreadNotification = isCRTEnabled && Boolean(rootId);
-
     await operator.batchRecords(models);
 
-    let switchedToScreen = false;
-    let switchedToChannel = false;
-    if (myChannel && myTeam) {
-        if (isThreadNotification) {
-            await fetchAndSwitchToThread(serverUrl, rootId, true);
-        } else {
-            switchedToChannel = true;
-            await switchToChannelById(serverUrl, channelId, teamId);
-        }
-        switchedToScreen = true;
-    }
-
-    if (!switchedToScreen) {
-        const isTabletDevice = await isTablet();
-        if (isTabletDevice || (selectedChannelId === channelId)) {
-            // Make switch again to get the missing data and make sure the team is the correct one
-            switchedToScreen = true;
-            if (isThreadNotification) {
-                await fetchAndSwitchToThread(serverUrl, rootId, true);
-            } else {
-                switchedToChannel = true;
-                await switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
-            }
-        } else if (selectedTeamId !== teamId || selectedChannelId !== channelId) {
-            // If in the end the selected team or channel is different than the one from the notification
-            // we switch again
-            await setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
-        }
-    }
-
-    if (selectedTeamId !== teamId) {
-        emitNotificationError('Team');
-    } else if (selectedChannelId !== channelId) {
-        emitNotificationError('Channel');
-    }
+    await handleNotificationNavigation(serverUrl, selectedChannelId, selectedTeamId, channelId, teamId, rootId);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(operator.database))!;
     const {config, license} = await getCommonSystemValues(operator.database);
 
     const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
-
-    // Waiting for the screen to display fixes a race condition when fetching and storing data
-    if (switchedToChannel) {
-        await NavigationStore.waitUntilScreenHasLoaded(Screens.CHANNEL);
-    } else if (switchedToScreen && isThreadNotification) {
-        await NavigationStore.waitUntilScreenHasLoaded(Screens.THREAD);
-    }
 
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, selectedChannelId);
 

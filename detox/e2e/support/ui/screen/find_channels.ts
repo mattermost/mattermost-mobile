@@ -8,8 +8,10 @@ import {expect} from 'detox';
 
 class FindChannelsScreen {
     testID = {
+        findChannelsScreenPrefix: 'find_channels.',
+        filteredChannelItemPrefix: 'find_channels.filtered_list.channel_item.',
+        unfilteredChannelItemPrefix: 'find_channels.unfiltered_list.channel_item.',
         findChannelsScreen: 'find_channels.screen',
-        findChannelsPrefix: 'find_channels.',
         closeButton: 'close.find_channels.button',
         directoryQuickOption: 'find_channels.quick_options.directory.option',
         openDirectMessageQuickOption: 'find_channels.quick_options.open_dm.option',
@@ -27,25 +29,25 @@ class FindChannelsScreen {
     flatFilteredChannelList = element(by.id(this.testID.flatFilteredChannelList));
 
     // convenience props
-    searchBar = SearchBar.getSearchBar(this.testID.findChannelsPrefix);
-    searchInput = SearchBar.getSearchInput(this.testID.findChannelsPrefix);
-    cancelButton = SearchBar.getCancelButton(this.testID.findChannelsPrefix);
-    clearButton = SearchBar.getClearButton(this.testID.findChannelsPrefix);
+    searchBar = SearchBar.getSearchBar(this.testID.findChannelsScreenPrefix);
+    searchInput = SearchBar.getSearchInput(this.testID.findChannelsScreenPrefix);
+    cancelButton = SearchBar.getCancelButton(this.testID.findChannelsScreenPrefix);
+    clearButton = SearchBar.getClearButton(this.testID.findChannelsScreenPrefix);
 
     getUnfilteredChannelItem = (channelName: string) => {
-        return element(by.id(`find_channels.unfiltered_list.channel_item.${channelName}`));
+        return element(by.id(`${this.testID.unfilteredChannelItemPrefix}${channelName}`));
     };
 
     getUnfilteredChannelItemDisplayName = (channelName: string) => {
-        return element(by.id(`find_channels.unfiltered_list.channel_item.${channelName}.display_name`));
+        return element(by.id(`${this.testID.unfilteredChannelItemPrefix}${channelName}.display_name`));
     };
 
     getFilteredChannelItem = (channelName: string) => {
-        return element(by.id(`find_channels.filtered_list.channel_item.${channelName}`));
+        return element(by.id(`${this.testID.filteredChannelItemPrefix}${channelName}`));
     };
 
     getFilteredChannelItemDisplayName = (channelName: string) => {
-        return element(by.id(`find_channels.filtered_list.channel_item.${channelName}.display_name`));
+        return element(by.id(`${this.testID.filteredChannelItemPrefix}${channelName}.display_name`));
     };
 
     toBeVisible = async () => {

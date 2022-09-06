@@ -199,6 +199,7 @@ const ChannelHeader = ({
                         customStatus={customStatus}
                         emojiSize={13}
                         style={styles.customStatusEmoji}
+                        testID='channel_header'
                     />
                     }
                     <View style={styles.customStatusText}>
@@ -206,6 +207,7 @@ const ChannelHeader = ({
                             numberOfLines={1}
                             ellipsizeMode='tail'
                             style={styles.subtitle}
+                            testID='channel_header.custom_status.custom_status_text'
                         >
                             {customStatus.text}
                         </Text>
