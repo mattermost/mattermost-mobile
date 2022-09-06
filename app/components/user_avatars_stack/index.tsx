@@ -88,9 +88,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginBottom: 12,
         },
         listHeaderText: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            ...typography('Body', 75, 'SemiBold'),
-            textTransform: 'uppercase',
+            color: theme.centerChannelColor,
+            ...typography('Heading', 600, 'SemiBold'),
         },
     };
 });

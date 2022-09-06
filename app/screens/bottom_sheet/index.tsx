@@ -116,12 +116,15 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
         <View
             style={{
                 backgroundColor: theme.centerChannelBg,
+                borderColor: changeOpacity(theme.centerChannelColor,0.08),
+                borderWidth: 1,
                 opacity: 1,
                 paddingHorizontal: 20,
                 paddingTop: isTablet ? 8 : PADDING_TOP_MOBILE,
                 height: '100%',
                 width: isTablet ? '100%' : Math.min(dimensions.width, 450),
                 alignSelf: 'center',
+                borderRadius: 12,
             }}
             testID={`${testID}.screen`}
         >
@@ -144,7 +147,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
             <RNBottomSheet
                 ref={sheetRef}
                 snapPoints={snapPoints}
-                borderRadius={10}
+                // borderRadius={12}
                 initialSnap={snapPoints.length - 1}
                 renderContent={renderContainerContent}
                 onCloseEnd={close}

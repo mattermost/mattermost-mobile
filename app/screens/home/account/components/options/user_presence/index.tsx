@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import FormattedText from '@components/formatted_text';
 import {setStatus} from '@actions/remote/user';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import StatusLabel from '@components/status_label';
@@ -13,6 +14,7 @@ import UserStatusIndicator from '@components/user_status';
 import General from '@constants/general';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {bottomSheet, dismissBottomSheet, dismissModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
@@ -37,6 +39,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         spacer: {
             marginLeft: 16,
         },
+
+        listHeader: {
+            marginBottom: 12,
+        },
+        listHeaderText: {
+            color: theme.centerChannelColor,
+            ...typography('Heading', 600, 'SemiBold'),
+        },
     };
 });
 
@@ -52,10 +62,21 @@ const UserStatus = ({currentUser}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    const isTablet = useIsTablet();
+
     const handleSetStatus = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
             return (
                 <>
+                    {!isTablet && (
+                        <View style={styles.listHeader}>
+                            <FormattedText
+                                id='mobile.user_presence.header'
+                                defaultMessage={'Set your status'}
+                                style={styles.listHeaderText}
+                            />
+                        </View>
+                    )}
                     <SlideUpPanelItem
                         icon='check-circle'
                         imageStyles={{color: theme.onlineIndicator}}
@@ -108,7 +129,7 @@ const UserStatus = ({currentUser}: Props) => {
         bottomSheet({
             closeButtonId: 'close-set-user-status',
             renderContent,
-            snapPoints: [snapPoint, 10],
+            snapPoints: [(snapPoint + 34), 10],
             title: intl.formatMessage({id: 'account.user_status.title', defaultMessage: 'User Presence'}),
             theme,
         });

@@ -35,12 +35,11 @@ type ThreadOptionsProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         listHeader: {
-            marginBottom: 12,
+            marginBottom: 8,
         },
         listHeaderText: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            textTransform: 'uppercase',
-            ...typography('Body', 75, 'SemiBold'),
+            color: theme.centerChannelColor,
+            ...typography('Heading', 600, 'SemiBold'),
         },
     };
 });
@@ -124,7 +123,7 @@ const ThreadOptions = ({
             closeButtonId={THREAD_OPTIONS_BUTTON}
             componentId={Screens.THREAD_OPTIONS}
             initialSnapIndex={0}
-            snapPoints={[((options.length + 2) * ITEM_HEIGHT), 10]}
+            snapPoints={[((options.length + 2) * ITEM_HEIGHT + 34), 10]}
             testID='thread_options'
         />
     );
