@@ -12,7 +12,7 @@ import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {observeChannelsByCategoryChannelSortOrder, observeChannelsByLastPostAtInCategory} from '@queries/servers/categories';
-import {observeNotifyPropsByChannels, queryChannelsByNames, queryEmptyDirectChannels} from '@queries/servers/channel';
+import {observeNotifyPropsByChannels, queryChannelsByNames, queryEmptyDirectAndGroupChannels} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeCurrentUserId, observeLastUnreadChannelId} from '@queries/servers/system';
 import {getDirectChannelName} from '@utils/channel';
@@ -108,7 +108,7 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
             }),
         );
 
-    const emptyDmIds = queryEmptyDirectChannels(database).observe().pipe(
+    const emptyDmIds = queryEmptyDirectAndGroupChannels(database).observeWithColumns(['last_post_at']).pipe(
         switchMap(mapChannelIds),
     );
 

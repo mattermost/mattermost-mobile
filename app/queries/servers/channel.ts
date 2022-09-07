@@ -436,8 +436,12 @@ export const queryMyChannelUnreads = (database: Database, currentTeamId: string)
     );
 };
 
-export const queryEmptyDirectChannels = (database: Database) => {
+export const queryEmptyDirectAndGroupChannels = (database: Database) => {
     return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(
+            CHANNEL,
+            Q.where('team_id', Q.eq('')),
+        ),
         Q.where('last_post_at', Q.eq(0)),
     );
 };
