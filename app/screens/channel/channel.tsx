@@ -28,7 +28,6 @@ type ChannelProps = {
     serverUrl: string;
     channelId: string;
     componentId?: string;
-    isCallsPluginEnabled: boolean;
     isCallInCurrentChannel: boolean;
     isInACall: boolean;
     isInCurrentChannelCall: boolean;
@@ -47,7 +46,6 @@ const Channel = ({
     serverUrl,
     channelId,
     componentId,
-    isCallsPluginEnabled,
     isCallInCurrentChannel,
     isInACall,
     isInCurrentChannelCall,
@@ -120,7 +118,7 @@ const Channel = ({
 
     let callsComponents: JSX.Element | null = null;
     const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
-    if (isCallsPluginEnabled && (showJoinCallBanner || isInACall)) {
+    if (showJoinCallBanner || isInACall) {
         callsComponents = (
             <FloatingCallContainer>
                 {showJoinCallBanner &&
