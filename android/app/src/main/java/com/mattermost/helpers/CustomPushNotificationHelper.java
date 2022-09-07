@@ -57,14 +57,7 @@ public class CustomPushNotificationHelper {
         if (senderId == null) {
             senderId = "sender_id";
         }
-        Bundle userInfoBundle = bundle.getBundle("userInfo");
         String senderName = getSenderName(bundle);
-        if (userInfoBundle != null) {
-            boolean localPushNotificationTest = userInfoBundle.getBoolean("test");
-            if (localPushNotificationTest) {
-                senderName = "Test";
-            }
-        }
 
         if (conversationTitle == null || !android.text.TextUtils.isEmpty(senderName.trim())) {
             message = removeSenderNameFromMessage(message, senderName);
@@ -246,6 +239,10 @@ public class CustomPushNotificationHelper {
             title = bundle.getString("sender_name");
         }
 
+        if (android.text.TextUtils.isEmpty(title)) {
+            title = bundle.getString("title", "");
+        }
+
         return title;
     }
 
@@ -362,19 +359,6 @@ public class CustomPushNotificationHelper {
         }
 
         NotificationChannel notificationChannel = mHighImportanceChannel;
-
-        boolean testNotification = false;
-        boolean localNotification = false;
-        Bundle userInfoBundle = bundle.getBundle("userInfo");
-        if (userInfoBundle != null) {
-            testNotification = userInfoBundle.getBoolean("test");
-            localNotification = userInfoBundle.getBoolean("local");
-        }
-
-        if (testNotification || localNotification) {
-            notificationChannel = mMinImportanceChannel;
-        }
-
         notification.setChannelId(notificationChannel.getId());
     }
 
