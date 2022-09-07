@@ -110,7 +110,6 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
                     style={[styles.flexRow, animated]}
                 >
                     <ScrollView
-                        contentContainerStyle={styles.flex}
                         alwaysBounceVertical={false}
                         style={tabletSidebarStyle}
                     >
