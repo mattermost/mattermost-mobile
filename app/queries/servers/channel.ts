@@ -436,6 +436,12 @@ export const queryMyChannelUnreads = (database: Database, currentTeamId: string)
     );
 };
 
+export const queryEmptyDirectChannels = (database: Database) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.where('last_post_at', Q.eq(0)),
+    );
+};
+
 export function observeMyChannelMentionCount(database: Database, teamId?: string, columns = ['mentions_count', 'is_unread']): Observable<number> {
     const conditions: Q.Condition[] = [
         Q.where('delete_at', Q.eq(0)),
