@@ -5,8 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {View, Pressable} from 'react-native';
 
-import {showLimitRestrictedAlert} from '@calls/alerts';
-import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
+import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';

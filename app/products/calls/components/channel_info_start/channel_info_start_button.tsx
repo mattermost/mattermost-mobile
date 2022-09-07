@@ -5,8 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import {leaveCall} from '@calls/actions';
-import {showLimitRestrictedAlert} from '@calls/alerts';
-import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
+import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
 import {useTryCallsFunction} from '@calls/hooks';
 import OptionBox from '@components/option_box';
 import {preventDoubleTap} from '@utils/tap';
