@@ -68,7 +68,7 @@ const CustomStatusInput = ({emoji, isStatusSet, onChangeText, onClearHandle, onO
                     theme={theme}
                 />
                 <TextInput
-                    testID='custom_status.input'
+                    testID='custom_status.status.input'
                     autoCapitalize='none'
                     autoCorrect={false}
                     blurOnSubmit={false}
@@ -88,7 +88,7 @@ const CustomStatusInput = ({emoji, isStatusSet, onChangeText, onClearHandle, onO
                 {isStatusSet ? (
                     <View
                         style={style.clearButton}
-                        testID='custom_status.input.clear.button'
+                        testID='custom_status.status.input.clear.button'
                     >
                         <ClearButton
                             handlePress={onClearHandle}

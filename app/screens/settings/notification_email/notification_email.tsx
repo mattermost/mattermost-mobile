@@ -113,7 +113,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
     useBackNavigation(saveEmail);
 
     return (
-        <SettingContainer testID='notification_email'>
+        <SettingContainer testID='email_notification_settings'>
             <SettingBlock
                 disableFooter={!sendEmailNotifications}
                 footerText={emailFooterText}
@@ -125,7 +125,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                         action={setNotifyInterval}
                         label={intl.formatMessage({id: 'notification_settings.email.immediately', defaultMessage: 'Immediately'})}
                         selected={notifyInterval === `${Preferences.INTERVAL_IMMEDIATE}`}
-                        testID='notification_settings.email.immediately.action'
+                        testID='email_notification_settings.immediately.option'
                         type='select'
                         value={`${Preferences.INTERVAL_IMMEDIATE}`}
                     />
@@ -136,6 +136,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                             action={setNotifyInterval}
                             label={intl.formatMessage({id: 'notification_settings.email.fifteenMinutes', defaultMessage: 'Every 15 minutes'})}
                             selected={notifyInterval === `${Preferences.INTERVAL_FIFTEEN_MINUTES}`}
+                            testID='email_notification_settings.every_fifteen_minutes.option'
                             type='select'
                             value={`${Preferences.INTERVAL_FIFTEEN_MINUTES}`}
                         />
@@ -144,6 +145,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                             action={setNotifyInterval}
                             label={intl.formatMessage({id: 'notification_settings.email.everyHour', defaultMessage: 'Every hour'})}
                             selected={notifyInterval === `${Preferences.INTERVAL_HOUR}`}
+                            testID='email_notification_settings.every_hour.option'
                             type='select'
                             value={`${Preferences.INTERVAL_HOUR}`}
                         />
@@ -154,7 +156,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                         action={setNotifyInterval}
                         label={intl.formatMessage({id: 'notification_settings.email.never', defaultMessage: 'Never'})}
                         selected={notifyInterval === `${Preferences.INTERVAL_NEVER}`}
-                        testID='notification_settings.email.never.action'
+                        testID='email_notification_settings.never.option'
                         type='select'
                         value={`${Preferences.INTERVAL_NEVER}`}
                     />
@@ -180,6 +182,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
                         action={setEmailThreads}
                         label={intl.formatMessage({id: 'user.settings.notifications.email_threads.description', defaultMessage: 'Notify me about all replies to threads I\'m following'})}
                         selected={emailThreads}
+                        testID='email_notification_settings.email_threads.option'
                         type='toggle'
                     />
                     <SettingSeparator/>

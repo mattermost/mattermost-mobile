@@ -277,7 +277,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
             }
         };
         const handleVoiceOff = (data: VoiceEventData) => {
-            if (data.channelId === currentCall?.channelId && speakers.hasOwnProperty(data.userId) && speakers[data.userId]) {
+            if (data.channelId === currentCall?.channelId && speakers.hasOwnProperty(data.userId)) {
                 setSpeakers((prev) => {
                     const next = {...prev};
                     delete next[data.userId];
@@ -292,7 +292,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
             onVoiceOn.remove();
             onVoiceOff.remove();
         };
-    }, []);
+    }, [speakers, currentCall?.channelId]);
 
     const leaveCallHandler = useCallback(() => {
         popTopScreen();

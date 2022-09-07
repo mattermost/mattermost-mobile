@@ -3,6 +3,7 @@
 
 import CookieManager, {Cookie} from '@react-native-cookies/cookies';
 import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
+import FastImage from 'react-native-fast-image';
 import semver from 'semver';
 
 import LocalConfig from '@assets/config.json';
@@ -17,7 +18,7 @@ import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
-import {deleteFileCache} from '@utils/file';
+import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 
 import type {jsAndNativeErrorHandler} from '@typings/global/error_handling';
 import type {LaunchType} from '@typings/launch';
@@ -112,7 +113,13 @@ class GlobalEventHandler {
 
         this.resetLocale();
         this.clearCookiesForServer(serverUrl);
+        FastImage.clearDiskCache();
         deleteFileCache(serverUrl);
+        deleteFileCacheByDir('mmPasteInput');
+        deleteFileCacheByDir('thumbnails');
+        if (Platform.OS === 'android') {
+            deleteFileCacheByDir('image_cache');
+        }
 
         if (activeServerUrl === serverUrl) {
             let displayName = '';

@@ -24,7 +24,7 @@ import {filterAndTransformRoles, getMemberChannelsFromGQLQuery, getMemberTeamsFr
 import {isTablet} from '@utils/helpers';
 import {processIsCRTEnabled} from '@utils/thread';
 
-import {teamsToRemove, FETCH_UNREADS_TIMEOUT} from './common';
+import {teamsToRemove, FETCH_UNREADS_TIMEOUT, handleNotificationNavigation} from './common';
 
 import type ClientError from '@client/rest/error';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -57,7 +57,7 @@ export async function deferredAppEntryGraphQLActions(
     setTimeout(() => {
         if (chData?.channels?.length && chData.memberships?.length) {
             // defer fetching posts for unread channels on initial team
-            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
+            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, true);
         }
     }, FETCH_UNREADS_TIMEOUT);
 
@@ -158,7 +158,7 @@ const getChannelData = async (serverUrl: string, initialTeamId: string, userId: 
     return {chData, roles};
 };
 
-export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, currentTeamId: string, currentChannelId: string, isUpgrade = false) => {
+export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, currentTeamId: string, currentChannelId: string, rootId?: string, isUpgrade = false, isNotificationEntry = false) => {
     const dt = Date.now();
 
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -301,6 +301,10 @@ export const graphQLCommon = async (serverUrl: string, syncDatabase: boolean, cu
     const models = await Promise.all(modelPromises);
     if (models.length) {
         await operator.batchRecords(models.flat());
+    }
+
+    if (isNotificationEntry) {
+        await handleNotificationNavigation(serverUrl, initialChannelId, initialTeamId, currentChannelId, currentTeamId, rootId);
     }
 
     const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, config));

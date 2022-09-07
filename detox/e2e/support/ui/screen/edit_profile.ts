@@ -8,8 +8,8 @@ import {expect} from 'detox';
 
 class EditProfileScreen {
     testID = {
+        editProfileScreenPrefix: 'edit_profile.',
         editProfileScreen: 'edit_profile.screen',
-        editProfilePrefix: 'edit_profile.',
         closeButton: 'close.edit_profile.button',
         saveButton: 'edit_profile.save.button',
         scrollView: 'edit_profile.scroll_view',
@@ -47,7 +47,7 @@ class EditProfileScreen {
     positionInputDisabled = element(by.id(this.testID.positionInputDisabled));
 
     getEditProfilePicture = (userId: string) => {
-        return element(ProfilePicture.getProfilePictureItemMatcher(this.testID.editProfilePrefix, userId));
+        return element(ProfilePicture.getProfilePictureItemMatcher(this.testID.editProfileScreenPrefix, userId));
     };
 
     toBeVisible = async () => {

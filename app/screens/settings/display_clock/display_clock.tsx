@@ -57,7 +57,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
     useAndroidHardwareBackHandler(componentId, saveClockDisplayPreference);
 
     return (
-        <SettingContainer testID='display_clock'>
+        <SettingContainer testID='clock_display_settings'>
             <SettingBlock
                 disableHeader={true}
             >
@@ -66,7 +66,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
                     label={intl.formatMessage({id: 'settings_display.clock.standard', defaultMessage: '12-hour clock'})}
                     description={intl.formatMessage({id: 'settings_display.clock.normal.desc', defaultMessage: 'Example: 4:00 PM'})}
                     selected={!isMilitaryTimeFormat}
-                    testID='clock_display_settings.normal_clock.action'
+                    testID='clock_display_settings.twelve_hour.option'
                     type='select'
                     value={CLOCK_TYPE.NORMAL}
                 />
@@ -76,7 +76,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
                     label={intl.formatMessage({id: 'settings_display.clock.mz', defaultMessage: '24-hour clock'})}
                     description={intl.formatMessage({id: 'settings_display.clock.mz.desc', defaultMessage: 'Example: 16:00'})}
                     selected={isMilitaryTimeFormat}
-                    testID='clock_display_settings.military_clock.action'
+                    testID='clock_display_settings.twenty_four_hour.option'
                     type='select'
                     value={CLOCK_TYPE.MILITARY}
                 />
