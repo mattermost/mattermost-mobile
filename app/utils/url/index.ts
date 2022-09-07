@@ -174,20 +174,22 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
     }
 
     let urlToMatch = url;
+    const urlBase = serverURL || siteURL || '';
 
     if (!url.startsWith('mattermost://')) {
         // If url doesn't contain site or server URL, tack it on.
         // e.g. <jump to convo> URLs from autolink plugin.
-        const urlBase = serverURL || siteURL || '';
         const match = new RegExp(escapeRegex(urlBase)).exec(url);
         if (!match) {
             urlToMatch = urlBase + url;
         }
     }
 
-    const parsedDeepLink = parseDeepLink(urlToMatch);
-    if (parsedDeepLink.type !== DeepLink.Invalid) {
-        return parsedDeepLink;
+    if (urlParse(urlToMatch).hostname === urlParse(urlBase).hostname) {
+        const parsedDeepLink = parseDeepLink(urlToMatch);
+        if (parsedDeepLink.type !== DeepLink.Invalid) {
+            return parsedDeepLink;
+        }
     }
 
     return null;
