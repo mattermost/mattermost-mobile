@@ -131,7 +131,7 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 418
+        versionCode 423
         versionName "1.55.1"
         multiDexEnabled = true
         testBuildType System.getProperty('testBuildType', 'debug')
