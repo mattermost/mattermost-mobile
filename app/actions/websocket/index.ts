@@ -45,7 +45,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
-import {logInfo} from '@utils/log';
+import {logDebug, logInfo} from '@utils/log';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelConvertedEvent, handleChannelCreatedEvent,
@@ -127,9 +127,6 @@ async function doReconnectRest(serverUrl: string, operator: ServerDataOperator, 
     const currentChannel = await getCurrentChannel(database);
     const currentActiveServerUrl = await getActiveServerUrl(DatabaseManager.appDatabase!.database);
 
-    if (serverUrl === currentActiveServerUrl) {
-        DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
-    }
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
         if (serverUrl === currentActiveServerUrl) {
@@ -199,8 +196,17 @@ async function doReconnect(serverUrl: string) {
         license = system.license;
     }
 
+    const currentActiveServerUrl = await getActiveServerUrl(DatabaseManager.appDatabase!.database);
+    if (serverUrl === currentActiveServerUrl) {
+        DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
+    }
+
     if (config.FeatureFlagGraphQL === 'true') {
-        await graphQLCommon(serverUrl, true, system.currentTeamId, system.currentChannelId);
+        const {error} = await graphQLCommon(serverUrl, true, system.currentTeamId, system.currentChannelId);
+        if (error) {
+            logDebug('Error using GraphQL, trying REST', error);
+            await doReconnectRest(serverUrl, operator, system.currentTeamId, system.currentUserId, config, license, lastDisconnectedAt);
+        }
     } else {
         await doReconnectRest(serverUrl, operator, system.currentTeamId, system.currentUserId, config, license, lastDisconnectedAt);
     }
