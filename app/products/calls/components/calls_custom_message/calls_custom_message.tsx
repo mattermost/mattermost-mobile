@@ -30,6 +30,7 @@ type Props = {
     currentCallChannelId?: string;
     leaveChannelName?: string;
     joinChannelName?: string;
+    joinChannelIsDMorGM?: boolean;
     limitRestrictedInfo?: LimitRestrictedInfo;
 }
 
@@ -108,7 +109,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 export const CallsCustomMessage = ({
     post, currentUser, author, isMilitaryTime, teammateNameDisplay,
-    currentCallChannelId, leaveChannelName, joinChannelName, limitRestrictedInfo,
+    currentCallChannelId, leaveChannelName, joinChannelName, joinChannelIsDMorGM, limitRestrictedInfo,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -130,7 +131,7 @@ export const CallsCustomMessage = ({
             return;
         }
 
-        leaveAndJoinWithAlert(intl, serverUrl, post.channelId, leaveChannelName || '', joinChannelName || '', confirmToJoin, false);
+        leaveAndJoinWithAlert(intl, serverUrl, post.channelId, leaveChannelName || '', joinChannelName || '', confirmToJoin, false, Boolean(joinChannelIsDMorGM));
     };
 
     if (post.props.end_at) {

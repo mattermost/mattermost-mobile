@@ -3,7 +3,7 @@
 
 import {Alert} from 'react-native';
 
-import {hasMicrophonePermission, joinCall} from '@calls/actions';
+import {hasMicrophonePermission, joinCall, unmuteMyself} from '@calls/actions';
 import {errorAlert} from '@calls/utils';
 
 import type {IntlShape} from 'react-intl';
@@ -16,6 +16,7 @@ export default function leaveAndJoinWithAlert(
     joinChannelName: string,
     confirmToJoin: boolean,
     newCall: boolean,
+    isDMorGM: boolean,
 ) {
     if (confirmToJoin) {
         const {formatMessage} = intl;
@@ -49,17 +50,17 @@ export default function leaveAndJoinWithAlert(
                         id: 'mobile.leave_and_join_confirmation',
                         defaultMessage: 'Leave & Join',
                     }),
-                    onPress: () => doJoinCall(serverUrl, channelId, intl),
+                    onPress: () => doJoinCall(serverUrl, channelId, isDMorGM, intl),
                     style: 'cancel',
                 },
             ],
         );
     } else {
-        doJoinCall(serverUrl, channelId, intl);
+        doJoinCall(serverUrl, channelId, isDMorGM, intl);
     }
 }
 
-export const doJoinCall = async (serverUrl: string, channelId: string, intl: IntlShape) => {
+export const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolean, intl: IntlShape) => {
     const {formatMessage} = intl;
 
     const hasPermission = await hasMicrophonePermission(intl);
@@ -75,5 +76,14 @@ export const doJoinCall = async (serverUrl: string, channelId: string, intl: Int
     if (res.error) {
         const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);
+        return;
+    }
+
+    if (isDMorGM) {
+        // FIXME (MM-46048) - HACK
+        // There's a race condition between unmuting and receiving existing tracks from other participants.
+        // Fixing this properly requires extensive and potentially breaking changes.
+        // Waiting for a second before unmuting is a decent workaround that should work in most cases.
+        setTimeout(() => unmuteMyself(), 1000);
     }
 };

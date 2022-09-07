@@ -17,6 +17,7 @@ export interface Props {
     serverUrl: string;
     displayName: string;
     channelId: string;
+    channelIsDMorGM: boolean;
     isACallInCurrentChannel: boolean;
     confirmToJoin: boolean;
     alreadyInCall: boolean;
@@ -29,6 +30,7 @@ const ChannelInfoStartButton = ({
     serverUrl,
     displayName,
     channelId,
+    channelIsDMorGM,
     isACallInCurrentChannel,
     confirmToJoin,
     alreadyInCall,
@@ -45,7 +47,7 @@ const ChannelInfoStartButton = ({
         } else if (isLimitRestricted) {
             showLimitRestrictedAlert(limitRestrictedInfo.maxParticipants, intl);
         } else {
-            leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, !isACallInCurrentChannel);
+            leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, !isACallInCurrentChannel, channelIsDMorGM);
         }
 
         dismissChannelInfo();

@@ -23,6 +23,7 @@ type Props = {
     channelId: string;
     serverUrl: string;
     displayName: string;
+    channelIsDMorGM: boolean;
     inACall: boolean;
     participants: UserModel[];
     currentCallChannelName: string;
@@ -87,6 +88,7 @@ const JoinCallBanner = ({
     channelId,
     serverUrl,
     displayName,
+    channelIsDMorGM,
     participants,
     inACall,
     currentCallChannelName,
@@ -103,7 +105,7 @@ const JoinCallBanner = ({
             showLimitRestrictedAlert(limitRestrictedInfo.maxParticipants, intl);
             return;
         }
-        leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, inACall, false);
+        leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, inACall, false, channelIsDMorGM);
     };
 
     return (
