@@ -233,11 +233,11 @@ export default function ChannelInfoForm({
             insetsAdjust,
         default: 0,
     });
-    const autocompletePosition = spaceOnTop > spaceOnBottom ?
-        (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardAdjust) - otherElementsSize :
-        (otherElementsSize + headerFieldHeight) - scrollPosition;
-    const autocompleteAvailableSpace = spaceOnTop > spaceOnBottom ? spaceOnTop : spaceOnBottom;
-    const growUp = spaceOnTop > spaceOnBottom;
+    const autocompletePosition = spaceOnBottom > spaceOnTop ?
+        (otherElementsSize + headerFieldHeight) - scrollPosition :
+        (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardAdjust) - otherElementsSize;
+    const autocompleteAvailableSpace = spaceOnBottom > spaceOnTop ? spaceOnBottom : spaceOnTop;
+    const growDown = spaceOnBottom > spaceOnTop;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -403,7 +403,7 @@ export default function ChannelInfoForm({
                 nestedScrollEnabled={true}
                 availableSpace={animatedAutocompleteAvailableSpace}
                 inPost={false}
-                growDown={!growUp}
+                growDown={growDown}
             />
         </SafeAreaView>
     );

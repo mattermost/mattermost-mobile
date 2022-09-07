@@ -110,7 +110,7 @@ const Autocomplete = ({
         return growDown ?
             {top: position.value, bottom: Platform.OS === 'ios' ? 'auto' : undefined, maxHeight: maxHeight.value} :
             {top: Platform.OS === 'ios' ? 'auto' : undefined, bottom: position.value, maxHeight: maxHeight.value};
-    }, [growDown]);
+    }, [growDown, position]);
 
     const containerStyles = useMemo(() => {
         const s = [style.base, containerAnimatedStyle];
@@ -124,7 +124,7 @@ const Autocomplete = ({
             s.push(containerStyle);
         }
         return s;
-    }, [hasElements, position, growDown, style, containerStyle, containerAnimatedStyle]);
+    }, [hasElements, style, containerStyle, containerAnimatedStyle]);
 
     return (
         <Animated.View
