@@ -3,6 +3,8 @@
 import * as React from 'react';
 import Svg, {Path} from 'react-native-svg';
 
+import {useTheme} from '@app/context/theme';
+
 interface PasswordEyeIconProps {
     isVisible: Boolean;
 }
@@ -14,18 +16,23 @@ const EYE_OFF_PATH =
 
 export const PasswordEyeIcon: React.FC<PasswordEyeIconProps> = ({
     isVisible,
-}) => (
-    <Svg
-        style={{
-            width: 18,
-            height: 18,
-        }}
-        viewBox='0 0 24 24'
-        color='#3F4350'
-    >
-        <Path
-            fill='currentColor'
-            d={isVisible ? EYE_OFF_PATH : EYE_ON_PATH}
-        />
-    </Svg>
-);
+}) => {
+    const theme = useTheme();
+
+    return (
+        <Svg
+            style={{
+                width: 18,
+                height: 18,
+            }}
+            viewBox='0 0 24 24'
+            color={theme.centerChannelColor}
+            opacity={0.64}
+        >
+            <Path
+                fill='currentColor'
+                d={isVisible ? EYE_OFF_PATH : EYE_ON_PATH}
+            />
+        </Svg>
+    );
+};
