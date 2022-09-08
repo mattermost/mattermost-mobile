@@ -23,7 +23,7 @@ import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
 import type {CallsConnection} from '@calls/types/calls';
 
-const websocketConnectTimeout = 3000;
+const peerConnectTimeout = 5000;
 
 export async function newConnection(serverUrl: string, channelID: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
     let peer: Peer | null = null;
@@ -236,36 +236,36 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         }
     });
 
-    const waitForReady = () => {
+    const waitForPeerConnection = () => {
         const waitForReadyImpl = (callback: () => void, fail: () => void, timeout: number) => {
             if (timeout <= 0) {
                 fail();
                 return;
             }
             setTimeout(() => {
-                if (ws.state() === WebSocket.OPEN) {
+                if (peer?.isConnected) {
                     callback();
                 } else {
-                    waitForReadyImpl(callback, fail, timeout - 10);
+                    waitForReadyImpl(callback, fail, timeout - 200);
                 }
-            }, 10);
+            }, 200);
         };
 
         const promise = new Promise<void>((resolve, reject) => {
-            waitForReadyImpl(resolve, reject, websocketConnectTimeout);
+            waitForReadyImpl(resolve, reject, peerConnectTimeout);
         });
 
         return promise;
     };
 
-    const connection = {
+    const connection: CallsConnection = {
         disconnect,
         mute,
         unmute,
-        waitForReady,
+        waitForPeerConnection,
         raiseHand,
         unraiseHand,
-    } as CallsConnection;
+    };
 
     return connection;
 }
