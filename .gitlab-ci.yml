@@ -7,6 +7,9 @@ stages:
   - test
   - build
 
+empty:
+  script: echo "empty"
+
 .test:
   image: $CI_REGISTRY/qa/images/android-node:android-32_node-16.14.2-20220426
   stage: test
