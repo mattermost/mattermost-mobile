@@ -11,6 +11,7 @@ import {observeIsCallLimitRestricted} from '@calls/observers';
 import {observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
+import {isDMorGM} from '@utils/channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -20,8 +21,13 @@ type EnhanceProps = WithDatabaseArgs & {
 }
 
 const enhanced = withObservables([], ({serverUrl, channelId, database}: EnhanceProps) => {
-    const displayName = observeChannel(database, channelId).pipe(
-        switchMap((channel) => of$(channel?.displayName || '')),
+    const channel = observeChannel(database, channelId);
+    const displayName = channel.pipe(
+        switchMap((c) => of$(c?.displayName || '')),
+        distinctUntilChanged(),
+    );
+    const channelIsDMorGM = channel.pipe(
+        switchMap((chan) => of$(chan ? isDMorGM(chan) : false)),
         distinctUntilChanged(),
     );
     const isACallInCurrentChannel = observeChannelsWithCalls(serverUrl).pipe(
@@ -48,6 +54,7 @@ const enhanced = withObservables([], ({serverUrl, channelId, database}: EnhanceP
 
     return {
         displayName,
+        channelIsDMorGM,
         isACallInCurrentChannel,
         confirmToJoin,
         alreadyInCall,
