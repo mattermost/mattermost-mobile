@@ -15,6 +15,7 @@ import {getPreferenceAsBool} from '@helpers/api/preference';
 import {observeChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentUser, observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
+import {isDMorGM} from '@utils/channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
@@ -56,8 +57,13 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
         switchMap((c) => of$(c ? c.displayName : '')),
         distinctUntilChanged(),
     );
-    const joinChannelName = observeChannel(database, post.channelId).pipe(
+    const joinChannel = observeChannel(database, post.channelId);
+    const joinChannelName = joinChannel.pipe(
         switchMap((chan) => of$(chan?.displayName || '')),
+        distinctUntilChanged(),
+    );
+    const joinChannelIsDMorGM = joinChannel.pipe(
+        switchMap((chan) => of$(chan ? isDMorGM(chan) : false)),
         distinctUntilChanged(),
     );
 
@@ -69,6 +75,7 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
         currentCallChannelId,
         leaveChannelName,
         joinChannelName,
+        joinChannelIsDMorGM,
         limitRestrictedInfo: observeIsCallLimitRestricted(serverUrl, post.channelId),
     };
 });

@@ -86,7 +86,7 @@ export type CallsConnection = {
     disconnect: () => void;
     mute: () => void;
     unmute: () => void;
-    waitForReady: () => Promise<void>;
+    waitForPeerConnection: () => Promise<void>;
     raiseHand: () => void;
     unraiseHand: () => void;
 }
