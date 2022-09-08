@@ -116,8 +116,8 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         observeWithColumns(['value']).pipe(
             switchMap(mapPrefName),
             combineLatestWith(hiddenDmIds, emptyDmIds),
-            switchMap(([hIds, hiddenDms, emptyDms]) => {
-                return of$(new Set(hIds.concat(hiddenDms, emptyDms)));
+            switchMap(([hIds, hDmIds, eDmIds]) => {
+                return of$(new Set(hIds.concat(hDmIds, eDmIds)));
             }),
         );
 
