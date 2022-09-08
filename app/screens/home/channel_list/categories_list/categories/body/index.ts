@@ -112,16 +112,13 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         switchMap(mapChannelIds),
     );
 
-    const hiddenOrEmptyDmIds = hiddenDmIds.pipe(
-        combineLatestWith(emptyDmIds),
-        map(([hidden, empty]) => hidden.concat(empty)),
-    );
-
     const hiddenChannelIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, undefined, 'false').
         observeWithColumns(['value']).pipe(
             switchMap(mapPrefName),
-            combineLatestWith(hiddenOrEmptyDmIds),
-            switchMap(([a, b]) => of$(new Set(a.concat(b)))),
+            combineLatestWith(hiddenDmIds, emptyDmIds),
+            switchMap(([hIds, hiddenDms, emptyDms]) => {
+                return of$(new Set(hIds.concat(hiddenDms, emptyDms)));
+            }),
         );
 
     const sortedChannels = hiddenChannelIds.pipe(
