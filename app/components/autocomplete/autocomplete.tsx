@@ -29,16 +29,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderRadius: 8,
             elevation: 3,
         },
-        searchContainer: {
-            ...Platform.select({
-                android: {
-                    top: 42,
-                },
-                ios: {
-                    top: 55,
-                },
-            }),
-        },
         shadow: {
             shadowColor: '#000',
             shadowOpacity: 0.12,
