@@ -141,7 +141,7 @@
   "combined_system_message.removed_from_team.one": "{firstUser} **togs bort från kanalen**.",
   "combined_system_message.removed_from_team.one_you": "Du **togs bort från teamet**.",
   "combined_system_message.removed_from_team.two": "{firstUser} och {secondUser} **togs bort från teamet**.",
-  "combined_system_message.you": "Du",
+  "combined_system_message.you": "dig",
   "create_comment.addComment": "Lägg till en kommentar...",
   "create_post.deactivated": "Du visar en arkiverad kanal med ett avstängt användarkonto.",
   "create_post.write": "Skriv i kanalen {channelDisplayName}",
