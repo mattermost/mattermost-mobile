@@ -169,90 +169,161 @@ const ChannelListItem = ({
     ],
     [height, isActive, isTablet, isInfo, styles]);
 
-    if (!hasMember) {
-        return null;
-    }
+    const channelIcon = useMemo(() => {
+        return (
+            <ChannelIcon
+                hasDraft={hasDraft}
+                isActive={isInfo ? false : isTablet && isActive}
+                isInfo={isInfo}
+                isUnread={isBolded}
+                isArchived={channel.deleteAt > 0}
+                membersCount={membersCount}
+                name={channel.name}
+                shared={channel.shared}
+                size={24}
+                type={channel.type}
+                isMuted={isMuted}
+            />
+        );
+    }, [hasDraft, isInfo, isTablet, isActive, isBolded, channel, membersCount, isMuted]);
+
+    const badge = useMemo(() => {
+        return (
+            <Badge
+                visible={mentionsCount > 0}
+                value={mentionsCount}
+                style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
+            />
+        );
+    }, [mentionsCount, isMuted, isInfo, styles]);
 
     const teammateId = (channel.type === General.DM_CHANNEL) ? getUserIdFromChannelName(currentUserId, channel.name) : undefined;
     const isOwnDirectMessage = (channel.type === General.DM_CHANNEL) && currentUserId === teammateId;
-
     let displayName = channel.displayName;
     if (isOwnDirectMessage) {
         displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
+    const customStatus = useMemo(() => {
+        return teammateId ? (
+            <CustomStatus
+                isInfo={isInfo}
+                userId={teammateId!}
+            />
+        ) : null;
+    }, [teammateId, isInfo]);
+
+    const callButton = useMemo(() => {
+        return hasCall ? (
+            <CompassIcon
+                name='phone-in-talk'
+                size={16}
+                style={[...textStyles, styles.hasCall]}
+            />
+        ) : null;
+    }, [hasCall, styles, textStyles]);
+
+    const teamNameMobile = useMemo(() => {
+        if (!isInfo || !teamDisplayName || isTablet) {
+            return null;
+        }
+
+        return (
+            <Text
+                ellipsizeMode='tail'
+                numberOfLines={1}
+                style={[styles.teamName, isMuted && styles.teamNameMuted]}
+                testID={`${testID}.${channel.name}.team_display_name`}
+            >
+                {teamDisplayName}
+            </Text>
+        );
+    }, [isInfo, isMuted, isTablet, styles, channel.name, teamDisplayName]);
+
+    const teamNameTablet = useMemo(() => {
+        if (!isInfo || !teamDisplayName || !isTablet) {
+            return null;
+        }
+
+        return (
+            <Text
+                ellipsizeMode='tail'
+                numberOfLines={1}
+                style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
+                testID={`${testID}.${channel.name}.team_display_name`}
+            >
+                {teamDisplayName}
+            </Text>
+        );
+    }, [isInfo, isMuted, isTablet, styles, channel.name, teamDisplayName]);
+
+    const teamNameBoth = useMemo(() => {
+        if (!isInfo || !teamDisplayName) {
+            return null;
+        }
+
+        if (!isTablet) {
+            return (
+                <Text
+                    ellipsizeMode='tail'
+                    numberOfLines={1}
+                    style={[styles.teamName, isMuted && styles.teamNameMuted]}
+                    testID={`${testID}.${channel.name}.team_display_name`}
+                >
+                    {teamDisplayName}
+                </Text>
+            );
+        }
+
+        if (isTablet) {
+            return (
+                <Text
+                    ellipsizeMode='tail'
+                    numberOfLines={1}
+                    style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
+                    testID={`${testID}.${channel.name}.team_display_name`}
+                >
+                    {teamDisplayName}
+                </Text>
+            );
+        }
+    }, [isInfo, isMuted, isTablet, styles, channel.name, teamDisplayName]);
+
+    const channelDisplayName = useMemo(() => (
+        <Text
+            ellipsizeMode='tail'
+            numberOfLines={1}
+            style={textStyles}
+            testID={`${testID}.${channel.name}.display_name`}
+        >
+            {displayName}
+        </Text>
+    ), [channel.name, displayName, textStyles]);
+
+    if (!hasMember) {
+        return null;
+    }
+
     return (
         <TouchableOpacity onPress={handleOnPress}>
-            <>
-                <View
-                    style={containerStyle}
-                    testID={`${testID}.${channel.name}`}
-                >
-                    <View style={styles.wrapper}>
-                        <ChannelIcon
-                            hasDraft={hasDraft}
-                            isActive={isInfo ? false : isTablet && isActive}
-                            isInfo={isInfo}
-                            isUnread={isBolded}
-                            isArchived={channel.deleteAt > 0}
-                            membersCount={membersCount}
-                            name={channel.name}
-                            shared={channel.shared}
-                            size={24}
-                            type={channel.type}
-                            isMuted={isMuted}
-                        />
-                        <View>
-                            <Text
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                                style={textStyles}
-                                testID={`${testID}.${channel.name}.display_name`}
-                            >
-                                {displayName}
-                            </Text>
-                            {isInfo && Boolean(teamDisplayName) && !isTablet &&
-                            <Text
-                                ellipsizeMode='tail'
-                                numberOfLines={1}
-                                style={[styles.teamName, isMuted && styles.teamNameMuted]}
-                                testID={`${testID}.${channel.name}.team_display_name`}
-                            >
-                                {teamDisplayName}
-                            </Text>
-                            }
-                        </View>
-                        {Boolean(teammateId) &&
-                        <CustomStatus
-                            isInfo={isInfo}
-                            userId={teammateId!}
-                        />
-                        }
-                        {isInfo && Boolean(teamDisplayName) && isTablet &&
-                        <Text
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
-                            style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
-                            testID={`${testID}.${channel.name}.team_display_name`}
-                        >
-                            {teamDisplayName}
-                        </Text>
-                        }
+            <View
+                style={containerStyle}
+                testID={`${testID}.${channel.name}`}
+            >
+                <View style={styles.wrapper}>
+                    {channelIcon}
+                    <View>
+                        {channelDisplayName}
+                        {!isTablet && teamNameMobile}
+                        {/* {!isTablet && teamNameBoth} */}
                     </View>
-                    <Badge
-                        visible={mentionsCount > 0}
-                        value={mentionsCount}
-                        style={[styles.badge, isMuted && styles.mutedBadge, isInfo && styles.infoBadge]}
-                    />
-                    {hasCall &&
-                        <CompassIcon
-                            name='phone-in-talk'
-                            size={16}
-                            style={[...textStyles, styles.hasCall]}
-                        />
-                    }
+                    {customStatus}
+                    {isTablet && teamNameTablet}
+                    {/* {isTablet && teamNameBoth} */}
                 </View>
-            </>
+                {badge}
+                {callButton}
+            </View>
         </TouchableOpacity>
     );
 };
