@@ -130,7 +130,7 @@ const ChannelMentionItem = ({
                         style={style.icon}
                     />
                     <Text
-                        numberOfLines={2}
+                        numberOfLines={1}
                         style={style.rowDisplayName}
                         testID={`${channelMentionItemTestId}.display_name`}
                     >
