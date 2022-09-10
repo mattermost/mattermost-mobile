@@ -83,3 +83,85 @@ exports[`Thread item in the channel list Threads Component should match snapshot
 `;
 
 exports[`Thread item in the channel list Threads Component should match snapshot with only unreads filter 1`] = `null`;
+
+exports[`Thread item in the channel list Threads Component should match snapshot, groupUnreadsSeparately false, always show 1`] = `
+<View
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    Object {
+      "opacity": 1,
+    }
+  }
+  testID="channel_list.threads.button"
+>
+  <View
+    style={
+      Object {
+        "marginLeft": -18,
+        "marginRight": -20,
+      }
+    }
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "minHeight": 40,
+            "paddingHorizontal": 20,
+          },
+          undefined,
+        ]
+      }
+    >
+      <Icon
+        name="message-text-outline"
+        style={
+          Array [
+            Object {
+              "color": "rgba(255,255,255,0.5)",
+              "fontSize": 24,
+            },
+            undefined,
+          ]
+        }
+      />
+      <Text
+        style={
+          Array [
+            Object {
+              "flex": 1,
+            },
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "color": "rgba(255,255,255,0.72)",
+              "marginTop": -1,
+              "paddingLeft": 12,
+              "paddingRight": 20,
+            },
+            undefined,
+            undefined,
+          ]
+        }
+      >
+        Threads
+      </Text>
+    </View>
+  </View>
+</View>
+`;

@@ -38,13 +38,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     currentChannelId: string;
     onlyUnreads: boolean;
+    groupUnreadsSeparately: boolean;
     unreadsAndMentions: {
         unreads: boolean;
         mentions: number;
     };
 };
 
-const ThreadsButton = ({currentChannelId, onlyUnreads, unreadsAndMentions}: Props) => {
+const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, onlyUnreads, unreadsAndMentions}: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
@@ -81,7 +82,7 @@ const ThreadsButton = ({currentChannelId, onlyUnreads, unreadsAndMentions}: Prop
         return [container, icon, text];
     }, [customStyles, isActive, styles, unreads]);
 
-    if (onlyUnreads && !isActive && !unreads && !mentions) {
+    if (groupUnreadsSeparately && (onlyUnreads && !isActive && !unreads && !mentions)) {
         return null;
     }
 
