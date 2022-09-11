@@ -93,7 +93,7 @@ const EmailField = ({
             >
                 <Text
                     style={style.text}
-                    testID='edit_profile_form.email.description'
+                    testID='edit_profile_form.email.input.description'
                 >
                     {fieldDescription}
                 </Text>

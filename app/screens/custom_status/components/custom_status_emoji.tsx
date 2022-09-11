@@ -33,7 +33,7 @@ const CustomStatusEmoji = ({emoji, isStatusSet, onPress, theme}: Props) => {
     const style = getStyleSheet(theme);
     return (
         <TouchableOpacity
-            testID={`custom_status.emoji.${isStatusSet ? (emoji || 'speech_balloon') : 'default'}`}
+            testID={`custom_status.custom_status_emoji.${isStatusSet ? (emoji || 'speech_balloon') : 'default'}`}
             onPress={onPress}
             style={style.iconContainer}
         >

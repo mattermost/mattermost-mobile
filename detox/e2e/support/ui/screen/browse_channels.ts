@@ -7,6 +7,7 @@ import {expect} from 'detox';
 
 class BrowseChannelsScreen {
     testID = {
+        channelItemPrefix: 'browse_channels.custom_list.channel_item.',
         browseChannelsScreen: 'browse_channels.screen',
         closeButton: 'close.browse_channels.button',
         createButton: 'browse_channels.create.button',
@@ -33,11 +34,11 @@ class BrowseChannelsScreen {
     flatChannelList = element(by.id(this.testID.flatChannelList));
 
     getChannelItem = (channelName: string) => {
-        return element(by.id(`browse_channels.custom_list.channel_item.${channelName}`));
+        return element(by.id(`${this.testID.channelItemPrefix}${channelName}`));
     };
 
     getChannelItemDisplayName = (channelName: string) => {
-        return element(by.id(`browse_channels.custom_list.channel_item.${channelName}.display_name`));
+        return element(by.id(`${this.testID.channelItemPrefix}${channelName}.display_name`));
     };
 
     toBeVisible = async () => {

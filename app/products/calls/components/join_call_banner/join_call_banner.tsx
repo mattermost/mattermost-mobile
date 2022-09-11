@@ -5,8 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {View, Pressable} from 'react-native';
 
-import {showLimitRestrictedAlert} from '@calls/alerts';
-import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
+import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
@@ -23,6 +22,7 @@ type Props = {
     channelId: string;
     serverUrl: string;
     displayName: string;
+    channelIsDMorGM: boolean;
     inACall: boolean;
     participants: UserModel[];
     currentCallChannelName: string;
@@ -87,6 +87,7 @@ const JoinCallBanner = ({
     channelId,
     serverUrl,
     displayName,
+    channelIsDMorGM,
     participants,
     inACall,
     currentCallChannelName,
@@ -103,7 +104,7 @@ const JoinCallBanner = ({
             showLimitRestrictedAlert(limitRestrictedInfo.maxParticipants, intl);
             return;
         }
-        leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, inACall, false);
+        leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, inACall, false, channelIsDMorGM);
     };
 
     return (

@@ -11,6 +11,7 @@ import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
@@ -197,14 +198,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, [postMessage]);
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
 
-    if (isUpdating) {
-        return (
-            <View style={styles.loader}>
-                <Loading color={theme.buttonBg}/>
-            </View>
-        );
-    }
-
     const bottomSpace = (dimensions.height - containerHeight - modalPosition);
     const autocompletePosition = Platform.select({
         ios: isTablet ?
@@ -212,6 +205,16 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             keyboardHeight || insets.bottom,
         default: 0}) + AUTOCOMPLETE_SEPARATION;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
+
+    const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
+
+    if (isUpdating) {
+        return (
+            <View style={styles.loader}>
+                <Loading color={theme.buttonBg}/>
+            </View>
+        );
+    }
 
     return (
         <>
@@ -248,8 +251,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 updateValue={onChangeText}
                 value={postMessage}
                 cursorPosition={cursorPosition}
-                position={autocompletePosition}
-                availableSpace={autocompleteAvailableSpace}
+                position={animatedAutocompletePosition}
+                availableSpace={animatedAutocompleteAvailableSpace}
                 inPost={false}
             />
         </>

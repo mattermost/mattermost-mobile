@@ -68,7 +68,7 @@ jest.mock('@calls/connection/connection', () => ({
         disconnect: jest.fn(),
         mute: jest.fn(),
         unmute: jest.fn(),
-        waitForReady: jest.fn(() => Promise.resolve()),
+        waitForPeerConnection: jest.fn(() => Promise.resolve()),
     })),
 }));
 

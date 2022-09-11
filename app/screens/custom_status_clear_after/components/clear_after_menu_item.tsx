@@ -91,11 +91,13 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
         handleItemClick(duration, expiresAt.toISOString());
     }, [handleItemClick, duration]);
 
+    const clearAfterMenuItemTestId = `custom_status_clear_after.menu_item.${duration}`;
+
     return (
         <View>
             <TouchableOpacity
-                testID={`clear_after.menu_item.${duration}`}
                 onPress={handleClick}
+                testID={clearAfterMenuItemTestId}
             >
                 <View style={style.container}>
                     <View style={style.textContainer}>
@@ -103,6 +105,7 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
                             text={expiryMenuItems[duration]}
                             theme={theme}
                             textStyle={{color: theme.centerChannelColor}}
+                            testID={`${clearAfterMenuItemTestId}.custom_status_text`}
                         />
                         {isSelected && (
                             <View style={style.rightPosition}>
@@ -121,6 +124,7 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
                                     textStyles={style.customStatusExpiry}
                                     showTimeCompulsory={true}
                                     showToday={true}
+                                    testID={`${clearAfterMenuItemTestId}.custom_status_expiry`}
                                 />
                             </View>
                         )}

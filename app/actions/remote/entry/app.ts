@@ -35,7 +35,7 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     let result;
     if (config?.FeatureFlagGraphQL === 'true') {
         const {currentTeamId, currentChannelId} = await getCommonSystemValues(database);
-        result = await graphQLCommon(serverUrl, true, currentTeamId, currentChannelId, isUpgrade);
+        result = await graphQLCommon(serverUrl, true, currentTeamId, currentChannelId, '', isUpgrade);
         if (result.error) {
             logDebug('Error using GraphQL, trying REST', result.error);
             result = restAppEntry(serverUrl, since, isUpgrade);

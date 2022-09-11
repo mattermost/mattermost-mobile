@@ -4,6 +4,9 @@ PODS:
   - BVLinearGradient (2.6.2):
     - React-Core
   - CocoaAsyncSocket (7.6.5)
+  - CocoaLumberjack (3.7.4):
+    - CocoaLumberjack/Core (= 3.7.4)
+  - CocoaLumberjack/Core (3.7.4)
   - DoubleConversion (1.1.6)
   - FBLazyVector (0.69.3)
   - FBReactNativeSpec (0.69.3):
@@ -90,6 +93,9 @@ PODS:
   - libwebp/mux (1.2.1):
     - libwebp/demux
   - libwebp/webp (1.2.1)
+  - mattermost-react-native-turbo-log (0.2.0):
+    - CocoaLumberjack
+    - React-Core
   - OpenSSL-Universal (1.1.1100)
   - Permission-Camera (3.6.0):
     - RNPermissions
@@ -438,7 +444,7 @@ PODS:
     - React
   - ReactNativeExceptionHandler (2.10.10):
     - React-Core
-  - ReactNativeIncallManager (3.3.0):
+  - ReactNativeIncallManager (4.0.0):
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
@@ -572,6 +578,7 @@ DEPENDENCIES:
   - hermes-engine (from `../node_modules/react-native/sdks/hermes/hermes-engine.podspec`)
   - jail-monkey (from `../node_modules/jail-monkey`)
   - libevent (~> 2.1.12)
+  - "mattermost-react-native-turbo-log (from `../node_modules/@mattermost/react-native-turbo-log`)"
   - OpenSSL-Universal (= 1.1.1100)
   - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera`)
   - Permission-Microphone (from `../node_modules/react-native-permissions/ios/Microphone`)
@@ -654,6 +661,7 @@ SPEC REPOS:
   trunk:
     - Alamofire
     - CocoaAsyncSocket
+    - CocoaLumberjack
     - Flipper
     - Flipper-Boost-iOSX
     - Flipper-DoubleConversion
@@ -694,6 +702,8 @@ EXTERNAL SOURCES:
     :podspec: "../node_modules/react-native/sdks/hermes/hermes-engine.podspec"
   jail-monkey:
     :path: "../node_modules/jail-monkey"
+  mattermost-react-native-turbo-log:
+    :path: "../node_modules/@mattermost/react-native-turbo-log"
   Permission-Camera:
     :path: "../node_modules/react-native-permissions/ios/Camera"
   Permission-Microphone:
@@ -854,6 +864,7 @@ SPEC CHECKSUMS:
   boost: a7c83b31436843459a1961bfd74b96033dc77234
   BVLinearGradient: 34a999fda29036898a09c6a6b728b0b4189e1a44
   CocoaAsyncSocket: 065fd1e645c7abab64f7a6a2007a48038fdc6a99
+  CocoaLumberjack: 543c79c114dadc3b1aba95641d8738b06b05b646
   DoubleConversion: 5189b271737e1565bdce30deb4a08d647e3f5f54
   FBLazyVector: 1d83d91816fa605d16227a83f1b2e71c8df09d22
   FBReactNativeSpec: 626e35e73f83c637ff166f906d584f4c6750c251
@@ -873,6 +884,7 @@ SPEC CHECKSUMS:
   jail-monkey: de7eab0c9cbe4e7cdd2f80d04f812337ae94b2e0
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
+  mattermost-react-native-turbo-log: 5c269c7c27d7f1db3d03300cf50d659d0d269126
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: 0a0fb4341f50ab242f496fb2f73380e0ec454fe7
   Permission-Microphone: 84bf2faad8d87969e8e275e9917a174424f948fc
@@ -923,7 +935,7 @@ SPEC CHECKSUMS:
   ReactCommon: af7636436b382db7cde4583bbd642f0978e6e3ed
   ReactNativeART: 78edc68dd4a1e675338cd0cd113319cf3a65f2ab
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
-  ReactNativeIncallManager: 642c22630caadff0a0619413aff4a9da08d63df9
+  ReactNativeIncallManager: b169b57d3064d8f62478f8fc3c485da6c75045d1
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: 3b09d0b7a64326dbcea7e64231287c766b18adf0
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495

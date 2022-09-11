@@ -2,7 +2,7 @@
 
 exports[`components/custom_status/custom_status_emoji should match snapshot 1`] = `
 <View
-  testID="custom_status_emoji.calendar"
+  testID="test.custom_status.custom_status_emoji.calendar"
 >
   <Text
     style={
@@ -22,7 +22,7 @@ exports[`components/custom_status/custom_status_emoji should match snapshot 1`] 
 
 exports[`components/custom_status/custom_status_emoji should match snapshot with props 1`] = `
 <View
-  testID="custom_status_emoji.calendar"
+  testID="test.custom_status.custom_status_emoji.calendar"
 >
   <Text
     style={

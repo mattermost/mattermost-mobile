@@ -71,7 +71,7 @@ describe('Server Login - Connect to Server', () => {
         await connectButton.tap();
 
         // * Verify invalid url error
-        await expect(serverUrlInputError).toHaveText(`"http://${invalidServerUrl}" is not a valid API base URL`);
+        await expect(serverUrlInputError).toHaveText('Can’t find this server. Check spelling and URL format.');
     });
 
     it('MM-T4676_4 - should show connection error on invalid ssl or invalid host', async () => {

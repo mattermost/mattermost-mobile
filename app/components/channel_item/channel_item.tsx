@@ -139,6 +139,8 @@ const ChannelListItem = ({
     // Make it bolded if it has unreads or mentions
     const isBolded = isUnread || mentionsCount > 0;
 
+    const channelItemTestId = `${testID}.${channel.name}`;
+
     const height = useMemo(() => {
         let h = 40;
         if (isInfo) {
@@ -233,7 +235,7 @@ const ChannelListItem = ({
                 ellipsizeMode='tail'
                 numberOfLines={1}
                 style={[styles.teamName, isMuted && styles.teamNameMuted]}
-                testID={`${testID}.${channel.name}.team_display_name`}
+                testID={`${channelItemTestId}.team_display_name`}
             >
                 {teamDisplayName}
             </Text>
@@ -250,7 +252,7 @@ const ChannelListItem = ({
                 ellipsizeMode='tail'
                 numberOfLines={1}
                 style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
-                testID={`${testID}.${channel.name}.team_display_name`}
+                testID={`${channelItemTestId}.team_display_name`}
             >
                 {teamDisplayName}
             </Text>
@@ -268,7 +270,7 @@ const ChannelListItem = ({
                     ellipsizeMode='tail'
                     numberOfLines={1}
                     style={[styles.teamName, isMuted && styles.teamNameMuted]}
-                    testID={`${testID}.${channel.name}.team_display_name`}
+                    testID={`${channelItemTestId}.team_display_name`}
                 >
                     {teamDisplayName}
                 </Text>
@@ -281,7 +283,7 @@ const ChannelListItem = ({
                     ellipsizeMode='tail'
                     numberOfLines={1}
                     style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
-                    testID={`${testID}.${channel.name}.team_display_name`}
+                    testID={`${channelItemTestId}.team_display_name`}
                 >
                     {teamDisplayName}
                 </Text>
@@ -294,7 +296,7 @@ const ChannelListItem = ({
             ellipsizeMode='tail'
             numberOfLines={1}
             style={textStyles}
-            testID={`${testID}.${channel.name}.display_name`}
+            testID={`${channelItemTestId}.display_name`}
         >
             {displayName}
         </Text>
@@ -308,7 +310,7 @@ const ChannelListItem = ({
         <TouchableOpacity onPress={handleOnPress}>
             <View
                 style={containerStyle}
-                testID={`${testID}.${channel.name}`}
+                testID={channelItemTestId}
             >
                 <View style={styles.wrapper}>
                     {channelIcon}
