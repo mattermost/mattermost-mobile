@@ -53,6 +53,7 @@ type PostProps = {
     isJumboEmoji: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
+    isPostPriorityEnabled: boolean;
     location: string;
     post: PostModel;
     rootId?: string;
@@ -107,7 +108,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Post = ({
     appsEnabled, canDelete, currentUser, differentThreadSequence, hasFiles, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
-    isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember,
+    isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isJumboEmoji, isLastReply, isPostAddChannelMember, isPostPriorityEnabled,
     location, post, rootId, hasReactions, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, thread, previousPost,
 }: PostProps) => {
@@ -221,8 +222,9 @@ const Post = ({
     let header: ReactNode;
     let postAvatar: ReactNode;
     let consecutiveStyle: StyleProp<ViewStyle>;
-    const sameSecuence = hasReplies ? (hasReplies && post.rootId) : !post.rootId;
-    if (hasSameRoot && isConsecutivePost && sameSecuence) {
+    const isProrityPost = isPostPriorityEnabled && post.props.priority;
+    const sameSequence = hasReplies ? (hasReplies && post.rootId) : !post.rootId;
+    if (!isProrityPost && hasSameRoot && isConsecutivePost && sameSequence) {
         consecutiveStyle = styles.consective;
         postAvatar = <View style={styles.consecutivePostContainer}/>;
     } else {
@@ -254,6 +256,7 @@ const Post = ({
                     differentThreadSequence={differentThreadSequence}
                     isAutoResponse={isAutoResponder}
                     isCRTEnabled={isCRTEnabled}
+                    isPostPriorityEnabled={isPostPriorityEnabled}
                     isEphemeral={isEphemeral}
                     isPendingOrFailed={isPendingOrFailed}
                     isSystemPost={isSystemPost}

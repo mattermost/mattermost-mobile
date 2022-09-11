@@ -12,7 +12,7 @@ import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsBetween} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
-import {observeConfigBooleanValue} from '@queries/servers/system';
+import {observeIsPostPriorityEnabled, observeConfigBooleanValue} from '@queries/servers/system';
 import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
@@ -168,6 +168,7 @@ const withPost = withObservables(
             isJumboEmoji,
             isLastReply,
             isPostAddChannelMember,
+            isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
             post: post.observe(),
             thread: isCRTEnabled ? observeThreadById(database, post.id) : of$(undefined),
             hasReactions,

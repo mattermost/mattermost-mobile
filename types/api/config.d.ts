@@ -119,6 +119,7 @@ interface ClientConfig {
     FeatureFlagAppsEnabled?: string;
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagGraphQL?: string;
+    FeatureFlagPostPriority?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
     GoogleDeveloperKey: string;
@@ -151,6 +152,7 @@ interface ClientConfig {
     PasswordRequireUppercase: string;
     PluginsEnabled: string;
     PostEditTimeLimit: string;
+    PostPriority: string;
     PrivacyPolicyLink: string;
     ReportAProblemLink: string;
     RequireEmailVerification: string;

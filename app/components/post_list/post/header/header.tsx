@@ -6,6 +6,7 @@ import {View} from 'react-native';
 
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedTime from '@components/formatted_time';
+import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {CHANNEL, THREAD} from '@constants/screens';
 import {useTheme} from '@context/theme';
 import {postUserDisplayName} from '@utils/post';
@@ -31,6 +32,7 @@ type HeaderProps = {
     isEphemeral: boolean;
     isMilitaryTime: boolean;
     isPendingOrFailed: boolean;
+    isPostPriorityEnabled: boolean;
     isSystemPost: boolean;
     isTimezoneEnabled: boolean;
     isWebHook: boolean;
@@ -58,8 +60,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             marginTop: 5,
             opacity: 0.5,
-            flex: 1,
             ...typography('Body', 75, 'Regular'),
+        },
+        postPriority: {
+            alignSelf: 'center',
+            marginLeft: 6,
         },
         customStatusEmoji: {
             color: theme.centerChannelColor,
@@ -72,7 +77,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Header = (props: HeaderProps) => {
     const {
         author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled,
-        isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isTimezoneEnabled, isWebHook,
+        isEphemeral, isMilitaryTime, isPendingOrFailed, isPostPriorityEnabled, isSystemPost, isTimezoneEnabled, isWebHook,
         location, post, rootPostAuthor, shouldRenderReplyButton, teammateNameDisplay,
     } = props;
     const theme = useTheme();
@@ -126,6 +131,13 @@ const Header = (props: HeaderProps) => {
                         style={style.time}
                         testID='post_header.date_time'
                     />
+                    {Boolean(isPostPriorityEnabled && post.props?.priority) && (
+                        <View style={style.postPriority}>
+                            <PostPriorityLabel
+                                label={post.props?.priority}
+                            />
+                        </View>
+                    )}
                     {!isCRTEnabled && showReply && commentCount > 0 &&
                         <HeaderReply
                             commentCount={commentCount}
