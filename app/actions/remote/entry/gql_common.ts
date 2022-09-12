@@ -94,10 +94,8 @@ export async function deferredAppEntryGraphQLActions(
         }, FETCH_UNREADS_TIMEOUT);
     }
 
-    if (currentUserId) {
-        // Fetch groups for current user
-        fetchGroupsForMember(serverUrl, currentUserId);
-    }
+    // Fetch groups for current user
+    fetchGroupsForMember(serverUrl, currentUserId);
 
     updateAllUsersSince(serverUrl, since);
 

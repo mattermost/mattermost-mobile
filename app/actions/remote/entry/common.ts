@@ -291,7 +291,7 @@ export async function entryInitialChannelId(database: Database, requestedChannel
     }
 
     // Check if we are member of the default channel.
-    const defaultChannel = channels?.find((c) => c.name === General.DEFAULT_CHANNEL);
+    const defaultChannel = channels?.find((c) => c.name === General.DEFAULT_CHANNEL && c.team_id === initialTeamId);
     const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannel && membershipIds.has(defaultChannel.id));
     if (iAmMemberOfTheTeamDefaultChannel) {
         return defaultChannel!.id;
