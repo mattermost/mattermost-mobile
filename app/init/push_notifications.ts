@@ -259,8 +259,14 @@ class PushNotifications {
                 notification.fireDate = new Date(notification.fireDate).toISOString();
             }
 
-            Notifications.postLocalNotification(notification);
+            return Notifications.postLocalNotification(notification);
         }
+
+        return 0;
+    };
+
+    cancelScheduleNotification = (notificationId: number) => {
+        Notifications.cancelLocalNotification(notificationId);
     };
 }
 
