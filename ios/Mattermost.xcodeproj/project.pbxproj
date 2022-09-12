@@ -1121,6 +1121,10 @@
 				PRODUCT_NAME = Mattermost;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SENTRY_AUTH_TOKEN = 76de48bda24240f98deea9d7d44c472e9017b45a9e3a49af8ee1cfa9e6e1c98f;
+				SENTRY_ENABLED = true;
+				SENTRY_ORG = "mm-cb";
+				SENTRY_PROJECT_IOS = "gekidou-sentry";
 				SWIFT_OBJC_BRIDGING_HEADER = "Mattermost/Mattermost-Bridging-Header.h";
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
 				SWIFT_VERSION = 4.2;
@@ -1162,6 +1166,10 @@
 				PRODUCT_NAME = Mattermost;
 				PROVISIONING_PROFILE = "";
 				PROVISIONING_PROFILE_SPECIFIER = "";
+				SENTRY_AUTH_TOKEN = 76de48bda24240f98deea9d7d44c472e9017b45a9e3a49af8ee1cfa9e6e1c98f;
+				SENTRY_ENABLED = true;
+				SENTRY_ORG = "mm-cb";
+				SENTRY_PROJECT_IOS = "gekidou-sentry";
 				SWIFT_OBJC_BRIDGING_HEADER = "Mattermost/Mattermost-Bridging-Header.h";
 				SWIFT_VERSION = 4.2;
 				TARGETED_DEVICE_FAMILY = "1,2";
