@@ -4,6 +4,7 @@
 import {Model} from '@nozbe/watermelondb';
 
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest, switchToChannelById} from '@actions/remote/channel';
+import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
@@ -35,8 +36,6 @@ import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {emitNotificationError} from '@utils/notification';
 import {processIsCRTEnabled} from '@utils/thread';
-
-import {fetchGroupsForMember} from '../groups';
 
 import type ClientError from '@client/rest/error';
 

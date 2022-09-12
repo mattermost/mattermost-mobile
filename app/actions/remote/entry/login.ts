@@ -2,14 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {switchToChannelById} from '@actions/remote/channel';
-import {getSessions} from '@actions/remote/session';
 import {ConfigAndLicenseRequest, fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {isTablet} from '@utils/helpers';
-import {logDebug, logWarning} from '@utils/log';
-import {scheduleExpiredNotification} from '@utils/notification';
+import {logDebug} from '@utils/log';
 
 import {deferredAppEntryActions, entry} from './common';
 import {graphQLCommon} from './gql_common';
@@ -53,27 +51,6 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
         const clData = await fetchConfigAndLicense(serverUrl, true);
         if (clData.error) {
             return {error: clData.error};
-        }
-
-        // schedule local push notification if needed
-        if (clData.config) {
-            if (clData.config.ExtendSessionLengthWithActivity !== 'true') {
-                const timeOut = setTimeout(async () => {
-                    clearTimeout(timeOut);
-                    let sessions: Session[]|undefined;
-
-                    try {
-                        sessions = await getSessions(serverUrl, 'me');
-                    } catch (e) {
-                        logWarning('Failed to get user sessions', e);
-                        return;
-                    }
-
-                    if (sessions && Array.isArray(sessions)) {
-                        scheduleExpiredNotification(sessions, clData.config?.SiteName || serverUrl, user.locale);
-                    }
-                }, 500);
-            }
         }
 
         if (clData.config?.FeatureFlagGraphQL === 'true') {
