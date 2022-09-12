@@ -18,6 +18,8 @@ const style = StyleSheet.create({
     customStatusEmoji: {
         color: '#000',
         marginHorizontal: -5,
+
+        // alignItems: 'center',
         top: 3,
     },
     info: {

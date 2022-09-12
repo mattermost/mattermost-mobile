@@ -49,6 +49,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     wrapper: {
         flex: 1,
         flexDirection: 'row',
+        backgroundColor: 'green',
     },
     icon: {
         fontSize: 24,
@@ -161,13 +162,14 @@ const ChannelListItem = ({
         isInfo ? styles.textInfo : null,
         isMuted && styles.muted,
         isMuted && isInfo && styles.mutedInfo,
+        {backgroundColor: 'red'},
     ], [isBolded, styles, isMuted, isActive, isInfo, isTablet]);
 
     const containerStyle = useMemo(() => [
         styles.container,
         isActive && isTablet && !isInfo && styles.activeItem,
         isInfo && styles.infoItem,
-        {minHeight: height},
+        {minHeight: height, backgroundColor: 'cyan'},
     ],
     [height, isActive, isTablet, isInfo, styles]);
 
@@ -220,75 +222,33 @@ const ChannelListItem = ({
             <CompassIcon
                 name='phone-in-talk'
                 size={16}
-                style={[...textStyles, styles.hasCall]}
+                style={[styles.hasCall]}
             />
         ) : null;
-    }, [hasCall, styles, textStyles]);
+    }, [hasCall, styles]);
 
-    const teamNameMobile = useMemo(() => {
-        if (!isInfo || !teamDisplayName || isTablet) {
-            return null;
-        }
-
-        return (
-            <Text
-                ellipsizeMode='tail'
-                numberOfLines={1}
-                style={[styles.teamName, isMuted && styles.teamNameMuted]}
-                testID={`${channelItemTestId}.team_display_name`}
-            >
-                {teamDisplayName}
-            </Text>
-        );
-    }, [isInfo, isMuted, isTablet, styles, channel.name, teamDisplayName]);
-
-    const teamNameTablet = useMemo(() => {
-        if (!isInfo || !teamDisplayName || !isTablet) {
-            return null;
-        }
-
-        return (
-            <Text
-                ellipsizeMode='tail'
-                numberOfLines={1}
-                style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
-                testID={`${channelItemTestId}.team_display_name`}
-            >
-                {teamDisplayName}
-            </Text>
-        );
-    }, [isInfo, isMuted, isTablet, styles, channel.name, teamDisplayName]);
-
-    const teamNameBoth = useMemo(() => {
+    const teamName = useMemo(() => {
         if (!isInfo || !teamDisplayName) {
             return null;
         }
 
-        if (!isTablet) {
-            return (
-                <Text
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
-                    style={[styles.teamName, isMuted && styles.teamNameMuted]}
-                    testID={`${channelItemTestId}.team_display_name`}
-                >
-                    {teamDisplayName}
-                </Text>
-            );
-        }
+        const teamNameStyles = [
+            styles.teamName,
+            isTablet ? styles.teamNameTablet : null,
+            isMuted && styles.teamNameMuted,
+            {backgroundColor: 'yellow'},
+        ];
 
-        if (isTablet) {
-            return (
-                <Text
-                    ellipsizeMode='tail'
-                    numberOfLines={1}
-                    style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
-                    testID={`${channelItemTestId}.team_display_name`}
-                >
-                    {teamDisplayName}
-                </Text>
-            );
-        }
+        return (
+            <Text
+                ellipsizeMode='tail'
+                numberOfLines={1}
+                style={teamNameStyles}
+                testID={`${channelItemTestId}.team_display_name`}
+            >
+                {teamDisplayName}
+            </Text>
+        );
     }, [isInfo, isMuted, isTablet, styles, channel.name, teamDisplayName]);
 
     const channelDisplayName = useMemo(() => (
@@ -314,14 +274,14 @@ const ChannelListItem = ({
             >
                 <View style={styles.wrapper}>
                     {channelIcon}
+                    {/* <View style={{flex: 1}}> */}
+                    {/* <View style={{flex: 1, flexDirection: 'row'}}> */}
                     <View>
                         {channelDisplayName}
-                        {!isTablet && teamNameMobile}
-                        {/* {!isTablet && teamNameBoth} */}
+                        {!isTablet && teamName}
                     </View>
                     {customStatus}
-                    {isTablet && teamNameTablet}
-                    {/* {isTablet && teamNameBoth} */}
+                    {isTablet && teamName}
                 </View>
                 {badge}
                 {callButton}
