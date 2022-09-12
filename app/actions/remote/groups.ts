@@ -30,6 +30,10 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getGroups({query, includeMemberCount: true});
 
+        if (!response.length) {
+            return [];
+        }
+
         return operator.handleGroups({groups: response, prepareRecordsOnly: fetchOnly});
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
@@ -51,6 +55,10 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
         const groups = (await Promise.all(promises)).flat();
 
         // Save locally
+        if (!groups.length) {
+            return [];
+        }
+
         return operator.handleGroups({groups, prepareRecordsOnly: fetchOnly});
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
@@ -63,6 +71,10 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToChannel(channelId);
+
+        if (!response.groups.length) {
+            return {groups: [], groupChannels: []};
+        }
 
         const [groups, groupChannels] = await Promise.all([
             operator.handleGroups({groups: response.groups, prepareRecordsOnly: true}),
@@ -87,6 +99,10 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetc
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToTeam(teamId);
 
+        if (!response.groups.length) {
+            return {groups: [], groupTeams: []};
+        }
+
         const [groups, groupTeams] = await Promise.all([
             operator.handleGroups({groups: response.groups, prepareRecordsOnly: true}),
             operator.handleGroupTeamsForTeam({groups: response.groups, teamId, prepareRecordsOnly: true}),
@@ -108,6 +124,10 @@ export const fetchGroupsForMember = async (serverUrl: string, userId: string, fe
 
         const client: Client = NetworkManager.getClient(serverUrl);
         const response = await client.getAllGroupsAssociatedToMembership(userId);
+
+        if (!response.length) {
+            return {groups: [], groupMemberships: []};
+        }
 
         const [groups, groupMemberships] = await Promise.all([
             operator.handleGroups({groups: response, prepareRecordsOnly: true}),

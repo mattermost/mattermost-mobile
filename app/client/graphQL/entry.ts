@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Client} from '@client/rest';
 import {MEMBERS_PER_PAGE} from '@constants/graphql';
 import NetworkManager from '@managers/network_manager';
-
-import {Client} from '../rest';
 
 import QueryNames from './constants';
 
@@ -321,6 +320,11 @@ query ${QueryNames.QUERY_ALL_CHANNELS}($perPage: Int!){
         schemeAdmin
         lastViewedAt
         notifyProps
+        roles {
+            id
+            name
+            permissions
+        }
         channel {
             id
             header
@@ -358,6 +362,11 @@ query ${QueryNames.QUERY_ALL_CHANNELS_NEXT}($perPage: Int!, $cursor: String!) {
         schemeAdmin
         lastViewedAt
         notifyProps
+        roles {
+            id
+            name
+            permissions
+        }
         channel {
             id
             header
