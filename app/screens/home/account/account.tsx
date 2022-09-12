@@ -54,6 +54,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderLeftWidth: 1,
             borderLeftColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
+        totalHeight: {height: '100%'},
     };
 });
 
@@ -112,6 +113,7 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
                     <ScrollView
                         alwaysBounceVertical={false}
                         style={tabletSidebarStyle}
+                        contentContainerStyle={styles.totalHeight}
                     >
                         <AccountUserInfo
                             user={currentUser}
