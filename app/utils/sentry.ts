@@ -33,7 +33,12 @@ export function initializeSentry() {
         return;
     }
 
-    Sentry.init({dsn, ...Config.SentryOptions});
+    Sentry.init({
+        dsn: 'https://8166acfeeced43de98bc11f217d871c5@o1347733.ingest.sentry.io/6734065',
+        tracesSampleRate: 1.0,
+
+        // ...Config.SentryOptions,
+    });
 }
 
 function getDsn() {
