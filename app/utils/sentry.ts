@@ -18,15 +18,16 @@ export const LOGGER_NATIVE = 'native';
 
 let Sentry: any;
 export function initializeSentry() {
-    if (!Config.SentryEnabled) {
-        return;
-    }
+    //fixme: remove all hardcoded/commmented lines
+    //  if (!Config.SentryEnabled) {
+    //      return;
+    //  }
 
     if (!Sentry) {
         Sentry = require('@sentry/react-native');
     }
 
-    const dsn = getDsn();
+    const dsn = 'https://8166acfeeced43de98bc11f217d871c5@o1347733.ingest.sentry.io/6734065'; //getDsn();
 
     if (!dsn) {
         logWarning('Sentry is enabled, but not configured on this platform');

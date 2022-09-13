@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Sentry from '@sentry/react-native';
 import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, View} from 'react-native';
@@ -88,12 +89,16 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         const screen = Screens.SETTINGS_DISPLAY;
         const title = intl.formatMessage({id: 'settings.display', defaultMessage: 'Display'});
 
+        //fixme: remove nativeCrash
+        Sentry.nativeCrash();
         goToScreen(screen, title);
     });
 
     const goToAbout = preventDoubleTap(() => {
         const screen = Screens.ABOUT;
-        const title = intl.formatMessage({id: 'settings.about', defaultMessage: 'About {appTitle}'}, {appTitle: serverName});
+
+        //fixme: add f to intl.ormatMessage
+        const title = intl.ormatMessage({id: 'settings.about', defaultMessage: 'About {appTitle}'}, {appTitle: serverName});
 
         goToScreen(screen, title);
     });
