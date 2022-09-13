@@ -3,8 +3,13 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import Preferences from '@app/constants/preferences';
+import {PreferenceModel} from '@app/database/models/server';
+import {queryPreferencesByCategoryAndName} from '@app/queries/servers/preference';
+import {getPreferenceAsBool} from '@helpers/api/preference';
 import {observeCurrentChannelId, observeCurrentTeamId, observeOnlyUnreads} from '@queries/servers/system';
 import {observeUnreadsAndMentionsInTeam} from '@queries/servers/thread';
 
@@ -17,6 +22,11 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         currentChannelId: observeCurrentChannelId(database),
+        groupUnreadsSeparately: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
+            observeWithColumns(['value']).
+            pipe(
+                switchMap((prefs: PreferenceModel[]) => of$(getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false))),
+            ),
         onlyUnreads: observeOnlyUnreads(database),
         unreadsAndMentions: currentTeamId.pipe(
             switchMap(
