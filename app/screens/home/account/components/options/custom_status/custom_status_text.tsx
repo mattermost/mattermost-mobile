@@ -12,6 +12,7 @@ import {typography} from '@utils/typography';
 type CustomStatusTextProps = {
     customStatus?: UserCustomStatus;
     isStatusSet: boolean;
+    testID?: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -21,7 +22,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const CustomStatusText = ({isStatusSet, customStatus}: CustomStatusTextProps) => {
+const CustomStatusText = ({isStatusSet, customStatus, testID}: CustomStatusTextProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -44,6 +45,7 @@ const CustomStatusText = ({isStatusSet, customStatus}: CustomStatusTextProps) =>
             text={text}
             theme={theme}
             textStyle={styles.text}
+            testID={testID}
         />
     );
 };

@@ -64,6 +64,17 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
         }
     }, []);
 
+    const handleCloseEnd = useCallback(() => {
+        if (firstRun.current) {
+            backdropOpacity.value = 0;
+            setTimeout(close, 250);
+        }
+    }, []);
+
+    const handleOpenStart = useCallback(() => {
+        backdropOpacity.value = 1;
+    }, []);
+
     useAndroidHardwareBackHandler(componentId, handleClose);
 
     useEffect(() => {
@@ -147,13 +158,8 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
                 borderRadius={10}
                 initialSnap={snapPoints.length - 1}
                 renderContent={renderContainerContent}
-                onCloseEnd={close}
-                onCloseStart={() => {
-                    backdropOpacity.value = 0;
-                }}
-                onOpenEnd={() => {
-                    backdropOpacity.value = 1;
-                }}
+                onCloseEnd={handleCloseEnd}
+                onOpenStart={handleOpenStart}
                 enabledBottomInitialAnimation={false}
                 renderHeader={Indicator}
                 enabledContentTapInteraction={false}

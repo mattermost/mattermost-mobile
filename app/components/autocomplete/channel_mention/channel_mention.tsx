@@ -3,7 +3,7 @@
 
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Platform, SectionList, SectionListData, SectionListRenderItemInfo} from 'react-native';
+import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
 import {searchChannels} from '@actions/remote/channel';
 import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';
@@ -11,11 +11,9 @@ import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
 import {General} from '@constants';
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
 import {hasTrailingSpaces} from '@utils/helpers';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -131,25 +129,16 @@ const filterResults = (channels: Array<Channel | ChannelModel>, term: string) =>
 type Props = {
     cursorPosition: number;
     isSearch: boolean;
-    maxListHeight: number;
     myMembers: MyChannelModel[];
     updateValue: (v: string) => void;
     onShowingChange: (c: boolean) => void;
     value: string;
     nestedScrollEnabled: boolean;
+    listStyle: StyleProp<ViewStyle>;
     matchTerm: string;
     localChannels: ChannelModel[];
     teamId: string;
 }
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        listView: {
-            backgroundColor: theme.centerChannelBg,
-            borderRadius: 4,
-        },
-    };
-});
 
 const emptySections: Array<SectionListData<Channel>> = [];
 const emptyChannels: Array<Channel | ChannelModel> = [];
@@ -157,29 +146,23 @@ const emptyChannels: Array<Channel | ChannelModel> = [];
 const ChannelMention = ({
     cursorPosition,
     isSearch,
-    maxListHeight,
     myMembers,
     updateValue,
     onShowingChange,
     value,
     nestedScrollEnabled,
+    listStyle,
     matchTerm,
     localChannels,
     teamId,
 }: Props) => {
     const serverUrl = useServerUrl();
-    const theme = useTheme();
-    const style = getStyleFromTheme(theme);
 
     const [sections, setSections] = useState<Array<SectionListData<(Channel | ChannelModel)>>>(emptySections);
     const [remoteChannels, setRemoteChannels] = useState<Array<ChannelModel | Channel>>(emptyChannels);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
-
-    const listStyle = useMemo(() =>
-        [style.listView, {maxHeight: maxListHeight}]
-    , [style, maxListHeight]);
 
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, tId: string) => {
         setLoading(true);

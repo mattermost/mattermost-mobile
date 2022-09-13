@@ -66,7 +66,6 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
 
     const updateFileForGallery = (idx: number, file: FileInfo) => {
         'worklet';
-
         filesForGallery.value[idx] = file;
     };
 

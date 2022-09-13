@@ -17,7 +17,7 @@ const headerText = {
 
 type MobilePushThreadProps = {
     onMobilePushThreadChanged: (status: string) => void;
-    pushThread: PushStatus;
+    pushThread: UserNotifyPropsPushThreads;
 }
 
 const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThreadProps) => {
@@ -31,6 +31,7 @@ const MobilePushThread = ({pushThread, onMobilePushThreadChanged}: MobilePushThr
                 action={onMobilePushThreadChanged}
                 label={intl.formatMessage({id: 'notification_settings.push_threads.following', defaultMessage: 'Notify me about replies to threads I\'m following in this channel'})}
                 selected={pushThread === 'all'}
+                testID='push_notification_settings.push_threads_following.option'
                 type='toggle'
             />
             <SettingSeparator/>

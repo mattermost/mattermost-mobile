@@ -124,6 +124,7 @@ export const gqlToClientChannelMembership = (m: Partial<GQLChannelMembership>, u
         last_update_at: m.lastUpdateAt || 0,
         last_viewed_at: m.lastViewedAt || 0,
         mention_count: m.mentionCount || 0,
+        mention_count_root: m.mentionCountRoot || 0,
         msg_count: m.msgCount || 0,
         msg_count_root: m.msgCountRoot || 0,
         notify_props: m.notifyProps || {},

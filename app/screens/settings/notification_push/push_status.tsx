@@ -16,8 +16,8 @@ const headerText = {
 };
 
 type MobilePushStatusProps = {
-    pushStatus: PushStatus;
-    setMobilePushStatus: (status: PushStatus) => void;
+    pushStatus: UserNotifyPropsPushStatus;
+    setMobilePushStatus: (status: UserNotifyPropsPushStatus) => void;
 }
 const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusProps) => {
     const intl = useIntl();
@@ -30,6 +30,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
                 action={setMobilePushStatus}
                 label={intl.formatMessage({id: 'notification_settings.mobile.online', defaultMessage: 'Online, away or offline'})}
                 selected={pushStatus === 'online'}
+                testID='push_notification_settings.mobile_online.option'
                 type='select'
                 value='online'
             />
@@ -38,6 +39,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
                 action={setMobilePushStatus}
                 label={intl.formatMessage({id: 'notification_settings.mobile.away', defaultMessage: 'Away or offline'})}
                 selected={pushStatus === 'away'}
+                testID='push_notification_settings.mobile_away.option'
                 type='select'
                 value='away'
             />
@@ -46,6 +48,7 @@ const MobilePushStatus = ({pushStatus, setMobilePushStatus}: MobilePushStatusPro
                 action={setMobilePushStatus}
                 label={intl.formatMessage({id: 'notification_settings.mobile.offline', defaultMessage: 'Offline'})}
                 selected={pushStatus === 'offline'}
+                testID='push_notification_settings.mobile_offline.option'
                 type='select'
                 value='offline'
             />

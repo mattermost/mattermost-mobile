@@ -50,11 +50,14 @@ const TimezoneRow = ({onPressTimezone, isSelected, timezone}: TimezoneRowProps) 
         onPressTimezone(timezone);
     }, [onPressTimezone, timezone]);
 
+    const timezoneRowTestId = isSelected ? `select_timezone.timezone_row.${timezone}.selected` : `select_timezone.timezone_row.${timezone}`;
+
     return (
         <TouchableOpacity
             key={timezone}
             onPress={onTimezoneSelect}
             style={styles.itemContainer}
+            testID={timezoneRowTestId}
         >
             <View
                 style={styles.body}

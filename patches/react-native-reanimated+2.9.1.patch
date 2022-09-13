@@ -22,7 +22,7 @@ index 5ae42ec..da59568 100644
  export const getAnimatedStyle = (received) => {
      return getCurrentStyle(received);
 diff --git a/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx b/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx
-index 1cf0c3f..a334889 100644
+index 1cf0c3f..a242e4b 100644
 --- a/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx
 +++ b/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx
 @@ -195,6 +195,7 @@ export default function createAnimatedComponent(
@@ -33,7 +33,7 @@ index 1cf0c3f..a334889 100644
      sv: SharedValue<null | Record<string, unknown>> | null;
      _propsAnimated?: PropsAnimated;
      _component: ComponentRef | null = null;
-@@ -580,17 +581,24 @@ export default function createAnimatedComponent(
+@@ -580,16 +581,33 @@ export default function createAnimatedComponent(
  
      _filterNonAnimatedStyle(inputStyle: StyleProps) {
        const style: StyleProps = {};
@@ -50,20 +50,20 @@ index 1cf0c3f..a334889 100644
 +          changed = changed || style[key] !== this._lastSentStyle?.[key];
          }
        }
--      return style;
-+      if (changed) {
-+        return style;
-+      } else {
-+        return this._lastSentStyle;
++      if (!changed) {
++        const inputKeys = new Set(Object.keys(inputStyle));
++        let equalKeys = true;
++        for (const key in this._lastSentStyle) {
++          if (!inputKeys.has(key)) {
++            equalKeys = false;
++            break;
++          }
++        }
++        if (equalKeys) {
++          return this._lastSentStyle;
++        }
 +      }
++      this._lastSentStyle = style;
+       return style;
      }
  
-     _filterNonAnimatedProps(
-@@ -620,6 +628,7 @@ export default function createAnimatedComponent(
-           props[key] = this._filterNonAnimatedStyle(
-             StyleSheet.flatten(processedStyle)
-           );
-+          this._lastSentStyle = props[key]
-         } else if (key === 'animatedProps') {
-           const animatedProp = inputProps.animatedProps as Partial<
-             AnimatedComponentProps<AnimatedProps>

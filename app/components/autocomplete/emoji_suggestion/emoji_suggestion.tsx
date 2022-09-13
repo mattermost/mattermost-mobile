@@ -4,7 +4,7 @@
 import Fuse from 'fuse.js';
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {FlatList, Platform, Text, View} from 'react-native';
+import {FlatList, Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
@@ -48,8 +48,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         listView: {
             paddingTop: 16,
-            backgroundColor: theme.centerChannelBg,
-            borderRadius: 8,
         },
         row: {
             flexDirection: 'row',
@@ -67,7 +65,6 @@ const keyExtractor = (item: string) => item;
 type Props = {
     cursorPosition: number;
     customEmojis: CustomEmojiModel[];
-    maxListHeight: number;
     updateValue: (v: string) => void;
     onShowingChange: (c: boolean) => void;
     rootId?: string;
@@ -76,11 +73,11 @@ type Props = {
     skinTone: string;
     hasFilesAttached?: boolean;
     inPost: boolean;
+    listStyle: StyleProp<ViewStyle>;
 }
 const EmojiSuggestion = ({
     cursorPosition,
     customEmojis = [],
-    maxListHeight,
     updateValue,
     onShowingChange,
     rootId,
@@ -89,14 +86,13 @@ const EmojiSuggestion = ({
     skinTone,
     hasFilesAttached = false,
     inPost,
+    listStyle,
 }: Props) => {
     const insets = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const serverUrl = useServerUrl();
-    const flatListStyle = useMemo(() =>
-        [style.listView, {maxHeight: maxListHeight}]
-    , [style, maxListHeight]);
+
     const containerStyle = useMemo(() =>
         ({paddingBottom: insets.bottom + 12})
     , [insets.bottom]);
@@ -219,7 +215,7 @@ const EmojiSuggestion = ({
     return (
         <FlatList
             keyboardShouldPersistTaps='always'
-            style={flatListStyle}
+            style={[style.listView, listStyle]}
             data={data}
             keyExtractor={keyExtractor}
             removeClippedSubviews={true}

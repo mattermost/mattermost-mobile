@@ -8,6 +8,8 @@ import {expect} from 'detox';
 
 class CreateDirectMessageScreen {
     testID = {
+        selectedUserPrefix: 'create_direct_message.selected_user.',
+        userItemPrefix: 'create_direct_message.user_list.user_item.',
         createDirectMessageScreen: 'create_direct_message.screen',
         closeButton: 'close.create_direct_message.button',
         startButton: 'create_direct_message.start.button',
@@ -30,27 +32,27 @@ class CreateDirectMessageScreen {
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
 
     getSelectedUser = (userId: string) => {
-        return element(by.id(`create_direct_message.selected_user.${userId}`));
+        return element(by.id(`${this.testID.selectedUserPrefix}${userId}`));
     };
 
     getSelectedUserDisplayName = (userId: string) => {
-        return element(by.id(`create_direct_message.selected_user.${userId}.display_name`));
+        return element(by.id(`${this.testID.selectedUserPrefix}${userId}.display_name`));
     };
 
     getSelectedUserRemoveButton = (userId: string) => {
-        return element(by.id(`create_direct_message.selected_user.${userId}.remove.button`));
+        return element(by.id(`${this.testID.selectedUserPrefix}${userId}.remove.button`));
     };
 
     getUserItem = (userId: string) => {
-        return element(by.id(`create_direct_message.user_list.user_item.${userId}`));
+        return element(by.id(`${this.testID.userItemPrefix}${userId}`));
     };
 
     getUserItemProfilePicture = (userId: string) => {
-        return element(ProfilePicture.getProfilePictureItemMatcher('create_direct_message.user_list.user_item.', userId));
+        return element(ProfilePicture.getProfilePictureItemMatcher(this.testID.userItemPrefix, userId));
     };
 
     getUserItemDisplayName = (userId: string) => {
-        return element(by.id(`create_direct_message.user_list.user_item.${userId}.display_name`));
+        return element(by.id(`${this.testID.userItemPrefix}${userId}.display_name`));
     };
 
     toBeVisible = async () => {

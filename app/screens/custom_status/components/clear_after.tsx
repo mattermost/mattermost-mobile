@@ -61,6 +61,7 @@ const ClearAfter = ({duration, expiresAt, onOpenClearAfterModal, theme}: Props) 
                         textStyles={style.customStatusExpiry}
                         theme={theme}
                         time={expiresAt.toDate()}
+                        testID={`custom_status.clear_after.custom_status_duration.${duration}.custom_status_expiry`}
                     />
                 </View>
             );
@@ -71,19 +72,17 @@ const ClearAfter = ({duration, expiresAt, onOpenClearAfterModal, theme}: Props) 
                 id={CST[duration].id}
                 defaultMessage={CST[duration].defaultMessage}
                 style={style.expiryTime}
+                testID={`custom_status.clear_after.custom_status_duration.${duration}.custom_status_expiry`}
             />
         );
     };
 
     return (
         <TouchableOpacity
-            testID={'custom_status.clear_after.action'}
             onPress={onOpenClearAfterModal}
+            testID={`custom_status.clear_after.custom_status_duration.${duration}.action`}
         >
-            <View
-                testID={`custom_status.duration.${duration}`}
-                style={style.inputContainer}
-            >
+            <View style={style.inputContainer}>
                 <Text style={style.expiryTimeLabel}>{intl.formatMessage({id: 'mobile.custom_status.clear_after', defaultMessage: 'Clear After'})}</Text>
                 {renderClearAfterTime()}
                 <CompassIcon
