@@ -240,7 +240,7 @@ export const joinCall = async (serverUrl: string, channelId: string): Promise<{ 
     }
 
     try {
-        await connection.waitForReady();
+        await connection.waitForPeerConnection();
         return {data: channelId};
     } catch (e) {
         connection.disconnect();

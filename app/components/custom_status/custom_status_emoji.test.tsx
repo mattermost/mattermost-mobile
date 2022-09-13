@@ -23,7 +23,10 @@ describe('components/custom_status/custom_status_emoji', () => {
     };
     it('should match snapshot', () => {
         const wrapper = renderWithEverything(
-            <CustomStatusEmoji customStatus={customStatus}/>,
+            <CustomStatusEmoji
+                customStatus={customStatus}
+                testID='test'
+            />,
             {database},
         );
         expect(wrapper.toJSON()).toMatchSnapshot();
@@ -34,6 +37,7 @@ describe('components/custom_status/custom_status_emoji', () => {
             <CustomStatusEmoji
                 customStatus={customStatus}
                 emojiSize={34}
+                testID='test'
             />,
             {database},
         );

@@ -181,12 +181,14 @@ const ChannelListItem = ({
         displayName = formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
+    const channelItemTestId = `${testID}.${channel.name}`;
+
     return (
         <TouchableOpacity onPress={handleOnPress}>
             <>
                 <View
                     style={containerStyle}
-                    testID={`${testID}.${channel.name}`}
+                    testID={channelItemTestId}
                 >
                     <View style={styles.wrapper}>
                         <ChannelIcon
@@ -207,7 +209,7 @@ const ChannelListItem = ({
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                                 style={textStyles}
-                                testID={`${testID}.${channel.name}.display_name`}
+                                testID={`${channelItemTestId}.display_name`}
                             >
                                 {displayName}
                             </Text>
@@ -216,7 +218,7 @@ const ChannelListItem = ({
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                                 style={[styles.teamName, isMuted && styles.teamNameMuted]}
-                                testID={`${testID}.${channel.name}.team_display_name`}
+                                testID={`${channelItemTestId}.team_display_name`}
                             >
                                 {teamDisplayName}
                             </Text>
@@ -225,6 +227,7 @@ const ChannelListItem = ({
                         {Boolean(teammateId) &&
                         <CustomStatus
                             isInfo={isInfo}
+                            testID={channelItemTestId}
                             userId={teammateId!}
                         />
                         }
@@ -233,7 +236,7 @@ const ChannelListItem = ({
                             ellipsizeMode='tail'
                             numberOfLines={1}
                             style={[styles.teamName, styles.teamNameTablet, isMuted && styles.teamNameMuted]}
-                            testID={`${testID}.${channel.name}.team_display_name`}
+                            testID={`${channelItemTestId}.team_display_name`}
                         >
                             {teamDisplayName}
                         </Text>

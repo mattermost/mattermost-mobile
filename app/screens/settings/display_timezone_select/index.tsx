@@ -139,7 +139,7 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
         <SafeAreaView
             edges={EDGES}
             style={styles.container}
-            testID='settings.select_timezone.screen'
+            testID='select_timezone.screen'
         >
             <Search
                 autoCapitalize='none'
@@ -152,7 +152,7 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
                 placeholder={intl.formatMessage({id: 'search_bar.search.placeholder', defaultMessage: 'Search timezone'})}
                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                 selectionColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                testID='settings.select_timezone.search_bar'
+                testID='select_timezone.search_bar'
                 value={searchRegion}
             />
             <FlatList
@@ -165,6 +165,7 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
                 keyboardShouldPersistTaps='always'
                 removeClippedSubviews={true}
                 renderItem={renderItem}
+                testID='select_timezone.timezone.flat_list'
             />
         </SafeAreaView>
     );

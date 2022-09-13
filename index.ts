@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import TurboLogger from '@mattermost/react-native-turbo-log';
 import {DeviceEventEmitter, LogBox} from 'react-native';
 import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
@@ -21,6 +22,13 @@ import setFontFamily from './app/utils/font_family';
 import {logInfo} from './app/utils/log';
 
 declare const global: { HermesInternal: null | {} };
+
+TurboLogger.configure({
+    dailyRolling: false,
+    logToFile: !__DEV__,
+    maximumFileSize: 1024 * 1024,
+    maximumNumberOfFiles: 2,
+});
 
 if (__DEV__) {
     LogBox.ignoreLogs([

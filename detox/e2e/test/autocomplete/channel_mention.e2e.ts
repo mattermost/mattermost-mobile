@@ -131,7 +131,7 @@ describe('Autocomplete - Channel Mention', () => {
         await expect(channelMentionAutocomplete).toBeVisible();
     });
 
-    it('MM-T4879_5 - should stop suggesting channel after channel display name with trailing space -- KNOWN ISSUE: MM-45279', async () => {
+    it('MM-T4879_5 - should stop suggesting channel after channel display name with trailing space', async () => {
         // # Type in "~" to activate channel mention autocomplete
         await ChannelScreen.postInput.typeText('~');
         await Autocomplete.toBeVisible();

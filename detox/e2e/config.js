@@ -8,6 +8,7 @@ module.exports = {
     maxWorkers: 1,
     testEnvironment: './environment',
     testRunner: 'jest-circus/runner',
+    testSequencer: './custom_sequencer.js',
     testTimeout: 120000,
     testRegex: '\\.e2e\\.ts$',
     transform: {

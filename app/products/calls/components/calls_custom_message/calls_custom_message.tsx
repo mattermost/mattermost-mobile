@@ -6,8 +6,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 
-import {showLimitRestrictedAlert} from '@calls/alerts';
-import leaveAndJoinWithAlert from '@calls/components/leave_and_join_alert';
+import {leaveAndJoinWithAlert, showLimitRestrictedAlert} from '@calls/alerts';
 import CompassIcon from '@components/compass_icon';
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import FormattedText from '@components/formatted_text';
@@ -30,6 +29,7 @@ type Props = {
     currentCallChannelId?: string;
     leaveChannelName?: string;
     joinChannelName?: string;
+    joinChannelIsDMorGM?: boolean;
     limitRestrictedInfo?: LimitRestrictedInfo;
 }
 
@@ -108,7 +108,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 export const CallsCustomMessage = ({
     post, currentUser, author, isMilitaryTime, teammateNameDisplay,
-    currentCallChannelId, leaveChannelName, joinChannelName, limitRestrictedInfo,
+    currentCallChannelId, leaveChannelName, joinChannelName, joinChannelIsDMorGM, limitRestrictedInfo,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -130,7 +130,7 @@ export const CallsCustomMessage = ({
             return;
         }
 
-        leaveAndJoinWithAlert(intl, serverUrl, post.channelId, leaveChannelName || '', joinChannelName || '', confirmToJoin, false);
+        leaveAndJoinWithAlert(intl, serverUrl, post.channelId, leaveChannelName || '', joinChannelName || '', confirmToJoin, false, Boolean(joinChannelIsDMorGM));
     };
 
     if (post.props.end_at) {

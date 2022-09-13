@@ -12,6 +12,7 @@ import {observeCallsState, observeCurrentCall} from '@calls/state';
 import {idsAreEqual} from '@calls/utils';
 import {observeChannel} from '@queries/servers/channel';
 import {queryUsersById} from '@queries/servers/user';
+import {isDMorGM} from '@utils/channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -25,8 +26,13 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
     channelId,
     database,
 }: OwnProps & WithDatabaseArgs) => {
-    const displayName = observeChannel(database, channelId).pipe(
+    const channel = observeChannel(database, channelId);
+    const displayName = channel.pipe(
         switchMap((c) => of$(c?.displayName)),
+        distinctUntilChanged(),
+    );
+    const channelIsDMorGM = channel.pipe(
+        switchMap((chan) => of$(chan ? isDMorGM(chan) : false)),
         distinctUntilChanged(),
     );
     const callsState = observeCallsState(serverUrl);
@@ -47,7 +53,7 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
     );
     const currentCallChannelName = currentCallChannelId.pipe(
         switchMap((id) => observeChannel(database, id || '')),
-        switchMap((channel) => of$(channel ? channel.displayName : '')),
+        switchMap((c) => of$(c ? c.displayName : '')),
         distinctUntilChanged(),
     );
     const channelCallStartTime = callsState.pipe(
@@ -57,6 +63,7 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
 
     return {
         displayName,
+        channelIsDMorGM,
         participants,
         inACall,
         currentCallChannelName,
