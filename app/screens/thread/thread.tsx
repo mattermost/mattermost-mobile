@@ -101,7 +101,7 @@ const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
                 }
                 {isInACall &&
                     <FloatingCallContainer threadScreen={true}>
-                        <CurrentCallBar/>
+                        <CurrentCallBar threadScreen={true}/>
                     </FloatingCallContainer>
                 }
             </SafeAreaView>
