@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {debounce} from 'lodash';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
 import {searchChannels} from '@actions/remote/channel';
@@ -54,7 +54,7 @@ const reduceChannelsForAutocomplete = (channels: Array<Channel | ChannelModel>, 
     }, [[], []]);
 };
 
-const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChannelModel[], isSearch = false) => {
+const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChannelModel[], loading: boolean, isSearch = false) => {
     const newSections = [];
     if (isSearch) {
         const [publicChannels, privateChannels, directAndGroupMessages] = reduceChannelsForSearch(channels, myMembers);
@@ -99,7 +99,7 @@ const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChan
             });
         }
 
-        if (otherChannels.length) {
+        if (otherChannels.length || (!myChannels.length && loading)) {
             newSections.push({
                 id: t('suggestion.mention.morechannels'),
                 defaultMessage: 'Other Channels',
@@ -164,10 +164,17 @@ const ChannelMention = ({
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
 
+    const latestSearchAt = useRef(0);
+
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, tId: string) => {
-        setLoading(true);
+        const searchAt = Date.now();
+        latestSearchAt.current = searchAt;
+
         const {channels: receivedChannels} = await searchChannels(sUrl, term, tId, isSearch);
 
+        if (latestSearchAt.current > searchAt) {
+            return;
+        }
         let channelsToStore: Array<Channel | ChannelModel> = receivedChannels || [];
         if (hasTrailingSpaces(term)) {
             channelsToStore = filterResults(receivedChannels || [], term);
@@ -178,9 +185,12 @@ const ChannelMention = ({
     }, 200), []);
 
     const resetState = () => {
+        latestSearchAt.current = Date.now();
         setRemoteChannels(emptyChannels);
         setSections(emptySections);
+        setNoResultsTerm(null);
         runSearch.cancel();
+        setLoading(false);
     };
 
     const completeMention = useCallback((mention: string) => {
@@ -216,8 +226,11 @@ const ChannelMention = ({
         }
 
         onShowingChange(false);
+        setLoading(false);
         setNoResultsTerm(mention);
         setSections(emptySections);
+        setRemoteChannels(emptyChannels);
+        latestSearchAt.current = Date.now();
     }, [value, localCursorPosition, isSearch]);
 
     const renderItem = useCallback(({item}: SectionListRenderItemInfo<Channel | ChannelModel>) => {
@@ -244,6 +257,9 @@ const ChannelMention = ({
         if (localCursorPosition !== cursorPosition) {
             setLocalCursorPosition(cursorPosition);
         }
+        if (remoteChannels.length) {
+            setRemoteChannels(emptyChannels);
+        }
     }, [cursorPosition]);
 
     useEffect(() => {
@@ -258,6 +274,7 @@ const ChannelMention = ({
         }
 
         setNoResultsTerm(null);
+        setLoading(true);
         runSearch(serverUrl, matchTerm, teamId);
     }, [matchTerm, teamId]);
 
@@ -275,17 +292,23 @@ const ChannelMention = ({
     }, [localChannels, remoteChannels]);
 
     useDidUpdate(() => {
-        const newSections = makeSections(channels, myMembers, isSearch);
+        if (noResultsTerm && !loading) {
+            return;
+        }
+        const newSections = makeSections(channels, myMembers, loading, isSearch);
         const nSections = newSections.length;
 
         if (!loading && !nSections && noResultsTerm == null) {
             setNoResultsTerm(matchTerm);
         }
+        if (nSections) {
+            setNoResultsTerm(null);
+        }
         setSections(newSections.length ? newSections : emptySections);
-        onShowingChange(Boolean(nSections && !noResultsTerm));
+        onShowingChange(Boolean(nSections));
     }, [channels, myMembers, loading]);
 
-    if (sections.length === 0 || noResultsTerm != null) {
+    if (!loading && (sections.length === 0 || noResultsTerm != null)) {
         // If we are not in an active state or the mention has been completed return null so nothing is rendered
         // other components are not blocked.
         return null;

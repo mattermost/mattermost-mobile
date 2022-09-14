@@ -41,17 +41,27 @@ const getMatchTermForChannelMention = (() => {
     };
 })();
 
+type WithTeamIdProps = {
+    teamId?: string;
+    channelId?: string;
+} & WithDatabaseArgs;
+
 type OwnProps = {
     value: string;
     isSearch: boolean;
-    channelId?: string;
-    teamId?: string;
+    cursorPosition: number;
+    teamId: string;
 } & WithDatabaseArgs;
 
 const emptyChannelList: ChannelModel[] = [];
-const enhanced = withObservables(['value', 'isSearch', 'teamId', 'channelId'], ({value, isSearch, teamId, channelId, database}: OwnProps) => {
-    const matchTerm = getMatchTermForChannelMention(value, isSearch);
 
+const withMembers = withObservables([], ({database}: WithDatabaseArgs) => {
+    return {
+        myMembers: queryAllMyChannel(database).observe(),
+    };
+});
+
+const withTeamId = withObservables(['teamId', 'channelId'], ({teamId, channelId, database}: WithTeamIdProps) => {
     let currentTeamId;
     if (teamId) {
         currentTeamId = of$(teamId);
@@ -63,14 +73,20 @@ const enhanced = withObservables(['value', 'isSearch', 'teamId', 'channelId'], (
         currentTeamId = observeCurrentTeamId(database);
     }
 
-    const localChannels = matchTerm === null ? of$(emptyChannelList) : currentTeamId.pipe(switchMap((id) => queryChannelsForAutocomplete(database, matchTerm, isSearch, id).observe()));
-
     return {
-        myMembers: queryAllMyChannel(database).observe(),
-        matchTerm: of$(matchTerm),
-        localChannels,
         teamId: currentTeamId,
     };
 });
 
-export default withDatabase(enhanced(ChannelMention));
+const enhanced = withObservables(['value', 'isSearch', 'teamId', 'cursorPosition'], ({value, isSearch, teamId, cursorPosition, database}: OwnProps) => {
+    const matchTerm = getMatchTermForChannelMention(value.substring(0, cursorPosition), isSearch);
+
+    const localChannels = matchTerm === null ? of$(emptyChannelList) : queryChannelsForAutocomplete(database, matchTerm, isSearch, teamId).observe();
+
+    return {
+        matchTerm: of$(matchTerm),
+        localChannels,
+    };
+});
+
+export default withDatabase(withMembers(withTeamId(enhanced(ChannelMention))));
