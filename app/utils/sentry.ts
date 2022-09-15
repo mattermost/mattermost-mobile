@@ -3,6 +3,7 @@
 
 import {Breadcrumb} from '@sentry/types';
 import {Platform} from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import Config from '@assets/config.json';
 
@@ -36,7 +37,18 @@ export function initializeSentry() {
 
     Sentry.init({
         dsn: 'https://8166acfeeced43de98bc11f217d871c5@o1347733.ingest.sentry.io/6734065',
-        tracesSampleRate: 1.0,
+        tracesSampleRate: 1.0, //fixme: lower to about 0.2 for production
+        integrations: [
+            new Sentry.ReactNativeTracing({
+
+                // Pass instrumentation to be used as `routingInstrumentation`
+                routingInstrumentation: new Sentry.ReactNativeNavigationInstrumentation(
+                    Navigation,
+                ),
+
+                // ...
+            }),
+        ],
 
         // ...Config.SentryOptions,
     });
