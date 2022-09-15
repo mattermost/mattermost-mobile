@@ -146,14 +146,14 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
             />
             {Platform.OS === 'android' && <View style={styles.helpGroup}/>}
             {showHelp &&
-                <SettingItem
-                    optionLabelTextStyle={{color: theme.linkColor}}
-                    onPress={openHelp}
-                    optionName='help'
-                    separator={false}
-                    testID='settings.help.option'
-                    type='default'
-                />
+            <SettingItem
+                optionLabelTextStyle={{color: theme.linkColor}}
+                onPress={openHelp}
+                optionName='help'
+                separator={false}
+                testID='settings.help.option'
+                type='default'
+            />
             }
         </SettingContainer>
     );
