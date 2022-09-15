@@ -144,7 +144,7 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 6
+        versionCode 422
         versionName "2.0.0"
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -222,20 +222,23 @@ android {
         }
     }
 
-    signingConfigs {
-        release {
-            storeFile file('gekidou-keystore')
-            storePassword '123456789'
-            keyAlias 'gekidou'
-            keyPassword '123456789'
-        }
-        debug {
-            storeFile file('gekidou-keystore')
-            storePassword '123456789'
-            keyAlias 'gekidou'
-            keyPassword '123456789'
-        }
-    }
+   signingConfigs {
+       release {
+           if (project.hasProperty('MATTERMOST_RELEASE_STORE_FILE')) {
+               storeFile file(MATTERMOST_RELEASE_STORE_FILE)
+               storePassword MATTERMOST_RELEASE_PASSWORD
+               keyAlias MATTERMOST_RELEASE_KEY_ALIAS
+               keyPassword MATTERMOST_RELEASE_PASSWORD
+           }
+       }
+       debug {
+           storeFile file('debug.keystore')
+           storePassword 'android'
+           keyAlias 'androiddebugkey'
+           keyPassword 'android'
+       }
+   }
+
     splits {
         abi {
             reset()
