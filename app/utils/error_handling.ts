@@ -25,8 +25,8 @@ class JavascriptAndNativeErrorHandler {
     initializeErrorHandling = () => {
         initializeSentry();
 
+        // NOTE: The below methods have been disabled as they interferred with Sentry error reporting.
         // setJSExceptionHandler(this.errorHandler, true);
-
         // setNativeExceptionHandler(this.nativeErrorHandler, false);
     };
 
