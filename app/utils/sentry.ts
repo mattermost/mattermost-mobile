@@ -19,16 +19,15 @@ export const LOGGER_NATIVE = 'native';
 
 let Sentry: any;
 export function initializeSentry() {
-    //fixme: remove all hardcoded/commmented lines
-    //  if (!Config.SentryEnabled) {
-    //      return;
-    //  }
+    if (!Config.SentryEnabled) {
+        return;
+    }
 
     if (!Sentry) {
         Sentry = require('@sentry/react-native');
     }
 
-    const dsn = 'https://8166acfeeced43de98bc11f217d871c5@o1347733.ingest.sentry.io/6734065'; //getDsn();
+    const dsn = getDsn();
 
     if (!dsn) {
         logWarning('Sentry is enabled, but not configured on this platform');
@@ -36,8 +35,8 @@ export function initializeSentry() {
     }
 
     Sentry.init({
-        dsn: 'https://8166acfeeced43de98bc11f217d871c5@o1347733.ingest.sentry.io/6734065',
-        tracesSampleRate: 1.0, //fixme: lower to about 0.2 for production
+        dsn,
+        tracesSampleRate: 0.2,
         integrations: [
             new Sentry.ReactNativeTracing({
 
@@ -45,12 +44,9 @@ export function initializeSentry() {
                 routingInstrumentation: new Sentry.ReactNativeNavigationInstrumentation(
                     Navigation,
                 ),
-
-                // ...
             }),
         ],
-
-        // ...Config.SentryOptions,
+        ...Config.SentryOptions,
     });
 }
 
