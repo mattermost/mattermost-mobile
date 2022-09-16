@@ -317,6 +317,10 @@ platform :ios do
     if ENV['CIRCLECI'] == 'true'
       setup_circle_ci
     end
+      if ENV['SENTRY_ENABLED'] == 'true'
+        sh "export SENTRY_ENABLED=true"
+        UI.success("Exporting SENTRY_ENABLED to environment variable")
+      end
   end
 
   desc 'Get iOS match profiles'
@@ -600,6 +604,12 @@ platform :ios do
 end
 
 platform :android do
+  before_all do
+      if ENV['SENTRY_ENABLED'] == 'true'
+        sh "export SENTRY_ENABLED=true"
+        UI.success("Exporting SENTRY_ENABLED to environment variable")
+      end
+  end
   desc 'Build Android app'
   lane :build do
     unless configured
