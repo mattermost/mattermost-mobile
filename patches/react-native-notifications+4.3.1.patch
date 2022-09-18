@@ -376,7 +376,7 @@ index 0000000..58ff887
 +    }
 +}
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
-index a14089f..a339934 100644
+index a14089f..5238c75 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
 @@ -2,9 +2,15 @@ package com.wix.reactnativenotifications.core.notificationdrawer;
@@ -395,10 +395,26 @@ index a14089f..a339934 100644
  
  public class PushNotificationsDrawer implements IPushNotificationsDrawer {
  
-@@ -62,4 +68,31 @@ public class PushNotificationsDrawer implements IPushNotificationsDrawer {
+@@ -49,17 +55,50 @@ public class PushNotificationsDrawer implements IPushNotificationsDrawer {
+     public void onNotificationClearRequest(int id) {
+         final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+         notificationManager.cancel(id);
++        cancelScheduledNotification(String.valueOf(id));
+     }
+ 
+     @Override
+     public void onNotificationClearRequest(String tag, int id) {
+         final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+         notificationManager.cancel(tag, id);
++        cancelScheduledNotification(String.valueOf(id));
+     }
+ 
+     @Override
+     public void onAllNotificationsClearRequest() {
          final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
          notificationManager.cancelAll();
-     }
++        cancelAllScheduledNotifications();
++    }
 +
 +    protected void cancelAllScheduledNotifications() {
 +        Log.i(LOGTAG, "Cancelling all scheduled notifications");
@@ -413,6 +429,9 @@ index a14089f..a339934 100644
 +        Log.i(LOGTAG, "Cancelling scheduled notification: " + notificationId);
 +
 +        ScheduleNotificationHelper helper = ScheduleNotificationHelper.getInstance(mContext);
++        if (!helper.getPreferencesKeys().contains(notificationId)) {
++            return;
++        }
 +
 +        // Remove it from the alarm manger schedule
 +        Bundle bundle = new Bundle();
@@ -425,7 +444,7 @@ index a14089f..a339934 100644
 +        // Remove it from the notification center
 +        final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 +        notificationManager.cancel(Integer.parseInt(notificationId));
-+    }
+     }
  }
 diff --git a/node_modules/react-native-notifications/lib/dist/DTO/Notification.d.ts b/node_modules/react-native-notifications/lib/dist/DTO/Notification.d.ts
 index 7b2b3b1..3a2f872 100644
@@ -462,3 +481,46 @@ index afd5c73..6036dda 100644
      }];
  }
  
+diff --git a/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m b/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
+index 5c8dd0b..1c7e575 100644
+--- a/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
++++ b/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
+@@ -6,11 +6,13 @@
+ 
+ @implementation RNNotificationEventHandler {
+     RNNotificationsStore* _store;
++    NSDate* wakeTime;
+ }
+ 
+ - (instancetype)initWithStore:(RNNotificationsStore *)store {
+     self = [super init];
+     _store = store;
++    wakeTime = [[NSDate alloc] init];
+     return self;
+ }
+ 
+@@ -31,6 +33,15 @@
+ - (void)didReceiveNotificationResponse:(UNNotificationResponse *)response completionHandler:(void (^)(void))completionHandler {
+     [_store setActionCompletionHandler:completionHandler withCompletionKey:response.notification.request.identifier];
+     [RNEventEmitter sendEvent:RNNotificationOpened body:[RNNotificationParser parseNotificationResponse:response]];
++    dispatch_async(dispatch_get_main_queue(), ^{
++        NSDate* now = [[NSDate alloc] init];
++        double interval = [now timeIntervalSinceDate:self->wakeTime];
++        BOOL background = [[UIApplication sharedApplication] applicationState] == UIApplicationStateBackground;
++        NSDictionary* userInfo = response.notification.request.content.userInfo;
++        if (interval < 1.0 && !background) {
++            [self->_store setInitialNotification:userInfo];
++        }
++    });
+ }
+ 
+ - (void)didReceiveBackgroundNotification:(NSDictionary *)userInfo withCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
+@@ -38,7 +49,7 @@
+         NSString *uuid = [[NSUUID UUID] UUIDString];
+         __block BOOL completionHandlerCalled = NO;
+         dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
+-        [_store setBackgroundActionCompletionHandler:^(UIBackgroundFetchResult result) {
++        [self->_store setBackgroundActionCompletionHandler:^(UIBackgroundFetchResult result) {
+             dispatch_async(dispatch_get_main_queue(), ^{
+                 completionHandler(result);
+             });
