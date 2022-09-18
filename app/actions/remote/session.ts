@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import NetInfo from '@react-native-community/netinfo';
 import {DeviceEventEmitter, Platform} from 'react-native';
 
 import {Database, Events} from '@constants';
@@ -191,8 +192,9 @@ export const cancelSessionNotification = async (serverUrl: string) => {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const expiredSession = await getExpiredSession(database);
+        const rechable = (await NetInfo.fetch()).isInternetReachable;
 
-        if (expiredSession?.notificationId) {
+        if (expiredSession?.notificationId && rechable) {
             PushNotifications.cancelScheduleNotification(parseInt(expiredSession.notificationId, 10));
             operator.handleSystem({
                 systems: [{
