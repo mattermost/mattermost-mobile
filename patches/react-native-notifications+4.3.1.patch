@@ -48,10 +48,32 @@ index 90969b2..3420045 100644
  
      @ReactMethod
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java
-index eadf41e..a3f71dd 100644
+index eadf41e..3279431 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java
-@@ -96,8 +96,7 @@ public class RNNotificationsPackage implements ReactPackage, AppLifecycleFacade.
+@@ -15,6 +15,7 @@ import com.wix.reactnativenotifications.core.AppLifecycleFacade;
+ import com.wix.reactnativenotifications.core.AppLifecycleFacadeHolder;
+ import com.wix.reactnativenotifications.core.InitialNotificationHolder;
+ import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
++import com.wix.reactnativenotifications.core.ReactAppLifecycleFacade;
+ import com.wix.reactnativenotifications.core.notification.IPushNotification;
+ import com.wix.reactnativenotifications.core.notification.PushNotification;
+ import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
+@@ -67,7 +68,12 @@ public class RNNotificationsPackage implements ReactPackage, AppLifecycleFacade.
+ 
+     @Override
+     public void onActivityStarted(Activity activity) {
+-        if (InitialNotificationHolder.getInstance().get() == null) {
++        boolean isInitialized = false;
++        if (AppLifecycleFacadeHolder.get() instanceof ReactAppLifecycleFacade) {
++            isInitialized = AppLifecycleFacadeHolder.get().isReactInitialized();
++        }
++
++        if (!isInitialized && InitialNotificationHolder.getInstance().get() == null) {
+             callOnOpenedIfNeed(activity);
+         }
+     }
+@@ -96,8 +102,7 @@ public class RNNotificationsPackage implements ReactPackage, AppLifecycleFacade.
          Intent intent = activity.getIntent();
          if (NotificationIntentAdapter.canHandleIntent(intent)) {
              Context appContext = mApplication.getApplicationContext();
