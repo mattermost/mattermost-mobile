@@ -1,18 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
+import {Database, Model} from '@nozbe/watermelondb';
 
-import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest, switchToChannelById} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
+import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
-import {fetchAndSwitchToThread, fetchNewThreads} from '@actions/remote/thread';
+import {fetchNewThreads} from '@actions/remote/thread';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
-import {Preferences, Screens} from '@constants';
+import {General, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
@@ -22,21 +23,15 @@ import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {queryAllServers} from '@queries/app/servers';
-import {getMyChannel, prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {deleteMyTeams, getAvailableTeamIds, getMyTeamById, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
-import {getIsCRTEnabled} from '@queries/servers/thread';
-import NavigationStore from '@store/navigation_store';
-import {isDMorGM} from '@utils/channel';
+import {getConfig, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
+import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
+import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getMemberChannelsFromGQLQuery, gqlToClientChannelMembership} from '@utils/graphql';
-import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
-import {emitNotificationError} from '@utils/notification';
 import {processIsCRTEnabled} from '@utils/thread';
-
-import {fetchGroupsForMember} from '../groups';
 
 import type ClientError from '@client/rest/error';
 
@@ -91,7 +86,7 @@ export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[])
     return [];
 };
 
-export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0): Promise<EntryResponse> => {
+export const entryRest = async (serverUrl: string, teamId?: string, channelId?: string, since = 0): Promise<EntryResponse> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -114,13 +109,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
 
     const rolesData = await fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData.user, true);
 
-    let initialChannelId = channelId;
-    if (!chData?.channels?.find((c) => c.id === channelId)) {
-        initialChannelId = '';
-    }
-    if (initialTeamId !== teamId || !initialChannelId) {
-        initialChannelId = await getNthLastChannelFromTeam(database, initialTeamId);
-    }
+    const initialChannelId = await entryInitialChannelId(database, channelId, teamId, initialTeamId, meData?.user?.locale || '', chData?.channels, chData?.memberships);
 
     const removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
 
@@ -279,7 +268,45 @@ export const fetchAlternateTeamData = async (
     return {initialTeamId, removeTeamIds};
 };
 
-export async function deferredAppEntryActions(
+export async function entryInitialChannelId(database: Database, requestedChannelId = '', requestedTeamId = '', initialTeamId: string, locale: string, channels?: Channel[], memberships?: ChannelMember[]) {
+    const membershipIds = new Set(memberships?.map((m) => m.channel_id));
+    const requestedChannel = channels?.find((c) => (c.id === requestedChannelId) && membershipIds.has(c.id));
+
+    // If team and channel are the requested, return the channel
+    if (initialTeamId === requestedTeamId && requestedChannel) {
+        return requestedChannelId;
+    }
+
+    // DM or GMs don't care about changes in teams, so return directly
+    if (requestedChannel && isDMorGM(requestedChannel)) {
+        return requestedChannelId;
+    }
+
+    // Check if we are still members of any channel on the history
+    const teamChannelHistory = await getTeamChannelHistory(database, initialTeamId);
+    for (const c of teamChannelHistory) {
+        if (membershipIds.has(c) || c === Screens.GLOBAL_THREADS) {
+            return c;
+        }
+    }
+
+    // Check if we are member of the default channel.
+    const defaultChannel = channels?.find((c) => c.name === General.DEFAULT_CHANNEL && c.team_id === initialTeamId);
+    const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannel && membershipIds.has(defaultChannel.id));
+    if (iAmMemberOfTheTeamDefaultChannel) {
+        return defaultChannel!.id;
+    }
+
+    // Get the first channel of the list, based on the locale.
+    const myFirstTeamChannel = channels?.filter((c) =>
+        c.team_id === requestedTeamId &&
+        c.type === General.OPEN_CHANNEL &&
+        membershipIds.has(c.id),
+    ).sort(sortChannelsByDisplayName.bind(null, locale))[0];
+    return myFirstTeamChannel?.id || '';
+}
+
+export async function restDeferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string) {
@@ -484,63 +511,5 @@ export async function verifyPushProxy(serverUrl: string) {
         }
     } catch (err) {
         // Do nothing
-    }
-}
-
-export async function handleNotificationNavigation(serverUrl: string, selectedChannelId: string, selectedTeamId: string, notificationChannelId: string, notificationTeamId: string, rootId = '') {
-    try {
-        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        const myChannel = await getMyChannel(database, selectedChannelId);
-        const myTeam = await getMyTeamById(database, selectedTeamId);
-        const isCRTEnabled = await getIsCRTEnabled(database);
-        const isThreadNotification = isCRTEnabled && Boolean(rootId);
-
-        let switchedToScreen = false;
-        let switchedToChannel = false;
-        if (myChannel && myTeam) {
-            if (isThreadNotification) {
-                await fetchAndSwitchToThread(serverUrl, rootId, true);
-            } else {
-                switchedToChannel = true;
-                await switchToChannelById(serverUrl, selectedChannelId, selectedTeamId);
-            }
-            switchedToScreen = true;
-        }
-
-        if (!switchedToScreen) {
-            const isTabletDevice = await isTablet();
-            if (isTabletDevice || (notificationChannelId === selectedChannelId)) {
-                // Make switch again to get the missing data and make sure the team is the correct one
-                switchedToScreen = true;
-                if (isThreadNotification) {
-                    await fetchAndSwitchToThread(serverUrl, rootId, true);
-                } else {
-                    switchedToChannel = true;
-                    await switchToChannelById(serverUrl, notificationChannelId, notificationTeamId);
-                }
-            } else if (notificationTeamId !== selectedTeamId || notificationChannelId !== selectedChannelId) {
-                // If in the end the selected team or channel is different than the one from the notification
-                // we switch again
-                await setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
-            }
-        }
-
-        if (notificationTeamId !== selectedTeamId) {
-            emitNotificationError('Team');
-        } else if (notificationChannelId !== selectedChannelId) {
-            emitNotificationError('Channel');
-        }
-
-        // Waiting for the screen to display fixes a race condition when fetching and storing data
-        if (switchedToChannel) {
-            await NavigationStore.waitUntilScreenHasLoaded(Screens.CHANNEL);
-        } else if (switchedToScreen && isThreadNotification) {
-            await NavigationStore.waitUntilScreenHasLoaded(Screens.THREAD);
-        }
-
-        return {};
-    } catch (error) {
-        return {error};
     }
 }

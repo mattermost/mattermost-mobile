@@ -27,6 +27,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
         },
         rowDisplayName: {
+            flex: 1,
             fontSize: 15,
             color: theme.centerChannelColor,
         },
@@ -129,16 +130,17 @@ const ChannelMentionItem = ({
                         style={style.icon}
                     />
                     <Text
+                        numberOfLines={1}
                         style={style.rowDisplayName}
                         testID={`${channelMentionItemTestId}.display_name`}
                     >
                         {displayName}
-                    </Text>
-                    <Text
-                        style={style.rowName}
-                        testID={`${channelMentionItemTestId}.name`}
-                    >
-                        {` ~${channel.name}`}
+                        <Text
+                            style={style.rowName}
+                            testID={`${channelMentionItemTestId}.name`}
+                        >
+                            {` ~${channel.name}`}
+                        </Text>
                     </Text>
                 </View>
             </TouchableWithFeedback>
