@@ -84,12 +84,15 @@ project.ext.react = [
 apply from: "../../node_modules/react-native/react.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
+
+/** Disable the below if you are not using Sentry */
+def SENTRY_ENABLED = true
 project.ext.sentryCli = [
         logLevel: "error",
         flavorAware: false
 ]
 
-if (System.getenv("SENTRY_ENABLED") == "true") {
+if (SENTRY_ENABLED == "true") {
     apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 }
 
