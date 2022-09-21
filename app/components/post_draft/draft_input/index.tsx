@@ -10,9 +10,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import PostInput from '../post_input';
 import QuickActions from '../quick_actions';
+import RecordAction from '../record_action';
 import SendAction from '../send_action';
 import Typing from '../typing';
 import Uploads from '../uploads';
+
+//fixme:to read config to know if we can record or not
 
 type Props = {
     testID?: string;
@@ -107,6 +110,19 @@ export default function DraftInput({
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
 
+    const getActionButton = useCallback(() => {
+        if (value.length > 0) {
+            return (
+                <SendAction
+                    testID={sendActionTestID}
+                    disabled={!canSend}
+                    sendMessage={sendMessage}
+                />
+            );
+        }
+        return (<RecordAction/>);
+    }, [value]);
+
     return (
         <>
             <Typing
@@ -158,11 +174,7 @@ export default function DraftInput({
                             updateValue={updateValue}
                             value={value}
                         />
-                        <SendAction
-                            testID={sendActionTestID}
-                            disabled={!canSend}
-                            sendMessage={sendMessage}
-                        />
+                        {getActionButton()}
                     </View>
                 </ScrollView>
             </SafeAreaView>
