@@ -32,6 +32,7 @@ export const PostTypes: Record<string, string> = {
 
     SYSTEM_AUTO_RESPONDER: 'system_auto_responder',
     CUSTOM_CALLS: 'custom_calls',
+    VOICE_MESSAGE: 'voice',
 };
 
 export const PostPriorityTypes: Record<string, string> = {

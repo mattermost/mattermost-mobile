@@ -107,6 +107,7 @@ interface ClientConfig {
     ExperimentalEnableClickToReply: string;
     ExperimentalEnableDefaultChannelLeaveJoinMessages: string;
     ExperimentalEnablePostMetadata: string;
+    ExperimentalEnableVoiceMessages: string;
     ExperimentalGroupUnreadChannels: string;
     ExperimentalHideTownSquareinLHS: string;
     ExperimentalNormalizeMarkdownLinks: string;
@@ -120,6 +121,7 @@ interface ClientConfig {
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagGraphQL?: string;
     FeatureFlagPostPriority?: string;
+    FeatureFlagEnableVoiceMessages?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
     GoogleDeveloperKey: string;
