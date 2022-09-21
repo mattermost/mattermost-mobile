@@ -22,7 +22,7 @@ type FileInfo = {
     uri?: string;
     user_id: string;
     width: number;
-    is_voice_recording: boolean;
+    is_voice_recording?: boolean;
 };
 
 type FilesState = {

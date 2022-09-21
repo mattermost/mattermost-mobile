@@ -3,13 +3,13 @@
 import React from 'react';
 
 type Props = {
-    setRecording: () => void;
-    addFiles: (f: FileInfo[]) => void;
-    setShowAsRecording: (v: boolean) => void;
+    file: FileInfo;
 }
 
-function RecordContainer() {
+function VoiceRecordingFile({
+    file,
+}: Props) {
     return null;
 }
 
-export default RecordContainer;
+export default VoiceRecordingFile;

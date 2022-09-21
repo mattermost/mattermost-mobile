@@ -2,17 +2,16 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import {LayoutChangeEvent, Platform, ScrollView} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import PostInput from '../post_input';
-import QuickActions from '../quick_actions';
-import SendAction from '../send_action';
 import Typing from '../typing';
-import Uploads from '../uploads';
+
+import RecordContainer from './record_container';
+import TextContainer from './text_container';
 
 type Props = {
     testID?: string;
@@ -42,16 +41,6 @@ const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        actionsContainer: {
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingBottom: Platform.select({
-                ios: 1,
-                android: 2,
-            }),
-        },
         inputContainer: {
             flex: 1,
             flexDirection: 'column',
@@ -104,12 +93,8 @@ export default function DraftInput({
     const [recording, setRecording] = useState(false);
 
     // Render
-    const postInputTestID = `${testID}.post.input`;
-    const quickActionsTestID = `${testID}.quick_actions`;
-    const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
 
-    const showAsRecord = files[0]?.is_voice_recording;
     return (
         <>
             <Typing
@@ -135,47 +120,29 @@ export default function DraftInput({
                     disableScrollViewPanResponder={true}
                 >
                     {recording && (
-                        <RecordComponent/>
+                        <RecordContainer
+                            addFiles={addFiles}
+                            setRecording={setRecording}
+                        />
                     )}
                     {!recording && (
-                        <>
-                            <PostInput
-                                testID={postInputTestID}
-                                channelId={channelId}
-                                maxMessageLength={maxMessageLength}
-                                rootId={rootId}
-                                cursorPosition={cursorPosition}
-                                updateCursorPosition={updateCursorPosition}
-                                updateValue={updateValue}
-                                value={value}
-                                addFiles={addFiles}
-                                sendMessage={sendMessage}
-                            />
-                            <Uploads
-                                currentUserId={currentUserId}
-                                files={files}
-                                uploadFileError={uploadFileError}
-                                channelId={channelId}
-                                rootId={rootId}
-                            />
-                            <View style={style.actionsContainer}>
-                                {!showAsRecord &&
-                                    <QuickActions
-                                        testID={quickActionsTestID}
-                                        fileCount={files.length}
-                                        addFiles={addFiles}
-                                        updateValue={updateValue}
-                                        value={value}
-                                    />
-                                }
-                                <SendAction
-                                    testID={sendActionTestID}
-                                    disabled={!canSend}
-                                    sendMessage={sendMessage}
-                                    setRecording={setRecording}
-                                />
-                            </View>
-                        </>
+                        <TextContainer
+                            addFiles={addFiles}
+                            canSend={canSend}
+                            channelId={channelId}
+                            currentUserId={currentUserId}
+                            cursorPosition={cursorPosition}
+                            files={files}
+                            maxMessageLength={maxMessageLength}
+                            sendMessage={sendMessage}
+                            setRecording={setRecording}
+                            updateCursorPosition={updateCursorPosition}
+                            updateValue={updateValue}
+                            uploadFileError={uploadFileError}
+                            value={value}
+                            rootId={rootId}
+                            testID={testID}
+                        />
                     )}
                 </ScrollView>
             </SafeAreaView>
