@@ -10,8 +10,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Typing from '../typing';
 
-import RecordingInput from './record_container';
 import MessageInput from './message_input';
+import RecordingInput from './record_container';
 
 type Props = {
     testID?: string;
