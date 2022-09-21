@@ -11,7 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import Typing from '../typing';
 
 import MessageInput from './message_input';
-import RecordingInput from './record_container';
+import VoiceInput from './voice_input';
 
 type Props = {
     testID?: string;
@@ -122,7 +122,7 @@ export default function DraftInput({
                     disableScrollViewPanResponder={true}
                 >
                     {recording && (
-                        <RecordingInput
+                        <VoiceInput
                             addFiles={addFiles}
                             setRecording={setRecording}
                         />

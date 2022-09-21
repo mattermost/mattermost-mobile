@@ -7,11 +7,11 @@ type Props = {
     addFiles: (f: FileInfo[]) => void;
 }
 
-function RecordContainer({
+function VoiceInput({
     setRecording,
     addFiles,
 }: Props) {
     return null;
 }
 
-export default RecordContainer;
+export default VoiceInput;
