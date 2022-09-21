@@ -13,7 +13,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         voiceMessageEnabled: observeVoiceMessagesEnabled(database),
-    }
+    };
 });
 
 export default withDatabase(enhanced(DraftInput));

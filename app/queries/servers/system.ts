@@ -427,7 +427,7 @@ export const observeVoiceMessagesEnabled = (database: Database) => {
     return observeConfig(database).pipe(
         switchMap((c) => of$(c?.ExperimentalEnableVoiceMessages === 'true' && c?.FeatureFlagEnableVoiceMessages === 'true')),
     );
-}
+};
 
 export const getExpiredSession = async (database: Database) => {
     try {
