@@ -46,7 +46,7 @@ const style = StyleSheet.create({
     },
 });
 
-export default function TextContainer({
+export default function MessageInput({
     testID,
     channelId,
     currentUserId,
@@ -104,7 +104,6 @@ export default function TextContainer({
                     testID={sendActionTestID}
                     disabled={!canSend}
                     sendMessage={sendMessage}
-                    setRecording={setRecording}
                 />
             </View>
         </>

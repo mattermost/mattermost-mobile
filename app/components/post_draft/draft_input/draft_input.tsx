@@ -10,14 +10,15 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Typing from '../typing';
 
-import RecordContainer from './record_container';
-import TextContainer from './text_container';
+import RecordingInput from './record_container';
+import MessageInput from './message_input';
 
 type Props = {
     testID?: string;
     channelId: string;
     rootId?: string;
     currentUserId: string;
+    voiceMessageEnabled: boolean;
 
     // Cursor Position Handler
     updateCursorPosition: (pos: number) => void;
@@ -83,6 +84,7 @@ export default function DraftInput({
     updateCursorPosition,
     cursorPosition,
     updatePostInputTop,
+    voiceMessageEnabled,
 }: Props) {
     const theme = useTheme();
 
@@ -120,13 +122,13 @@ export default function DraftInput({
                     disableScrollViewPanResponder={true}
                 >
                     {recording && (
-                        <RecordContainer
+                        <RecordingInput
                             addFiles={addFiles}
                             setRecording={setRecording}
                         />
                     )}
                     {!recording && (
-                        <TextContainer
+                        <MessageInput
                             addFiles={addFiles}
                             canSend={canSend}
                             channelId={channelId}

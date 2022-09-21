@@ -13,7 +13,6 @@ type Props = {
     testID: string;
     disabled: boolean;
     sendMessage: () => void;
-    setRecording: (v: boolean) => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
