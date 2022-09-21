@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -101,12 +101,15 @@ export default function DraftInput({
         updatePostInputTop(e.nativeEvent.layout.height);
     }, []);
 
+    const [recording, setRecording] = useState(false);
+
     // Render
     const postInputTestID = `${testID}.post.input`;
     const quickActionsTestID = `${testID}.quick_actions`;
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
 
+    const showAsRecord = files[0]?.is_voice_recording;
     return (
         <>
             <Typing
@@ -131,39 +134,49 @@ export default function DraftInput({
                     overScrollMode={'never'}
                     disableScrollViewPanResponder={true}
                 >
-                    <PostInput
-                        testID={postInputTestID}
-                        channelId={channelId}
-                        maxMessageLength={maxMessageLength}
-                        rootId={rootId}
-                        cursorPosition={cursorPosition}
-                        updateCursorPosition={updateCursorPosition}
-                        updateValue={updateValue}
-                        value={value}
-                        addFiles={addFiles}
-                        sendMessage={sendMessage}
-                    />
-                    <Uploads
-                        currentUserId={currentUserId}
-                        files={files}
-                        uploadFileError={uploadFileError}
-                        channelId={channelId}
-                        rootId={rootId}
-                    />
-                    <View style={style.actionsContainer}>
-                        <QuickActions
-                            testID={quickActionsTestID}
-                            fileCount={files.length}
-                            addFiles={addFiles}
-                            updateValue={updateValue}
-                            value={value}
-                        />
-                        <SendAction
-                            testID={sendActionTestID}
-                            disabled={!canSend}
-                            sendMessage={sendMessage}
-                        />
-                    </View>
+                    {recording && (
+                        <RecordComponent/>
+                    )}
+                    {!recording && (
+                        <>
+                            <PostInput
+                                testID={postInputTestID}
+                                channelId={channelId}
+                                maxMessageLength={maxMessageLength}
+                                rootId={rootId}
+                                cursorPosition={cursorPosition}
+                                updateCursorPosition={updateCursorPosition}
+                                updateValue={updateValue}
+                                value={value}
+                                addFiles={addFiles}
+                                sendMessage={sendMessage}
+                            />
+                            <Uploads
+                                currentUserId={currentUserId}
+                                files={files}
+                                uploadFileError={uploadFileError}
+                                channelId={channelId}
+                                rootId={rootId}
+                            />
+                            <View style={style.actionsContainer}>
+                                {!showAsRecord &&
+                                    <QuickActions
+                                        testID={quickActionsTestID}
+                                        fileCount={files.length}
+                                        addFiles={addFiles}
+                                        updateValue={updateValue}
+                                        value={value}
+                                    />
+                                }
+                                <SendAction
+                                    testID={sendActionTestID}
+                                    disabled={!canSend}
+                                    sendMessage={sendMessage}
+                                    setRecording={setRecording}
+                                />
+                            </View>
+                        </>
+                    )}
                 </ScrollView>
             </SafeAreaView>
         </>
