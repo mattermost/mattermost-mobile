@@ -8,9 +8,7 @@ import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 
 type Props = {
-    testID: string;
-    disabled: boolean;
-    sendMessage: () => void;
+    onPress: () => void;
 }
 
 const styles = {
@@ -27,22 +25,15 @@ const styles = {
     },
 };
 
-function RecordButton({
-    testID,
-    disabled,
-    sendMessage,
-}: Props) {
+function RecordButton({onPress}: Props) {
     const theme = useTheme();
-
-    const recordButtonTestID = disabled ? `${testID}.record.button.disabled` : `${testID}.record.button`;
 
     return (
         <TouchableWithFeedback
-            testID={recordButtonTestID}
-            onPress={sendMessage}
+            testID='record.button'
+            onPress={onPress}
             style={styles.recordButtonContainer}
             type={'opacity'}
-            disabled={disabled}
         >
             <CompassIcon
                 name='microphone'

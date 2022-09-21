@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import RecordContainer from '@components/post_draft/record_container';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -99,7 +100,7 @@ export default function DraftInput({
     updatePostInputTop,
 }: Props) {
     const theme = useTheme();
-
+    const [isRecording, setIsRecording] = useState(false);
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
     }, []);
@@ -110,17 +111,26 @@ export default function DraftInput({
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
 
+    const onPresRecord = useCallback(() => {
+        setIsRecording(true);
+    }, []);
+
     const getActionButton = useCallback(() => {
-        if (value.length > 0) {
+        if (value.length === 0 && files.length === 0) { // add config condition to it
             return (
-                <SendAction
-                    testID={sendActionTestID}
-                    disabled={!canSend}
-                    sendMessage={sendMessage}
+                <RecordAction
+                    onPress={onPresRecord}
                 />
             );
         }
-        return (<RecordAction/>);
+
+        return (
+            <SendAction
+                testID={sendActionTestID}
+                disabled={!canSend}
+                sendMessage={sendMessage}
+            />
+        );
     }, [value]);
 
     return (
@@ -135,7 +145,6 @@ export default function DraftInput({
                 style={style.inputWrapper}
                 testID={testID}
             >
-
                 <ScrollView
                     style={style.inputContainer}
                     contentContainerStyle={style.inputContentContainer}
@@ -147,18 +156,25 @@ export default function DraftInput({
                     overScrollMode={'never'}
                     disableScrollViewPanResponder={true}
                 >
-                    <PostInput
-                        testID={postInputTestID}
-                        channelId={channelId}
-                        maxMessageLength={maxMessageLength}
-                        rootId={rootId}
-                        cursorPosition={cursorPosition}
-                        updateCursorPosition={updateCursorPosition}
-                        updateValue={updateValue}
-                        value={value}
-                        addFiles={addFiles}
-                        sendMessage={sendMessage}
-                    />
+                    {
+                        isRecording && (
+                            <RecordContainer/>
+                        )
+                    }
+                    {!isRecording && (
+                        <PostInput
+                            testID={postInputTestID}
+                            channelId={channelId}
+                            maxMessageLength={maxMessageLength}
+                            rootId={rootId}
+                            cursorPosition={cursorPosition}
+                            updateCursorPosition={updateCursorPosition}
+                            updateValue={updateValue}
+                            value={value}
+                            addFiles={addFiles}
+                            sendMessage={sendMessage}
+                        />
+                    )}
                     <Uploads
                         currentUserId={currentUserId}
                         files={files}
@@ -166,16 +182,18 @@ export default function DraftInput({
                         channelId={channelId}
                         rootId={rootId}
                     />
-                    <View style={style.actionsContainer}>
-                        <QuickActions
-                            testID={quickActionsTestID}
-                            fileCount={files.length}
-                            addFiles={addFiles}
-                            updateValue={updateValue}
-                            value={value}
-                        />
-                        {getActionButton()}
-                    </View>
+                    {!isRecording && (
+                        <View style={style.actionsContainer}>
+                            <QuickActions
+                                testID={quickActionsTestID}
+                                fileCount={files.length}
+                                addFiles={addFiles}
+                                updateValue={updateValue}
+                                value={value}
+                            />
+                            {getActionButton()}
+                        </View>
+                    )}
                 </ScrollView>
             </SafeAreaView>
         </>
