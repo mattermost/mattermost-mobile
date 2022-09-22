@@ -3,12 +3,11 @@
 
 import type RoleModel from '@typings/database/models/servers/role';
 
-export function hasPermission(roles: RoleModel[] | Role[], permission: string, defaultValue: boolean) {
+export function hasPermission(roles: RoleModel[] | Role[], permission: string) {
     const permissions = new Set<string>();
     for (const role of roles) {
         role.permissions.forEach(permissions.add, permissions);
     }
 
-    const exists = permissions.has(permission);
-    return defaultValue === true || exists;
+    return permissions.has(permission);
 }
