@@ -63,7 +63,7 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
         ]);
 
         if (!fetchOnly) {
-            storeConfigAndLicense(serverUrl, config, license);
+            await storeConfigAndLicense(serverUrl, config, license);
         }
 
         return {config, license};
