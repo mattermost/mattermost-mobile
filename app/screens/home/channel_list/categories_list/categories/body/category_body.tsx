@@ -62,7 +62,9 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit,
     }, [category.collapsed]);
 
     useEffect(() => {
-        fetchDirectChannelsInfo(serverUrl, directChannels);
+        if (directChannels.length) {
+            fetchDirectChannelsInfo(serverUrl, directChannels);
+        }
     }, [directChannels.length]);
 
     const height = ids.length ? ids.length * 40 : 0;
