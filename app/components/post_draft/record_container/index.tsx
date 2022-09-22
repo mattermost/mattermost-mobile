@@ -8,7 +8,7 @@ import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import PlaybackBox from './playback_box';
+import SoundWave from './sound_wave';
 import TimeElapsed from './time_elapsed';
 
 const MIC_SIZE = 40;
@@ -62,7 +62,7 @@ const RecordContainer = () => {
                     color={theme.buttonBg}
                 />
             </View>
-            <PlaybackBox/>
+            <SoundWave/>
             <TimeElapsed/>
             <View style={styles.close}>
                 <CompassIcon
