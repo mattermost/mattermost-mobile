@@ -8,6 +8,7 @@ import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import AnimatedMicrophone from './animated_microphone';
 import SoundWave from './sound_wave';
 import TimeElapsed from './time_elapsed';
 
@@ -27,6 +28,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 
     return {
+        mainContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-around',
+            height: 88,
+        },
         container: {
             flexDirection: 'row',
             alignItems: 'center',
@@ -52,15 +59,9 @@ const RecordContainer = () => {
     const styles = getStyleSheet(theme);
 
     return (
-        <View
-            style={styles.container}
-        >
-            <View style={styles.mic}>
-                <CompassIcon
-                    name='microphone'
-                    size={24}
-                    color={theme.buttonBg}
-                />
+        <View style={styles.mainContainer}>
+            <View style={{position: 'relative'}}>
+                <AnimatedMicrophone/>
             </View>
             <SoundWave/>
             <TimeElapsed/>
