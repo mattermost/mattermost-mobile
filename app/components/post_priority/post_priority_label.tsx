@@ -6,11 +6,12 @@ import {useIntl} from 'react-intl';
 import {StyleProp, StyleSheet, Text, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {PostPriorityTypes} from '@constants/post';
+import {PostPriorityColors, PostPriorityTypes} from '@constants/post';
 import {typography} from '@utils/typography';
 
 const style = StyleSheet.create({
     container: {
+        alignSelf: 'flex-start',
         flexDirection: 'row',
         borderRadius: 4,
         alignItems: 'center',
@@ -18,10 +19,10 @@ const style = StyleSheet.create({
         paddingHorizontal: 4,
     },
     urgent: {
-        backgroundColor: '#D24B4E',
+        backgroundColor: PostPriorityColors.URGENT,
     },
     important: {
-        backgroundColor: '#5D89EA',
+        backgroundColor: PostPriorityColors.IMPORTANT,
     },
     label: {
         color: '#fff',
@@ -35,7 +36,7 @@ const style = StyleSheet.create({
 });
 
 type Props = {
-    label: string;
+    label: PostPriorityTypes;
 };
 
 const PostPriorityLabel = ({label}: Props) => {

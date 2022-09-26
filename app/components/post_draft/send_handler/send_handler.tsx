@@ -13,6 +13,7 @@ import {setStatus} from '@actions/remote/user';
 import {canEndCall, endCall, getEndCallMessage} from '@calls/actions/calls';
 import ClientError from '@client/rest/error';
 import {Events, Screens} from '@constants';
+import {PostPriorityTypes} from '@constants/post';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
@@ -29,6 +30,7 @@ type Props = {
     testID?: string;
     channelId: string;
     rootId: string;
+    location: string;
 
     // From database
     currentUserId: string;
@@ -63,6 +65,7 @@ export default function SendHandler({
     membersCount = 0,
     cursorPosition,
     rootId,
+    location,
     useChannelMentions,
     userIsOutOfOffice,
     customEmojis,
@@ -79,6 +82,8 @@ export default function SendHandler({
 
     const [channelTimezoneCount, setChannelTimezoneCount] = useState(0);
     const [sendingMessage, setSendingMessage] = useState(false);
+
+    const [postPriority, setPostPriority] = useState<PostPriorityTypes>(PostPriorityTypes.STANDARD);
 
     const canSend = useCallback(() => {
         if (sendingMessage) {
@@ -112,14 +117,21 @@ export default function SendHandler({
             channel_id: channelId,
             root_id: rootId,
             message: value,
-        };
+        } as Post;
+
+        if (postPriority) {
+            post.props = {
+                priority: postPriority,
+            };
+        }
 
         createPost(serverUrl, post, postFiles);
 
         clearDraft();
         setSendingMessage(false);
+        setPostPriority(PostPriorityTypes.STANDARD);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
-    }, [files, currentUserId, channelId, rootId, value, clearDraft]);
+    }, [files, currentUserId, channelId, rootId, value, clearDraft, postPriority]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, Boolean(isTimezoneEnabled), channelTimezoneCount, atHere);
@@ -279,6 +291,7 @@ export default function SendHandler({
             channelId={channelId}
             currentUserId={currentUserId}
             rootId={rootId}
+            location={location}
             cursorPosition={cursorPosition}
             updateCursorPosition={updateCursorPosition}
             value={value}
@@ -290,6 +303,8 @@ export default function SendHandler({
             canSend={canSend()}
             maxMessageLength={maxMessageLength}
             updatePostInputTop={updatePostInputTop}
+            postPriority={postPriority}
+            updatePostPriority={setPostPriority}
         />
     );
 }

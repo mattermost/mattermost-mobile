@@ -103,6 +103,7 @@ export type OptionItemProps = {
     description?: string;
     destructive?: boolean;
     icon?: string;
+    iconColor?: string;
     info?: string;
     inline?: boolean;
     label: string;
@@ -124,6 +125,7 @@ const OptionItem = ({
     description,
     destructive,
     icon,
+    iconColor,
     info,
     inline = false,
     label,
@@ -238,7 +240,7 @@ const OptionItem = ({
                             <CompassIcon
                                 name={icon!}
                                 size={24}
-                                color={destructive ? theme.dndIndicator : changeOpacity(theme.centerChannelColor, 0.64)}
+                                color={iconColor || (destructive ? theme.dndIndicator : changeOpacity(theme.centerChannelColor, 0.64))}
                             />
                         </View>
                     )}

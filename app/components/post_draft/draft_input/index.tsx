@@ -5,6 +5,8 @@ import React, {useCallback} from 'react';
 import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import PostPriorityLabel from '@components/post_priority/post_priority_label';
+import {PostPriorityTypes} from '@constants/post';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -19,6 +21,11 @@ type Props = {
     channelId: string;
     rootId?: string;
     currentUserId: string;
+    location: string;
+
+    // Post Priority
+    postPriority: PostPriorityTypes;
+    updatePostPriority: (priority: PostPriorityTypes) => void;
 
     // Cursor Position Handler
     updateCursorPosition: (pos: number) => void;
@@ -75,6 +82,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
         },
+        postPriorityLabel: {
+            marginLeft: 12,
+            marginTop: 3,
+        },
     };
 });
 
@@ -82,6 +93,7 @@ export default function DraftInput({
     testID,
     channelId,
     currentUserId,
+    location,
     files,
     maxMessageLength,
     rootId = '',
@@ -94,6 +106,8 @@ export default function DraftInput({
     updateCursorPosition,
     cursorPosition,
     updatePostInputTop,
+    postPriority,
+    updatePostPriority,
 }: Props) {
     const theme = useTheme();
 
@@ -131,6 +145,11 @@ export default function DraftInput({
                     overScrollMode={'never'}
                     disableScrollViewPanResponder={true}
                 >
+                    {Boolean(postPriority) && (
+                        <View style={style.postPriorityLabel}>
+                            <PostPriorityLabel label={postPriority}/>
+                        </View>
+                    )}
                     <PostInput
                         testID={postInputTestID}
                         channelId={channelId}
@@ -157,6 +176,9 @@ export default function DraftInput({
                             addFiles={addFiles}
                             updateValue={updateValue}
                             value={value}
+                            postPriority={postPriority}
+                            updatePostPriority={updatePostPriority}
+                            location={location}
                         />
                         <SendAction
                             testID={sendActionTestID}

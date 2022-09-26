@@ -7,7 +7,7 @@ import React from 'react';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeConfig, observeLicense} from '@queries/servers/system';
+import {observeConfig, observeIsPostPriorityEnabled, observeLicense} from '@queries/servers/system';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import QuickActions from './quick_actions';
@@ -32,6 +32,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         canUploadFiles,
+        isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
         maxFileCount,
     };
 });

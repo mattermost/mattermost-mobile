@@ -9,7 +9,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {Events} from '@constants';
+import {Events, Screens} from '@constants';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
@@ -93,6 +93,7 @@ const Thread = ({componentId, rootPost}: ThreadProps) => {
                         testID='thread.post_draft'
                         containerHeight={containerHeight}
                         isChannelScreen={false}
+                        location={Screens.THREAD}
                     />
                 </>
                 }
