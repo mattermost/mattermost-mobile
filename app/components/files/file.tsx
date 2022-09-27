@@ -30,7 +30,7 @@ type FileProps = {
     onPress: (index: number) => void;
     publicLinkEnabled: boolean;
     channelName?: string;
-    onOptionsPress?: (index: number) => void;
+    onOptionsPress?: (fileInfo: FileInfo) => void;
     optionSelected?: boolean;
     wrapperWidth?: number;
     showDate?: boolean;
@@ -96,7 +96,7 @@ const File = ({
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
 
     const handleOnOptionsPress = useCallback(() => {
-        onOptionsPress?.(index);
+        onOptionsPress?.(file);
     }, [index, onOptionsPress]);
 
     const renderOptionsButton = () => {

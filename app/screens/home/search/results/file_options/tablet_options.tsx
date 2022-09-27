@@ -1,12 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {Overlay} from 'react-native-elements';
 
 import {ITEM_HEIGHT} from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {GalleryAction} from '@typings/screens/gallery';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import {XyOffset} from '../file_result';
 
 import {useNumberItems} from './hooks';
 import OptionMenus from './option_menus';
@@ -33,12 +35,11 @@ type Props = {
     canDownloadFiles: boolean;
     fileInfo: FileInfo;
     openUp?: boolean;
-    optionSelected?: boolean;
+    optionSelected: boolean;
+    setShowOptions: (show: boolean) => void;
     publicLinkEnabled: boolean;
     setAction: (action: GalleryAction) => void;
-    setSelectedItemNumber: (index: number | undefined) => void;
-    xOffset?: number;
-    yOffset?: number;
+    xyOffset: XyOffset;
 }
 const TabletOptions = ({
     action,
@@ -46,37 +47,31 @@ const TabletOptions = ({
     fileInfo,
     openUp = false,
     optionSelected,
+    setShowOptions,
     publicLinkEnabled,
-    setIsOpen,
     setAction,
-    setSelectedItemNumber,
-    xOffset,
-    yOffset,
+    xyOffset,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const [visible, setVisible] = useState(optionSelected);
     const numOptions = useNumberItems(canDownloadFiles, publicLinkEnabled);
 
     const toggleOverlay = useCallback(() => {
-        setVisible(!visible);
-        setSelectedItemNumber?.(undefined);
-        setIsOpen?.(false);
-    }, [setIsOpen, setSelectedItemNumber, visible]);
-    }, [setSelectedItemNumber, visible]);
+        setShowOptions(false);
+    }, []);
 
     const overlayStyle = useMemo(() => ({
         marginTop: openUp ? 0 : openDownMargin,
-        top: yOffset ? yOffset - (openUp ? ITEM_HEIGHT * numOptions : 0) : 0,
-        right: xOffset,
-    }), [numOptions, openUp, xOffset, yOffset]);
+        top: xyOffset?.y ? xyOffset.y - (openUp ? ITEM_HEIGHT * numOptions : 0) : 0,
+        right: xyOffset?.x,
+    }), [numOptions, openUp, xyOffset]);
 
     return (
         <>
             <Overlay
                 backdropStyle={styles.backDrop}
                 fullScreen={false}
-                isVisible={visible || false}
+                isVisible={optionSelected}
                 onBackdropPress={toggleOverlay}
                 overlayStyle={[
                     styles.tablet,
@@ -87,7 +82,6 @@ const TabletOptions = ({
                     action={action}
                     setAction={setAction}
                     fileInfo={fileInfo}
-                    setSelectedItemNumber={setSelectedItemNumber}
                 />
             </Overlay>
         </>

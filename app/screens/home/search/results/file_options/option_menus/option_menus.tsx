@@ -14,7 +14,6 @@ type Props = {
     enablePublicLink?: boolean;
     fileInfo: FileInfo;
     setAction: (action: GalleryAction) => void;
-    setSelectedItemNumber: (index: number | undefined) => void;
 }
 const OptionMenus = ({
     action,
@@ -22,20 +21,15 @@ const OptionMenus = ({
     enablePublicLink,
     fileInfo,
     setAction,
-    setSelectedItemNumber,
 }: Props) => {
     const intl = useIntl();
 
-    const {
-        handleCopyLink,
-        handleDownload,
-        handlePermalink,
-    } = useHandleFileOptions({
-        action,
-        postId: fileInfo.post_id,
-        setSelectedItemNumber,
-        setAction,
-    });
+    const {handleCopyLink, handleDownload, handlePermalink} = useHandleFileOptions(
+        {
+            action,
+            postId: fileInfo.post_id,
+            setAction,
+        });
 
     return (
         <>

@@ -27,23 +27,21 @@ type Props = {
     action: GalleryAction;
     fileInfo: FileInfo | undefined;
     setAction: (action: GalleryAction) => void;
-    setSelectedItemNumber: (index: number | undefined) => void;
 }
 const Toasts = ({
     action,
     fileInfo,
     setAction,
-    setSelectedItemNumber,
 }: Props) => {
     const [showToast, setShowToast] = useState(true);
     const galleryItem = {...fileInfo, type: 'image'} as GalleryItemType;
 
     const toggleOverlay = useCallback(() => {
-        setSelectedItemNumber?.(undefined);
         setShowToast(false);
-    }, [setSelectedItemNumber]);
+    }, []);
 
     useEffect(() => {
+        console.log('toast.tsx <> action', action);
         if (action === 'none') {
             setShowToast(false);
             return;

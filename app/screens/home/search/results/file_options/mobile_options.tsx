@@ -17,7 +17,6 @@ type Props = {
     insets: EdgeInsets;
     numOptions: number;
     setAction: (action: GalleryAction) => void;
-    setSelectedItemNumber: (index: number | undefined) => void;
     theme: Theme;
 }
 
@@ -27,7 +26,6 @@ export const showMobileOptionsBottomSheet = ({
     insets,
     numOptions,
     setAction,
-    setSelectedItemNumber,
     theme,
 }: Props) => {
     const renderContent = () => (
@@ -37,7 +35,6 @@ export const showMobileOptionsBottomSheet = ({
                 action={action}
                 setAction={setAction}
                 fileInfo={fileInfo}
-                setSelectedItemNumber={setSelectedItemNumber}
             />
         </>
     );

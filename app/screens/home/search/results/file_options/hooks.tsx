@@ -17,43 +17,39 @@ type Props = {
     action: GalleryAction;
     postId?: string | undefined;
     setAction: (action: GalleryAction) => void;
-    setSelectedItemNumber: (value: number | undefined) => void;
 }
 
 export const useHandleFileOptions = ({
     action,
     postId,
     setAction,
-    setSelectedItemNumber,
 }: Props) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const isTablet = useIsTablet();
 
     const handleDownload = useCallback(() => {
-        if (isTablet) {
+        if (!isTablet) {
             dismissBottomSheet();
         }
         setAction('downloading');
-        setSelectedItemNumber?.(undefined);
-    }, [setSelectedItemNumber, setAction]);
+    }, [setAction]);
 
     const handleCopyLink = useCallback(() => {
-        if (isTablet) {
+        if (!isTablet) {
             dismissBottomSheet();
         }
         setAction('copying');
-        setSelectedItemNumber?.(undefined);
-    }, [setSelectedItemNumber, setAction]);
+    }, [setAction]);
 
     const handlePermalink = useCallback(() => {
         if (postId) {
             showPermalink(serverUrl, '', postId, intl);
+            setAction('opening');
         }
 
         // dismissBottomSheet();
-        setSelectedItemNumber(undefined);
-    }, [intl, serverUrl, postId, setSelectedItemNumber]);
+    }, [intl, serverUrl, postId]);
 
     return useMemo(() => {
         return {
@@ -61,7 +57,7 @@ export const useHandleFileOptions = ({
             handleDownload,
             handlePermalink,
         };
-    }, [action, handleCopyLink, handleDownload, handlePermalink, postId, setAction, setSelectedItemNumber]);
+    }, [action, handleCopyLink, handleDownload, handlePermalink, postId, setAction]);
 };
 
 export const useNumberItems = (canDownloadFiles: boolean, publicLinkEnabled: boolean) => {
