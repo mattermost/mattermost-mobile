@@ -14,10 +14,6 @@ const styles = StyleSheet.create({
         flex: 1,
         backgroundColor: 'transparent',
         justifyContent: 'flex-end',
-
-        // position: 'absolute',
-        // zIndex: 100,
-        // bottom: 100,
         alignItems: 'center',
     },
     backDrop: {opacity: 0},
