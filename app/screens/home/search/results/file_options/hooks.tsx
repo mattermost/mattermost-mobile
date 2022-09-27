@@ -47,8 +47,6 @@ export const useHandleFileOptions = ({
             showPermalink(serverUrl, '', postId, intl);
             setAction('opening');
         }
-
-        // dismissBottomSheet();
     }, [intl, serverUrl, postId]);
 
     return useMemo(() => {
