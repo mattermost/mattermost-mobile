@@ -6,9 +6,8 @@ import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import PostPriorityPicker from '@components/post_priority/post_priority_picker';
+import PostPriorityPicker, {PostPriorityData} from '@components/post_priority/post_priority_picker';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {PostPriorityTypes} from '@constants/post';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
@@ -16,8 +15,8 @@ import {changeOpacity} from '@utils/theme';
 
 type Props = {
     testID?: string;
-    postPriority: PostPriorityTypes;
-    updatePostPriority: (priority: PostPriorityTypes) => void;
+    postProps: Post['props'];
+    updatePostProps: (postProps: Post['props']) => void;
 }
 
 const style = StyleSheet.create({
@@ -30,25 +29,30 @@ const style = StyleSheet.create({
 
 export default function PostPriorityAction({
     testID,
-    postPriority,
-    updatePostPriority,
+    postProps,
+    updatePostProps,
 }: Props) {
     const intl = useIntl();
     const theme = useTheme();
 
-    const handlePostPriority = useCallback((value: PostPriorityTypes) => {
-        updatePostPriority(value);
+    const handlePostPriorityPicker = useCallback((postPriorityData: PostPriorityData) => {
+        updatePostProps((oldPostProps: Post['props']) => ({
+            ...oldPostProps,
+            ...postPriorityData,
+        }));
         dismissBottomSheet();
     }, []);
 
     const renderContent = useCallback(() => {
         return (
             <PostPriorityPicker
-                postPriority={postPriority}
-                updatePostPriority={handlePostPriority}
+                data={{
+                    priority: postProps?.priority || '',
+                }}
+                onSubmit={handlePostPriorityPicker}
             />
         );
-    }, [postPriority]);
+    }, [postProps]);
 
     const onPress = useCallback(() => {
         bottomSheet({

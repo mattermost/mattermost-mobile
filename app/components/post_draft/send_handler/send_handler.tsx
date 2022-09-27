@@ -13,7 +13,6 @@ import {setStatus} from '@actions/remote/user';
 import {canEndCall, endCall, getEndCallMessage} from '@calls/actions/calls';
 import ClientError from '@client/rest/error';
 import {Events, Screens} from '@constants';
-import {PostPriorityTypes} from '@constants/post';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
@@ -83,7 +82,7 @@ export default function SendHandler({
     const [channelTimezoneCount, setChannelTimezoneCount] = useState(0);
     const [sendingMessage, setSendingMessage] = useState(false);
 
-    const [postPriority, setPostPriority] = useState<PostPriorityTypes>(PostPriorityTypes.STANDARD);
+    const [postProps, setPostProps] = useState<Post['props']>({});
 
     const canSend = useCallback(() => {
         if (sendingMessage) {
@@ -119,19 +118,17 @@ export default function SendHandler({
             message: value,
         } as Post;
 
-        if (postPriority) {
-            post.props = {
-                priority: postPriority,
-            };
+        if (Object.keys(postProps).length) {
+            post.props = postProps;
         }
 
         createPost(serverUrl, post, postFiles);
 
         clearDraft();
         setSendingMessage(false);
-        setPostPriority(PostPriorityTypes.STANDARD);
+        setPostProps({});
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
-    }, [files, currentUserId, channelId, rootId, value, clearDraft, postPriority]);
+    }, [files, currentUserId, channelId, rootId, value, clearDraft, postProps]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, Boolean(isTimezoneEnabled), channelTimezoneCount, atHere);
@@ -303,8 +300,8 @@ export default function SendHandler({
             canSend={canSend()}
             maxMessageLength={maxMessageLength}
             updatePostInputTop={updatePostInputTop}
-            postPriority={postPriority}
-            updatePostPriority={setPostPriority}
+            postProps={postProps}
+            updatePostProps={setPostProps}
         />
     );
 }

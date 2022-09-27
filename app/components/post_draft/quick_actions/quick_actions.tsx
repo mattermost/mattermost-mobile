@@ -5,7 +5,6 @@ import React from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 
 import {Screens} from '@constants';
-import {PostPriorityTypes} from '@constants/post';
 
 import CameraAction from './camera_quick_action';
 import FileAction from './file_quick_action';
@@ -25,8 +24,8 @@ type Props = {
     value: string;
     updateValue: (value: string) => void;
     addFiles: (file: FileInfo[]) => void;
-    postPriority: PostPriorityTypes;
-    updatePostPriority: (priority: PostPriorityTypes) => void;
+    postProps: Post['props'];
+    updatePostProps: (postProps: Post['props']) => void;
 }
 
 const style = StyleSheet.create({
@@ -57,8 +56,8 @@ export default function QuickActions({
     maxFileCount,
     updateValue,
     addFiles,
-    postPriority,
-    updatePostPriority,
+    postProps,
+    updatePostProps,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
@@ -112,8 +111,8 @@ export default function QuickActions({
             {isPostPriorityEnabled && location !== Screens.THREAD && (
                 <PostPriorityAction
                     testID={postPriorityActionTestID}
-                    postPriority={postPriority}
-                    updatePostPriority={updatePostPriority}
+                    postProps={postProps}
+                    updatePostProps={updatePostProps}
                 />
             )}
         </View>

@@ -14,10 +14,14 @@ import {typography} from '@utils/typography';
 
 import PostPriorityPickerItem from './post_priority_picker_item';
 
+export type PostPriorityData = {
+    priority: PostPriorityTypes;
+};
+
 type Props = {
-    postPriority: PostPriorityTypes;
-    updatePostPriority: (priority: PostPriorityTypes) => void;
-}
+    data: PostPriorityData;
+    onSubmit: (data: PostPriorityData) => void;
+};
 
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -48,11 +52,18 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const PostPriorityPicker = ({postPriority, updatePostPriority}: Props) => {
+const PostPriorityPicker = ({data, onSubmit}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
     const style = getStyle(theme);
+
+    // For now, we just have one option but the spec suggest we have more in the next phase
+    // const [data, setData] = React.useState<PostPriorityData>(defaultData);
+
+    const handleUpdatePriority = React.useCallback((priority: PostPriorityTypes) => {
+        onSubmit({priority});
+    }, []);
 
     return (
         <View style={style.container}>
@@ -74,35 +85,35 @@ const PostPriorityPicker = ({postPriority, updatePostPriority}: Props) => {
             }
             <View style={style.optionsContainer}>
                 <PostPriorityPickerItem
-                    action={updatePostPriority}
+                    action={handleUpdatePriority}
                     icon='message-text-outline'
                     label={intl.formatMessage({
                         id: 'post_priority.picker.label.standard',
                         defaultMessage: 'Standard',
                     })}
-                    selected={postPriority === ''}
+                    selected={data.priority === ''}
                     value={PostPriorityTypes.STANDARD}
                 />
                 <PostPriorityPickerItem
-                    action={updatePostPriority}
+                    action={handleUpdatePriority}
                     icon='alert-circle-outline'
                     iconColor={PostPriorityColors.IMPORTANT}
                     label={intl.formatMessage({
                         id: 'post_priority.picker.label.important',
                         defaultMessage: 'Important',
                     })}
-                    selected={postPriority === PostPriorityTypes.IMPORTANT}
+                    selected={data.priority === PostPriorityTypes.IMPORTANT}
                     value={PostPriorityTypes.IMPORTANT}
                 />
                 <PostPriorityPickerItem
-                    action={updatePostPriority}
+                    action={handleUpdatePriority}
                     icon='alert-outline'
                     iconColor={PostPriorityColors.URGENT}
                     label={intl.formatMessage({
                         id: 'post_priority.picker.label.urgent',
                         defaultMessage: 'Urgent',
                     })}
-                    selected={postPriority === PostPriorityTypes.URGENT}
+                    selected={data.priority === PostPriorityTypes.URGENT}
                     value={PostPriorityTypes.URGENT}
                 />
             </View>

@@ -6,7 +6,6 @@ import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
-import {PostPriorityTypes} from '@constants/post';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -23,9 +22,9 @@ type Props = {
     currentUserId: string;
     location: string;
 
-    // Post Priority
-    postPriority: PostPriorityTypes;
-    updatePostPriority: (priority: PostPriorityTypes) => void;
+    // Post Props
+    postProps: Post['props'];
+    updatePostProps: (postProps: Post['props']) => void;
 
     // Cursor Position Handler
     updateCursorPosition: (pos: number) => void;
@@ -106,8 +105,8 @@ export default function DraftInput({
     updateCursorPosition,
     cursorPosition,
     updatePostInputTop,
-    postPriority,
-    updatePostPriority,
+    postProps,
+    updatePostProps,
 }: Props) {
     const theme = useTheme();
 
@@ -145,9 +144,9 @@ export default function DraftInput({
                     overScrollMode={'never'}
                     disableScrollViewPanResponder={true}
                 >
-                    {Boolean(postPriority) && (
+                    {Boolean(postProps.priority) && (
                         <View style={style.postPriorityLabel}>
-                            <PostPriorityLabel label={postPriority}/>
+                            <PostPriorityLabel label={postProps.priority}/>
                         </View>
                     )}
                     <PostInput
@@ -176,8 +175,8 @@ export default function DraftInput({
                             addFiles={addFiles}
                             updateValue={updateValue}
                             value={value}
-                            postPriority={postPriority}
-                            updatePostPriority={updatePostPriority}
+                            postProps={postProps}
+                            updatePostProps={updatePostProps}
                             location={location}
                         />
                         <SendAction
