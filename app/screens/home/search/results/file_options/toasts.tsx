@@ -37,7 +37,6 @@ const Toasts = ({
     }, []);
 
     useEffect(() => {
-        console.log('toast.tsx <> action', action);
         if (action === 'none') {
             setShowToast(false);
             return;

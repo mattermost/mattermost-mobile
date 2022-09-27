@@ -77,7 +77,6 @@ const FileResult = ({
     }, [elementsRef, showOptions]);
 
     useEffect(() => {
-        console.log('action', action);
         if (showOptions && action === 'none') {
             setShowOptions(false);
         }
