@@ -35,7 +35,7 @@ export const useOrderedFileInfos = (fileInfos: FileInfo[], publicLinkEnabled: bo
     }, [imageAttachments, nonImageAttachments]);
 };
 
-// returns object with keys of fileInfo.id and key of the ordered index from
+// returns object with keys of fileInfo.id and value of the ordered index from
 // orderedFilesForGallery
 export const useFileInfosIndexes = (orderedFilesForGallery: FileInfo[]) => {
     return useMemo(() => {

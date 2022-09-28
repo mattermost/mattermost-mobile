@@ -67,7 +67,7 @@ const OptionMenus = ({
             />
             {enablePublicLink &&
                 <OptionItem
-                    key={'link'}
+                    key={'copylink'}
                     action={handleCopyLink}
                     label={intl.formatMessage({id: 'screen.search.results.file_options.copy_link', defaultMessage: 'Copy link'})}
                     icon={'link-variant'}
