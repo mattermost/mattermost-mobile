@@ -39,7 +39,7 @@ export const PostPriorityColors = {
     IMPORTANT: '#5D89EA',
 };
 
-export enum PostPriorityTypes {
+export enum PostPriorityType {
     STANDARD = '',
     URGENT = 'urgent',
     IMPORTANT = 'important',
