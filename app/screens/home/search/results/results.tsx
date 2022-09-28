@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useMemo, useState} from 'react';
 import {ScaledSize, StyleSheet, useWindowDimensions, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import Loading from '@app/components/loading';
 import {useTheme} from '@context/theme';
+import {GalleryAction} from '@typings/screens/gallery';
 import {TabTypes, TabType} from '@utils/search';
 
+import Toasts from './file_options/toasts';
 import FileResults from './file_results';
 import PostResults from './post_results';
 
@@ -33,7 +35,6 @@ const getStyles = (dimensions: ScaledSize) => {
             flex: 1,
             width: dimensions.width,
         },
-
     });
 };
 
@@ -81,6 +82,9 @@ const Results = ({
         {paddingTop: scrollPaddingTop, flexGrow: 1}
     ), [scrollPaddingTop]);
 
+    const [action, setAction] = useState<GalleryAction>('none');
+    const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
+
     return (
         <>
             {loading &&
@@ -103,16 +107,25 @@ const Results = ({
                 </View>
                 <View style={styles.result} >
                     <FileResults
+                        action={action}
                         canDownloadFiles={canDownloadFiles}
                         fileChannels={fileChannels}
                         fileInfos={fileInfos}
-                        publicLinkEnabled={publicLinkEnabled}
+                        lastViewedFileInfo={lastViewedFileInfo}
                         paddingTop={paddingTop}
+                        publicLinkEnabled={publicLinkEnabled}
                         searchValue={searchValue}
+                        setAction={setAction}
+                        setLastViewedFileInfo={setLastViewedFileInfo}
                     />
                 </View>
             </Animated.View>
             }
+            <Toasts
+                action={action}
+                fileInfo={lastViewedFileInfo}
+                setAction={setAction}
+            />
         </>
     );
 };

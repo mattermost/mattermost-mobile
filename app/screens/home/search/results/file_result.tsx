@@ -17,7 +17,6 @@ import {getViewPortWidth} from '@utils/images';
 import {useNumberItems} from './file_options/hooks';
 import {showMobileOptionsBottomSheet} from './file_options/mobile_options';
 import TabletOptions from './file_options/tablet_options';
-import Toasts from './file_options/toasts';
 
 export type XyOffset = {x: number; y: number} | undefined;
 
@@ -29,26 +28,34 @@ const styles = StyleSheet.create({
 });
 
 type Props = {
+    action: GalleryAction;
     canDownloadFiles: boolean;
     channelName: string | undefined;
     fileInfo: FileInfo;
     index: number;
     isSingleImage: boolean;
+    lastViewedFileInfo: FileInfo | undefined;
     onPress: (idx: number) => void;
     publicLinkEnabled: boolean;
+    setAction: (action: GalleryAction) => void;
+    setLastViewedFileInfo: (fInfo: FileInfo) => void;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
 }
 
 const galleryIdentifier = 'search-files-location';
 
 const FileResult = ({
+    action,
     canDownloadFiles,
     channelName,
     fileInfo,
     index,
     isSingleImage,
+    lastViewedFileInfo,
     onPress,
     publicLinkEnabled,
+    setAction,
+    setLastViewedFileInfo,
     updateFileForGallery,
 }: Props) => {
     const elementsRef = useRef<View | null>(null);
@@ -57,9 +64,6 @@ const FileResult = ({
     const isReplyPost = false;
     const insets = useSafeAreaInsets();
     const numOptions = useNumberItems(canDownloadFiles, publicLinkEnabled);
-
-    const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
-    const [action, setAction] = useState<GalleryAction>('none');
 
     const [showOptions, setShowOptions] = useState<boolean>(false);
     const [openUp, setOpenUp] = useState<boolean>(false);
@@ -76,19 +80,20 @@ const FileResult = ({
         }
     }, [elementsRef, showOptions]);
 
-    useEffect(() => {
-        if (showOptions && action === 'none') {
+    const handleSetAction = useCallback((a: GalleryAction) => {
+        setAction(a);
+        if (showOptions && a !== 'none') {
             setShowOptions(false);
         }
-    }, [action]);
+    }, [action, showOptions]);
 
     const handleOpenOptions = useCallback((fInfo: FileInfo) => {
-        setShowOptions(!showOptions);
+        setShowOptions(true);
         setLastViewedFileInfo(fInfo);
 
         if (!isTablet) {
             showMobileOptionsBottomSheet({
-                setAction,
+                setAction: handleSetAction,
                 fileInfo,
                 insets,
                 numOptions,
@@ -137,18 +142,13 @@ const FileResult = ({
                     wrapperWidth={(getViewPortWidth(isReplyPost, isTablet) - 6)}
                 />
             </View>
-            <Toasts
-                action={action}
-                fileInfo={lastViewedFileInfo}
-                setAction={setAction}
-            />
             {isTablet && showOptions && xyOffset &&
                 <TabletOptions
                     fileInfo={fileInfo}
                     numOptions={numOptions}
                     openUp={openUp}
                     optionSelected={showOptions}
-                    setAction={setAction}
+                    setAction={handleSetAction}
                     setShowOptions={setShowOptions}
                     xyOffset={xyOffset}
                 />

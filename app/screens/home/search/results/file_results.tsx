@@ -5,6 +5,7 @@ import React, {useCallback, useMemo} from 'react';
 import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
+import {GalleryAction} from '@typings/screens/gallery';
 import {isImage, isVideo} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {TabTypes} from '@utils/search';
@@ -21,23 +22,31 @@ import FileResult from './file_result';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
+    action: GalleryAction;
     canDownloadFiles: boolean;
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
-    publicLinkEnabled: boolean;
+    lastViewedFileInfo: FileInfo | undefined;
     paddingTop: StyleProp<ViewStyle>;
+    publicLinkEnabled: boolean;
     searchValue: string;
+    setAction: (action: GalleryAction) => void;
+    setLastViewedFileInfo: (fInfo: FileInfo) => void;
 }
 
 const galleryIdentifier = 'search-files-location';
 
 const FileResults = ({
+    action,
     canDownloadFiles,
     fileChannels,
     fileInfos,
-    publicLinkEnabled,
+    lastViewedFileInfo,
     paddingTop,
+    publicLinkEnabled,
     searchValue,
+    setAction,
+    setLastViewedFileInfo,
 }: Props) => {
     const containerStyle = useMemo(() => ({top: fileInfos.length ? 8 : 0}), [fileInfos]);
 
@@ -59,13 +68,17 @@ const FileResults = ({
         const isSingleImage = orderedFileInfos.length === 1 && (isImage(orderedFileInfos[0]) || isVideo(orderedFileInfos[0]));
         return (
             <FileResult
+                action={action}
                 canDownloadFiles={canDownloadFiles}
                 channelName={channelNames[item.channel_id!]}
                 fileInfo={item}
                 index={fileInfosIndexes[item.id!] || 0}
                 isSingleImage={isSingleImage}
+                lastViewedFileInfo={lastViewedFileInfo}
                 onPress={onPreviewPress}
                 publicLinkEnabled={publicLinkEnabled}
+                setAction={setAction}
+                setLastViewedFileInfo={setLastViewedFileInfo}
                 updateFileForGallery={updateFileForGallery}
             />
         );
