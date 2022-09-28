@@ -1,35 +1,51 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
+import {showPermalink} from '@actions/remote/permalink';
+import {useServerUrl} from '@app/context/server';
+import {useIsTablet} from '@app/hooks/device';
+import {dismissBottomSheet} from '@app/screens/navigation';
 import OptionItem from '@components/option_item';
 import {GalleryAction} from '@typings/screens/gallery';
 
-import {useHandleFileOptions} from '../hooks';
-
 type Props = {
-    action: GalleryAction;
     canDownloadFiles?: boolean;
     enablePublicLink?: boolean;
     fileInfo: FileInfo;
     setAction: (action: GalleryAction) => void;
 }
 const OptionMenus = ({
-    action,
     canDownloadFiles,
     enablePublicLink,
     fileInfo,
     setAction,
 }: Props) => {
+    const serverUrl = useServerUrl();
+    const isTablet = useIsTablet();
     const intl = useIntl();
 
-    const {handleCopyLink, handleDownload, handlePermalink} = useHandleFileOptions(
-        {
-            action,
-            postId: fileInfo.post_id,
-            setAction,
-        });
+    const handleDownload = useCallback(() => {
+        if (!isTablet) {
+            dismissBottomSheet();
+        }
+        setAction('downloading');
+    }, [setAction]);
+
+    const handleCopyLink = useCallback(() => {
+        if (!isTablet) {
+            dismissBottomSheet();
+        }
+        setAction('copying');
+    }, [setAction]);
+
+    const handlePermalink = useCallback(() => {
+        if (fileInfo.post_id) {
+            showPermalink(serverUrl, '', fileInfo.post_id, intl);
+            setAction('opening');
+        }
+    }, [intl, serverUrl, fileInfo.post_id, setAction]);
 
     return (
         <>

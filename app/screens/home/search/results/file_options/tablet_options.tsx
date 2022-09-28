@@ -31,7 +31,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const openDownMargin = 64;
 
 type Props = {
-    action: GalleryAction;
     canDownloadFiles: boolean;
     fileInfo: FileInfo;
     openUp?: boolean;
@@ -42,7 +41,6 @@ type Props = {
     xyOffset: XyOffset;
 }
 const TabletOptions = ({
-    action,
     canDownloadFiles,
     fileInfo,
     openUp = false,
@@ -79,7 +77,6 @@ const TabletOptions = ({
                 ]}
             >
                 <OptionMenus
-                    action={action}
                     setAction={setAction}
                     fileInfo={fileInfo}
                 />

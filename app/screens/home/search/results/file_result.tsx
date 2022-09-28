@@ -88,7 +88,6 @@ const FileResult = ({
 
         if (!isTablet) {
             showMobileOptionsBottomSheet({
-                action,
                 setAction,
                 fileInfo,
                 insets,
@@ -145,7 +144,6 @@ const FileResult = ({
             />
             {isTablet && showOptions && xyOffset &&
                 <TabletOptions
-                    action={action}
                     canDownloadFiles={canDownloadFiles}
                     fileInfo={fileInfo}
                     optionSelected={showOptions}

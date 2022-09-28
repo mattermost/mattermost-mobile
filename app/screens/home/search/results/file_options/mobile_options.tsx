@@ -12,7 +12,6 @@ import Header, {HEADER_HEIGHT} from './header';
 import OptionMenus from './option_menus';
 
 type Props = {
-    action: GalleryAction;
     fileInfo: FileInfo;
     insets: EdgeInsets;
     numOptions: number;
@@ -21,7 +20,6 @@ type Props = {
 }
 
 export const showMobileOptionsBottomSheet = ({
-    action,
     fileInfo,
     insets,
     numOptions,
@@ -32,7 +30,6 @@ export const showMobileOptionsBottomSheet = ({
         <>
             <Header fileInfo={fileInfo}/>
             <OptionMenus
-                action={action}
                 setAction={setAction}
                 fileInfo={fileInfo}
             />

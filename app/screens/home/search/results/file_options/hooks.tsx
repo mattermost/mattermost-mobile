@@ -1,62 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {useMemo} from 'react';
 
-import {showPermalink} from '@actions/remote/permalink';
-import {useServerUrl} from '@app/context/server';
 import {ChannelModel} from '@app/database/models/server';
-import {useIsTablet} from '@app/hooks/device';
 import {useImageAttachments} from '@app/hooks/files';
-import {dismissBottomSheet} from '@app/screens/navigation';
-import {GalleryAction} from '@typings/screens/gallery';
 import {fileToGalleryItem} from '@utils/gallery';
-
-type Props = {
-    action: GalleryAction;
-    postId?: string | undefined;
-    setAction: (action: GalleryAction) => void;
-}
-
-export const useHandleFileOptions = ({
-    action,
-    postId,
-    setAction,
-}: Props) => {
-    const serverUrl = useServerUrl();
-    const intl = useIntl();
-    const isTablet = useIsTablet();
-
-    const handleDownload = useCallback(() => {
-        if (!isTablet) {
-            dismissBottomSheet();
-        }
-        setAction('downloading');
-    }, [setAction]);
-
-    const handleCopyLink = useCallback(() => {
-        if (!isTablet) {
-            dismissBottomSheet();
-        }
-        setAction('copying');
-    }, [setAction]);
-
-    const handlePermalink = useCallback(() => {
-        if (postId) {
-            showPermalink(serverUrl, '', postId, intl);
-            setAction('opening');
-        }
-    }, [intl, serverUrl, postId]);
-
-    return useMemo(() => {
-        return {
-            handleCopyLink,
-            handleDownload,
-            handlePermalink,
-        };
-    }, [action, handleCopyLink, handleDownload, handlePermalink, postId, setAction]);
-};
 
 export const useNumberItems = (canDownloadFiles: boolean, publicLinkEnabled: boolean) => {
     return useMemo(() => {
