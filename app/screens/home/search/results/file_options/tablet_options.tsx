@@ -10,7 +10,6 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import {XyOffset} from '../file_result';
 
-import {useNumberItems} from './hooks';
 import OptionMenus from './option_menus';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -31,28 +30,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const openDownMargin = 64;
 
 type Props = {
-    canDownloadFiles: boolean;
     fileInfo: FileInfo;
+    numOptions: number;
     openUp?: boolean;
     optionSelected: boolean;
-    setShowOptions: (show: boolean) => void;
-    publicLinkEnabled: boolean;
     setAction: (action: GalleryAction) => void;
+    setShowOptions: (show: boolean) => void;
     xyOffset: XyOffset;
 }
 const TabletOptions = ({
-    canDownloadFiles,
     fileInfo,
+    numOptions,
     openUp = false,
     optionSelected,
-    setShowOptions,
-    publicLinkEnabled,
     setAction,
+    setShowOptions,
     xyOffset,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const numOptions = useNumberItems(canDownloadFiles, publicLinkEnabled);
 
     const toggleOverlay = useCallback(() => {
         setShowOptions(false);

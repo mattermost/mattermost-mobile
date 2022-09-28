@@ -144,13 +144,12 @@ const FileResult = ({
             />
             {isTablet && showOptions && xyOffset &&
                 <TabletOptions
-                    canDownloadFiles={canDownloadFiles}
                     fileInfo={fileInfo}
-                    optionSelected={showOptions}
-                    setShowOptions={setShowOptions}
+                    numOptions={numOptions}
                     openUp={openUp}
-                    publicLinkEnabled={publicLinkEnabled}
+                    optionSelected={showOptions}
                     setAction={setAction}
+                    setShowOptions={setShowOptions}
                     xyOffset={xyOffset}
                 />
             }
