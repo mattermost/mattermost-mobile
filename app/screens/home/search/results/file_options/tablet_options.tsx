@@ -15,7 +15,7 @@ import OptionMenus from './option_menus';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     tablet: {
         backgroundColor: theme.centerChannelBg,
-        borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+        borderColor: changeOpacity(theme.centerChannelColor, 0.16),
         borderRadius: 8,
         borderWidth: 1,
         paddingLeft: 20,
@@ -23,6 +23,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         right: 20,
         width: 252,
         marginRight: 20,
+        shadowColor: theme.centerChannelColor,
+        shadowOffset: {
+            width: 0,
+            height: 8,
+        },
+        shadowOpacity: 0.12,
+        shadowRadius: 24,
     },
     backDrop: {opacity: 0},
 }));
