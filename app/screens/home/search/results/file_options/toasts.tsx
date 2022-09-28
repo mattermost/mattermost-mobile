@@ -23,15 +23,15 @@ const Toasts = ({
             {action === 'downloading' &&
                 <DownloadWithAction
                     action={action}
-                    item={galleryItem}
                     galleryView={false}
+                    item={galleryItem}
                     setAction={setAction}
                 />
             }
             {action === 'copying' &&
                 <CopyPublicLink
-                    item={galleryItem}
                     galleryView={false}
+                    item={galleryItem}
                     setAction={setAction}
                 />
             }

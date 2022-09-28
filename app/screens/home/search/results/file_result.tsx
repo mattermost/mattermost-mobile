@@ -85,7 +85,7 @@ const FileResult = ({
         if (showOptions && a !== 'none') {
             setShowOptions(false);
         }
-    }, [action, showOptions]);
+    }, [action, setAction, showOptions]);
 
     const handleOpenOptions = useCallback((fInfo: FileInfo) => {
         setShowOptions(true);
@@ -135,7 +135,7 @@ const FileResult = ({
                     nonVisibleImagesCount={0}
                     onOptionsPress={handleOpenOptions}
                     onPress={onPress}
-                    optionSelected={showOptions}
+                    optionSelected={isTablet && showOptions}
                     publicLinkEnabled={publicLinkEnabled}
                     showDate={true}
                     updateFileForGallery={updateFileForGallery}
