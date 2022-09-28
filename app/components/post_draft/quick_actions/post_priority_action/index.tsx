@@ -41,7 +41,7 @@ export default function PostPriorityAction({
             ...postPriorityData,
         }));
         dismissBottomSheet();
-    }, []);
+    }, [updatePostProps]);
 
     const renderContent = useCallback(() => {
         return (
@@ -62,7 +62,7 @@ export default function PostPriorityAction({
             theme,
             closeButtonId: 'post-priority-close-id',
         });
-    }, [intl, renderContent]);
+    }, [intl, renderContent, theme]);
 
     const iconName = 'alert-circle-outline';
     const iconColor = changeOpacity(theme.centerChannelColor, 0.64);

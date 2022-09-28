@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
-import {PostPriorityColors, PostPriorityTypes} from '@constants/post';
+import {PostPriorityColors, PostPriorityType} from '@constants/post';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -15,7 +15,7 @@ import {typography} from '@utils/typography';
 import PostPriorityPickerItem from './post_priority_picker_item';
 
 export type PostPriorityData = {
-    priority: PostPriorityTypes;
+    priority: PostPriorityType;
 };
 
 type Props = {
@@ -61,9 +61,9 @@ const PostPriorityPicker = ({data, onSubmit}: Props) => {
     // For now, we just have one option but the spec suggest we have more in the next phase
     // const [data, setData] = React.useState<PostPriorityData>(defaultData);
 
-    const handleUpdatePriority = React.useCallback((priority: PostPriorityTypes) => {
+    const handleUpdatePriority = React.useCallback((priority: PostPriorityType) => {
         onSubmit({priority});
-    }, []);
+    }, [onSubmit]);
 
     return (
         <View style={style.container}>
@@ -92,7 +92,7 @@ const PostPriorityPicker = ({data, onSubmit}: Props) => {
                         defaultMessage: 'Standard',
                     })}
                     selected={data.priority === ''}
-                    value={PostPriorityTypes.STANDARD}
+                    value={PostPriorityType.STANDARD}
                 />
                 <PostPriorityPickerItem
                     action={handleUpdatePriority}
@@ -102,8 +102,8 @@ const PostPriorityPicker = ({data, onSubmit}: Props) => {
                         id: 'post_priority.picker.label.important',
                         defaultMessage: 'Important',
                     })}
-                    selected={data.priority === PostPriorityTypes.IMPORTANT}
-                    value={PostPriorityTypes.IMPORTANT}
+                    selected={data.priority === PostPriorityType.IMPORTANT}
+                    value={PostPriorityType.IMPORTANT}
                 />
                 <PostPriorityPickerItem
                     action={handleUpdatePriority}
@@ -113,8 +113,8 @@ const PostPriorityPicker = ({data, onSubmit}: Props) => {
                         id: 'post_priority.picker.label.urgent',
                         defaultMessage: 'Urgent',
                     })}
-                    selected={data.priority === PostPriorityTypes.URGENT}
-                    value={PostPriorityTypes.URGENT}
+                    selected={data.priority === PostPriorityType.URGENT}
+                    value={PostPriorityType.URGENT}
                 />
             </View>
         </View>

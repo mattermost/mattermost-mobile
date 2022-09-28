@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {StyleProp, StyleSheet, Text, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {PostPriorityColors, PostPriorityTypes} from '@constants/post';
+import {PostPriorityColors, PostPriorityType} from '@constants/post';
 import {typography} from '@utils/typography';
 
 const style = StyleSheet.create({
@@ -36,7 +36,7 @@ const style = StyleSheet.create({
 });
 
 type Props = {
-    label: PostPriorityTypes;
+    label: PostPriorityType;
 };
 
 const PostPriorityLabel = ({label}: Props) => {
@@ -45,7 +45,7 @@ const PostPriorityLabel = ({label}: Props) => {
     const containerStyle: StyleProp<ViewStyle> = [style.container];
     let iconName = '';
     let labelText = '';
-    if (label === PostPriorityTypes.URGENT) {
+    if (label === PostPriorityType.URGENT) {
         containerStyle.push(style.urgent);
         iconName = 'alert-outline';
         labelText = intl.formatMessage({id: 'post_priority.label.urgent', defaultMessage: 'URGENT'});
