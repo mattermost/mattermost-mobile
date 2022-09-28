@@ -91,7 +91,7 @@ const CopyPublicLink = ({item, galleryView = true, setAction}: Props) => {
             animatedStyle={animatedStyle}
             style={error ? styles.error : styles.toast}
             message={error || formatMessage({id: 'public_link_copied', defaultMessage: 'Link copied to clipboard'})}
-            iconName='check'
+            iconName='link-variant'
         />
     );
 };

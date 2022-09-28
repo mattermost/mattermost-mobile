@@ -5,6 +5,7 @@ import React, {useMemo} from 'react';
 import {StyleProp, Text, TextStyle, useWindowDimensions, View, ViewStyle} from 'react-native';
 import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
+import {useIsTablet} from '@app/hooks/device';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -53,9 +54,10 @@ const Toast = ({animatedStyle, children, style, iconName, message, textStyle}: T
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dim = useWindowDimensions();
+    const isTablet = useIsTablet();
     const containerStyle = useMemo(() => {
         const totalMargin = 40;
-        const width = Math.min(dim.height, dim.width, 400) - totalMargin;
+        const width = Math.min(dim.height, dim.width, isTablet ? 484 : 400) - totalMargin;
 
         return [styles.container, {width}, style];
     }, [dim, styles.container, style]);
