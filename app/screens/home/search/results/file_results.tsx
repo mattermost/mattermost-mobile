@@ -83,11 +83,15 @@ const FileResults = ({
             />
         );
     }, [
+        action,
         (orderedFileInfos.length === 1) && orderedFileInfos[0].mime_type,
         canDownloadFiles,
         channelNames,
         fileInfosIndexes,
+        lastViewedFileInfo,
         onPreviewPress,
+        setAction,
+        setLastViewedFileInfo,
         publicLinkEnabled,
     ]);
 

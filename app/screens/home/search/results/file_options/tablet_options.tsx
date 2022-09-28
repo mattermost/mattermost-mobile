@@ -40,7 +40,6 @@ type Props = {
     fileInfo: FileInfo;
     numOptions: number;
     openUp?: boolean;
-    optionSelected: boolean;
     setAction: (action: GalleryAction) => void;
     setShowOptions: (show: boolean) => void;
     xyOffset: XyOffset;
@@ -49,7 +48,6 @@ const TabletOptions = ({
     fileInfo,
     numOptions,
     openUp = false,
-    optionSelected,
     setAction,
     setShowOptions,
     xyOffset,
@@ -68,23 +66,21 @@ const TabletOptions = ({
     }), [numOptions, openUp, xyOffset]);
 
     return (
-        <>
-            <Overlay
-                backdropStyle={styles.backDrop}
-                fullScreen={false}
-                isVisible={optionSelected}
-                onBackdropPress={toggleOverlay}
-                overlayStyle={[
-                    styles.tablet,
-                    overlayStyle,
-                ]}
-            >
-                <OptionMenus
-                    setAction={setAction}
-                    fileInfo={fileInfo}
-                />
-            </Overlay>
-        </>
+        <Overlay
+            backdropStyle={styles.backDrop}
+            fullScreen={false}
+            isVisible={true}
+            onBackdropPress={toggleOverlay}
+            overlayStyle={[
+                styles.tablet,
+                overlayStyle,
+            ]}
+        >
+            <OptionMenus
+                setAction={setAction}
+                fileInfo={fileInfo}
+            />
+        </Overlay>
     );
 };
 

@@ -93,10 +93,10 @@ const FileResult = ({
 
         if (!isTablet) {
             showMobileOptionsBottomSheet({
-                setAction: handleSetAction,
                 fileInfo,
                 insets,
                 numOptions,
+                setAction: handleSetAction,
                 theme,
             });
         }
@@ -147,7 +147,6 @@ const FileResult = ({
                     fileInfo={fileInfo}
                     numOptions={numOptions}
                     openUp={openUp}
-                    optionSelected={showOptions}
                     setAction={handleSetAction}
                     setShowOptions={setShowOptions}
                     xyOffset={xyOffset}
