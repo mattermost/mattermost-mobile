@@ -237,9 +237,9 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
     });
 
     const waitForPeerConnection = () => {
-        const waitForReadyImpl = (callback: () => void, fail: () => void, timeout: number) => {
+        const waitForReadyImpl = (callback: () => void, fail: (reason: string) => void, timeout: number) => {
             if (timeout <= 0) {
-                fail();
+                fail('timed out waiting for peer connection');
                 return;
             }
             setTimeout(() => {
