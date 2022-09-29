@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
@@ -17,36 +17,29 @@ import {
     useOrderedFileInfos,
     useOrderedGalleryItems,
 } from './file_options/hooks';
+import Toasts from './file_options/toasts';
 import FileResult from './file_result';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
-    action: GalleryAction;
     canDownloadFiles: boolean;
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
-    lastViewedFileInfo: FileInfo | undefined;
     paddingTop: StyleProp<ViewStyle>;
     publicLinkEnabled: boolean;
     searchValue: string;
-    setAction: (action: GalleryAction) => void;
-    setLastViewedFileInfo: (fInfo: FileInfo) => void;
 }
 
 const galleryIdentifier = 'search-files-location';
 
 const FileResults = ({
-    action,
     canDownloadFiles,
     fileChannels,
     fileInfos,
-    lastViewedFileInfo,
     paddingTop,
     publicLinkEnabled,
     searchValue,
-    setAction,
-    setLastViewedFileInfo,
 }: Props) => {
     const containerStyle = useMemo(() => ({top: fileInfos.length ? 8 : 0}), [fileInfos]);
 
@@ -54,6 +47,9 @@ const FileResults = ({
     const orderedFileInfos = useOrderedFileInfos(fileInfos, publicLinkEnabled);
     const fileInfosIndexes = useFileInfosIndexes(orderedFileInfos);
     const orderedGalleryItems = useOrderedGalleryItems(orderedFileInfos);
+
+    const [action, setAction] = useState<GalleryAction>('none');
+    const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
 
     const onPreviewPress = useCallback(preventDoubleTap((idx: number) => {
         openGalleryAtIndex(galleryIdentifier, idx, orderedGalleryItems);
@@ -103,23 +99,30 @@ const FileResults = ({
     ), [searchValue]);
 
     return (
-        <FlatList
-            ListEmptyComponent={noResults}
-            contentContainerStyle={[paddingTop, containerStyle]}
-            data={orderedFileInfos}
-            indicatorStyle='black'
-            initialNumToRender={10}
-            listKey={'files'}
-            maxToRenderPerBatch={5}
-            nestedScrollEnabled={true}
-            refreshing={false}
-            removeClippedSubviews={true}
-            renderItem={renderItem}
-            scrollEventThrottle={16}
-            scrollToOverflowEnabled={true}
-            showsVerticalScrollIndicator={true}
-            testID='search_results.post_list.flat_list'
-        />
+        <>
+            <FlatList
+                ListEmptyComponent={noResults}
+                contentContainerStyle={[paddingTop, containerStyle]}
+                data={orderedFileInfos}
+                indicatorStyle='black'
+                initialNumToRender={10}
+                listKey={'files'}
+                maxToRenderPerBatch={5}
+                nestedScrollEnabled={true}
+                refreshing={false}
+                removeClippedSubviews={true}
+                renderItem={renderItem}
+                scrollEventThrottle={16}
+                scrollToOverflowEnabled={true}
+                showsVerticalScrollIndicator={true}
+                testID='search_results.post_list.flat_list'
+            />
+            <Toasts
+                action={action}
+                fileInfo={lastViewedFileInfo}
+                setAction={setAction}
+            />
+        </>
     );
 };
 
