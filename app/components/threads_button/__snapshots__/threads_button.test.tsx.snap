@@ -36,7 +36,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
             "minHeight": 40,
             "paddingHorizontal": 20,
           },
-          undefined,
+          false,
         ]
       }
     >
@@ -48,6 +48,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
               "color": "rgba(255,255,255,0.5)",
               "fontSize": 24,
             },
+            undefined,
             undefined,
           ]
         }
@@ -70,8 +71,98 @@ exports[`Thread item in the channel list Threads Component should match snapshot
               "paddingLeft": 12,
               "paddingRight": 20,
             },
+            false,
+            false,
             undefined,
+          ]
+        }
+      >
+        Threads
+      </Text>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`Thread item in the channel list Threads Component should match snapshot with isInfo 1`] = `
+<View
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    Object {
+      "opacity": 1,
+    }
+  }
+  testID="channel_list.threads.button"
+>
+  <View
+    style={
+      Object {
+        "marginLeft": -18,
+        "marginRight": -20,
+      }
+    }
+  >
+    <View
+      style={
+        Array [
+          Object {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "minHeight": 40,
+            "paddingHorizontal": 20,
+          },
+          false,
+        ]
+      }
+    >
+      <Icon
+        name="message-text-outline"
+        style={
+          Array [
+            Object {
+              "color": "rgba(255,255,255,0.5)",
+              "fontSize": 24,
+            },
             undefined,
+            Object {
+              "color": "rgba(63,67,80,0.72)",
+            },
+          ]
+        }
+      />
+      <Text
+        style={
+          Array [
+            Object {
+              "flex": 1,
+            },
+            Object {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            Object {
+              "color": "rgba(255,255,255,0.72)",
+              "marginTop": -1,
+              "paddingLeft": 12,
+              "paddingRight": 20,
+            },
+            false,
+            false,
+            Object {
+              "color": "#3f4350",
+              "paddingRight": 20,
+            },
           ]
         }
       >
@@ -120,7 +211,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
             "minHeight": 40,
             "paddingHorizontal": 20,
           },
-          undefined,
+          false,
         ]
       }
     >
@@ -132,6 +223,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
               "color": "rgba(255,255,255,0.5)",
               "fontSize": 24,
             },
+            undefined,
             undefined,
           ]
         }
@@ -154,7 +246,8 @@ exports[`Thread item in the channel list Threads Component should match snapshot
               "paddingLeft": 12,
               "paddingRight": 20,
             },
-            undefined,
+            false,
+            false,
             undefined,
           ]
         }

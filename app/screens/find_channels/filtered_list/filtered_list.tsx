@@ -25,7 +25,7 @@ import UserItem from './user_item';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
-type Result = ChannelModel|Channel|UserModel|'thread';
+type ResultItem = ChannelModel|Channel|UserModel|'thread';
 
 type RemoteChannels = {
     archived: Channel[];
@@ -216,7 +216,7 @@ const FilteredList = ({
         return null;
     }, [term, loading, theme]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<Result>) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<ResultItem>) => {
         if (item === 'thread') {
             return (
                 <ThreadsButton
@@ -256,7 +256,7 @@ const FilteredList = ({
     }, [onJoinChannel, onOpenDirectMessage, onSwitchToChannel, showTeamName, teammateDisplayNameSetting]);
 
     const data = useMemo(() => {
-        const items: Result[] = [...channelsMatchStart];
+        const items: ResultItem[] = [...channelsMatchStart];
 
         // Channels that matches
         if (items.length < MAX_RESULTS) {
