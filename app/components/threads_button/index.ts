@@ -17,7 +17,7 @@ import ThreadsButton from './threads_button';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+const enhanced = withObservables(['database'], ({database}: WithDatabaseArgs) => {
     const currentTeamId = observeCurrentTeamId(database);
 
     return {
