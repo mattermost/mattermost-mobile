@@ -66,7 +66,7 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUn
         }
     }), [serverUrl]);
 
-    const {unreads, mentions} = unreadsAndMentions || {};
+    const {unreads, mentions} = unreadsAndMentions;
     const isActive = isTablet && !currentChannelId;
 
     const [containerStyle, iconStyle, textStyle, badgeStyle] = useMemo(() => {
