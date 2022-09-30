@@ -184,6 +184,7 @@ const Autocomplete = ({
                         nestedScrollEnabled={nestedScrollEnabled}
                         channelId={channelId}
                         rootId={rootId}
+                        isAppsEnabled={isAppsEnabled}
                     />
                 }
                 {/* {(isSearch && enableDateSuggestion) &&

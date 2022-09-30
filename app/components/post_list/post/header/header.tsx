@@ -23,7 +23,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type HeaderProps = {
-    author: UserModel;
+    author?: UserModel;
     commentCount: number;
     currentUser: UserModel;
     enablePostUsernameOverride: boolean;
@@ -91,7 +91,7 @@ const Header = (props: HeaderProps) => {
     const customStatusExpired = isCustomStatusExpired(author);
     const showCustomStatusEmoji = Boolean(
         displayName && customStatus &&
-        !(isSystemPost || author.isBot || isAutoResponse || isWebHook),
+        !(isSystemPost || author?.isBot || isAutoResponse || isWebHook),
     );
 
     return (
@@ -120,8 +120,8 @@ const Header = (props: HeaderProps) => {
                     {(!isSystemPost || isAutoResponse) &&
                     <HeaderTag
                         isAutoResponder={isAutoResponse}
-                        isAutomation={isWebHook || author.isBot}
-                        isGuest={author.isGuest}
+                        isAutomation={isWebHook || author?.isBot}
+                        isGuest={author?.isGuest}
                     />
                     }
                     <FormattedTime

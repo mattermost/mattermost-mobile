@@ -4,10 +4,14 @@
 import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
+import {doAppSubmit, postEphemeralCallResponseForCommandArgs} from '@actions/remote/apps';
 import {showPermalink} from '@actions/remote/permalink';
 import {Client} from '@client/rest';
+import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
+import {AppCallResponseTypes} from '@constants/apps';
 import DeepLinkType from '@constants/deep_linking';
 import DatabaseManager from '@database/manager';
+import AppsManager from '@managers/apps_manager';
 import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
@@ -22,7 +26,7 @@ import {makeDirectChannel, switchToChannelById, switchToChannelByName} from './c
 
 import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkDM, DeepLinkGM, DeepLinkPlugin} from '@typings/launch';
 
-export const executeCommand = async (serverUrl: string, intl: IntlShape, message: string, channelId: string, rootId?: string) => {
+export const executeCommand = async (serverUrl: string, intl: IntlShape, message: string, channelId: string, rootId?: string): Promise<{data?: CommandResponse; error?: string | {message: string}}> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -35,14 +39,6 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
         return {error: error as ClientErrorProps};
     }
 
-    // const config = await queryConfig(operator.database)
-    // if (config.FeatureFlagAppsEnabled) {
-    //     const parser = new AppCommandParser(serverUrl, intl, channelId, rootId);
-    //     if (parser.isAppCommand(msg)) {
-    //         return executeAppCommand(serverUrl, intl, parser);
-    //     }
-    // }
-
     const channel = await getChannelById(operator.database, channelId);
     const teamId = channel?.teamId || (await getCurrentTeamId(operator.database));
 
@@ -52,6 +48,14 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
         root_id: rootId,
         parent_id: rootId,
     };
+
+    const appsEnabled = await AppsManager.isAppsEnabled(serverUrl);
+    if (appsEnabled) {
+        const parser = new AppCommandParser(serverUrl, intl, channelId, teamId, rootId);
+        if (parser.isAppCommand(message)) {
+            return executeAppCommand(serverUrl, intl, parser, message, args);
+        }
+    }
 
     let msg = filterEmDashForCommand(message);
 
@@ -81,44 +85,44 @@ export const executeCommand = async (serverUrl: string, intl: IntlShape, message
     return {data};
 };
 
-// TODO https://mattermost.atlassian.net/browse/MM-41234
-// const executeAppCommand = (serverUrl: string, intl: IntlShape, parser: any) => {
-//     const {call, errorMessage} = await parser.composeCallFromCommand(msg);
-//     const createErrorMessage = (errMessage: string) => {
-//         return {error: {message: errMessage}};
-//     };
+const executeAppCommand = async (serverUrl: string, intl: IntlShape, parser: AppCommandParser, msg: string, args: CommandArgs) => {
+    const {creq, errorMessage} = await parser.composeCommandSubmitCall(msg);
+    const createErrorMessage = (errMessage: string) => {
+        return {error: {message: errMessage}};
+    };
 
-//     if (!call) {
-//         return createErrorMessage(errorMessage!);
-//     }
+    if (!creq) {
+        return createErrorMessage(errorMessage!);
+    }
 
-//     const res = await dispatch(doAppCall(call, AppCallTypes.SUBMIT, intl));
-//     if (res.error) {
-//         const errorResponse = res.error as AppCallResponse;
-//         return createErrorMessage(errorResponse.error || intl.formatMessage({
-//             id: 'apps.error.unknown',
-//             defaultMessage: 'Unknown error.',
-//         }));
-//     }
-//     const callResp = res.data as AppCallResponse;
-//     switch (callResp.type) {
-//     case AppCallResponseTypes.OK:
-//         if (callResp.markdown) {
-//             dispatch(postEphemeralCallResponseForCommandArgs(callResp, callResp.markdown, args));
-//         }
-//         return {data: {}};
-//     case AppCallResponseTypes.FORM:
-//     case AppCallResponseTypes.NAVIGATE:
-//         return {data: {}};
-//     default:
-//         return createErrorMessage(intl.formatMessage({
-//             id: 'apps.error.responses.unknown_type',
-//             defaultMessage: 'App response type not supported. Response type: {type}.',
-//         }, {
-//             type: callResp.type,
-//         }));
-//     }
-// };
+    const res = await doAppSubmit(serverUrl, creq, intl);
+    if (res.error) {
+        const errorResponse = res.error as AppCallResponse;
+        return createErrorMessage(errorResponse.text || intl.formatMessage({
+            id: 'apps.error.unknown',
+            defaultMessage: 'Unknown error.',
+        }));
+    }
+    const callResp = res.data as AppCallResponse;
+
+    switch (callResp.type) {
+        case AppCallResponseTypes.OK:
+            if (callResp.text) {
+                postEphemeralCallResponseForCommandArgs(serverUrl, callResp, callResp.text, args);
+            }
+            return {data: {}};
+        case AppCallResponseTypes.FORM:
+        case AppCallResponseTypes.NAVIGATE:
+            return {data: {}};
+        default:
+            return createErrorMessage(intl.formatMessage({
+                id: 'apps.error.responses.unknown_type',
+                defaultMessage: 'App response type not supported. Response type: {type}.',
+            }, {
+                type: callResp.type,
+            }));
+    }
+};
 
 const filterEmDashForCommand = (command: string): string => {
     return command.replace(/\u2014/g, '--');
