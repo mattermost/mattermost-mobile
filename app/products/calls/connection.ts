@@ -203,7 +203,7 @@ export async function newClient(channelID: string, iceServers: ICEServersConfigs
 
     ws.on('message', ({data}) => {
         const msg = JSON.parse(data);
-        if (msg.type === 'answer' || msg.type === 'offer') {
+        if (msg.type === 'answer' || msg.type === 'candidate' || msg.type === 'offer') {
             peer?.signal(data);
         }
     });
