@@ -158,7 +158,7 @@ Appearance.addChangeListener(() => {
     }
 });
 
-function getThemeFromState(): Theme {
+export function getThemeFromState(): Theme {
     if (EphemeralStore.theme) {
         return EphemeralStore.theme;
     }
@@ -193,7 +193,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
         dismissModal({componentId: Screens.SSO});
         dismissModal({componentId: Screens.BOTTOM_SHEET});
         DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
-        return;
+        return '';
     }
 
     NavigationStore.clearNavigationComponents();
@@ -228,7 +228,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
         }],
     };
 
-    Navigation.setRoot({
+    return Navigation.setRoot({
         root: {stack},
     });
 }
@@ -272,7 +272,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
         },
     }];
 
-    Navigation.setRoot({
+    return Navigation.setRoot({
         root: {
             stack: {
                 children,
@@ -288,7 +288,7 @@ export function resetToTeams() {
 
     NavigationStore.clearNavigationComponents();
 
-    Navigation.setRoot({
+    return Navigation.setRoot({
         root: {
             stack: {
                 children: [{
@@ -324,7 +324,7 @@ export function resetToTeams() {
 
 export function goToScreen(name: string, title: string, passProps = {}, options = {}) {
     if (!isScreenRegistered(name)) {
-        return;
+        return '';
     }
 
     const theme = getThemeFromState();
@@ -361,7 +361,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
         },
     };
 
-    Navigation.push(componentId, {
+    return Navigation.push(componentId, {
         component: {
             id: name,
             name,

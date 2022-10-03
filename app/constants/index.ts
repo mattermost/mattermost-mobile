@@ -27,6 +27,7 @@ import Post from './post';
 import PostDraft from './post_draft';
 import Preferences from './preferences';
 import Profile from './profile';
+import PushNotification from './push_notification';
 import PushProxy from './push_proxy';
 import Screens from './screens';
 import ServerErrors from './server_errors';
@@ -63,6 +64,7 @@ export {
     PostDraft,
     Preferences,
     Profile,
+    PushNotification,
     PushProxy,
     Screens,
     ServerErrors,

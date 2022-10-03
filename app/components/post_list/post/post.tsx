@@ -222,7 +222,7 @@ const Post = ({
     let header: ReactNode;
     let postAvatar: ReactNode;
     let consecutiveStyle: StyleProp<ViewStyle>;
-    const isProrityPost = isPostPriorityEnabled && post.props.priority;
+    const isProrityPost = Boolean(isPostPriorityEnabled && post.props?.priority);
     const sameSequence = hasReplies ? (hasReplies && post.rootId) : !post.rootId;
     if (!isProrityPost && hasSameRoot && isConsecutivePost && sameSequence) {
         consecutiveStyle = styles.consective;
