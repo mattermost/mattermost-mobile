@@ -4,8 +4,8 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
+import {useImageAttachments} from '@app/hooks/files';
 import NoResultsWithTerm from '@components/no_results_with_term';
-import {useImageAttachments} from '@hooks/files';
 import {GalleryAction} from '@typings/screens/gallery';
 import {isImage, isVideo} from '@utils/file';
 import {getChannelNamesWithID, getFileInfosIndexes, getOrderedFileInfos, getOrderedGalleryItems} from '@utils/files';
@@ -42,10 +42,10 @@ const FileResults = ({
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
     const filesForGallery = imageAttachments.concat(nonImageAttachments);
 
-    const channelNames = getChannelNamesWithID(fileChannels);
-    const orderedFileInfos = getOrderedFileInfos(filesForGallery);
-    const fileInfosIndexes = getFileInfosIndexes(orderedFileInfos);
-    const orderedGalleryItems = getOrderedGalleryItems(orderedFileInfos);
+    const channelNames = useMemo(() => getChannelNamesWithID(fileChannels), []);
+    const orderedFileInfos = useMemo(() => getOrderedFileInfos(filesForGallery), []);
+    const fileInfosIndexes = useMemo(() => getFileInfosIndexes(orderedFileInfos), []);
+    const orderedGalleryItems = useMemo(() => getOrderedGalleryItems(orderedFileInfos), []);
 
     const [action, setAction] = useState<GalleryAction>('none');
     const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
