@@ -738,9 +738,6 @@ export default class Peer extends stream.Duplex {
             this.pcReady = true;
             this.maybeReady();
         }
-        if (iceConnectionState === 'checking' && this.iceComplete) {
-            this.negotiate();
-        }
         if (iceConnectionState === 'failed') {
             this.destroy(
                 errCode(
