@@ -5,18 +5,14 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
+import {useImageAttachments} from '@hooks/files';
 import {GalleryAction} from '@typings/screens/gallery';
 import {isImage, isVideo} from '@utils/file';
+import {getChannelNamesWithID, getFileInfosIndexes, getOrderedFileInfos, getOrderedGalleryItems} from '@utils/files';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {TabTypes} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
 
-import {
-    useChannelNames,
-    useFileInfosIndexes,
-    useOrderedFileInfos,
-    useOrderedGalleryItems,
-} from './file_options/hooks';
 import Toasts from './file_options/toasts';
 import FileResult from './file_result';
 
@@ -43,10 +39,13 @@ const FileResults = ({
 }: Props) => {
     const containerStyle = useMemo(() => ([paddingTop, {top: fileInfos.length ? 8 : 0}]), [fileInfos, paddingTop]);
 
-    const channelNames = useChannelNames(fileChannels);
-    const orderedFileInfos = useOrderedFileInfos(fileInfos, publicLinkEnabled);
-    const fileInfosIndexes = useFileInfosIndexes(orderedFileInfos);
-    const orderedGalleryItems = useOrderedGalleryItems(orderedFileInfos);
+    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
+    const filesForGallery = imageAttachments.concat(nonImageAttachments);
+
+    const channelNames = getChannelNamesWithID(fileChannels);
+    const orderedFileInfos = getOrderedFileInfos(filesForGallery);
+    const fileInfosIndexes = getFileInfosIndexes(orderedFileInfos);
+    const orderedGalleryItems = getOrderedGalleryItems(orderedFileInfos);
 
     const [action, setAction] = useState<GalleryAction>('none');
     const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
