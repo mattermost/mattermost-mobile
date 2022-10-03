@@ -231,7 +231,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
 
     ws.on('message', ({data}: { data: string }) => {
         const msg = JSON.parse(data);
-        if (msg.type === 'answer' || msg.type === 'offer') {
+        if (msg.type === 'answer' || msg.type === 'candidate' || msg.type === 'offer') {
             peer?.signal(data);
         }
     });
