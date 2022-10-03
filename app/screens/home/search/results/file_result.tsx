@@ -28,7 +28,6 @@ const styles = StyleSheet.create({
 });
 
 type Props = {
-    action: GalleryAction;
     canDownloadFiles: boolean;
     channelName: string | undefined;
     fileInfo: FileInfo;
@@ -45,7 +44,6 @@ type Props = {
 const galleryIdentifier = 'search-files-location';
 
 const FileResult = ({
-    action,
     canDownloadFiles,
     channelName,
     fileInfo,
@@ -85,7 +83,7 @@ const FileResult = ({
         if (showOptions && a !== 'none') {
             setShowOptions(false);
         }
-    }, [action, setAction, showOptions]);
+    }, [setAction, showOptions]);
 
     const handleOpenOptions = useCallback((fInfo: FileInfo) => {
         setShowOptions(true);

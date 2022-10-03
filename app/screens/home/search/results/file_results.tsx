@@ -64,7 +64,6 @@ const FileResults = ({
         const isSingleImage = orderedFileInfos.length === 1 && (isImage(orderedFileInfos[0]) || isVideo(orderedFileInfos[0]));
         return (
             <FileResult
-                action={action}
                 canDownloadFiles={canDownloadFiles}
                 channelName={channelNames[item.channel_id!]}
                 fileInfo={item}
