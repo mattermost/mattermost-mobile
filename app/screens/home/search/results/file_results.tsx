@@ -41,7 +41,7 @@ const FileResults = ({
     publicLinkEnabled,
     searchValue,
 }: Props) => {
-    const containerStyle = useMemo(() => ({top: fileInfos.length ? 8 : 0}), [fileInfos]);
+    const containerStyle = useMemo(() => ([paddingTop, {top: fileInfos.length ? 8 : 0}]), [fileInfos, paddingTop]);
 
     const channelNames = useChannelNames(fileChannels);
     const orderedFileInfos = useOrderedFileInfos(fileInfos, publicLinkEnabled);
@@ -102,7 +102,7 @@ const FileResults = ({
         <>
             <FlatList
                 ListEmptyComponent={noResults}
-                contentContainerStyle={[paddingTop, containerStyle]}
+                contentContainerStyle={containerStyle}
                 data={orderedFileInfos}
                 indicatorStyle='black'
                 initialNumToRender={10}
