@@ -4,6 +4,7 @@
 import React, {useCallback, useState} from 'react';
 import {LayoutChangeEvent, StyleProp, View, ViewStyle} from 'react-native';
 
+import {PostTypes} from '@app/constants/post';
 import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
 import JumboEmoji from '@components/jumbo_emoji';
@@ -38,6 +39,7 @@ type BodyProps = {
     post: PostModel;
     searchPatterns?: SearchPattern[];
     showAddReaction?: boolean;
+    voiceMessageEnabled?: boolean;
     theme: Theme;
 };
 
@@ -77,7 +79,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const Body = ({
     appsEnabled, hasFiles, hasReactions, highlight, highlightReplyBar,
     isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAddChannelMember,
-    location, post, searchPatterns, showAddReaction, theme,
+    location, post, searchPatterns, showAddReaction, voiceMessageEnabled, theme,
 }: BodyProps) => {
     const style = getStyleSheet(theme);
     const isEdited = postEdited(post);
@@ -159,36 +161,51 @@ const Body = ({
     }
 
     if (!hasBeenDeleted) {
-        body = (
-            <View style={style.messageBody}>
-                {message}
-                {hasContent &&
-                <Content
-                    isReplyPost={isReplyPost}
-                    layoutWidth={layoutWidth}
-                    location={location}
-                    post={post}
-                    theme={theme}
-                />
-                }
-                {hasFiles &&
-                <Files
-                    failed={isFailed}
-                    layoutWidth={layoutWidth}
-                    location={location}
-                    post={post}
-                    isReplyPost={isReplyPost}
-                />
-                }
-                {hasReactions && showAddReaction &&
-                <Reactions
-                    location={location}
-                    post={post}
-                    theme={theme}
-                />
-                }
-            </View>
-        );
+        if (voiceMessageEnabled && post.type === PostTypes.VOICE_MESSAGE) {
+            body = (
+                <View style={style.messageBody}>
+                    {/* <VoiceMessagePost /> */}
+                    {hasReactions && showAddReaction &&
+                    <Reactions
+                        location={location}
+                        post={post}
+                        theme={theme}
+                    />
+                    }
+                </View>
+            );
+        } else {
+            body = (
+                <View style={style.messageBody}>
+                    {message}
+                    {hasContent &&
+                    <Content
+                        isReplyPost={isReplyPost}
+                        layoutWidth={layoutWidth}
+                        location={location}
+                        post={post}
+                        theme={theme}
+                    />
+                    }
+                    {hasFiles &&
+                    <Files
+                        failed={isFailed}
+                        layoutWidth={layoutWidth}
+                        location={location}
+                        post={post}
+                        isReplyPost={isReplyPost}
+                    />
+                    }
+                    {hasReactions && showAddReaction &&
+                    <Reactions
+                        location={location}
+                        post={post}
+                        theme={theme}
+                    />
+                    }
+                </View>
+            );
+        }
     }
 
     return (

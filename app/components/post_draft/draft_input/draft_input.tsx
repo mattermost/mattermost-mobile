@@ -2,27 +2,23 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import {LayoutChangeEvent, Platform, ScrollView} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import RecordContainer from '@components/post_draft/record_container';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import PostInput from '../post_input';
-import QuickActions from '../quick_actions';
-import RecordAction from '../record_action';
-import SendAction from '../send_action';
 import Typing from '../typing';
-import Uploads from '../uploads';
 
-//fixme:to read config to know if we can record or not
+import MessageInput from './message_input';
+import VoiceInput from './voice_input';
 
 type Props = {
     testID?: string;
     channelId: string;
     rootId?: string;
     currentUserId: string;
+    voiceMessageEnabled: boolean;
 
     // Cursor Position Handler
     updateCursorPosition: (pos: number) => void;
@@ -46,16 +42,6 @@ const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
-        actionsContainer: {
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'space-between',
-            alignItems: 'center',
-            paddingBottom: Platform.select({
-                ios: 1,
-                android: 2,
-            }),
-        },
         inputContainer: {
             flex: 1,
             flexDirection: 'column',
@@ -98,40 +84,18 @@ export default function DraftInput({
     updateCursorPosition,
     cursorPosition,
     updatePostInputTop,
+    voiceMessageEnabled,
 }: Props) {
     const theme = useTheme();
-    const [isRecording, setIsRecording] = useState(false);
+
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
     }, []);
 
+    const [recording, setRecording] = useState(false);
+
     // Render
-    const postInputTestID = `${testID}.post.input`;
-    const quickActionsTestID = `${testID}.quick_actions`;
-    const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
-
-    const onPresRecord = useCallback(() => {
-        setIsRecording(true);
-    }, []);
-
-    const getActionButton = useCallback(() => {
-        if (value.length === 0 && files.length === 0) { // add config condition to it
-            return (
-                <RecordAction
-                    onPress={onPresRecord}
-                />
-            );
-        }
-
-        return (
-            <SendAction
-                testID={sendActionTestID}
-                disabled={!canSend}
-                sendMessage={sendMessage}
-            />
-        );
-    }, [value]);
 
     return (
         <>
@@ -145,6 +109,7 @@ export default function DraftInput({
                 style={style.inputWrapper}
                 testID={testID}
             >
+
                 <ScrollView
                     style={style.inputContainer}
                     contentContainerStyle={style.inputContentContainer}
@@ -156,43 +121,30 @@ export default function DraftInput({
                     overScrollMode={'never'}
                     disableScrollViewPanResponder={true}
                 >
-                    {
-                        isRecording && (
-                            <RecordContainer/>
-                        )
-                    }
-                    {!isRecording && (
-                        <PostInput
-                            testID={postInputTestID}
-                            channelId={channelId}
-                            maxMessageLength={maxMessageLength}
-                            rootId={rootId}
-                            cursorPosition={cursorPosition}
-                            updateCursorPosition={updateCursorPosition}
-                            updateValue={updateValue}
-                            value={value}
+                    {recording && (
+                        <VoiceInput
                             addFiles={addFiles}
-                            sendMessage={sendMessage}
+                            setRecording={setRecording}
                         />
                     )}
-                    <Uploads
-                        currentUserId={currentUserId}
-                        files={files}
-                        uploadFileError={uploadFileError}
-                        channelId={channelId}
-                        rootId={rootId}
-                    />
-                    {!isRecording && (
-                        <View style={style.actionsContainer}>
-                            <QuickActions
-                                testID={quickActionsTestID}
-                                fileCount={files.length}
-                                addFiles={addFiles}
-                                updateValue={updateValue}
-                                value={value}
-                            />
-                            {getActionButton()}
-                        </View>
+                    {!recording && (
+                        <MessageInput
+                            addFiles={addFiles}
+                            canSend={canSend}
+                            channelId={channelId}
+                            currentUserId={currentUserId}
+                            cursorPosition={cursorPosition}
+                            files={files}
+                            maxMessageLength={maxMessageLength}
+                            sendMessage={sendMessage}
+                            setRecording={setRecording}
+                            updateCursorPosition={updateCursorPosition}
+                            updateValue={updateValue}
+                            uploadFileError={uploadFileError}
+                            value={value}
+                            rootId={rootId}
+                            testID={testID}
+                        />
                     )}
                 </ScrollView>
             </SafeAreaView>

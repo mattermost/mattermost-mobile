@@ -6,6 +6,7 @@ import {StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {updateDraftFile} from '@actions/local/draft';
+import VoiceRecordingFile from '@app/components/files/voice_recording_file';
 import FileIcon from '@components/files/file_icon';
 import ImageFile from '@components/files/image_file';
 import ProgressBar from '@components/progress_bar';
@@ -115,6 +116,13 @@ export default function UploadItem({
                 />
             );
         }
+        if (file.is_voice_recording) {
+            return (
+                <VoiceRecordingFile
+                    file={file}
+                />
+            );
+        }
         return (
             <FileIcon
                 backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
@@ -130,7 +138,10 @@ export default function UploadItem({
             style={style.preview}
         >
             <View style={style.previewContainer}>
-                <TouchableWithoutFeedback onPress={onGestureEvent}>
+                <TouchableWithoutFeedback
+                    onPress={onGestureEvent}
+                    disabled={file.is_voice_recording}
+                >
                     <Animated.View style={[styles, style.filePreview]}>
                         {filePreviewComponent}
                     </Animated.View>
