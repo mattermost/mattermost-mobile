@@ -68,7 +68,6 @@ const FileResults = ({
                 fileInfo={item}
                 index={fileInfosIndexes[item.id!] || 0}
                 isSingleImage={isSingleImage}
-                lastViewedFileInfo={lastViewedFileInfo}
                 onPress={onPreviewPress}
                 publicLinkEnabled={publicLinkEnabled}
                 setAction={setAction}
@@ -81,7 +80,6 @@ const FileResults = ({
         canDownloadFiles,
         channelNames,
         fileInfosIndexes,
-        lastViewedFileInfo,
         onPreviewPress,
         setAction,
         setLastViewedFileInfo,

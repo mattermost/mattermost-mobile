@@ -1,16 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {Dimensions, StyleSheet, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import File from '@components/files/file';
-import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {dismissBottomSheet} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
 import {GalleryAction} from '@typings/screens/gallery';
 import {getViewPortWidth} from '@utils/images';
 
@@ -33,7 +30,6 @@ type Props = {
     fileInfo: FileInfo;
     index: number;
     isSingleImage: boolean;
-    lastViewedFileInfo: FileInfo | undefined;
     onPress: (idx: number) => void;
     publicLinkEnabled: boolean;
     setAction: (action: GalleryAction) => void;
@@ -49,7 +45,6 @@ const FileResult = ({
     fileInfo,
     index,
     isSingleImage,
-    lastViewedFileInfo,
     onPress,
     publicLinkEnabled,
     setAction,
@@ -85,9 +80,9 @@ const FileResult = ({
         }
     }, [setAction, showOptions]);
 
-    const handleOpenOptions = useCallback((fInfo: FileInfo) => {
+    const handleOpenOptions = useCallback(() => {
         setShowOptions(true);
-        setLastViewedFileInfo(fInfo);
+        setLastViewedFileInfo(fileInfo);
 
         if (!isTablet) {
             showMobileOptionsBottomSheet({
@@ -99,21 +94,6 @@ const FileResult = ({
             });
         }
     }, [isTablet, numOptions, showOptions, theme]);
-
-    // This effect handles the case where a user has the FileOptions Modal
-    // open and the server changes the ability to download files or copy public
-    // links. Reopen the Bottom Sheet again so the new options are added or
-    // removed.
-    useEffect(() => {
-        if (lastViewedFileInfo === undefined) {
-            return;
-        }
-        if (NavigationStore.getNavigationTopComponentId() === Screens.BOTTOM_SHEET) {
-            dismissBottomSheet().then(() => {
-                handleOpenOptions(lastViewedFileInfo);
-            });
-        }
-    }, [canDownloadFiles, publicLinkEnabled, lastViewedFileInfo]);
 
     return (
         <>
