@@ -9,6 +9,7 @@ import {useTheme} from '@context/theme';
 
 type Props = {
     onPress: () => void;
+    testID: string;
 }
 
 const styles = {
@@ -25,20 +26,20 @@ const styles = {
     },
 };
 
-function RecordButton({onPress}: Props) {
+function RecordButton({onPress, testID}: Props) {
     const theme = useTheme();
 
     return (
         <TouchableWithFeedback
-            testID='record.button'
             onPress={onPress}
             style={styles.recordButtonContainer}
+            testID={testID}
             type={'opacity'}
         >
             <CompassIcon
+                color={theme.centerChannelColor}
                 name='microphone'
                 size={24}
-                color={theme.centerChannelColor}
             />
         </TouchableWithFeedback>
     );
