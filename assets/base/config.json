@@ -13,9 +13,9 @@
     "MobileNoticeURL": "https://about.mattermost.com/mobile-notice-txt/",
     "RudderApiKey": "",
 
-    "SentryEnabled": true,
-    "SentryDsnIos": "https://8166acfeeced43de98bc11f217d871c5@o1347733.ingest.sentry.io/6734065",
-    "SentryDsnAndroid": "https://8166acfeeced43de98bc11f217d871c5@o1347733.ingest.sentry.io/6734065",
+    "SentryEnabled": false,
+    "SentryDsnIos": "",
+    "SentryDsnAndroid": "",
     "SentryOptions": {
         "deactivateStacktraceMerging": true,
         "autoBreadcrumbs": {
