@@ -1,40 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CookieManager, {Cookie} from '@react-native-cookies/cookies';
-import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
-import FastImage from 'react-native-fast-image';
+import {Alert, DeviceEventEmitter, Linking} from 'react-native';
 import semver from 'semver';
 
 import LocalConfig from '@assets/config.json';
-import {Events, Sso, Launch} from '@constants';
-import DatabaseManager from '@database/manager';
-import {DEFAULT_LOCALE, getTranslations, resetMomentLocale, t} from '@i18n';
-import {getServerCredentials, removeServerCredentials} from '@init/credentials';
+import {Events, Sso} from '@constants';
+import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import {getServerCredentials} from '@init/credentials';
 import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
-import PushNotifications from '@init/push_notifications';
 import * as analytics from '@managers/analytics';
-import NetworkManager from '@managers/network_manager';
-import WebsocketManager from '@managers/websocket_manager';
-import {getCurrentUser} from '@queries/servers/user';
-import EphemeralStore from '@store/ephemeral_store';
-import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 
 import type {jsAndNativeErrorHandler} from '@typings/global/error_handling';
-import type {LaunchType} from '@typings/launch';
 
 type LinkingCallbackArg = {url: string};
-
-type LogoutCallbackArg = {
-    serverUrl: string;
-    removeServer: boolean;
-}
 
 class GlobalEventHandler {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
 
     constructor() {
-        DeviceEventEmitter.addListener(Events.SERVER_LOGOUT, this.onLogout);
         DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         DeviceEventEmitter.addListener(Events.CONFIG_CHANGED, this.onServerConfigChanged);
 
@@ -68,75 +52,6 @@ class GlobalEventHandler {
         }
     };
 
-    clearCookies = async (serverUrl: string, webKit: boolean) => {
-        try {
-            const cookies = await CookieManager.get(serverUrl, webKit);
-            const values = Object.values(cookies);
-            values.forEach((cookie: Cookie) => {
-                CookieManager.clearByName(serverUrl, cookie.name, webKit);
-            });
-        } catch (error) {
-            // Nothing to clear
-        }
-    };
-
-    clearCookiesForServer = async (serverUrl: string) => {
-        this.clearCookies(serverUrl, false);
-        if (Platform.OS === 'ios') {
-            // Also delete any cookies that were set by react-native-webview
-            this.clearCookies(serverUrl, true);
-        } else if (Platform.OS === 'android') {
-            CookieManager.flush();
-        }
-    };
-
-    onLogout = async ({serverUrl, removeServer}: LogoutCallbackArg) => {
-        await removeServerCredentials(serverUrl);
-        PushNotifications.removeServerNotifications(serverUrl);
-
-        NetworkManager.invalidateClient(serverUrl);
-        WebsocketManager.invalidateClient(serverUrl);
-
-        const activeServerUrl = await DatabaseManager.getActiveServerUrl();
-        const activeServerDisplayName = await DatabaseManager.getActiveServerDisplayName();
-        if (removeServer) {
-            await DatabaseManager.destroyServerDatabase(serverUrl);
-        } else {
-            await DatabaseManager.deleteServerDatabase(serverUrl);
-        }
-
-        const analyticsClient = analytics.get(serverUrl);
-        if (analyticsClient) {
-            analyticsClient.reset();
-            analytics.invalidate(serverUrl);
-        }
-
-        this.resetLocale();
-        this.clearCookiesForServer(serverUrl);
-        FastImage.clearDiskCache();
-        deleteFileCache(serverUrl);
-        deleteFileCacheByDir('mmPasteInput');
-        deleteFileCacheByDir('thumbnails');
-        if (Platform.OS === 'android') {
-            deleteFileCacheByDir('image_cache');
-        }
-
-        if (activeServerUrl === serverUrl) {
-            let displayName = '';
-            let launchType: LaunchType = Launch.AddServer;
-            if (!Object.keys(DatabaseManager.serverDatabases).length) {
-                EphemeralStore.theme = undefined;
-                launchType = Launch.Normal;
-
-                if (activeServerDisplayName) {
-                    displayName = activeServerDisplayName;
-                }
-            }
-
-            relaunchApp({launchType, serverUrl, displayName}, true);
-        }
-    };
-
     onServerConfigChanged = ({serverUrl, config}: {serverUrl: string; config: ClientConfig}) => {
         this.configureAnalytics(serverUrl, config);
     };
@@ -162,21 +77,11 @@ class GlobalEventHandler {
         }
     };
 
-    resetLocale = async () => {
-        if (Object.keys(DatabaseManager.serverDatabases).length) {
-            const serverDatabase = await DatabaseManager.getActiveServerDatabase();
-            const user = await getCurrentUser(serverDatabase!);
-            resetMomentLocale(user?.locale);
-        } else {
-            resetMomentLocale();
-        }
-    };
-
     serverUpgradeNeeded = async (serverUrl: string) => {
         const credentials = await getServerCredentials(serverUrl);
 
         if (credentials) {
-            this.onLogout({serverUrl, removeServer: false});
+            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer: false});
         }
     };
 }

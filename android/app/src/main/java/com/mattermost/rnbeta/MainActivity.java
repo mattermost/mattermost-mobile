@@ -57,6 +57,12 @@ public class MainActivity extends NavigationActivity {
         }
     }
 
+    @Override
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        getReactGateway().onWindowFocusChanged(hasFocus);
+    }
+
     /*
     https://mattermost.atlassian.net/browse/MM-10601
     Required by react-native-hw-keyboard-event
