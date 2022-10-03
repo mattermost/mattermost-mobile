@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# Disable the below if you are not using Sentry
-export SENTRY_ENABLED=true
-
 sentry_properties="defaults.url=https://sentry.io
 defaults.org=${SENTRY_ORG}
 defaults.project=${SENTRY_PROJECT_IOS}

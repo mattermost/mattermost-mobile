@@ -6,9 +6,6 @@ export NODE_OPTIONS=--max_old_space_size=12000
 export BUNDLE_COMMAND="bundle"
 export ENTRY_FILE="index.ts"
 
-# Disable the below if you are not using Sentry
-export SENTRY_ENABLED=true
-
 if [[ "${SENTRY_ENABLED}" = "true" ]]; then
 	echo "Sentry native integration is enabled"
 

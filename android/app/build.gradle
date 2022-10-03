@@ -84,9 +84,6 @@ project.ext.react = [
 apply from: "../../node_modules/react-native/react.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
-
-/** Disable the below if you are not using Sentry */
-def SENTRY_ENABLED = true
 project.ext.sentryCli = [
         logLevel: "error",
         flavorAware: false

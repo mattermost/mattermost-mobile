@@ -1,8 +1,5 @@
 #!/bin/sh
 
-# Disable the below if you are not using Sentry
-export SENTRY_ENABLED=true
-
 if [[ "${SENTRY_ENABLED}" = "true" ]]; then
 	echo "Uploading debugging symbols to Sentry"
 
