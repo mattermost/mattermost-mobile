@@ -56,7 +56,7 @@ const SoundWave = () => {
         return {
             height: newHeight,
         };
-    }, [animatedValue.value]);
+    }, []);
 
     useEffect(() => {
         animatedValue.value = withRepeat(

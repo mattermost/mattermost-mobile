@@ -119,7 +119,7 @@ export default function DraftInput({
         const sendActionTestID = `${testID}.send_action`;
         const recordActionTestID = `${testID}.record_action`;
 
-        if (value.length === 0 && files.length === 0) { // add config condition to it
+        if (value.length === 0 && files.length === 0 && voiceMessageEnabled) {
             return (
                 <RecordAction
                     onPress={onPresRecording}
