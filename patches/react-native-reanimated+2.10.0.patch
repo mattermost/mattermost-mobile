@@ -1,3 +1,27 @@
+diff --git a/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js b/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js
+index d8befd8..6357426 100644
+--- a/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js
++++ b/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js
+@@ -148,6 +148,9 @@ export const setUpTests = (userConfig = {}) => {
+     let expect;
+     try {
+         expect = require('expect');
++        if (!expect.extend) {
++            throw new Error('expect does not have extend, falling back...')
++        }
+     }
+     catch (_) {
+         // for Jest in version 28+
+@@ -162,6 +165,9 @@ export const setUpTests = (userConfig = {}) => {
+             return compareStyle(received, expectedStyle, config);
+         },
+     });
++    global.ReanimatedDataMock = {
++        now: () => currentTimestamp,
++    };
+ };
+ export const getAnimatedStyle = (received) => {
+     return getCurrentStyle(received);
 diff --git a/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx b/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx
 index 1cf0c3f..a242e4b 100644
 --- a/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx

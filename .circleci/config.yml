@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   owasp: entur/owasp@0.0.10
-  node: circleci/node@5.0.2
+  node: circleci/node@5.0.3
 
 executors:
   android:
@@ -28,7 +28,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     macos:
-      xcode: "14.0.0"
+      xcode: "14.0.1"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
     resource_class: <<parameters.resource_class>>
@@ -105,7 +105,7 @@ commands:
     description: "Get JavaScript dependencies"
     steps:
       - node/install:
-          node-version: '16.14.2'
+          node-version: '18.7.0'
       - restore_cache:
           name: Restore npm cache
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}

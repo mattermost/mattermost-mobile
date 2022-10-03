@@ -20,7 +20,7 @@ type State = {
 };
 
 export function withServerDatabase<T>(Component: ComponentType<T>): ComponentType<T> {
-    return function ServerDatabaseComponent(props) {
+    return function ServerDatabaseComponent(props: any) {
         const [state, setState] = useState<State | undefined>();
 
         const observer = (servers: ServersModel[]) => {

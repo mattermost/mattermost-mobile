@@ -7,6 +7,8 @@ if [[ "$OSTYPE" == "darwin"* ]]; then
   echo "Installing Gems"
   npm run ios-gems &> /dev/null
   echo "Getting Cocoapods dependencies"
+  # remove duplicate dependency
+  rm -rf node_modules/react-native-animated-numbers/node_modules/react-native-gesture-handler
   npm run pod-install &> /dev/null
 fi
 
