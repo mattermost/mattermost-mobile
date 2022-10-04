@@ -18,25 +18,29 @@ const Toasts = ({
     setAction,
 }: Props) => {
     const galleryItem = {...fileInfo, type: 'image'} as GalleryItemType;
-    return (
-        <>
-            {action === 'downloading' &&
+
+    switch (action) {
+        case 'downloading':
+            return (
                 <DownloadWithAction
                     action={action}
                     galleryView={false}
                     item={galleryItem}
                     setAction={setAction}
                 />
-            }
-            {action === 'copying' &&
+            );
+        case 'copying':
+            return (
                 <CopyPublicLink
                     galleryView={false}
                     item={galleryItem}
                     setAction={setAction}
                 />
-            }
-        </>
-    );
+            );
+
+        default:
+            return null;
+    }
 };
 
 export default Toasts;
