@@ -97,7 +97,7 @@ const File = ({
 
     const handleOnOptionsPress = useCallback(() => {
         onOptionsPress?.(file);
-    }, [index, onOptionsPress]);
+    }, [file, onOptionsPress]);
 
     const renderOptionsButton = () => {
         if (onOptionsPress) {
