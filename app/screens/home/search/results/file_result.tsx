@@ -3,16 +3,12 @@
 
 import React, {useCallback, useRef, useState} from 'react';
 import {Dimensions, StyleSheet, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import File from '@components/files/file';
-import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {GalleryAction} from '@typings/screens/gallery';
 import {getViewPortWidth} from '@utils/images';
 
-import {useNumberItems} from './file_options/hooks';
-import {showMobileOptionsBottomSheet} from './file_options/mobile_options';
 import TabletOptions from './file_options/tablet_options';
 
 export type XyOffset = {x: number; y: number} | undefined;
@@ -30,10 +26,11 @@ type Props = {
     fileInfo: FileInfo;
     index: number;
     isSingleImage: boolean;
+    numOptions: number;
+    onOptionsPress: (finfo: FileInfo) => void;
     onPress: (idx: number) => void;
     publicLinkEnabled: boolean;
     setAction: (action: GalleryAction) => void;
-    setLastViewedFileInfo: (fInfo: FileInfo) => void;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
 }
 
@@ -45,18 +42,16 @@ const FileResult = ({
     fileInfo,
     index,
     isSingleImage,
+    numOptions,
+    onOptionsPress,
     onPress,
     publicLinkEnabled,
     setAction,
-    setLastViewedFileInfo,
     updateFileForGallery,
 }: Props) => {
     const elementsRef = useRef<View | null>(null);
-    const theme = useTheme();
     const isTablet = useIsTablet();
     const isReplyPost = false;
-    const insets = useSafeAreaInsets();
-    const numOptions = useNumberItems(canDownloadFiles, publicLinkEnabled);
 
     const [showOptions, setShowOptions] = useState<boolean>(false);
     const [openUp, setOpenUp] = useState<boolean>(false);
@@ -73,27 +68,17 @@ const FileResult = ({
         }
     }, [elementsRef, showOptions]);
 
-    const handleSetAction = useCallback((a: GalleryAction) => {
-        setAction(a);
-        if (showOptions && a !== 'none') {
+    const handleOptionsPress = useCallback((fInfo: FileInfo) => {
+        setShowOptions(true);
+        onOptionsPress(fInfo);
+    }, []);
+
+    const handleSetAction = useCallback((action: GalleryAction) => {
+        setAction(action);
+        if (showOptions && action !== 'none') {
             setShowOptions(false);
         }
     }, [setAction, showOptions]);
-
-    const handleOpenOptions = useCallback(() => {
-        setShowOptions(true);
-        setLastViewedFileInfo(fileInfo);
-
-        if (!isTablet) {
-            showMobileOptionsBottomSheet({
-                fileInfo,
-                insets,
-                numOptions,
-                setAction: handleSetAction,
-                theme,
-            });
-        }
-    }, [isTablet, numOptions, showOptions, theme]);
 
     return (
         <>
@@ -111,7 +96,7 @@ const FileResult = ({
                     index={index}
                     isSingleImage={isSingleImage}
                     nonVisibleImagesCount={0}
-                    onOptionsPress={handleOpenOptions}
+                    onOptionsPress={handleOptionsPress}
                     onPress={onPress}
                     optionSelected={isTablet && showOptions}
                     publicLinkEnabled={publicLinkEnabled}
