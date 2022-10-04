@@ -54,6 +54,10 @@ const FileResults = ({
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
 
+    const [optionsOpen, setOptionsOpen] = useState(false);
+    const [action, setAction] = useState<GalleryAction>('none');
+    const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
+
     const containerStyle = useMemo(() => ([paddingTop, {top: fileInfos.length ? 8 : 0}]), [fileInfos, paddingTop]);
     const numOptions = getNumberFileMenuOptions(canDownloadFiles, publicLinkEnabled);
 
@@ -64,9 +68,6 @@ const FileResults = ({
     const orderedFileInfos = useMemo(() => getOrderedFileInfos(filesForGallery), []);
     const fileInfosIndexes = useMemo(() => getFileInfosIndexes(orderedFileInfos), []);
     const orderedGalleryItems = useMemo(() => getOrderedGalleryItems(orderedFileInfos), []);
-
-    const [action, setAction] = useState<GalleryAction>('none');
-    const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
 
     const onPreviewPress = useCallback(preventDoubleTap((idx: number) => {
         openGalleryAtIndex(galleryIdentifier, idx, orderedGalleryItems);
@@ -80,17 +81,21 @@ const FileResults = ({
     // This effect handles the case where a user has the FileOptions Modal
     // open and the server changes the ability to download files or copy public
     // links. Reopen the Bottom Sheet again so the new options are added or
-    // removed.
+    // removed. The effect has to know it is the file options open, and
+    // not the team picker or file filter so the dismiss won't close those
+    // modals. Do not pass this state value to FileResult or the all Files will
+    // re-render on each state change and slow the options opening
     useEffect(() => {
-        if (lastViewedFileInfo === undefined) {
+        if (lastViewedFileInfo === undefined || !optionsOpen) {
             return;
         }
+
         if (NavigationStore.getNavigationTopComponentId() === Screens.BOTTOM_SHEET) {
             dismissBottomSheet().then(() => {
                 onOptionsPress(lastViewedFileInfo);
             });
         }
-    }, [canDownloadFiles, publicLinkEnabled, lastViewedFileInfo]);
+    }, [canDownloadFiles, publicLinkEnabled, lastViewedFileInfo, optionsOpen]);
 
     const onOptionsPress = useCallback((fInfo: FileInfo) => {
         setLastViewedFileInfo(fInfo);
@@ -118,6 +123,7 @@ const FileResults = ({
                 numOptions={numOptions}
                 onOptionsPress={onOptionsPress}
                 onPress={onPreviewPress}
+                setOptionsOpen={setOptionsOpen}
                 publicLinkEnabled={publicLinkEnabled}
                 setAction={setAction}
                 updateFileForGallery={updateFileForGallery}
