@@ -251,7 +251,7 @@ export const getDefaultChannelForTeam = async (database: Database, teamId: strin
     const roles = await queryRoles(database).fetch();
 
     if (roles.length) {
-        canIJoinPublicChannelsInTeam = hasPermission(roles, Permissions.JOIN_PUBLIC_CHANNELS, true);
+        canIJoinPublicChannelsInTeam = hasPermission(roles, Permissions.JOIN_PUBLIC_CHANNELS);
     }
 
     const myChannels = await database.get<ChannelModel>(CHANNEL).query(
