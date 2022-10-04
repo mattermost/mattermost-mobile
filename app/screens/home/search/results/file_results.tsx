@@ -14,12 +14,17 @@ import {useTheme} from '@context/theme';
 import NavigationStore from '@store/navigation_store';
 import {GalleryAction} from '@typings/screens/gallery';
 import {isImage, isVideo} from '@utils/file';
-import {getChannelNamesWithID, getFileInfosIndexes, getOrderedFileInfos, getOrderedGalleryItems} from '@utils/files';
+import {
+    getChannelNamesWithID,
+    getFileInfosIndexes,
+    getNumberFileMenuOptions,
+    getOrderedFileInfos,
+    getOrderedGalleryItems,
+} from '@utils/files';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {TabTypes} from '@utils/search';
 import {preventDoubleTap} from '@utils/tap';
 
-import {useNumberItems} from './file_options/hooks';
 import {showMobileOptionsBottomSheet} from './file_options/mobile_options';
 import Toasts from './file_options/toasts';
 import FileResult from './file_result';
@@ -50,7 +55,7 @@ const FileResults = ({
     const isTablet = useIsTablet();
 
     const containerStyle = useMemo(() => ([paddingTop, {top: fileInfos.length ? 8 : 0}]), [fileInfos, paddingTop]);
-    const numOptions = useNumberItems(canDownloadFiles, publicLinkEnabled);
+    const numOptions = getNumberFileMenuOptions(canDownloadFiles, publicLinkEnabled);
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
     const filesForGallery = imageAttachments.concat(nonImageAttachments);

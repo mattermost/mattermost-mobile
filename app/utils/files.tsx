@@ -21,9 +21,6 @@ export const getChannelNamesWithID = (fileChannels: ChannelModel[]) => {
 
 // return array of fileInfos (image and non-image) sorted by create_at date
 export const getOrderedFileInfos = (fileInfos: FileInfo[]) => {
-    // const filesForGallery = fileInfos.map(
-    //     (fInfo) => (fInfo.id === selectedId ? {...fInfo, selected: true} : fInfo));
-    //
     return fileInfos.sort((a: FileInfo, b: FileInfo) => {
         return (b.create_at || 0) - (a.create_at || 0);
     });
