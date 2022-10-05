@@ -31,7 +31,6 @@ type Props = {
     onPress: (idx: number) => void;
     publicLinkEnabled: boolean;
     setAction: (action: GalleryAction) => void;
-    setOptionsOpen: (open: boolean) => void;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
 }
 
@@ -48,7 +47,6 @@ const FileResult = ({
     onPress,
     publicLinkEnabled,
     setAction,
-    setOptionsOpen,
     updateFileForGallery,
 }: Props) => {
     const elementsRef = useRef<View | null>(null);
@@ -72,14 +70,12 @@ const FileResult = ({
 
     const handleOptionsPress = useCallback((fInfo: FileInfo) => {
         setShowOptions(true);
-        setOptionsOpen(true);
         onOptionsPress(fInfo);
     }, []);
 
     const handleSetAction = useCallback((action: GalleryAction) => {
         setAction(action);
         if (showOptions && action !== 'none') {
-            setOptionsOpen(false);
             setShowOptions(false);
         }
     }, [setAction, showOptions]);

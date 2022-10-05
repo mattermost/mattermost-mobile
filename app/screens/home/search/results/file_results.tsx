@@ -1,17 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {Screens} from '@app/constants';
 import {useIsTablet} from '@app/hooks/device';
 import {useImageAttachments} from '@app/hooks/files';
-import {dismissBottomSheet} from '@app/screens/navigation';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
-import NavigationStore from '@store/navigation_store';
 import {GalleryAction} from '@typings/screens/gallery';
 import {isImage, isVideo} from '@utils/file';
 import {
@@ -54,7 +51,6 @@ const FileResults = ({
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
 
-    const [optionsOpen, setOptionsOpen] = useState(false);
     const [action, setAction] = useState<GalleryAction>('none');
     const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
 
@@ -77,25 +73,6 @@ const FileResults = ({
         'worklet';
         orderedFileInfos[idx] = file;
     };
-
-    // This effect handles the case where a user has the FileOptions Modal
-    // open and the server changes the ability to download files or copy public
-    // links. Reopen the Bottom Sheet again so the new options are added or
-    // removed. The effect has to know it is the file options open, and
-    // not the team picker or file filter so the dismiss won't close those
-    // modals. Do not pass this state value to FileResult or the all Files will
-    // re-render on each state change and slow the options opening
-    useEffect(() => {
-        if (lastViewedFileInfo === undefined || !optionsOpen) {
-            return;
-        }
-
-        if (NavigationStore.getNavigationTopComponentId() === Screens.BOTTOM_SHEET) {
-            dismissBottomSheet().then(() => {
-                onOptionsPress(lastViewedFileInfo);
-            });
-        }
-    }, [canDownloadFiles, publicLinkEnabled, lastViewedFileInfo, optionsOpen]);
 
     const onOptionsPress = useCallback((fInfo: FileInfo) => {
         setLastViewedFileInfo(fInfo);
@@ -123,7 +100,6 @@ const FileResults = ({
                 numOptions={numOptions}
                 onOptionsPress={onOptionsPress}
                 onPress={onPreviewPress}
-                setOptionsOpen={setOptionsOpen}
                 publicLinkEnabled={publicLinkEnabled}
                 setAction={setAction}
                 updateFileForGallery={updateFileForGallery}
@@ -136,7 +112,6 @@ const FileResults = ({
         fileInfosIndexes,
         onPreviewPress,
         setAction,
-        setLastViewedFileInfo,
         publicLinkEnabled,
     ]);
 
