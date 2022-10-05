@@ -375,7 +375,6 @@ jobs:
           filename: "*.ipa"
 
   notify-sentry-deploy:
-    working_directory: ~/mattermost-mobile
     parameters:
       e:
         type: executor
