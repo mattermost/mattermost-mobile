@@ -622,7 +622,7 @@ workflows:
             - mattermost-mobile-sentry
           requires:
             - test
-            - build-android-pr
+            - build-ios-pr
           filters:
             branches:
               only: /^(build|android)-pr-.*/
