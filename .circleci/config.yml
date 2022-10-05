@@ -186,6 +186,7 @@ commands:
             HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
             export TERM=xterm && bundle exec fastlane ios build
 
+
   deploy-to-store:
     description: "Deploy build to store"
     parameters:
@@ -372,6 +373,27 @@ jobs:
       - build-ios
       - save:
           filename: "*.ipa"
+
+  notify-sentry-deploy:
+    parameters:
+      e:
+        type: executor
+    executor: << parameters.e >>
+    environment:
+      SENTRY_ORG: $SENTRY_ORG
+      SENTRY_PROJECT: $SENTRY_PROJECT
+      SENTRY_ENVIRONMENT: production
+    steps:
+      - run:
+          name: Create release and notify Sentry of deploy
+          command: |
+            curl -sL https://sentry.io/get-cli/ | bash
+            export SENTRY_RELEASE=$(sentry-cli releases propose-version)
+            sentry-cli releases new -p $SENTRY_PROJECT $SENTRY_RELEASE
+            sentry-cli releases set-commits $SENTRY_RELEASE --auto
+            sentry-cli releases files $SENTRY_RELEASE upload-sourcemaps path-to-sourcemaps-if-applicable
+            sentry-cli releases finalize $SENTRY_RELEASE
+            sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
 
   # build-ios-unsigned:
   #   executor: ios
@@ -562,19 +584,48 @@ workflows:
                 - /^build-ios-beta-\d+$/
 
       - build-android-pr:
-          context: mattermost-mobile-android-pr
+          context:
+            - mattermost-mobile-android-pr
+            - mattermost-mobile-sentry
           requires:
             - test
           filters:
             branches:
               only: /^(build|android)-pr-.*/
+
+      - notify-sentry-deploy:
+          context:
+            - mattermost-mobile-android-pr
+            - mattermost-mobile-sentry
+          requires:
+            - test
+            - build-android-pr
+          filters:
+            branches:
+              only: /^(build|android)-pr-.*/
+          e: android
+
       - build-ios-pr:
-          context: mattermost-mobile-ios-pr
+          context:
+            - mattermost-mobile-ios-pr
+            - mattermost-mobile-sentry
           requires:
             - test
           filters:
             branches:
               only: /^(build|ios)-pr-.*/
+
+      - notify-sentry-deploy:
+          context:
+            - mattermost-mobile-ios-pr
+            - mattermost-mobile-sentry
+          requires:
+            - test
+            - build-ios-pr
+          filters:
+            branches:
+              only: /^(build|ios)-pr-.*/
+          e: ios
 
       # - build-android-unsigned:
       #     context: mattermost-mobile-unsigned
@@ -605,7 +656,7 @@ workflows:
           #       - /^build-ios-\d+$/
           #       - /^build-ios-beta-\d+$/
           #       - /^build-ios-sim-\d+$/
-                
+
       # - github-release:
       #     context: mattermost-mobile-unsigned
       #     requires:
