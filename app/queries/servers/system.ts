@@ -422,3 +422,12 @@ export const observeAllowedThemesKeys = (database: Database) => {
         }),
     );
 };
+
+export const getExpiredSession = async (database: Database) => {
+    try {
+        const session = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.SESSION_EXPIRATION);
+        return (session?.value || {}) as SessionExpiration;
+    } catch {
+        return undefined;
+    }
+};

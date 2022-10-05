@@ -84,6 +84,23 @@ index a34598c..b035a76 100644
          if (navigationActivity != null) {
              navigationActivity.onCatalystInstanceDestroy();
          }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative68/java/com/reactnativenavigation/react/ReactGateway.java b/node_modules/react-native-navigation/lib/android/app/src/reactNative68/java/com/reactnativenavigation/react/ReactGateway.java
+index 035ec31..38109c1 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/reactNative68/java/com/reactnativenavigation/react/ReactGateway.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/reactNative68/java/com/reactnativenavigation/react/ReactGateway.java
+@@ -48,6 +48,12 @@ public class ReactGateway {
+         }
+     }
+ 
++    public void onWindowFocusChanged(boolean hasFocus) {
++        if (host.hasInstance()) {
++            host.getReactInstanceManager().onWindowFocusChange(hasFocus);
++        }
++    }
++
+ 	public void onActivityPaused(NavigationActivity activity) {
+ 		initializer.onActivityPaused(activity);
+ 		jsDevReloadHandler.onActivityPaused(activity);
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
 index 934e7e7..19169a3 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m

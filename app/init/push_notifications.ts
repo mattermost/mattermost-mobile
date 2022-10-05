@@ -18,7 +18,7 @@ import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
 import {markThreadAsRead} from '@actions/remote/thread';
-import {Device, Events, Navigation, Screens} from '@constants';
+import {Device, Events, Navigation, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
@@ -31,14 +31,6 @@ import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
-
-const CATEGORY = 'CAN_REPLY';
-const REPLY_ACTION = 'REPLY_ACTION';
-const NOTIFICATION_TYPE = {
-    CLEAR: 'clear',
-    MESSAGE: 'message',
-    SESSION: 'session',
-};
 
 class PushNotifications {
     configured = false;
@@ -56,15 +48,15 @@ class PushNotifications {
         const replyButton = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.button'));
         const replyPlaceholder = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.placeholder'));
         const replyTextInput: NotificationTextInput = {buttonTitle: replyButton, placeholder: replyPlaceholder};
-        const replyAction = new NotificationAction(REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
-        return new NotificationCategory(CATEGORY, [replyAction]);
+        const replyAction = new NotificationAction(PushNotification.REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
+        return new NotificationCategory(PushNotification.CATEGORY, [replyAction]);
     };
 
     getServerUrlFromNotification = async (notification: NotificationWithData) => {
         const {payload} = notification;
 
         if (!payload?.channel_id && (!payload?.server_url || !payload.server_id)) {
-            return undefined;
+            return payload?.server_url;
         }
 
         let serverUrl = payload.server_url;
@@ -156,7 +148,11 @@ class PushNotifications {
         const serverUrl = await this.getServerUrlFromNotification(notification);
 
         if (serverUrl) {
-            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl});
+            if (notification.userInteraction) {
+                DeviceEventEmitter.emit(Events.SESSION_EXPIRED, serverUrl);
+            } else {
+                DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl});
+            }
         }
     };
 
@@ -165,13 +161,13 @@ class PushNotifications {
 
         if (payload) {
             switch (payload.type) {
-                case NOTIFICATION_TYPE.CLEAR:
+                case PushNotification.NOTIFICATION_TYPE.CLEAR:
                     this.handleClearNotification(notification);
                     break;
-                case NOTIFICATION_TYPE.MESSAGE:
+                case PushNotification.NOTIFICATION_TYPE.MESSAGE:
                     this.handleMessageNotification(notification);
                     break;
-                case NOTIFICATION_TYPE.SESSION:
+                case PushNotification.NOTIFICATION_TYPE.SESSION:
                     this.handleSessionNotification(notification);
                     break;
             }
@@ -259,8 +255,14 @@ class PushNotifications {
                 notification.fireDate = new Date(notification.fireDate).toISOString();
             }
 
-            Notifications.postLocalNotification(notification);
+            return Notifications.postLocalNotification(notification);
         }
+
+        return 0;
+    };
+
+    cancelScheduleNotification = (notificationId: number) => {
+        Notifications.cancelLocalNotification(notificationId);
     };
 }
 

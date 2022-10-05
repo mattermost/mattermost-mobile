@@ -15,6 +15,7 @@ import ManagedApp from './app/init/managed_app';
 import PushNotifications from './app/init/push_notifications';
 import GlobalEventHandler from './app/managers/global_event_handler';
 import NetworkManager from './app/managers/network_manager';
+import SessionManager from './app/managers/session_manager';
 import WebsocketManager from './app/managers/websocket_manager';
 import {registerScreens} from './app/screens';
 import NavigationStore from './app/store/navigation_store';
@@ -75,6 +76,7 @@ Navigation.events().registerAppLaunchedListener(async () => {
         await NetworkManager.init(serverCredentials);
         await WebsocketManager.init(serverCredentials);
         PushNotifications.init();
+        SessionManager.init();
     }
 
     initialLaunch();

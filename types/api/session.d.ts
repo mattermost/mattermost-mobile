@@ -7,6 +7,10 @@ interface Session {
     device_id?: string;
     expires_at: number;
     user_id: string;
+    props?: {
+        os: string;
+        csrf: string;
+    };
 }
 
 interface LoginActionResponse {
