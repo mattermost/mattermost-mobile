@@ -618,14 +618,14 @@ workflows:
 
       - notify-sentry-deploy:
           context:
-            - mattermost-mobile-android-pr
+            - mattermost-mobile-ios-pr
             - mattermost-mobile-sentry
           requires:
             - test
             - build-ios-pr
           filters:
             branches:
-              only: /^(build|android)-pr-.*/
+              only: /^(build|ios)-pr-.*/
           e: ios
 
       # - build-android-unsigned:
