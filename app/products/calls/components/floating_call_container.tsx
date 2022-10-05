@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import EventEmitter from '@mm-redux/utils/event_emitter';
 import React, {useState, useEffect, useMemo} from 'react';
 import {View, Platform, StyleSheet} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {ViewTypes} from '@constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 
 const {
     IOS_TOP_PORTRAIT,

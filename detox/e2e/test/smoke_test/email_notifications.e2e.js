@@ -175,16 +175,16 @@ async function verifyEmailNotificationsIsSetTo(sendKey) {
         await expect(sendActionDescription).toHaveText(capitalize(sendKey));
     } else {
         switch (sendKey) {
-            case 'immediately':
-                await expect(immediatelyActionSelected).toBeVisible();
-                await expect(neverActionSelected).not.toBeVisible();
-                break;
-            case 'never':
-                await expect(neverActionSelected).toBeVisible();
-                await expect(immediatelyActionSelected).not.toBeVisible();
-                break;
-            default:
-                throw new Error('Not a valid send option: ' + sendKey);
+        case 'immediately':
+            await expect(immediatelyActionSelected).toBeVisible();
+            await expect(neverActionSelected).not.toBeVisible();
+            break;
+        case 'never':
+            await expect(neverActionSelected).toBeVisible();
+            await expect(immediatelyActionSelected).not.toBeVisible();
+            break;
+        default:
+            throw new Error('Not a valid send option: ' + sendKey);
         }
     }
 }

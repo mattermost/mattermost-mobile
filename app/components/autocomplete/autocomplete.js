@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import EventEmitter from '@mm-redux/utils/event_emitter';
 import {ViewPropTypes} from 'deprecated-react-native-prop-types';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
@@ -12,6 +11,7 @@ import {
 } from 'react-native';
 
 import {DeviceTypes} from '@constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import {emptyFunction} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 

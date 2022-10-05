@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {COMMAND_SUGGESTION_ERROR} from '@mm-redux/constants/apps';
-import {Theme} from '@mm-redux/types/theme';
 import base64 from 'base-64';
 import React from 'react';
 import {Image, Text, View} from 'react-native';
@@ -11,6 +9,8 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgXml} from 'react-native-svg';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {COMMAND_SUGGESTION_ERROR} from '@mm-redux/constants/apps';
+import {Theme} from '@mm-redux/types/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const slashIcon = require('@assets/images/autocomplete/slash_command.png');

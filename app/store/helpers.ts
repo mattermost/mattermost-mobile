@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {enableBatching, Reducer} from '@mm-redux/types/actions';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+
 import {combineReducers} from 'redux';
+
+import {enableBatching, Reducer} from '@mm-redux/types/actions';
 
 const KEY_PREFIX = 'reduxPersist:';
 

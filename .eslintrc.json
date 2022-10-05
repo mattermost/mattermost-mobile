@@ -3,8 +3,7 @@
     "./eslint/eslint-mattermost",
     "./eslint/eslint-react",
     "plugin:@typescript-eslint/eslint-recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:react-hooks/recommended"
+    "plugin:@typescript-eslint/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "plugins": [
@@ -14,7 +13,7 @@
   "settings": {
     "react": {
       "pragma": "React",
-      "version": "17.0"
+      "version": "16.5"
     }
   },
   "env": {
@@ -27,10 +26,8 @@
     "eol-last": ["error", "always"],
     "global-require": 0,
     "no-undefined": 0,
-    "no-shadow": "off",
     "react/display-name": [2, { "ignoreTranspilerName": false }],
     "react/jsx-filename-extension": 0,
-    "react-hooks/exhaustive-deps": 0,
     "camelcase": [
       0,
       {
@@ -46,20 +43,12 @@
         "args": "after-used"
       }
     ],
-    "@typescript-eslint/no-shadow": ["error"],
     "@typescript-eslint/no-explicit-any": "warn",
     "no-use-before-define": "off",
     "@typescript-eslint/no-use-before-define": 0,
     "@typescript-eslint/no-var-requires": 0,
     "@typescript-eslint/explicit-function-return-type": 0,
     "@typescript-eslint/explicit-module-boundary-types": "off",
-    "no-underscore-dangle": "off",
-    "indent": [2, 4, {"SwitchCase": 1}],
-    "key-spacing": [2, {
-      "singleLine": {
-        "beforeColon": false,
-        "afterColon": true
-      }}],
     "@typescript-eslint/member-delimiter-style": 2,
     "import/order": [
       2,
@@ -68,7 +57,12 @@
         "newlines-between": "always",
         "pathGroups": [
           {
-            "pattern": "{@(@actions|@app|@assets|@calls|@client|@components|@constants|@context|@database|@helpers|@hooks|@init|@managers|@queries|@screens|@selectors|@share|@store|@telemetry|@typings|@test|@utils)/**,@(@constants|@i18n|@notifications|@store|@websocket)}",
+            "pattern": "@(@react-native-async-storage|@react-native-community|@react-native-cookies|@react-navigation|@rudderstack|@sentry|@testing-library)/**",
+            "group": "external",
+            "position": "before"
+          },
+          {
+            "pattern": "@{**,*/**}",
             "group": "external",
             "position": "after"
           },
@@ -84,7 +78,9 @@
         },
         "pathGroupsExcludedImportTypes": ["type"]
       }
-    ]
+    ],
+    "no-shadow": "off",
+    "@typescript-eslint/no-shadow": "error"
   },
   "overrides": [
     {

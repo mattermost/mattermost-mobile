@@ -3,8 +3,9 @@
 
 import path from 'path';
 
-import testConfig from '@support/test_config';
 import merge from 'deepmerge';
+
+import testConfig from '@support/test_config';
 
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';

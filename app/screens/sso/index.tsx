@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {getTheme} from '@mm-redux/selectors/entities/preferences';
-import {DispatchFunc} from '@mm-redux/types/actions';
-import {ErrorApi} from '@mm-redux/types/client4';
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {shallowEqual, useDispatch, useSelector} from 'react-redux';
@@ -14,6 +11,9 @@ import {ssoLogin} from '@actions/views/user';
 import {Client4} from '@client/rest';
 import {Sso} from '@constants';
 import emmProvider from '@init/emm_provider';
+import {getTheme} from '@mm-redux/selectors/entities/preferences';
+import {DispatchFunc} from '@mm-redux/types/actions';
+import {ErrorApi} from '@mm-redux/types/client4';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
@@ -40,31 +40,31 @@ function SSO({intl, ssoType}: SSOProps) {
     let completeUrlPath = '';
     let loginUrl = '';
     switch (ssoType) {
-        case Sso.GOOGLE: {
-            completeUrlPath = '/signup/google/complete';
-            loginUrl = `${serverUrl}/oauth/google/mobile_login`;
-            break;
-        }
-        case Sso.GITLAB: {
-            completeUrlPath = '/signup/gitlab/complete';
-            loginUrl = `${serverUrl}/oauth/gitlab/mobile_login`;
-            break;
-        }
-        case Sso.SAML: {
-            completeUrlPath = '/login/sso/saml';
-            loginUrl = `${serverUrl}/login/sso/saml?action=mobile`;
-            break;
-        }
-        case Sso.OFFICE365: {
-            completeUrlPath = '/signup/office365/complete';
-            loginUrl = `${serverUrl}/oauth/office365/mobile_login`;
-            break;
-        }
-        case Sso.OPENID: {
-            completeUrlPath = '/signup/openid/complete';
-            loginUrl = `${serverUrl}/oauth/openid/mobile_login`;
-            break;
-        }
+    case Sso.GOOGLE: {
+        completeUrlPath = '/signup/google/complete';
+        loginUrl = `${serverUrl}/oauth/google/mobile_login`;
+        break;
+    }
+    case Sso.GITLAB: {
+        completeUrlPath = '/signup/gitlab/complete';
+        loginUrl = `${serverUrl}/oauth/gitlab/mobile_login`;
+        break;
+    }
+    case Sso.SAML: {
+        completeUrlPath = '/login/sso/saml';
+        loginUrl = `${serverUrl}/login/sso/saml?action=mobile`;
+        break;
+    }
+    case Sso.OFFICE365: {
+        completeUrlPath = '/signup/office365/complete';
+        loginUrl = `${serverUrl}/oauth/office365/mobile_login`;
+        break;
+    }
+    case Sso.OPENID: {
+        completeUrlPath = '/signup/openid/complete';
+        loginUrl = `${serverUrl}/oauth/openid/mobile_login`;
+        break;
+    }
     }
 
     const onLoadEndError = (e: ErrorApi) => {

@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
+
 import {AppCallResponseTypes} from '@mm-redux/constants/apps';
 import {ActionResult} from '@mm-redux/types/actions';
 import {AppCallResponse, AppField, AppForm, AppFormValues, FormResponseData, AppLookupResponse, AppContext} from '@mm-redux/types/apps';
 import {Theme} from '@mm-redux/types/theme';
 import {DoAppCallResult, DoAppFetchForm, DoAppLookup, DoAppSubmit, PostEphemeralCallResponseForContext} from '@mm-types/actions/apps';
-import React, {PureComponent} from 'react';
-import {intlShape} from 'react-intl';
-
 import {createCallRequest, makeCallErrorResponse} from '@utils/apps';
 
 import AppsFormComponent from './apps_form_component';
@@ -86,25 +86,25 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
 
         const callResp = res.data!;
         switch (callResp.type) {
-            case AppCallResponseTypes.OK:
-                if (callResp.text) {
-                    this.props.actions.postEphemeralCallResponseForContext(callResp, callResp.text, creq.context);
-                }
-                break;
-            case AppCallResponseTypes.FORM:
-                this.setState({form: callResp.form});
-                break;
-            case AppCallResponseTypes.NAVIGATE:
-                break;
-            default:
-                return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage(
-                    {
-                        id: 'apps.error.responses.unknown_type',
-                        defaultMessage: 'App response type not supported. Response type: {type}.',
-                    }, {
-                        type: callResp.type,
-                    },
-                )))};
+        case AppCallResponseTypes.OK:
+            if (callResp.text) {
+                this.props.actions.postEphemeralCallResponseForContext(callResp, callResp.text, creq.context);
+            }
+            break;
+        case AppCallResponseTypes.FORM:
+            this.setState({form: callResp.form});
+            break;
+        case AppCallResponseTypes.NAVIGATE:
+            break;
+        default:
+            return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage(
+                {
+                    id: 'apps.error.responses.unknown_type',
+                    defaultMessage: 'App response type not supported. Response type: {type}.',
+                }, {
+                    type: callResp.type,
+                },
+            )))};
         }
         return res;
     };
@@ -156,26 +156,26 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
         }
         const callResp = res.data!;
         switch (callResp.type) {
-            case AppCallResponseTypes.FORM:
-                this.setState({form: callResp.form});
-                break;
-            case AppCallResponseTypes.OK:
-            case AppCallResponseTypes.NAVIGATE:
-                return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage({
-                    id: 'apps.error.responses.unexpected_type',
-                    defaultMessage: 'App response type was not expected. Response type: {type}.',
-                }, {
-                    type: callResp.type,
-                },
-                )))};
-            default:
-                return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage({
-                    id: 'apps.error.responses.unknown_type',
-                    defaultMessage: 'App response type not supported. Response type: {type}.',
-                }, {
-                    type: callResp.type,
-                },
-                )))};
+        case AppCallResponseTypes.FORM:
+            this.setState({form: callResp.form});
+            break;
+        case AppCallResponseTypes.OK:
+        case AppCallResponseTypes.NAVIGATE:
+            return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage({
+                id: 'apps.error.responses.unexpected_type',
+                defaultMessage: 'App response type was not expected. Response type: {type}.',
+            }, {
+                type: callResp.type,
+            },
+            )))};
+        default:
+            return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage({
+                id: 'apps.error.responses.unknown_type',
+                defaultMessage: 'App response type not supported. Response type: {type}.',
+            }, {
+                type: callResp.type,
+            },
+            )))};
         }
         return res;
     };

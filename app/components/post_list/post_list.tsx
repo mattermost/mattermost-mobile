@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useResetNativeScrollView} from '@hooks';
-import {Posts} from '@mm-redux/constants';
-import EventEmitter from '@mm-redux/utils/event_emitter';
-import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
-import telemetry, {PERF_MARKERS} from '@telemetry';
 import React, {ReactElement, useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
 import {injectIntl, intlShape} from 'react-intl';
 import {DeviceEventEmitter, FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleSheet, ViewToken} from 'react-native';
 
 import {DeepLinkTypes, NavigationTypes} from '@constants';
 import * as Screens from '@constants/screen';
+import {useResetNativeScrollView} from '@hooks';
+import {Posts} from '@mm-redux/constants';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
+import telemetry, {PERF_MARKERS} from '@telemetry';
 import {badDeepLink, errorBadChannel} from '@utils/draft';
 import {emptyFunction} from '@utils/general';
 import {makeExtraData} from '@utils/list_view';

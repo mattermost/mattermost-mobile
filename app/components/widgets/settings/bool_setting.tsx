@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Theme} from '@mm-redux/types/theme';
 import React from 'react';
 import {
     View,
@@ -11,6 +10,7 @@ import {
 
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
+import {Theme} from '@mm-redux/types/theme';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {
     changeOpacity,

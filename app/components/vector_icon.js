@@ -35,54 +35,54 @@ export default class VectorIcon extends PureComponent {
         const {name, type, style, size} = this.props;
 
         switch (type) {
-            case 'fontawesome':
-                return (
-                    <FontAwesomeIcon
-                        name={name}
-                        style={style}
-                        size={size}
-                    />
-                );
-            case 'fontawesome5':
-                return (
-                    <FontAwesome5Icon
-                        name={name}
-                        style={style}
-                        size={size}
-                    />
-                );
-            case 'foundation':
-                return (
-                    <FoundationIcon
-                        name={name}
-                        style={style}
-                        size={size}
-                    />
-                );
-            case 'ion':
-                return (
-                    <IonIcon
-                        name={name}
-                        style={style}
-                        size={size}
-                    />
-                );
-            case 'material':
-                return (
-                    <MaterialIcon
-                        name={name}
-                        style={style}
-                        size={size}
-                    />
-                );
-            case 'mattermost':
-                return (
-                    <Mattermost
-                        name={name}
-                        style={style}
-                        size={size}
-                    />
-                );
+        case 'fontawesome':
+            return (
+                <FontAwesomeIcon
+                    name={name}
+                    style={style}
+                    size={size}
+                />
+            );
+        case 'fontawesome5':
+            return (
+                <FontAwesome5Icon
+                    name={name}
+                    style={style}
+                    size={size}
+                />
+            );
+        case 'foundation':
+            return (
+                <FoundationIcon
+                    name={name}
+                    style={style}
+                    size={size}
+                />
+            );
+        case 'ion':
+            return (
+                <IonIcon
+                    name={name}
+                    style={style}
+                    size={size}
+                />
+            );
+        case 'material':
+            return (
+                <MaterialIcon
+                    name={name}
+                    style={style}
+                    size={size}
+                />
+            );
+        case 'mattermost':
+            return (
+                <Mattermost
+                    name={name}
+                    style={style}
+                    size={size}
+                />
+            );
         }
 
         return null;

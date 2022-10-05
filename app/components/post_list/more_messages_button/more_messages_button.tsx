@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import EventEmitter from '@mm-redux/utils/event_emitter';
-import {messageCount} from '@mm-redux/utils/post_list';
 import React from 'react';
 import {intlShape} from 'react-intl';
 import {ActivityIndicator, Animated, AppState, AppStateStatus, NativeEventSubscription, Text, View, ViewToken} from 'react-native';
@@ -10,6 +8,8 @@ import {ActivityIndicator, Animated, AppState, AppStateStatus, NativeEventSubscr
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import ViewTypes, {INDICATOR_BAR_HEIGHT, JOIN_CALL_BAR_HEIGHT, CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
+import EventEmitter from '@mm-redux/utils/event_emitter';
+import {messageCount} from '@mm-redux/utils/post_list';
 import {t} from '@utils/i18n';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 

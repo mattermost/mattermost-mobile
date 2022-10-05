@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelNotifyProps} from '@mm-redux/types/channels';
-import {Theme} from '@mm-redux/types/theme';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 
 import {goToScreen} from '@actions/navigation';
 import {ViewTypes} from '@constants';
+import {ChannelNotifyProps} from '@mm-redux/types/channels';
+import {Theme} from '@mm-redux/types/theme';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
@@ -41,26 +41,26 @@ export default class NotificationPreference extends PureComponent<NotificationPr
         let textId = '';
         let defaultMsg = '';
         switch (notifyLevel) {
-            case ViewTypes.NotificationLevels.DEFAULT: {
-                textId = t('channel_header.notificationPreference.default');
-                defaultMsg = 'Default';
-                break;
-            }
-            case ViewTypes.NotificationLevels.ALL: {
-                textId = t('channel_header.notificationPreference.all');
-                defaultMsg = 'All';
-                break;
-            }
-            case ViewTypes.NotificationLevels.MENTION: {
-                textId = t('channel_header.notificationPreference.mention');
-                defaultMsg = 'Mentions';
-                break;
-            }
-            case ViewTypes.NotificationLevels.NONE: {
-                textId = t('channel_header.notificationPreference.none');
-                defaultMsg = 'Never';
-                break;
-            }
+        case ViewTypes.NotificationLevels.DEFAULT: {
+            textId = t('channel_header.notificationPreference.default');
+            defaultMsg = 'Default';
+            break;
+        }
+        case ViewTypes.NotificationLevels.ALL: {
+            textId = t('channel_header.notificationPreference.all');
+            defaultMsg = 'All';
+            break;
+        }
+        case ViewTypes.NotificationLevels.MENTION: {
+            textId = t('channel_header.notificationPreference.mention');
+            defaultMsg = 'Mentions';
+            break;
+        }
+        case ViewTypes.NotificationLevels.NONE: {
+            textId = t('channel_header.notificationPreference.none');
+            defaultMsg = 'Never';
+            break;
+        }
         }
 
         return intl.formatMessage({id: textId, defaultMessage: defaultMsg});

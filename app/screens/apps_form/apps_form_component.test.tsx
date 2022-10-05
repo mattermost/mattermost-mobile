@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Preferences from '@mm-redux/constants/preferences';
 import {ShallowWrapper} from 'enzyme';
 import React from 'react';
 import {shallowWithIntl} from 'test/intl-test-helper';
+
+import Preferences from '@mm-redux/constants/preferences';
 
 import AppsFormComponent, {Props, State} from './apps_form_component';
 
