@@ -625,7 +625,7 @@ workflows:
             - build-ios-pr
           filters:
             branches:
-              only: /^(build|android)-pr-.*/
+              only: /^(build|ios)-pr-.*/
           e: ios
 
       # - build-android-unsigned:
