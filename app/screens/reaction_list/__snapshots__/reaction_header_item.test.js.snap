@@ -4,8 +4,8 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
 <TouchableOpacity
   onPress={[Function]}
   style={
-    Array [
-      Object {
+    [
+      {
         "alignItems": "center",
         "flexDirection": "row",
         "height": 35,
@@ -15,7 +15,7 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
         "paddingHorizontal": 6,
         "paddingVertical": 2,
       },
-      Object {
+      {
         "borderBottomWidth": 2,
         "borderColor": "transparent",
       },
@@ -29,7 +29,7 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
       padding={5}
       size={16}
       textStyle={
-        Object {
+        {
           "color": "#000",
           "fontWeight": "bold",
         }
@@ -37,7 +37,7 @@ exports[`ReactionHeaderItem should match snapshot 1`] = `
     />
     <Text
       style={
-        Object {
+        {
           "color": "#1c58d9",
           "fontSize": 16,
           "marginLeft": 4,
@@ -57,7 +57,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
     padding={5}
     size={16}
     textStyle={
-      Object {
+      {
         "color": "#000",
         "fontWeight": "bold",
       }
@@ -65,7 +65,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 1`] = `
   />
   <Text
     style={
-      Object {
+      {
         "color": "#1c58d9",
         "fontSize": 16,
         "marginLeft": 4,
@@ -83,7 +83,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
     defaultMessage="All"
     id="mobile.reaction_header.all_emojis"
     style={
-      Object {
+      {
         "color": "#1c58d9",
         "fontSize": 16,
         "marginLeft": 4,
@@ -92,7 +92,7 @@ exports[`ReactionHeaderItem should match snapshot, renderContent 2`] = `
   />
   <Text
     style={
-      Object {
+      {
         "color": "#1c58d9",
         "fontSize": 16,
         "marginLeft": 4,

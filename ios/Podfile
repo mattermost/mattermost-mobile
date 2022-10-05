@@ -1,15 +1,27 @@
 require_relative '../node_modules/react-native/scripts/react_native_pods'
 require_relative '../node_modules/@react-native-community/cli-platform-ios/native_modules'
 
-platform :ios, '12.1'
+platform :ios, '12.4'
+install! 'cocoapods', :deterministic_uuids => false
+
+production = ENV["PRODUCTION"] == "1"
 
 target 'Mattermost' do
   # Pods for Mattermost
   config = use_native_modules!
+  
+  # Flags change depending on the env values.
+  # flags = get_default_flags()
+
   use_react_native!(
     :path => config[:reactNativePath],
     # to enable hermes on iOS, change `false` to `true` and then install pods
-    :hermes_enabled => false
+    :production => production,
+    :hermes_enabled => false,
+    :fabric_enabled => false,
+    :flipper_configuration => FlipperConfiguration.enabled,
+    # An absolute path to your application root.
+    :app_path => "#{Pod::Config.instance.installation_root}/.."
   )
 
   permissions_path = '../node_modules/react-native-permissions/ios'
@@ -23,12 +35,6 @@ target 'Mattermost' do
   pod 'XCDYouTubeKit', :git => 'https://github.com/KODIKAS-NL/XCDYouTubeKit.git', :branch => 'master', :commit => '7c5ea8fe159d096a8f2cdc88c29bb6e4ac79dcde'
   pod 'Swime', '3.0.6'
 
-# Enables Flipper.
-  #
-  # Note that if you have use_frameworks! enabled, Flipper will not work and
-  # you should disable the next line.
-  #use_flipper!()
-
   post_install do |installer|
     react_native_post_install(installer)
     __apply_Xcode_12_5_M1_post_install_workaround(installer)
@@ -36,6 +42,11 @@ target 'Mattermost' do
       if target.name != "RCT-Folly"
         target.build_configurations.each do |config|
           config.build_settings.delete 'IPHONEOS_DEPLOYMENT_TARGET'
+        end
+      end
+      if target.respond_to?(:product_type) and target.product_type == "com.apple.product-type.bundle"
+        target.build_configurations.each do |config|
+            config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
         end
       end
     end

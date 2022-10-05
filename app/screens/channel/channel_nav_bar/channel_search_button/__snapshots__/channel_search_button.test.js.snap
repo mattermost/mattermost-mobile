@@ -3,7 +3,7 @@
 exports[`ChannelSearchButton should match, full snapshot 1`] = `
 <View
   style={
-    Object {
+    {
       "width": 40,
     }
   }
@@ -15,7 +15,7 @@ exports[`ChannelSearchButton should match, full snapshot 1`] = `
     accessible={true}
     onPress={[Function]}
     style={
-      Object {
+      {
         "flex": 1,
       }
     }
@@ -23,7 +23,7 @@ exports[`ChannelSearchButton should match, full snapshot 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "flex-end",
           "flex": 1,
           "flexDirection": "column",
@@ -36,7 +36,7 @@ exports[`ChannelSearchButton should match, full snapshot 1`] = `
         name="magnify"
         size={24}
         style={
-          Object {
+          {
             "backgroundColor": "#192a4d",
             "color": "#ffffff",
           }

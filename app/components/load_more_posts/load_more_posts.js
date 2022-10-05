@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ViewPropTypes} from 'deprecated-react-native-prop-types';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
-import {ActivityIndicator, Platform, View, ViewPropTypes} from 'react-native';
+import {ActivityIndicator, Platform, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import TouchableWithFeedback from '@components/touchable_with_feedback';

@@ -8,7 +8,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
   headerDefaultMessage="SEND EMAIL NOTIFICATIONS"
   headerId="mobile.notification_settings.email.send"
   theme={
-    Object {
+    {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -51,7 +51,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       selected={true}
       testID="notification_settings_email.immediately.action"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -82,7 +82,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
     />
     <View
       style={
-        Object {
+        {
           "backgroundColor": undefined,
           "flex": 1,
           "height": 1,
@@ -103,7 +103,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailSection 
       selected={false}
       testID="notification_settings_email.never.action"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -143,7 +143,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailThreadsS
   headerDefaultMessage="THREAD REPLY NOTIFICATIONS"
   headerId="user.settings.notifications.email_threads.title"
   theme={
-    Object {
+    {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -184,7 +184,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailThreadsS
     }
     selected={true}
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -214,7 +214,7 @@ exports[`NotificationSettingsEmailIos should match snapshot, renderEmailThreadsS
     }
   />
   <View
-    style={Object {}}
+    style={{}}
   />
 </section>
 `;

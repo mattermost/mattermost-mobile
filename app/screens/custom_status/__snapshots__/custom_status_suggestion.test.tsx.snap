@@ -7,7 +7,7 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#ffffff",
         "flexDirection": "row",
         "minHeight": 50,
@@ -16,7 +16,7 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
   >
     <Text
       style={
-        Object {
+        {
           "color": "#3f4350",
           "height": 46,
           "left": 14,
@@ -33,14 +33,14 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
     </Text>
     <View
       style={
-        Object {
+        {
           "flex": 1,
         }
       }
     >
       <View
         style={
-          Object {
+          {
             "flex": 1,
             "justifyContent": "center",
             "paddingBottom": 14,
@@ -53,12 +53,12 @@ exports[`screens/custom_status_suggestion should match snapshot 1`] = `
           <CustomStatusText
             text="In a meeting"
             textStyle={
-              Object {
+              {
                 "color": "#3f4350",
               }
             }
             theme={
-              Object {
+              {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -101,7 +101,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
 >
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#ffffff",
         "flexDirection": "row",
         "minHeight": 50,
@@ -110,7 +110,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
   >
     <Text
       style={
-        Object {
+        {
           "color": "#3f4350",
           "height": 46,
           "left": 14,
@@ -127,14 +127,14 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
     </Text>
     <View
       style={
-        Object {
+        {
           "flex": 1,
         }
       }
     >
       <View
         style={
-          Object {
+          {
             "flex": 1,
             "justifyContent": "center",
             "paddingBottom": 14,
@@ -147,12 +147,12 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
           <CustomStatusText
             text="In a meeting"
             textStyle={
-              Object {
+              {
                 "color": "#3f4350",
               }
             }
             theme={
-              Object {
+              {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -185,7 +185,7 @@ exports[`screens/custom_status_suggestion should match snapshot with separator a
       </View>
       <View
         style={
-          Object {
+          {
             "backgroundColor": "rgba(63,67,80,0.2)",
             "height": 1,
             "marginRight": 16,

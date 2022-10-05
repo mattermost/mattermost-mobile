@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`TermsOfService should enable/disable navigator buttons on setNavigatorButtons true/false 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -11,12 +11,12 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
   <Connect(StatusBar) />
   <ScrollView
     contentContainerStyle={
-      Object {
+      {
         "paddingBottom": 50,
       }
     }
     style={
-      Object {
+      {
         "backgroundColor": "#ffffff",
         "flex": 1,
         "padding": 30,
@@ -25,23 +25,23 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
   >
     <Connect(Markdown)
       baseTextStyle={
-        Object {
+        {
           "color": "#3f4350",
           "fontSize": 15,
           "lineHeight": 20,
         }
       }
       blockStyles={
-        Object {
-          "adjacentParagraph": Object {
+        {
+          "adjacentParagraph": {
             "marginTop": 6,
           },
-          "horizontalRule": Object {
+          "horizontalRule": {
             "backgroundColor": "#3f4350",
             "height": 0.5,
             "marginVertical": 10,
           },
-          "quoteBlockIcon": Object {
+          "quoteBlockIcon": {
             "color": undefined,
           },
         }
@@ -51,86 +51,86 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
       disableGallery={true}
       disableHashtags={true}
       textStyles={
-        Object {
-          "code": Object {
+        {
+          "code": {
             "alignSelf": "center",
             "backgroundColor": undefined,
             "fontFamily": "Menlo",
           },
-          "codeBlock": Object {
+          "codeBlock": {
             "fontFamily": "Menlo",
           },
-          "del": Object {
+          "del": {
             "textDecorationLine": "line-through",
           },
-          "emph": Object {
+          "emph": {
             "fontStyle": "italic",
           },
-          "error": Object {
+          "error": {
             "color": "#d24b4e",
           },
-          "heading1": Object {
+          "heading1": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading1Text": Object {
+          "heading1Text": {
             "paddingBottom": 8,
           },
-          "heading2": Object {
+          "heading2": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading2Text": Object {
+          "heading2Text": {
             "paddingBottom": 8,
           },
-          "heading3": Object {
+          "heading3": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading3Text": Object {
+          "heading3Text": {
             "paddingBottom": 8,
           },
-          "heading4": Object {
+          "heading4": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading4Text": Object {
+          "heading4Text": {
             "paddingBottom": 8,
           },
-          "heading5": Object {
+          "heading5": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading5Text": Object {
+          "heading5Text": {
             "paddingBottom": 8,
           },
-          "heading6": Object {
+          "heading6": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading6Text": Object {
+          "heading6Text": {
             "paddingBottom": 8,
           },
-          "link": Object {
+          "link": {
             "color": "#386fe5",
           },
-          "mention": Object {
+          "mention": {
             "color": "#386fe5",
           },
-          "mention_highlight": Object {
+          "mention_highlight": {
             "backgroundColor": "#ffd470",
             "color": "#1b1d22",
           },
-          "strong": Object {
+          "strong": {
             "fontWeight": "bold",
           },
-          "table_header_row": Object {
+          "table_header_row": {
             "fontWeight": "700",
           },
         }
@@ -138,13 +138,13 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
       value="Terms Text"
     />
   </ScrollView>
-</RNCSafeAreaView>
+</ForwardRef>
 `;
 
 exports[`TermsOfService should enable/disable navigator buttons on setNavigatorButtons true/false 2`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -152,12 +152,12 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
   <Connect(StatusBar) />
   <ScrollView
     contentContainerStyle={
-      Object {
+      {
         "paddingBottom": 50,
       }
     }
     style={
-      Object {
+      {
         "backgroundColor": "#ffffff",
         "flex": 1,
         "padding": 30,
@@ -166,23 +166,23 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
   >
     <Connect(Markdown)
       baseTextStyle={
-        Object {
+        {
           "color": "#3f4350",
           "fontSize": 15,
           "lineHeight": 20,
         }
       }
       blockStyles={
-        Object {
-          "adjacentParagraph": Object {
+        {
+          "adjacentParagraph": {
             "marginTop": 6,
           },
-          "horizontalRule": Object {
+          "horizontalRule": {
             "backgroundColor": "#3f4350",
             "height": 0.5,
             "marginVertical": 10,
           },
-          "quoteBlockIcon": Object {
+          "quoteBlockIcon": {
             "color": undefined,
           },
         }
@@ -192,86 +192,86 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
       disableGallery={true}
       disableHashtags={true}
       textStyles={
-        Object {
-          "code": Object {
+        {
+          "code": {
             "alignSelf": "center",
             "backgroundColor": undefined,
             "fontFamily": "Menlo",
           },
-          "codeBlock": Object {
+          "codeBlock": {
             "fontFamily": "Menlo",
           },
-          "del": Object {
+          "del": {
             "textDecorationLine": "line-through",
           },
-          "emph": Object {
+          "emph": {
             "fontStyle": "italic",
           },
-          "error": Object {
+          "error": {
             "color": "#d24b4e",
           },
-          "heading1": Object {
+          "heading1": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading1Text": Object {
+          "heading1Text": {
             "paddingBottom": 8,
           },
-          "heading2": Object {
+          "heading2": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading2Text": Object {
+          "heading2Text": {
             "paddingBottom": 8,
           },
-          "heading3": Object {
+          "heading3": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading3Text": Object {
+          "heading3Text": {
             "paddingBottom": 8,
           },
-          "heading4": Object {
+          "heading4": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading4Text": Object {
+          "heading4Text": {
             "paddingBottom": 8,
           },
-          "heading5": Object {
+          "heading5": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading5Text": Object {
+          "heading5Text": {
             "paddingBottom": 8,
           },
-          "heading6": Object {
+          "heading6": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading6Text": Object {
+          "heading6Text": {
             "paddingBottom": 8,
           },
-          "link": Object {
+          "link": {
             "color": "#386fe5",
           },
-          "mention": Object {
+          "mention": {
             "color": "#386fe5",
           },
-          "mention_highlight": Object {
+          "mention_highlight": {
             "backgroundColor": "#ffd470",
             "color": "#1b1d22",
           },
-          "strong": Object {
+          "strong": {
             "fontWeight": "bold",
           },
-          "table_header_row": Object {
+          "table_header_row": {
             "fontWeight": "700",
           },
         }
@@ -279,21 +279,21 @@ exports[`TermsOfService should enable/disable navigator buttons on setNavigatorB
       value="Terms Text"
     />
   </ScrollView>
-</RNCSafeAreaView>
+</ForwardRef>
 `;
 
 exports[`TermsOfService should match snapshot 1`] = `
 <Loading
   color="#3f4350"
   size="large"
-  style={Object {}}
+  style={{}}
 />
 `;
 
 exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
 <View
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -302,7 +302,7 @@ exports[`TermsOfService should match snapshot for fail of get terms 1`] = `
   <Connect(FailedNetworkAction)
     onRetry={[Function]}
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -338,14 +338,14 @@ exports[`TermsOfService should match snapshot for get terms 1`] = `
 <Loading
   color="#3f4350"
   size="large"
-  style={Object {}}
+  style={{}}
 />
 `;
 
 exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -353,12 +353,12 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
   <Connect(StatusBar) />
   <ScrollView
     contentContainerStyle={
-      Object {
+      {
         "paddingBottom": 50,
       }
     }
     style={
-      Object {
+      {
         "backgroundColor": "#ffffff",
         "flex": 1,
         "padding": 30,
@@ -367,23 +367,23 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
   >
     <Connect(Markdown)
       baseTextStyle={
-        Object {
+        {
           "color": "#3f4350",
           "fontSize": 15,
           "lineHeight": 20,
         }
       }
       blockStyles={
-        Object {
-          "adjacentParagraph": Object {
+        {
+          "adjacentParagraph": {
             "marginTop": 6,
           },
-          "horizontalRule": Object {
+          "horizontalRule": {
             "backgroundColor": "#3f4350",
             "height": 0.5,
             "marginVertical": 10,
           },
-          "quoteBlockIcon": Object {
+          "quoteBlockIcon": {
             "color": undefined,
           },
         }
@@ -393,86 +393,86 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
       disableGallery={true}
       disableHashtags={true}
       textStyles={
-        Object {
-          "code": Object {
+        {
+          "code": {
             "alignSelf": "center",
             "backgroundColor": undefined,
             "fontFamily": "Menlo",
           },
-          "codeBlock": Object {
+          "codeBlock": {
             "fontFamily": "Menlo",
           },
-          "del": Object {
+          "del": {
             "textDecorationLine": "line-through",
           },
-          "emph": Object {
+          "emph": {
             "fontStyle": "italic",
           },
-          "error": Object {
+          "error": {
             "color": "#d24b4e",
           },
-          "heading1": Object {
+          "heading1": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading1Text": Object {
+          "heading1Text": {
             "paddingBottom": 8,
           },
-          "heading2": Object {
+          "heading2": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading2Text": Object {
+          "heading2Text": {
             "paddingBottom": 8,
           },
-          "heading3": Object {
+          "heading3": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading3Text": Object {
+          "heading3Text": {
             "paddingBottom": 8,
           },
-          "heading4": Object {
+          "heading4": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading4Text": Object {
+          "heading4Text": {
             "paddingBottom": 8,
           },
-          "heading5": Object {
+          "heading5": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading5Text": Object {
+          "heading5Text": {
             "paddingBottom": 8,
           },
-          "heading6": Object {
+          "heading6": {
             "fontSize": 17,
             "fontWeight": "700",
             "lineHeight": 25,
           },
-          "heading6Text": Object {
+          "heading6Text": {
             "paddingBottom": 8,
           },
-          "link": Object {
+          "link": {
             "color": "#386fe5",
           },
-          "mention": Object {
+          "mention": {
             "color": "#386fe5",
           },
-          "mention_highlight": Object {
+          "mention_highlight": {
             "backgroundColor": "#ffd470",
             "color": "#1b1d22",
           },
-          "strong": Object {
+          "strong": {
             "fontWeight": "bold",
           },
-          "table_header_row": Object {
+          "table_header_row": {
             "fontWeight": "700",
           },
         }
@@ -480,5 +480,5 @@ exports[`TermsOfService should match snapshot on enableNavigatorLogout 1`] = `
       value="Terms Text"
     />
   </ScrollView>
-</RNCSafeAreaView>
+</ForwardRef>
 `;

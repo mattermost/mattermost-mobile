@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import jestExpect from 'expect';
-
 import client from './client';
 import {getResponseFromError} from './common';
 
@@ -51,10 +49,10 @@ export const apiLDAPTest = async () => {
  */
 export const apiRequireLDAPServer = async () => {
     const {error: testError} = await apiLDAPTest();
-    jestExpect(testError).toBeUndefined();
+    expect(testError).toBeUndefined();
 
     const {error: syncError} = await apiLDAPSync();
-    jestExpect(syncError).toBeUndefined();
+    expect(syncError).toBeUndefined();
 };
 
 export const Ldap = {

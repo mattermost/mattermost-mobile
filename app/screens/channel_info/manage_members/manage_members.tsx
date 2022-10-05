@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Theme} from '@mm-redux/types/theme';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 
 import {goToScreen} from '@actions/navigation';
-import {Theme} from '@mm-redux/types/theme';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import Separator from '@screens/channel_info/separator';
 import {t} from '@utils/i18n';
@@ -30,8 +30,9 @@ export default class ManageMembers extends PureComponent<ManageMembersProps> {
     };
 
     goToChannelMembers = preventDoubleTap(() => {
-        const {canManageUsers} = this.props;
+        // @ts-expect-error context type definition
         const {intl} = this.context;
+        const {canManageUsers} = this.props;
         const id = canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers');
         const defaultMessage = canManageUsers ? 'Manage Members' : 'View Members';
         const screen = 'ChannelMembers';

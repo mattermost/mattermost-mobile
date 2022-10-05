@@ -6,9 +6,9 @@ exports[`components/custom_status/custom_status_emoji should match snapshot 1`] 
 >
   <Text
     style={
-      Array [
+      [
         undefined,
-        Object {
+        {
           "fontSize": 16,
         },
       ]
@@ -25,9 +25,9 @@ exports[`components/custom_status/custom_status_emoji should match snapshot with
 >
   <Text
     style={
-      Array [
+      [
         undefined,
-        Object {
+        {
           "fontSize": 34,
         },
       ]

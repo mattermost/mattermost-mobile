@@ -3,7 +3,7 @@
 exports[`edit_profile should match snapshot 1`] = `
 <View
   style={
-    Object {
+    {
       "alignItems": "center",
       "justifyContent": "center",
       "padding": 25,

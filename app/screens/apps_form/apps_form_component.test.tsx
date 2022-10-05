@@ -1,11 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Preferences from '@mm-redux/constants/preferences';
 import {ShallowWrapper} from 'enzyme';
 import React from 'react';
 import {shallowWithIntl} from 'test/intl-test-helper';
-
-import Preferences from '@mm-redux/constants/preferences';
 
 import AppsFormComponent, {Props, State} from './apps_form_component';
 
@@ -72,21 +71,21 @@ describe('AppsForm', () => {
     };
 
     test('should set match snapshot', () => {
-        const wrapper: ShallowWrapper<Props, State, AppsFormComponent> = shallowWithIntl(
+        const wrapper: ShallowWrapper<Props, State, typeof AppsFormComponent> = shallowWithIntl(
             <AppsFormComponent
                 {...baseProps}
             />,
-        ) as unknown as ShallowWrapper<Props, State, AppsFormComponent>;
+        ) as unknown as ShallowWrapper<Props, State, typeof AppsFormComponent>;
 
         expect(wrapper).toMatchSnapshot();
     });
 
     test('should set initial form values', () => {
-        const wrapper: ShallowWrapper<Props, State, AppsFormComponent> = shallowWithIntl(
+        const wrapper: ShallowWrapper<Props, State, typeof AppsFormComponent> = shallowWithIntl(
             <AppsFormComponent
                 {...baseProps}
             />,
-        ) as unknown as ShallowWrapper<Props, State, AppsFormComponent>;
+        ) as unknown as ShallowWrapper<Props, State, typeof AppsFormComponent>;
 
         expect(wrapper.state().values).toEqual({
             bool1: false,
@@ -109,15 +108,18 @@ describe('AppsForm', () => {
             },
         };
 
-        const wrapper: ShallowWrapper<Props, State, AppsFormComponent> = shallowWithIntl(
+        const wrapper: ShallowWrapper<Props, State, typeof AppsFormComponent> = shallowWithIntl(
             <AppsFormComponent
                 {...props}
             />,
-        ) as unknown as ShallowWrapper<Props, State, AppsFormComponent>;
+        ) as unknown as ShallowWrapper<Props, State, typeof AppsFormComponent>;
 
         const hide = jest.fn();
+
+        // @ts-expect-error handleHide is defined
         wrapper.instance().handleHide = hide;
 
+        // @ts-expect-error doSubmit is defined
         await wrapper.instance().doSubmit();
 
         expect(submit).toHaveBeenCalledWith({

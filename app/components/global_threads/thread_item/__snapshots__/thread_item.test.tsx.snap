@@ -9,7 +9,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
 >
   <View
     style={
-      Object {
+      {
         "borderBottomColor": "rgba(63,67,80,0.08)",
         "borderBottomWidth": 1,
         "flex": 1,
@@ -21,7 +21,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
   >
     <View
       style={
-        Object {
+        {
           "marginTop": 3,
           "width": 32,
         }
@@ -29,7 +29,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
     >
       <View
         style={
-          Object {
+          {
             "alignSelf": "center",
             "backgroundColor": "#5d89ea",
             "borderRadius": 4,
@@ -43,14 +43,14 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
     </View>
     <View
       style={
-        Object {
+        {
           "flex": 1,
         }
       }
     >
       <View
         style={
-          Object {
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -60,7 +60,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
       >
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "row",
@@ -72,7 +72,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
           <Text
             numberOfLines={1}
             style={
-              Object {
+              {
                 "color": "#3f4350",
                 "fontSize": 15,
                 "fontWeight": "600",
@@ -83,7 +83,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
           />
           <View
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(63,67,80,0.08)",
                 "borderRadius": 4,
                 "maxWidth": "50%",
@@ -93,7 +93,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
             <Text
               numberOfLines={1}
               style={
-                Object {
+                {
                   "color": "#3f4350",
                   "fontSize": 10,
                   "fontWeight": "600",
@@ -113,7 +113,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
         </View>
         <InjectIntl(FriendlyDate)
           style={
-            Object {
+            {
               "color": "rgba(63,67,80,0.64)",
               "fontSize": 12,
               "fontWeight": "400",
@@ -124,7 +124,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
       <Text
         numberOfLines={2}
         style={
-          Object {
+          {
             "color": "#3f4350",
             "fontSize": 15,
             "lineHeight": 20,
@@ -139,7 +139,7 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
         location="GlobalThreads"
         testID="thread_item.post1.footer"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -168,13 +168,13 @@ exports[`Global Thread Item Should render thread item with unread messages dot 1
           }
         }
         thread={
-          Object {
+          {
             "id": "post1",
             "unread_replies": 5,
           }
         }
         threadStarter={
-          Object {
+          {
             "id": "user1",
           }
         }
@@ -193,7 +193,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "borderBottomColor": "rgba(63,67,80,0.08)",
         "borderBottomWidth": 1,
         "flex": 1,
@@ -205,7 +205,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "marginTop": 3,
           "width": 32,
         }
@@ -213,7 +213,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
     >
       <View
         style={
-          Object {
+          {
             "alignSelf": "center",
             "backgroundColor": "#1e325c",
             "borderRadius": 9,
@@ -225,7 +225,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
       >
         <Text
           style={
-            Object {
+            {
               "alignSelf": "center",
               "color": "#ffffff",
               "fontFamily": "Open Sans",
@@ -241,14 +241,14 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "flex": 1,
         }
       }
     >
       <View
         style={
-          Object {
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -258,7 +258,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
       >
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "row",
@@ -270,7 +270,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
           <Text
             numberOfLines={1}
             style={
-              Object {
+              {
                 "color": "#3f4350",
                 "fontSize": 15,
                 "fontWeight": "600",
@@ -281,7 +281,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
           />
           <View
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(63,67,80,0.08)",
                 "borderRadius": 4,
                 "maxWidth": "50%",
@@ -291,7 +291,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
             <Text
               numberOfLines={1}
               style={
-                Object {
+                {
                   "color": "#3f4350",
                   "fontSize": 10,
                   "fontWeight": "600",
@@ -311,7 +311,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
         </View>
         <InjectIntl(FriendlyDate)
           style={
-            Object {
+            {
               "color": "rgba(63,67,80,0.64)",
               "fontSize": 12,
               "fontWeight": "400",
@@ -322,7 +322,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
       <Text
         numberOfLines={2}
         style={
-          Object {
+          {
             "color": "#3f4350",
             "fontSize": 15,
             "lineHeight": 20,
@@ -337,7 +337,7 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
         location="GlobalThreads"
         testID="thread_item.post1.footer"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -366,14 +366,14 @@ exports[`Global Thread Item Should show unread mentions count 1`] = `
           }
         }
         thread={
-          Object {
+          {
             "id": "post1",
             "unread_mentions": 5,
             "unread_replies": 5,
           }
         }
         threadStarter={
-          Object {
+          {
             "id": "user1",
           }
         }

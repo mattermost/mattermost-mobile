@@ -3,14 +3,14 @@
 exports[`Badge should match snapshot 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "borderRadius": 20,
         "position": "absolute",
         "right": 30,
         "top": 2,
       },
-      Object {
+      {
         "borderColor": "#000000",
       },
     ]
@@ -19,18 +19,18 @@ exports[`Badge should match snapshot 1`] = `
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "backgroundColor": "#444",
           "height": 20,
           "padding": 12,
           "paddingBottom": 3,
           "paddingTop": 3,
         },
-        Object {
+        {
           "backgroundColor": "#ffffff",
         },
-        Object {
+        {
           "opacity": 0,
         },
       ]
@@ -38,7 +38,7 @@ exports[`Badge should match snapshot 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "alignSelf": "center",
           "flex": 1,
@@ -48,7 +48,7 @@ exports[`Badge should match snapshot 1`] = `
     >
       <View
         style={
-          Object {
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -60,12 +60,12 @@ exports[`Badge should match snapshot 1`] = `
         <Text
           onLayout={[Function]}
           style={
-            Array [
-              Object {
+            [
+              {
                 "color": "white",
                 "fontSize": 14,
               },
-              Object {
+              {
                 "color": "#145dbf",
                 "fontSize": 10,
               },

@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ActionResult} from '@mm-redux/types/actions';
+import {Theme} from '@mm-redux/types/theme';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
-import {ActionResult} from '@mm-redux/types/actions';
-import {Theme} from '@mm-redux/types/theme';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import Separator from '@screens/channel_info/separator';
 import {alertErrorWithFallback} from '@utils/general';
@@ -30,9 +30,13 @@ export default class ConvertPrivate extends PureComponent<ConvertPrivateProps> {
     handleConfirmConvertToPrivate = preventDoubleTap(async () => {
         const {channelId, convertChannelToPrivate, displayName} = this.props;
         const result = await convertChannelToPrivate(channelId);
+
+        // @ts-expect-error context type definition
         const {formatMessage} = this.context.intl;
         if (result.error) {
             alertErrorWithFallback(
+
+                // @ts-expect-error context type definition
                 this.context.intl,
                 result.error,
                 {
@@ -59,6 +63,8 @@ export default class ConvertPrivate extends PureComponent<ConvertPrivateProps> {
 
     handleConvertToPrivate = preventDoubleTap(() => {
         const {displayName} = this.props;
+
+        // @ts-expect-error context type definition
         const {formatMessage} = this.context.intl;
         const title = {id: t('mobile.channel_info.alertTitleConvertChannel'), defaultMessage: 'Convert {displayName} to a private channel?'};
         const message = {

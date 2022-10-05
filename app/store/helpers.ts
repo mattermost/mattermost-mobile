@@ -1,11 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import AsyncStorage from '@react-native-async-storage/async-storage';
-
-import {combineReducers} from 'redux';
-
 import {enableBatching, Reducer} from '@mm-redux/types/actions';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import {combineReducers} from 'redux';
 
 const KEY_PREFIX = 'reduxPersist:';
 
@@ -23,7 +21,7 @@ export async function getStoredState() {
     let storeKeys: string[] = [];
 
     try {
-        const allKeys: string[] = await AsyncStorage.getAllKeys();
+        const allKeys: readonly string[] = await AsyncStorage.getAllKeys();
         storeKeys = allKeys.filter((key) => key.includes(KEY_PREFIX));
 
         const values = await AsyncStorage.multiGet(storeKeys);

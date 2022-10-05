@@ -1,21 +1,21 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`PostDraft ReadOnly should match snapshot 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   edges={
-    Array [
+    [
       "bottom",
     ]
   }
   style={
-    Object {
+    {
       "backgroundColor": "rgba(63,67,80,0.04)",
     }
   }
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "borderTopColor": "rgba(63,67,80,0.2)",
         "borderTopWidth": 1,
@@ -30,7 +30,7 @@ exports[`PostDraft ReadOnly should match snapshot 1`] = `
       color="#3f4350"
       name="glasses"
       style={
-        Object {
+        {
           "fontSize": 20,
           "lineHeight": 22,
           "opacity": 0.56,
@@ -41,7 +41,7 @@ exports[`PostDraft ReadOnly should match snapshot 1`] = `
       defaultMessage="This channel is read-only."
       id="mobile.create_post.read_only"
       style={
-        Object {
+        {
           "color": "#3f4350",
           "fontSize": 15,
           "lineHeight": 20,
@@ -51,5 +51,5 @@ exports[`PostDraft ReadOnly should match snapshot 1`] = `
       }
     />
   </View>
-</RNCSafeAreaView>
+</ForwardRef>
 `;

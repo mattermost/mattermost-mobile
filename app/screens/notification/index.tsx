@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
+import EventEmitter from '@mm-redux/utils/event_emitter';
 import React, {useEffect, useRef, useState} from 'react';
 import {Platform, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 import * as Animatable from 'react-native-animatable';
@@ -12,8 +14,6 @@ import {useDispatch, useSelector} from 'react-redux';
 import {popToRoot, dismissAllModals, dismissOverlay} from '@actions/navigation';
 import {loadFromPushNotification} from '@actions/views/root';
 import {NavigationTypes} from '@constants';
-import {isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
-import EventEmitter from '@mm-redux/utils/event_emitter';
 import {changeOpacity} from '@utils/theme';
 
 import NotificationIcon from './notification_icon';
@@ -83,6 +83,7 @@ const Notification = ({componentId, notification}: NotificationProps) => {
         dismiss();
 
         if (!notification.payload?.userInfo?.local) {
+            // @ts-expect-error ActionFunc
             dispatch(loadFromPushNotification(notification));
         }
     };

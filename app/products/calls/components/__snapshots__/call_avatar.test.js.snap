@@ -3,16 +3,16 @@
 exports[`CallAvatar should match snapshot muted 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "borderRadius": 20,
         "height": 40,
         "marginBottom": 5,
         "width": 40,
       },
-      Object {
+      {
         "shadowColor": "rgb(61, 184, 135)",
-        "shadowOffset": Object {
+        "shadowOffset": {
           "height": 0,
           "width": 0,
         },
@@ -31,7 +31,7 @@ exports[`CallAvatar should match snapshot muted 1`] = `
     name="microphone-off"
     size={12}
     style={
-      Object {
+      {
         "backgroundColor": "black",
         "borderColor": "black",
         "borderRadius": 10,
@@ -55,16 +55,16 @@ exports[`CallAvatar should match snapshot muted 1`] = `
 exports[`CallAvatar should match snapshot size large 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "borderRadius": 36,
         "height": 72,
         "marginBottom": 5,
         "width": 72,
       },
-      Object {
+      {
         "shadowColor": "rgb(61, 184, 135)",
-        "shadowOffset": Object {
+        "shadowOffset": {
           "height": 0,
           "width": 0,
         },
@@ -83,7 +83,7 @@ exports[`CallAvatar should match snapshot size large 1`] = `
     name="microphone"
     size={16}
     style={
-      Object {
+      {
         "backgroundColor": "#3DB887",
         "borderColor": "black",
         "borderRadius": 12,
@@ -107,16 +107,16 @@ exports[`CallAvatar should match snapshot size large 1`] = `
 exports[`CallAvatar should match snapshot unmuted 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "borderRadius": 20,
         "height": 40,
         "marginBottom": 5,
         "width": 40,
       },
-      Object {
+      {
         "shadowColor": "rgb(61, 184, 135)",
-        "shadowOffset": Object {
+        "shadowOffset": {
           "height": 0,
           "width": 0,
         },
@@ -135,7 +135,7 @@ exports[`CallAvatar should match snapshot unmuted 1`] = `
     name="microphone"
     size={12}
     style={
-      Object {
+      {
         "backgroundColor": "#3DB887",
         "borderColor": "black",
         "borderRadius": 10,

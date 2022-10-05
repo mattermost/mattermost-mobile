@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SavedPosts should match snapshot 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -13,13 +13,13 @@ exports[`SavedPosts should match snapshot 1`] = `
   <Connect(ChannelLoader)
     channelIsLoading={true}
   />
-</RNCSafeAreaView>
+</ForwardRef>
 `;
 
 exports[`SavedPosts should match snapshot when component waiting for response 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -29,13 +29,13 @@ exports[`SavedPosts should match snapshot when component waiting for response 1`
   <Connect(ChannelLoader)
     channelIsLoading={true}
   />
-</RNCSafeAreaView>
+</ForwardRef>
 `;
 
 exports[`SavedPosts should match snapshot when getFlaggedPosts failed 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -45,7 +45,7 @@ exports[`SavedPosts should match snapshot when getFlaggedPosts failed 1`] = `
   <Connect(FailedNetworkAction)
     onRetry={[Function]}
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -74,5 +74,5 @@ exports[`SavedPosts should match snapshot when getFlaggedPosts failed 1`] = `
       }
     }
   />
-</RNCSafeAreaView>
+</ForwardRef>
 `;

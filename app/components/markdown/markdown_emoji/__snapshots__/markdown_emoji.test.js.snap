@@ -2,7 +2,7 @@
 
 exports[`MarkdownEmoji should match snapshot 1`] = `
 <Unknown
-  context={Array []}
+  context={[]}
   first={true}
   last={true}
   literal={null}
@@ -10,7 +10,7 @@ exports[`MarkdownEmoji should match snapshot 1`] = `
 >
   <Unknown
     context={
-      Array [
+      [
         "paragraph",
       ]
     }
@@ -20,7 +20,7 @@ exports[`MarkdownEmoji should match snapshot 1`] = `
   >
     <Unknown
       context={
-        Array [
+        [
           "paragraph",
           "emoji",
         ]
@@ -34,7 +34,7 @@ exports[`MarkdownEmoji should match snapshot 1`] = `
 
 exports[`MarkdownEmoji should render with hardbreaks 1`] = `
 <Unknown
-  context={Array []}
+  context={[]}
   first={true}
   last={true}
   literal={null}
@@ -42,7 +42,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
 >
   <Unknown
     context={
-      Array [
+      [
         "paragraph",
       ]
     }
@@ -52,7 +52,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   >
     <Unknown
       context={
-        Array [
+        [
           "paragraph",
           "emoji",
         ]
@@ -63,7 +63,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   </Unknown>
   <Unknown
     context={
-      Array [
+      [
         "paragraph",
       ]
     }
@@ -72,7 +72,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   />
   <Unknown
     context={
-      Array [
+      [
         "paragraph",
       ]
     }
@@ -82,7 +82,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   >
     <Unknown
       context={
-        Array [
+        [
           "paragraph",
           "emoji",
         ]
@@ -93,7 +93,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   </Unknown>
   <Unknown
     context={
-      Array [
+      [
         "paragraph",
       ]
     }
@@ -102,7 +102,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   />
   <Unknown
     context={
-      Array [
+      [
         "paragraph",
       ]
     }
@@ -111,7 +111,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   />
   <Unknown
     context={
-      Array [
+      [
         "paragraph",
       ]
     }
@@ -121,7 +121,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   >
     <Unknown
       context={
-        Array [
+        [
           "paragraph",
           "emoji",
         ]
@@ -132,7 +132,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   </Unknown>
   <Unknown
     context={
-      Array [
+      [
         "paragraph",
       ]
     }
@@ -141,7 +141,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   />
   <Unknown
     context={
-      Array [
+      [
         "paragraph",
       ]
     }
@@ -151,7 +151,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   >
     <Unknown
       context={
-        Array [
+        [
           "paragraph",
           "emoji",
         ]
@@ -162,7 +162,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   </Unknown>
   <Unknown
     context={
-      Array [
+      [
         "paragraph",
       ]
     }
@@ -171,7 +171,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   />
   <Unknown
     context={
-      Array [
+      [
         "paragraph",
       ]
     }
@@ -181,7 +181,7 @@ exports[`MarkdownEmoji should render with hardbreaks 1`] = `
   >
     <Unknown
       context={
-        Array [
+        [
           "paragraph",
           "emoji",
         ]

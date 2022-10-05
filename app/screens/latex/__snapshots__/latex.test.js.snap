@@ -1,29 +1,29 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Latex should have 2 lines 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   edges={
-    Array [
+    [
       "bottom",
       "left",
       "right",
     ]
   }
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
 >
   <ScrollView
     contentContainerStyle={
-      Object {
+      {
         "minHeight": "100%",
       }
     }
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
         },
       ]
@@ -31,7 +31,7 @@ exports[`Latex should have 2 lines 1`] = `
   >
     <ScrollView
       contentContainerStyle={
-        Object {
+        {
           "flexDirection": "column",
           "minHeight": "100%",
           "paddingLeft": 10,
@@ -40,14 +40,14 @@ exports[`Latex should have 2 lines 1`] = `
       }
       horizontal={true}
       style={
-        Object {
+        {
           "flex": 1,
         }
       }
     >
       <View
         style={
-          Object {
+          {
             "flexDirection": "row",
             "justifyContent": "flex-start",
             "marginHorizontal": 5,
@@ -57,7 +57,7 @@ exports[`Latex should have 2 lines 1`] = `
       >
         <ForwardRef
           color="black"
-          math="\\\\frac{1}{2} = 0.5^1 + (x^0 - e^{\\\\pi - \\\\frac{2*pi}}{2}} \\\\\\\\ Test = 1"
+          math="\\frac{1}{2} = 0.5^1 + (x^0 - e^{\\pi - \\frac{2*pi}}{2}} \\\\ Test = 1"
           onError={[Function]}
           renderError={[Function]}
           resizeMode="cover"
@@ -65,33 +65,33 @@ exports[`Latex should have 2 lines 1`] = `
       </View>
     </ScrollView>
   </ScrollView>
-</RNCSafeAreaView>
+</ForwardRef>
 `;
 
 exports[`Latex should have 4 lines 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   edges={
-    Array [
+    [
       "bottom",
       "left",
       "right",
     ]
   }
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
 >
   <ScrollView
     contentContainerStyle={
-      Object {
+      {
         "minHeight": "100%",
       }
     }
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
         },
       ]
@@ -99,7 +99,7 @@ exports[`Latex should have 4 lines 1`] = `
   >
     <ScrollView
       contentContainerStyle={
-        Object {
+        {
           "flexDirection": "column",
           "minHeight": "100%",
           "paddingLeft": 10,
@@ -108,14 +108,14 @@ exports[`Latex should have 4 lines 1`] = `
       }
       horizontal={true}
       style={
-        Object {
+        {
           "flex": 1,
         }
       }
     >
       <View
         style={
-          Object {
+          {
             "flexDirection": "row",
             "justifyContent": "flex-start",
             "marginHorizontal": 5,
@@ -125,7 +125,7 @@ exports[`Latex should have 4 lines 1`] = `
       >
         <ForwardRef
           color="black"
-          math="\\\\frac{1}{2} = 0.5^1 + (x^0 - e^{\\\\pi - \\\\frac{2*pi}}{2}} \\\\\\\\ Test = 1 \\\\\\\\ \\\\alpha = \\\\beta \\\\\\\\ 1 != 0"
+          math="\\frac{1}{2} = 0.5^1 + (x^0 - e^{\\pi - \\frac{2*pi}}{2}} \\\\ Test = 1 \\\\ \\alpha = \\beta \\\\ 1 != 0"
           onError={[Function]}
           renderError={[Function]}
           resizeMode="cover"
@@ -133,33 +133,33 @@ exports[`Latex should have 4 lines 1`] = `
       </View>
     </ScrollView>
   </ScrollView>
-</RNCSafeAreaView>
+</ForwardRef>
 `;
 
 exports[`Latex should match snapshot 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   edges={
-    Array [
+    [
       "bottom",
       "left",
       "right",
     ]
   }
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
 >
   <ScrollView
     contentContainerStyle={
-      Object {
+      {
         "minHeight": "100%",
       }
     }
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
         },
       ]
@@ -167,7 +167,7 @@ exports[`Latex should match snapshot 1`] = `
   >
     <ScrollView
       contentContainerStyle={
-        Object {
+        {
           "flexDirection": "column",
           "minHeight": "100%",
           "paddingLeft": 10,
@@ -176,14 +176,14 @@ exports[`Latex should match snapshot 1`] = `
       }
       horizontal={true}
       style={
-        Object {
+        {
           "flex": 1,
         }
       }
     >
       <View
         style={
-          Object {
+          {
             "flexDirection": "row",
             "justifyContent": "flex-start",
             "marginHorizontal": 5,
@@ -193,7 +193,7 @@ exports[`Latex should match snapshot 1`] = `
       >
         <ForwardRef
           color="black"
-          math="\\\\frac{1}{2} = 0.5^1 + (x^0 - e^{\\\\pi - \\\\frac{2*pi}}{2}}"
+          math="\\frac{1}{2} = 0.5^1 + (x^0 - e^{\\pi - \\frac{2*pi}}{2}}"
           onError={[Function]}
           renderError={[Function]}
           resizeMode="cover"
@@ -201,5 +201,5 @@ exports[`Latex should match snapshot 1`] = `
       </View>
     </ScrollView>
   </ScrollView>
-</RNCSafeAreaView>
+</ForwardRef>
 `;

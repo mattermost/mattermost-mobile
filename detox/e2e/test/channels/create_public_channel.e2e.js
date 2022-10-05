@@ -7,8 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import jestExpect from 'expect';
-
 import {Setup} from '@support/server_api';
 import {
     ChannelScreen,
@@ -115,7 +113,7 @@ async function attemptToTapCreateButton() {
         await CreateChannelScreen.createButton.tap();
     } else {
         const attributes = await CreateChannelScreen.createButton.getAttributes();
-        jestExpect(attributes.visible).toEqual(true);
-        jestExpect(attributes.enabled).toEqual(false);
+        expect(attributes.visible).toEqual(true);
+        expect(attributes.enabled).toEqual(false);
     }
 }

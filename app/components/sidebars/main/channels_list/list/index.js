@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {connect} from 'react-redux';
 
-import {DeviceTypes, ViewTypes} from '@constants';
 import {General} from '@mm-redux/constants';
 import Permissions from '@mm-redux/constants/permissions';
 import {getCategoriesWithFilteredChannelIds} from '@mm-redux/selectors/entities/channel_categories';
@@ -18,6 +16,9 @@ import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
 import {getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {showCreateOption} from '@mm-redux/utils/channel_utils';
 import {memoizeResult} from '@mm-redux/utils/helpers';
+import {connect} from 'react-redux';
+
+import {DeviceTypes, ViewTypes} from '@constants';
 import {shouldShowLegacySidebar} from '@utils/categories';
 
 import List from './list';
@@ -97,4 +98,4 @@ function areStatesEqual(next, prev) {
     return equalChannels && equalConfig && equalRoles && equalUsers && equalFav;
 }
 
-export default connect(mapStateToProps, null, null, {pure: true, areStatesEqual})(List);
+export default connect(mapStateToProps, null, null, {areStatesEqual})(List);

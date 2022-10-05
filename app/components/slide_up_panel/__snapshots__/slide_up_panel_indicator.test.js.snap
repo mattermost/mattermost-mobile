@@ -3,7 +3,7 @@
 exports[`SlideUpPanelIndicator should match snapshot 1`] = `
 <ForwardRef(AnimatedComponentWrapper)
   style={
-    Object {
+    {
       "alignItems": "center",
       "justifyContent": "center",
       "marginVertical": 10,
@@ -12,7 +12,7 @@ exports[`SlideUpPanelIndicator should match snapshot 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "backgroundColor": "white",
         "borderRadius": 25,
         "height": 5,

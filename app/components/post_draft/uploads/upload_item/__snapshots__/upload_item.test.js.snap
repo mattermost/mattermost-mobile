@@ -3,7 +3,7 @@
 exports[`UploadItem downloadAndUploadFile should match, full snapshot 1`] = `
 <View
   style={
-    Object {
+    {
       "marginLeft": 12,
       "paddingTop": 5,
     }
@@ -11,7 +11,7 @@ exports[`UploadItem downloadAndUploadFile should match, full snapshot 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "borderRadius": 4,
         "height": 56,
         "width": 56,
@@ -23,7 +23,7 @@ exports[`UploadItem downloadAndUploadFile should match, full snapshot 1`] = `
     >
       <View
         style={
-          Object {
+          {
             "height": 56,
             "width": 56,
           }
@@ -32,13 +32,13 @@ exports[`UploadItem downloadAndUploadFile should match, full snapshot 1`] = `
         <FileIcon
           backgroundColor="rgba(63,67,80,0.08)"
           file={
-            Object {
+            {
               "loading": false,
             }
           }
           iconSize={60}
           theme={
-            Object {
+            {
               "awayIndicator": "#ffbc1f",
               "buttonBg": "#1c58d9",
               "buttonColor": "#ffffff",
@@ -74,7 +74,7 @@ exports[`UploadItem downloadAndUploadFile should match, full snapshot 1`] = `
     channelId="channel-id"
     onPress={[Function]}
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",

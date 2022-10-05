@@ -3,22 +3,22 @@
 exports[`ChannelsList FilteredList should match snapshot 1`] = `
 <FilteredList
   actions={
-    Object {
+    {
       "getProfilesInTeam": [MockFunction],
       "makeGroupMessageVisibleIfNecessary": [MockFunction],
       "searchChannels": [MockFunction],
       "searchProfiles": [MockFunction],
     }
   }
-  archivedChannels={Array []}
-  channels={Object {}}
-  currentChannel={Object {}}
-  currentTeam={Object {}}
+  archivedChannels={[]}
+  channels={{}}
+  currentChannel={{}}
+  currentTeam={{}}
   currentUserId="current-user-id"
-  groupChannelMemberDetails={Object {}}
+  groupChannelMemberDetails={{}}
   intl={
-    Object {
-      "defaultFormats": Object {},
+    {
+      "defaultFormats": {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -27,8 +27,8 @@ exports[`ChannelsList FilteredList should match snapshot 1`] = `
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": Object {},
-      "formatters": Object {
+      "formats": {},
+      "formatters": {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -36,7 +36,7 @@ exports[`ChannelsList FilteredList should match snapshot 1`] = `
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": Object {},
+      "messages": {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
@@ -45,19 +45,19 @@ exports[`ChannelsList FilteredList should match snapshot 1`] = `
   }
   isLandscape={false}
   onSelectChannel={[MockFunction]}
-  otherChannels={Array []}
-  pastDirectMessages={Array []}
-  profiles={Object {}}
+  otherChannels={[]}
+  pastDirectMessages={[]}
+  profiles={{}}
   restrictDms={false}
-  searchOrder={Array []}
-  statuses={Object {}}
-  styles={Object {}}
-  teamProfiles={Object {}}
+  searchOrder={[]}
+  statuses={{}}
+  styles={{}}
+  teamProfiles={{}}
   teammateNameDisplay="teammate-name-display"
   term="term"
   testID="main.sidebar.channels_list.filtered_list"
   theme={
-    Object {
+    {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",

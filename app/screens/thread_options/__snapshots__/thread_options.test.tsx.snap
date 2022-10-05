@@ -3,7 +3,7 @@
 exports[`ThreadOptions should match snapshot, showing all possible options 1`] = `
 <View
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -15,7 +15,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
     marginFromTop={200}
     onRequestClose={[Function]}
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -48,7 +48,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
       defaultMessage="THREAD ACTIONS"
       id="global_threads.options.title"
       style={
-        Object {
+        {
           "color": "rgba(63,67,80,0.65)",
           "fontSize": 12,
           "paddingBottom": 8,
@@ -64,7 +64,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
       testID="global_threads.options.reply.action"
       text="Reply"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -100,7 +100,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
       testID="global_threads.options.unfollow.action"
       text="Unfollow Thread"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -136,7 +136,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
       testID="global_threads.options.open_in_channel.action"
       text="Open in Channel"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -172,7 +172,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
       testID="global_threads.options.mark_as_read.action"
       text="Mark as Read"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -208,7 +208,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
       testID="global_threads.options.unflag.action"
       text="Unsave"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -244,7 +244,7 @@ exports[`ThreadOptions should match snapshot, showing all possible options 1`] =
       testID="global_threads.options.permalink.action"
       text="Copy Link"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",

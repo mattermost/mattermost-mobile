@@ -1,13 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ActionResult} from '@mm-redux/types/actions';
+import {FormattedMsg} from '@mm-redux/types/general';
+import {Theme} from '@mm-redux/types/theme';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
-import {ActionResult} from '@mm-redux/types/actions';
-import {FormattedMsg} from '@mm-redux/types/general';
-import {Theme} from '@mm-redux/types/theme';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import Separator from '@screens/channel_info/separator';
 import {alertErrorWithFallback} from '@utils/general';
@@ -38,6 +38,7 @@ export default class Archive extends PureComponent<ArchiveProps> {
     };
 
     alertAndHandleYesAction = (title: FormattedMsg, message: FormattedMsg, onPressAction: () => void) => {
+        // @ts-expect-error context type definition
         const {formatMessage} = this.context.intl;
         const {displayName, isPublic} = this.props;
 
@@ -74,6 +75,8 @@ export default class Archive extends PureComponent<ArchiveProps> {
             const result = await deleteChannel(channelId);
             if (result.error) {
                 alertErrorWithFallback(
+
+                    // @ts-expect-error context type definition
                     this.context.intl,
                     result.error,
                     {
@@ -109,6 +112,8 @@ export default class Archive extends PureComponent<ArchiveProps> {
             const result = await this.props.unarchiveChannel(channelId);
             if (result.error) {
                 alertErrorWithFallback(
+
+                    // @ts-expect-error context type definition
                     this.context.intl,
                     result.error,
                     {

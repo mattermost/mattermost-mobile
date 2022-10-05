@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {FileInfo} from '@mm-redux/types/files';
 import React, {useCallback, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
 import {SvgUri} from 'react-native-svg';
@@ -9,7 +10,6 @@ import parseUrl from 'url-parse';
 import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {FileInfo} from '@mm-redux/types/files';
 import EphemeralStore from '@store/ephemeral_store';
 import {generateId} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
@@ -114,8 +114,6 @@ const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source, the
                         style={styles.container}
                         width={width}
                         height={height}
-
-                        //@ts-expect-error onError not defined in the types
                         onError={onLoadFailed}
                     />
                 </View>

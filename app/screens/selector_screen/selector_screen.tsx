@@ -1,6 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {debounce} from '@mm-redux/actions/helpers';
+import {General} from '@mm-redux/constants';
+import {ActionResult} from '@mm-redux/types/actions';
+import {Channel} from '@mm-redux/types/channels';
+import {DialogOption} from '@mm-redux/types/integrations';
+import {Theme} from '@mm-redux/types/theme';
+import {UserProfile} from '@mm-redux/types/users';
+import {Dictionary} from '@mm-redux/types/utilities';
+import {filterChannelsMatchingTerm} from '@mm-redux/utils/channel_utils';
+import {memoizeResult} from '@mm-redux/utils/helpers';
+import {filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {
@@ -20,17 +31,6 @@ import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search_bar';
 import StatusBar from '@components/status_bar';
 import {ViewTypes} from '@constants';
-import {debounce} from '@mm-redux/actions/helpers';
-import {General} from '@mm-redux/constants';
-import {ActionResult} from '@mm-redux/types/actions';
-import {Channel} from '@mm-redux/types/channels';
-import {DialogOption} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/theme';
-import {UserProfile} from '@mm-redux/types/users';
-import {Dictionary} from '@mm-redux/types/utilities';
-import {filterChannelsMatchingTerm} from '@mm-redux/utils/channel_utils';
-import {memoizeResult} from '@mm-redux/utils/helpers';
-import {filterProfilesMatchingTerm} from '@mm-redux/utils/user_utils';
 import {t} from '@utils/i18n';
 import {createProfilesSections, loadingText} from '@utils/member_list';
 import {
@@ -136,41 +136,41 @@ export default class SelectorScreen extends PureComponent<Props, State> {
         }
 
         switch (this.props.dataSource) {
-        case ViewTypes.DATA_SOURCE_USERS: {
-            const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
-            const typedItem = item as UserProfile;
-            const multiselectSelected = {...currentSelected};
-            if (currentSelected[typedItem.id]) {
-                delete multiselectSelected[typedItem.id];
-            } else {
-                multiselectSelected[typedItem.id] = typedItem;
+            case ViewTypes.DATA_SOURCE_USERS: {
+                const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
+                const typedItem = item as UserProfile;
+                const multiselectSelected = {...currentSelected};
+                if (currentSelected[typedItem.id]) {
+                    delete multiselectSelected[typedItem.id];
+                } else {
+                    multiselectSelected[typedItem.id] = typedItem;
+                }
+                this.setState({multiselectSelected});
+                break;
             }
-            this.setState({multiselectSelected});
-            break;
-        }
-        case ViewTypes.DATA_SOURCE_CHANNELS: {
-            const currentSelected = this.state.multiselectSelected as Dictionary<Channel>;
-            const typedItem = item as Channel;
-            const multiselectSelected = {...currentSelected};
-            if (currentSelected[typedItem.id]) {
-                delete multiselectSelected[typedItem.id];
-            } else {
-                multiselectSelected[typedItem.id] = typedItem;
+            case ViewTypes.DATA_SOURCE_CHANNELS: {
+                const currentSelected = this.state.multiselectSelected as Dictionary<Channel>;
+                const typedItem = item as Channel;
+                const multiselectSelected = {...currentSelected};
+                if (currentSelected[typedItem.id]) {
+                    delete multiselectSelected[typedItem.id];
+                } else {
+                    multiselectSelected[typedItem.id] = typedItem;
+                }
+                this.setState({multiselectSelected});
+                break;
             }
-            this.setState({multiselectSelected});
-            break;
-        }
-        default: {
-            const currentSelected = this.state.multiselectSelected as Dictionary<DialogOption>;
-            const typedItem = item as DialogOption;
-            const multiselectSelected = {...currentSelected};
-            if (currentSelected[typedItem.value]) {
-                delete multiselectSelected[typedItem.value];
-            } else {
-                multiselectSelected[typedItem.value] = typedItem;
+            default: {
+                const currentSelected = this.state.multiselectSelected as Dictionary<DialogOption>;
+                const typedItem = item as DialogOption;
+                const multiselectSelected = {...currentSelected};
+                if (currentSelected[typedItem.value]) {
+                    delete multiselectSelected[typedItem.value];
+                } else {
+                    multiselectSelected[typedItem.value] = typedItem;
+                }
+                this.setState({multiselectSelected});
             }
-            this.setState({multiselectSelected});
-        }
         }
 
         setTimeout(() => {
@@ -182,40 +182,40 @@ export default class SelectorScreen extends PureComponent<Props, State> {
 
     navigationButtonPressed({buttonId}: {buttonId: string}) {
         switch (buttonId) {
-        case 'submit-form':
-            this.props.onSelect(Object.values(this.state.multiselectSelected));
-            this.close();
-            return;
-        case 'close-dialog':
-            this.close();
+            case 'submit-form':
+                this.props.onSelect(Object.values(this.state.multiselectSelected));
+                this.close();
+                return;
+            case 'close-dialog':
+                this.close();
         }
     }
 
     handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
         switch (this.props.dataSource) {
-        case ViewTypes.DATA_SOURCE_USERS: {
-            const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
-            const typedItem = item as UserProfile;
-            const multiselectSelected = {...currentSelected};
-            delete multiselectSelected[typedItem.id];
-            this.setState({multiselectSelected});
-            return;
-        }
-        case ViewTypes.DATA_SOURCE_CHANNELS: {
-            const currentSelected = this.state.multiselectSelected as Dictionary<Channel>;
-            const typedItem = item as Channel;
-            const multiselectSelected = {...currentSelected};
-            delete multiselectSelected[typedItem.id];
-            this.setState({multiselectSelected});
-            return;
-        }
-        default: {
-            const currentSelected = this.state.multiselectSelected as Dictionary<DialogOption>;
-            const typedItem = item as DialogOption;
-            const multiselectSelected = {...currentSelected};
-            delete multiselectSelected[typedItem.value];
-            this.setState({multiselectSelected});
-        }
+            case ViewTypes.DATA_SOURCE_USERS: {
+                const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
+                const typedItem = item as UserProfile;
+                const multiselectSelected = {...currentSelected};
+                delete multiselectSelected[typedItem.id];
+                this.setState({multiselectSelected});
+                return;
+            }
+            case ViewTypes.DATA_SOURCE_CHANNELS: {
+                const currentSelected = this.state.multiselectSelected as Dictionary<Channel>;
+                const typedItem = item as Channel;
+                const multiselectSelected = {...currentSelected};
+                delete multiselectSelected[typedItem.id];
+                this.setState({multiselectSelected});
+                return;
+            }
+            default: {
+                const currentSelected = this.state.multiselectSelected as Dictionary<DialogOption>;
+                const typedItem = item as DialogOption;
+                const multiselectSelected = {...currentSelected};
+                delete multiselectSelected[typedItem.value];
+                this.setState({multiselectSelected});
+            }
         }
     };
 
@@ -387,21 +387,21 @@ export default class SelectorScreen extends PureComponent<Props, State> {
 
         let text;
         switch (dataSource) {
-        case ViewTypes.DATA_SOURCE_USERS:
-            text = loadingText;
-            break;
-        case ViewTypes.DATA_SOURCE_CHANNELS:
-            text = {
-                id: t('mobile.loading_channels'),
-                defaultMessage: 'Loading Channels...',
-            };
-            break;
-        default:
-            text = {
-                id: t('mobile.loading_options'),
-                defaultMessage: 'Loading Options...',
-            };
-            break;
+            case ViewTypes.DATA_SOURCE_USERS:
+                text = loadingText;
+                break;
+            case ViewTypes.DATA_SOURCE_CHANNELS:
+                text = {
+                    id: t('mobile.loading_channels'),
+                    defaultMessage: 'Loading Channels...',
+                };
+                break;
+            default:
+                text = {
+                    id: t('mobile.loading_options'),
+                    defaultMessage: 'Loading Options...',
+                };
+                break;
         }
 
         return (
@@ -471,6 +471,7 @@ export default class SelectorScreen extends PureComponent<Props, State> {
     };
 
     render() {
+        // @ts-expect-error context type definition
         const {formatMessage} = this.context.intl;
         const {theme, dataSource} = this.props;
         const {loading, term} = this.state;

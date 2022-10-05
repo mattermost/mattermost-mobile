@@ -7,8 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import jestExpect from 'expect';
-
 import {Channel, Post, Setup} from '@support/server_api';
 import {ChannelScreen} from '@support/ui/screen';
 
@@ -47,9 +45,9 @@ describe('Messaging', () => {
         // * Check that no duplicate message is saved.
         const {channel} = await Channel.apiGetChannelByName(team.id, 'town-square');
         const {posts} = await Post.apiGetPostsInChannel(channel.id);
-        jestExpect(posts.length).toEqual(3);
-        jestExpect(posts[0].message).toEqual(message);
-        jestExpect(posts[1].message).toEqual(`${user.username} joined the team.`);
-        jestExpect(posts[2].message).toEqual('sysadmin joined the team.');
+        expect(posts.length).toEqual(3);
+        expect(posts[0].message).toEqual(message);
+        expect(posts[1].message).toEqual(`${user.username} joined the team.`);
+        expect(posts[2].message).toEqual('sysadmin joined the team.');
     });
 });

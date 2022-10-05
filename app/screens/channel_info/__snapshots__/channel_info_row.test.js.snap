@@ -6,7 +6,7 @@ exports[`ChannelInfoRow should match snapshot 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "backgroundColor": "#ffffff",
         "flexDirection": "row",
@@ -18,7 +18,7 @@ exports[`ChannelInfoRow should match snapshot 1`] = `
     <Image
       source={1}
       style={
-        Object {
+        {
           "height": 15,
           "tintColor": "#ffffff",
           "width": 15,
@@ -29,14 +29,14 @@ exports[`ChannelInfoRow should match snapshot 1`] = `
       defaultMessage="default-message"
       id="text-id"
       style={
-        Array [
-          Object {
+        [
+          {
             "flex": 1,
             "fontSize": 15,
             "marginLeft": 15,
             "paddingVertical": 15,
           },
-          Object {
+          {
             "color": "#000000",
           },
         ]
@@ -44,7 +44,7 @@ exports[`ChannelInfoRow should match snapshot 1`] = `
     />
     <Text
       style={
-        Object {
+        {
           "color": "rgba(63,67,80,0.5)",
           "fontSize": 15,
           "marginHorizontal": 7,
@@ -57,7 +57,7 @@ exports[`ChannelInfoRow should match snapshot 1`] = `
       name="chevron-right"
       size={24}
       style={
-        Object {
+        {
           "color": "rgba(63,67,80,0.32)",
           "marginRight": -4,
         }

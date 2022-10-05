@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {COMMAND_SUGGESTION_ERROR} from '@mm-redux/constants/apps';
+import {Theme} from '@mm-redux/types/theme';
 import base64 from 'base-64';
 import React from 'react';
 import {Image, Text, View} from 'react-native';
@@ -9,8 +11,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {SvgXml} from 'react-native-svg';
 
 import TouchableWithFeedback from '@components/touchable_with_feedback';
-import {COMMAND_SUGGESTION_ERROR} from '@mm-redux/constants/apps';
-import {Theme} from '@mm-redux/types/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const slashIcon = require('@assets/images/autocomplete/slash_command.png');
@@ -35,6 +35,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         iconColor: {
             tintColor: theme.centerChannelColor,
+        },
+        iconSize: {
+            width: 10,
+            height: 16,
         },
         container: {
             flexDirection: 'row',
@@ -100,18 +104,14 @@ const SlashSuggestionItem = (props: Props) => {
 
     let image = (
         <Image
-            style={style.iconColor}
-            width={10}
-            height={16}
+            style={[style.iconColor, style.iconSize]}
             source={slashIcon}
         />
     );
     if (props.icon === COMMAND_SUGGESTION_ERROR) {
         image = (
             <Image
-                style={style.iconColor}
-                width={10}
-                height={16}
+                style={[style.iconColor, style.iconSize]}
                 source={bangIcon}
             />
         );

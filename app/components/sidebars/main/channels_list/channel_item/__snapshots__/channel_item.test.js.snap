@@ -7,8 +7,8 @@ exports[`ChannelItem should match snapshot 1`] = `
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
           "flexDirection": "row",
           "height": 44,
@@ -20,8 +20,8 @@ exports[`ChannelItem should match snapshot 1`] = `
   >
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -42,14 +42,14 @@ exports[`ChannelItem should match snapshot 1`] = `
         membersCount={1}
         size={24}
         statusStyle={
-          Object {
+          {
             "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -83,8 +83,8 @@ exports[`ChannelItem should match snapshot 1`] = `
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Array [
-            Object {
+          [
+            {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
               "fontFamily": "Open Sans",
@@ -94,7 +94,7 @@ exports[`ChannelItem should match snapshot 1`] = `
               "maxWidth": "80%",
               "paddingRight": 10,
             },
-            Object {
+            {
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
@@ -118,8 +118,8 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
           "flexDirection": "row",
           "height": 44,
@@ -131,7 +131,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
   >
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#5d89ea",
           "width": 5,
         }
@@ -139,14 +139,14 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
     />
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
             "paddingLeft": 16,
           },
-          Object {
+          {
             "backgroundColor": "rgba(255,255,255,0.1)",
             "paddingLeft": 11,
           },
@@ -164,14 +164,14 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         membersCount={1}
         size={24}
         statusStyle={
-          Object {
+          {
             "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -205,8 +205,8 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Array [
-            Object {
+          [
+            {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
               "fontFamily": "Open Sans",
@@ -216,7 +216,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
               "maxWidth": "80%",
               "paddingRight": 10,
             },
-            Object {
+            {
               "color": "#ffffff",
               "opacity": 1,
             },
@@ -238,8 +238,8 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
           "flexDirection": "row",
           "height": 44,
@@ -251,7 +251,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
   >
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#5d89ea",
           "width": 5,
         }
@@ -259,14 +259,14 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
     />
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
             "paddingLeft": 16,
           },
-          Object {
+          {
             "backgroundColor": "rgba(255,255,255,0.1)",
             "paddingLeft": 11,
           },
@@ -284,14 +284,14 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         membersCount={1}
         size={24}
         statusStyle={
-          Object {
+          {
             "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -325,8 +325,8 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Array [
-            Object {
+          [
+            {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
               "fontFamily": "Open Sans",
@@ -336,7 +336,7 @@ exports[`ChannelItem should match snapshot for current user i.e currentUser (you
               "maxWidth": "80%",
               "paddingRight": 10,
             },
-            Object {
+            {
               "color": "#ffffff",
               "opacity": 1,
             },
@@ -358,8 +358,8 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
           "flexDirection": "row",
           "height": 44,
@@ -371,7 +371,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
   >
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#5d89ea",
           "width": 5,
         }
@@ -379,14 +379,14 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
     />
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
             "paddingLeft": 16,
           },
-          Object {
+          {
             "backgroundColor": "rgba(255,255,255,0.1)",
             "paddingLeft": 11,
           },
@@ -404,14 +404,14 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
         membersCount={1}
         size={24}
         statusStyle={
-          Object {
+          {
             "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -445,8 +445,8 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Array [
-            Object {
+          [
+            {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
               "fontFamily": "Open Sans",
@@ -456,7 +456,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is currentCh
               "maxWidth": "80%",
               "paddingRight": 10,
             },
-            Object {
+            {
               "color": "#ffffff",
               "opacity": 1,
             },
@@ -478,8 +478,8 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
           "flexDirection": "row",
           "height": 44,
@@ -491,8 +491,8 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
   >
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -513,14 +513,14 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
         membersCount={1}
         size={24}
         statusStyle={
-          Object {
+          {
             "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -554,8 +554,8 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Array [
-            Object {
+          [
+            {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
               "fontFamily": "Open Sans",
@@ -565,7 +565,7 @@ exports[`ChannelItem should match snapshot for deactivated user and is searchRes
               "maxWidth": "80%",
               "paddingRight": 10,
             },
-            Object {
+            {
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
@@ -589,8 +589,8 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
           "flexDirection": "row",
           "height": 44,
@@ -602,8 +602,8 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
   >
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -624,14 +624,14 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
         membersCount={1}
         size={24}
         statusStyle={
-          Object {
+          {
             "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -665,8 +665,8 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Array [
-            Object {
+          [
+            {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
               "fontFamily": "Open Sans",
@@ -676,7 +676,7 @@ exports[`ChannelItem should match snapshot for deactivated user and not searchRe
               "maxWidth": "80%",
               "paddingRight": 10,
             },
-            Object {
+            {
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
@@ -700,8 +700,8 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
           "flexDirection": "row",
           "height": 44,
@@ -713,8 +713,8 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
   >
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -735,14 +735,14 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
         membersCount={1}
         size={24}
         statusStyle={
-          Object {
+          {
             "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -776,8 +776,8 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Array [
-            Object {
+          [
+            {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
               "fontFamily": "Open Sans",
@@ -787,7 +787,7 @@ exports[`ChannelItem should match snapshot for isManualUnread 1`] = `
               "maxWidth": "80%",
               "paddingRight": 10,
             },
-            Object {
+            {
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
@@ -815,8 +815,8 @@ exports[`ChannelItem should match snapshot when there is a call 1`] = `
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
           "flexDirection": "row",
           "height": 44,
@@ -828,8 +828,8 @@ exports[`ChannelItem should match snapshot when there is a call 1`] = `
   >
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -850,14 +850,14 @@ exports[`ChannelItem should match snapshot when there is a call 1`] = `
         membersCount={1}
         size={24}
         statusStyle={
-          Object {
+          {
             "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -891,8 +891,8 @@ exports[`ChannelItem should match snapshot when there is a call 1`] = `
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Array [
-            Object {
+          [
+            {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
               "fontFamily": "Open Sans",
@@ -902,7 +902,7 @@ exports[`ChannelItem should match snapshot when there is a call 1`] = `
               "maxWidth": "80%",
               "paddingRight": 10,
             },
-            Object {
+            {
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
@@ -918,7 +918,7 @@ exports[`ChannelItem should match snapshot when there is a call 1`] = `
         name="phone-in-talk"
         size={16}
         style={
-          Object {
+          {
             "color": "#ffffff",
             "flex": 1,
             "marginRight": 20,
@@ -938,8 +938,8 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
           "flexDirection": "row",
           "height": 44,
@@ -951,8 +951,8 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
   >
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -973,14 +973,14 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
         membersCount={1}
         size={24}
         statusStyle={
-          Object {
+          {
             "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -1015,8 +1015,8 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Array [
-            Object {
+          [
+            {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
               "fontFamily": "Open Sans",
@@ -1026,7 +1026,7 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
               "maxWidth": "80%",
               "paddingRight": 10,
             },
-            Object {
+            {
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
@@ -1041,12 +1041,12 @@ exports[`ChannelItem should match snapshot with custom status emoji 1`] = `
       <CustomStatusEmoji
         emojiSize={16}
         style={
-          Array [
-            Object {
+          [
+            {
               "color": "rgba(255,255,255,0.6)",
               "opacity": 0.6,
             },
-            Object {
+            {
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
@@ -1069,8 +1069,8 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
           "flexDirection": "row",
           "height": 44,
@@ -1082,8 +1082,8 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
   >
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -1104,14 +1104,14 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
         membersCount={1}
         size={24}
         statusStyle={
-          Object {
+          {
             "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -1145,8 +1145,8 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Array [
-            Object {
+          [
+            {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
               "fontFamily": "Open Sans",
@@ -1156,7 +1156,7 @@ exports[`ChannelItem should match snapshot with draft 1`] = `
               "maxWidth": "80%",
               "paddingRight": 10,
             },
-            Object {
+            {
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
@@ -1180,13 +1180,13 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "flex": 1,
           "flexDirection": "row",
           "height": 44,
         },
-        Object {
+        {
           "opacity": 0.5,
         },
       ]
@@ -1195,8 +1195,8 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
   >
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -1217,14 +1217,14 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         membersCount={1}
         size={24}
         statusStyle={
-          Object {
+          {
             "backgroundColor": "#1e325c",
             "borderColor": "transparent",
           }
         }
         testID="main.sidebar.channels_list.list.channel_item.channel_icon"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -1258,8 +1258,8 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Array [
-            Object {
+          [
+            {
               "alignSelf": "center",
               "color": "rgba(255,255,255,0.6)",
               "fontFamily": "Open Sans",
@@ -1269,7 +1269,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
               "maxWidth": "80%",
               "paddingRight": 10,
             },
-            Object {
+            {
               "color": "#ffffff",
               "fontWeight": "500",
               "maxWidth": "70%",
@@ -1283,7 +1283,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
       </Text>
       <Badge
         containerStyle={
-          Object {
+          {
             "borderColor": "#192a4d",
             "borderRadius": 14,
             "borderWidth": 0,
@@ -1294,7 +1294,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         }
         count={1}
         countStyle={
-          Object {
+          {
             "color": "#1e325c",
             "fontSize": 12,
             "fontWeight": "bold",
@@ -1306,7 +1306,7 @@ exports[`ChannelItem should match snapshot with mentions and muted 1`] = `
         minWidth={21}
         onPress={[Function]}
         style={
-          Object {
+          {
             "backgroundColor": "#ffffff",
             "height": 21,
             "padding": 3,

@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Theme} from '@mm-redux/types/theme';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 
 import {goToScreen} from '@actions/navigation';
-import {Theme} from '@mm-redux/types/theme';
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
@@ -24,8 +24,9 @@ export default class Pinned extends PureComponent<PinnedProps> {
     };
 
     goToPinnedPosts = preventDoubleTap(() => {
-        const {channelId} = this.props;
+        // @ts-expect-error context type definition
         const {formatMessage} = this.context.intl;
+        const {channelId} = this.props;
         const id = t('channel_header.pinnedPosts');
         const defaultMessage = 'Pinned Messages';
         const screen = 'PinnedPosts';

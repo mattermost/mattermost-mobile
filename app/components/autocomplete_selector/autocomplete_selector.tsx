@@ -1,6 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {ActionResult} from '@mm-redux/types/actions';
+import {Channel} from '@mm-redux/types/channels';
+import {DialogOption} from '@mm-redux/types/integrations';
+import {Theme} from '@mm-redux/types/theme';
+import {UserProfile} from '@mm-redux/types/users';
+import {displayUsername} from '@mm-redux/utils/user_utils';
 import React, {PureComponent} from 'react';
 import {intlShape} from 'react-intl';
 import {Text, View, Platform} from 'react-native';
@@ -11,12 +17,6 @@ import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ViewTypes} from '@constants';
-import {ActionResult} from '@mm-redux/types/actions';
-import {Channel} from '@mm-redux/types/channels';
-import {DialogOption} from '@mm-redux/types/integrations';
-import {Theme} from '@mm-redux/types/theme';
-import {UserProfile} from '@mm-redux/types/users';
-import {displayUsername} from '@mm-redux/utils/user_utils';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -127,23 +127,23 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
             let selectedText: string;
             let selectedValue: string;
             switch (dataSource) {
-            case ViewTypes.DATA_SOURCE_USERS: {
-                const typedSelected = selected as UserProfile;
-                selectedText = displayUsername(typedSelected, teammateNameDisplay || '');
-                selectedValue = typedSelected.id;
-                break;
-            }
-            case ViewTypes.DATA_SOURCE_CHANNELS: {
-                const typedSelected = selected as Channel;
-                selectedText = typedSelected.display_name;
-                selectedValue = typedSelected.id;
-                break;
-            }
-            default: {
-                const typedSelected = selected as DialogOption;
-                selectedText = typedSelected.text;
-                selectedValue = typedSelected.value;
-            }
+                case ViewTypes.DATA_SOURCE_USERS: {
+                    const typedSelected = selected as UserProfile;
+                    selectedText = displayUsername(typedSelected, teammateNameDisplay || '');
+                    selectedValue = typedSelected.id;
+                    break;
+                }
+                case ViewTypes.DATA_SOURCE_CHANNELS: {
+                    const typedSelected = selected as Channel;
+                    selectedText = typedSelected.display_name;
+                    selectedValue = typedSelected.id;
+                    break;
+                }
+                default: {
+                    const typedSelected = selected as DialogOption;
+                    selectedText = typedSelected.text;
+                    selectedValue = typedSelected.value;
+                }
             }
 
             this.setState({selectedText});
@@ -157,41 +157,41 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
         let selectedText = '';
         const selectedOptions: DialogOption[] = [];
         switch (dataSource) {
-        case ViewTypes.DATA_SOURCE_USERS: {
-            const typedSelected = selected as UserProfile[];
-            typedSelected.forEach((option) => {
-                if (selectedText !== '') {
-                    selectedText += ', ';
-                }
-                const text = displayUsername(option, teammateNameDisplay || '');
-                selectedText += text;
-                selectedOptions.push({text, value: option.id});
-            });
-            break;
-        }
-        case ViewTypes.DATA_SOURCE_CHANNELS: {
-            const typedSelected = selected as Channel[];
-            typedSelected.forEach((option) => {
-                if (selectedText !== '') {
-                    selectedText += ', ';
-                }
-                const text = option.display_name;
-                selectedText += text;
-                selectedOptions.push({text, value: option.id});
-            });
-            break;
-        }
-        default: {
-            const typedSelected = selected as DialogOption[];
-            typedSelected.forEach((option) => {
-                if (selectedText !== '') {
-                    selectedText += ', ';
-                }
-                selectedText += option.text;
-                selectedOptions.push(option);
-            });
-            break;
-        }
+            case ViewTypes.DATA_SOURCE_USERS: {
+                const typedSelected = selected as UserProfile[];
+                typedSelected.forEach((option) => {
+                    if (selectedText !== '') {
+                        selectedText += ', ';
+                    }
+                    const text = displayUsername(option, teammateNameDisplay || '');
+                    selectedText += text;
+                    selectedOptions.push({text, value: option.id});
+                });
+                break;
+            }
+            case ViewTypes.DATA_SOURCE_CHANNELS: {
+                const typedSelected = selected as Channel[];
+                typedSelected.forEach((option) => {
+                    if (selectedText !== '') {
+                        selectedText += ', ';
+                    }
+                    const text = option.display_name;
+                    selectedText += text;
+                    selectedOptions.push({text, value: option.id});
+                });
+                break;
+            }
+            default: {
+                const typedSelected = selected as DialogOption[];
+                typedSelected.forEach((option) => {
+                    if (selectedText !== '') {
+                        selectedText += ', ';
+                    }
+                    selectedText += option.text;
+                    selectedOptions.push(option);
+                });
+                break;
+            }
         }
 
         this.setState({selectedText});
@@ -204,6 +204,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
     goToSelectorScreen = preventDoubleTap(async () => {
         const closeButton = await CompassIcon.getImageSource(Platform.select({ios: 'arrow-back-ios', default: 'arrow-left'}), 24, this.props.theme.sidebarHeaderTextColor);
 
+        // @ts-expect-error context type definition
         const {formatMessage} = this.context.intl;
         const {actions, dataSource, options, placeholder, getDynamicOptions, theme} = this.props;
         const screen = 'SelectorScreen';
@@ -233,6 +234,7 @@ export default class AutocompleteSelector extends PureComponent<Props, State> {
     });
 
     render() {
+        // @ts-expect-error context type definition
         const {intl} = this.context;
         const {
             placeholder,

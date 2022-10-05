@@ -1,11 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useEffect, useState} from 'react';
-import {Alert} from 'react-native';
-import {useDispatch, useSelector} from 'react-redux';
-
-import {Client4} from '@client/rest';
 import {General} from '@mm-redux/constants';
 import {getCurrentChannel} from '@mm-redux/selectors/entities/channels';
 import {getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
@@ -17,6 +12,11 @@ import {
     isCallsExplicitlyEnabled,
     isCallsPluginEnabled,
 } from '@mmproducts/calls/store/selectors/calls';
+import {useEffect, useState} from 'react';
+import {Alert} from 'react-native';
+import {useDispatch, useSelector} from 'react-redux';
+
+import {Client4} from '@client/rest';
 
 // Check if calls is enabled. If it is, then run fn; if it isn't, show an alert and set
 // msgPostfix to ' (Not Available)'.
@@ -57,6 +57,7 @@ export const useCallsChannelSettings = () => {
 
     useEffect(() => {
         if (pluginEnabled) {
+            // @ts-expect-error ActionFunc
             dispatch(loadConfig());
         }
     }, []);

@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import jestExpect from 'expect';
-
 import {capitalize, getRandomId} from '@support/utils';
 
 import client from './client';
@@ -91,7 +89,7 @@ export const apiDeleteTeams = async (teams = []) => {
 
     teamArray.forEach(async (team) => {
         const {status} = await Team.apiDeleteTeam(team.id);
-        jestExpect(status).toEqual(200);
+        expect(status).toEqual(200);
     });
 };
 

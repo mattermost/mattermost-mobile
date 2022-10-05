@@ -1,5 +1,6 @@
 package com.mattermost.rnbeta;
 
+import android.annotation.SuppressLint;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
@@ -128,11 +129,20 @@ public class CustomPushNotificationHelper {
         replyIntent.putExtra(NOTIFICATION_ID, notificationId);
         replyIntent.putExtra("pushNotification", bundle);
 
-        PendingIntent replyPendingIntent = PendingIntent.getBroadcast(
-                context,
-                notificationId,
-                replyIntent,
-                PendingIntent.FLAG_UPDATE_CURRENT);
+        PendingIntent replyPendingIntent;
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+            replyPendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    notificationId,
+                    replyIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_MUTABLE);
+        } else {
+            replyPendingIntent = PendingIntent.getBroadcast(
+                    context,
+                    notificationId,
+                    replyIntent,
+                    PendingIntent.FLAG_UPDATE_CURRENT);
+        }
 
         RemoteInput remoteInput = new RemoteInput.Builder(KEY_TEXT_REPLY)
                 .setLabel("Reply")
@@ -381,10 +391,12 @@ public class CustomPushNotificationHelper {
 
     private static void setNotificationDeleteIntent(Context context, NotificationCompat.Builder notification, Bundle bundle, int notificationId) {
         // Let's add a delete intent when the notification is dismissed
+        final String PUSH_NOTIFICATION_EXTRA_NAME = "pushNotification";
         Intent delIntent = new Intent(context, NotificationDismissService.class);
-        PushNotificationProps notificationProps = new PushNotificationProps(bundle);
         delIntent.putExtra(NOTIFICATION_ID, notificationId);
-        PendingIntent deleteIntent = NotificationIntentAdapter.createPendingNotificationIntent(context, delIntent, notificationProps);
+        delIntent.putExtra(PUSH_NOTIFICATION_EXTRA_NAME, bundle);
+        @SuppressLint("UnspecifiedImmutableFlag")
+        PendingIntent deleteIntent = PendingIntent.getService(context, (int) System.currentTimeMillis(), delIntent, PendingIntent.FLAG_ONE_SHOT | PendingIntent.FLAG_IMMUTABLE);
         notification.setDeleteIntent(deleteIntent);
     }
 

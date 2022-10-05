@@ -1,18 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import DateTimePicker from '@react-native-community/datetimepicker';
-
-import moment, {Moment} from 'moment-timezone';
-import React, {useState} from 'react';
-import {View, Button, Platform} from 'react-native';
-import {useSelector} from 'react-redux';
-
 import Preferences from '@mm-redux/constants/preferences';
 import {getBool} from '@mm-redux/selectors/entities/preferences';
 import {getCurrentUserTimezone} from '@mm-redux/selectors/entities/timezone';
 import {GlobalState} from '@mm-redux/types/store';
 import {Theme} from '@mm-redux/types/theme';
+import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
+import moment, {Moment} from 'moment-timezone';
+import React, {useState} from 'react';
+import {View, Button, Platform} from 'react-native';
+import {useSelector} from 'react-redux';
+
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {getCurrentMomentForTimezone, getUtcOffsetForTimeZone} from '@utils/timezone';
 
@@ -49,7 +48,7 @@ const DateTimeSelector = (props: Props) => {
     const [mode, setMode] = useState<AndroidMode>('date');
     const [show, setShow] = useState<boolean>(false);
 
-    const onChange = (_: React.ChangeEvent<HTMLInputElement>, selectedDate: Date) => {
+    const onChange = (_: DateTimePickerEvent, selectedDate: Date) => {
         const currentDate = selectedDate || date;
         setShow(Platform.OS === 'ios');
         if (moment(currentDate).isAfter(minimumDate)) {

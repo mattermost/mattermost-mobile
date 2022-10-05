@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent} from 'react';
-import {intlShape} from 'react-intl';
-import {Alert} from 'react-native';
-
 import {ActionResult} from '@mm-redux/types/actions';
 import {Channel} from '@mm-redux/types/channels';
 import {FormattedMsg} from '@mm-redux/types/general';
 import {Theme} from '@mm-redux/types/theme';
+import React, {PureComponent} from 'react';
+import {intlShape} from 'react-intl';
+import {Alert} from 'react-native';
+
 import ChannelInfoRow from '@screens/channel_info/channel_info_row';
 import Separator from '@screens/channel_info/separator';
 import {t} from '@utils/i18n';
@@ -36,6 +36,7 @@ export default class Leave extends PureComponent<LeaveProps> {
     };
 
     alertAndHandleYesAction = (title: FormattedMsg, message: FormattedMsg, onPressAction: () => void) => {
+        // @ts-expect-error context type definition
         const {formatMessage} = this.context.intl;
         const {displayName, isPublic} = this.props;
 

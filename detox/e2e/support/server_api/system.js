@@ -3,10 +3,8 @@
 
 import path from 'path';
 
-import merge from 'deepmerge';
-import jestExpect from 'expect';
-
 import testConfig from '@support/test_config';
+import merge from 'deepmerge';
 
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
@@ -31,9 +29,9 @@ import defaultServerConfig from './default_config.json';
  */
 export const apiCheckSystemHealth = async () => {
     const {data} = await apiPingServerStatus();
-    jestExpect(data.status).toEqual('OK');
-    jestExpect(data.database_status).toEqual('OK');
-    jestExpect(data.filestore_status).toEqual('OK');
+    expect(data.status).toEqual('OK');
+    expect(data.database_status).toEqual('OK');
+    expect(data.filestore_status).toEqual('OK');
 };
 
 /**
@@ -103,7 +101,7 @@ export const apiRequireLicense = async () => {
     if (license.IsLicensed !== 'true') {
         console.error('Server has no Enterprise license.');
     }
-    jestExpect(license.IsLicensed).toEqual('true');
+    expect(license.IsLicensed).toEqual('true');
 
     return {license};
 };
@@ -119,7 +117,7 @@ export const apiRequireLicenseForFeature = async (key = '') => {
     if (license.IsLicensed !== 'true') {
         console.error('Server has no Enterprise license.');
     }
-    jestExpect(license.IsLicensed).toEqual('true');
+    expect(license.IsLicensed).toEqual('true');
 
     let hasLicenseKey = false;
     for (const [k, v] of Object.entries(license)) {
@@ -132,7 +130,7 @@ export const apiRequireLicenseForFeature = async (key = '') => {
     if (!hasLicenseKey) {
         console.error(`Server has no license for "${key}" feature.`);
     }
-    jestExpect(hasLicenseKey).toEqual(true);
+    expect(hasLicenseKey).toEqual(true);
 
     return {license};
 };
@@ -142,7 +140,7 @@ export const apiRequireLicenseForFeature = async (key = '') => {
  */
 export const apiRequireSMTPServer = async () => {
     const {status} = await apiEmailTest();
-    jestExpect(status).toEqual(200);
+    expect(status).toEqual(200);
 };
 
 /**

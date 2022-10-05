@@ -5,28 +5,28 @@ exports[`DialogIntroductionText should not render the component with an empty va
 exports[`DialogIntroductionText should render the introduction text correctly 1`] = `
 <View
   style={
-    Object {
+    {
       "marginHorizontal": 15,
     }
   }
 >
   <Connect(Markdown)
     baseTextStyle={
-      Object {
+      {
         "color": "#3f4350",
       }
     }
     blockStyles={
-      Object {
-        "adjacentParagraph": Object {
+      {
+        "adjacentParagraph": {
           "marginTop": 6,
         },
-        "horizontalRule": Object {
+        "horizontalRule": {
           "backgroundColor": "#3f4350",
           "height": 0.5,
           "marginVertical": 10,
         },
-        "quoteBlockIcon": Object {
+        "quoteBlockIcon": {
           "color": "rgba(63,67,80,0.5)",
         },
       }
@@ -36,86 +36,86 @@ exports[`DialogIntroductionText should render the introduction text correctly 1`
     disableGallery={true}
     disableHashtags={true}
     textStyles={
-      Object {
-        "code": Object {
+      {
+        "code": {
           "alignSelf": "center",
           "backgroundColor": "rgba(63,67,80,0.07)",
           "fontFamily": "Menlo",
         },
-        "codeBlock": Object {
+        "codeBlock": {
           "fontFamily": "Menlo",
         },
-        "del": Object {
+        "del": {
           "textDecorationLine": "line-through",
         },
-        "emph": Object {
+        "emph": {
           "fontStyle": "italic",
         },
-        "error": Object {
+        "error": {
           "color": "#d24b4e",
         },
-        "heading1": Object {
+        "heading1": {
           "fontSize": 17,
           "fontWeight": "700",
           "lineHeight": 25,
         },
-        "heading1Text": Object {
+        "heading1Text": {
           "paddingBottom": 8,
         },
-        "heading2": Object {
+        "heading2": {
           "fontSize": 17,
           "fontWeight": "700",
           "lineHeight": 25,
         },
-        "heading2Text": Object {
+        "heading2Text": {
           "paddingBottom": 8,
         },
-        "heading3": Object {
+        "heading3": {
           "fontSize": 17,
           "fontWeight": "700",
           "lineHeight": 25,
         },
-        "heading3Text": Object {
+        "heading3Text": {
           "paddingBottom": 8,
         },
-        "heading4": Object {
+        "heading4": {
           "fontSize": 17,
           "fontWeight": "700",
           "lineHeight": 25,
         },
-        "heading4Text": Object {
+        "heading4Text": {
           "paddingBottom": 8,
         },
-        "heading5": Object {
+        "heading5": {
           "fontSize": 17,
           "fontWeight": "700",
           "lineHeight": 25,
         },
-        "heading5Text": Object {
+        "heading5Text": {
           "paddingBottom": 8,
         },
-        "heading6": Object {
+        "heading6": {
           "fontSize": 17,
           "fontWeight": "700",
           "lineHeight": 25,
         },
-        "heading6Text": Object {
+        "heading6Text": {
           "paddingBottom": 8,
         },
-        "link": Object {
+        "link": {
           "color": "#386fe5",
         },
-        "mention": Object {
+        "mention": {
           "color": "#386fe5",
         },
-        "mention_highlight": Object {
+        "mention_highlight": {
           "backgroundColor": "#ffd470",
           "color": "#1b1d22",
         },
-        "strong": Object {
+        "strong": {
           "fontWeight": "bold",
         },
-        "table_header_row": Object {
+        "table_header_row": {
           "fontWeight": "700",
         },
       }

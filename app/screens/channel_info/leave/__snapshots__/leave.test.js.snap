@@ -4,7 +4,7 @@ exports[`ChannelInfo -> Leave should match snapshot for Close DM 1`] = `
 <React.Fragment>
   <Separator
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -43,7 +43,7 @@ exports[`ChannelInfo -> Leave should match snapshot for Close DM 1`] = `
     textColor="#CA3B27"
     textId="mobile.channel_list.closeDM"
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -80,7 +80,7 @@ exports[`ChannelInfo -> Leave should match snapshot for Close GM 1`] = `
 <React.Fragment>
   <Separator
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -119,7 +119,7 @@ exports[`ChannelInfo -> Leave should match snapshot for Close GM 1`] = `
     textColor="#CA3B27"
     textId="mobile.channel_list.closeGM"
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -156,7 +156,7 @@ exports[`ChannelInfo -> Leave should match snapshot for Leave Private Channel 1`
 <React.Fragment>
   <Separator
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -195,7 +195,7 @@ exports[`ChannelInfo -> Leave should match snapshot for Leave Private Channel 1`
     textColor="#CA3B27"
     textId="navbar.leave"
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -232,7 +232,7 @@ exports[`ChannelInfo -> Leave should match snapshot for Leave Public Channel 1`]
 <React.Fragment>
   <Separator
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -271,7 +271,7 @@ exports[`ChannelInfo -> Leave should match snapshot for Leave Public Channel 1`]
     textColor="#CA3B27"
     textId="navbar.leave"
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",

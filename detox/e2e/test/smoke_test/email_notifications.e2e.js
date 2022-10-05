@@ -7,8 +7,6 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import jestExpect from 'expect';
-
 import {
     Channel,
     Post,
@@ -117,7 +115,7 @@ describe('Email Notifications', () => {
         // * Verify mentioned user does not receive email notification
         const {data} = await getRecentEmail(testUser.username);
         const bodyText = splitEmailBodyText(data.body.text);
-        jestExpect(bodyText[7]).not.toEqual(testMessage);
+        expect(bodyText[7]).not.toEqual(testMessage);
     });
 });
 
@@ -177,16 +175,16 @@ async function verifyEmailNotificationsIsSetTo(sendKey) {
         await expect(sendActionDescription).toHaveText(capitalize(sendKey));
     } else {
         switch (sendKey) {
-        case 'immediately':
-            await expect(immediatelyActionSelected).toBeVisible();
-            await expect(neverActionSelected).not.toBeVisible();
-            break;
-        case 'never':
-            await expect(neverActionSelected).toBeVisible();
-            await expect(immediatelyActionSelected).not.toBeVisible();
-            break;
-        default:
-            throw new Error('Not a valid send option: ' + sendKey);
+            case 'immediately':
+                await expect(immediatelyActionSelected).toBeVisible();
+                await expect(neverActionSelected).not.toBeVisible();
+                break;
+            case 'never':
+                await expect(neverActionSelected).toBeVisible();
+                await expect(immediatelyActionSelected).not.toBeVisible();
+                break;
+            default:
+                throw new Error('Not a valid send option: ' + sendKey);
         }
     }
 }
@@ -199,20 +197,20 @@ async function verifyEmailNotification(testConfig, team, channel, mentionedUser,
     const {data, status} = response;
 
     // * Should return success status
-    jestExpect(status).toEqual(200);
+    expect(status).toEqual(200);
 
     // * Verify that email is addressed to mentionedUser
-    jestExpect(data.to.length).toEqual(1);
-    jestExpect(data.to[0]).toContain(mentionedUser.email);
+    expect(data.to.length).toEqual(1);
+    expect(data.to[0]).toContain(mentionedUser.email);
 
     // * Verify that email is from default feedback email
-    jestExpect(data.from).toContain(feedbackEmail);
+    expect(data.from).toContain(feedbackEmail);
 
     // * Verify that date is current
-    jestExpect(data.date).toContain(isoDate);
+    expect(data.date).toContain(isoDate);
 
     // * Verify that the email subject is correct
-    jestExpect(data.subject).toContain(`[${siteName}] Notification in ${team.display_name}`);
+    expect(data.subject).toContain(`[${siteName}] Notification in ${team.display_name}`);
 
     // * Verify that the email body is correct
     const expectedEmailBody = getMentionEmailTemplate(

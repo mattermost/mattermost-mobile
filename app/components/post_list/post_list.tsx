@@ -1,17 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactElement, useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
-import {injectIntl, intlShape} from 'react-intl';
-import {DeviceEventEmitter, FlatList, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleSheet, ViewToken} from 'react-native';
-
-import {DeepLinkTypes, NavigationTypes} from '@constants';
-import * as Screens from '@constants/screen';
 import {useResetNativeScrollView} from '@hooks';
 import {Posts} from '@mm-redux/constants';
 import EventEmitter from '@mm-redux/utils/event_emitter';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages} from '@mm-redux/utils/post_list';
 import telemetry, {PERF_MARKERS} from '@telemetry';
+import React, {ReactElement, useCallback, useEffect, useLayoutEffect, useRef, useState} from 'react';
+import {injectIntl, intlShape} from 'react-intl';
+import {DeviceEventEmitter, FlatList, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleSheet, ViewToken} from 'react-native';
+
+import {DeepLinkTypes, NavigationTypes} from '@constants';
+import * as Screens from '@constants/screen';
 import {badDeepLink, errorBadChannel} from '@utils/draft';
 import {emptyFunction} from '@utils/general';
 import {makeExtraData} from '@utils/list_view';
@@ -104,7 +104,7 @@ const PostList = ({
     const [refreshing, setRefreshing] = useState(false);
     const [offsetY, setOffsetY] = useState(0);
 
-    const registerViewableItemsListener = useCallback((listener) => {
+    const registerViewableItemsListener = useCallback((listener: any) => {
         onViewableItemsChangedListener.current = listener;
         const removeListener = () => {
             onViewableItemsChangedListener.current = undefined;
@@ -113,7 +113,7 @@ const PostList = ({
         return removeListener;
     }, []);
 
-    const registerScrollEndIndexListener = useCallback((listener) => {
+    const registerScrollEndIndexListener = useCallback((listener: any) => {
         onScrollEndIndexListener.current = listener;
         const removeListener = () => {
             onScrollEndIndexListener.current = undefined;
@@ -122,7 +122,7 @@ const PostList = ({
         return removeListener;
     }, []);
 
-    const keyExtractor = useCallback((item) => {
+    const keyExtractor = useCallback((item: string) => {
         // All keys are strings (either post IDs or special keys)
         return item;
     }, []);
@@ -173,7 +173,7 @@ const PostList = ({
         }
     }, []);
 
-    const renderItem = useCallback(({item, index}) => {
+    const renderItem = useCallback(({item, index}: ListRenderItemInfo<string>) => {
         if (isStartOfNewMessages(item)) {
             // postIds includes a date item after the new message indicator so 2
             // needs to be added to the index for the length check to be correct.
