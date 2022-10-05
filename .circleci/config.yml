@@ -618,7 +618,7 @@ workflows:
 
       - notify-sentry-deploy:
           context:
-            - mattermost-mobile-android-pr
+            - mattermost-mobile-ios-pr
             - mattermost-mobile-sentry
           requires:
             - test
