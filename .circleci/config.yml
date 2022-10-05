@@ -1,7 +1,7 @@
 version: 2.1
 orbs:
   owasp: entur/owasp@0.0.10
-  node: circleci/node@4.5.1
+  node: circleci/node@5.0.3
 
 executors:
   android:
@@ -93,8 +93,7 @@ commands:
     description: "Get JavaScript dependencies"
     steps:
       - node/install:
-          node-version: '16.2.0'
-          install-npm: false
+          node-version: '16.15.0'
       - restore_cache:
           name: Restore npm cache
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}

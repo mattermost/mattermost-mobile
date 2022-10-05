@@ -331,13 +331,13 @@ PODS:
   - react-native-mmkv-storage (0.8.0):
     - MMKV (= 1.2.13)
     - React-Core
-  - react-native-netinfo (9.3.3):
+  - react-native-netinfo (9.3.4):
     - React-Core
   - react-native-notifications (4.3.1):
     - React-Core
   - react-native-passcode-status (1.1.2):
     - React
-  - react-native-paste-input (0.5.0):
+  - react-native-paste-input (0.5.1):
     - React-Core
     - Swime (= 3.0.6)
   - react-native-safe-area (0.5.1):
@@ -452,7 +452,7 @@ PODS:
     - React
   - RNDateTimePicker (6.5.0):
     - React-Core
-  - RNDeviceInfo (10.2.0):
+  - RNDeviceInfo (10.2.1):
     - React-Core
   - RNFastImage (8.6.1):
     - React-Core
@@ -508,7 +508,7 @@ PODS:
     - Sentry (= 7.27.0)
   - RNShare (7.9.0):
     - React-Core
-  - RNSVG (13.2.0):
+  - RNSVG (13.3.0):
     - React-Core
   - RNVectorIcons (9.2.0):
     - React-Core
@@ -896,10 +896,10 @@ SPEC CHECKSUMS:
   react-native-image-picker: 4bc9ed38c8be255b515d8c88babbaf74973f91a8
   react-native-local-auth: 49d336dcf0cb0268a930100013a6525844093844
   react-native-mmkv-storage: 8ba3c0216a6df283ece11205b442a3e435aec4e5
-  react-native-netinfo: b514dd6d9cd512b90e178c5b7158df1a1c568d47
+  react-native-netinfo: 6ac9bcc7c88dc51717bda3484eb99093acb755e0
   react-native-notifications: 33ec77006f7987bb22de8f1665889abc633b9196
   react-native-passcode-status: e78f76b3c8db613e6ced6bd40b54aa4f53374173
-  react-native-paste-input: 3037f113267c367e863790bcfd57cdb3ace3cad6
+  react-native-paste-input: 183ad7dc224e192719616f4258dde5b548627d08
   react-native-safe-area: e8230b0017d76c00de6b01e2412dcf86b127c6a3
   react-native-safe-area-context: 99b24a0c5acd0d5dcac2b1a7f18c49ea317be99a
   react-native-startup-time: 90dc8ded4242ba45523e7d974d5fdef883a23160
@@ -927,7 +927,7 @@ SPEC CHECKSUMS:
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
   RNCMaskedView: 0e1bc4bfa8365eba5fbbb71e07fbdc0555249489
   RNDateTimePicker: 154f8246e9c32fd663995647a7f9f667a8c6b258
-  RNDeviceInfo: 8b83e99e290deaf1bab71673cc636776ef647b6f
+  RNDeviceInfo: c31137f22ee779fe3931d1a8d60cc1af80ef4077
   RNFastImage: 7ef39e3f1987edefc0b546a8637bd469de0709fa
   RNFileViewer: ce7ca3ac370e18554d35d6355cffd7c30437c592
   RNGestureHandler: 7673697e7c0e9391adefae4faa087442bc04af33
@@ -940,7 +940,7 @@ SPEC CHECKSUMS:
   RNScreens: f3230dd008a7d0ce5c0a8bc78ff12cf2315bda24
   RNSentry: 73f65d6ef3e5a313d6bb225e2c92c84be2e17921
   RNShare: be91a5c149585affb02c25b351bd07ba927c7006
-  RNSVG: 07037623c36f12e41312730622d5f6b3656227ca
+  RNSVG: 1869ad9534459f24caaa0416a4764548c2aeedad
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   Rudder: 7c080303528ea612f58c9f9e8fcfab92b5dbcca8
   SDWebImage: a47aea9e3d8816015db4e523daff50cfd294499d
