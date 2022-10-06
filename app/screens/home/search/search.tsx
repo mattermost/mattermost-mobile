@@ -273,7 +273,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const autocompletePosition = useDerivedValue(() => {
         return headerHeight.value - AutocompletePaddingTop;
-    }, [containerHeight]);
+    }, [headerHeight.value]);
 
     const autocomplete = useMemo(() => (
         <Autocomplete
