@@ -14,6 +14,7 @@ import {
     DeviceEventEmitter, Keyboard,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
+import Permissions from 'react-native-permissions';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
@@ -28,27 +29,32 @@ import {
 } from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
+import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import RaisedHandIcon from '@calls/icons/raised_hand_icon';
 import UnraisedHandIcon from '@calls/icons/unraised_hand_icon';
+import {setMicPermissionsErrorDismissed} from '@calls/state';
 import {CallParticipant, CurrentCall, VoiceEventData} from '@calls/types/calls';
 import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {WebsocketEvents, Screens} from '@constants';
+import {CALL_ERROR_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {bottomSheet, dismissBottomSheet, goToScreen, popTopScreen} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 export type Props = {
     componentId: string;
     currentCall: CurrentCall | null;
     participantsDict: Dictionary<CallParticipant>;
+    micPermissionsGranted: boolean;
     teammateNameDisplay: string;
 }
 
@@ -245,9 +251,44 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: 'white',
         margin: 3,
     },
+    errorWrapper: {
+        display: 'flex',
+        width: '100%',
+        padding: 10,
+        paddingTop: 0,
+    },
+    errorBar: {
+        flexDirection: 'row',
+        backgroundColor: theme.dndIndicator,
+        height: CALL_ERROR_BAR_HEIGHT,
+        borderRadius: 5,
+        padding: 10,
+        alignItems: 'center',
+    },
+    errorText: {
+        flex: 1,
+        ...typography('Body', 100, 'SemiBold'),
+        color: '#ffffff',
+    },
+    unavailableText: {
+        color: changeOpacity(theme.sidebarText, 0.32),
+    },
+    errorIcon: {
+        color: '#ffffff',
+        fontSize: 18,
+    },
+    pressableIcon: {
+        padding: 9,
+    },
 }));
 
-const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDisplay}: Props) => {
+const CallScreen = ({
+    componentId,
+    currentCall,
+    participantsDict,
+    micPermissionsGranted,
+    teammateNameDisplay,
+}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
@@ -257,6 +298,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
     const myParticipant = currentCall?.participants[currentCall.myUserId];
     const style = getStyleSheet(theme);
     const showControls = !isLandscape || showControlsInLandscape;
+    const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
     const [speakers, setSpeakers] = useState<Dictionary<boolean>>({});
 
     useEffect(() => {
@@ -373,6 +415,14 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         return () => listener.remove();
     }, []);
 
+    const goToSettings = useCallback(() => {
+        Permissions.openSettings();
+    }, []);
+
+    const dismissPermissionsError = useCallback(() => {
+        setMicPermissionsErrorDismissed();
+    }, []);
+
     if (!currentCall || !myParticipant) {
         // Note: this happens because the screen is "rendered", even after the screen has been popped, and the
         // currentCall will have already been set to null when those extra renders run. We probably don't ever need
@@ -472,7 +522,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         <FormattedText
             id={'mobile.calls_unmute'}
             defaultMessage={'Unmute'}
-            style={style.buttonText}
+            style={[style.buttonText, !micPermissionsGranted && style.unavailableText]}
         />);
 
     return (
@@ -496,6 +546,32 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                 </View>
                 {usersList}
                 {screenShareView}
+                {micPermissionsError &&
+                    <View style={style.errorWrapper}>
+                        <Pressable onPress={goToSettings}>
+                            <View style={style.errorBar}>
+                                <CompassIcon
+                                    name='microphone-off'
+                                    style={[style.errorIcon, {paddingRight: 9}]}
+                                />
+                                <FormattedText
+                                    id={'mobile.calls_mic_error'}
+                                    defaultMessage={'To participate, open Settings to grant Mattermost access to your microphone.'}
+                                    style={style.errorText}
+                                />
+                                <Pressable
+                                    onPress={dismissPermissionsError}
+                                    hitSlop={20}
+                                >
+                                    <CompassIcon
+                                        name='close'
+                                        style={[style.errorIcon, style.pressableIcon]}
+                                    />
+                                </Pressable>
+                            </View>
+                        </Pressable>
+                    </View>
+                }
                 <View
                     style={[style.buttons, isLandscape && style.buttonsLandscape, !showControls && style.buttonsLandscapeNoControls]}
                 >
@@ -504,10 +580,12 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                             testID='mute-unmute'
                             style={[style.mute, myParticipant.muted && style.muteMuted]}
                             onPress={muteUnmuteHandler}
+                            disabled={!micPermissionsGranted}
                         >
-                            <CompassIcon
+                            <UnavailableIconWrapper
                                 name={myParticipant.muted ? 'microphone-off' : 'microphone'}
                                 size={24}
+                                unavailable={!micPermissionsGranted}
                                 style={style.muteIcon}
                             />
                             {myParticipant.muted ? UnmuteText : MuteText}

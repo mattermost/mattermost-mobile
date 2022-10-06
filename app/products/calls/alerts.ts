@@ -4,6 +4,7 @@
 import {Alert} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, unmuteMyself} from '@calls/actions';
+import {setMicPermissionsGranted} from '@calls/state';
 import {errorAlert} from '@calls/utils';
 
 import type {IntlShape} from 'react-intl';
@@ -89,14 +90,8 @@ export const leaveAndJoinWithAlert = (
 const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolean, intl: IntlShape) => {
     const {formatMessage} = intl;
 
-    const hasPermission = await hasMicrophonePermission(intl);
-    if (!hasPermission) {
-        errorAlert(formatMessage({
-            id: 'mobile.calls_error_permissions',
-            defaultMessage: 'No permissions to microphone, unable to start call',
-        }), intl);
-        return;
-    }
+    const hasPermission = await hasMicrophonePermission();
+    setMicPermissionsGranted(hasPermission);
 
     const res = await joinCall(serverUrl, channelId);
     if (res.error) {
