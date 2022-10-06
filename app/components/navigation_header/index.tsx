@@ -74,21 +74,17 @@ const NavigationHeader = ({
         };
     });
 
-    const minScrollValue = useDerivedValue(() => {
-        return scrollValue?.value || 0;
-    });
+    const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
+    const heightOffset = useDerivedValue(() => largeHeight - defaultHeight, [largeHeight, defaultHeight]);
 
-    const heightOffset = useDerivedValue(() => {
-        return largeHeight - defaultHeight;
-    }, [largeHeight, defaultHeight]);
-
-    const translateY = useDerivedValue(() => {
-        return lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, heightOffset.value);
-    }, [lockValue?.value]);
+    const translateY = useDerivedValue(() => (
+        lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, heightOffset.value)
+    ), [lockValue?.value]);
 
     const topMargin = useAnimatedStyle(() => {
         const min = heightOffset.value;
-        return {marginTop: lockValue?.value ? -lockValue?.value : Math.min(-Math.min((minScrollValue.value), min), min)};
+        const margin = Math.min(-Math.min((minScrollValue.value), min), min);
+        return {marginTop: lockValue?.value ? -lockValue?.value : margin};
     }, [lockValue?.value, heightOffset.value]);
 
     return (
