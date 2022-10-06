@@ -19,7 +19,7 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useKeyboardHeight} from '@hooks/device';
+import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';
@@ -40,6 +40,8 @@ const emptyChannelIds: string[] = [];
 const dummyData = [1];
 
 const AutocompletePaddingTop = 4;
+const roundedHeaderMarginMobile = 7;
+const roundedHeaderMarginTablet = 0;
 
 type Props = {
     teamId: string;
@@ -81,6 +83,7 @@ const SearchScreen = ({teamId}: Props) => {
     const serverUrl = useServerUrl();
     const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
 
+    const isTablet = useIsTablet();
     const [cursorPosition, setCursorPosition] = useState(searchTerm?.length);
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
@@ -185,38 +188,32 @@ const SearchScreen = ({teamId}: Props) => {
         handleSearch(newTeamId, lastSearchedValue);
     }, [lastSearchedValue, handleSearch]);
 
-    const containerStyle = useMemo(() => {
-        const justifyContent = (resultsLoading || loading) ? 'center' : 'flex-start';
-        return {paddingTop: scrollPaddingTop, flexGrow: 1, justifyContent} as ViewProps;
+    const initialContainerStyle = useMemo(() => {
+        return {
+            paddingTop: scrollPaddingTop,
+            flexGrow: 1,
+            justifyContent: (resultsLoading || loading) ? 'center' : 'flex-start',
+        } as ViewProps;
     }, [loading, resultsLoading, scrollPaddingTop]);
 
-    const loadingComponent = useMemo(() => (
-        <Loading
-            containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
-            color={theme.buttonBg}
-            size='large'
-        />
-    ), [theme, scrollPaddingTop]);
-
-    const initialComponent = useMemo(() => (
-        <Initial
-            searchValue={searchValue}
-            setRecentValue={handleRecentSearch}
-            setSearchValue={handleTextChange}
-            setTeamId={setSearchTeamId}
-            teamId={searchTeamId}
-        />
-    ), [searchValue, searchTeamId, handleRecentSearch, handleTextChange]);
-
-    const renderItem = useCallback(() => {
-        if (loading) {
-            return loadingComponent;
-        }
-        return initialComponent;
-    }, [
-        loading && loadingComponent,
-        initialComponent,
-    ]);
+    const renderInitialOrLoadingItem = useCallback(() => {
+        return loading ? (
+            <Loading
+                containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
+                color={theme.buttonBg}
+                size='large'
+            />
+        ) : (
+            <Initial
+                searchValue={searchValue}
+                setRecentValue={handleRecentSearch}
+                setSearchValue={handleTextChange}
+                setTeamId={setSearchTeamId}
+                teamId={searchTeamId}
+            />
+        );
+    }, [handleRecentSearch, handleTextChange, loading,
+        scrollPaddingTop, searchTeamId, searchValue, theme]);
 
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
@@ -246,22 +243,6 @@ const SearchScreen = ({teamId}: Props) => {
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
-
-    let header = null;
-    if (lastSearchedValue && !loading) {
-        header = (
-            <Header
-                teamId={searchTeamId}
-                setTeamId={handleResultsTeamChange}
-                onTabSelect={setSelectedTab}
-                onFilterChanged={handleFilterChange}
-                numberMessages={posts.length}
-                selectedTab={selectedTab}
-                numberFiles={fileInfos.length}
-                selectedFilter={filter}
-            />
-        );
-    }
 
     const autocompleteMaxHeight = useDerivedValue(() => {
         const iosAdjust = keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom;
@@ -311,14 +292,25 @@ const SearchScreen = ({teamId}: Props) => {
                 onLayout={onLayout}
             >
                 <Animated.View style={animated}>
-                    <Animated.View style={top}>
+                    <Animated.View style={headerTopStyle}>
                         <RoundedHeaderContext/>
-                        {header}
+                        {lastSearchedValue && !loading &&
+                            <Header
+                                teamId={searchTeamId}
+                                setTeamId={handleResultsTeamChange}
+                                onTabSelect={setSelectedTab}
+                                onFilterChanged={handleFilterChange}
+                                numberMessages={posts.length}
+                                selectedTab={selectedTab}
+                                numberFiles={fileInfos.length}
+                                selectedFilter={filter}
+                            />
+                        }
                     </Animated.View>
                     {!showResults &&
                         <AnimatedFlatList
                             data={dummyData}
-                            contentContainerStyle={containerStyle}
+                            contentContainerStyle={initialContainerStyle}
                             keyboardShouldPersistTaps='handled'
                             keyboardDismissMode={'interactive'}
                             nestedScrollEnabled={true}
@@ -329,7 +321,7 @@ const SearchScreen = ({teamId}: Props) => {
                             scrollToOverflowEnabled={true}
                             overScrollMode='always'
                             ref={scrollRef}
-                            renderItem={renderItem}
+                            renderItem={renderInitialOrLoadingItem}
                         />
                     }
                     {showResults && !loading &&
