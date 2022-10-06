@@ -392,7 +392,7 @@ jobs:
             curl -sL https://sentry.io/get-cli/
             export SENTRY_LOG_LEVEL=debug
 #            export SENTRY_RELEASE=$(sentry-cli releases propose-version)
-            export SENTRY_RELEASE=445
+            export SENTRY_RELEASE="445"
             sentry-cli releases new --project $SENTRY_PROJECT  --auth-token $SENTRY_AUTH_TOKEN $SENTRY_RELEASE
             sentry-cli releases set-commits $SENTRY_RELEASE --auto
             sentry-cli releases files $SENTRY_RELEASE upload-sourcemaps ./
