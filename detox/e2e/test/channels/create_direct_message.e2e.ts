@@ -68,7 +68,7 @@ describe('Channels - Create Direct Message', () => {
         await CreateDirectMessageScreen.close();
     });
 
-    it('MM-T4730_2 - should be able to create a direct message -- KNOWN ISSUE: MM-47371', async () => {
+    it('MM-T4730_2 - should be able to create a direct message', async () => {
         // # As admin, create a new user to open direct message with
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, newUser.id, testTeam.id);
@@ -98,7 +98,8 @@ describe('Channels - Create Direct Message', () => {
         await expect(ChannelScreen.headerTitle).toHaveText(newUserDisplayName);
         await expect(ChannelScreen.introDisplayName).toHaveText(newUserDisplayName);
 
-        // # Go back to channel list screen
+        // # Post a message and go back to channel list screen
+        await ChannelScreen.postMessage('test');
         await ChannelScreen.back();
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
@@ -108,7 +109,7 @@ describe('Channels - Create Direct Message', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name)).toHaveText(newUserDisplayName);
     });
 
-    it('MM-T4730_3 - should be able to create a group message -- KNOWN ISSUE: MM-47371', async () => {
+    it('MM-T4730_3 - should be able to create a group message', async () => {
         // # As admin, create two new users to open group message with
         const {user: firstNewUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'a'});
         await Team.apiAddUserToTeam(siteOneUrl, firstNewUser.id, testTeam.id);
@@ -144,7 +145,8 @@ describe('Channels - Create Direct Message', () => {
         await expect(ChannelScreen.headerTitle).toHaveText(groupDisplayName);
         await expect(ChannelScreen.introDisplayName).toHaveText(groupDisplayName);
 
-        // # Go back to channel list screen
+        // # Post a message and go back to channel list screen
+        await ChannelScreen.postMessage('test');
         await ChannelScreen.back();
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
