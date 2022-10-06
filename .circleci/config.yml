@@ -390,11 +390,11 @@ jobs:
             curl -SL https://sentry.io/get-cli/
             export SENTRY_LOG_LEVEL=debug
             export SENTRY_RELEASE=$(sentry-cli releases propose-version)
-            sentry-cli releases new $SENTRY_RELEASE
-            sentry-cli releases set-commits $SENTRY_RELEASE --auto
-            sentry-cli releases files $SENTRY_RELEASE upload-sourcemaps ./
-            sentry-cli releases finalize $SENTRY_RELEASE
-            sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
+#            sentry-cli releases new $SENTRY_RELEASE
+#            sentry-cli releases set-commits $SENTRY_RELEASE --auto
+#            sentry-cli releases files $SENTRY_RELEASE upload-sourcemaps ./
+#            sentry-cli releases finalize $SENTRY_RELEASE
+#            sentry-cli releases deploys $SENTRY_RELEASE new -e $SENTRY_ENVIRONMENT
 
   # build-ios-unsigned:
   #   executor: ios
