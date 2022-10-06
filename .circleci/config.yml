@@ -582,27 +582,15 @@ workflows:
                 - /^build-ios-\d+$/
                 - /^build-ios-beta-\d+$/
 
-#      - build-android-pr:
-#          context:
-#            - mattermost-mobile-android-pr
-#            - mattermost-mobile-sentry
-#          requires:
-#            - test
-#          filters:
-#            branches:
-#              only: /^(build|android)-pr-.*/
-
-      - notify-sentry-deploy:
+      - build-android-pr:
           context:
             - mattermost-mobile-android-pr
             - mattermost-mobile-sentry
-#          requires:
-#            - test
-##            - build-android-pr
+          requires:
+            - test
           filters:
             branches:
               only: /^(build|android)-pr-.*/
-          e: android
 
       - build-ios-pr:
           context:
@@ -613,18 +601,6 @@ workflows:
           filters:
             branches:
               only: /^(build|ios)-pr-.*/
-
-      - notify-sentry-deploy:
-          context:
-            - mattermost-mobile-ios-pr
-            - mattermost-mobile-sentry
-          requires:
-            - test
-            - build-ios-pr
-          filters:
-            branches:
-              only: /^(build|ios)-pr-.*/
-          e: ios
 
       # - build-android-unsigned:
       #     context: mattermost-mobile-unsigned
