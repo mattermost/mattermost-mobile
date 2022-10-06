@@ -386,7 +386,7 @@ jobs:
     steps:
       - run:
           name: Create release and notify Sentry of deploy
-          run: |
+          command: |
             curl -SL https://sentry.io/get-cli/
             export SENTRY_LOG_LEVEL=debug
             export SENTRY_RELEASE=$(sentry-cli releases propose-version)
