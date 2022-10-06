@@ -79,13 +79,13 @@ const NavigationHeader = ({
 
     const translateY = useDerivedValue(() => (
         lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, heightOffset.value)
-    ), [lockValue?.value]);
+    ), [lockValue?.value, minScrollValue.value]);
 
     const topMargin = useAnimatedStyle(() => {
         const min = heightOffset.value;
         const margin = Math.min(-Math.min((minScrollValue.value), min), min);
         return {marginTop: lockValue?.value ? -lockValue?.value : margin};
-    }, [lockValue?.value, heightOffset.value]);
+    }, [lockValue?.value, heightOffset.value, minScrollValue.value]);
 
     return (
         <>

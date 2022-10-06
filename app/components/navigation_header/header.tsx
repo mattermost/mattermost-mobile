@@ -166,9 +166,9 @@ const Header = ({
     }, [heightOffset.value, isLargeTitle, hasSearch]);
 
     const containerStyle = useMemo(() => {
-        const containerHeight = lockValue?.value || defaultHeight + top;
+        const height = lockValue?.value || defaultHeight + top;
         const paddingTop = lockValue?.value || top;
-        return [styles.container, {height: containerHeight, paddingTop}];
+        return [styles.container, {height, paddingTop}];
     }, [defaultHeight, lockValue?.value, theme, top]);
 
     const additionalTitleStyle = useMemo(() => ({
