@@ -498,7 +498,7 @@ workflows:
   version: 2
   build:
     jobs:
-      - test
+#      - test
       # - check-deps:
       #     context: sast-webhook
       #     requires:
@@ -598,9 +598,9 @@ workflows:
           context:
             - mattermost-mobile-android-pr
             - mattermost-mobile-sentry
-          requires:
-            - test
-#            - build-android-pr
+#          requires:
+#            - test
+##            - build-android-pr
           filters:
             branches:
               only: /^(build|android)-pr-.*/
