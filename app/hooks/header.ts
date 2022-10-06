@@ -140,16 +140,9 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         }
     }, [largeHeight, defaultHeight]);
 
-    const unlock = useCallback((showHeader: boolean) => {
+    const unlock = () => {
         lockValue.value = null;
-
-        if (showHeader) {
-            (animatedRef.current as any).scrollToOffset({
-                headerHeight,
-                animated: true,
-            });
-        }
-    }, [lockValue.value, animatedRef]);
+    };
 
     const scrollPaddingTop = (isLargeTitle ? largeHeight : defaultHeight) + insets.top;
 
