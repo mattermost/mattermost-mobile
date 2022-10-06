@@ -46,7 +46,7 @@ const NavigationHeaderLargeTitle = ({
         return {
             transform: [{translateY: translateY.value}],
         };
-    });
+    }, [translateY?.value]);
 
     const containerStyle = useMemo(() => {
         return [{height: heightOffset.value}, styles.container];

@@ -233,17 +233,15 @@ const SearchScreen = ({teamId}: Props) => {
         };
     }, [isFocused, stateIndex]);
 
-    const top = useAnimatedStyle(() => {
-        let topMargin = headerHeight.value;
-        if (lockValue?.value) {
-            // FIXME topMargin = lockValue.value + marginFromRoundedHeaderContext;
-            topMargin = lockValue.value;
-        }
-        return {
-            top: topMargin,
+    const headerTopStyle = useAnimatedStyle(() => {
+        const margin = isTablet ? roundedHeaderMarginTablet : roundedHeaderMarginMobile;
+        const headerTopS = {
+            top: lockValue.value ? lockValue.value + margin : headerHeight.value,
             zIndex: lastSearchedValue ? 10 : 0,
+            backgroundColor: 'green',
         };
-    }, [headerHeight.value, lastSearchedValue, lockValue.value]);
+        return headerTopS;
+    }, [headerHeight.value, isTablet, lastSearchedValue, lockValue]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
