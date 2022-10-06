@@ -341,7 +341,7 @@ const SearchScreen = ({teamId}: Props) => {
                             searchValue={lastSearchedValue}
                             posts={posts}
                             fileInfos={fileInfos}
-                            scrollPaddingTop={scrollPaddingTop}
+                            scrollPaddingTop={lockValue.value}
                             fileChannelIds={fileChannelIds}
                         />
                     }
