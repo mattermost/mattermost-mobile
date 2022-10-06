@@ -5,6 +5,7 @@ import React from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import ViewConstants from '@constants/view';
 import {useTheme} from '@context/theme';
 import useHeaderHeight, {MAX_OVERSCROLL} from '@hooks/header';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -60,17 +61,16 @@ const NavigationHeader = ({
     const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
-    const {largeHeight, defaultHeight} = useHeaderHeight();
+    const {largeHeight, defaultHeight} = useHeaderHeight(hasSearch);
     const containerHeight = useAnimatedStyle(() => {
         const minHeight = defaultHeight + insets.top;
         const value = -(scrollValue?.value || 0);
         const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + value;
         const height = lockValue?.value ? lockValue.value : calculatedHeight;
-        const maxHeight = largeHeight + insets.top + MAX_OVERSCROLL;
         return {
             height: Math.max(height, minHeight),
             minHeight,
-            maxHeight,
+            maxHeight: largeHeight + insets.top + MAX_OVERSCROLL,
         };
     });
 
@@ -81,10 +81,14 @@ const NavigationHeader = ({
         lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, heightOffset.value)
     ), [lockValue?.value, minScrollValue.value]);
 
-    const topMargin = useAnimatedStyle(() => {
+    const searchTopMargin = useAnimatedStyle(() => {
         const min = heightOffset.value;
-        const margin = Math.min(-Math.min((minScrollValue.value), min), min);
-        return {marginTop: lockValue?.value ? -lockValue?.value : margin};
+        const margin = Math.min(-Math.min(minScrollValue.value, min), min);
+        const unlockedBottomMargin = margin + ViewConstants.UNLOCKED_SEARCH_BOTTOM_MARGIN;
+        const bottomMargin = lockValue?.value ? -lockValue?.value : unlockedBottomMargin;
+        return {
+            marginTop: bottomMargin - ViewConstants.SEARCH_INPUT_HEIGHT,
+        };
     }, [lockValue?.value, heightOffset.value, minScrollValue.value]);
 
     return (
@@ -106,17 +110,16 @@ const NavigationHeader = ({
                     subtitleCompanion={subtitleCompanion}
                     theme={theme}
                     title={title}
-                    top={insets.top}
                 />
                 {isLargeTitle &&
-                <NavigationHeaderLargeTitle
-                    heightOffset={heightOffset}
-                    hasSearch={hasSearch}
-                    subtitle={subtitle}
-                    theme={theme}
-                    title={title}
-                    translateY={translateY}
-                />
+                    <NavigationHeaderLargeTitle
+                        heightOffset={heightOffset}
+                        hasSearch={hasSearch}
+                        subtitle={subtitle}
+                        theme={theme}
+                        title={title}
+                        translateY={translateY}
+                    />
                 }
                 {hasSearch &&
                     <NavigationSearch
@@ -124,7 +127,7 @@ const NavigationHeader = ({
                         hideHeader={hideHeader}
                         theme={theme}
                         top={0}
-                        topMargin={topMargin}
+                        topMargin={searchTopMargin}
                     />
                 }
             </Animated.View>

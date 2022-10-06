@@ -7,7 +7,6 @@ import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
 import Search, {SearchProps} from '@components/search';
 import {Events} from '@constants';
-import {HEADER_SEARCH_HEIGHT} from '@constants/view';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -18,17 +17,12 @@ type Props = SearchProps & {
     top: number;
 }
 
-const INITIAL_TOP = -45;
-
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.sidebarBg,
-        height: HEADER_SEARCH_HEIGHT,
-        justifyContent: 'center',
         paddingHorizontal: 20,
         width: '100%',
         zIndex: 10,
-        top: INITIAL_TOP,
     },
     inputContainerStyle: {
         backgroundColor: changeOpacity(theme.sidebarText, 0.12),

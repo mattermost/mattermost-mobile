@@ -42,22 +42,22 @@ const NavigationHeaderLargeTitle = ({
 }: Props) => {
     const styles = getStyleSheet(theme);
 
-    const transform = useAnimatedStyle(() => {
-        return {
-            transform: [{translateY: translateY.value}],
-        };
-    }, [translateY?.value]);
+    const transform = useAnimatedStyle(() => (
+        {transform: [{translateY: translateY.value}]}
+    ), [translateY?.value]);
 
     const containerStyle = useMemo(() => {
         return [{height: heightOffset.value}, styles.container];
     }, [heightOffset.value, theme]);
+
+    const searchMargin = ({marginTop: hasSearch ? -6 : 0});
 
     return (
         <Animated.View style={[containerStyle, transform]}>
             <Text
                 ellipsizeMode='tail'
                 numberOfLines={1}
-                style={styles.heading}
+                style={[styles.heading, searchMargin]}
                 testID='navigation.large_header.title'
             >
                 {title}

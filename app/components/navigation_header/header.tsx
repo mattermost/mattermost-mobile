@@ -4,6 +4,7 @@
 import React, {useMemo} from 'react';
 import {Platform, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -36,7 +37,6 @@ type Props = {
     subtitleCompanion?: React.ReactElement;
     theme: Theme;
     title?: string;
-    top: number;
 }
 
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
@@ -140,9 +140,9 @@ const Header = ({
     subtitleCompanion,
     theme,
     title,
-    top,
 }: Props) => {
     const styles = getStyleSheet(theme);
+    const insets = useSafeAreaInsets();
 
     const opacity = useAnimatedStyle(() => {
         if (!isLargeTitle) {
@@ -167,9 +167,9 @@ const Header = ({
 
     const containerStyle = useMemo(() => (
         [styles.container, {
-            height: lockValue?.value || defaultHeight + top,
-            paddingTop: lockValue?.value || top,
-        }]), [defaultHeight, lockValue?.value, theme, top]);
+            height: lockValue?.value || defaultHeight + insets.top,
+            paddingTop: lockValue?.value || insets.top,
+        }]), [defaultHeight, lockValue?.value, theme, insets.top]);
 
     const additionalTitleStyle = useMemo(() => ({
         marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),

@@ -17,54 +17,57 @@ type HeaderScrollContext = {
 
 export const MAX_OVERSCROLL = 80;
 
-export const useDefaultHeaderHeight = () => {
+export const useDefaultHeaderHeight = (hasSearch = false) => {
     const isTablet = useIsTablet();
-
+    let height;
     if (isTablet) {
-        return ViewConstants.TABLET_HEADER_HEIGHT;
+        height = hasSearch ? ViewConstants.TABLET_SEARCH_HEIGHT_COLLAPSED : ViewConstants.TABLET_HEADER_HEIGHT;
+    } else if (Platform.OS === 'ios') {
+        height = ViewConstants.IOS_DEFAULT_HEADER_HEIGHT;
+        height += hasSearch ? 7 : 0;
+    } else {
+        height = ViewConstants.ANDROID_DEFAULT_HEADER_HEIGHT;
     }
-
-    if (Platform.OS === 'ios') {
-        return ViewConstants.IOS_DEFAULT_HEADER_HEIGHT;
-    }
-
-    return ViewConstants.ANDROID_DEFAULT_HEADER_HEIGHT;
+    return height;
 };
 
-export const useLargeHeaderHeight = () => {
-    const defaultHeight = useDefaultHeaderHeight();
+export const useLargeHeaderHeight = (hasSearch = false) => {
+    const isTablet = useIsTablet();
+    const defaultHeight = useDefaultHeaderHeight(hasSearch);
+    if (isTablet && hasSearch) {
+        return ViewConstants.TABLET_SEARCH_HEIGHT_EXPANDED;
+    }
     return defaultHeight + ViewConstants.LARGE_HEADER_TITLE + ViewConstants.HEADER_WITH_SUBTITLE;
 };
 
-export const useHeaderHeight = () => {
-    const defaultHeight = useDefaultHeaderHeight();
-    const largeHeight = useLargeHeaderHeight();
+export const useHeaderHeight = (hasSearch = false) => {
+    const defaultHeight = useDefaultHeaderHeight(hasSearch);
+    const largeHeight = useLargeHeaderHeight(hasSearch);
     return useMemo(() => {
         return {
             defaultHeight,
             largeHeight,
         };
-    }, [defaultHeight, largeHeight]);
+    }, [defaultHeight, largeHeight, hasSearch]);
 };
 
-export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void) => {
+export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void, hasSearch = false) => {
     const insets = useSafeAreaInsets();
     const animatedRef = useAnimatedRef<Animated.ScrollView>();
-    const {largeHeight, defaultHeight} = useHeaderHeight();
+    const {largeHeight, defaultHeight} = useHeaderHeight(hasSearch);
     const scrollValue = useSharedValue(0);
     const lockValue = useSharedValue<number | null>(null);
     const autoScroll = useSharedValue(false);
     const snapping = useSharedValue(false);
 
     const headerHeight = useDerivedValue(() => {
-        const minHeight = defaultHeight + insets.top;
         const value = -(scrollValue?.value || 0);
         const header = (isLargeTitle ? largeHeight : defaultHeight);
         const height = header + value + insets.top;
         if (height > header + (insets.top * 2)) {
             return Math.min(height, largeHeight + insets.top + MAX_OVERSCROLL);
         }
-        return Math.max(height, minHeight);
+        return Math.max(height, defaultHeight + insets.top);
     });
 
     function snapIfNeeded(dir: string, offset: number) {
@@ -123,7 +126,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
     const hideHeader = useCallback((lock = false) => {
         const offset = largeHeight - defaultHeight;
         if (lock) {
-            lockValue.value = offset;
+            lockValue.value = defaultHeight + insets.top;
         }
         if (animatedRef?.current && Math.abs((scrollValue?.value || 0)) <= insets.top) {
             autoScroll.value = true;
@@ -140,16 +143,9 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         }
     }, [largeHeight, defaultHeight]);
 
-    const unlock = useCallback((showHeader: boolean) => {
+    const unlock = () => {
         lockValue.value = null;
-
-        if (showHeader) {
-            (animatedRef.current as any).scrollToOffset({
-                headerHeight,
-                animated: true,
-            });
-        }
-    }, [lockValue.value, animatedRef]);
+    };
 
     const scrollPaddingTop = (isLargeTitle ? largeHeight : defaultHeight) + insets.top;
 

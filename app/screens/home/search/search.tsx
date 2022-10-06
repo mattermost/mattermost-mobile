@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
@@ -40,8 +40,6 @@ const emptyChannelIds: string[] = [];
 const dummyData = [1];
 
 const AutocompletePaddingTop = 4;
-const roundedHeaderMarginMobile = 7;
-const roundedHeaderMarginTablet = 0;
 
 type Props = {
     teamId: string;
@@ -83,6 +81,7 @@ const SearchScreen = ({teamId}: Props) => {
     const serverUrl = useServerUrl();
     const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
 
+    const clearRef = useRef<boolean>(false);
     const isTablet = useIsTablet();
     const [cursorPosition, setCursorPosition] = useState(searchTerm?.length);
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
@@ -103,31 +102,39 @@ const SearchScreen = ({teamId}: Props) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
     };
 
-    const {scrollPaddingTop,
-        scrollRef,
-        scrollValue,
-        onScroll,
+    const {
+        defaultHeight,
         headerHeight,
         hideHeader,
+        largeHeight,
         lockValue,
+        onScroll,
+        scrollPaddingTop,
+        scrollRef,
+        scrollValue,
         unlock,
-    } = useCollapsibleHeader<FlatList>(true, onSnap);
+    } = useCollapsibleHeader<FlatList>(true, onSnap, true);
+
+    const resetToInitial = useCallback(() => {
+        unlock();
+        setShowResults(false);
+        setSearchValue('');
+        setLastSearchedValue('');
+        setFilter(FileFilters.ALL);
+    }, []);
 
     const handleClearSearch = useCallback(() => {
-        setShowResults(false);
-        setSearchValue('');
-        setLastSearchedValue('');
-        setFilter(FileFilters.ALL);
-        unlock(false);
-    }, [unlock]);
+        resetToInitial();
+        clearRef.current = true;
+    }, [resetToInitial]);
 
     const handleCancelSearch = useCallback(() => {
-        unlock(true);
-        setShowResults(false);
-        setSearchValue('');
-        setLastSearchedValue('');
-        setFilter(FileFilters.ALL);
-    }, [unlock]);
+        resetToInitial();
+        scrollRef.current?.scrollToOffset({
+            offset: 0,
+            animated: true,
+        });
+    }, [resetToInitial]);
 
     const handleTextChange = useCallback((newValue: string) => {
         setSearchValue(newValue);
@@ -230,15 +237,10 @@ const SearchScreen = ({teamId}: Props) => {
         };
     }, [isFocused, stateIndex]);
 
-    const headerTopStyle = useAnimatedStyle(() => {
-        const margin = isTablet ? roundedHeaderMarginTablet : roundedHeaderMarginMobile;
-        const headerTopS = {
-            top: lockValue.value ? lockValue.value + margin : headerHeight.value,
-            zIndex: lastSearchedValue ? 10 : 0,
-            backgroundColor: 'green',
-        };
-        return headerTopS;
-    }, [headerHeight.value, isTablet, lastSearchedValue, lockValue]);
+    const headerTopStyle = useAnimatedStyle(() => ({
+        top: lockValue.value ? lockValue.value : headerHeight.value,
+        zIndex: lastSearchedValue ? 10 : 0,
+    }), [headerHeight.value, isTablet, lastSearchedValue, lockValue]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
@@ -267,6 +269,17 @@ const SearchScreen = ({teamId}: Props) => {
             containerStyle={styles.autocompleteContainer}
         />
     ), [cursorPosition, handleTextChange, searchValue, autocompleteMaxHeight, autocompletePosition]);
+
+    const onFlatLayout = useCallback(() => {
+        if (clearRef.current) {
+            const offset = largeHeight - defaultHeight;
+            scrollRef.current?.scrollToOffset({
+                offset,
+                animated: false,
+            });
+            clearRef.current = false;
+        }
+    }, [scrollRef, largeHeight, defaultHeight]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
@@ -309,6 +322,7 @@ const SearchScreen = ({teamId}: Props) => {
                     </Animated.View>
                     {!showResults &&
                         <AnimatedFlatList
+                            onLayout={onFlatLayout}
                             data={dummyData}
                             contentContainerStyle={initialContainerStyle}
                             keyboardShouldPersistTaps='handled'
