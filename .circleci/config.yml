@@ -379,10 +379,6 @@ jobs:
       e:
         type: executor
     executor: << parameters.e >>
-    environment:
-      SENTRY_ORG: $SENTRY_ORG
-      SENTRY_PROJECT: $SENTRY_PROJECT
-      SENTRY_ENVIRONMENT: production
     steps:
       - checkout:
           path: ~/mattermost-mobile
@@ -392,7 +388,7 @@ jobs:
             export SENTRY_LOG_LEVEL=debug
             export SENTRY_RELEASE="445"
             curl -sL https://sentry.io/get-cli/ | bash
-            sentry-cli releases new --project $SENTRY_PROJECT  --auth-token $SENTRY_AUTH_TOKEN $SENTRY_RELEASE
+            sentry-cli releases new --project gekidou-sentry --auth-token $SENTRY_AUTH_TOKEN $SENTRY_RELEASE
             sentry-cli releases set-commits $SENTRY_RELEASE --auto
             sentry-cli releases files $SENTRY_RELEASE upload-sourcemaps ./
             sentry-cli releases finalize $SENTRY_RELEASE
