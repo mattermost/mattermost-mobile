@@ -68,7 +68,7 @@ describe('Channels - Create Direct Message', () => {
         await CreateDirectMessageScreen.close();
     });
 
-    it('MM-T4730_2 - should be able to create a direct message', async () => {
+    it('MM-T4730_2 - should be able to create a direct message -- KNOWN ISSUE: MM-47371', async () => {
         // # As admin, create a new user to open direct message with
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, newUser.id, testTeam.id);
@@ -108,7 +108,7 @@ describe('Channels - Create Direct Message', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name)).toHaveText(newUserDisplayName);
     });
 
-    it('MM-T4730_3 - should be able to create a group message', async () => {
+    it('MM-T4730_3 - should be able to create a group message -- KNOWN ISSUE: MM-47371', async () => {
         // # As admin, create two new users to open group message with
         const {user: firstNewUser} = await User.apiCreateUser(siteOneUrl, {prefix: 'a'});
         await Team.apiAddUserToTeam(siteOneUrl, firstNewUser.id, testTeam.id);

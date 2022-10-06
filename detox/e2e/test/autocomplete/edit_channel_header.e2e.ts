@@ -21,6 +21,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Autocomplete - Edit Channel Header', () => {
@@ -62,6 +63,7 @@ describe('Autocomplete - Edit Channel Header', () => {
         await CreateOrEditChannelScreen.headerInput.typeText('@');
 
         // * Verify at-mention list is displayed
+        await waitFor(Autocomplete.sectionAtMentionList).toExist().withTimeout(timeouts.ONE_SEC);
         await expect(Autocomplete.sectionAtMentionList).toBeVisible();
     });
 

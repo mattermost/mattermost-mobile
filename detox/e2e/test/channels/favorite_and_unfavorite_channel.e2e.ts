@@ -111,7 +111,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
     });
 
-    it('MM-T4929_3 - should be able to favorite/unfavorite a direct message channel from channel intro', async () => {
+    it('MM-T4929_3 - should be able to favorite/unfavorite a direct message channel from channel intro -- KNOWN ISSUE: MM-47371', async () => {
         // # Open a direct message channel screen, tap on intro favorite action to favorite the channel, and go back to channel list screen
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, newUser.id, testTeam.id);
