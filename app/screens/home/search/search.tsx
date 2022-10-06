@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
@@ -83,6 +83,7 @@ const SearchScreen = ({teamId}: Props) => {
     const serverUrl = useServerUrl();
     const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
 
+    const clearRef = useRef<boolean>(false);
     const isTablet = useIsTablet();
     const [cursorPosition, setCursorPosition] = useState(searchTerm?.length);
     const [searchValue, setSearchValue] = useState<string>(searchTerm);
@@ -103,31 +104,39 @@ const SearchScreen = ({teamId}: Props) => {
         scrollRef.current?.scrollToOffset({offset, animated: true});
     };
 
-    const {scrollPaddingTop,
-        scrollRef,
-        scrollValue,
-        onScroll,
+    const {
+        defaultHeight,
         headerHeight,
         hideHeader,
+        largeHeight,
         lockValue,
+        onScroll,
+        scrollPaddingTop,
+        scrollRef,
+        scrollValue,
         unlock,
     } = useCollapsibleHeader<FlatList>(true, onSnap);
 
-    const handleClearSearch = useCallback(() => {
+    const resetToInitial = useCallback(() => {
+        unlock();
         setShowResults(false);
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
-        unlock(false);
-    }, [unlock]);
+    }, []);
+
+    const handleClearSearch = useCallback(() => {
+        resetToInitial();
+        clearRef.current = true;
+    }, [resetToInitial]);
 
     const handleCancelSearch = useCallback(() => {
-        unlock(true);
-        setShowResults(false);
-        setSearchValue('');
-        setLastSearchedValue('');
-        setFilter(FileFilters.ALL);
-    }, [unlock]);
+        resetToInitial();
+        scrollRef.current?.scrollToOffset({
+            offset: 0,
+            animated: true,
+        });
+    }, [resetToInitial]);
 
     const handleTextChange = useCallback((newValue: string) => {
         setSearchValue(newValue);
@@ -268,6 +277,17 @@ const SearchScreen = ({teamId}: Props) => {
         />
     ), [cursorPosition, handleTextChange, searchValue, autocompleteMaxHeight, autocompletePosition]);
 
+    const onFlatLayout = useCallback(() => {
+        if (clearRef.current) {
+            const offset = largeHeight - defaultHeight;
+            scrollRef.current?.scrollToOffset({
+                offset,
+                animated: false,
+            });
+            clearRef.current = false;
+        }
+    }, [scrollRef, largeHeight, defaultHeight]);
+
     return (
         <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
@@ -309,6 +329,7 @@ const SearchScreen = ({teamId}: Props) => {
                     </Animated.View>
                     {!showResults &&
                         <AnimatedFlatList
+                            onLayout={onFlatLayout}
                             data={dummyData}
                             contentContainerStyle={initialContainerStyle}
                             keyboardShouldPersistTaps='handled'
