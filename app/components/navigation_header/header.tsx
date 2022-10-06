@@ -165,11 +165,11 @@ const Header = ({
         };
     }, [heightOffset.value, isLargeTitle, hasSearch]);
 
-    const containerStyle = useMemo(() => {
-        const height = lockValue?.value || defaultHeight + top;
-        const paddingTop = lockValue?.value || top;
-        return [styles.container, {height, paddingTop}];
-    }, [defaultHeight, lockValue?.value, theme, top]);
+    const containerStyle = useMemo(() => (
+        [styles.container, {
+            height: lockValue?.value || defaultHeight + top,
+            paddingTop: lockValue?.value || top,
+        }]), [defaultHeight, lockValue?.value, theme, top]);
 
     const additionalTitleStyle = useMemo(() => ({
         marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
