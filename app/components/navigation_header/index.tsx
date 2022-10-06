@@ -66,11 +66,10 @@ const NavigationHeader = ({
         const value = -(scrollValue?.value || 0);
         const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + value;
         const height = lockValue?.value ? lockValue.value : calculatedHeight;
-        const maxHeight = largeHeight + insets.top + MAX_OVERSCROLL;
         return {
             height: Math.max(height, minHeight),
             minHeight,
-            maxHeight,
+            maxHeight: largeHeight + insets.top + MAX_OVERSCROLL,
         };
     });
 
