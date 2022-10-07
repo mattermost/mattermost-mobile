@@ -719,16 +719,16 @@ platform :android do
         gradle_file: './android/app/build.gradle'
     )
 
-   send_message_to_mattermost({
-                                  :version_number => version_number,
-                                  :build_number => build_number,
-                                  :pretext => '',
-                                  :title => 'Unsuccessful Build',
-                                  :thumb_url => 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300',
-                                  :msg =>  exception.message,
-                                  :default_payloads => [:lane],
-                                  :success => false,
-                              })
+#    send_message_to_mattermost({
+#                                   :version_number => version_number,
+#                                   :build_number => build_number,
+#                                   :pretext => '',
+#                                   :title => 'Unsuccessful Build',
+#                                   :thumb_url => 'https://lh3.ggpht.com/XL0CrI8skkxnboGct-duyg-bZ_MxJDTrjczyjdU8OP2PM1dmj7SP4jL1K8JQeMIB3AM=w300',
+#                                   :msg =>  exception.message,
+#                                   :default_payloads => [:lane],
+#                                   :success => false,
+#                               })
   end
 
   def build_android

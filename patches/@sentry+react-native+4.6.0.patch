@@ -1,5 +1,5 @@
 diff --git a/node_modules/@sentry/react-native/sentry.gradle b/node_modules/@sentry/react-native/sentry.gradle
-index c54bf8c..5d6c20d 100644
+index c54bf8c..046e61a 100644
 --- a/node_modules/@sentry/react-native/sentry.gradle
 +++ b/node_modules/@sentry/react-native/sentry.gradle
 @@ -30,11 +30,13 @@ gradle.projectsEvaluated {
@@ -22,11 +22,11 @@ index c54bf8c..5d6c20d 100644
          def props = bundleTask.getProperties()
          def reactRoot = props.get("workingDir")
  
-+logger.info("sentry.gradle file reactRoot ", + reactRoot)
++logger.info("sentry.gradle file reactRoot " + reactRoot)
 +
          (shouldCleanUp, bundleOutput, sourcemapOutput) = forceSourceMapOutputFromBundleTask(bundleTask)
  
-+logger.info("shouldCleanUp, bundleOutput, sourcemapOutput ", + shouldCleanUp +  bundleOutput +  sourcemapOutput)
++logger.info("shouldCleanUp, bundleOutput, sourcemapOutput " + shouldCleanUp +  bundleOutput +  sourcemapOutput)
          // Lets leave this here if we need to debug
 -        // println bundleTask.properties
 -        //     .sort{it.key}
@@ -46,7 +46,7 @@ index c54bf8c..5d6c20d 100644
  
          def nameCleanup = "${bundleTask.name}_SentryUploadCleanUp"
 +
-+logger.info("sentry.gradle nameCleanup ", + nameCleanup)
++logger.info("sentry.gradle nameCleanup " + nameCleanup)
 +
          // Upload the source map several times if necessary: once for each release and versionCode.
          currentVariants.each { key, currentVariant ->
@@ -56,12 +56,12 @@ index c54bf8c..5d6c20d 100644
            // based on where we're uploading to.
            def nameCliTask = "${bundleTask.name}_SentryUpload_${releaseName}_${versionCode}"
 -
-+logger.info("sentry.gradle nameCliTask ", + nameCliTask)
++logger.info("sentry.gradle nameCliTask " + nameCliTask)
            // If several outputs have the same releaseName and versionCode, we'd do the exact same
            // upload for each of them.  No need to repeat.
 -          try { tasks.named(nameCliTask); return } catch (Exception e) {}
 +          try { tasks.named(nameCliTask); return } catch (Exception e) {
-+            logger.info("sentry.gradle tasks.named(nameCliTask ", + e)
++            logger.info("sentry.gradle tasks.named(nameCliTask " + e)
 +          }
  
            /** Upload source map file to the sentry server via CLI call. */
