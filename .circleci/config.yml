@@ -142,8 +142,6 @@ commands:
 
   build-android:
     description: "Build the android app"
-    environment:
-      GRADLE_OPTS: "-Dorg.gradle.daemon=false"
     steps:
       - checkout:
           path: ~/mattermost-mobile
@@ -325,6 +323,7 @@ jobs:
     executor: android
     environment:
       BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false"
     steps:
       - build-android
       - save:
