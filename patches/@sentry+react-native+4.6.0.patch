@@ -1,0 +1,93 @@
+diff --git a/node_modules/@sentry/react-native/sentry.gradle b/node_modules/@sentry/react-native/sentry.gradle
+index c54bf8c..5d6c20d 100644
+--- a/node_modules/@sentry/react-native/sentry.gradle
++++ b/node_modules/@sentry/react-native/sentry.gradle
+@@ -30,11 +30,13 @@ gradle.projectsEvaluated {
+         println "* Flavor aware sentry properties *"
+         println "**********************************"
+     }
+-
++logger.info("sentry.gradle file at line 33 ")
+     // separately we then hook into the bundle task of react native to inject
+     // sourcemap generation parameters.  In case for whatever reason no release
+     // was found for the asset folder we just bail.
+-    def bundleTasks = tasks.findAll { task -> task.name.startsWith("bundle") && task.name.endsWith("JsAndAssets") && !task.name.contains("Debug") && task.enabled }
++    def bundleTasks = tasks.findAll { 
++        task -> task.name.startsWith("bundle") && task.name.endsWith("JsAndAssets") && !task.name.contains("Debug") && task.enabled 
++        }
+     bundleTasks.each { bundleTask ->
+         def shouldCleanUp
+         def sourcemapOutput
+@@ -42,14 +44,17 @@ gradle.projectsEvaluated {
+         def props = bundleTask.getProperties()
+         def reactRoot = props.get("workingDir")
+ 
++logger.info("sentry.gradle file reactRoot ", + reactRoot)
++
+         (shouldCleanUp, bundleOutput, sourcemapOutput) = forceSourceMapOutputFromBundleTask(bundleTask)
+ 
++logger.info("shouldCleanUp, bundleOutput, sourcemapOutput ", + shouldCleanUp +  bundleOutput +  sourcemapOutput)
+         // Lets leave this here if we need to debug
+-        // println bundleTask.properties
+-        //     .sort{it.key}
+-        //     .collect{it}
+-        //     .findAll{!['class', 'active'].contains(it.key)}
+-        //     .join('\n')
++        println bundleTask.properties
++            .sort{it.key}
++            .collect{it}
++            .findAll{!['class', 'active'].contains(it.key)}
++            .join('\n')
+ 
+         def currentVariants = extractCurrentVariants(bundleTask, releases)
+         if (currentVariants == null) return
+@@ -60,6 +65,9 @@ gradle.projectsEvaluated {
+         def previousCliTask = null
+ 
+         def nameCleanup = "${bundleTask.name}_SentryUploadCleanUp"
++
++logger.info("sentry.gradle nameCleanup ", + nameCleanup)
++
+         // Upload the source map several times if necessary: once for each release and versionCode.
+         currentVariants.each { key, currentVariant ->
+           variant = currentVariant[0]
+@@ -79,10 +87,12 @@ gradle.projectsEvaluated {
+           // below) and distribution identifier (`--dist` below).  Give the task a unique name
+           // based on where we're uploading to.
+           def nameCliTask = "${bundleTask.name}_SentryUpload_${releaseName}_${versionCode}"
+-
++logger.info("sentry.gradle nameCliTask ", + nameCliTask)
+           // If several outputs have the same releaseName and versionCode, we'd do the exact same
+           // upload for each of them.  No need to repeat.
+-          try { tasks.named(nameCliTask); return } catch (Exception e) {}
++          try { tasks.named(nameCliTask); return } catch (Exception e) {
++            logger.info("sentry.gradle tasks.named(nameCliTask ", + e)
++          }
+ 
+           /** Upload source map file to the sentry server via CLI call. */
+           def cliTask = tasks.create(nameCliTask, Exec) {
+@@ -127,7 +137,9 @@ gradle.projectsEvaluated {
+               //
+               def args = [cliExecutable]
+ 
+-              args.addAll(!config.logLevel ? [] : [
++              args.addAll(!config.logLevel ? [
++                "--log-level", "debug"
++              ] : [
+                       "--log-level", config.logLevel      // control verbosity of the output
+               ])
+               args.addAll(!config.flavorAware ? [] : [
+@@ -168,8 +180,12 @@ gradle.projectsEvaluated {
+             description = "clean up extra sourcemap"
+             group = 'sentry.io'
+ 
++//  '/home/circleci/*****************/android/app/build/generated/assets/react/release/index.android.bundle',
++// '/home/circleci/*****************/android/app/build/generated/sourcemaps/react/release/index.android.bundle.map',
++
++
+             delete sourcemapOutput
+-            delete "$buildDir/intermediates/assets/release/index.android.bundle.map" // react native default bundle dir
++            delete "$buildDir/generated" // react native default bundle dir
+         }
+ 
+         // register clean task extension
