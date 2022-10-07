@@ -245,8 +245,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
           false,
           false,
           {
-            "flex": 1,
-            "marginRight": 20,
+            "paddingRight": 0,
             "textAlign": "right",
           },
         ]
