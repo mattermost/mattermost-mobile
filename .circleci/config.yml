@@ -163,6 +163,9 @@ commands:
           name: Jetify android libraries
           command: ./node_modules/.bin/jetify
       - run:
+          name: Install Sentry CLI
+          command: curl -sL https://sentry.io/get-cli/ | bash
+      - run:
           working_directory: fastlane
           name: Run fastlane to build android
           no_output_timeout: 30m
