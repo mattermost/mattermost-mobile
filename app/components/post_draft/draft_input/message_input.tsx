@@ -71,18 +71,20 @@ export default function MessageInput({
     const showAsRecord = files[0]?.is_voice_recording;
     return (
         <>
-            <PostInput
-                testID={postInputTestID}
-                channelId={channelId}
-                maxMessageLength={maxMessageLength}
-                rootId={rootId}
-                cursorPosition={cursorPosition}
-                updateCursorPosition={updateCursorPosition}
-                updateValue={updateValue}
-                value={value}
-                addFiles={addFiles}
-                sendMessage={sendMessage}
-            />
+            {!showAsRecord &&
+                <PostInput
+                    testID={postInputTestID}
+                    channelId={channelId}
+                    maxMessageLength={maxMessageLength}
+                    rootId={rootId}
+                    cursorPosition={cursorPosition}
+                    updateCursorPosition={updateCursorPosition}
+                    updateValue={updateValue}
+                    value={value}
+                    addFiles={addFiles}
+                    sendMessage={sendMessage}
+                />
+            }
             <Uploads
                 currentUserId={currentUserId}
                 files={files}

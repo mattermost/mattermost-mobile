@@ -425,7 +425,7 @@ export const observeAllowedThemesKeys = (database: Database) => {
 
 export const observeVoiceMessagesEnabled = (database: Database) => {
     return observeConfig(database).pipe(
-        switchMap((c) => of$(c?.ExperimentalEnableVoiceMessages === 'true' && c?.FeatureFlagEnableVoiceMessages === 'true')),
+        switchMap((c) => of$(c?.ExperimentalEnableVoiceMessage === 'true' && c?.FeatureFlagEnableVoiceMessages === 'true')),
     );
 };
 

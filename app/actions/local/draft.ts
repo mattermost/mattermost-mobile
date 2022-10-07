@@ -18,9 +18,12 @@ export async function updateDraftFile(serverUrl: string, channelId: string, root
             return {error: 'file not found'};
         }
 
+        file.is_voice_recording = draft.files[i].is_voice_recording;
+
         // We create a new list to make sure we re-render the draft input.
         const newFiles = [...draft.files];
         newFiles[i] = file;
+
         draft.prepareUpdate((d) => {
             d.files = newFiles;
         });

@@ -13,6 +13,7 @@ import {setStatus} from '@actions/remote/user';
 import {canEndCall, endCall, getEndCallMessage} from '@calls/actions/calls';
 import ClientError from '@client/rest/error';
 import {Events, Screens} from '@constants';
+import {PostTypes} from '@constants/post';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
@@ -112,6 +113,7 @@ export default function SendHandler({
             channel_id: channelId,
             root_id: rootId,
             message: value,
+            type: (files[0]?.is_voice_recording ? PostTypes.VOICE_MESSAGE : '') as PostType,
         };
 
         createPost(serverUrl, post, postFiles);
