@@ -742,7 +742,7 @@ platform :android do
           'separateApk' => ENV["SEPARATE_APKS"] || false,
           'universalApk' => ENV["SEPARATE_APKS"] || false,
         },
-        flags: "-Dorg.gradle.logging.level=warn",
+        flags: "-Dorg.gradle.logging.stacktrace=full -Dorg.gradle.daemon=false",
     )
   end
 
