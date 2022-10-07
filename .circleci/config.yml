@@ -323,6 +323,7 @@ jobs:
     executor: android
     environment:
       BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
+      GRADLE_OPTS: "-Dorg.gradle.daemon=false"
     steps:
       - build-android
       - save:
