@@ -597,12 +597,12 @@ platform :android do
     unless configured
       configure
     end
-    update_identifiers
-    replace_assets
-    link_sentry_android
+#     update_identifiers
+#     replace_assets
+#     link_sentry_android
     build_android
-    move_apk_to_root
-    upload_file_to_s3({:os_type => "android"})
+#     move_apk_to_root
+#     upload_file_to_s3({:os_type => "android"})
   end
 
   desc 'Build an unsigned apk'
