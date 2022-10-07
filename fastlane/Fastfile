@@ -738,7 +738,7 @@ platform :android do
         task: 'app:assemble',
         build_type: config_mode,
         project_dir: 'android/',
-        flags: "-Dorg.gradle.logging.stacktrace=full",
+        flags: "-Dorg.gradle.logging.stacktrace=full -Dorg.gradle.daemon=false",
         properties: {
           'separateApk' => ENV["SEPARATE_APKS"] || false,
           'universalApk' => ENV["SEPARATE_APKS"] || false,
