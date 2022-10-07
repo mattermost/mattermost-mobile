@@ -322,7 +322,7 @@ jobs:
   build-android-pr:
     executor:
       name: android
-      resource_class: large
+      resource_class: xlarge
     environment:
       BRANCH_TO_BUILD: ${CIRCLE_BRANCH}
     steps:
