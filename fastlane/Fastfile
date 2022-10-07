@@ -741,7 +741,7 @@ platform :android do
         properties: {
           'separateApk' => ENV["SEPARATE_APKS"] || false,
           'universalApk' => ENV["SEPARATE_APKS"] || false,
-        }
+        },
         flags: "-Dorg.gradle.logging.level=debug",
     )
   end
