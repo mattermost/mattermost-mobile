@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CameraRoll from '@react-native-community/cameraroll';
+import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {NativeModules, Platform, StyleSheet, Text, View} from 'react-native';
