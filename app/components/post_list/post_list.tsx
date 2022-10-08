@@ -3,7 +3,7 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, Pressable, StyleProp, StyleSheet, Text, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -16,6 +16,8 @@ import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, isThreadOverview, preparePostList, START_OF_NEW_MESSAGES} from '@utils/post_list';
+
+import CompassIcon from '../compass_icon';
 
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
 import MoreMessages from './more_messages';
@@ -58,6 +60,8 @@ type ScrollIndexFailed = {
     averageItemLength: number;
 };
 
+const CONTENT_OFFSET_THRESHOLD = 120;
+
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const keyExtractor = (item: string | PostModel) => (typeof item === 'string' ? item : item.id);
 
@@ -75,6 +79,33 @@ const styles = StyleSheet.create({
                 scaleY: -1,
             },
         }),
+    },
+    scrollToEndBtn: {
+        position: 'absolute',
+        width: 30,
+        height: 30,
+        borderRadius: 30,
+        right: 16,
+        top: 8,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        scaleY: -1,
+    },
+    scrollToEndBadge: {
+        position: 'absolute',
+        alignSelf: 'center',
+        borderRadius: 30,
+        elevation: 8,
+        height: 30,
+        paddingHorizontal: 20,
+        top: 8,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        scaleY: -1,
     },
 });
 
@@ -109,6 +140,8 @@ const PostList = ({
     const scrolledToHighlighted = useRef(false);
     const [enableRefreshControl, setEnableRefreshControl] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
+    const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
+    const [isNewMessages, setIsNewMessages] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const orderedPosts = useMemo(() => {
@@ -144,6 +177,10 @@ const PostList = ({
         };
     }, []);
 
+    useEffect(() => {
+        setIsNewMessages(initialIndex > -1);
+    }, [initialIndex]);
+
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
         if (location === Screens.CHANNEL && channelId) {
@@ -165,6 +202,7 @@ const PostList = ({
         if (Platform.OS === 'android') {
             const {y} = event.nativeEvent.contentOffset;
             setEnableRefreshControl(y === 0);
+            setShowScrollToEndBtn(y > CONTENT_OFFSET_THRESHOLD);
         }
     }, []);
 
@@ -357,6 +395,29 @@ const PostList = ({
         return () => clearTimeout(t);
     }, [orderedPosts, highlightedId]);
 
+    const onScrollToEnd = () => {
+        scrollToIndex(0);
+    };
+
+    const ScrollToEndView = () => (
+        <Pressable
+            style={[
+                isNewMessages ? styles.scrollToEndBadge : styles.scrollToEndBtn,
+                {
+                    backgroundColor: isNewMessages ? theme.onlineIndicator : theme.sidebarBg,
+                },
+            ]}
+            onPress={onScrollToEnd}
+        >
+            <CompassIcon
+                size={16}
+                name='arrow-down'
+                color={theme.sidebarHeaderTextColor}
+            />
+            <Text>{isNewMessages && 'Jump To New Messages'}</Text>
+        </Pressable>
+    );
+
     return (
         <>
             <PostListRefreshControl
@@ -365,30 +426,38 @@ const PostList = ({
                 onRefresh={onRefresh}
                 style={styles.container}
             >
-                <AnimatedFlatList
-                    contentContainerStyle={contentContainerStyle}
-                    data={orderedPosts}
-                    keyboardDismissMode='interactive'
-                    keyboardShouldPersistTaps='handled'
-                    keyExtractor={keyExtractor}
-                    initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                    ListFooterComponent={footer}
-                    maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                    maxToRenderPerBatch={10}
-                    nativeID={nativeID}
-                    onEndReached={onEndReached}
-                    onEndReachedThreshold={2}
-                    onScroll={onScroll}
-                    onScrollToIndexFailed={onScrollToIndexFailed}
-                    onViewableItemsChanged={onViewableItemsChanged}
-                    ref={listRef}
-                    removeClippedSubviews={true}
-                    renderItem={renderItem}
-                    scrollEventThrottle={60}
-                    style={styles.flex}
-                    viewabilityConfig={VIEWABILITY_CONFIG}
-                    testID={`${testID}.flat_list`}
-                />
+                <>
+                    <AnimatedFlatList
+                        contentContainerStyle={contentContainerStyle}
+                        data={orderedPosts}
+                        getItemLayout={(data, index) => (
+                            {length: 50, offset: 50 * index, index}
+                        )}
+                        keyboardDismissMode='interactive'
+                        keyboardShouldPersistTaps='handled'
+                        keyExtractor={keyExtractor}
+                        initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
+                        ListFooterComponent={footer}
+                        maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+                        maxToRenderPerBatch={10}
+                        nativeID={nativeID}
+                        onEndReached={onEndReached}
+                        onEndReachedThreshold={2}
+                        onScroll={onScroll}
+                        onScrollToIndexFailed={onScrollToIndexFailed}
+                        onViewableItemsChanged={onViewableItemsChanged}
+                        ref={listRef}
+                        removeClippedSubviews={true}
+                        renderItem={renderItem}
+                        scrollEventThrottle={60}
+                        style={styles.flex}
+                        viewabilityConfig={VIEWABILITY_CONFIG}
+                        testID={`${testID}.flat_list`}
+                    />
+                    {showScrollToEndBtn && (
+                        <ScrollToEndView/>
+                    )}
+                </>
             </PostListRefreshControl>
             {showMoreMessages &&
             <MoreMessages
