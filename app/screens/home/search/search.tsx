@@ -241,12 +241,10 @@ const SearchScreen = ({teamId}: Props) => {
 
     const headerTopStyle = useAnimatedStyle(() => {
         const margin = isTablet ? roundedHeaderMarginTablet : roundedHeaderMarginMobile;
-        const headerTopS = {
+        return {
             top: lockValue.value ? lockValue.value + margin : headerHeight.value,
             zIndex: lastSearchedValue ? 10 : 0,
-            backgroundColor: 'green',
         };
-        return headerTopS;
     }, [headerHeight.value, isTablet, lastSearchedValue, lockValue]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
