@@ -5,6 +5,7 @@ import React from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {clamp} from '@app/utils/gallery';
 import {useTheme} from '@context/theme';
 import useHeaderHeight, {MAX_OVERSCROLL} from '@hooks/header';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -80,11 +81,10 @@ const NavigationHeader = ({
         lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, heightOffset.value)
     ), [lockValue?.value, minScrollValue.value]);
 
-    const topMargin = useAnimatedStyle(() => {
-        const min = heightOffset.value;
-        const margin = Math.min(-Math.min((minScrollValue.value), min), min);
+    const searchTopMargin = useAnimatedStyle(() => {
+        const margin = clamp(-minScrollValue.value, -heightOffset.value, heightOffset.value);
         return {marginTop: lockValue?.value ? -lockValue?.value : margin};
-    }, [lockValue?.value, heightOffset.value, minScrollValue.value]);
+    }, [lockValue?.value]);
 
     return (
         <>
