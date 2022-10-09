@@ -105,17 +105,16 @@ const NavigationHeader = ({
                     subtitleCompanion={subtitleCompanion}
                     theme={theme}
                     title={title}
-                    top={insets.top}
                 />
                 {isLargeTitle &&
-                <NavigationHeaderLargeTitle
-                    heightOffset={heightOffset}
-                    hasSearch={hasSearch}
-                    subtitle={subtitle}
-                    theme={theme}
-                    title={title}
-                    translateY={translateY}
-                />
+                    <NavigationHeaderLargeTitle
+                        heightOffset={heightOffset}
+                        hasSearch={hasSearch}
+                        subtitle={subtitle}
+                        theme={theme}
+                        title={title}
+                        translateY={translateY}
+                    />
                 }
                 {hasSearch &&
                     <NavigationSearch
