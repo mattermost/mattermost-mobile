@@ -63,13 +63,12 @@ const NavigationHeader = ({
 
     const {largeHeight, defaultHeight} = useHeaderHeight();
     const containerHeight = useAnimatedStyle(() => {
-        const minHeight = defaultHeight + insets.top;
         const value = -(scrollValue?.value || 0);
         const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + value;
         const height = lockValue?.value ? lockValue.value : calculatedHeight;
         return {
             height: Math.max(height, minHeight),
-            minHeight,
+            minHeight: defaultHeight + insets.top,
             maxHeight: largeHeight + insets.top + MAX_OVERSCROLL,
         };
     });
@@ -122,7 +121,7 @@ const NavigationHeader = ({
                         hideHeader={hideHeader}
                         theme={theme}
                         top={0}
-                        topMargin={topMargin}
+                        topMargin={searchTopMargin}
                     />
                 }
             </Animated.View>
