@@ -61,7 +61,7 @@ const NavigationHeader = ({
     const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
-    const {largeHeight, defaultHeight} = useHeaderHeight(hasSearch);
+    const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight(hasSearch);
     const staticHeaderHeight = useStaticHeaderHeight(hasSearch);
     const containerHeight = useAnimatedStyle(() => {
         const value = -(scrollValue?.value || 0);
@@ -74,14 +74,14 @@ const NavigationHeader = ({
     });
 
     const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
-    const heightOffset = useDerivedValue(() => largeHeight - defaultHeight, [largeHeight, defaultHeight]);
+    const heightOffset = headerOffset;
 
     const translateY = useDerivedValue(() => (
-        lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, heightOffset.value)
+        lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, heightOffset)
     ), [lockValue?.value, minScrollValue.value]);
 
     const searchTopMargin = useAnimatedStyle(() => {
-        const margin = clamp(-minScrollValue.value, -heightOffset.value, heightOffset.value);
+        const margin = clamp(-minScrollValue.value, -heightOffset, heightOffset);
         return {marginTop: lockValue?.value ? -lockValue?.value : margin};
     }, [lockValue?.value]);
 
