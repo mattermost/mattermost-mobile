@@ -17,11 +17,11 @@ type HeaderScrollContext = {
 
 export const MAX_OVERSCROLL = 80;
 
-export const useDefaultHeaderHeight = () => {
+const useDefaultHeaderHeight = (hasSearch = false) => {
     const isTablet = useIsTablet();
 
     if (isTablet) {
-        return ViewConstants.TABLET_HEADER_HEIGHT;
+        return hasSearch ? ViewConstants.TABLET_SEARCH_HEIGHT : ViewConstants.TABLET_HEADER_HEIGHT;
     }
 
     if (Platform.OS === 'ios') {
@@ -31,40 +31,50 @@ export const useDefaultHeaderHeight = () => {
     return ViewConstants.ANDROID_DEFAULT_HEADER_HEIGHT;
 };
 
-export const useLargeHeaderHeight = () => {
-    const defaultHeight = useDefaultHeaderHeight();
+const useLargeHeaderHeight = (hasSearch = false) => {
+    const defaultHeight = useDefaultHeaderHeight(hasSearch);
     return defaultHeight + ViewConstants.LARGE_HEADER_TITLE + ViewConstants.HEADER_WITH_SUBTITLE;
 };
 
-export const useHeaderHeight = () => {
-    const defaultHeight = useDefaultHeaderHeight();
-    const largeHeight = useLargeHeaderHeight();
+export const useHeaderHeight = (hasSearch = false) => {
+    const defaultHeight = useDefaultHeaderHeight(hasSearch);
+    const largeHeight = useLargeHeaderHeight(hasSearch);
+    const headerOffset = largeHeight - defaultHeight;
     return useMemo(() => {
         return {
             defaultHeight,
             largeHeight,
+            headerOffset,
         };
-    }, [defaultHeight, largeHeight]);
+    }, [defaultHeight, largeHeight, hasSearch]);
 };
 
-export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void) => {
+export const useStaticHeaderHeight = (isLargeTitle = false, hasSearch = false) => {
+    const defaultHeight = useDefaultHeaderHeight(hasSearch);
+    const largeHeight = useLargeHeaderHeight(hasSearch);
+    return useMemo(() => (
+        isLargeTitle ? largeHeight : defaultHeight
+    ), [isLargeTitle, hasSearch]);
+};
+
+export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void, hasSearch = false) => {
     const insets = useSafeAreaInsets();
     const animatedRef = useAnimatedRef<Animated.ScrollView>();
-    const {largeHeight, defaultHeight} = useHeaderHeight();
+    const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight(hasSearch);
+    const staticHeaderHeight = useStaticHeaderHeight(isLargeTitle, hasSearch);
     const scrollValue = useSharedValue(0);
     const lockValue = useSharedValue<number | null>(null);
     const autoScroll = useSharedValue(false);
     const snapping = useSharedValue(false);
 
     const headerHeight = useDerivedValue(() => {
-        const minHeight = defaultHeight + insets.top;
-        const value = -(scrollValue?.value || 0);
-        const header = (isLargeTitle ? largeHeight : defaultHeight);
-        const height = header + value + insets.top;
-        if (height > header + (insets.top * 2)) {
-            return Math.min(height, largeHeight + insets.top + MAX_OVERSCROLL);
+        const scrollVal = -(scrollValue?.value || 0);
+        const header = staticHeaderHeight + scrollVal;
+        let height = Math.max(header, defaultHeight);
+        if (scrollVal > insets.top) {
+            height = Math.min(header, largeHeight + MAX_OVERSCROLL);
         }
-        return Math.max(height, minHeight);
+        return height + insets.top;
     });
 
     function snapIfNeeded(dir: string, offset: number) {
@@ -74,7 +84,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
             if (dir === 'down' && offset < largeHeight) {
                 runOnJS(onSnap)(0);
             } else if (dir === 'up' && offset < (defaultHeight + insets.top)) {
-                runOnJS(onSnap)((largeHeight - defaultHeight));
+                runOnJS(onSnap)((headerOffset));
             }
             snapping.value = false;
         }
@@ -121,7 +131,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
     }, [insets, defaultHeight, largeHeight, animatedRef]);
 
     const hideHeader = useCallback((lock = false) => {
-        const offset = largeHeight - defaultHeight;
+        const offset = headerOffset;
         if (lock) {
             lockValue.value = offset;
         }
@@ -138,17 +148,15 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
                 // No scroll for section lists?
             }
         }
-    }, [largeHeight, defaultHeight]);
+    }, [headerOffset]);
 
     const unlock = () => {
         lockValue.value = null;
     };
 
-    const scrollPaddingTop = (isLargeTitle ? largeHeight : defaultHeight) + insets.top;
+    const scrollPaddingTop = staticHeaderHeight + insets.top;
 
     return {
-        defaultHeight,
-        largeHeight,
         scrollPaddingTop,
         scrollRef: animatedRef as unknown as React.RefObject<T>,
         scrollValue,
@@ -156,6 +164,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         hideHeader,
         lockValue,
         unlock,
+        headerOffset,
         headerHeight,
     };
 };

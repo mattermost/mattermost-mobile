@@ -9,7 +9,7 @@ import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
-import {useDefaultHeaderHeight} from '@hooks/header';
+import {useStaticHeaderHeight} from '@hooks/header';
 import {changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -44,7 +44,7 @@ const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 
 const Header = ({index, onClose, style, total}: Props) => {
     const {width} = useWindowDimensions();
-    const height = useDefaultHeaderHeight();
+    const height = useStaticHeaderHeight();
     const containerStyle = useMemo(() => [styles.container, {height}], [height]);
     const iconStyle = useMemo(() => [{width: height}, styles.icon], [height]);
     const titleStyle = useMemo(() => ({width: width - (height * 2)}), [height, width]);

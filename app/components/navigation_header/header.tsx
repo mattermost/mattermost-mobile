@@ -8,6 +8,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import ViewConstants from '@constants/view';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -153,8 +154,7 @@ const Header = ({
             return {opacity: 0};
         }
 
-        const largeTitleLabelHeight = 60;
-        const barHeight = heightOffset.value - largeTitleLabelHeight;
+        const barHeight = heightOffset.value - ViewConstants.LARGE_HEADER_TITLE;
         const val = (scrollValue?.value ?? 0);
         const showDuration = 200;
         const hideDuration = 50;

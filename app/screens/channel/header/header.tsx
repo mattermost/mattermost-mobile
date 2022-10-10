@@ -15,7 +15,7 @@ import {General, Screens} from '@constants';
 import {QUICK_OPTIONS_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {useDefaultHeaderHeight} from '@hooks/header';
+import {useStaticHeaderHeight} from '@hooks/header';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
 import {preventDoubleTap} from '@utils/tap';
@@ -73,7 +73,7 @@ const ChannelHeader = ({
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const defaultHeight = useDefaultHeaderHeight();
+    const defaultHeight = useStaticHeaderHeight();
     const insets = useSafeAreaInsets();
     const callsAvailable = callsEnabledInChannel && !callsFeatureRestricted;
 

@@ -9,7 +9,7 @@ import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-cont
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {useAppState, useIsTablet} from '@hooks/device';
-import {useDefaultHeaderHeight} from '@hooks/header';
+import {useStaticHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {popTopScreen} from '@screens/navigation';
 
@@ -34,7 +34,7 @@ const GlobalThreads = ({componentId}: Props) => {
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
 
-    const defaultHeight = useDefaultHeaderHeight();
+    const defaultHeight = useStaticHeaderHeight();
 
     const [tab, setTab] = useState<GlobalThreadsTab>('all');
 

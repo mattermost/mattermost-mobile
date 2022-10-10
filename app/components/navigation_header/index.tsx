@@ -7,7 +7,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {clamp} from '@app/utils/gallery';
 import {useTheme} from '@context/theme';
-import useHeaderHeight, {MAX_OVERSCROLL} from '@hooks/header';
+import useHeaderHeight, {MAX_OVERSCROLL, useStaticHeaderHeight} from '@hooks/header';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Header, {HeaderRightButton} from './header';
@@ -61,13 +61,13 @@ const NavigationHeader = ({
     const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
-    const {largeHeight, defaultHeight} = useHeaderHeight();
+    const {largeHeight, defaultHeight} = useHeaderHeight(hasSearch);
+    const staticHeaderHeight = useStaticHeaderHeight(hasSearch);
     const containerHeight = useAnimatedStyle(() => {
         const value = -(scrollValue?.value || 0);
-        const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + value;
-        const height = lockValue?.value ? lockValue.value : calculatedHeight;
+        const height = lockValue?.value ? lockValue.value : staticHeaderHeight + value;
         return {
-            height: Math.max(height, minHeight),
+            height,
             minHeight: defaultHeight + insets.top,
             maxHeight: largeHeight + insets.top + MAX_OVERSCROLL,
         };

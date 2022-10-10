@@ -10,7 +10,7 @@ import Autocomplete from '@components/autocomplete';
 import {View as ViewConstants} from '@constants';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
-import {useDefaultHeaderHeight} from '@hooks/header';
+import {useStaticHeaderHeight} from '@hooks/header';
 
 import Archived from './archived';
 import DraftHandler from './draft_handler';
@@ -60,7 +60,7 @@ function PostDraft({
     const isTablet = useIsTablet();
     const keyboardHeight = useKeyboardHeight(keyboardTracker);
     const insets = useSafeAreaInsets();
-    const headerHeight = useDefaultHeaderHeight();
+    const headerHeight = useStaticHeaderHeight();
 
     // Update draft in case we switch channels or threads
     useEffect(() => {
