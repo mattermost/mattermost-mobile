@@ -167,7 +167,7 @@ const Header = ({
 
     const containerStyle = useMemo(() => (
         [styles.container, {
-            height: lockValue?.value || defaultHeight + insets.top,
+            height: lockValue?.value || defaultHeight,
             paddingTop: lockValue?.value || insets.top,
         }]), [defaultHeight, lockValue?.value, theme, insets.top]);
 

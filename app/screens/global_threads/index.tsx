@@ -4,7 +4,7 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -30,7 +30,6 @@ const styles = StyleSheet.create({
 const GlobalThreads = ({componentId}: Props) => {
     const appState = useAppState();
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
     const switchingTeam = useTeamSwitch();
     const isTablet = useIsTablet();
 
@@ -39,13 +38,13 @@ const GlobalThreads = ({componentId}: Props) => {
     const [tab, setTab] = useState<GlobalThreadsTab>('all');
 
     const containerStyle = useMemo(() => {
-        const marginTop = defaultHeight + insets.top;
+        const marginTop = defaultHeight;
         return {flex: 1, marginTop};
-    }, [defaultHeight, insets.top]);
+    }, [defaultHeight]);
 
     const contextStyle = useMemo(() => ({
-        top: defaultHeight + insets.top,
-    }), [defaultHeight, insets.top]);
+        top: defaultHeight,
+    }), [defaultHeight]);
 
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();

@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {BackHandler, DeviceEventEmitter, LayoutChangeEvent, NativeEventSubscription, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CurrentCallBar from '@calls/components/current_call_bar';
 import FloatingCallContainer from '@calls/components/floating_call_container';
@@ -55,11 +55,10 @@ const Channel = ({
 }: ChannelProps) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
-    const insets = useSafeAreaInsets();
     const [shouldRenderPosts, setShouldRenderPosts] = useState(false);
     const switchingTeam = useTeamSwitch();
     const switchingChannels = useChannelSwitch();
-    const defaultHeight = useStaticHeaderHeight();
+    const headerHeight = useStaticHeaderHeight();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
 
@@ -94,7 +93,6 @@ const Channel = ({
         return () => back?.remove();
     }, [componentId, isTablet]);
 
-    const marginTop = defaultHeight + (isTablet ? insets.top : 0);
     useEffect(() => {
         // This is done so that the header renders
         // and the screen does not look totally blank
@@ -151,7 +149,7 @@ const Channel = ({
                 />
                 {shouldRender &&
                 <>
-                    <View style={[styles.flex, {marginTop}]}>
+                    <View style={[styles.flex, {marginTop: headerHeight}]}>
                         <ChannelPostList
                             channelId={channelId}
                             forceQueryAfterAppState={appState}
