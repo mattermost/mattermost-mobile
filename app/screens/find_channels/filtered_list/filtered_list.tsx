@@ -315,7 +315,11 @@ const FilteredList = ({
         bounce.current = debounce(search, 500);
         bounce.current();
         if (isCRTEnabled) {
-            const isThreadTerm = 'threads'.indexOf(term.toLowerCase()) === 0;
+            const label = formatMessage({
+                id: 'threads',
+                defaultMessage: 'Threads',
+            }).toLowerCase();
+            const isThreadTerm = label.indexOf(term.toLowerCase()) === 0;
             setShowThreadItem(isThreadTerm);
         }
         return () => {
