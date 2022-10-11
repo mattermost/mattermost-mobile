@@ -12,8 +12,9 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
-import {getUserTimezone} from '@utils/user';
+import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
+import UserProfileCustomStatus from './custom_status';
 import UserProfileLabel from './label';
 import UserProfileOptions, {OptionsType} from './options';
 import UserProfileTitle from './title';
@@ -27,6 +28,7 @@ type Props = {
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
     isChannelAdmin: boolean;
+    isCustomStatusEnabled: boolean;
     isDirectMessage: boolean;
     isMilitaryTime: boolean;
     isSystemAdmin: boolean;
@@ -47,7 +49,7 @@ const EXTRA_HEIGHT = 60;
 
 const UserProfile = ({
     channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
-    isChannelAdmin, isDirectMessage, isMilitaryTime, isSystemAdmin, isTeamAdmin,
+    isChannelAdmin, isCustomStatusEnabled, isDirectMessage, isMilitaryTime, isSystemAdmin, isTeamAdmin,
     location, teamId, teammateDisplayName,
     user, userIconOverride, usernameOverride,
 }: Props) => {
@@ -58,6 +60,8 @@ const UserProfile = ({
     const showOptions: OptionsType = channelContext && !user.isBot ? 'all' : 'message';
     const override = Boolean(userIconOverride || usernameOverride);
     const timezone = getUserTimezone(user);
+    const customStatus = getUserCustomStatus(user);
+    const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
     let localTime: string|undefined;
     if (timezone) {
         moment.locale(getLocaleFromLanguage(locale).toLowerCase());
@@ -77,6 +81,10 @@ const UserProfile = ({
 
         let labels = 0;
         if (!override && !user.isBot) {
+            if (showCustomStatus) {
+                labels += 1;
+            }
+
             if (user.nickname) {
                 labels += 1;
             }
@@ -125,6 +133,7 @@ const UserProfile = ({
                         userId={user.id}
                     />
                 }
+                {showCustomStatus && <UserProfileCustomStatus customStatus={customStatus!}/>}
                 {Boolean(user.nickname) && !override && !user.isBot &&
                 <UserProfileLabel
                     description={user.nickname}

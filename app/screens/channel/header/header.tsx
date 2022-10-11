@@ -30,6 +30,7 @@ type ChannelProps = {
     channelId: string;
     channelType: ChannelType;
     customStatus?: UserCustomStatus;
+    isCustomStatusEnabled: boolean;
     isCustomStatusExpired: boolean;
     componentId?: string;
     displayName: string;
@@ -65,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ChannelHeader = ({
     channelId, channelType, componentId, customStatus, displayName,
-    isCustomStatusExpired, isOwnDirectMessage, memberCount,
+    isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
     searchTerm, teamId, callsEnabledInChannel, callsFeatureRestricted,
 }: ChannelProps) => {
     const intl = useIntl();
@@ -192,7 +193,7 @@ const ChannelHeader = ({
         } else if (customStatus && customStatus.text) {
             return (
                 <View style={styles.customStatusContainer}>
-                    {Boolean(customStatus.emoji) &&
+                    {isCustomStatusEnabled && Boolean(customStatus.emoji) &&
                     <CustomStatusEmoji
                         customStatus={customStatus}
                         emojiSize={13}

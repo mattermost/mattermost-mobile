@@ -9,7 +9,7 @@ import {combineLatestWith, switchMap} from 'rxjs/operators';
 import {observeIsCallsFeatureRestricted} from '@calls/observers';
 import {General} from '@constants';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
-import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {
     getUserCustomStatus,
@@ -60,6 +60,8 @@ const enhanced = withObservables(['channelId'], ({serverUrl, channelId, database
         switchMap((dm) => of$(checkCustomStatusIsExpired(dm))),
     );
 
+    const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
+
     const searchTerm = channel.pipe(
         combineLatestWith(dmUser),
         switchMap(([c, dm]) => {
@@ -82,6 +84,7 @@ const enhanced = withObservables(['channelId'], ({serverUrl, channelId, database
         channelType,
         customStatus,
         displayName,
+        isCustomStatusEnabled,
         isCustomStatusExpired,
         isOwnDirectMessage,
         memberCount,
