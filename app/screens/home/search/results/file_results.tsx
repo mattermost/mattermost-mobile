@@ -60,7 +60,7 @@ const FileResults = ({
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
     const filesForGallery = imageAttachments.concat(nonImageAttachments);
 
-    const channelNames = useMemo(() => getChannelNamesWithID(fileChannels), []);
+    const channelNames = useMemo(() => getChannelNamesWithID(fileChannels), [fileChannels]);
     const orderedFileInfos = useMemo(() => getOrderedFileInfos(filesForGallery), []);
     const fileInfosIndexes = useMemo(() => getFileInfosIndexes(orderedFileInfos), []);
     const orderedGalleryItems = useMemo(() => getOrderedGalleryItems(orderedFileInfos), []);
