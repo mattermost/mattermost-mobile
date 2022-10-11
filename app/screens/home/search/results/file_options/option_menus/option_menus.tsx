@@ -4,10 +4,10 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import {showPermalink} from '@actions/remote/permalink';
-import {useServerUrl} from '@app/context/server';
-import {useIsTablet} from '@app/hooks/device';
-import {dismissBottomSheet} from '@app/screens/navigation';
 import OptionItem from '@components/option_item';
+import {useServerUrl} from '@context/server';
+import {useIsTablet} from '@hooks/device';
+import {dismissBottomSheet} from '@screens/navigation';
 import {GalleryAction} from '@typings/screens/gallery';
 
 type Props = {
