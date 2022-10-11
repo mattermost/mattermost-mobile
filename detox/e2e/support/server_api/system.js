@@ -11,6 +11,8 @@ import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
 import defaultServerConfig from './default_config.json';
 
+const {expect: jestExpect} = require('@jest/globals');
+
 // ****************************************************************
 // System
 // See https://api.mattermost.com/#tag/system
@@ -30,9 +32,9 @@ import defaultServerConfig from './default_config.json';
  */
 export const apiCheckSystemHealth = async () => {
     const {data} = await apiPingServerStatus();
-    expect(data.status).toEqual('OK');
-    expect(data.database_status).toEqual('OK');
-    expect(data.filestore_status).toEqual('OK');
+    jestExpect(data.status).toEqual('OK');
+    jestExpect(data.database_status).toEqual('OK');
+    jestExpect(data.filestore_status).toEqual('OK');
 };
 
 /**
@@ -102,7 +104,7 @@ export const apiRequireLicense = async () => {
     if (license.IsLicensed !== 'true') {
         console.error('Server has no Enterprise license.');
     }
-    expect(license.IsLicensed).toEqual('true');
+    jestExpect(license.IsLicensed).toEqual('true');
 
     return {license};
 };
@@ -118,7 +120,7 @@ export const apiRequireLicenseForFeature = async (key = '') => {
     if (license.IsLicensed !== 'true') {
         console.error('Server has no Enterprise license.');
     }
-    expect(license.IsLicensed).toEqual('true');
+    jestExpect(license.IsLicensed).toEqual('true');
 
     let hasLicenseKey = false;
     for (const [k, v] of Object.entries(license)) {
@@ -131,7 +133,7 @@ export const apiRequireLicenseForFeature = async (key = '') => {
     if (!hasLicenseKey) {
         console.error(`Server has no license for "${key}" feature.`);
     }
-    expect(hasLicenseKey).toEqual(true);
+    jestExpect(hasLicenseKey).toEqual(true);
 
     return {license};
 };
@@ -141,7 +143,7 @@ export const apiRequireLicenseForFeature = async (key = '') => {
  */
 export const apiRequireSMTPServer = async () => {
     const {status} = await apiEmailTest();
-    expect(status).toEqual(200);
+    jestExpect(status).toEqual(200);
 };
 
 /**

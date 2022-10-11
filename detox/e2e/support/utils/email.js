@@ -5,6 +5,8 @@ import axios from 'axios';
 
 import testConfig from '@support/test_config';
 
+const {expect: jestExpect} = require('@jest/globals');
+
 /**
  * Get email url.
  * @returns {string} email url
@@ -166,7 +168,7 @@ export const getWelcomeEmailTemplate = (userEmail, siteName, teamName) => {
  * @param {*} actualBody - actual email body
  */
 export const verifyEmailBody = (expectedBody, actualBody) => {
-    expect(expectedBody.length).toEqual(actualBody.length);
+    jestExpect(expectedBody.length).toEqual(actualBody.length);
 
     for (let i = 0; i < expectedBody.length; i++) {
         if (expectedBody[i].includes('skip-local-time-check')) {
@@ -174,24 +176,24 @@ export const verifyEmailBody = (expectedBody, actualBody) => {
         }
 
         if (expectedBody[i].includes('email-verify-link-check')) {
-            expect(actualBody[i]).toContain('Verify Email');
-            expect(actualBody[i]).toContain('do_verify_email?token=');
+            jestExpect(actualBody[i]).toContain('Verify Email');
+            jestExpect(actualBody[i]).toContain('do_verify_email?token=');
             continue;
         }
 
         if (expectedBody[i].includes('join-link-check')) {
-            expect(actualBody[i]).toContain('Join now');
-            expect(actualBody[i]).toContain('signup_user_complete/?d=');
+            jestExpect(actualBody[i]).toContain('Join now');
+            jestExpect(actualBody[i]).toContain('signup_user_complete/?d=');
             continue;
         }
 
         if (expectedBody[i].includes('reset-password-link-check')) {
-            expect(actualBody[i]).toContain('Reset Password');
-            expect(actualBody[i]).toContain('reset_password_complete?token=');
+            jestExpect(actualBody[i]).toContain('Reset Password');
+            jestExpect(actualBody[i]).toContain('reset_password_complete?token=');
             continue;
         }
 
-        expect(expectedBody[i]).toEqual(actualBody[i]);
+        jestExpect(expectedBody[i]).toEqual(actualBody[i]);
     }
 };
 

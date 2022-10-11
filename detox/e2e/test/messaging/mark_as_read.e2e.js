@@ -7,6 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {expect} from 'detox';
+
 import {
     Channel,
     Post,
@@ -14,6 +16,8 @@ import {
 } from '@support/server_api';
 import {MainSidebar} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
+
+const {expect: jestExpect} = require('@jest/globals');
 
 describe('Mark As Read', () => {
     const {
@@ -73,13 +77,13 @@ describe('Mark As Read', () => {
 
         // * Verify unread messages on webapp or api is 1
         const beforeVisit = await Channel.apiGetUnreadMessages(testUser.id, testChannel.id);
-        expect(beforeVisit.data.msg_count).toEqual(1);
+        jestExpect(beforeVisit.data.msg_count).toEqual(1);
 
         // # Visit channel on mobile
         await goToChannel(testChannel.display_name);
 
         // * Verify unread messages on webapp or api is 0
         const afterVisit = await Channel.apiGetUnreadMessages(testUser.id, testChannel.id);
-        expect(afterVisit.data.msg_count).toEqual(0);
+        jestExpect(afterVisit.data.msg_count).toEqual(0);
     });
 });

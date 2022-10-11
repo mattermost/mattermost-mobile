@@ -7,6 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {expect} from 'detox';
+
 import {
     Channel,
     Post,
@@ -30,6 +32,8 @@ import {
     splitEmailBodyText,
     verifyEmailBody,
 } from '@support/utils';
+
+const {expect: jestExpect} = require('@jest/globals');
 
 describe('Email Notifications', () => {
     let testUser;
@@ -115,7 +119,7 @@ describe('Email Notifications', () => {
         // * Verify mentioned user does not receive email notification
         const {data} = await getRecentEmail(testUser.username);
         const bodyText = splitEmailBodyText(data.body.text);
-        expect(bodyText[7]).not.toEqual(testMessage);
+        jestExpect(bodyText[7]).not.toEqual(testMessage);
     });
 });
 
@@ -197,20 +201,20 @@ async function verifyEmailNotification(testConfig, team, channel, mentionedUser,
     const {data, status} = response;
 
     // * Should return success status
-    expect(status).toEqual(200);
+    jestExpect(status).toEqual(200);
 
     // * Verify that email is addressed to mentionedUser
-    expect(data.to.length).toEqual(1);
-    expect(data.to[0]).toContain(mentionedUser.email);
+    jestExpect(data.to.length).toEqual(1);
+    jestExpect(data.to[0]).toContain(mentionedUser.email);
 
     // * Verify that email is from default feedback email
-    expect(data.from).toContain(feedbackEmail);
+    jestExpect(data.from).toContain(feedbackEmail);
 
     // * Verify that date is current
-    expect(data.date).toContain(isoDate);
+    jestExpect(data.date).toContain(isoDate);
 
     // * Verify that the email subject is correct
-    expect(data.subject).toContain(`[${siteName}] Notification in ${team.display_name}`);
+    jestExpect(data.subject).toContain(`[${siteName}] Notification in ${team.display_name}`);
 
     // * Verify that the email body is correct
     const expectedEmailBody = getMentionEmailTemplate(

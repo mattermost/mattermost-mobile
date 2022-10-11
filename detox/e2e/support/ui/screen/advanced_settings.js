@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {expect} from 'detox';
+
 import {Alert} from '@support/ui/component';
 import {GeneralSettingsScreen} from '@support/ui/screen';
 import {timeouts, wait} from '@support/utils';

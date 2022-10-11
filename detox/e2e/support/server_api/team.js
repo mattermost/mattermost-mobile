@@ -6,6 +6,8 @@ import {capitalize, getRandomId} from '@support/utils';
 import client from './client';
 import {getResponseFromError} from './common';
 
+const {expect: jestExpect} = require('@jest/globals');
+
 // ****************************************************************
 // Teams
 // See https://api.mattermost.com/#tag/teams
@@ -89,7 +91,7 @@ export const apiDeleteTeams = async (teams = []) => {
 
     teamArray.forEach(async (team) => {
         const {status} = await Team.apiDeleteTeam(team.id);
-        expect(status).toEqual(200);
+        jestExpect(status).toEqual(200);
     });
 };
 
