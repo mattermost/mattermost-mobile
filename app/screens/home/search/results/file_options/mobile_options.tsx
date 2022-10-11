@@ -3,10 +3,10 @@
 import React from 'react';
 import {EdgeInsets} from 'react-native-safe-area-context';
 
-import {ITEM_HEIGHT} from '@app/components/slide_up_panel_item';
-import {bottomSheet} from '@app/screens/navigation';
-import {bottomSheetSnapPoint} from '@app/utils/helpers';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
+import {bottomSheet} from '@screens/navigation';
 import {GalleryAction} from '@typings/screens/gallery';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 
 import Header, {HEADER_HEIGHT} from './header';
 import OptionMenus from './option_menus';
