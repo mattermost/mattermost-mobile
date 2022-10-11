@@ -99,17 +99,12 @@ const File = ({
         onOptionsPress?.(file);
     }, [file, onOptionsPress]);
 
-    const renderOptionsButton = () => {
-        if (onOptionsPress) {
-            return (
-                <FileOptionsIcon
-                    onPress={handleOnOptionsPress}
-                    selected={optionSelected}
-                />
-            );
-        }
-        return null;
-    };
+    const optionsButton = (
+        <FileOptionsIcon
+            onPress={handleOnOptionsPress}
+            selected={optionSelected}
+        />
+    );
 
     const fileInfo = (
         <FileInfo
@@ -177,7 +172,7 @@ const File = ({
                     {fileIcon}
                 </View>
                 {fileInfo}
-                {renderOptionsButton()}
+                {onOptionsPress && optionsButton}
             </View>
         );
     };
@@ -192,7 +187,7 @@ const File = ({
             <View style={[style.fileWrapper]}>
                 {renderDocumentFile}
                 {fileInfo}
-                {renderOptionsButton()}
+                {onOptionsPress && optionsButton}
             </View>
         );
     } else {
