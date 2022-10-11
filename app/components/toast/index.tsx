@@ -21,6 +21,9 @@ type ToastProps = {
 }
 
 export const TOAST_HEIGHT = 56;
+const TOAST_MARGIN = 40;
+const WIDTH_TABLET = 484;
+const WIDTH_MOBILE = 400;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     center: {
@@ -56,9 +59,8 @@ const Toast = ({animatedStyle, children, style, iconName, message, textStyle}: T
     const dim = useWindowDimensions();
     const isTablet = useIsTablet();
     const containerStyle = useMemo(() => {
-        const totalMargin = 40;
-        const width = Math.min(dim.height, dim.width, isTablet ? 484 : 400) - totalMargin;
-
+        const toast_width = isTablet ? WIDTH_TABLET : WIDTH_MOBILE;
+        const width = Math.min(dim.height, dim.width, toast_width) - TOAST_MARGIN;
         return [styles.container, {width}, style];
     }, [dim, styles.container, style]);
 
