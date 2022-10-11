@@ -47,20 +47,24 @@ export default function MessageInput({
 }: Props) {
     // Render
     const postInputTestID = `${testID}.post.input`;
+    const isHandlingVoice = files[0]?.is_voice_recording;
+
     return (
         <>
-            <PostInput
-                testID={postInputTestID}
-                channelId={channelId}
-                maxMessageLength={maxMessageLength}
-                rootId={rootId}
-                cursorPosition={cursorPosition}
-                updateCursorPosition={updateCursorPosition}
-                updateValue={updateValue}
-                value={value}
-                addFiles={addFiles}
-                sendMessage={sendMessage}
-            />
+            {!isHandlingVoice && (
+                <PostInput
+                    testID={postInputTestID}
+                    channelId={channelId}
+                    maxMessageLength={maxMessageLength}
+                    rootId={rootId}
+                    cursorPosition={cursorPosition}
+                    updateCursorPosition={updateCursorPosition}
+                    updateValue={updateValue}
+                    value={value}
+                    addFiles={addFiles}
+                    sendMessage={sendMessage}
+                />
+            )}
             <Uploads
                 currentUserId={currentUserId}
                 files={files}

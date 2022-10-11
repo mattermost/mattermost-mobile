@@ -78,6 +78,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 android: 2,
             }),
         },
+        sendVoiceMessage: {
+            position: 'absolute',
+            right: -5,
+            top: 16,
+        },
     };
 });
 
@@ -115,10 +120,11 @@ export default function DraftInput({
         setRecording(false);
     }, []);
 
-    const getActionButton = useCallback(() => {
-        const sendActionTestID = `${testID}.send_action`;
-        const recordActionTestID = `${testID}.record_action`;
+    const isHandlingVoice = files[0]?.is_voice_recording || recording;
+    const sendActionTestID = `${testID}.send_action`;
+    const recordActionTestID = `${testID}.record_action`;
 
+    const getActionButton = useCallback(() => {
         if (value.length === 0 && files.length === 0 && voiceMessageEnabled) {
             return (
                 <RecordAction
@@ -130,12 +136,22 @@ export default function DraftInput({
 
         return (
             <SendAction
-                testID={sendActionTestID}
                 disabled={!canSend}
                 sendMessage={sendMessage}
+                testID={sendActionTestID}
             />
         );
-    }, [canSend, files.length, onCloseRecording, onPresRecording, sendMessage, testID, value.length]);
+    }, [
+        canSend,
+        files.length,
+        onCloseRecording,
+        onPresRecording,
+        sendMessage,
+        testID,
+        value.length,
+        voiceMessageEnabled,
+        isHandlingVoice,
+    ]);
 
     const quickActionsTestID = `${testID}.quick_actions`;
 
@@ -169,7 +185,7 @@ export default function DraftInput({
                             setRecording={setRecording}
                         />
                     )}
-                    {!recording && (
+                    {!recording &&
                         <MessageInput
                             addFiles={addFiles}
                             canSend={canSend}
@@ -187,9 +203,9 @@ export default function DraftInput({
                             uploadFileError={uploadFileError}
                             value={value}
                         />
-                    )}
+                    }
                     <View style={style.actionsContainer}>
-                        {!files[0]?.is_voice_recording &&
+                        {!isHandlingVoice &&
                             <QuickActions
                                 testID={quickActionsTestID}
                                 fileCount={files.length}
@@ -198,8 +214,14 @@ export default function DraftInput({
                                 value={value}
                             />
                         }
-                        {getActionButton()}
+                        {!isHandlingVoice && getActionButton()}
                     </View>
+                    <SendAction
+                        disabled={!canSend}
+                        sendMessage={sendMessage}
+                        testID={sendActionTestID}
+                        containerStyle={isHandlingVoice && style.sendVoiceMessage}
+                    />
                 </ScrollView>
             </SafeAreaView>
         </>

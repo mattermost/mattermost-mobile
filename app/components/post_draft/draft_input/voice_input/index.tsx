@@ -5,14 +5,13 @@ import React from 'react';
 import {TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import {MIC_SIZE} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AnimatedMicrophone from './animated_microphone';
 import SoundWave from './sound_wave';
 import TimeElapsed from './time_elapsed';
-
-const MIC_SIZE = 40;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     const iconCommon = {
@@ -59,7 +58,7 @@ type VoiceInputProps = {
     addFiles: (f: FileInfo[]) => void;
     onClose: () => void;
 }
-const VoiceInput = ({onClose, addFiles, setRecording}: VoiceInputProps) => {
+const VoiceInput = ({onClose}: VoiceInputProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
