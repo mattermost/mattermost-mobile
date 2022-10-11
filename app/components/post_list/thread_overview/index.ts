@@ -24,7 +24,7 @@ const enhanced = withObservables(
                 pipe(
                     switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))),
                 ),
-            repliesCount: queryPostReplies(database, rootId).observeCount(false),
+            repliesCount: queryPostReplies(database, rootId, true, true).observeCount(false),
         };
     });
 

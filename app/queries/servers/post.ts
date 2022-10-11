@@ -101,10 +101,13 @@ export const queryPostsInThread = (database: Database, rootId: string, sorted = 
     return database.get<PostsInThreadModel>(POSTS_IN_THREAD).query(...clauses);
 };
 
-export const queryPostReplies = (database: Database, rootId: string, excludeDeleted = true) => {
+export const queryPostReplies = (database: Database, rootId: string, excludeDeleted = true, excludeSystemMessages = false) => {
     const clauses: Q.Clause[] = [Q.where('root_id', rootId)];
     if (excludeDeleted) {
         clauses.push(Q.where('delete_at', Q.eq(0)));
+    }
+    if (excludeSystemMessages) {
+        clauses.push(Q.where('type', ''));
     }
     return database.get<PostModel>(POST).query(...clauses);
 };
