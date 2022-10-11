@@ -116,9 +116,8 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         top: 5,
     },
     hasCall: {
-        flex: 1,
         textAlign: 'right',
-        marginRight: 20,
+        paddingRight: 0,
     },
 }));
 
