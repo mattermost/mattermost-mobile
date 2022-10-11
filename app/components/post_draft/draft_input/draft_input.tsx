@@ -118,7 +118,7 @@ export default function DraftInput({
     const getActionButton = useCallback(() => {
         const sendActionTestID = `${testID}.send_action`;
         const recordActionTestID = `${testID}.record_action`;
-
+        console.log('>>>  voiceMessageEnabled', voiceMessageEnabled);
         if (value.length === 0 && files.length === 0 && voiceMessageEnabled) {
             return (
                 <RecordAction

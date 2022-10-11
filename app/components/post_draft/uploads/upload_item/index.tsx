@@ -54,6 +54,13 @@ const style = StyleSheet.create({
         width: 56,
         height: 56,
     },
+    voicePreview: {
+        width: 300,
+        height: 64,
+    },
+    removeVoice: {
+        right: -250,
+    },
 });
 
 export default function UploadItem({
@@ -107,19 +114,20 @@ export default function UploadItem({
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePress);
 
     const filePreviewComponent = useMemo(() => {
-        if (isImage(file)) {
-            return (
-                <ImageFile
-                    file={file}
-                    forwardRef={ref}
-                    resizeMode='cover'
-                />
-            );
-        }
-        if (file.is_voice_recording) {
+        // if (isImage(file)) {
+        //     return (
+        //         <ImageFile
+        //             file={file}
+        //             forwardRef={ref}
+        //             resizeMode='cover'
+        //         />
+        //     );
+        // }
+        if (true || file.is_voice_recording) {
             return (
                 <VoiceRecordingFile
                     file={file}
+                    onClose={() => null}
                 />
             );
         }
@@ -135,14 +143,28 @@ export default function UploadItem({
     return (
         <View
             key={file.clientId}
-            style={style.preview}
+            style={[
+                style.preview,
+                (true || file.is_voice_recording) && {marginTop: 5},
+            ]}
         >
-            <View style={style.previewContainer}>
+            <View
+                style={[
+                    style.previewContainer,
+                    (true || file.is_voice_recording) && style.voicePreview,
+                ]}
+            >
                 <TouchableWithoutFeedback
                     onPress={onGestureEvent}
                     disabled={file.is_voice_recording}
                 >
-                    <Animated.View style={[styles, style.filePreview]}>
+                    <Animated.View
+                        style={[
+                            styles,
+                            style.filePreview,
+                            (true || file.is_voice_recording) && style.voicePreview,
+                        ]}
+                    >
                         {filePreviewComponent}
                     </Animated.View>
                 </TouchableWithoutFeedback>
@@ -164,6 +186,8 @@ export default function UploadItem({
                 clientId={file.clientId!}
                 channelId={channelId}
                 rootId={rootId}
+
+                // containerStyle={(true || file.is_voice_recording) && style.removeVoice}
             />
         </View>
     );
