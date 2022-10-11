@@ -32,8 +32,13 @@ type Props = SearchProps & {
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+
+    // const getStyleSheet = makeStyleSheetFromTheme(() => ({
     container: {
         backgroundColor: theme.sidebarBg,
+
+        // backgroundColor: 'green',
+        // marginLeft: 100,
         position: 'absolute',
         width: '100%',
         zIndex: 10,
@@ -62,6 +67,7 @@ const NavigationHeader = ({
     const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight(hasSearch);
     const staticHeaderHeight = useStaticHeaderHeight(hasSearch);
     const containerHeight = useAnimatedStyle(() => {
+        // 'value' needed for search / recent mentions / saved messages . when drag up, move the header up
         const value = -(scrollValue?.value || 0);
         const height = lockValue?.value ? lockValue.value : staticHeaderHeight + value;
         return {
@@ -69,7 +75,12 @@ const NavigationHeader = ({
             minHeight: defaultHeight,
             maxHeight: largeHeight + MAX_OVERSCROLL,
         };
-    });
+    }, [lockValue?.value, defaultHeight, largeHeight, staticHeaderHeight, scrollValue]);
+
+    // console.log('\n');
+    // console.log('staticHeaderHeight + headerOffset', staticHeaderHeight + headerOffset);
+    // console.log('largeHeight, headerOffset, staticHeaderHeight, MAX_OVERSCROLL', largeHeight, headerOffset, staticHeaderHeight, MAX_OVERSCROLL);
+    // console.log('lock=', lockValue?.value, 'staticHeight', staticHeaderHeight, 'cnterHeight=', containerHeight.initial.value);
 
     const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
     const heightOffset = headerOffset;

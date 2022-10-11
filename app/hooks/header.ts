@@ -21,16 +21,28 @@ const useDefaultHeaderHeight = (hasSearch = false) => {
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
 
+    if (hasSearch) {
+        return ViewConstants.TABLET_SEARCH_HEIGHT_COLLAPSED;
+    }
+
     let height = ViewConstants.ANDROID_DEFAULT_HEADER_HEIGHT;
+
     if (isTablet) {
-        height = hasSearch ? ViewConstants.TABLET_SEARCH_HEIGHT : ViewConstants.TABLET_HEADER_HEIGHT;
+        height = ViewConstants.TABLET_HEADER_HEIGHT;
+        if (hasSearch) {
+            height += ViewConstants.HEADER_SEARCH_HEIGHT;
+        }
     } else if (Platform.OS === 'ios') {
         height = ViewConstants.IOS_DEFAULT_HEADER_HEIGHT;
     }
+
     return height + insets.top;
 };
 
 const useLargeHeaderHeight = (hasSearch = false) => {
+    // if (hasSearch) {
+    //     return ViewConstants.TABLET_SEARCH_HEIGHT_EXPANDED;
+    // }
     const defaultHeight = useDefaultHeaderHeight(hasSearch);
     return defaultHeight + ViewConstants.LARGE_HEADER_TITLE + ViewConstants.HEADER_WITH_SUBTITLE;
 };
@@ -75,6 +87,11 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         }
         return height;
     });
+
+    // console.log('\n');
+    // console.log('largeHeight', largeHeight);
+    // console.log('staticHeaderHeight', staticHeaderHeight);
+    // console.log('headerHeight', headerHeight);
 
     function snapIfNeeded(dir: string, offset: number) {
         'worklet';
@@ -130,17 +147,16 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
     }, [defaultHeight, largeHeight, animatedRef]);
 
     const hideHeader = useCallback((lock = false) => {
-        const offset = headerOffset;
         if (lock) {
-            lockValue.value = offset;
+            lockValue.value = headerOffset;
         }
         if (animatedRef?.current && Math.abs((scrollValue?.value || 0)) <= insets.top) {
             autoScroll.value = true;
             if ('scrollTo' in animatedRef.current) {
-                animatedRef.current.scrollTo({y: offset, animated: true});
+                animatedRef.current.scrollTo({y: headerOffset, animated: true});
             } else if ('scrollToOffset' in animatedRef.current) {
                 (animatedRef.current as any).scrollToOffset({
-                    offset,
+                    offset: headerOffset,
                     animated: true,
                 });
             } else {

@@ -4,7 +4,7 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'react-native';
+import {FlatList, LayoutChangeEvent, Platform, StyleSheet, View, ViewProps} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -40,12 +40,35 @@ const emptyChannelIds: string[] = [];
 const dummyData = [1];
 
 const AutocompletePaddingTop = 4;
-const roundedHeaderMarginMobile = 7;
-const roundedHeaderMarginTablet = 0;
+const roundedHeaderMarginMobile = 16;
+const roundedHeaderMarginTablet = 14;
 
 type Props = {
     teamId: string;
 }
+
+const styleTest = StyleSheet.create({
+    collapsed: {
+        position: 'absolute',
+        backgroundColor: 'red',
+        width: 5,
+    },
+    expanded: {
+        position: 'absolute',
+        backgroundColor: 'black',
+        width: 5,
+    },
+});
+
+const collapsed = StyleSheet.create({
+    total: {...styleTest.collapsed},
+    topOfSearchInput: {...styleTest.collapsed, marginLeft: 5},
+});
+const expanded = StyleSheet.create({
+    topOfSearchText: {...styleTest.expanded, marginLeft: 12},
+    topOfSearchInput: {...styleTest.expanded, marginLeft: 17},
+    total: {...styleTest.expanded, marginLeft: 22},
+});
 
 const styles = StyleSheet.create({
     flex: {
@@ -122,7 +145,7 @@ const SearchScreen = ({teamId}: Props) => {
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
-    }, []);
+    }, [unlock]);
 
     const handleClearSearch = useCallback(() => {
         resetToInitial();
@@ -199,7 +222,6 @@ const SearchScreen = ({teamId}: Props) => {
     const initialContainerStyle = useMemo(() => {
         return {
             paddingTop: scrollPaddingTop,
-            flexGrow: 1,
             justifyContent: (resultsLoading || loading) ? 'center' : 'flex-start',
         } as ViewProps;
     }, [loading, resultsLoading, scrollPaddingTop]);
@@ -276,17 +298,23 @@ const SearchScreen = ({teamId}: Props) => {
 
     const onFlatLayout = useCallback(() => {
         if (clearRef.current) {
-            const offset = headerOffset;
             scrollRef.current?.scrollToOffset({
-                offset,
+                offset: headerOffset,
                 animated: false,
             });
             clearRef.current = false;
         }
-    }, [scrollRef]);
+    }, [scrollRef, headerOffset]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
+            <View style={[collapsed.total, {height: 98}]}/>
+            <View style={[collapsed.topOfSearchInput, {height: 46}]}/>
+
+            <View style={[expanded.topOfSearchText, {height: 78}]}/>
+            <View style={[expanded.topOfSearchInput, {height: 126}]}/>
+            <View style={[expanded.total, {height: 182}]}/>
+
             <NavigationHeader
                 isLargeTitle={true}
                 showBackButton={false}

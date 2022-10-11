@@ -6,7 +6,8 @@ import {transformGroupChannelRecord, transformGroupMembershipRecord, transformGr
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {queryGroupChannelForChannel, queryGroupMembershipForMember, queryGroupTeamForTeam} from '@queries/servers/group';
 import {generateGroupAssociationId} from '@utils/groups';
-import {logWarning} from '@utils/log';
+
+// import {logWarning} from '@utils/log';
 
 import type {HandleGroupArgs, HandleGroupChannelsForChannelArgs, HandleGroupMembershipForMemberArgs, HandleGroupTeamsForTeamArgs} from '@typings/database/database';
 import type GroupModel from '@typings/database/models/servers/group';
@@ -32,9 +33,9 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
       */
     handleGroups = async ({groups, prepareRecordsOnly = true}: HandleGroupArgs): Promise<GroupModel[]> => {
         if (!groups?.length) {
-            logWarning(
-                'An empty or undefined "groups" array has been passed to the handleGroups method',
-            );
+            // logWarning(
+            //     'An empty or undefined "groups" array has been passed to the handleGroups method',
+            // );
             return [];
         }
 
