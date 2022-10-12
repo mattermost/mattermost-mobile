@@ -44,13 +44,11 @@ export const useHeaderHeight = (hasSearch = false) => {
     const defaultHeight = useDefaultHeaderHeight(hasSearch);
     const largeHeight = useLargeHeaderHeight(hasSearch);
     const headerOffset = largeHeight - defaultHeight;
-    return useMemo(() => {
-        return {
-            defaultHeight,
-            largeHeight,
-            headerOffset,
-        };
-    }, [defaultHeight, largeHeight, hasSearch]);
+    return useMemo(() => ({
+        defaultHeight,
+        largeHeight,
+        headerOffset,
+    }), [defaultHeight, largeHeight, hasSearch]);
 };
 
 export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void, hasSearch = false) => {
@@ -64,10 +62,10 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
 
     const headerHeight = useDerivedValue(() => {
         const value = -(scrollValue?.value || 0);
-        const header = (isLargeTitle ? largeHeight : defaultHeight) + value;
-        let height = Math.max(header, defaultHeight);
+        const heightWithScroll = (isLargeTitle ? largeHeight : defaultHeight) + value;
+        let height = Math.max(heightWithScroll, defaultHeight);
         if (value > insets.top) {
-            height = Math.min(header, largeHeight + MAX_OVERSCROLL);
+            height = Math.min(heightWithScroll, largeHeight + MAX_OVERSCROLL);
         }
         return height + insets.top;
     });
