@@ -219,17 +219,23 @@ export default function ChannelInfoForm({
         (displayHeaderOnly ? 0 : purposeFieldHeight + FIELD_MARGIN_BOTTOM + displayNameFieldHeight + FIELD_MARGIN_BOTTOM);
 
     const keyboardOverlap = Platform.select({
-        ios: isTablet ? Math.max(0, keyboardHeight - bottomSpace) : keyboardHeight || insets.bottom,
+        ios: isTablet ?
+            Math.max(0, keyboardHeight - bottomSpace) :
+            keyboardHeight || insets.bottom,
         default: 0});
     const workingSpace = wrapperHeight - keyboardOverlap;
     const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
     const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + headerFieldHeight + BOTTOM_AUTOCOMPLETE_SEPARATION);
     const insetsAdjust = keyboardHeight || insets.bottom;
     const keyboardAdjust = Platform.select({
-        ios: isTablet ? keyboardOverlap : insetsAdjust,
+        ios: isTablet ?
+            keyboardOverlap :
+            insetsAdjust,
         default: 0,
     });
-    const autocompletePosition = spaceOnBottom > spaceOnTop ? (otherElementsSize + headerFieldHeight) - scrollPosition : (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardAdjust) - otherElementsSize;
+    const autocompletePosition = spaceOnBottom > spaceOnTop ?
+        (otherElementsSize + headerFieldHeight) - scrollPosition :
+        (workingSpace + scrollPosition + AUTOCOMPLETE_ADJUST + keyboardAdjust) - otherElementsSize;
     const autocompleteAvailableSpace = spaceOnBottom > spaceOnTop ? spaceOnBottom : spaceOnTop;
     const growDown = spaceOnBottom > spaceOnTop;
 
