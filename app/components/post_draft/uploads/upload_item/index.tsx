@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
+import {StyleSheet, TouchableWithoutFeedback, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {updateDraftFile} from '@actions/local/draft';
@@ -10,6 +10,7 @@ import VoiceRecordingFile from '@app/components/files/voice_recording_file';
 import FileIcon from '@components/files/file_icon';
 import ImageFile from '@components/files/image_file';
 import ProgressBar from '@components/progress_bar';
+import {VOICE_MESSAGE_CARD_RATIO} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
@@ -54,13 +55,6 @@ const style = StyleSheet.create({
         width: 56,
         height: 56,
     },
-    voicePreview: {
-        width: 300,
-        height: 64,
-    },
-    removeVoice: {
-        right: -250,
-    },
 });
 
 export default function UploadItem({
@@ -71,8 +65,10 @@ export default function UploadItem({
     const serverUrl = useServerUrl();
     const removeCallback = useRef<(() => void)|null>(null);
     const [progress, setProgress] = useState(0);
+    const dimensions = useWindowDimensions();
 
     const loading = DraftUploadManager.isUploading(file.clientId!);
+    const isVoiceMessage = file.is_voice_recording;
 
     const handlePress = useCallback(() => {
         openGallery(file);
@@ -114,16 +110,17 @@ export default function UploadItem({
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePress);
 
     const filePreviewComponent = useMemo(() => {
-        // if (isImage(file)) {
-        //     return (
-        //         <ImageFile
-        //             file={file}
-        //             forwardRef={ref}
-        //             resizeMode='cover'
-        //         />
-        //     );
-        // }
-        if (true || file.is_voice_recording) {
+        if (isImage(file)) {
+            return (
+                <ImageFile
+                    file={file}
+                    forwardRef={ref}
+                    resizeMode='cover'
+                />
+            );
+        }
+
+        if (isVoiceMessage) {
             return (
                 <VoiceRecordingFile
                     file={file}
@@ -131,6 +128,7 @@ export default function UploadItem({
                 />
             );
         }
+
         return (
             <FileIcon
                 backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
@@ -140,18 +138,23 @@ export default function UploadItem({
         );
     }, [file]);
 
+    const voiceStyle = useMemo(() => {
+        return {
+            width: dimensions.width * VOICE_MESSAGE_CARD_RATIO,
+        };
+    }, [dimensions.width]);
+
     return (
         <View
             key={file.clientId}
             style={[
                 style.preview,
-                (true || file.is_voice_recording) && {marginTop: 5},
+                isVoiceMessage && voiceStyle,
             ]}
         >
             <View
                 style={[
                     style.previewContainer,
-                    (true || file.is_voice_recording) && style.voicePreview,
                 ]}
             >
                 <TouchableWithoutFeedback
@@ -162,7 +165,6 @@ export default function UploadItem({
                         style={[
                             styles,
                             style.filePreview,
-                            (true || file.is_voice_recording) && style.voicePreview,
                         ]}
                     >
                         {filePreviewComponent}
@@ -186,8 +188,6 @@ export default function UploadItem({
                 clientId={file.clientId!}
                 channelId={channelId}
                 rootId={rootId}
-
-                // containerStyle={(true || file.is_voice_recording) && style.removeVoice}
             />
         </View>
     );
