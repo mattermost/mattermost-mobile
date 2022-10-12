@@ -62,7 +62,7 @@ const NavigationHeader = ({
     const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
-    const {largeHeight, defaultHeight} = useHeaderHeight(hasSearch);
+    const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight(hasSearch);
     const containerHeight = useAnimatedStyle(() => {
         const minHeight = defaultHeight + insets.top;
         const value = -(scrollValue?.value || 0);
@@ -76,7 +76,7 @@ const NavigationHeader = ({
     });
 
     const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
-    const heightOffset = useDerivedValue(() => largeHeight - defaultHeight, [largeHeight, defaultHeight]);
+    const heightOffset = useDerivedValue(() => headerOffset, [headerOffset]);
 
     const translateY = useDerivedValue(() => (
         lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, heightOffset.value)
