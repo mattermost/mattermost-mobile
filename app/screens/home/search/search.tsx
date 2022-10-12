@@ -271,9 +271,8 @@ const SearchScreen = ({teamId}: Props) => {
 
     const onFlatLayout = useCallback(() => {
         if (clearRef.current) {
-            const offset = headerOffset;
             scrollRef.current?.scrollToOffset({
-                offset,
+                offset: headerOffset,
                 animated: false,
             });
             clearRef.current = false;
