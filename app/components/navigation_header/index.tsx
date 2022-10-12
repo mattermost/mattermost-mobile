@@ -75,21 +75,19 @@ const NavigationHeader = ({
     });
 
     const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
-    const heightOffset = useDerivedValue(() => headerOffset, [headerOffset]);
 
     const translateY = useDerivedValue(() => (
-        lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, heightOffset.value)
-    ), [lockValue?.value, minScrollValue.value]);
+        lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, headerOffset)
+    ), [lockValue?.value, minScrollValue.value, headerOffset]);
 
     const searchTopMargin = useAnimatedStyle(() => {
-        const min = heightOffset.value;
-        const margin = Math.min(-Math.min(minScrollValue.value, min), min);
+        const margin = Math.min(-Math.min(minScrollValue.value, headerOffset), headerOffset);
         const unlockedBottomMargin = margin + ViewConstants.UNLOCKED_SEARCH_BOTTOM_MARGIN;
         const bottomMargin = lockValue?.value ? -lockValue?.value : unlockedBottomMargin;
         return {
             marginTop: bottomMargin - ViewConstants.SEARCH_INPUT_HEIGHT,
         };
-    }, [lockValue?.value, heightOffset.value, minScrollValue.value]);
+    }, [lockValue?.value, headerOffset, minScrollValue.value]);
 
     return (
         <>
@@ -98,7 +96,7 @@ const NavigationHeader = ({
                     defaultHeight={defaultHeight}
                     hasSearch={hasSearch}
                     isLargeTitle={isLargeTitle}
-                    heightOffset={heightOffset}
+                    heightOffset={headerOffset}
                     leftComponent={leftComponent}
                     onBackPress={onBackPress}
                     onTitlePress={onTitlePress}
@@ -113,7 +111,7 @@ const NavigationHeader = ({
                 />
                 {isLargeTitle &&
                     <NavigationHeaderLargeTitle
-                        heightOffset={heightOffset}
+                        heightOffset={headerOffset}
                         hasSearch={hasSearch}
                         subtitle={subtitle}
                         theme={theme}

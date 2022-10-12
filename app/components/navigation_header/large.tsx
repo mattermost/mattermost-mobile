@@ -9,7 +9,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    heightOffset: Animated.DerivedValue<number>;
+    heightOffset: number;
     hasSearch: boolean;
     subtitle?: string;
     theme: Theme;
@@ -47,8 +47,8 @@ const NavigationHeaderLargeTitle = ({
     ), [translateY?.value]);
 
     const containerStyle = useMemo(() => {
-        return [{height: heightOffset.value}, styles.container];
-    }, [heightOffset.value, theme]);
+        return [{height: heightOffset}, styles.container];
+    }, [heightOffset, theme]);
 
     const searchMargin = ({marginTop: hasSearch ? -6 : 0});
 
