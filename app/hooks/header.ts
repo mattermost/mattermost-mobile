@@ -43,12 +43,10 @@ export const useLargeHeaderHeight = (hasSearch = false) => {
 export const useHeaderHeight = (hasSearch = false) => {
     const defaultHeight = useDefaultHeaderHeight(hasSearch);
     const largeHeight = useLargeHeaderHeight(hasSearch);
-    const headerOffset = largeHeight - defaultHeight;
     return useMemo(() => {
         return {
             defaultHeight,
             largeHeight,
-            headerOffset,
         };
     }, [defaultHeight, largeHeight, hasSearch]);
 };
@@ -56,7 +54,7 @@ export const useHeaderHeight = (hasSearch = false) => {
 export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void, hasSearch = false) => {
     const insets = useSafeAreaInsets();
     const animatedRef = useAnimatedRef<Animated.ScrollView>();
-    const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight(hasSearch);
+    const {largeHeight, defaultHeight} = useHeaderHeight(hasSearch);
     const scrollValue = useSharedValue(0);
     const lockValue = useSharedValue<number | null>(null);
     const autoScroll = useSharedValue(false);
@@ -79,7 +77,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
             if (dir === 'down' && offset < largeHeight) {
                 runOnJS(onSnap)(0);
             } else if (dir === 'up' && offset < (defaultHeight + insets.top)) {
-                runOnJS(onSnap)(headerOffset);
+                runOnJS(onSnap)((largeHeight - defaultHeight));
             }
             snapping.value = false;
         }
@@ -126,7 +124,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
     }, [insets, defaultHeight, largeHeight, animatedRef]);
 
     const hideHeader = useCallback((lock = false) => {
-        const offset = headerOffset;
+        const offset = largeHeight - defaultHeight;
         if (lock) {
             lockValue.value = defaultHeight + insets.top;
         }
@@ -162,7 +160,6 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         lockValue,
         unlock,
         headerHeight,
-        headerOffset,
     };
 };
 

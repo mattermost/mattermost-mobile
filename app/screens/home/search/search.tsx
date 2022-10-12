@@ -103,9 +103,10 @@ const SearchScreen = ({teamId}: Props) => {
     };
 
     const {
+        defaultHeight,
         headerHeight,
-        headerOffset,
         hideHeader,
+        largeHeight,
         lockValue,
         onScroll,
         scrollPaddingTop,
@@ -271,14 +272,14 @@ const SearchScreen = ({teamId}: Props) => {
 
     const onFlatLayout = useCallback(() => {
         if (clearRef.current) {
-            const offset = headerOffset;
+            const offset = largeHeight - defaultHeight;
             scrollRef.current?.scrollToOffset({
                 offset,
                 animated: false,
             });
             clearRef.current = false;
         }
-    }, [headerOffset, scrollRef]);
+    }, [scrollRef, largeHeight, defaultHeight]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
