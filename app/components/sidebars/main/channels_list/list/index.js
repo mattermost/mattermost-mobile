@@ -13,10 +13,9 @@ import {
     getOrderedChannelIds,
     getCurrentChannelId,
 } from '@mm-redux/selectors/entities/channels';
-import {getTheme, getFavoritesPreferences, getSidebarPreferences, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
+import {getTheme, getSidebarPreferences, isCollapsedThreadsEnabled} from '@mm-redux/selectors/entities/preferences';
 import {haveITeamPermission} from '@mm-redux/selectors/entities/roles';
 import {getCurrentTeamId} from '@mm-redux/selectors/entities/teams';
-import {getCurrentUserRoles} from '@mm-redux/selectors/entities/users';
 import {showCreateOption} from '@mm-redux/utils/channel_utils';
 import {memoizeResult} from '@mm-redux/utils/helpers';
 import {shouldShowLegacySidebar} from '@utils/categories';
@@ -88,14 +87,4 @@ function mapStateToProps(state) {
     };
 }
 
-function areStatesEqual(next, prev) {
-    const equalRoles = getCurrentUserRoles(prev) === getCurrentUserRoles(next);
-    const equalChannels = next.entities.channels === prev.entities.channels;
-    const equalConfig = next.entities.general.config === prev.entities.general.config;
-    const equalUsers = next.entities.users.profiles === prev.entities.users.profiles;
-    const equalFav = getFavoritesPreferences(next) === getFavoritesPreferences(prev);
-
-    return equalChannels && equalConfig && equalRoles && equalUsers && equalFav;
-}
-
-export default connect(mapStateToProps, null, null, {areStatesEqual})(List);
+export default connect(mapStateToProps)(List);
