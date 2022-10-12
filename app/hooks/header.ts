@@ -64,12 +64,12 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
 
     const headerHeight = useDerivedValue(() => {
         const value = -(scrollValue?.value || 0);
-        const header = (isLargeTitle ? largeHeight : defaultHeight);
-        const height = header + value + insets.top;
-        if (height > header + (insets.top * 2)) {
-            return Math.min(height, largeHeight + insets.top + MAX_OVERSCROLL);
+        const header = (isLargeTitle ? largeHeight : defaultHeight) + value;
+        let height = Math.max(header, defaultHeight);
+        if (value > insets.top) {
+            height = Math.min(header, largeHeight + MAX_OVERSCROLL);
         }
-        return Math.max(height, defaultHeight + insets.top);
+        return height + insets.top;
     });
 
     function snapIfNeeded(dir: string, offset: number) {
