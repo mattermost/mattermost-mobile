@@ -37,7 +37,7 @@ export const useLargeHeaderHeight = (hasSearch = false) => {
     if (isTablet && hasSearch) {
         return ViewConstants.TABLET_SEARCH_HEIGHT_EXPANDED;
     }
-    return defaultHeight + ViewConstants.LARGE_HEADER_TITLE + ViewConstants.HEADER_WITH_SUBTITLE;
+    return defaultHeight + ViewConstants.LARGE_HEADER_TITLE_HEIGHT + ViewConstants.HEADER_WITH_SUBTITLE;
 };
 
 export const useHeaderHeight = (hasSearch = false) => {
