@@ -14,7 +14,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     docker:
-      - image: cimg/android:2022.03-node
+      - image: cimg/android:2022.09.2-node
     working_directory: ~/mattermost-mobile
     resource_class: <<parameters.resource_class>>
 
