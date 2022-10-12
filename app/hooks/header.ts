@@ -124,10 +124,11 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
     }, [insets, defaultHeight, largeHeight, animatedRef]);
 
     const hideHeader = useCallback((lock = false) => {
-        const offset = headerOffset;
         if (lock) {
             lockValue.value = defaultHeight + insets.top;
         }
+
+        const offset = headerOffset;
         if (animatedRef?.current && Math.abs((scrollValue?.value || 0)) <= insets.top) {
             autoScroll.value = true;
             if ('scrollTo' in animatedRef.current) {
@@ -147,12 +148,10 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         lockValue.value = null;
     };
 
-    const scrollPaddingTop = (isLargeTitle ? largeHeight : defaultHeight) + insets.top;
-
     return {
         defaultHeight,
         largeHeight,
-        scrollPaddingTop,
+        scrollPaddingTop: (isLargeTitle ? largeHeight : defaultHeight) + insets.top,
         scrollRef: animatedRef as unknown as React.RefObject<T>,
         scrollValue,
         onScroll,
