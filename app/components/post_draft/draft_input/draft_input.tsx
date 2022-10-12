@@ -118,15 +118,16 @@ export default function DraftInput({
     const getActionButton = useCallback(() => {
         const sendActionTestID = `${testID}.send_action`;
         const recordActionTestID = `${testID}.record_action`;
-        console.log('>>>  voiceMessageEnabled', voiceMessageEnabled);
-        if (value.length === 0 && files.length === 0 && voiceMessageEnabled) {
-            return (
-                <RecordAction
-                    onPress={onPresRecording}
-                    testID={recordActionTestID}
-                />
-            );
-        }
+
+        // if (value.length === 0 && files.length === 0 && voiceMessageEnabled) {
+        return (
+            <RecordAction
+                onPress={onPresRecording}
+                testID={recordActionTestID}
+            />
+        );
+
+        // }
 
         return (
             <SendAction
@@ -138,7 +139,9 @@ export default function DraftInput({
     }, [canSend, files.length, onCloseRecording, onPresRecording, sendMessage, testID, value.length]);
 
     const quickActionsTestID = `${testID}.quick_actions`;
+    const isHandlingVoice = files[0]?.is_voice_recording || recording;
 
+    console.log('>>>  canShowQuickActions', isHandlingVoice);
     return (
         <>
             <Typing
@@ -169,7 +172,7 @@ export default function DraftInput({
                             setRecording={setRecording}
                         />
                     )}
-                    {!recording && (
+                    {!recording &&
                         <MessageInput
                             addFiles={addFiles}
                             canSend={canSend}
@@ -187,9 +190,9 @@ export default function DraftInput({
                             uploadFileError={uploadFileError}
                             value={value}
                         />
-                    )}
+                    }
                     <View style={style.actionsContainer}>
-                        {!files[0]?.is_voice_recording &&
+                        {!isHandlingVoice &&
                             <QuickActions
                                 testID={quickActionsTestID}
                                 fileCount={files.length}
@@ -198,7 +201,7 @@ export default function DraftInput({
                                 value={value}
                             />
                         }
-                        {getActionButton()}
+                        {!isHandlingVoice && getActionButton()}
                     </View>
                 </ScrollView>
             </SafeAreaView>
