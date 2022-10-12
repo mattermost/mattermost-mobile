@@ -119,15 +119,14 @@ export default function DraftInput({
         const sendActionTestID = `${testID}.send_action`;
         const recordActionTestID = `${testID}.record_action`;
 
-        // if (value.length === 0 && files.length === 0 && voiceMessageEnabled) {
-        return (
-            <RecordAction
-                onPress={onPresRecording}
-                testID={recordActionTestID}
-            />
-        );
-
-        // }
+        if (value.length === 0 && files.length === 0 && voiceMessageEnabled) {
+            return (
+                <RecordAction
+                    onPress={onPresRecording}
+                    testID={recordActionTestID}
+                />
+            );
+        }
 
         return (
             <SendAction
@@ -141,7 +140,6 @@ export default function DraftInput({
     const quickActionsTestID = `${testID}.quick_actions`;
     const isHandlingVoice = files[0]?.is_voice_recording || recording;
 
-    console.log('>>>  canShowQuickActions', isHandlingVoice);
     return (
         <>
             <Typing
@@ -201,7 +199,7 @@ export default function DraftInput({
                                 value={value}
                             />
                         }
-                        {!isHandlingVoice && getActionButton()}
+                        {getActionButton()}
                     </View>
                 </ScrollView>
             </SafeAreaView>

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {View} from 'react-native';
+import {StyleProp, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -13,6 +13,7 @@ type Props = {
     testID: string;
     disabled: boolean;
     sendMessage: () => void;
+    containerStyle?: StyleProp<ViewStyle>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -39,6 +40,7 @@ function SendButton({
     testID,
     disabled,
     sendMessage,
+    containerStyle,
 }: Props) {
     const theme = useTheme();
     const sendButtonTestID = disabled ? `${testID}.send.button.disabled` : `${testID}.send.button`;
@@ -57,7 +59,7 @@ function SendButton({
         <TouchableWithFeedback
             testID={sendButtonTestID}
             onPress={sendMessage}
-            style={style.sendButtonContainer}
+            style={[style.sendButtonContainer, containerStyle]}
             type={'opacity'}
             disabled={disabled}
         >
