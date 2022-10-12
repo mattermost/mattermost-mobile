@@ -8,7 +8,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import ViewConstants from '@constants/view';
 import {useTheme} from '@context/theme';
 import useHeaderHeight, {MAX_OVERSCROLL} from '@hooks/header';
-import {clamp} from '@utils/gallery';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Header, {HeaderRightButton} from './header';
@@ -83,7 +82,8 @@ const NavigationHeader = ({
     ), [lockValue?.value, minScrollValue.value]);
 
     const searchTopMargin = useAnimatedStyle(() => {
-        const margin = clamp(-minScrollValue.value, -heightOffset.value, heightOffset.value);
+        const min = heightOffset.value;
+        const margin = Math.min(-Math.min(minScrollValue.value, min), min);
         const unlockedBottomMargin = margin + ViewConstants.UNLOCKED_SEARCH_BOTTOM_MARGIN;
         const bottomMargin = lockValue?.value ? -lockValue?.value : unlockedBottomMargin;
         return {
