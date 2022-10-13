@@ -124,7 +124,7 @@ export default function UploadItem({
             return (
                 <VoiceRecordingFile
                     file={file}
-                    uploading={true}
+                    uploading={loading}
                 />
             );
         }
@@ -136,7 +136,7 @@ export default function UploadItem({
                 file={file}
             />
         );
-    }, [file]);
+    }, [file, isVoiceMessage && loading]);
 
     const voiceStyle = useMemo(() => {
         return {

@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
+import {useIntl} from 'react-intl';
 import {StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -10,10 +11,6 @@ import {MIC_SIZE, VOICE_MESSAGE_CARD_RATIO} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-//i18n
-const VOICE_MESSAGE = 'Voice message';
-const UPLOADING_TEXT = 'Uploading..(0%)';
 
 type Props = {
     file: FileInfo;
@@ -70,7 +67,7 @@ const VoiceRecordingFile = ({file, uploading}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
-    const isVoiceMessage = file.is_voice_recording;
+    const intl = useIntl();
 
     const voiceStyle = useMemo(() => {
         return {
@@ -91,8 +88,8 @@ const VoiceRecordingFile = ({file, uploading}: Props) => {
                     />
                 </View>
                 <View style={styles.centerContainer}>
-                    <Text style={styles.title}>{VOICE_MESSAGE}</Text>
-                    <Text style={styles.uploading}>{UPLOADING_TEXT}</Text>
+                    <Text style={styles.title}>{intl.formatMessage({id: 'draft.voice_message.title', defaultMessage: 'Voice Message'})}</Text>
+                    <Text style={styles.uploading}>{intl.formatMessage({id: 'draft.voice_message.progress', defaultMessage: 'Uploading...'})}</Text>
                 </View>
             </>
         );
@@ -102,10 +99,10 @@ const VoiceRecordingFile = ({file, uploading}: Props) => {
         <View
             style={[
                 styles.container,
-                isVoiceMessage && voiceStyle,
+                voiceStyle,
             ]}
         >
-            {uploading ? getUploadingView() : <PlayBack/>}
+            {uploading ? getUploadingView() : <PlayBack file={file}/>}
         </View>
     );
 };

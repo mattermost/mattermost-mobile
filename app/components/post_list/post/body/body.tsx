@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {LayoutChangeEvent, StyleProp, Text, View, ViewStyle} from 'react-native';
+import {LayoutChangeEvent, StyleProp, View, ViewStyle} from 'react-native';
 
 import {PostTypes} from '@app/constants/post';
 import Files from '@components/files';
@@ -164,8 +164,14 @@ const Body = ({
         if (voiceMessageEnabled && post.type === PostTypes.VOICE_MESSAGE) {
             body = (
                 <View style={style.messageBody}>
-                    <Text>{'I am a recording'}</Text>
-                    {/* <VoiceMessagePost /> */}
+                    <Files
+                        failed={isFailed}
+                        layoutWidth={layoutWidth}
+                        location={location}
+                        post={post}
+                        isReplyPost={isReplyPost}
+                        asVoiceRecording={true}
+                    />
                     {hasReactions && showAddReaction &&
                     <Reactions
                         location={location}

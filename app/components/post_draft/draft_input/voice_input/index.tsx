@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {TouchableOpacity, View} from 'react-native';
+import AudioRecorderPlayer from 'react-native-audio-recorder-player';
 
 import CompassIcon from '@components/compass_icon';
 import {MIC_SIZE} from '@constants/view';
@@ -63,25 +64,34 @@ const VoiceInput = ({onClose, addFiles, setRecording}: VoiceInputProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    useEffect(() => {
-        // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const record = async () => {
-            const url = ''; //await recorder.current?.stopRecorder()
-            const fi = await extractFileInfo([{uri: url}]);
-            fi[0].is_voice_recording = true;
-            addFiles(fi as FileInfo[]);
-            setRecording(false);
-        };
+    const audioRecorderPlayer = useMemo(() => new AudioRecorderPlayer(), []);
+    const [time, setTime] = useState('00:00');
 
-        //todo: to start recording as soon as this screen shows up
-        // record();
+    useEffect(() => {
+        audioRecorderPlayer.addRecordBackListener((e) => {
+            setTime(audioRecorderPlayer.mmss(Math.floor(e.currentPosition / 1000)));
+        });
+        audioRecorderPlayer.startRecorder(`${Date.now()}.mp3`);
+        return () => {
+            audioRecorderPlayer.stopRecorder();
+            audioRecorderPlayer.removePlayBackListener();
+        };
     }, []);
+
+    const accept = useCallback(async () => {
+        const url = await audioRecorderPlayer.stopRecorder();
+        const fi = await extractFileInfo([{uri: url}]);
+        fi[0].is_voice_recording = true;
+        addFiles(fi as FileInfo[]);
+        setRecording(false);
+        onClose();
+    }, [onClose]);
 
     return (
         <View style={styles.mainContainer}>
             <AnimatedMicrophone/>
             <SoundWave/>
-            <TimeElapsed/>
+            <TimeElapsed timeElapsed={time}/>
             <TouchableOpacity
                 style={styles.close}
                 onPress={onClose}
@@ -94,7 +104,7 @@ const VoiceInput = ({onClose, addFiles, setRecording}: VoiceInputProps) => {
             </TouchableOpacity>
             <TouchableOpacity
                 style={styles.check}
-                onPress={onClose} // to be fixed when wiring is completed
+                onPress={accept}
             >
                 <CompassIcon
                     color={theme.buttonColor}

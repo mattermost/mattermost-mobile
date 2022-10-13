@@ -121,7 +121,7 @@ interface ClientConfig {
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagGraphQL?: string;
     FeatureFlagPostPriority?: string;
-    FeatureFlagEnableVoiceMessages?: string;
+    FeatureFlagVoiceMessages?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
     GoogleDeveloperKey: string;

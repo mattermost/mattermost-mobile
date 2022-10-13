@@ -15,6 +15,7 @@ import {getViewPortWidth} from '@utils/images';
 import {preventDoubleTap} from '@utils/tap';
 
 import File from './file';
+import VoiceRecordingFile from './voice_recording_file';
 
 type FilesProps = {
     canDownloadFiles: boolean;
@@ -25,6 +26,7 @@ type FilesProps = {
     isReplyPost: boolean;
     postId: string;
     publicLinkEnabled: boolean;
+    asVoiceRecording?: boolean;
 }
 
 const MAX_VISIBLE_ROW_IMAGES = 4;
@@ -45,7 +47,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, location, postId, publicLinkEnabled}: FilesProps) => {
+const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, location, postId, publicLinkEnabled, asVoiceRecording = false}: FilesProps) => {
     const galleryIdentifier = `${postId}-fileAttachments-${location}`;
     const [inViewPort, setInViewPort] = useState(false);
     const isTablet = useIsTablet();
@@ -72,6 +74,16 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
     const isSingleImage = () => (filesInfo.length === 1 && (isImage(filesInfo[0]) || isVideo(filesInfo[0])));
 
     const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
+        if (asVoiceRecording) {
+            return [(
+                <VoiceRecordingFile
+                    key={items[0].id}
+                    file={items[0]}
+                    uploading={false}
+                />
+            )];
+        }
+
         const singleImage = isSingleImage();
         let nonVisibleImagesCount: number;
         let container: StyleProp<ViewStyle> = items.length > 1 ? styles.container : undefined;

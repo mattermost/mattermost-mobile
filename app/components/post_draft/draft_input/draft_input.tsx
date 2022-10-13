@@ -120,7 +120,7 @@ export default function DraftInput({
         setRecording(false);
     }, []);
 
-    const isHandlingVoice = files[0]?.is_voice_recording || recording;
+    const isHandlingVoice = files[0]?.is_voice_recording;
     const sendActionTestID = `${testID}.send_action`;
     const recordActionTestID = `${testID}.record_action`;
 
@@ -186,42 +186,46 @@ export default function DraftInput({
                         />
                     )}
                     {!recording &&
-                        <MessageInput
-                            addFiles={addFiles}
-                            canSend={canSend}
-                            channelId={channelId}
-                            currentUserId={currentUserId}
-                            cursorPosition={cursorPosition}
-                            files={files}
-                            maxMessageLength={maxMessageLength}
-                            rootId={rootId}
-                            sendMessage={sendMessage}
-                            setRecording={setRecording}
-                            testID={testID}
-                            updateCursorPosition={updateCursorPosition}
-                            updateValue={updateValue}
-                            uploadFileError={uploadFileError}
-                            value={value}
-                        />
-                    }
-                    <View style={style.actionsContainer}>
-                        {!isHandlingVoice &&
-                            <QuickActions
-                                testID={quickActionsTestID}
-                                fileCount={files.length}
+                        <>
+                            <MessageInput
                                 addFiles={addFiles}
+                                canSend={canSend}
+                                channelId={channelId}
+                                currentUserId={currentUserId}
+                                cursorPosition={cursorPosition}
+                                files={files}
+                                maxMessageLength={maxMessageLength}
+                                rootId={rootId}
+                                sendMessage={sendMessage}
+                                setRecording={setRecording}
+                                testID={testID}
+                                updateCursorPosition={updateCursorPosition}
                                 updateValue={updateValue}
+                                uploadFileError={uploadFileError}
                                 value={value}
                             />
-                        }
-                        {!isHandlingVoice && getActionButton()}
-                    </View>
-                    <SendAction
-                        disabled={!canSend}
-                        sendMessage={sendMessage}
-                        testID={sendActionTestID}
-                        containerStyle={isHandlingVoice && style.sendVoiceMessage}
-                    />
+                            <View style={style.actionsContainer}>
+                                {!isHandlingVoice &&
+                                    <QuickActions
+                                        testID={quickActionsTestID}
+                                        fileCount={files.length}
+                                        addFiles={addFiles}
+                                        updateValue={updateValue}
+                                        value={value}
+                                    />
+                                }
+                                {!isHandlingVoice && getActionButton()}
+                            </View>
+                            {isHandlingVoice &&
+                                <SendAction
+                                    disabled={!canSend}
+                                    sendMessage={sendMessage}
+                                    testID={sendActionTestID}
+                                    containerStyle={isHandlingVoice && style.sendVoiceMessage}
+                                />
+                            }
+                        </>
+                    }
                 </ScrollView>
             </SafeAreaView>
         </>
