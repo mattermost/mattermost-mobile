@@ -2,21 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {random} from 'lodash';
-import React, {useEffect} from 'react';
+import React from 'react';
 import {View} from 'react-native';
-import Animated, {
-    Extrapolation,
-    interpolate,
-    useAnimatedStyle,
-    useSharedValue,
-    withRepeat,
-    withSpring,
-} from 'react-native-reanimated';
+import Animated, {cancelAnimation, Extrapolation, interpolate, useAnimatedStyle, useSharedValue, withRepeat, withSpring} from 'react-native-reanimated';
 
+import {WAVEFORM_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
+import useDidUpdate from '@hooks/did_update';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-const WAVEFORM_HEIGHT = 40;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -37,10 +30,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-// if not playing, height = 0
-// if paused, height = where they are at
-// if playing, then modulate the height
-const SoundWave = () => {
+type SoundWaveProps = {
+    animating?: boolean;
+};
+
+const SoundWave = ({animating = true}: SoundWaveProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -58,17 +52,21 @@ const SoundWave = () => {
         };
     }, []);
 
-    useEffect(() => {
-        animatedValue.value = withRepeat(
-            withSpring(40, {
-                damping: 10,
-                mass: 0.6,
-                overshootClamping: true,
-            }),
-            800,
-            true,
-        );
-    }, []);
+    useDidUpdate(() => {
+        if (animating) {
+            animatedValue.value = withRepeat(
+                withSpring(40, {
+                    damping: 10,
+                    mass: 0.6,
+                    overshootClamping: true,
+                }),
+                800,
+                true,
+            );
+        } else {
+            cancelAnimation(animatedValue);
+        }
+    }, [animating]);
 
     const getAudioBars = () => {
         const bars = [];

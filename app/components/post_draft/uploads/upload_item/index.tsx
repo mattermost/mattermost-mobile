@@ -6,9 +6,9 @@ import {StyleSheet, TouchableWithoutFeedback, useWindowDimensions, View} from 'r
 import Animated from 'react-native-reanimated';
 
 import {updateDraftFile} from '@actions/local/draft';
-import VoiceRecordingFile from '@app/components/files/voice_recording_file';
 import FileIcon from '@components/files/file_icon';
 import ImageFile from '@components/files/image_file';
+import VoiceRecordingFile from '@components/files/voice_recording_file';
 import ProgressBar from '@components/progress_bar';
 import {VOICE_MESSAGE_CARD_RATIO} from '@constants/view';
 import {useServerUrl} from '@context/server';
@@ -124,7 +124,7 @@ export default function UploadItem({
             return (
                 <VoiceRecordingFile
                     file={file}
-                    onClose={() => null}
+                    uploading={true}
                 />
             );
         }

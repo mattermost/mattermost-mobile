@@ -48,6 +48,7 @@ export default function MessageInput({
     // Render
     const postInputTestID = `${testID}.post.input`;
     const isHandlingVoice = files[0]?.is_voice_recording;
+
     return (
         <>
             {!isHandlingVoice && (

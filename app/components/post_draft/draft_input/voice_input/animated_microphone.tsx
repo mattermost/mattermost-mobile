@@ -6,10 +6,9 @@ import {View} from 'react-native';
 import Animated, {interpolate, SharedValue, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
+import {MIC_SIZE} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-const MIC_SIZE = 40;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     const iconCommon = {

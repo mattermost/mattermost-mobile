@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {VOICE_MESSAGE_CARD_RATIO} from '@constants/view';
+import PlayBack from '@components/files/voice_recording_file/playback';
+import {MIC_SIZE, VOICE_MESSAGE_CARD_RATIO} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -13,16 +14,15 @@ import {typography} from '@utils/typography';
 //i18n
 const VOICE_MESSAGE = 'Voice message';
 const UPLOADING_TEXT = 'Uploading..(0%)';
-const MIC_SIZE = 40;
 
 type Props = {
     file: FileInfo;
+    uploading: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            backgroundColor: 'blue',
             flex: 1,
             flexDirection: 'row',
             borderWidth: StyleSheet.hairlineWidth,
@@ -34,6 +34,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
                 width: 0,
                 height: 3,
             },
+            alignItems: 'center',
         },
         centerContainer: {
             marginLeft: 12,
@@ -58,10 +59,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             marginLeft: 12,
         },
+        playBackContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+        },
     };
 });
 
-const VoiceRecordingFile = ({file}: Props) => {
+const VoiceRecordingFile = ({file, uploading}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
@@ -73,6 +78,26 @@ const VoiceRecordingFile = ({file}: Props) => {
         };
     }, [dimensions.width]);
 
+    const getUploadingView = useCallback(() => {
+        return (
+            <>
+                <View
+                    style={styles.mic}
+                >
+                    <CompassIcon
+                        name='microphone'
+                        size={24}
+                        color={theme.buttonBg}
+                    />
+                </View>
+                <View style={styles.centerContainer}>
+                    <Text style={styles.title}>{VOICE_MESSAGE}</Text>
+                    <Text style={styles.uploading}>{UPLOADING_TEXT}</Text>
+                </View>
+            </>
+        );
+    }, [uploading]);
+
     return (
         <View
             style={[
@@ -80,19 +105,7 @@ const VoiceRecordingFile = ({file}: Props) => {
                 isVoiceMessage && voiceStyle,
             ]}
         >
-            <View
-                style={styles.mic}
-            >
-                <CompassIcon
-                    name='microphone'
-                    size={24}
-                    color={theme.buttonBg}
-                />
-            </View>
-            <View style={styles.centerContainer}>
-                <Text style={styles.title}>{VOICE_MESSAGE}</Text>
-                <Text style={styles.uploading}>{UPLOADING_TEXT}</Text>
-            </View>
+            {uploading ? getUploadingView() : <PlayBack/>}
         </View>
     );
 };
