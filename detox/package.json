@@ -26,6 +26,8 @@
     "jest-cli": "29.1.2",
     "jest-html-reporters": "3.0.11",
     "jest-junit": "14.0.1",
+    "jest-stare": "2.4.1",
+    "junit-report-merger": "4.0.0",
     "moment-timezone": "0.5.37",
     "recursive-readdir": "2.2.2",
     "sanitize-filename": "1.6.3",
