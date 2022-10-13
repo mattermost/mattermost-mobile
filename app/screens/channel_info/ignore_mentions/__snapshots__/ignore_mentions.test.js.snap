@@ -10,7 +10,7 @@ exports[`ChannelInfo -> IgnoreMentions should match snapshot for Ignore Mentions
   shouldRender={true}
   textId="channel_notifications.ignoreChannelMentions.settings"
   theme={
-    Object {
+    {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -52,7 +52,7 @@ exports[`ChannelInfo -> IgnoreMentions should match snapshot for Not Ignore Ment
   shouldRender={true}
   textId="channel_notifications.ignoreChannelMentions.settings"
   theme={
-    Object {
+    {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",

@@ -42,6 +42,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
     }
 
     handleSubmit = async (submission: {values: AppFormValues}): Promise<{data?: AppCallResponse<FormResponseData>; error?: AppCallResponse<FormResponseData>}> => {
+        // @ts-expect-error context type definition
         const intl = this.context.intl;
         const makeErrorMsg = (msg: string) => {
             return intl.formatMessage(
@@ -109,6 +110,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
     };
 
     refreshOnSelect = async (field: AppField, values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
+        // @ts-expect-error context type definition
         const intl = this.context.intl;
         const makeErrorMsg = (message: string) => intl.formatMessage(
             {
@@ -179,6 +181,7 @@ export default class AppsFormContainer extends PureComponent<Props, State> {
     };
 
     performLookupCall = async (field: AppField, values: AppFormValues, userInput: string): Promise<DoAppCallResult<AppLookupResponse>> => {
+        // @ts-expect-error context type definition
         const intl = this.context.intl;
         const makeErrorMsg = (message: string) => intl.formatMessage(
             {

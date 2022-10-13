@@ -7,6 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {expect} from 'detox';
 import moment from 'moment-timezone';
 
 import {

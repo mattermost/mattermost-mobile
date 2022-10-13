@@ -35,7 +35,7 @@ const style = StyleSheet.create({
 });
 
 type Props = {
-    children: React.ReactChildren;
+    children: React.ReactNode;
 }
 
 const FloatingCallContainer = (props: Props) => {

@@ -36,6 +36,7 @@ export default class Leave extends PureComponent<LeaveProps> {
     };
 
     alertAndHandleYesAction = (title: FormattedMsg, message: FormattedMsg, onPressAction: () => void) => {
+        // @ts-expect-error context type definition
         const {formatMessage} = this.context.intl;
         const {displayName, isPublic} = this.props;
 

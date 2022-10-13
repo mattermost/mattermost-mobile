@@ -3,7 +3,7 @@
 exports[`SelectedUsers should match snapshot 1`] = `
 <View
   style={
-    Object {
+    {
       "marginBottom": 5,
       "marginLeft": 5,
     }
@@ -11,7 +11,7 @@ exports[`SelectedUsers should match snapshot 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "flex-start",
         "flexDirection": "row",
         "flexWrap": "wrap",
@@ -23,7 +23,7 @@ exports[`SelectedUsers should match snapshot 1`] = `
       teammateNameDisplay="full_name"
       testID="more_direct_messages.selected_user"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -52,7 +52,7 @@ exports[`SelectedUsers should match snapshot 1`] = `
         }
       }
       user={
-        Object {
+        {
           "id": "userId1",
         }
       }
@@ -62,7 +62,7 @@ exports[`SelectedUsers should match snapshot 1`] = `
     defaultMessage="You can add {remaining, number} more users"
     id="mobile.more_dms.add_more"
     style={
-      Object {
+      {
         "color": "rgba(63,67,80,0.6)",
         "fontSize": 12,
         "marginBottom": 2,
@@ -71,7 +71,7 @@ exports[`SelectedUsers should match snapshot 1`] = `
       }
     }
     values={
-      Object {
+      {
         "remaining": 2,
       }
     }
@@ -82,7 +82,7 @@ exports[`SelectedUsers should match snapshot 1`] = `
 exports[`SelectedUsers should match snapshot for no warning message 1`] = `
 <View
   style={
-    Object {
+    {
       "marginBottom": 5,
       "marginLeft": 5,
     }
@@ -90,7 +90,7 @@ exports[`SelectedUsers should match snapshot for no warning message 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "flex-start",
         "flexDirection": "row",
         "flexWrap": "wrap",
@@ -102,7 +102,7 @@ exports[`SelectedUsers should match snapshot for no warning message 1`] = `
       teammateNameDisplay="full_name"
       testID="more_direct_messages.selected_user"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -131,7 +131,7 @@ exports[`SelectedUsers should match snapshot for no warning message 1`] = `
         }
       }
       user={
-        Object {
+        {
           "id": "userId1",
         }
       }
@@ -143,7 +143,7 @@ exports[`SelectedUsers should match snapshot for no warning message 1`] = `
 exports[`SelectedUsers should match snapshot to show warning for ability to add one more user 1`] = `
 <View
   style={
-    Object {
+    {
       "marginBottom": 5,
       "marginLeft": 5,
     }
@@ -151,7 +151,7 @@ exports[`SelectedUsers should match snapshot to show warning for ability to add 
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "flex-start",
         "flexDirection": "row",
         "flexWrap": "wrap",
@@ -163,7 +163,7 @@ exports[`SelectedUsers should match snapshot to show warning for ability to add 
       teammateNameDisplay="full_name"
       testID="more_direct_messages.selected_user"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -192,7 +192,7 @@ exports[`SelectedUsers should match snapshot to show warning for ability to add 
         }
       }
       user={
-        Object {
+        {
           "id": "userId2",
         }
       }
@@ -202,7 +202,7 @@ exports[`SelectedUsers should match snapshot to show warning for ability to add 
       teammateNameDisplay="full_name"
       testID="more_direct_messages.selected_user"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -231,7 +231,7 @@ exports[`SelectedUsers should match snapshot to show warning for ability to add 
         }
       }
       user={
-        Object {
+        {
           "id": "userId1",
         }
       }
@@ -241,7 +241,7 @@ exports[`SelectedUsers should match snapshot to show warning for ability to add 
     defaultMessage="You can add 1 more user"
     id="mobile.more_dms.one_more"
     style={
-      Object {
+      {
         "color": "rgba(63,67,80,0.6)",
         "fontSize": 12,
         "marginBottom": 2,

@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import jestExpect from 'expect';
+import {expect} from 'detox';
 
 import {
     Channel,
@@ -16,6 +16,8 @@ import {
 } from '@support/server_api';
 import {MainSidebar} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
+
+const {expect: jestExpect} = require('@jest/globals');
 
 describe('Mark As Read', () => {
     const {

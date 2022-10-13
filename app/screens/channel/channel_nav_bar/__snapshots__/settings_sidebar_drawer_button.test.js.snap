@@ -8,7 +8,7 @@ exports[`SettingsSidebarDrawerButton should match, full snapshot 1`] = `
   accessible={true}
   onPress={[Function]}
   style={
-    Object {
+    {
       "width": 44,
     }
   }
@@ -16,7 +16,7 @@ exports[`SettingsSidebarDrawerButton should match, full snapshot 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "flex": 1,
         "flexDirection": "column",

@@ -2,7 +2,7 @@
 
 exports[`CallDuration should match snapshot 1`] = `
 <Text
-  style={Object {}}
+  style={{}}
 >
   00:15
 </Text>

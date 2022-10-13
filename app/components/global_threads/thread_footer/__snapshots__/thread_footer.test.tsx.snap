@@ -3,7 +3,7 @@
 exports[`Global Thread Footer Should render for channel view and unfollow the thread on press 1`] = `
 <View
   style={
-    Object {
+    {
       "alignItems": "center",
       "flexDirection": "row",
       "minHeight": 40,
@@ -12,20 +12,20 @@ exports[`Global Thread Footer Should render for channel view and unfollow the th
 >
   <Connect(Avatars)
     style={
-      Object {
+      {
         "marginRight": 12,
         "paddingVertical": 8,
       }
     }
     userIds={
-      Array [
+      [
         "user2",
       ]
     }
   />
   <View
     style={
-      Object {
+      {
         "marginRight": 5,
         "top": -1,
       }
@@ -39,7 +39,7 @@ exports[`Global Thread Footer Should render for channel view and unfollow the th
   </View>
   <Text
     style={
-      Object {
+      {
         "alignSelf": "center",
         "color": "rgba(63,67,80,0.64)",
         "fontSize": 12,
@@ -54,7 +54,7 @@ exports[`Global Thread Footer Should render for channel view and unfollow the th
   <TouchableOpacity
     onPress={[Function]}
     style={
-      Object {
+      {
         "backgroundColor": "rgba(28,88,217,0.08)",
         "borderRadius": 4,
         "height": 32,
@@ -66,7 +66,7 @@ exports[`Global Thread Footer Should render for channel view and unfollow the th
   >
     <Text
       style={
-        Object {
+        {
           "color": "#1c58d9",
           "fontSize": 12,
           "fontWeight": "600",
@@ -82,7 +82,7 @@ exports[`Global Thread Footer Should render for channel view and unfollow the th
 exports[`Global Thread Footer Should render for global threads view 1`] = `
 <View
   style={
-    Object {
+    {
       "alignItems": "center",
       "flexDirection": "row",
       "minHeight": 40,
@@ -91,13 +91,13 @@ exports[`Global Thread Footer Should render for global threads view 1`] = `
 >
   <Connect(Avatars)
     style={
-      Object {
+      {
         "marginRight": 12,
         "paddingVertical": 8,
       }
     }
     userIds={
-      Array [
+      [
         "user1",
         "user2",
       ]
@@ -105,7 +105,7 @@ exports[`Global Thread Footer Should render for global threads view 1`] = `
   />
   <Text
     style={
-      Object {
+      {
         "alignSelf": "center",
         "color": "#5d89ea",
         "fontSize": 12,

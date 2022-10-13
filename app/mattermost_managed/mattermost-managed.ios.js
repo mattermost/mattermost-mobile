@@ -1,5 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import JailMonkey from 'jail-monkey';
 import {NativeModules, NativeEventEmitter} from 'react-native';
 import LocalAuth from 'react-native-local-auth';

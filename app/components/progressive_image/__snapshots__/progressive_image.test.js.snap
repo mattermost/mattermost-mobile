@@ -3,26 +3,26 @@
 exports[`ProgressiveImage should match snapshot for BackgroundImage 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "alignItems": "center",
         "backgroundColor": "rgba(63,67,80,0.08)",
         "justifyContent": "center",
       },
-      Object {},
+      {},
     ]
   }
 >
   <ImageBackground
     resizeMode="cover"
     source={
-      Object {
+      {
         "uri": "https://images.com/image.png",
       }
     }
     style={
-      Array [
-        Object {
+      [
+        {
           "bottom": 0,
           "left": 0,
           "position": "absolute",
@@ -39,13 +39,13 @@ exports[`ProgressiveImage should match snapshot for BackgroundImage 1`] = `
 exports[`ProgressiveImage should match snapshot for Default Image 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "alignItems": "center",
         "backgroundColor": "rgba(63,67,80,0.08)",
         "justifyContent": "center",
       },
-      Object {},
+      {},
     ]
   }
 >
@@ -56,8 +56,8 @@ exports[`ProgressiveImage should match snapshot for Default Image 1`] = `
     resizeMode="contain"
     source="https://images.com/image.png"
     style={
-      Array [
-        Object {
+      [
+        {
           "bottom": 0,
           "left": 0,
           "position": "absolute",
@@ -75,14 +75,14 @@ exports[`ProgressiveImage should match snapshot for Default Image 1`] = `
 exports[`ProgressiveImage should match snapshot for Image 1`] = `
 <ForwardRef(AnimatedComponentWrapper)
   style={
-    Array [
-      Object {
+    [
+      {
         "alignItems": "center",
         "backgroundColor": "rgba(63,67,80,0.08)",
         "justifyContent": "center",
       },
-      Object {},
-      Object {
+      {},
+      {
         "backgroundColor": "rgba(63,67,80,NaN)",
       },
     ]
@@ -93,14 +93,14 @@ exports[`ProgressiveImage should match snapshot for Image 1`] = `
     resizeMethod="auto"
     resizeMode="contain"
     source={
-      Object {
+      {
         "testUri": "../../../dist/assets/images/thumb.png",
       }
     }
     style={
-      Array [
+      [
         undefined,
-        Object {
+        {
           "opacity": 0.5,
           "tintColor": "#3f4350",
         },
@@ -115,13 +115,13 @@ exports[`ProgressiveImage should match snapshot for Image 1`] = `
     resizeMethod="auto"
     resizeMode="contain"
     source={
-      Object {
+      {
         "uri": "https://images.com/image.png",
       }
     }
     style={
-      Array [
-        Object {
+      [
+        {
           "bottom": 0,
           "left": 0,
           "position": "absolute",
@@ -129,7 +129,7 @@ exports[`ProgressiveImage should match snapshot for Image 1`] = `
           "top": 0,
         },
         undefined,
-        Object {
+        {
           "opacity": 0,
         },
       ]

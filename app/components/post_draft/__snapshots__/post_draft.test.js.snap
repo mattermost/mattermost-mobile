@@ -3,7 +3,7 @@
 exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
 <View
   style={
-    Object {
+    {
       "backgroundColor": "#ffffff",
       "borderTopColor": "rgba(63,67,80,0.2)",
       "borderTopWidth": 1,
@@ -18,12 +18,12 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
   <Text>
     <Text
       style={
-        Array [
-          Object {
+        [
+          {
             "color": "#3f4350",
             "textAlign": "center",
           },
-          Array [
+          [
             undefined,
           ],
         ]
@@ -33,14 +33,14 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
     </Text>
     <Text
       style={
-        Array [
-          Object {
+        [
+          {
             "color": "#3f4350",
             "textAlign": "center",
           },
-          Array [
+          [
             undefined,
-            Object {
+            {
               "fontWeight": "bold",
             },
           ],
@@ -51,12 +51,12 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
     </Text>
     <Text
       style={
-        Array [
-          Object {
+        [
+          {
             "color": "#3f4350",
             "textAlign": "center",
           },
-          Array [
+          [
             undefined,
           ],
         ]
@@ -78,7 +78,7 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      Object {
+      {
         "alignItems": "center",
         "backgroundColor": "#1c58d9",
         "borderRadius": 4,
@@ -92,7 +92,7 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
   >
     <Text
       style={
-        Object {
+        {
           "color": "white",
           "fontWeight": "bold",
           "marginTop": 7,
@@ -108,7 +108,7 @@ exports[`PostDraft Should render the Archived for channelIsArchived 1`] = `
 exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
 <View
   style={
-    Object {
+    {
       "backgroundColor": "#ffffff",
       "borderTopColor": "rgba(63,67,80,0.2)",
       "borderTopWidth": 1,
@@ -123,12 +123,12 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
   <Text>
     <Text
       style={
-        Array [
-          Object {
+        [
+          {
             "color": "#3f4350",
             "textAlign": "center",
           },
-          Array [
+          [
             undefined,
           ],
         ]
@@ -138,14 +138,14 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
     </Text>
     <Text
       style={
-        Array [
-          Object {
+        [
+          {
             "color": "#3f4350",
             "textAlign": "center",
           },
-          Array [
+          [
             undefined,
-            Object {
+            {
               "fontWeight": "bold",
             },
           ],
@@ -156,12 +156,12 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
     </Text>
     <Text
       style={
-        Array [
-          Object {
+        [
+          {
             "color": "#3f4350",
             "textAlign": "center",
           },
-          Array [
+          [
             undefined,
           ],
         ]
@@ -183,7 +183,7 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      Object {
+      {
         "alignItems": "center",
         "backgroundColor": "#1c58d9",
         "borderRadius": 4,
@@ -197,7 +197,7 @@ exports[`PostDraft Should render the Archived for deactivatedChannel 1`] = `
   >
     <Text
       style={
-        Object {
+        {
           "color": "white",
           "fontWeight": "bold",
           "marginTop": 7,
@@ -217,7 +217,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
   <View
     collapsable={false}
     style={
-      Object {
+      {
         "bottom": 0,
       }
     }
@@ -226,7 +226,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
-        Object {
+        {
           "backgroundColor": "transparent",
           "color": "#3f4350",
           "fontSize": 11,
@@ -240,14 +240,14 @@ exports[`PostDraft Should render the DraftInput 1`] = `
   </View>
   <RNCSafeAreaView
     edges={
-      Array [
+      [
         "left",
         "right",
       ]
     }
     onLayout={[Function]}
     style={
-      Object {
+      {
         "alignItems": "flex-end",
         "backgroundColor": "#ffffff",
         "borderTopColor": "rgba(63,67,80,0.2)",
@@ -261,7 +261,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
   >
     <RCTScrollView
       contentContainerStyle={
-        Object {
+        {
           "alignItems": "stretch",
           "paddingTop": 7,
         }
@@ -274,7 +274,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
       showsHorizontalScrollIndicator={false}
       showsVerticalScrollIndicator={false}
       style={
-        Object {
+        {
           "flex": 1,
           "flexDirection": "column",
         }
@@ -289,7 +289,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           blurOnSubmit={false}
           disableCopyPaste={false}
           disableFullscreenUI={true}
-          focusable={true}
+          focusable={false}
           keyboardAppearance="light"
           keyboardType="default"
           mostRecentEventCount={0}
@@ -315,8 +315,8 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           placeholderTextColor="rgba(63,67,80,0.5)"
           screenId="NavigationScreen1"
           style={
-            Array [
-              Object {
+            [
+              {
                 "color": "#3f4350",
                 "fontSize": 15,
                 "lineHeight": 20,
@@ -334,7 +334,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
         />
         <View
           style={
-            Object {
+            {
               "display": "flex",
               "flexDirection": "column",
             }
@@ -345,7 +345,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             forwardedRef={[Function]}
             isInteraction={true}
             style={
-              Object {
+              {
                 "display": "flex",
                 "flexDirection": "row",
                 "height": 0,
@@ -355,7 +355,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           >
             <RCTScrollView
               contentContainerStyle={
-                Object {
+                {
                   "alignItems": "flex-end",
                   "paddingRight": 12,
                 }
@@ -363,7 +363,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               horizontal={true}
               keyboardShouldPersistTaps="handled"
               style={
-                Object {
+                {
                   "flex": 1,
                 }
               }
@@ -376,14 +376,14 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             forwardedRef={[Function]}
             isInteraction={true}
             style={
-              Object {
+              {
                 "height": 0,
               }
             }
           >
             <View
               style={
-                Object {
+                {
                   "flex": 1,
                   "marginHorizontal": 12,
                   "marginTop": 4,
@@ -394,7 +394,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
         </View>
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "display": "flex",
               "flexDirection": "row",
@@ -405,7 +405,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
         >
           <View
             style={
-              Object {
+              {
                 "display": "flex",
                 "flexDirection": "row",
                 "height": 44,
@@ -415,7 +415,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           >
             <View
               accessibilityState={
-                Object {
+                {
                   "disabled": false,
                 }
               }
@@ -430,7 +430,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               onResponderTerminationRequest={[Function]}
               onStartShouldSetResponder={[Function]}
               style={
-                Object {
+                {
                   "alignItems": "center",
                   "justifyContent": "center",
                   "opacity": 1,
@@ -447,7 +447,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             </View>
             <View
               accessibilityState={
-                Object {
+                {
                   "disabled": false,
                 }
               }
@@ -462,7 +462,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               onResponderTerminationRequest={[Function]}
               onStartShouldSetResponder={[Function]}
               style={
-                Object {
+                {
                   "alignItems": "center",
                   "justifyContent": "center",
                   "opacity": 1,
@@ -479,7 +479,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             </View>
             <View
               accessibilityState={
-                Object {
+                {
                   "disabled": false,
                 }
               }
@@ -494,7 +494,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               onResponderTerminationRequest={[Function]}
               onStartShouldSetResponder={[Function]}
               style={
-                Object {
+                {
                   "alignItems": "center",
                   "justifyContent": "center",
                   "opacity": 1,
@@ -511,7 +511,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             </View>
             <View
               accessibilityState={
-                Object {
+                {
                   "disabled": false,
                 }
               }
@@ -526,7 +526,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               onResponderTerminationRequest={[Function]}
               onStartShouldSetResponder={[Function]}
               style={
-                Object {
+                {
                   "alignItems": "center",
                   "justifyContent": "center",
                   "opacity": 1,
@@ -543,7 +543,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
             </View>
             <View
               accessibilityState={
-                Object {
+                {
                   "disabled": false,
                 }
               }
@@ -558,7 +558,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
               onResponderTerminationRequest={[Function]}
               onStartShouldSetResponder={[Function]}
               style={
-                Object {
+                {
                   "alignItems": "center",
                   "justifyContent": "center",
                   "opacity": 1,
@@ -576,7 +576,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           </View>
           <View
             style={
-              Object {
+              {
                 "justifyContent": "flex-end",
                 "paddingRight": 8,
               }
@@ -585,8 +585,8 @@ exports[`PostDraft Should render the DraftInput 1`] = `
           >
             <View
               style={
-                Array [
-                  Object {
+                [
+                  {
                     "alignItems": "center",
                     "backgroundColor": "#1c58d9",
                     "borderRadius": 4,
@@ -594,7 +594,7 @@ exports[`PostDraft Should render the DraftInput 1`] = `
                     "justifyContent": "center",
                     "width": 80,
                   },
-                  Object {
+                  {
                     "backgroundColor": "rgba(28,88,217,0.3)",
                   },
                 ]
@@ -617,19 +617,19 @@ exports[`PostDraft Should render the DraftInput 1`] = `
 exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
 <RNCSafeAreaView
   edges={
-    Array [
+    [
       "bottom",
     ]
   }
   style={
-    Object {
+    {
       "backgroundColor": "rgba(63,67,80,0.04)",
     }
   }
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "borderTopColor": "rgba(63,67,80,0.2)",
         "borderTopWidth": 1,
@@ -644,7 +644,7 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
       color="#3f4350"
       name="glasses"
       style={
-        Object {
+        {
           "fontSize": 20,
           "lineHeight": 22,
           "opacity": 0.56,
@@ -653,7 +653,7 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
     />
     <Text
       style={
-        Object {
+        {
           "color": "#3f4350",
           "fontSize": 15,
           "lineHeight": 20,
@@ -671,19 +671,19 @@ exports[`PostDraft Should render the ReadOnly for canPost 1`] = `
 exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
 <RNCSafeAreaView
   edges={
-    Array [
+    [
       "bottom",
     ]
   }
   style={
-    Object {
+    {
       "backgroundColor": "rgba(63,67,80,0.04)",
     }
   }
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "borderTopColor": "rgba(63,67,80,0.2)",
         "borderTopWidth": 1,
@@ -698,7 +698,7 @@ exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
       color="#3f4350"
       name="glasses"
       style={
-        Object {
+        {
           "fontSize": 20,
           "lineHeight": 22,
           "opacity": 0.56,
@@ -707,7 +707,7 @@ exports[`PostDraft Should render the ReadOnly for channelIsReadOnly 1`] = `
     />
     <Text
       style={
-        Object {
+        {
           "color": "#3f4350",
           "fontSize": 15,
           "lineHeight": 20,

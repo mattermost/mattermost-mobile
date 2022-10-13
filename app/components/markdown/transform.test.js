@@ -3100,50 +3100,6 @@ function nodeToString(node) {
     return out;
 }
 
-const ignoredKeys = {_sourcepos: true, _lastLineBlank: true, _open: true, _string_content: true, _info: true, _isFenced: true, _fenceChar: true, _fenceLength: true, _fenceOffset: true, _onEnter: true, _onExit: true};
-function astToJson(node, visited = [], indent = '') {
-    let out = '{';
-
-    const myVisited = [...visited];
-    myVisited.push(node);
-
-    const keys = Object.keys(node).filter((key) => !ignoredKeys[key]);
-    if (keys.length > 0) {
-        out += '\n';
-    }
-
-    for (const [i, key] of keys.entries()) {
-        out += indent + '  "' + key + '":';
-
-        const value = node[key];
-        if (myVisited.indexOf(value) !== -1) {
-            out += '[Circular]';
-        } else if (value === null) {
-            out += 'null';
-        } else if (typeof value === 'number') {
-            out += value;
-        } else if (typeof value === 'string') {
-            out += '"' + value + '"';
-        } else if (typeof value === 'boolean') {
-            out += String(value);
-        } else if (typeof value === 'object') {
-            out += astToJson(value, myVisited, indent + '  '); // eslint-disable-line @typescript-eslint/no-unused-vars
-        }
-
-        if (i !== keys.length - 1) {
-            out += ',\n';
-        }
-    }
-
-    if (keys.length > 0) {
-        out += '\n' + indent;
-    }
-
-    out += '}';
-
-    return out;
-}
-
 // Converts an AST represented as a JavaScript object into a full Commonmark-compatitle AST.
 // This function is intended for use while testing. An example of input would be:
 // {

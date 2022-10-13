@@ -3,8 +3,8 @@
 exports[`DateHeader component should match snapshot when timezone is UserTimezone automatic 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "alignItems": "center",
         "flexDirection": "row",
         "height": 28,
@@ -16,7 +16,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
 >
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
@@ -26,7 +26,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
   />
   <View
     style={
-      Object {
+      {
         "marginHorizontal": 15,
       }
     }
@@ -34,8 +34,8 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
     <RecentDate
       date={1531152392}
       intl={
-        Object {
-          "defaultFormats": Object {},
+        {
+          "defaultFormats": {},
           "defaultLocale": "en",
           "formatDate": [Function],
           "formatHTMLMessage": [Function],
@@ -44,8 +44,8 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
           "formatPlural": [Function],
           "formatRelative": [Function],
           "formatTime": [Function],
-          "formats": Object {},
-          "formatters": Object {
+          "formats": {},
+          "formatters": {
             "getDateTimeFormat": [Function],
             "getMessageFormat": [Function],
             "getNumberFormat": [Function],
@@ -53,7 +53,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
             "getRelativeFormat": [Function],
           },
           "locale": "en",
-          "messages": Object {},
+          "messages": {},
           "now": [Function],
           "onError": [Function],
           "textComponent": "span",
@@ -61,14 +61,14 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
         }
       }
       style={
-        Object {
+        {
           "color": "#3f4350",
           "fontSize": 14,
           "fontWeight": "600",
         }
       }
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -97,7 +97,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
         }
       }
       timezone={
-        Object {
+        {
           "automaticTimezone": "America/New_York",
           "manualTimezone": "America/Santiago",
           "useAutomaticTimezone": true,
@@ -107,7 +107,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
   </View>
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
@@ -121,8 +121,8 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
 exports[`DateHeader component should match snapshot when timezone is UserTimezone manual 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "alignItems": "center",
         "flexDirection": "row",
         "height": 28,
@@ -134,7 +134,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
 >
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
@@ -144,7 +144,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
   />
   <View
     style={
-      Object {
+      {
         "marginHorizontal": 15,
       }
     }
@@ -152,8 +152,8 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
     <RecentDate
       date={1531152392}
       intl={
-        Object {
-          "defaultFormats": Object {},
+        {
+          "defaultFormats": {},
           "defaultLocale": "en",
           "formatDate": [Function],
           "formatHTMLMessage": [Function],
@@ -162,8 +162,8 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
           "formatPlural": [Function],
           "formatRelative": [Function],
           "formatTime": [Function],
-          "formats": Object {},
-          "formatters": Object {
+          "formats": {},
+          "formatters": {
             "getDateTimeFormat": [Function],
             "getMessageFormat": [Function],
             "getNumberFormat": [Function],
@@ -171,7 +171,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
             "getRelativeFormat": [Function],
           },
           "locale": "en",
-          "messages": Object {},
+          "messages": {},
           "now": [Function],
           "onError": [Function],
           "textComponent": "span",
@@ -179,14 +179,14 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
         }
       }
       style={
-        Object {
+        {
           "color": "#3f4350",
           "fontSize": 14,
           "fontWeight": "600",
         }
       }
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -215,7 +215,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
         }
       }
       timezone={
-        Object {
+        {
           "automaticTimezone": "America/New_York",
           "manualTimezone": "America/Santiago",
           "useAutomaticTimezone": false,
@@ -225,7 +225,7 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
   </View>
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
@@ -239,8 +239,8 @@ exports[`DateHeader component should match snapshot when timezone is UserTimezon
 exports[`DateHeader component should match snapshot when timezone is set 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "alignItems": "center",
         "flexDirection": "row",
         "height": 28,
@@ -252,7 +252,7 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
@@ -262,7 +262,7 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
   />
   <View
     style={
-      Object {
+      {
         "marginHorizontal": 15,
       }
     }
@@ -270,8 +270,8 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
     <RecentDate
       date={1531152392}
       intl={
-        Object {
-          "defaultFormats": Object {},
+        {
+          "defaultFormats": {},
           "defaultLocale": "en",
           "formatDate": [Function],
           "formatHTMLMessage": [Function],
@@ -280,8 +280,8 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
           "formatPlural": [Function],
           "formatRelative": [Function],
           "formatTime": [Function],
-          "formats": Object {},
-          "formatters": Object {
+          "formats": {},
+          "formatters": {
             "getDateTimeFormat": [Function],
             "getMessageFormat": [Function],
             "getNumberFormat": [Function],
@@ -289,7 +289,7 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
             "getRelativeFormat": [Function],
           },
           "locale": "en",
-          "messages": Object {},
+          "messages": {},
           "now": [Function],
           "onError": [Function],
           "textComponent": "span",
@@ -297,14 +297,14 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
         }
       }
       style={
-        Object {
+        {
           "color": "#3f4350",
           "fontSize": 14,
           "fontWeight": "600",
         }
       }
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -337,7 +337,7 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
   </View>
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
@@ -351,8 +351,8 @@ exports[`DateHeader component should match snapshot when timezone is set 1`] = `
 exports[`DateHeader component should match snapshot with suffix 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "alignItems": "center",
         "flexDirection": "row",
         "height": 28,
@@ -364,7 +364,7 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
@@ -374,7 +374,7 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
   />
   <View
     style={
-      Object {
+      {
         "marginHorizontal": 15,
       }
     }
@@ -382,8 +382,8 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
     <RecentDate
       date={1531152392}
       intl={
-        Object {
-          "defaultFormats": Object {},
+        {
+          "defaultFormats": {},
           "defaultLocale": "en",
           "formatDate": [Function],
           "formatHTMLMessage": [Function],
@@ -392,8 +392,8 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
           "formatPlural": [Function],
           "formatRelative": [Function],
           "formatTime": [Function],
-          "formats": Object {},
-          "formatters": Object {
+          "formats": {},
+          "formatters": {
             "getDateTimeFormat": [Function],
             "getMessageFormat": [Function],
             "getNumberFormat": [Function],
@@ -401,7 +401,7 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
             "getRelativeFormat": [Function],
           },
           "locale": "en",
-          "messages": Object {},
+          "messages": {},
           "now": [Function],
           "onError": [Function],
           "textComponent": "span",
@@ -409,14 +409,14 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
         }
       }
       style={
-        Object {
+        {
           "color": "#3f4350",
           "fontSize": 14,
           "fontWeight": "600",
         }
       }
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -449,7 +449,7 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
   </View>
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
@@ -463,8 +463,8 @@ exports[`DateHeader component should match snapshot with suffix 1`] = `
 exports[`DateHeader component should match snapshot without suffix 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "alignItems": "center",
         "flexDirection": "row",
         "height": 28,
@@ -476,7 +476,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,
@@ -486,7 +486,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
   />
   <View
     style={
-      Object {
+      {
         "marginHorizontal": 15,
       }
     }
@@ -494,8 +494,8 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
     <RecentDate
       date={1531152392}
       intl={
-        Object {
-          "defaultFormats": Object {},
+        {
+          "defaultFormats": {},
           "defaultLocale": "en",
           "formatDate": [Function],
           "formatHTMLMessage": [Function],
@@ -504,8 +504,8 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
           "formatPlural": [Function],
           "formatRelative": [Function],
           "formatTime": [Function],
-          "formats": Object {},
-          "formatters": Object {
+          "formats": {},
+          "formatters": {
             "getDateTimeFormat": [Function],
             "getMessageFormat": [Function],
             "getNumberFormat": [Function],
@@ -513,7 +513,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
             "getRelativeFormat": [Function],
           },
           "locale": "en",
-          "messages": Object {},
+          "messages": {},
           "now": [Function],
           "onError": [Function],
           "textComponent": "span",
@@ -521,14 +521,14 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
         }
       }
       style={
-        Object {
+        {
           "color": "#3f4350",
           "fontSize": 14,
           "fontWeight": "600",
         }
       }
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -561,7 +561,7 @@ exports[`DateHeader component should match snapshot without suffix 1`] = `
   </View>
   <View
     style={
-      Object {
+      {
         "backgroundColor": "#3f4350",
         "flex": 1,
         "height": 1,

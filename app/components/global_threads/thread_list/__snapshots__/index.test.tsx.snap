@@ -3,7 +3,7 @@
 exports[`Global Thread List Should render threads with functional tabs & mark all as read button 1`] = `
 <View
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -12,43 +12,43 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
     haveUnreads={true}
     markAllAsRead={[MockFunction]}
     style={
-      Object {
-        "borderBottom": Object {
+      {
+        "borderBottom": {
           "borderBottomColor": "rgba(63,67,80,0.08)",
           "borderBottomWidth": 1,
         },
-        "container": Object {
+        "container": {
           "flex": 1,
         },
-        "headerContainer": Object {
+        "headerContainer": {
           "alignItems": "center",
           "flexDirection": "row",
         },
-        "listScrollIndicator": Object {
+        "listScrollIndicator": {
           "right": 1,
         },
-        "loadingMoreContainer": Object {
+        "loadingMoreContainer": {
           "paddingVertical": 12,
         },
-        "markAllReadIcon": Object {
+        "markAllReadIcon": {
           "color": "rgba(63,67,80,0.56)",
           "fontSize": 28,
           "lineHeight": 28,
         },
-        "markAllReadIconContainer": Object {
+        "markAllReadIconContainer": {
           "paddingHorizontal": 20,
         },
-        "markAllReadIconDisabled": Object {
+        "markAllReadIconDisabled": {
           "opacity": 0.5,
         },
-        "menuContainer": Object {
+        "menuContainer": {
           "alignItems": "center",
           "flexDirection": "row",
           "flexGrow": 1,
           "marginVertical": 12,
           "paddingLeft": 12,
         },
-        "menuItem": Object {
+        "menuItem": {
           "alignSelf": "center",
           "color": "rgba(63,67,80,0.56)",
           "fontFamily": "Open Sans",
@@ -56,21 +56,21 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
           "fontWeight": "600",
           "lineHeight": 24,
         },
-        "menuItemContainer": Object {
+        "menuItemContainer": {
           "paddingHorizontal": 16,
           "paddingVertical": 8,
         },
-        "menuItemContainerSelected": Object {
+        "menuItemContainerSelected": {
           "backgroundColor": "rgba(28,88,217,0.08)",
           "borderRadius": 4,
         },
-        "menuItemSelected": Object {
+        "menuItemSelected": {
           "color": "#1c58d9",
         },
-        "messagesContainer": Object {
+        "messagesContainer": {
           "flexGrow": 1,
         },
-        "unreadsDot": Object {
+        "unreadsDot": {
           "backgroundColor": "#5d89ea",
           "borderRadius": 3,
           "height": 6,
@@ -92,7 +92,7 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
     onRefresh={[MockFunction]}
     refreshing={false}
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -125,8 +125,8 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
       ListEmptyComponent={
         <EmptyState
           intl={
-            Object {
-              "defaultFormats": Object {},
+            {
+              "defaultFormats": {},
               "defaultLocale": "en",
               "formatDate": [Function],
               "formatHTMLMessage": [Function],
@@ -135,8 +135,8 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
               "formatPlural": [Function],
               "formatRelative": [Function],
               "formatTime": [Function],
-              "formats": Object {},
-              "formatters": Object {
+              "formats": {},
+              "formatters": {
                 "getDateTimeFormat": [Function],
                 "getMessageFormat": [Function],
                 "getNumberFormat": [Function],
@@ -144,7 +144,7 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
                 "getRelativeFormat": [Function],
               },
               "locale": "en",
-              "messages": Object {},
+              "messages": {},
               "now": [Function],
               "onError": [Function],
               "textComponent": "span",
@@ -156,12 +156,12 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
       }
       ListFooterComponent={null}
       contentContainerStyle={
-        Object {
+        {
           "flexGrow": 1,
         }
       }
       data={
-        Array [
+        [
           "thread1",
         ]
       }
@@ -173,7 +173,7 @@ exports[`Global Thread List Should render threads with functional tabs & mark al
       removeClippedSubviews={true}
       renderItem={[Function]}
       scrollIndicatorInsets={
-        Object {
+        {
           "right": 1,
         }
       }

@@ -3,7 +3,7 @@
 exports[`TeamsListItem should match snapshot 1`] = `
 <View
   style={
-    Object {
+    {
       "marginTop": 10,
     }
   }
@@ -15,7 +15,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "flex": 1,
           "flexDirection": "row",
@@ -28,14 +28,14 @@ exports[`TeamsListItem should match snapshot 1`] = `
       <View>
         <Connect(TeamIcon)
           styleContainer={
-            Object {
+            {
               "backgroundColor": "#ffffff",
               "height": 40,
               "width": 40,
             }
           }
           styleText={
-            Object {
+            {
               "fontSize": 18,
             }
           }
@@ -44,7 +44,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
         />
         <Badge
           containerStyle={
-            Object {
+            {
               "borderColor": "#1e325c",
               "borderRadius": 14,
               "borderWidth": 2,
@@ -55,7 +55,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
           }
           count={1}
           countStyle={
-            Object {
+            {
               "color": "#1e325c",
               "fontSize": 10,
               "fontWeight": "bold",
@@ -65,7 +65,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
           minHeight={20}
           minWidth={20}
           style={
-            Object {
+            {
               "backgroundColor": "#ffffff",
               "height": 20,
               "padding": 3,
@@ -76,7 +76,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
       </View>
       <View
         style={
-          Object {
+          {
             "flex": 1,
             "flexDirection": "column",
             "marginLeft": 10,
@@ -87,7 +87,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
-            Object {
+            {
               "color": "#ffffff",
               "fontSize": 18,
             }
@@ -100,7 +100,7 @@ exports[`TeamsListItem should match snapshot 1`] = `
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
-            Object {
+            {
               "color": "rgba(255,255,255,0.5)",
               "fontSize": 12,
             }

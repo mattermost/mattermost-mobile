@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {expect} from 'detox';
+
 import {
     PostOptions,
     SettingsSidebar,
 } from '@support/ui/component';
 import {SearchResultPostScreen} from '@support/ui/screen';
-
 class SavedMessagesScreen {
     testID = {
         savedMessagesScreen: 'saved_messages.screen',

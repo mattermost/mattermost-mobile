@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import jestExpect from 'expect';
-
 import client from './client';
 import {getResponseFromError} from './common';
+
+const {expect: jestExpect} = require('@jest/globals');
 
 // ****************************************************************
 // LDAP

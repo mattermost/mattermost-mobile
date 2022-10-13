@@ -3,7 +3,7 @@
 exports[`JoinCall should match snapshot 1`] = `
 <View
   style={
-    Object {
+    {
       "backgroundColor": "#ffffff",
     }
   }
@@ -11,8 +11,8 @@ exports[`JoinCall should match snapshot 1`] = `
   <Pressable
     onPress={[Function]}
     style={
-      Array [
-        Object {
+      [
+        {
           "alignItems": "center",
           "backgroundColor": "#3DB887",
           "flexDirection": "row",
@@ -29,7 +29,7 @@ exports[`JoinCall should match snapshot 1`] = `
       name="phone-in-talk"
       size={16}
       style={
-        Object {
+        {
           "color": "#ffffff",
           "marginLeft": 10,
           "marginRight": 5,
@@ -38,7 +38,7 @@ exports[`JoinCall should match snapshot 1`] = `
     />
     <Text
       style={
-        Object {
+        {
           "color": "#ffffff",
           "fontSize": 16,
           "fontWeight": "bold",
@@ -49,7 +49,7 @@ exports[`JoinCall should match snapshot 1`] = `
     </Text>
     <Text
       style={
-        Object {
+        {
           "color": "#ffffff",
           "flex": 1,
           "fontWeight": "400",
@@ -64,7 +64,7 @@ exports[`JoinCall should match snapshot 1`] = `
     </Text>
     <View
       style={
-        Object {
+        {
           "marginRight": 5,
         }
       }
@@ -74,7 +74,7 @@ exports[`JoinCall should match snapshot 1`] = `
         listTitle={
           <Text
             style={
-              Object {
+              {
                 "color": "rgba(63,67,80,0.56)",
                 "fontSize": 12,
                 "fontWeight": "600",
@@ -88,7 +88,7 @@ exports[`JoinCall should match snapshot 1`] = `
           </Text>
         }
         userIds={
-          Array [
+          [
             "user-1-id",
             "user-2-id",
           ]

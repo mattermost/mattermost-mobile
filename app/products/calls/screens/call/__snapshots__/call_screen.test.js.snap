@@ -3,14 +3,14 @@
 exports[`CallScreen Landscape should match snapshot 1`] = `
 <ForwardRef(SafeAreaView)
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "backgroundColor": "black",
         "borderRadius": 5,
@@ -23,7 +23,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(0,0,0,0.64)",
           "flexDirection": "row",
           "height": 64,
@@ -40,7 +40,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
     >
       <CallDuration
         style={
-          Object {
+          {
             "color": "#ffffff",
             "flex": 1,
             "margin": 10,
@@ -57,7 +57,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
           name="arrow-collapse"
           size={24}
           style={
-            Object {
+            {
               "backgroundColor": "rgba(255,255,255,0.12)",
               "borderRadius": 4,
               "color": "#ffffff",
@@ -71,13 +71,13 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
     </View>
     <ScrollView
       alwaysBounceVertical={false}
-      contentContainerStyle={Object {}}
+      contentContainerStyle={{}}
       horizontal={false}
     >
       <Pressable
         onPress={[Function]}
         style={
-          Object {
+          {
             "alignContent": "center",
             "alignItems": "center",
             "flex": 1,
@@ -91,7 +91,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
       >
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "flexDirection": "column",
               "flexGrow": 1,
@@ -112,7 +112,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -122,7 +122,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
         </View>
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "flexDirection": "column",
               "flexGrow": 1,
@@ -143,7 +143,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -156,7 +156,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
     </ScrollView>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(0,0,0,0.64)",
           "bottom": 1000,
           "flexDirection": "column",
@@ -170,7 +170,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
     >
       <View
         style={
-          Object {
+          {
             "alignContent": "space-between",
             "alignItems": "center",
             "flexDirection": "row",
@@ -180,7 +180,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -192,7 +192,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
             name="phone-hangup"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "#D24B4E",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -206,7 +206,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -217,7 +217,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -229,8 +229,8 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
             name="volume-high"
             size={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -240,7 +240,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "color": "#ffffff",
                 },
@@ -249,7 +249,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -260,7 +260,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -271,8 +271,8 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
             fill="#ffffff"
             height={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -282,7 +282,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "margin": 10,
@@ -292,7 +292,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
               ]
             }
             svgStyle={
-              Object {
+              {
                 "position": "relative",
                 "right": 13,
                 "top": -12,
@@ -302,7 +302,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -313,7 +313,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -324,7 +324,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
             name="dots-horizontal"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(255,255,255,0.12)",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -338,7 +338,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -349,7 +349,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -361,7 +361,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
             name="microphone-off"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(255,255,255,0.16)",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -375,7 +375,7 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -392,14 +392,14 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
 exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
 <ForwardRef(SafeAreaView)
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "backgroundColor": "black",
         "borderRadius": 5,
@@ -412,7 +412,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(0,0,0,0.64)",
           "flexDirection": "row",
           "height": 64,
@@ -429,7 +429,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
     >
       <CallDuration
         style={
-          Object {
+          {
             "color": "#ffffff",
             "flex": 1,
             "margin": 10,
@@ -446,7 +446,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
           name="arrow-collapse"
           size={24}
           style={
-            Object {
+            {
               "backgroundColor": "rgba(255,255,255,0.12)",
               "borderRadius": 4,
               "color": "#ffffff",
@@ -461,7 +461,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
     <Pressable
       onPress={[Function]}
       style={
-        Object {
+        {
           "alignItems": "center",
           "flex": 7,
           "height": "100%",
@@ -473,7 +473,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
       <RTCVideoView
         streamURL="screen-share-url"
         style={
-          Object {
+          {
             "alignItems": "center",
             "flex": 7,
             "height": "100%",
@@ -483,7 +483,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
       />
       <Text
         style={
-          Object {
+          {
             "color": "white",
             "margin": 3,
           }
@@ -494,7 +494,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
     </Pressable>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(0,0,0,0.64)",
           "bottom": 1000,
           "flexDirection": "column",
@@ -508,7 +508,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
     >
       <View
         style={
-          Object {
+          {
             "alignContent": "space-between",
             "alignItems": "center",
             "flexDirection": "row",
@@ -518,7 +518,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -530,7 +530,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
             name="phone-hangup"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "#D24B4E",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -544,7 +544,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -555,7 +555,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -567,8 +567,8 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
             name="volume-high"
             size={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -578,7 +578,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "color": "#ffffff",
                 },
@@ -587,7 +587,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -598,7 +598,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -609,8 +609,8 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
             fill="#ffffff"
             height={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -620,7 +620,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "margin": 10,
@@ -630,7 +630,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
               ]
             }
             svgStyle={
-              Object {
+              {
                 "position": "relative",
                 "right": 13,
                 "top": -12,
@@ -640,7 +640,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -651,7 +651,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -662,7 +662,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
             name="dots-horizontal"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(255,255,255,0.12)",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -676,7 +676,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -687,7 +687,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -699,7 +699,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
             name="microphone-off"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(255,255,255,0.16)",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -713,7 +713,7 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -730,14 +730,14 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
 exports[`CallScreen Portrait should match snapshot 1`] = `
 <ForwardRef(SafeAreaView)
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "backgroundColor": "black",
         "borderRadius": 5,
@@ -750,7 +750,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "flexDirection": "row",
           "paddingLeft": 14,
           "paddingRight": 14,
@@ -762,7 +762,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
     >
       <CallDuration
         style={
-          Object {
+          {
             "color": "#ffffff",
             "flex": 1,
             "margin": 10,
@@ -779,7 +779,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
           name="arrow-collapse"
           size={24}
           style={
-            Object {
+            {
               "backgroundColor": "rgba(255,255,255,0.12)",
               "borderRadius": 4,
               "color": "#ffffff",
@@ -793,13 +793,13 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
     </View>
     <ScrollView
       alwaysBounceVertical={false}
-      contentContainerStyle={Object {}}
+      contentContainerStyle={{}}
       horizontal={false}
     >
       <Pressable
         onPress={[Function]}
         style={
-          Object {
+          {
             "alignContent": "center",
             "alignItems": "center",
             "flex": 1,
@@ -813,7 +813,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
       >
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "flexDirection": "column",
               "flexGrow": 1,
@@ -834,7 +834,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -844,7 +844,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
         </View>
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "flexDirection": "column",
               "flexGrow": 1,
@@ -865,7 +865,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -878,7 +878,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
     </ScrollView>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(255,255,255,0.16)",
           "flexDirection": "column",
           "paddingBottom": 10,
@@ -890,7 +890,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
       <Pressable
         onPress={[Function]}
         style={
-          Object {
+          {
             "alignItems": "center",
             "backgroundColor": "rgba(255,255,255,0.16)",
             "borderRadius": 20,
@@ -908,14 +908,14 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
           name="microphone-off"
           size={24}
           style={
-            Object {
+            {
               "color": "#ffffff",
             }
           }
         />
         <Text
           style={
-            Object {
+            {
               "color": "#ffffff",
             }
           }
@@ -925,7 +925,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
       </Pressable>
       <View
         style={
-          Object {
+          {
             "alignContent": "space-between",
             "alignItems": "center",
             "flexDirection": "row",
@@ -935,7 +935,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -947,7 +947,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
             name="phone-hangup"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "#D24B4E",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -961,7 +961,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -972,7 +972,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -984,8 +984,8 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
             name="volume-high"
             size={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -995,7 +995,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "color": "#ffffff",
                 },
@@ -1004,7 +1004,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1015,7 +1015,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -1026,8 +1026,8 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
             fill="#ffffff"
             height={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -1037,7 +1037,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "margin": 10,
@@ -1047,7 +1047,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
               ]
             }
             svgStyle={
-              Object {
+              {
                 "position": "relative",
                 "right": 13,
                 "top": -12,
@@ -1057,7 +1057,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1068,7 +1068,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -1079,7 +1079,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
             name="dots-horizontal"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(255,255,255,0.12)",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -1093,7 +1093,7 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1110,14 +1110,14 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
 exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
 <ForwardRef(SafeAreaView)
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "backgroundColor": "black",
         "borderRadius": 5,
@@ -1130,7 +1130,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "flexDirection": "row",
           "paddingLeft": 14,
           "paddingRight": 14,
@@ -1142,7 +1142,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
     >
       <CallDuration
         style={
-          Object {
+          {
             "color": "#ffffff",
             "flex": 1,
             "margin": 10,
@@ -1159,7 +1159,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           name="arrow-collapse"
           size={24}
           style={
-            Object {
+            {
               "backgroundColor": "rgba(255,255,255,0.12)",
               "borderRadius": 4,
               "color": "#ffffff",
@@ -1173,13 +1173,13 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
     </View>
     <ScrollView
       alwaysBounceVertical={false}
-      contentContainerStyle={Object {}}
+      contentContainerStyle={{}}
       horizontal={true}
     >
       <Pressable
         onPress={[Function]}
         style={
-          Object {
+          {
             "alignContent": "center",
             "alignItems": "center",
             "flex": 1,
@@ -1193,7 +1193,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
       >
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "flexDirection": "column",
               "flexGrow": 1,
@@ -1214,7 +1214,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1224,7 +1224,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
         </View>
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "flexDirection": "column",
               "flexGrow": 1,
@@ -1245,7 +1245,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1259,7 +1259,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
     <Pressable
       onPress={[Function]}
       style={
-        Object {
+        {
           "alignItems": "center",
           "flex": 7,
           "height": "100%",
@@ -1271,7 +1271,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
       <RTCVideoView
         streamURL="screen-share-url"
         style={
-          Object {
+          {
             "alignItems": "center",
             "flex": 7,
             "height": "100%",
@@ -1281,7 +1281,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
       />
       <Text
         style={
-          Object {
+          {
             "color": "white",
             "margin": 3,
           }
@@ -1292,7 +1292,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
     </Pressable>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(255,255,255,0.16)",
           "flexDirection": "column",
           "paddingBottom": 10,
@@ -1304,7 +1304,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
       <Pressable
         onPress={[Function]}
         style={
-          Object {
+          {
             "alignItems": "center",
             "backgroundColor": "rgba(255,255,255,0.16)",
             "borderRadius": 20,
@@ -1322,14 +1322,14 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           name="microphone-off"
           size={24}
           style={
-            Object {
+            {
               "color": "#ffffff",
             }
           }
         />
         <Text
           style={
-            Object {
+            {
               "color": "#ffffff",
             }
           }
@@ -1339,7 +1339,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
       </Pressable>
       <View
         style={
-          Object {
+          {
             "alignContent": "space-between",
             "alignItems": "center",
             "flexDirection": "row",
@@ -1349,7 +1349,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -1361,7 +1361,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
             name="phone-hangup"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "#D24B4E",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -1375,7 +1375,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1386,7 +1386,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -1398,8 +1398,8 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
             name="volume-high"
             size={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -1409,7 +1409,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "color": "#ffffff",
                 },
@@ -1418,7 +1418,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1429,7 +1429,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -1440,8 +1440,8 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
             fill="#ffffff"
             height={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -1451,7 +1451,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "margin": 10,
@@ -1461,7 +1461,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
               ]
             }
             svgStyle={
-              Object {
+              {
                 "position": "relative",
                 "right": 13,
                 "top": -12,
@@ -1471,7 +1471,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1482,7 +1482,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -1493,7 +1493,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
             name="dots-horizontal"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(255,255,255,0.12)",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -1507,7 +1507,7 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1524,14 +1524,14 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
 exports[`CallScreen should show controls in landscape view on click the screen share 1`] = `
 <ForwardRef(SafeAreaView)
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "backgroundColor": "black",
         "borderRadius": 5,
@@ -1544,7 +1544,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
   >
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(0,0,0,0.64)",
           "flexDirection": "row",
           "height": 64,
@@ -1561,7 +1561,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
     >
       <CallDuration
         style={
-          Object {
+          {
             "color": "#ffffff",
             "flex": 1,
             "margin": 10,
@@ -1578,7 +1578,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
           name="arrow-collapse"
           size={24}
           style={
-            Object {
+            {
               "backgroundColor": "rgba(255,255,255,0.12)",
               "borderRadius": 4,
               "color": "#ffffff",
@@ -1593,7 +1593,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
     <Pressable
       onPress={[Function]}
       style={
-        Object {
+        {
           "alignItems": "center",
           "flex": 7,
           "height": "100%",
@@ -1605,7 +1605,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
       <RTCVideoView
         streamURL="screen-share-url"
         style={
-          Object {
+          {
             "alignItems": "center",
             "flex": 7,
             "height": "100%",
@@ -1615,7 +1615,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
       />
       <Text
         style={
-          Object {
+          {
             "color": "white",
             "margin": 3,
           }
@@ -1626,7 +1626,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
     </Pressable>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(0,0,0,0.64)",
           "bottom": 0,
           "flexDirection": "column",
@@ -1640,7 +1640,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
     >
       <View
         style={
-          Object {
+          {
             "alignContent": "space-between",
             "alignItems": "center",
             "flexDirection": "row",
@@ -1650,7 +1650,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -1662,7 +1662,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
             name="phone-hangup"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "#D24B4E",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -1676,7 +1676,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1687,7 +1687,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -1699,8 +1699,8 @@ exports[`CallScreen should show controls in landscape view on click the screen s
             name="volume-high"
             size={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -1710,7 +1710,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "color": "#ffffff",
                 },
@@ -1719,7 +1719,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1730,7 +1730,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -1741,8 +1741,8 @@ exports[`CallScreen should show controls in landscape view on click the screen s
             fill="#ffffff"
             height={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -1752,7 +1752,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "margin": 10,
@@ -1762,7 +1762,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
               ]
             }
             svgStyle={
-              Object {
+              {
                 "position": "relative",
                 "right": 13,
                 "top": -12,
@@ -1772,7 +1772,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1783,7 +1783,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -1794,7 +1794,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
             name="dots-horizontal"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(255,255,255,0.12)",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -1808,7 +1808,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1819,7 +1819,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -1831,7 +1831,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
             name="microphone-off"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(255,255,255,0.16)",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -1845,7 +1845,7 @@ exports[`CallScreen should show controls in landscape view on click the screen s
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1862,14 +1862,14 @@ exports[`CallScreen should show controls in landscape view on click the screen s
 exports[`CallScreen should show controls in landscape view on click the users list 1`] = `
 <ForwardRef(SafeAreaView)
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "backgroundColor": "black",
         "borderRadius": 5,
@@ -1882,7 +1882,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
   >
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(0,0,0,0.64)",
           "flexDirection": "row",
           "height": 64,
@@ -1899,7 +1899,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
     >
       <CallDuration
         style={
-          Object {
+          {
             "color": "#ffffff",
             "flex": 1,
             "margin": 10,
@@ -1916,7 +1916,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
           name="arrow-collapse"
           size={24}
           style={
-            Object {
+            {
               "backgroundColor": "rgba(255,255,255,0.12)",
               "borderRadius": 4,
               "color": "#ffffff",
@@ -1930,13 +1930,13 @@ exports[`CallScreen should show controls in landscape view on click the users li
     </View>
     <ScrollView
       alwaysBounceVertical={false}
-      contentContainerStyle={Object {}}
+      contentContainerStyle={{}}
       horizontal={false}
     >
       <Pressable
         onPress={[Function]}
         style={
-          Object {
+          {
             "alignContent": "center",
             "alignItems": "center",
             "flex": 1,
@@ -1950,7 +1950,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
       >
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "flexDirection": "column",
               "flexGrow": 1,
@@ -1971,7 +1971,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -1981,7 +1981,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
         </View>
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "flexDirection": "column",
               "flexGrow": 1,
@@ -2002,7 +2002,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -2015,7 +2015,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
     </ScrollView>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(0,0,0,0.64)",
           "bottom": 0,
           "flexDirection": "column",
@@ -2029,7 +2029,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
     >
       <View
         style={
-          Object {
+          {
             "alignContent": "space-between",
             "alignItems": "center",
             "flexDirection": "row",
@@ -2039,7 +2039,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -2051,7 +2051,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
             name="phone-hangup"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "#D24B4E",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -2065,7 +2065,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -2076,7 +2076,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -2088,8 +2088,8 @@ exports[`CallScreen should show controls in landscape view on click the users li
             name="volume-high"
             size={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -2099,7 +2099,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "color": "#ffffff",
                 },
@@ -2108,7 +2108,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -2119,7 +2119,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -2130,8 +2130,8 @@ exports[`CallScreen should show controls in landscape view on click the users li
             fill="#ffffff"
             height={24}
             style={
-              Array [
-                Object {
+              [
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "color": "#ffffff",
@@ -2141,7 +2141,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
                   "padding": 22,
                   "width": 68,
                 },
-                Object {
+                {
                   "backgroundColor": "rgba(255,255,255,0.12)",
                   "borderRadius": 34,
                   "margin": 10,
@@ -2151,7 +2151,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
               ]
             }
             svgStyle={
-              Object {
+              {
                 "position": "relative",
                 "right": 13,
                 "top": -12,
@@ -2161,7 +2161,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -2172,7 +2172,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -2183,7 +2183,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
             name="dots-horizontal"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(255,255,255,0.12)",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -2197,7 +2197,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }
@@ -2208,7 +2208,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
         <Pressable
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "column",
@@ -2220,7 +2220,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
             name="microphone-off"
             size={24}
             style={
-              Object {
+              {
                 "backgroundColor": "rgba(255,255,255,0.16)",
                 "borderRadius": 34,
                 "color": "#ffffff",
@@ -2234,7 +2234,7 @@ exports[`CallScreen should show controls in landscape view on click the users li
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#ffffff",
               }
             }

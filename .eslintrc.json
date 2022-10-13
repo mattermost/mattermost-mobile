@@ -1,13 +1,13 @@
 {
   "extends": [
-    "plugin:mattermost/react",
+    "./eslint/eslint-mattermost",
+    "./eslint/eslint-react",
     "plugin:@typescript-eslint/eslint-recommended",
     "plugin:@typescript-eslint/recommended"
   ],
   "parser": "@typescript-eslint/parser",
   "plugins": [
     "@typescript-eslint",
-    "mattermost",
     "import"
   ],
   "settings": {

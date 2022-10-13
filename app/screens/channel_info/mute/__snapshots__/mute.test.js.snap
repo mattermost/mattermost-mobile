@@ -10,7 +10,7 @@ exports[`ChannelInfo -> Mute should match snapshot for Muted 1`] = `
   shouldRender={true}
   textId="channel_notifications.muteChannel.settings"
   theme={
-    Object {
+    {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -52,7 +52,7 @@ exports[`ChannelInfo -> Mute should match snapshot for Not Muted 1`] = `
   shouldRender={true}
   textId="channel_notifications.muteChannel.settings"
   theme={
-    Object {
+    {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",

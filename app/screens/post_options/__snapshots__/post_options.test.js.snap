@@ -3,7 +3,7 @@
 exports[`PostOptions should match snapshot, no option for system message to user who doesn't have the permission to delete 1`] = `
 <View
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -15,7 +15,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
     marginFromTop={228}
     onRequestClose={[Function]}
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -56,7 +56,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
       testID="post.options.reply.action"
       text="Reply"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -91,7 +91,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
       testID="post.options.markUnread.action"
       text="Mark as Unread"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -127,7 +127,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
       testID="post.options.pin.action"
       text="Pin to Channel"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -163,7 +163,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
       testID="post.options.edit.action"
       text="Edit"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -195,7 +195,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
     <Connect(InjectIntl(Component))
       closeWithAnimation={[Function]}
       post={
-        Object {
+        {
           "channel_id": "channel_id",
           "id": "post_id",
           "is_pinned": false,
@@ -211,7 +211,7 @@ exports[`PostOptions should match snapshot, no option for system message to user
 exports[`PostOptions should match snapshot, showing Delete option only for system message to user who has permission to delete 1`] = `
 <View
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -223,7 +223,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     marginFromTop={178}
     onRequestClose={[Function]}
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -264,7 +264,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       testID="post.options.reply.action"
       text="Reply"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -299,7 +299,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       testID="post.options.markUnread.action"
       text="Mark as Unread"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -335,7 +335,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       testID="post.options.pin.action"
       text="Pin to Channel"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -371,7 +371,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       testID="post.options.edit.action"
       text="Edit"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -407,7 +407,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
       testID="post.options.delete.action"
       text="Delete"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -439,7 +439,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
     <Connect(InjectIntl(Component))
       closeWithAnimation={[Function]}
       post={
-        Object {
+        {
           "channel_id": "channel_id",
           "id": "post_id",
           "is_pinned": false,
@@ -455,7 +455,7 @@ exports[`PostOptions should match snapshot, showing Delete option only for syste
 exports[`PostOptions should match snapshot, showing all possible options 1`] = `
 <View
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -467,7 +467,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     marginFromTop={178}
     onRequestClose={[Function]}
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -508,7 +508,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       testID="post.options.reply.action"
       text="Reply"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -543,7 +543,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       testID="post.options.markUnread.action"
       text="Mark as Unread"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -579,7 +579,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       testID="post.options.pin.action"
       text="Pin to Channel"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -615,7 +615,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       testID="post.options.edit.action"
       text="Edit"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -651,7 +651,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
       testID="post.options.delete.action"
       text="Delete"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -683,7 +683,7 @@ exports[`PostOptions should match snapshot, showing all possible options 1`] = `
     <Connect(InjectIntl(Component))
       closeWithAnimation={[Function]}
       post={
-        Object {
+        {
           "channel_id": "channel_id",
           "id": "post_id",
           "is_pinned": false,

@@ -30,8 +30,9 @@ export default class ManageMembers extends PureComponent<ManageMembersProps> {
     };
 
     goToChannelMembers = preventDoubleTap(() => {
-        const {canManageUsers} = this.props;
+        // @ts-expect-error context type definition
         const {intl} = this.context;
+        const {canManageUsers} = this.props;
         const id = canManageUsers ? t('channel_header.manageMembers') : t('channel_header.viewMembers');
         const defaultMessage = canManageUsers ? 'Manage Members' : 'View Members';
         const screen = 'ChannelMembers';

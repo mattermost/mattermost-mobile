@@ -3,7 +3,7 @@
 exports[`OptionModalList should match snapshot 1`] = `
 <View
   style={
-    Object {
+    {
       "alignItems": "center",
       "bottom": 0,
       "height": "100%",
@@ -14,7 +14,7 @@ exports[`OptionModalList should match snapshot 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "maxWidth": 450,
         "width": "100%",
       }
@@ -22,8 +22,8 @@ exports[`OptionModalList should match snapshot 1`] = `
   >
     <View
       style={
-        Array [
-          Object {
+        [
+          {
             "alignSelf": "stretch",
             "backgroundColor": "white",
             "borderTopLeftRadius": 12,
@@ -36,8 +36,8 @@ exports[`OptionModalList should match snapshot 1`] = `
     >
       <View
         style={
-          Array [
-            Object {
+          [
+            {
               "alignItems": "center",
               "alignSelf": "stretch",
               "flexDirection": "row",
@@ -46,7 +46,7 @@ exports[`OptionModalList should match snapshot 1`] = `
               "paddingVertical": 10,
               "width": "100%",
             },
-            Object {
+            {
               "paddingBottom": 10,
             },
           ]
@@ -54,7 +54,7 @@ exports[`OptionModalList should match snapshot 1`] = `
       >
         <Text
           style={
-            Object {
+            {
               "color": "#3D3C40",
               "fontSize": 24,
               "fontWeight": "600",
@@ -71,7 +71,7 @@ exports[`OptionModalList should match snapshot 1`] = `
         <TouchableOpacity
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "alignSelf": "stretch",
               "flexDirection": "row",
@@ -86,7 +86,7 @@ exports[`OptionModalList should match snapshot 1`] = `
             name="camera"
             size={24}
             style={
-              Object {
+              {
                 "color": "rgba(61, 60, 64, 0.64)",
                 "paddingRight": 10,
               }
@@ -96,8 +96,8 @@ exports[`OptionModalList should match snapshot 1`] = `
             defaultMessage="Take Photo or Video"
             id="mobile.file_upload.camera"
             style={
-              Array [
-                Object {
+              [
+                {
                   "color": "#3D3C40",
                   "flex": 1,
                   "fontSize": 16,
@@ -115,7 +115,7 @@ exports[`OptionModalList should match snapshot 1`] = `
         <TouchableOpacity
           onPress={[Function]}
           style={
-            Object {
+            {
               "alignItems": "center",
               "alignSelf": "stretch",
               "flexDirection": "row",
@@ -130,7 +130,7 @@ exports[`OptionModalList should match snapshot 1`] = `
             name="photo"
             size={24}
             style={
-              Object {
+              {
                 "color": "rgba(61, 60, 64, 0.64)",
                 "paddingRight": 10,
               }
@@ -140,8 +140,8 @@ exports[`OptionModalList should match snapshot 1`] = `
             defaultMessage="Photo Library"
             id="mobile.file_upload.library"
             style={
-              Array [
-                Object {
+              [
+                {
                   "color": "#3D3C40",
                   "flex": 1,
                   "fontSize": 16,

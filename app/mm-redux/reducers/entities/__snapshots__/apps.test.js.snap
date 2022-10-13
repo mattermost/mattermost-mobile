@@ -1,14 +1,14 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`bindings Invalid channel header get filtered 1`] = `
-Array [
-  Object {
+[
+  {
     "app_id": "1",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "1",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -18,13 +18,13 @@ Array [
     ],
     "location": "/post_menu",
   },
-  Object {
+  {
     "app_id": "2",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "2",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -34,13 +34,13 @@ Array [
     ],
     "location": "/post_menu",
   },
-  Object {
+  {
     "app_id": "1",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "1",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -48,10 +48,10 @@ Array [
         "label": "b",
         "location": "/channel_header/locB",
       },
-      Object {
+      {
         "app_id": "1",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -61,13 +61,13 @@ Array [
     ],
     "location": "/channel_header",
   },
-  Object {
+  {
     "app_id": "2",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "2",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -78,23 +78,23 @@ Array [
     ],
     "location": "/channel_header",
   },
-  Object {
+  {
     "app_id": "3",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "3",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
         "label": "locB",
         "location": "/channel_header/locB",
       },
-      Object {
+      {
         "app_id": "3",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -104,13 +104,13 @@ Array [
     ],
     "location": "/channel_header",
   },
-  Object {
+  {
     "app_id": "3",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "3",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -124,24 +124,24 @@ Array [
 `;
 
 exports[`bindings Invalid commands get filtered 1`] = `
-Array [
-  Object {
+[
+  {
     "app_id": "1",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "1",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
         "label": "a",
         "location": "/post_menu/locA",
       },
-      Object {
+      {
         "app_id": "1",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -151,13 +151,13 @@ Array [
     ],
     "location": "/post_menu",
   },
-  Object {
+  {
     "app_id": "1",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "1",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -168,16 +168,16 @@ Array [
     ],
     "location": "/channel_header",
   },
-  Object {
+  {
     "app_id": "3",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "3",
-        "bindings": Array [
-          Object {
+        "bindings": [
+          {
             "app_id": "3",
-            "form": Object {
-              "submit": Object {
+            "form": {
+              "submit": {
                 "path": "/submit_url",
               },
             },
@@ -191,26 +191,26 @@ Array [
     ],
     "location": "/command",
   },
-  Object {
+  {
     "app_id": "2",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "2",
-        "bindings": Array [
-          Object {
+        "bindings": [
+          {
             "app_id": "2",
-            "form": Object {
-              "submit": Object {
+            "form": {
+              "submit": {
                 "path": "/submit_url",
               },
             },
             "label": "c1",
             "location": "/command/locC/subC1",
           },
-          Object {
+          {
             "app_id": "2",
-            "form": Object {
-              "submit": Object {
+            "form": {
+              "submit": {
                 "path": "/submit_url",
               },
             },
@@ -228,14 +228,14 @@ Array [
 `;
 
 exports[`bindings Invalid post menu get filtered 1`] = `
-Array [
-  Object {
+[
+  {
     "app_id": "1",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "1",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -245,23 +245,23 @@ Array [
     ],
     "location": "/post_menu",
   },
-  Object {
+  {
     "app_id": "2",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "2",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
         "label": "a",
         "location": "/post_menu/locA",
       },
-      Object {
+      {
         "app_id": "2",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -271,13 +271,13 @@ Array [
     ],
     "location": "/post_menu",
   },
-  Object {
+  {
     "app_id": "1",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "1",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -288,13 +288,13 @@ Array [
     ],
     "location": "/channel_header",
   },
-  Object {
+  {
     "app_id": "3",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "3",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -308,14 +308,14 @@ Array [
 `;
 
 exports[`bindings No element get filtered 1`] = `
-Array [
-  Object {
+[
+  {
     "app_id": "1",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "1",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -325,13 +325,13 @@ Array [
     ],
     "location": "/post_menu",
   },
-  Object {
+  {
     "app_id": "2",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "2",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -341,13 +341,13 @@ Array [
     ],
     "location": "/post_menu",
   },
-  Object {
+  {
     "app_id": "1",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "1",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },
@@ -358,13 +358,13 @@ Array [
     ],
     "location": "/channel_header",
   },
-  Object {
+  {
     "app_id": "3",
-    "bindings": Array [
-      Object {
+    "bindings": [
+      {
         "app_id": "3",
-        "form": Object {
-          "submit": Object {
+        "form": {
+          "submit": {
             "path": "/submit_url",
           },
         },

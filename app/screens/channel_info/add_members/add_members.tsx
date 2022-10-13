@@ -24,6 +24,7 @@ export default class AddMembers extends PureComponent<AddMembersProps> {
     };
 
     goToChannelAddMembers = preventDoubleTap(() => {
+        // @ts-expect-error context type definition
         const {intl} = this.context;
         const screen = 'ChannelAddMembers';
         const title = intl.formatMessage({id: 'channel_header.addMembers', defaultMessage: 'Add Members'});

@@ -3,8 +3,8 @@
 exports[`components/autocomplete/slash_suggestion should match snapshot 1`] = `
 <FlatList
   data={
-    Array [
-      Object {
+    [
+      {
         "Complete": "thetrigger",
         "Description": "The Description",
         "Hint": "The Hint",
@@ -14,10 +14,10 @@ exports[`components/autocomplete/slash_suggestion should match snapshot 1`] = `
     ]
   }
   extraData={
-    Object {
+    {
       "active": true,
-      "dataSource": Array [
-        Object {
+      "dataSource": [
+        {
           "Complete": "thetrigger",
           "Description": "The Description",
           "Hint": "The Hint",
@@ -34,14 +34,14 @@ exports[`components/autocomplete/slash_suggestion should match snapshot 1`] = `
   removeClippedSubviews={true}
   renderItem={[Function]}
   style={
-    Array [
-      Object {
+    [
+      {
         "backgroundColor": "#ffffff",
         "borderRadius": 4,
         "flex": 1,
         "paddingTop": 8,
       },
-      Object {
+      {
         "maxHeight": 50,
       },
     ]

@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`user_profile should match snapshot 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -12,12 +12,12 @@ exports[`user_profile should match snapshot 1`] = `
   <Connect(StatusBar) />
   <ScrollView
     contentContainerStyle={
-      Object {
+      {
         "paddingBottom": 48,
       }
     }
     style={
-      Object {
+      {
         "backgroundColor": "#ffffff",
         "flex": 1,
       }
@@ -26,7 +26,7 @@ exports[`user_profile should match snapshot 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "justifyContent": "center",
           "padding": 25,
@@ -43,7 +43,7 @@ exports[`user_profile should match snapshot 1`] = `
       />
       <Text
         style={
-          Object {
+          {
             "color": "#3f4350",
             "fontSize": 15,
             "marginTop": 15,
@@ -56,7 +56,7 @@ exports[`user_profile should match snapshot 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#EBEBEC",
           "height": 1,
           "marginLeft": 16,
@@ -66,7 +66,7 @@ exports[`user_profile should match snapshot 1`] = `
     />
     <View
       style={
-        Object {
+        {
           "marginBottom": 25,
           "marginHorizontal": 15,
         }
@@ -77,7 +77,7 @@ exports[`user_profile should match snapshot 1`] = `
       >
         <Text
           style={
-            Object {
+            {
               "color": undefined,
               "fontSize": 13,
               "fontWeight": "600",
@@ -92,7 +92,7 @@ exports[`user_profile should match snapshot 1`] = `
         </Text>
         <Text
           style={
-            Object {
+            {
               "color": "#3f4350",
               "fontSize": 15,
             }
@@ -105,7 +105,7 @@ exports[`user_profile should match snapshot 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#EBEBEC",
           "height": 1,
           "marginLeft": 16,
@@ -123,7 +123,7 @@ exports[`user_profile should match snapshot 1`] = `
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -154,13 +154,13 @@ exports[`user_profile should match snapshot 1`] = `
       togglable={false}
     />
   </ScrollView>
-</RNCSafeAreaView>
+</ForwardRef>
 `;
 
 exports[`user_profile should match snapshot when user is from remote 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -169,12 +169,12 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
   <Connect(StatusBar) />
   <ScrollView
     contentContainerStyle={
-      Object {
+      {
         "paddingBottom": 48,
       }
     }
     style={
-      Object {
+      {
         "backgroundColor": "#ffffff",
         "flex": 1,
       }
@@ -183,7 +183,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "justifyContent": "center",
           "padding": 25,
@@ -200,7 +200,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
       />
       <Text
         style={
-          Object {
+          {
             "color": "#3f4350",
             "fontSize": 15,
             "marginTop": 15,
@@ -213,7 +213,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#EBEBEC",
           "height": 1,
           "marginLeft": 16,
@@ -223,7 +223,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
     />
     <View
       style={
-        Object {
+        {
           "marginBottom": 25,
           "marginHorizontal": 15,
         }
@@ -234,7 +234,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
       >
         <Text
           style={
-            Object {
+            {
               "color": undefined,
               "fontSize": 13,
               "fontWeight": "600",
@@ -249,7 +249,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
         </Text>
         <Text
           style={
-            Object {
+            {
               "color": "#3f4350",
               "fontSize": 15,
             }
@@ -264,7 +264,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
           defaultMessage="ORGANIZATION"
           id="mobile.routes.user_profile.organization"
           style={
-            Object {
+            {
               "color": undefined,
               "fontSize": 13,
               "fontWeight": "600",
@@ -276,7 +276,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
         />
         <View
           style={
-            Object {
+            {
               "alignItems": "center",
               "flexDirection": "row",
             }
@@ -293,7 +293,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
             shared={true}
             size={16}
             theme={
-              Object {
+              {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -325,7 +325,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
           />
           <Text
             style={
-              Object {
+              {
                 "color": "#3f4350",
                 "fontSize": 15,
               }
@@ -338,7 +338,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#EBEBEC",
           "height": 1,
           "marginLeft": 16,
@@ -356,7 +356,7 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -387,13 +387,13 @@ exports[`user_profile should match snapshot when user is from remote 1`] = `
       togglable={false}
     />
   </ScrollView>
-</RNCSafeAreaView>
+</ForwardRef>
 `;
 
 exports[`user_profile should match snapshot with custom status 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -402,12 +402,12 @@ exports[`user_profile should match snapshot with custom status 1`] = `
   <Connect(StatusBar) />
   <ScrollView
     contentContainerStyle={
-      Object {
+      {
         "paddingBottom": 48,
       }
     }
     style={
-      Object {
+      {
         "backgroundColor": "#ffffff",
         "flex": 1,
       }
@@ -416,7 +416,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "justifyContent": "center",
           "padding": 25,
@@ -433,7 +433,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
       />
       <Text
         style={
-          Object {
+          {
             "color": "#3f4350",
             "fontSize": 15,
             "marginTop": 15,
@@ -446,7 +446,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#EBEBEC",
           "height": 1,
           "marginLeft": 16,
@@ -456,7 +456,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
     />
     <View
       style={
-        Object {
+        {
           "marginBottom": 25,
           "marginHorizontal": 15,
         }
@@ -467,7 +467,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
       >
         <Text
           style={
-            Object {
+            {
               "color": undefined,
               "fontSize": 13,
               "fontWeight": "600",
@@ -482,14 +482,14 @@ exports[`user_profile should match snapshot with custom status 1`] = `
         </Text>
         <View
           style={
-            Object {
+            {
               "flexDirection": "row",
             }
           }
         >
           <Text
             style={
-              Object {
+              {
                 "color": "#3f4350",
                 "marginBottom": 3,
                 "marginRight": 5,
@@ -504,7 +504,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
           </Text>
           <View
             style={
-              Object {
+              {
                 "justifyContent": "center",
                 "width": "80%",
               }
@@ -513,13 +513,13 @@ exports[`user_profile should match snapshot with custom status 1`] = `
             <CustomStatusText
               text="In a meeting"
               textStyle={
-                Object {
+                {
                   "color": "#3f4350",
                   "fontSize": 15,
                 }
               }
               theme={
-                Object {
+                {
                   "awayIndicator": "#ffbc1f",
                   "buttonBg": "#1c58d9",
                   "buttonColor": "#ffffff",
@@ -556,7 +556,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
       >
         <Text
           style={
-            Object {
+            {
               "color": undefined,
               "fontSize": 13,
               "fontWeight": "600",
@@ -571,7 +571,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
         </Text>
         <Text
           style={
-            Object {
+            {
               "color": "#3f4350",
               "fontSize": 15,
             }
@@ -584,7 +584,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#EBEBEC",
           "height": 1,
           "marginLeft": 16,
@@ -602,7 +602,7 @@ exports[`user_profile should match snapshot with custom status 1`] = `
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -633,13 +633,13 @@ exports[`user_profile should match snapshot with custom status 1`] = `
       togglable={false}
     />
   </ScrollView>
-</RNCSafeAreaView>
+</ForwardRef>
 `;
 
 exports[`user_profile should match snapshot with custom status and isMyUser true 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -648,12 +648,12 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
   <Connect(StatusBar) />
   <ScrollView
     contentContainerStyle={
-      Object {
+      {
         "paddingBottom": 48,
       }
     }
     style={
-      Object {
+      {
         "backgroundColor": "#ffffff",
         "flex": 1,
       }
@@ -662,7 +662,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "justifyContent": "center",
           "padding": 25,
@@ -679,7 +679,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
       />
       <Text
         style={
-          Object {
+          {
             "color": "#3f4350",
             "fontSize": 15,
             "marginTop": 15,
@@ -692,7 +692,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
     </View>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#EBEBEC",
           "height": 1,
           "marginLeft": 16,
@@ -702,7 +702,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
     />
     <View
       style={
-        Object {
+        {
           "marginBottom": 25,
           "marginHorizontal": 15,
         }
@@ -713,7 +713,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
       >
         <Text
           style={
-            Object {
+            {
               "color": undefined,
               "fontSize": 13,
               "fontWeight": "600",
@@ -728,14 +728,14 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
         </Text>
         <View
           style={
-            Object {
+            {
               "flexDirection": "row",
             }
           }
         >
           <Text
             style={
-              Object {
+              {
                 "color": "#3f4350",
                 "marginBottom": 3,
                 "marginRight": 5,
@@ -750,7 +750,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
           </Text>
           <View
             style={
-              Object {
+              {
                 "justifyContent": "center",
                 "width": "80%",
               }
@@ -759,13 +759,13 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
             <CustomStatusText
               text="In a meeting"
               textStyle={
-                Object {
+                {
                   "color": "#3f4350",
                   "fontSize": 15,
                 }
               }
               theme={
-                Object {
+                {
                   "awayIndicator": "#ffbc1f",
                   "buttonBg": "#1c58d9",
                   "buttonColor": "#ffffff",
@@ -797,7 +797,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
           </View>
           <View
             style={
-              Object {
+              {
                 "position": "absolute",
                 "right": 0,
                 "top": -8,
@@ -810,7 +810,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
               iconName="close-circle"
               size={20}
               theme={
-                Object {
+                {
                   "awayIndicator": "#ffbc1f",
                   "buttonBg": "#1c58d9",
                   "buttonColor": "#ffffff",
@@ -847,7 +847,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
       >
         <Text
           style={
-            Object {
+            {
               "color": undefined,
               "fontSize": 13,
               "fontWeight": "600",
@@ -862,7 +862,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
         </Text>
         <Text
           style={
-            Object {
+            {
               "color": "#3f4350",
               "fontSize": 15,
             }
@@ -875,7 +875,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
     </View>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#EBEBEC",
           "height": 1,
           "marginLeft": 16,
@@ -893,7 +893,7 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -924,13 +924,13 @@ exports[`user_profile should match snapshot with custom status and isMyUser true
       togglable={false}
     />
   </ScrollView>
-</RNCSafeAreaView>
+</ForwardRef>
 `;
 
 exports[`user_profile should match snapshot with custom status expiry 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -939,12 +939,12 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
   <Connect(StatusBar) />
   <ScrollView
     contentContainerStyle={
-      Object {
+      {
         "paddingBottom": 48,
       }
     }
     style={
-      Object {
+      {
         "backgroundColor": "#ffffff",
         "flex": 1,
       }
@@ -953,7 +953,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "justifyContent": "center",
           "padding": 25,
@@ -970,7 +970,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
       />
       <Text
         style={
-          Object {
+          {
             "color": "#3f4350",
             "fontSize": 15,
             "marginTop": 15,
@@ -983,7 +983,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#EBEBEC",
           "height": 1,
           "marginLeft": 16,
@@ -993,7 +993,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
     />
     <View
       style={
-        Object {
+        {
           "marginBottom": 25,
           "marginHorizontal": 15,
         }
@@ -1004,7 +1004,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
       >
         <Text
           style={
-            Object {
+            {
               "color": undefined,
               "fontSize": 13,
               "fontWeight": "600",
@@ -1019,7 +1019,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
           <CustomStatusExpiry
             showPrefix={true}
             textStyles={
-              Object {
+              {
                 "color": undefined,
                 "fontSize": 13,
                 "fontWeight": "600",
@@ -1027,7 +1027,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
               }
             }
             theme={
-              Object {
+              {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -1061,14 +1061,14 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
         </Text>
         <View
           style={
-            Object {
+            {
               "flexDirection": "row",
             }
           }
         >
           <Text
             style={
-              Object {
+              {
                 "color": "#3f4350",
                 "marginBottom": 3,
                 "marginRight": 5,
@@ -1083,7 +1083,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
           </Text>
           <View
             style={
-              Object {
+              {
                 "justifyContent": "center",
                 "width": "80%",
               }
@@ -1092,13 +1092,13 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
             <CustomStatusText
               text="In a meeting"
               textStyle={
-                Object {
+                {
                   "color": "#3f4350",
                   "fontSize": 15,
                 }
               }
               theme={
-                Object {
+                {
                   "awayIndicator": "#ffbc1f",
                   "buttonBg": "#1c58d9",
                   "buttonColor": "#ffffff",
@@ -1135,7 +1135,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
       >
         <Text
           style={
-            Object {
+            {
               "color": undefined,
               "fontSize": 13,
               "fontWeight": "600",
@@ -1150,7 +1150,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
         </Text>
         <Text
           style={
-            Object {
+            {
               "color": "#3f4350",
               "fontSize": 15,
             }
@@ -1163,7 +1163,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "backgroundColor": "#EBEBEC",
           "height": 1,
           "marginLeft": 16,
@@ -1181,7 +1181,7 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
       textColor="#000"
       textId="mobile.routes.user_profile.send_message"
       theme={
-        Object {
+        {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -1212,5 +1212,5 @@ exports[`user_profile should match snapshot with custom status expiry 1`] = `
       togglable={false}
     />
   </ScrollView>
-</RNCSafeAreaView>
+</ForwardRef>
 `;

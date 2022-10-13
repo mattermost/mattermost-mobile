@@ -3,8 +3,6 @@
 
 import assert from 'assert';
 
-import expect from 'expect';
-
 import {
     ChannelTypes,
     GeneralTypes,

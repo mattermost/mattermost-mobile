@@ -1,15 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Settings SelectTimezone should match snapshot 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   edges={
-    Array [
+    [
       "left",
       "right",
     ]
   }
   style={
-    Object {
+    {
       "backgroundColor": "#ffffff",
       "flex": 1,
     }
@@ -19,7 +19,7 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      Object {
+      {
         "height": 38,
         "marginVertical": 5,
       }
@@ -36,7 +36,7 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
       editable={true}
       inputHeight={33}
       inputStyle={
-        Object {
+        {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "color": "#3f4350",
           "fontSize": 15,
@@ -64,7 +64,7 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
     />
   </View>
   <FlatList
-    data={Array []}
+    data={[]}
     getItemLayout={[Function]}
     initialScrollIndex={1}
     keyExtractor={[Function]}
@@ -74,11 +74,11 @@ exports[`Settings SelectTimezone should match snapshot 1`] = `
     removeClippedSubviews={true}
     renderItem={[Function]}
     viewabilityConfig={
-      Object {
+      {
         "itemVisiblePercentThreshold": 100,
         "waitForInteraction": false,
       }
     }
   />
-</RNCSafeAreaView>
+</ForwardRef>
 `;

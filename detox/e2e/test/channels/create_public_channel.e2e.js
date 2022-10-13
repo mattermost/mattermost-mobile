@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import jestExpect from 'expect';
+import {expect} from 'detox';
 
 import {Setup} from '@support/server_api';
 import {
@@ -17,6 +17,8 @@ import {
     MoreChannelsScreen,
 } from '@support/ui/screen';
 import {isAndroid} from '@support/utils';
+
+const {expect: jestExpect} = require('@jest/globals');
 
 describe('Channels', () => {
     const {

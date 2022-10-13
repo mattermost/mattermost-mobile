@@ -26,6 +26,7 @@ export default class NotificationPreference extends PureComponent<NotificationPr
     };
 
     goToChannelNotificationPreference = preventDoubleTap(() => {
+        // @ts-expect-error context type definition
         const {intl} = this.context;
         const screen = 'ChannelNotificationPreference';
         const title = intl.formatMessage({id: 'channel_header.notificationPreference', defaultMessage: 'Mobile Notifications'});
@@ -34,6 +35,7 @@ export default class NotificationPreference extends PureComponent<NotificationPr
     });
 
     notificationLevelToText = (notifyLevel: string) => {
+        // @ts-expect-error context type definition
         const {intl} = this.context;
 
         let textId = '';

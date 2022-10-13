@@ -36,6 +36,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         iconColor: {
             tintColor: theme.centerChannelColor,
         },
+        iconSize: {
+            width: 10,
+            height: 16,
+        },
         container: {
             flexDirection: 'row',
             alignItems: 'center',
@@ -100,18 +104,14 @@ const SlashSuggestionItem = (props: Props) => {
 
     let image = (
         <Image
-            style={style.iconColor}
-            width={10}
-            height={16}
+            style={[style.iconColor, style.iconSize]}
             source={slashIcon}
         />
     );
     if (props.icon === COMMAND_SUGGESTION_ERROR) {
         image = (
             <Image
-                style={style.iconColor}
-                width={10}
-                height={16}
+                style={[style.iconColor, style.iconSize]}
                 source={bangIcon}
             />
         );

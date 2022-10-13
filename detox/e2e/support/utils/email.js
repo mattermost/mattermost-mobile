@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import axios from 'axios';
-import jestExpect from 'expect';
 
 import testConfig from '@support/test_config';
+
+const {expect: jestExpect} = require('@jest/globals');
 
 /**
  * Get email url.

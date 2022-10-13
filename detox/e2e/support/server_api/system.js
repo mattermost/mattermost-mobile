@@ -4,13 +4,14 @@
 import path from 'path';
 
 import merge from 'deepmerge';
-import jestExpect from 'expect';
 
 import testConfig from '@support/test_config';
 
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
 import defaultServerConfig from './default_config.json';
+
+const {expect: jestExpect} = require('@jest/globals');
 
 // ****************************************************************
 // System

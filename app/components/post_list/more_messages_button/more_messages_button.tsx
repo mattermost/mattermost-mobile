@@ -317,6 +317,8 @@ export default class MoreMessageButton extends React.PureComponent<MoreMessagesB
 
     moreText = (count: number) => {
         const {unreadCount} = this.props;
+
+        // @ts-expect-error context type definition
         const {formatMessage} = this.context.intl;
         const isInitialMessage = unreadCount === count;
 

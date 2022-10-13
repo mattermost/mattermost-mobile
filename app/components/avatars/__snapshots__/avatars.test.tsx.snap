@@ -7,14 +7,14 @@ exports[`Avatars should match snapshot for overflow 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "flexDirection": "row",
       }
     }
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "backgroundColor": "#ffffff",
           "borderColor": "#ffffff",
@@ -31,7 +31,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
         size={24}
         testID="avatars.profile_picture"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -64,7 +64,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "backgroundColor": "#ffffff",
           "borderColor": "#ffffff",
@@ -82,7 +82,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
         size={24}
         testID="avatars.profile_picture"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -115,7 +115,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "backgroundColor": "#ffffff",
           "borderColor": "#ffffff",
@@ -133,7 +133,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
         size={24}
         testID="avatars.profile_picture"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -166,7 +166,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "backgroundColor": "#ffffff",
           "borderColor": "#ffffff",
@@ -181,7 +181,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
     >
       <View
         style={
-          Object {
+          {
             "alignItems": "center",
             "backgroundColor": "rgba(63,67,80,0.08)",
             "borderColor": "#ffffff",
@@ -195,7 +195,7 @@ exports[`Avatars should match snapshot for overflow 1`] = `
       >
         <Text
           style={
-            Object {
+            {
               "color": "rgba(63,67,80,0.64)",
               "fontSize": 10,
               "fontWeight": "bold",
@@ -218,14 +218,14 @@ exports[`Avatars should match snapshot for single avatar 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "flexDirection": "row",
       }
     }
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "backgroundColor": "#ffffff",
           "borderColor": "#ffffff",
@@ -242,7 +242,7 @@ exports[`Avatars should match snapshot for single avatar 1`] = `
         size={24}
         testID="avatars.profile_picture"
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",

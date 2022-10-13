@@ -7,6 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
+import {expect} from 'detox';
+
 import {Setup} from '@support/server_api';
 import {Alert} from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';

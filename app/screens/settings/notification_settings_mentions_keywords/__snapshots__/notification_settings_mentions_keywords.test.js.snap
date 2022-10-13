@@ -2,17 +2,17 @@
 
 exports[`NotificationSettingsMentionsKeywords should match snapshot 1`] = `
 NotificationSettingsMentionsKeywords {
-  "context": Object {},
+  "context": {},
   "handleSubmit": [Function],
   "keywordsRef": [Function],
-  "navigationEventListener": Object {
+  "navigationEventListener": {
     "remove": [MockFunction],
   },
   "onKeywordsChangeText": [Function],
-  "props": Object {
+  "props": {
     "componentId": "component-id",
-    "intl": Object {
-      "defaultFormats": Object {},
+    "intl": {
+      "defaultFormats": {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -21,8 +21,8 @@ NotificationSettingsMentionsKeywords {
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": Object {},
-      "formatters": Object {
+      "formats": {},
+      "formatters": {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -30,7 +30,7 @@ NotificationSettingsMentionsKeywords {
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": Object {},
+      "messages": {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
@@ -38,7 +38,7 @@ NotificationSettingsMentionsKeywords {
     },
     "keywords": "",
     "onBack": [MockFunction],
-    "theme": Object {
+    "theme": {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -66,17 +66,17 @@ NotificationSettingsMentionsKeywords {
       "type": "Denim",
     },
   },
-  "refs": Object {},
+  "refs": {},
   "setState": [Function],
-  "state": Object {
+  "state": {
     "keywords": "",
   },
   "updater": Updater {
-    "_callbacks": Array [],
+    "_callbacks": [],
     "_renderer": ReactShallowRenderer {
-      "_context": Object {},
+      "_context": {},
       "_didScheduleRenderPhaseUpdate": false,
-      "_dispatcher": Object {
+      "_dispatcher": {
         "readContext": [Function],
         "useCallback": [Function],
         "useContext": [Function],
@@ -95,8 +95,8 @@ NotificationSettingsMentionsKeywords {
       "_element": <NotificationSettingsMentionsKeywords
         componentId="component-id"
         intl={
-          Object {
-            "defaultFormats": Object {},
+          {
+            "defaultFormats": {},
             "defaultLocale": "en",
             "formatDate": [Function],
             "formatHTMLMessage": [Function],
@@ -105,8 +105,8 @@ NotificationSettingsMentionsKeywords {
             "formatPlural": [Function],
             "formatRelative": [Function],
             "formatTime": [Function],
-            "formats": Object {},
-            "formatters": Object {
+            "formats": {},
+            "formatters": {
               "getDateTimeFormat": [Function],
               "getMessageFormat": [Function],
               "getNumberFormat": [Function],
@@ -114,7 +114,7 @@ NotificationSettingsMentionsKeywords {
               "getRelativeFormat": [Function],
             },
             "locale": "en",
-            "messages": Object {},
+            "messages": {},
             "now": [Function],
             "onError": [Function],
             "textComponent": "span",
@@ -124,7 +124,7 @@ NotificationSettingsMentionsKeywords {
         keywords=""
         onBack={[MockFunction]}
         theme={
-          Object {
+          {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -160,15 +160,15 @@ NotificationSettingsMentionsKeywords {
       "_newState": null,
       "_numberOfReRenders": 0,
       "_renderPhaseUpdates": null,
-      "_rendered": <RNCSafeAreaView
+      "_rendered": <ForwardRef
         edges={
-          Array [
+          [
             "left",
             "right",
           ]
         }
         style={
-          Object {
+          {
             "backgroundColor": "#ffffff",
             "flex": 1,
           }
@@ -178,7 +178,7 @@ NotificationSettingsMentionsKeywords {
         <ScrollView
           alwaysBounceVertical={false}
           contentContainerStyle={
-            Object {
+            {
               "backgroundColor": "rgba(63,67,80,0.06)",
               "flex": 1,
               "paddingTop": 35,
@@ -187,7 +187,7 @@ NotificationSettingsMentionsKeywords {
         >
           <View
             style={
-              Object {
+              {
                 "backgroundColor": "#ffffff",
                 "borderBottomColor": "rgba(63,67,80,0.1)",
                 "borderBottomWidth": 1,
@@ -207,7 +207,7 @@ NotificationSettingsMentionsKeywords {
               onChangeText={[Function]}
               onSubmitEditing={[Function]}
               placeholder={
-                Object {
+                {
                   "defaultMessage": "Other words that trigger a mention",
                   "id": "mobile.notification_settings_mentions.keywordsDescription",
                 }
@@ -215,7 +215,7 @@ NotificationSettingsMentionsKeywords {
               placeholderTextColor="rgba(63,67,80,0.4)"
               returnKeyType="done"
               style={
-                Object {
+                {
                   "color": "#3f4350",
                   "fontSize": 15,
                   "height": 150,
@@ -228,7 +228,7 @@ NotificationSettingsMentionsKeywords {
           </View>
           <View
             style={
-              Object {
+              {
                 "marginTop": 10,
                 "paddingHorizontal": 15,
               }
@@ -238,7 +238,7 @@ NotificationSettingsMentionsKeywords {
               defaultMessage="Keywords are non-case sensitive and should be separated by a comma."
               id="mobile.notification_settings_mentions.keywordsHelp"
               style={
-                Object {
+                {
                   "color": "rgba(63,67,80,0.4)",
                   "fontSize": 13,
                 }
@@ -246,7 +246,7 @@ NotificationSettingsMentionsKeywords {
             />
           </View>
         </ScrollView>
-      </RNCSafeAreaView>,
+      </ForwardRef>,
       "_rendering": false,
       "_updater": [Circular],
       "_workInProgressHook": null,

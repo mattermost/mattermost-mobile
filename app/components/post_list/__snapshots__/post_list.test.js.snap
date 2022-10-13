@@ -7,8 +7,8 @@ exports[`PostList should match snapshot 1`] = `
   deepLinkURL=""
   handleSelectChannelByName={[MockFunction]}
   intl={
-    Object {
-      "defaultFormats": Object {},
+    {
+      "defaultFormats": {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -17,8 +17,8 @@ exports[`PostList should match snapshot 1`] = `
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": Object {},
-      "formatters": Object {
+      "formats": {},
+      "formatters": {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -26,7 +26,7 @@ exports[`PostList should match snapshot 1`] = `
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": Object {},
+      "messages": {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
@@ -35,7 +35,7 @@ exports[`PostList should match snapshot 1`] = `
   }
   lastPostIndex={-1}
   postIds={
-    Array [
+    [
       "post-id-1",
       "post-id-2",
     ]
@@ -46,7 +46,7 @@ exports[`PostList should match snapshot 1`] = `
   showPermalink={[MockFunction]}
   siteURL="https://site-url.fake"
   theme={
-    Object {
+    {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",

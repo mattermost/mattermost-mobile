@@ -83,6 +83,7 @@ const Notification = ({componentId, notification}: NotificationProps) => {
         dismiss();
 
         if (!notification.payload?.userInfo?.local) {
+            // @ts-expect-error ActionFunc
             dispatch(loadFromPushNotification(notification));
         }
     };

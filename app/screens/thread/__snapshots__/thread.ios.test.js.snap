@@ -8,7 +8,7 @@ exports[`thread should match snapshot, has root post 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "height": 1,
         }
@@ -18,7 +18,7 @@ exports[`thread should match snapshot, has root post 1`] = `
     <React.Fragment>
       <ForwardRef(AnimatedComponentWrapper)
         style={
-          Object {
+          {
             "flex": 1,
             "paddingBottom": 0,
           }
@@ -29,7 +29,7 @@ exports[`thread should match snapshot, has root post 1`] = `
           currentUserId="member_user_id"
           location="Thread"
           postIds={
-            Array [
+            [
               "root_id",
               "post_id_1",
               "post_id_2",
@@ -39,7 +39,7 @@ exports[`thread should match snapshot, has root post 1`] = `
             <Loading
               color="#3f4350"
               size="large"
-              style={Object {}}
+              style={{}}
             />
           }
           rootId="root_id"
@@ -84,7 +84,7 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "height": 1,
         }
@@ -94,7 +94,7 @@ exports[`thread should match snapshot, no root post, loading 1`] = `
     <Loading
       color="#3f4350"
       size="large"
-      style={Object {}}
+      style={{}}
     />
   </Connect(SafeArea)>
   <View
@@ -118,7 +118,7 @@ exports[`thread should match snapshot, render footer 1`] = `
   currentUserId="member_user_id"
   location="Thread"
   postIds={
-    Array [
+    [
       "root_id",
       "post_id_1",
       "post_id_2",
@@ -128,7 +128,7 @@ exports[`thread should match snapshot, render footer 1`] = `
     <Loading
       color="#3f4350"
       size="large"
-      style={Object {}}
+      style={{}}
     />
   }
   rootId="root_id"
@@ -142,7 +142,7 @@ exports[`thread should match snapshot, render footer 2`] = `
   currentUserId="member_user_id"
   location="Thread"
   postIds={
-    Array [
+    [
       "root_id",
       "post_id_1",
       "post_id_2",
@@ -163,7 +163,7 @@ exports[`thread should match snapshot, render footer 3`] = `
   >
     <View
       style={
-        Object {
+        {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "height": 1,
         }
@@ -173,7 +173,7 @@ exports[`thread should match snapshot, render footer 3`] = `
     <Loading
       color="#3f4350"
       size="large"
-      style={Object {}}
+      style={{}}
     />
   </Connect(SafeArea)>
   <View

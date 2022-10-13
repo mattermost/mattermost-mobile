@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`ErrorTeamsList should match snapshot 1`] = `
-<RNCSafeAreaView
+<ForwardRef
   style={
-    Object {
+    {
       "flex": 1,
     }
   }
@@ -14,7 +14,7 @@ exports[`ErrorTeamsList should match snapshot 1`] = `
     errorTitle="Something went wrong"
     onRetry={[Function]}
     theme={
-      Object {
+      {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -43,5 +43,5 @@ exports[`ErrorTeamsList should match snapshot 1`] = `
       }
     }
   />
-</RNCSafeAreaView>
+</ForwardRef>
 `;

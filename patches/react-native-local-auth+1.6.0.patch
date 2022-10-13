@@ -89,7 +89,7 @@ index 49242b4..8deada5 100644
 +};
 \ No newline at end of file
 diff --git a/node_modules/react-native-local-auth/android/build.gradle b/node_modules/react-native-local-auth/android/build.gradle
-index 0c9a9c2..68eb199 100644
+index 0c9a9c2..6106679 100644
 --- a/node_modules/react-native-local-auth/android/build.gradle
 +++ b/node_modules/react-native-local-auth/android/build.gradle
 @@ -11,12 +11,12 @@ buildscript {
@@ -109,6 +109,14 @@ index 0c9a9c2..68eb199 100644
          versionCode 1
          versionName "1.0"
          ndk {
+@@ -33,6 +33,6 @@ repositories {
+ }
+ 
+ dependencies {
+-    compile 'com.facebook.react:react-native:+'
++    implementation 'com.facebook.react:react-native:+'
+ }
+ 
 diff --git a/node_modules/react-native-local-auth/android/src/main/java/io/tradle/reactlocalauth/LocalAuthModule.java b/node_modules/react-native-local-auth/android/src/main/java/io/tradle/reactlocalauth/LocalAuthModule.java
 index 38b78f1..896e7dc 100644
 --- a/node_modules/react-native-local-auth/android/src/main/java/io/tradle/reactlocalauth/LocalAuthModule.java
