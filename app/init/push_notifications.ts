@@ -113,7 +113,6 @@ class PushNotifications {
                 const screen = Screens.IN_APP_NOTIFICATION;
                 const passProps = {
                     notification,
-                    overlay: true,
                     serverName,
                     serverUrl,
                 };

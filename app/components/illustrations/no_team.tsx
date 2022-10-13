@@ -11,7 +11,6 @@ import Svg, {
     Use,
     Image,
 } from 'react-native-svg';
-import {EMaskUnits} from 'react-native-svg/src/elements/Mask';
 
 type Props = {
     theme: Theme;
@@ -31,7 +30,7 @@ function SvgComponent({theme}: Props) {
             />
             <Mask
                 id='a'
-                maskUnits={EMaskUnits.USER_SPACE_ON_USE}
+                maskUnits='userSpaceOnUse'
                 x={3}
                 y={0}
                 width={117}
@@ -53,7 +52,7 @@ function SvgComponent({theme}: Props) {
                 />
                 <Mask
                     id='b'
-                    maskUnits={EMaskUnits.USER_SPACE_ON_USE}
+                    maskUnits='userSpaceOnUse'
                     x={32}
                     y={42}
                     width={71}
@@ -102,7 +101,7 @@ function SvgComponent({theme}: Props) {
             />
             <Mask
                 id='c'
-                maskUnits={EMaskUnits.USER_SPACE_ON_USE}
+                maskUnits='userSpaceOnUse'
                 x={25}
                 y={3}
                 width={53}
@@ -125,7 +124,7 @@ function SvgComponent({theme}: Props) {
             />
             <Mask
                 id='d'
-                maskUnits={EMaskUnits.USER_SPACE_ON_USE}
+                maskUnits='userSpaceOnUse'
                 x={71}
                 y={30}
                 width={51}
