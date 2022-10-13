@@ -44,6 +44,8 @@ ios/.xcode.env.local
 .gradle
 local.properties
 *.iml
+*.hprof
+.cxx/
 android/app/bin
 android/app/build
 android/build
