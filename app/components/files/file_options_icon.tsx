@@ -2,32 +2,38 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {TouchableOpacity, StyleSheet} from 'react-native';
+import {TouchableOpacity} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     onPress: () => void;
+    selected?: boolean;
 }
 
-const styles = StyleSheet.create({
-    threeDotContainer: {
-        alignItems: 'flex-end',
-        marginHorizontal: 20,
-    },
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        threeDotContainer: {
+            alignItems: 'flex-end',
+            borderRadius: 4,
+            marginHorizontal: 20,
+            padding: 7,
+        },
+        selected: {
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+        },
+    };
 });
 
-const hitSlop = {top: 5, bottom: 5, left: 5, right: 5};
-
-export default function FileOptionsIcon({onPress}: Props) {
+export default function FileOptionsIcon({onPress, selected = false}: Props) {
     const theme = useTheme();
+    const styles = getStyleSheet(theme);
     return (
         <TouchableOpacity
             onPress={onPress}
-            style={styles.threeDotContainer}
-            hitSlop={hitSlop}
+            style={[styles.threeDotContainer, selected ? styles.selected : null]}
         >
             <CompassIcon
                 name='dots-horizontal'
