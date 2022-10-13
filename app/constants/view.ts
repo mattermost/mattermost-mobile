@@ -27,6 +27,9 @@ export const JOIN_CALL_BAR_HEIGHT = 38;
 export const CURRENT_CALL_BAR_HEIGHT = 74;
 
 export const QUICK_OPTIONS_HEIGHT = 270;
+export const VOICE_MESSAGE_CARD_RATIO = 0.72;
+export const MIC_SIZE = 40;
+export const WAVEFORM_HEIGHT = 40;
 
 export default {
     BOTTOM_TAB_HEIGHT,
@@ -50,5 +53,8 @@ export default {
     HEADER_SEARCH_HEIGHT,
     HEADER_SEARCH_BOTTOM_MARGIN,
     QUICK_OPTIONS_HEIGHT,
+    VOICE_MESSAGE_CARD_RATIO,
+    MIC_SIZE,
+    WAVEFORM_HEIGHT,
 };
 

@@ -156,17 +156,14 @@ function Uploads({
                         {buildFilePreviews()}
                     </ScrollView>
                 </Animated.View>
-
                 <Animated.View
                     style={[style.errorContainer, errorAnimatedStyle]}
                 >
                     {Boolean(uploadFileError) &&
                     <View style={style.errorTextContainer}>
-
                         <Text style={style.warning}>
                             {uploadFileError}
                         </Text>
-
                     </View>
                     }
                 </Animated.View>

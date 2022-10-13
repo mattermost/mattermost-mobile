@@ -2,11 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
 
 import PostInput from '../post_input';
-import QuickActions from '../quick_actions';
-import SendAction from '../send_action';
 import Uploads from '../uploads';
 
 type Props = {
@@ -33,19 +30,6 @@ type Props = {
     setRecording: (v: boolean) => void;
 }
 
-const style = StyleSheet.create({
-    actionsContainer: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingBottom: Platform.select({
-            ios: 1,
-            android: 2,
-        }),
-    },
-});
-
 export default function MessageInput({
     testID,
     channelId,
@@ -56,22 +40,18 @@ export default function MessageInput({
     value,
     uploadFileError,
     sendMessage,
-    canSend,
     updateValue,
     addFiles,
     updateCursorPosition,
     cursorPosition,
-    setRecording,
 }: Props) {
     // Render
     const postInputTestID = `${testID}.post.input`;
-    const quickActionsTestID = `${testID}.quick_actions`;
-    const sendActionTestID = `${testID}.send_action`;
+    const isHandlingVoice = files[0]?.is_voice_recording;
 
-    const showAsRecord = files[0]?.is_voice_recording;
     return (
         <>
-            {!showAsRecord &&
+            {!isHandlingVoice && (
                 <PostInput
                     testID={postInputTestID}
                     channelId={channelId}
@@ -84,7 +64,7 @@ export default function MessageInput({
                     addFiles={addFiles}
                     sendMessage={sendMessage}
                 />
-            }
+            )}
             <Uploads
                 currentUserId={currentUserId}
                 files={files}
@@ -92,22 +72,6 @@ export default function MessageInput({
                 channelId={channelId}
                 rootId={rootId}
             />
-            <View style={style.actionsContainer}>
-                {!showAsRecord &&
-                    <QuickActions
-                        testID={quickActionsTestID}
-                        fileCount={files.length}
-                        addFiles={addFiles}
-                        updateValue={updateValue}
-                        value={value}
-                    />
-                }
-                <SendAction
-                    testID={sendActionTestID}
-                    disabled={!canSend}
-                    sendMessage={sendMessage}
-                />
-            </View>
         </>
     );
 }

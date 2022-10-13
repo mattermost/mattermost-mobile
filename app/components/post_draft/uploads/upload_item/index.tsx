@@ -2,14 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {StyleSheet, TouchableWithoutFeedback, View} from 'react-native';
+import {StyleSheet, TouchableWithoutFeedback, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {updateDraftFile} from '@actions/local/draft';
-import VoiceRecordingFile from '@app/components/files/voice_recording_file';
 import FileIcon from '@components/files/file_icon';
 import ImageFile from '@components/files/image_file';
+import VoiceRecordingFile from '@components/files/voice_recording_file';
 import ProgressBar from '@components/progress_bar';
+import {VOICE_MESSAGE_CARD_RATIO} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useDidUpdate from '@hooks/did_update';
@@ -64,8 +65,10 @@ export default function UploadItem({
     const serverUrl = useServerUrl();
     const removeCallback = useRef<(() => void)|null>(null);
     const [progress, setProgress] = useState(0);
+    const dimensions = useWindowDimensions();
 
     const loading = DraftUploadManager.isUploading(file.clientId!);
+    const isVoiceMessage = file.is_voice_recording;
 
     const handlePress = useCallback(() => {
         openGallery(file);
@@ -116,13 +119,16 @@ export default function UploadItem({
                 />
             );
         }
-        if (file.is_voice_recording) {
+
+        if (isVoiceMessage) {
             return (
                 <VoiceRecordingFile
                     file={file}
+                    uploading={true}
                 />
             );
         }
+
         return (
             <FileIcon
                 backgroundColor={changeOpacity(theme.centerChannelColor, 0.08)}
@@ -132,17 +138,35 @@ export default function UploadItem({
         );
     }, [file]);
 
+    const voiceStyle = useMemo(() => {
+        return {
+            width: dimensions.width * VOICE_MESSAGE_CARD_RATIO,
+        };
+    }, [dimensions.width]);
+
     return (
         <View
             key={file.clientId}
-            style={style.preview}
+            style={[
+                style.preview,
+                isVoiceMessage && voiceStyle,
+            ]}
         >
-            <View style={style.previewContainer}>
+            <View
+                style={[
+                    style.previewContainer,
+                ]}
+            >
                 <TouchableWithoutFeedback
                     onPress={onGestureEvent}
                     disabled={file.is_voice_recording}
                 >
-                    <Animated.View style={[styles, style.filePreview]}>
+                    <Animated.View
+                        style={[
+                            styles,
+                            style.filePreview,
+                        ]}
+                    >
                         {filePreviewComponent}
                     </Animated.View>
                 </TouchableWithoutFeedback>
