@@ -1,5 +1,6 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="com.mattermost.rnbeta">
+    package="com.mattermost.rnbeta"
+    xmlns:tools="http://schemas.android.com/tools">
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.VIBRATE" />
     <uses-permission-sdk-23 android:name="android.permission.VIBRATE"/>
@@ -38,6 +39,7 @@
       android:resizeableActivity="true"
       android:requestLegacyExternalStorage="true"
       android:usesCleartextTraffic="true"
+      tools:replace="android:allowBackup"
     >
         <meta-data android:name="firebase_analytics_collection_deactivated" android:value="true" />
         <meta-data android:name="android.content.APP_RESTRICTIONS"

@@ -83,6 +83,7 @@ PODS:
   - HMSegmentedControl (1.5.6)
   - jail-monkey (2.7.0):
     - React-Core
+  - lame (1.0.0)
   - libevent (2.1.12)
   - libwebp (1.2.1):
     - libwebp/demux (= 1.2.1)
@@ -459,6 +460,9 @@ PODS:
     - React-Core
     - React-RCTImage
     - React-RCTText
+  - RNAudioRecorderPlayer (3.5.1):
+    - lame
+    - React-Core
   - RNCClipboard (1.5.1):
     - React-Core
   - RNDateTimePicker (6.3.1):
@@ -634,6 +638,7 @@ DEPENDENCIES:
   - ReactNativeIncallManager (from `../node_modules/react-native-incall-manager`)
   - ReactNativeKeyboardTrackingView (from `../node_modules/react-native-keyboard-tracking-view`)
   - ReactNativeNavigation (from `../node_modules/react-native-navigation`)
+  - RNAudioRecorderPlayer (from `../node_modules/react-native-audio-recorder-player`)
   - "RNCClipboard (from `../node_modules/@react-native-community/clipboard`)"
   - "RNDateTimePicker (from `../node_modules/@react-native-community/datetimepicker`)"
   - RNDeviceInfo (from `../node_modules/react-native-device-info`)
@@ -673,6 +678,7 @@ SPEC REPOS:
     - FlipperKit
     - fmt
     - HMSegmentedControl
+    - lame
     - libevent
     - libwebp
     - OpenSSL-Universal
@@ -808,6 +814,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-keyboard-tracking-view"
   ReactNativeNavigation:
     :path: "../node_modules/react-native-navigation"
+  RNAudioRecorderPlayer:
+    :path: "../node_modules/react-native-audio-recorder-player"
   RNCClipboard:
     :path: "../node_modules/@react-native-community/clipboard"
   RNDateTimePicker:
@@ -882,6 +890,7 @@ SPEC CHECKSUMS:
   hermes-engine: ff1ba576165861a94a0d101b0a351a8ca2149f36
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
   jail-monkey: de7eab0c9cbe4e7cdd2f80d04f812337ae94b2e0
+  lame: 1edb6e24a4e2056b9d1fd90c9fddc10c9aff875d
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 98a37e597e40bfdb4c911fc98f2c53d0b12d05fc
   mattermost-react-native-turbo-log: 5c269c7c27d7f1db3d03300cf50d659d0d269126
@@ -938,6 +947,7 @@ SPEC CHECKSUMS:
   ReactNativeIncallManager: b169b57d3064d8f62478f8fc3c485da6c75045d1
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: 3b09d0b7a64326dbcea7e64231287c766b18adf0
+  RNAudioRecorderPlayer: 142484e03a1e6eadfea54026dca3ffe3eb53ee1b
   RNCClipboard: 41d8d918092ae8e676f18adada19104fa3e68495
   RNDateTimePicker: 95e0cb71cba4c2f08c62444029f834e6168a2b96
   RNDeviceInfo: 0a7c1d2532aa7691f9b9925a27e43af006db4dae
