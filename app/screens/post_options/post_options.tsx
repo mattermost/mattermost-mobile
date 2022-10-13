@@ -7,6 +7,8 @@ import React from 'react';
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {PostTypes} from '@constants/post';
+import {REACTION_PICKER_HEIGHT} from '@constants/reaction_picker';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
@@ -58,11 +60,21 @@ const PostOptions = ({
     const canCopyText = canCopyPermalink && post.message;
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
+    const shouldRenderReply = canReply && sourceScreen !== Screens.THREAD;
+    const shouldRenderMarkAsUnread = canMarkAsUnread && !isSystemPost;
+    const shouldRenderCopyText = Boolean(canCopyText && post.message);
+    const shouldRenderEdit = canEdit && post.type !== PostTypes.VOICE_MESSAGE;
 
     const snapPoints = [
-        canAddReaction, canCopyPermalink, canCopyText,
-        canDelete, canEdit, shouldRenderFollow,
-        canMarkAsUnread, canPin, canReply, !isSystemPost,
+        shouldRenderReply,
+        shouldRenderFollow,
+        shouldRenderMarkAsUnread,
+        canCopyPermalink,
+        !isSystemPost,
+        shouldRenderCopyText,
+        canPin,
+        shouldRenderEdit,
+        canDelete,
     ].reduce((acc, v) => {
         return v ? acc + 1 : acc;
     }, 0);
@@ -71,11 +83,11 @@ const PostOptions = ({
         return (
             <>
                 {canAddReaction && <ReactionBar postId={post.id}/>}
-                {canReply && sourceScreen !== Screens.THREAD && <ReplyOption post={post}/>}
+                {shouldRenderReply && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
                     <FollowThreadOption thread={thread}/>
                 }
-                {canMarkAsUnread && !isSystemPost &&
+                {shouldRenderMarkAsUnread &&
                     <MarkAsUnreadOption
                         post={post}
                         sourceScreen={sourceScreen}
@@ -93,7 +105,7 @@ const PostOptions = ({
                         postId={post.id}
                     />
                 }
-                {Boolean(canCopyText && post.message) &&
+                {shouldRenderCopyText &&
                     <CopyTextOption
                         postMessage={post.message}
                         sourceScreen={sourceScreen}
@@ -104,7 +116,7 @@ const PostOptions = ({
                         postId={post.id}
                     />
                 }
-                {canEdit &&
+                {shouldRenderEdit &&
                     <EditOption
                         post={post}
                         canDelete={canDelete}
@@ -119,7 +131,7 @@ const PostOptions = ({
         );
     };
 
-    const additionalSnapPoints = 2;
+    const additionalSnapPoints = 1;
 
     return (
         <BottomSheet
@@ -127,7 +139,7 @@ const PostOptions = ({
             closeButtonId={POST_OPTIONS_BUTTON}
             componentId={Screens.POST_OPTIONS}
             initialSnapIndex={0}
-            snapPoints={[((snapPoints + additionalSnapPoints) * ITEM_HEIGHT), 10]}
+            snapPoints={[(((snapPoints + additionalSnapPoints) * ITEM_HEIGHT) + (canAddReaction ? REACTION_PICKER_HEIGHT : 0)), 10]}
             testID='post_options'
         />
     );
