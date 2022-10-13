@@ -47,11 +47,11 @@ const TownSquareIllustration = ({theme}: Props) => (
             />
             <Mask
                 id='a'
+
+                // @ts-expect-error style not intrinsic
                 style={{
                     maskType: 'alpha',
                 }}
-
-                // @ts-expect-error string instead of enum
                 maskUnits='userSpaceOnUse'
                 x={61}
                 y={65}
@@ -117,11 +117,11 @@ const TownSquareIllustration = ({theme}: Props) => (
             />
             <Mask
                 id='b'
+
+                // @ts-expect-error style not intrinsic
                 style={{
                     maskType: 'alpha',
                 }}
-
-                // @ts-expect-error string instead of enum
                 maskUnits='userSpaceOnUse'
                 x={40}
                 y={33}
@@ -159,11 +159,11 @@ const TownSquareIllustration = ({theme}: Props) => (
             />
             <Mask
                 id='c'
+
+                // @ts-expect-error style not intrinsic
                 style={{
                     maskType: 'alpha',
                 }}
-
-                // @ts-expect-error string instead of enum
                 maskUnits='userSpaceOnUse'
                 x={69}
                 y={23}
