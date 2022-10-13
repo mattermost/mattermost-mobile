@@ -23,17 +23,24 @@ struct InitialView: View {
     shareViewModel.allServers.allSatisfy({!$0.hasChannels})
   }
   
-  var body: some View {
+  init(attachments: Binding<[AttachmentModel]>,
+       linkPreviewUrl: Binding<String>,
+       message: Binding<String>
+  ) {
     let appearance = UINavigationBarAppearance()
     appearance.configureWithTransparentBackground()
     
     appearance.titleTextAttributes = [.foregroundColor: UIColor(.white), .font: UIFont(name: "Metropolis-SemiBold", size: 18) as Any]
     appearance.backgroundColor = UIColor(Color.theme.sidebarBg)
     UINavigationBar.appearance().standardAppearance = appearance
-    UINavigationBar.appearance().compactAppearance = appearance
     UINavigationBar.appearance().scrollEdgeAppearance = appearance
     UINavigationBar.appearance().tintColor = UIColor(Color.theme.sidebarText)
-    
+    self._attachments = attachments
+    self._linkPreviewUrl = linkPreviewUrl
+    self._message = message
+  }
+  
+  var body: some View {
     return VStack {
       if noServers {
         NoServersView()
