@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import {TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {MIC_SIZE} from '@constants/view';
 import {useTheme} from '@context/theme';
+import {extractFileInfo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import AnimatedMicrophone from './animated_microphone';
@@ -58,9 +59,23 @@ type VoiceInputProps = {
     addFiles: (f: FileInfo[]) => void;
     onClose: () => void;
 }
-const VoiceInput = ({onClose}: VoiceInputProps) => {
+const VoiceInput = ({onClose, addFiles, setRecording}: VoiceInputProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    useEffect(() => {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
+        const record = async () => {
+            const url = ''; //await recorder.current?.stopRecorder()
+            const fi = await extractFileInfo([{uri: url}]);
+            fi[0].is_voice_recording = true;
+            addFiles(fi as FileInfo[]);
+            setRecording(false);
+        };
+
+        //todo: to start recording as soon as this screen shows up
+        // record();
+    }, []);
 
     return (
         <View style={styles.mainContainer}>
