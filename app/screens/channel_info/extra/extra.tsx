@@ -22,6 +22,7 @@ type Props = {
     createdBy: string;
     customStatus?: UserCustomStatus;
     header?: string;
+    isCustomStatusEnabled: boolean;
 }
 
 const headerMetadata = {header: {width: 1, height: 1}};
@@ -65,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Extra = ({channelId, createdAt, createdBy, customStatus, header}: Props) => {
+const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomStatusEnabled}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
@@ -82,7 +83,7 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header}: Props) =
 
     return (
         <View style={styles.container}>
-            {Boolean(customStatus) &&
+            {isCustomStatusEnabled && Boolean(customStatus) &&
             <View style={styles.item}>
                 <FormattedText
                     id='channel_info.custom_status'
