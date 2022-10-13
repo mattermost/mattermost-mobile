@@ -49,6 +49,7 @@
     "react-native": "0.69.3",
     "react-native-android-open-settings": "1.3.0",
     "react-native-animated-numbers": "0.4.1",
+    "react-native-audio-recorder-player": "github:enahum/react-native-audio-recorder-player",
     "react-native-background-timer": "2.4.1",
     "react-native-button": "3.0.1",
     "react-native-calendars": "1.1286.0",
