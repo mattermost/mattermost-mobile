@@ -1,8 +1,22 @@
 diff --git a/node_modules/@sentry/react-native/sentry.gradle b/node_modules/@sentry/react-native/sentry.gradle
-index c54bf8c..e76a028 100644
+index c54bf8c..a82e034 100644
 --- a/node_modules/@sentry/react-native/sentry.gradle
 +++ b/node_modules/@sentry/react-native/sentry.gradle
-@@ -127,8 +127,8 @@ gradle.projectsEvaluated {
+@@ -121,14 +121,22 @@ gradle.projectsEvaluated {
+                   cliExecutable = cliExecutable.replaceAll("/", "\\\\")
+               }
+ 
++              def sourcemapFile = new File(sourcemapOutput)
++              def bundleFile = new File(bundleOutput)
++              if(!sourcemapFile.isFile()){
++                  throw new GradleException('>>> sourcemapFile invalid path')
++              }
++              if(!bundleFile.isFile()){
++                  throw new GradleException('>>> bundleFile invalid path')
++              }
+               //
+               // based on:
+               //   https://github.com/getsentry/sentry-cli/blob/master/src/commands/react_native_gradle.rs
                //
                def args = [cliExecutable]
  
