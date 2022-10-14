@@ -3,10 +3,12 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, Pressable, StyleProp, StyleSheet, Text, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, Pressable, StyleProp, Text, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
+import {makeStyleSheetFromTheme} from '@app/utils/theme';
+import CompassIcon from '@components/compass_icon';
 import CombinedUserActivity from '@components/post_list/combined_user_activity';
 import DateSeparator from '@components/post_list/date_separator';
 import NewMessagesLine from '@components/post_list/new_message_line';
@@ -16,8 +18,6 @@ import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, isThreadOverview, preparePostList, START_OF_NEW_MESSAGES} from '@utils/post_list';
-
-import CompassIcon from '../compass_icon';
 
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
 import MoreMessages from './more_messages';
@@ -60,53 +60,62 @@ type ScrollIndexFailed = {
     averageItemLength: number;
 };
 
-const CONTENT_OFFSET_THRESHOLD = 120;
+const CONTENT_OFFSET_THRESHOLD = 160;
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const keyExtractor = (item: string | PostModel) => (typeof item === 'string' ? item : item.id);
 
-const styles = StyleSheet.create({
-    flex: {
-        flex: 1,
-    },
-    container: {
-        flex: 1,
-        scaleY: -1,
-    },
-    scale: {
-        ...Platform.select({
-            android: {
-                scaleY: -1,
-            },
-        }),
-    },
-    scrollToEndBtn: {
-        position: 'absolute',
-        width: 30,
-        height: 30,
-        borderRadius: 30,
-        right: 16,
-        top: 8,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'row',
-        scaleY: -1,
-    },
-    scrollToEndBadge: {
-        position: 'absolute',
-        alignSelf: 'center',
-        borderRadius: 30,
-        elevation: 8,
-        height: 30,
-        paddingHorizontal: 20,
-        top: 8,
-        display: 'flex',
-        justifyContent: 'center',
-        alignItems: 'center',
-        flexDirection: 'row',
-        scaleY: -1,
-    },
+const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    return {
+        flex: {
+            flex: 1,
+        },
+        container: {
+            flex: 1,
+            scaleY: -1,
+        },
+        scale: {
+            ...Platform.select({
+                android: {
+                    scaleY: -1,
+                },
+            }),
+        },
+        scrollToEndBtn: {
+            position: 'absolute',
+            alignSelf: 'center',
+            width: 40,
+            height: 40,
+            borderRadius: 40,
+            top: 12,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'row',
+            backgroundColor: theme.buttonColor,
+            scaleY: -1,
+            elevation: 4,
+        },
+        scrollToEndBadge: {
+            position: 'absolute',
+            alignSelf: 'center',
+            height: 40,
+            borderRadius: 8,
+            top: 8,
+            paddingHorizontal: 8,
+            backgroundColor: theme.buttonBg,
+            display: 'flex',
+            justifyContent: 'center',
+            alignItems: 'center',
+            flexDirection: 'row',
+            scaleY: -1,
+            elevation: 4,
+        },
+        newMessagesText: {
+            color: '#fff',
+            paddingHorizontal: 8,
+        },
+    };
 });
 
 const PostList = ({
@@ -135,15 +144,16 @@ const PostList = ({
     joinCallBannerVisible,
 }: Props) => {
     const listRef = useRef<FlatList<string | PostModel>>(null);
+    const isNewMessagesRef = useRef(false);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
     const [enableRefreshControl, setEnableRefreshControl] = useState(false);
     const [refreshing, setRefreshing] = useState(false);
     const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
-    const [isNewMessages, setIsNewMessages] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
+    const styles = getStyleFromTheme(theme);
     const orderedPosts = useMemo(() => {
         return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, currentTimezone, location === Screens.THREAD);
     }, [posts, lastViewedAt, showNewMessageLine, currentTimezone, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, location]);
@@ -178,7 +188,7 @@ const PostList = ({
     }, []);
 
     useEffect(() => {
-        setIsNewMessages(initialIndex > -1);
+        isNewMessagesRef.current = initialIndex > -1;
     }, [initialIndex]);
 
     const onRefresh = useCallback(async () => {
@@ -396,25 +406,24 @@ const PostList = ({
     }, [orderedPosts, highlightedId]);
 
     const onScrollToEnd = () => {
-        scrollToIndex(0);
+        listRef.current?.scrollToOffset({animated: true, offset: 0});
     };
 
     const ScrollToEndView = () => (
         <Pressable
-            style={[
-                isNewMessages ? styles.scrollToEndBadge : styles.scrollToEndBtn,
-                {
-                    backgroundColor: isNewMessages ? theme.onlineIndicator : theme.sidebarBg,
-                },
-            ]}
             onPress={onScrollToEnd}
+            style={isNewMessagesRef.current ? styles.scrollToEndBadge : styles.scrollToEndBtn}
         >
             <CompassIcon
-                size={16}
+                size={18}
                 name='arrow-down'
-                color={theme.sidebarHeaderTextColor}
+                color={isNewMessagesRef.current ? theme.sidebarHeaderTextColor : theme.centerChannelColor}
             />
-            <Text>{isNewMessages && 'Jump To New Messages'}</Text>
+            {isNewMessagesRef.current && (
+                <Text style={styles.newMessagesText}>
+                    {location === Screens.THREAD ? 'New replies' : 'New messages'}
+                </Text>
+            )}
         </Pressable>
     );
 
