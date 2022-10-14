@@ -1,5 +1,5 @@
 diff --git a/node_modules/@sentry/react-native/sentry.gradle b/node_modules/@sentry/react-native/sentry.gradle
-index c54bf8c..a82e034 100644
+index c54bf8c..2203438 100644
 --- a/node_modules/@sentry/react-native/sentry.gradle
 +++ b/node_modules/@sentry/react-native/sentry.gradle
 @@ -121,14 +121,22 @@ gradle.projectsEvaluated {
@@ -27,3 +27,24 @@ index c54bf8c..a82e034 100644
                ])
                args.addAll(!config.flavorAware ? [] : [
                        "--url", sentryProps.get("defaults.url"),
+@@ -211,10 +219,10 @@ static extractBundleTaskArguments(cmdArgs, Project project) {
+     cmdArgs.eachWithIndex { String arg, int i ->
+         if (arg == "--bundle-output") {
+             bundleOutput = cmdArgs[i + 1]
+-            project.logger.info("--bundle-output: `${bundleOutput}`")
++            project.logger.debug("--bundle-output: `${bundleOutput}`")
+         } else if (arg == "--sourcemap-output") {
+             sourcemapOutput = cmdArgs[i + 1]
+-            project.logger.info("--sourcemap-output param: `${sourcemapOutput}`")
++            project.logger.debug("--sourcemap-output param: `${sourcemapOutput}`")
+         }
+     }
+ 
+@@ -251,6 +259,7 @@ static extractBundleTaskArguments(cmdArgs, Project project) {
+ /** Force Bundle task to produce sourcemap files if they are not pre-configured by user yet. */
+ def forceSourceMapOutputFromBundleTask(bundleTask) {
+     def props = bundleTask.getProperties()
++    project.logger.debug('bundleTask', bundleTask)
+     def cmd = props.get("commandLine") as List<String>
+     def cmdArgs = props.get("args") as List<String>
+     def shouldCleanUp = false
