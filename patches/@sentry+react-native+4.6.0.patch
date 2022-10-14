@@ -1,0 +1,13 @@
+diff --git a/node_modules/@sentry/react-native/sentry.gradle b/node_modules/@sentry/react-native/sentry.gradle
+index c54bf8c..503331c 100644
+--- a/node_modules/@sentry/react-native/sentry.gradle
++++ b/node_modules/@sentry/react-native/sentry.gradle
+@@ -173,7 +173,7 @@ gradle.projectsEvaluated {
+         }
+ 
+         // register clean task extension
+-        cliCleanUpTask.onlyIf { shouldCleanUp }
++//        cliCleanUpTask.onlyIf { shouldCleanUp }
+         // due to chaining the last value of previousCliTask will be the final
+         // upload task, after which the cleanup can be done
+         previousCliTask.finalizedBy cliCleanUpTask
