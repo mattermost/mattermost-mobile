@@ -175,8 +175,9 @@ export default function SendHandler({
     const sendCommand = useCallback(async () => {
         if (value.trim() === '/call end') {
             await handleEndCall();
-
-            // NOTE: fallthrough because the server may want to handle the command as well
+            setSendingMessage(false);
+            clearDraft();
+            return;
         }
 
         const status = DraftUtils.getStatusFromSlashCommand(value);

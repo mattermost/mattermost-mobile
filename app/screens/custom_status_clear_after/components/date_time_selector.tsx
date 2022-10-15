@@ -82,13 +82,13 @@ const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme}: Props
         <View style={styles.container}>
             <View style={styles.buttonContainer}>
                 <Button
-                    testID={'clear_after.menu_item.date_and_time.button.date'}
+                    testID={'custom_status_clear_after.menu_item.date_and_time.button.date'}
                     onPress={showDatepicker}
                     title='Select Date'
                     color={theme.buttonBg}
                 />
                 <Button
-                    testID={'clear_after.menu_item.date_and_time.button.time'}
+                    testID={'custom_status_clear_after.menu_item.date_and_time.button.time'}
                     onPress={showTimepicker}
                     title='Select Time'
                     color={theme.buttonBg}
@@ -96,7 +96,7 @@ const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme}: Props
             </View>
             {show && (
                 <DateTimePicker
-                    testID='clear_after.date_time_picker'
+                    testID='custom_status_clear_after.date_time_picker'
                     value={date.toDate()}
                     mode={mode}
                     is24Hour={isMilitaryTime}

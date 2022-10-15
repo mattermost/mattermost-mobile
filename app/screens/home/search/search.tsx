@@ -4,10 +4,11 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, StyleSheet} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'react-native';
+import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
+import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {getPosts} from '@actions/local/post';
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
 import Autocomplete from '@components/autocomplete';
@@ -15,8 +16,10 @@ import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
+import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useKeyboardHeight} from '@hooks/device';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';
@@ -25,17 +28,18 @@ import Initial from './initial';
 import Results from './results';
 import Header from './results/header';
 
+import type PostModel from '@typings/database/models/servers/post';
+
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 
 const emptyFileResults: FileInfo[] = [];
-const emptyPostResults: string[] = [];
+const emptyPosts: PostModel[] = [];
 const emptyChannelIds: string[] = [];
 
 const dummyData = [1];
 
-const AutocompletePaddingTop = -4;
-const AutocompleteZindex = 11;
+const AutocompletePaddingTop = 4;
 
 type Props = {
     teamId: string;
@@ -47,8 +51,10 @@ const styles = StyleSheet.create({
     },
     loading: {
         flex: 1,
-        alignItems: 'center',
         justifyContent: 'center',
+    },
+    autocompleteContainer: {
+        zIndex: 11,
     },
 });
 
@@ -68,6 +74,8 @@ const SearchScreen = ({teamId}: Props) => {
     const isFocused = useIsFocused();
     const intl = useIntl();
     const theme = useTheme();
+    const insets = useSafeAreaInsets();
+    const keyboardHeight = useKeyboardHeight();
 
     const stateIndex = nav.getState().index;
     const serverUrl = useServerUrl();
@@ -79,11 +87,12 @@ const SearchScreen = ({teamId}: Props) => {
     const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [showResults, setShowResults] = useState(false);
+    const [containerHeight, setContainerHeight] = useState(0);
 
     const [loading, setLoading] = useState(false);
+    const [resultsLoading, setResultsLoading] = useState(false);
     const [lastSearchedValue, setLastSearchedValue] = useState('');
-
-    const [postIds, setPostIds] = useState<string[]>(emptyPostResults);
+    const [posts, setPosts] = useState<PostModel[]>(emptyPosts);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
     const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
 
@@ -105,13 +114,17 @@ const SearchScreen = ({teamId}: Props) => {
         setCursorPosition(newValue.length);
     }, []);
 
+    const handleLoading = useCallback((show: boolean) => {
+        (showResults ? setResultsLoading : setLoading)(show);
+    }, [showResults]);
+
     const handleSearch = useCallback(async (newSearchTeamId: string, term: string) => {
         const searchParams = getSearchParams(term);
         if (!searchParams.terms) {
             handleCancelAndClearSearch();
             return;
         }
-        setLoading(true);
+        handleLoading(true);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
         addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
@@ -121,12 +134,14 @@ const SearchScreen = ({teamId}: Props) => {
         ]);
 
         setFileInfos(files?.length ? files : emptyFileResults);
-        setPostIds(postResults?.order?.length ? postResults.order : emptyPostResults);
+        if (postResults.order) {
+            const postModels = await getPosts(serverUrl, postResults.order);
+            setPosts(postModels.length ? postModels : emptyPosts);
+        }
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
-
+        handleLoading(false);
         setShowResults(true);
-        setLoading(false);
-    }, [handleCancelAndClearSearch]);
+    }, [handleCancelAndClearSearch, handleLoading, showResults]);
 
     const onSubmit = useCallback(() => {
         handleSearch(searchTeamId, searchValue);
@@ -138,20 +153,24 @@ const SearchScreen = ({teamId}: Props) => {
     }, [handleSearch, handleTextChange, searchTeamId]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
-        setLoading(true);
+        setResultsLoading(true);
         setFilter(filterValue);
         const searchParams = getSearchParams(lastSearchedValue, filterValue);
         const {files, channels} = await searchFiles(serverUrl, searchTeamId, searchParams);
         setFileInfos(files?.length ? files : emptyFileResults);
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
-
-        setLoading(false);
+        setResultsLoading(false);
     }, [lastSearchedValue, searchTeamId]);
 
     const handleResultsTeamChange = useCallback((newTeamId: string) => {
         setSearchTeamId(newTeamId);
         handleSearch(newTeamId, lastSearchedValue);
-    }, [lastSearchedValue]);
+    }, [lastSearchedValue, handleSearch]);
+
+    const containerStyle = useMemo(() => {
+        const justifyContent = (resultsLoading || loading) ? 'center' : 'flex-start';
+        return {paddingTop: scrollPaddingTop, flexGrow: 1, justifyContent} as ViewProps;
+    }, [loading, resultsLoading, scrollPaddingTop]);
 
     const loadingComponent = useMemo(() => (
         <Loading
@@ -171,32 +190,15 @@ const SearchScreen = ({teamId}: Props) => {
         />
     ), [searchValue, searchTeamId, handleRecentSearch, handleTextChange]);
 
-    const resultsComponent = useMemo(() => (
-        <Results
-            selectedTab={selectedTab}
-            searchValue={lastSearchedValue}
-            postIds={postIds}
-            fileInfos={fileInfos}
-            scrollPaddingTop={scrollPaddingTop}
-            fileChannelIds={fileChannelIds}
-        />
-    ), [selectedTab, lastSearchedValue, postIds, fileInfos, scrollPaddingTop, fileChannelIds]);
-
     const renderItem = useCallback(() => {
         if (loading) {
             return loadingComponent;
         }
-        if (!showResults) {
-            return initialComponent;
-        }
-        return resultsComponent;
+        return initialComponent;
     }, [
         loading && loadingComponent,
-        !loading && !showResults && initialComponent,
-        !loading && showResults && resultsComponent,
+        initialComponent,
     ]);
-
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
 
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
@@ -218,7 +220,11 @@ const SearchScreen = ({teamId}: Props) => {
             top: headerHeight.value,
             zIndex: lastSearchedValue ? 10 : 0,
         };
-    }, [headerHeight, lastSearchedValue]);
+    }, [headerHeight.value, lastSearchedValue]);
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
 
     let header = null;
     if (lastSearchedValue && !loading) {
@@ -228,24 +234,37 @@ const SearchScreen = ({teamId}: Props) => {
                 setTeamId={handleResultsTeamChange}
                 onTabSelect={setSelectedTab}
                 onFilterChanged={handleFilterChange}
-                numberMessages={postIds.length}
+                numberMessages={posts.length}
                 selectedTab={selectedTab}
                 numberFiles={fileInfos.length}
                 selectedFilter={filter}
             />
         );
     }
+
+    const autocompleteMaxHeight = useDerivedValue(() => {
+        const iosAdjust = keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom;
+        const autocompleteRemoveFromHeight = headerHeight.value + (Platform.OS === 'ios' ? iosAdjust : 0);
+        return containerHeight - autocompleteRemoveFromHeight;
+    }, [keyboardHeight, insets.bottom, containerHeight]);
+
+    const autocompletePosition = useDerivedValue(() => {
+        return headerHeight.value - AutocompletePaddingTop;
+    }, [containerHeight]);
+
     const autocomplete = useMemo(() => (
         <Autocomplete
-            paddingTop={AutocompletePaddingTop}
-            postInputTop={0}
             updateValue={handleTextChange}
             cursorPosition={cursorPosition}
             value={searchValue}
             isSearch={true}
             hasFilesAttached={false}
+            availableSpace={autocompleteMaxHeight}
+            position={autocompletePosition}
+            growDown={true}
+            containerStyle={styles.autocompleteContainer}
         />
-    ), [cursorPosition, handleTextChange, searchValue]);
+    ), [cursorPosition, handleTextChange, searchValue, autocompleteMaxHeight, autocompletePosition]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
@@ -264,35 +283,47 @@ const SearchScreen = ({teamId}: Props) => {
                 onCancel={handleCancelAndClearSearch}
                 defaultValue={searchValue}
             />
-            <Animated.View style={[top, {zIndex: AutocompleteZindex}]}>
-                {autocomplete}
-            </Animated.View>
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
+                onLayout={onLayout}
             >
                 <Animated.View style={animated}>
                     <Animated.View style={top}>
                         <RoundedHeaderContext/>
                         {header}
                     </Animated.View>
-                    <AnimatedFlatList
-                        data={dummyData}
-                        contentContainerStyle={paddingTop}
-                        keyboardShouldPersistTaps='handled'
-                        keyboardDismissMode={'interactive'}
-                        nestedScrollEnabled={true}
-                        indicatorStyle='black'
-                        onScroll={onScroll}
-                        scrollEventThrottle={16}
-                        removeClippedSubviews={false}
-                        scrollToOverflowEnabled={true}
-                        overScrollMode='always'
-                        ref={scrollRef}
-                        renderItem={renderItem}
-                    />
+                    {!showResults &&
+                        <AnimatedFlatList
+                            data={dummyData}
+                            contentContainerStyle={containerStyle}
+                            keyboardShouldPersistTaps='handled'
+                            keyboardDismissMode={'interactive'}
+                            nestedScrollEnabled={true}
+                            indicatorStyle='black'
+                            onScroll={onScroll}
+                            scrollEventThrottle={16}
+                            removeClippedSubviews={false}
+                            scrollToOverflowEnabled={true}
+                            overScrollMode='always'
+                            ref={scrollRef}
+                            renderItem={renderItem}
+                        />
+                    }
+                    {showResults && !loading &&
+                        <Results
+                            loading={resultsLoading}
+                            selectedTab={selectedTab}
+                            searchValue={lastSearchedValue}
+                            posts={posts}
+                            fileInfos={fileInfos}
+                            scrollPaddingTop={scrollPaddingTop}
+                            fileChannelIds={fileChannelIds}
+                        />
+                    }
                 </Animated.View>
             </SafeAreaView>
+            {autocomplete}
         </FreezeScreen>
     );
 };

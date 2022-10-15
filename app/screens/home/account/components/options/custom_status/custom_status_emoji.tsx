@@ -28,7 +28,7 @@ const CustomStatusEmoji = ({emoji, isStatusSet}: CustomStatusEmojiProps) => {
 
     return (
         <View
-            testID={`custom_status.emoji.${isStatusSet ? emoji : 'default'}`}
+            testID={`account.custom_status.custom_status_emoji.${isStatusSet ? emoji : 'default'}`}
         >
             {isStatusSet && emoji ? (
                 <Emoji

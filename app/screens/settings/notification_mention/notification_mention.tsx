@@ -6,7 +6,6 @@ import React from 'react';
 import SettingContainer from '../setting_container';
 
 import MentionSettings from './mention_settings';
-import ReplySettings from './reply_settings';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -17,12 +16,12 @@ type NotificationMentionProps = {
 }
 const NotificationMention = ({componentId, currentUser, isCRTEnabled}: NotificationMentionProps) => {
     return (
-        <SettingContainer>
+        <SettingContainer testID='mention_notification_settings'>
             <MentionSettings
                 currentUser={currentUser}
                 componentId={componentId}
+                isCRTEnabled={isCRTEnabled}
             />
-            {!isCRTEnabled && <ReplySettings/>}
         </SettingContainer>
     );
 };

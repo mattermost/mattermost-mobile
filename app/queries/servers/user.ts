@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {combineLatest, Observable, of as of$} from 'rxjs';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {observeMyChannel} from '@queries/servers/channel';
+import {isChannelAdmin} from '@utils/user';
 
 import {queryPreferencesByCategoryAndName} from './preference';
 import {observeConfig, observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense} from './system';
@@ -110,9 +112,17 @@ export const observeUserIsTeamAdmin = (database: Database, userId: string, teamI
 
 export const observeUserIsChannelAdmin = (database: Database, userId: string, channelId: string) => {
     const id = `${channelId}-${userId}`;
-    return database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(
+    const myChannelRoles = observeMyChannel(database, channelId).pipe(
+        switchMap((mc) => of$(mc?.roles || '')),
+        distinctUntilChanged(),
+    );
+    const channelSchemeAdmin = database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(
         Q.where('id', Q.eq(id)),
     ).observe().pipe(
-        switchMap((tm) => of$(tm.length ? tm[0].schemeAdmin : false)),
+        switchMap((cm) => of$(cm.length ? cm[0].schemeAdmin : false)),
+        distinctUntilChanged(),
     );
+    return combineLatest([myChannelRoles, channelSchemeAdmin]).pipe(
+        switchMap(([mcr, csa]) => of$(isChannelAdmin(mcr) || csa)),
+    ) as Observable<boolean>;
 };

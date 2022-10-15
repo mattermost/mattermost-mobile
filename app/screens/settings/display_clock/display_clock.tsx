@@ -1,18 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {savePreference} from '@actions/remote/preference';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import useBackNavigation from '@hooks/navigate_back';
+import {popTopScreen} from '@screens/navigation';
 
-import {getSaveButton} from '../config';
 import SettingBlock from '../setting_block';
 import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
@@ -23,20 +21,15 @@ const CLOCK_TYPE = {
     MILITARY: 'MILITARY',
 } as const;
 
-const SAVE_CLOCK_BUTTON_ID = 'settings_display.clock.save.button';
-
 type DisplayClockProps = {
     componentId: string;
     currentUserId: string;
     hasMilitaryTimeFormat: boolean;
 }
 const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: DisplayClockProps) => {
-    const theme = useTheme();
     const [isMilitaryTimeFormat, setIsMilitaryTimeFormat] = useState(hasMilitaryTimeFormat);
     const serverUrl = useServerUrl();
     const intl = useIntl();
-
-    const saveButton = useMemo(() => getSaveButton(SAVE_CLOCK_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
 
     const onSelectClockPreference = useCallback((clockType: keyof typeof CLOCK_TYPE) => {
         setIsMilitaryTimeFormat(clockType === CLOCK_TYPE.MILITARY);
@@ -44,33 +37,27 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
 
     const close = () => popTopScreen(componentId);
 
-    const saveClockDisplayPreference = () => {
-        const timePreference: PreferenceType = {
-            category: Preferences.CATEGORY_DISPLAY_SETTINGS,
-            name: 'use_military_time',
-            user_id: currentUserId,
-            value: `${isMilitaryTimeFormat}`,
-        };
+    const saveClockDisplayPreference = useCallback(() => {
+        if (hasMilitaryTimeFormat !== isMilitaryTimeFormat) {
+            const timePreference: PreferenceType = {
+                category: Preferences.CATEGORY_DISPLAY_SETTINGS,
+                name: 'use_military_time',
+                user_id: currentUserId,
+                value: `${isMilitaryTimeFormat}`,
+            };
 
-        savePreference(serverUrl, [timePreference]);
+            savePreference(serverUrl, [timePreference]);
+        }
+
         close();
-    };
+    }, [hasMilitaryTimeFormat, isMilitaryTimeFormat, serverUrl]);
 
-    useEffect(() => {
-        const buttons = {
-            rightButtons: [{
-                ...saveButton,
-                enabled: hasMilitaryTimeFormat !== isMilitaryTimeFormat,
-            }],
-        };
-        setButtons(componentId, buttons);
-    }, [componentId, saveButton, isMilitaryTimeFormat]);
+    useBackNavigation(saveClockDisplayPreference);
 
-    useAndroidHardwareBackHandler(componentId, close);
-    useNavButtonPressed(SAVE_CLOCK_BUTTON_ID, componentId, saveClockDisplayPreference, [isMilitaryTimeFormat]);
+    useAndroidHardwareBackHandler(componentId, saveClockDisplayPreference);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='clock_display_settings'>
             <SettingBlock
                 disableHeader={true}
             >
@@ -79,7 +66,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
                     label={intl.formatMessage({id: 'settings_display.clock.standard', defaultMessage: '12-hour clock'})}
                     description={intl.formatMessage({id: 'settings_display.clock.normal.desc', defaultMessage: 'Example: 4:00 PM'})}
                     selected={!isMilitaryTimeFormat}
-                    testID='clock_display_settings.normal_clock.action'
+                    testID='clock_display_settings.twelve_hour.option'
                     type='select'
                     value={CLOCK_TYPE.NORMAL}
                 />
@@ -89,7 +76,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
                     label={intl.formatMessage({id: 'settings_display.clock.mz', defaultMessage: '24-hour clock'})}
                     description={intl.formatMessage({id: 'settings_display.clock.mz.desc', defaultMessage: 'Example: 16:00'})}
                     selected={isMilitaryTimeFormat}
-                    testID='clock_display_settings.military_clock.action'
+                    testID='clock_display_settings.twenty_four_hour.option'
                     type='select'
                     value={CLOCK_TYPE.MILITARY}
                 />

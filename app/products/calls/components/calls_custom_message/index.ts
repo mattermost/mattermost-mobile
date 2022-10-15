@@ -7,6 +7,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {CallsCustomMessage} from '@calls/components/calls_custom_message/calls_custom_message';
+import {observeIsCallLimitRestricted} from '@calls/observers';
 import {observeCurrentCall} from '@calls/state';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -14,11 +15,17 @@ import {getPreferenceAsBool} from '@helpers/api/preference';
 import {observeChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentUser, observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
+import {isDMorGM} from '@utils/channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 
-const enhanced = withObservables(['post'], ({post, database}: { post: PostModel } & WithDatabaseArgs) => {
+type OwnProps = {
+    serverUrl: string;
+    post: PostModel;
+}
+
+const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProps & WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
     const author = observeUser(database, post.userId);
     const isMilitaryTime = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observeWithColumns(['value']).pipe(
@@ -50,8 +57,13 @@ const enhanced = withObservables(['post'], ({post, database}: { post: PostModel 
         switchMap((c) => of$(c ? c.displayName : '')),
         distinctUntilChanged(),
     );
-    const joinChannelName = observeChannel(database, post.channelId).pipe(
+    const joinChannel = observeChannel(database, post.channelId);
+    const joinChannelName = joinChannel.pipe(
         switchMap((chan) => of$(chan?.displayName || '')),
+        distinctUntilChanged(),
+    );
+    const joinChannelIsDMorGM = joinChannel.pipe(
+        switchMap((chan) => of$(chan ? isDMorGM(chan) : false)),
         distinctUntilChanged(),
     );
 
@@ -63,6 +75,8 @@ const enhanced = withObservables(['post'], ({post, database}: { post: PostModel 
         currentCallChannelId,
         leaveChannelName,
         joinChannelName,
+        joinChannelIsDMorGM,
+        limitRestrictedInfo: observeIsCallLimitRestricted(serverUrl, post.channelId),
     };
 });
 

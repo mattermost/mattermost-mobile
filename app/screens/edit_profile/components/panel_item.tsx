@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import DocumentPicker from 'react-native-document-picker';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
+import {dismissBottomSheet} from '@screens/navigation';
 
 import type {MessageDescriptor} from '@formatjs/intl/src/types';
 import type PickerUtil from '@utils/file/file_picker';
@@ -31,25 +32,35 @@ const PanelItem = ({pickerAction, pictureUtils, onRemoveProfileImage}: PanelItem
     const panelTypes = useMemo(() => ({
         takePhoto: {
             icon: 'camera-outline',
-            onPress: () => pictureUtils?.attachFileFromCamera(),
+            onPress: async () => {
+                await dismissBottomSheet();
+                pictureUtils?.attachFileFromCamera();
+            },
             testID: 'attachment.takePhoto',
             text: {id: 'mobile.file_upload.camera_photo', defaultMessage: 'Take Photo'},
         },
         browsePhotoLibrary: {
             icon: 'file-generic-outline',
-            onPress: () => pictureUtils?.attachFileFromPhotoGallery(),
+            onPress: async () => {
+                await dismissBottomSheet();
+                pictureUtils?.attachFileFromPhotoGallery();
+            },
             testID: 'attachment.browsePhotoLibrary',
             text: {id: 'mobile.file_upload.library', defaultMessage: 'Photo Library'},
         },
         browseFiles: {
             icon: 'file-multiple-outline',
-            onPress: () => pictureUtils?.attachFileFromFiles(DocumentPicker.types.images),
+            onPress: async () => {
+                await dismissBottomSheet();
+                pictureUtils?.attachFileFromFiles(DocumentPicker.types.images);
+            },
             testID: 'attachment.browseFiles',
             text: {id: 'mobile.file_upload.browse', defaultMessage: 'Browse Files'},
         },
         removeProfilePicture: {
             icon: 'trash-can-outline',
-            onPress: () => {
+            onPress: async () => {
+                await dismissBottomSheet();
                 return onRemoveProfileImage && onRemoveProfileImage();
             },
             testID: 'attachment.removeImage',

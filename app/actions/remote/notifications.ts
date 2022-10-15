@@ -3,8 +3,9 @@
 
 import {Platform} from 'react-native';
 
-import {updatePostSinceCache, updatePostsInThreadsSinceCache} from '@actions/local/notification';
+// import {updatePostSinceCache, updatePostsInThreadsSinceCache} from '@actions/local/notification';
 import {fetchDirectChannelsInfo, fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
+import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
@@ -73,6 +74,18 @@ const fetchNotificationData = async (serverUrl: string, notification: Notificati
             }
         }
 
+        if (Platform.OS === 'android') {
+            // on Android we only fetched the post data on the native side
+            // when the RN context is not running, thus we need to fetch the
+            // data here as well
+            const isCRTEnabled = await getIsCRTEnabled(database);
+            const isThreadNotification = isCRTEnabled && Boolean(notification.payload?.root_id);
+            if (isThreadNotification) {
+                fetchPostThread(serverUrl, notification.payload!.root_id!);
+            } else {
+                fetchPostsForChannel(serverUrl, channelId);
+            }
+        }
         return {};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
@@ -88,15 +101,15 @@ export const backgroundNotification = async (serverUrl: string, notification: No
 
     const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
     if (lastDisconnectedAt) {
-        if (Platform.OS === 'ios') {
-            const isCRTEnabled = await getIsCRTEnabled(database);
-            const isThreadNotification = isCRTEnabled && Boolean(notification.payload?.root_id);
-            if (isThreadNotification) {
-                updatePostsInThreadsSinceCache(serverUrl, notification);
-            } else {
-                updatePostSinceCache(serverUrl, notification);
-            }
-        }
+        // if (Platform.OS === 'ios') {
+        //     const isCRTEnabled = await getIsCRTEnabled(database);
+        //     const isThreadNotification = isCRTEnabled && Boolean(notification.payload?.root_id);
+        //     if (isThreadNotification) {
+        //         updatePostsInThreadsSinceCache(serverUrl, notification);
+        //     } else {
+        //         updatePostSinceCache(serverUrl, notification);
+        //     }
+        // }
 
         await fetchNotificationData(serverUrl, notification, true);
     }

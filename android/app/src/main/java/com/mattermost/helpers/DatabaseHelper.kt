@@ -16,8 +16,7 @@ import java.lang.Exception
 import java.util.*
 
 class DatabaseHelper {
-    var defaultDatabase: Database? = null
-        private set
+    private var defaultDatabase: Database? = null
 
     val onlyServerUrl: String?
         get() {
@@ -83,12 +82,15 @@ class DatabaseHelper {
 
     fun queryIds(db: Database, tableName: String, ids: Array<String>): List<String> {
         val list: MutableList<String> = ArrayList()
-        val args = TextUtils.join(",", Arrays.stream(ids).map { value: String? -> "?" }.toArray())
+        val args = TextUtils.join(",", Arrays.stream(ids).map { "?" }.toArray())
         try {
             db.rawQuery("select distinct id from $tableName where id IN ($args)", ids as Array<Any?>).use { cursor ->
                 if (cursor.count > 0) {
                     while (cursor.moveToNext()) {
-                        list.add(cursor.getString(cursor.getColumnIndex("id")))
+                        val index = cursor.getColumnIndex("id")
+                        if (index >= 0) {
+                            list.add(cursor.getString(index))
+                        }
                     }
                 }
             }
@@ -100,12 +102,15 @@ class DatabaseHelper {
 
     fun queryByColumn(db: Database, tableName: String, columnName: String, values: Array<Any?>): List<String> {
         val list: MutableList<String> = ArrayList()
-        val args = TextUtils.join(",", Arrays.stream(values).map { value: Any? -> "?" }.toArray())
+        val args = TextUtils.join(",", Arrays.stream(values).map { "?" }.toArray())
         try {
             db.rawQuery("select distinct $columnName from $tableName where $columnName IN ($args)", values).use { cursor ->
                 if (cursor.count > 0) {
                     while (cursor.moveToNext()) {
-                        list.add(cursor.getString(cursor.getColumnIndex(columnName)))
+                        val index = cursor.getColumnIndex(columnName)
+                        if (index >= 0) {
+                            list.add(cursor.getString(index))
+                        }
                     }
                 }
             }
@@ -120,7 +125,7 @@ class DatabaseHelper {
         return result.getString("value")
     }
 
-    fun queryLastPostCreateAt(db: Database?, channelId: String): Double? {
+    private fun queryLastPostCreateAt(db: Database?, channelId: String): Double? {
         if (db != null) {
             val postsInChannelQuery = "SELECT earliest, latest FROM PostsInChannel WHERE channel_id=? ORDER BY latest DESC LIMIT 1"
             val cursor1 = db.rawQuery(postsInChannelQuery, arrayOf(channelId))
@@ -175,7 +180,7 @@ class DatabaseHelper {
                 val firstId = ordered.first()
                 val lastId = ordered.last()
                 lastFetchedAt = postList.fold(0.0) { acc, next ->
-                    val post = next.second as Map<String, Any?>
+                    val post = next.second as Map<*, *>
                     val createAt = post["create_at"] as Double
                     val updateAt = post["update_at"] as Double
                     val deleteAt = post["delete_at"] as Double
@@ -186,38 +191,38 @@ class DatabaseHelper {
                 var prevPostId = ""
 
                 val sortedPosts = postList.sortedBy { (_, value) ->
-                    ((value as Map<*, *>).get("create_at") as Double)
+                    ((value as Map<*, *>)["create_at"] as Double)
                 }
 
                 sortedPosts.forEachIndexed { index, it ->
                     val key = it.first
                     if (it.second != null) {
-                        val post = (it.second as MutableMap<String, Any?>)
+                        val post = it.second as MutableMap<String, Any?>
 
                         if (index == 0) {
                             post.putIfAbsent("prev_post_id", previousPostId)
-                        } else if (!prevPostId.isNullOrEmpty()) {
+                        } else if (prevPostId.isNotEmpty()) {
                             post.putIfAbsent("prev_post_id", prevPostId)
                         }
 
                         if (lastId == key) {
-                            earliest = post.get("create_at") as Double
+                            earliest = post["create_at"] as Double
                         }
                         if (firstId == key) {
-                            latest = post.get("create_at") as Double
+                            latest = post["create_at"] as Double
                         }
 
                         val jsonPost = JSONObject(post)
-                        val rootId = post.get("root_id") as? String
+                        val rootId = post["root_id"] as? String
 
                         if (!rootId.isNullOrEmpty()) {
-                            var thread = postsInThread.get(rootId)?.toMutableList()
+                            var thread = postsInThread[rootId]?.toMutableList()
                             if (thread == null) {
                                 thread = mutableListOf()
                             }
 
                             thread.add(jsonPost)
-                            postsInThread.put(rootId, thread.toList())
+                            postsInThread[rootId] = thread.toList()
                         }
 
                         if (find(db, "Post", key) == null) {
@@ -308,27 +313,6 @@ class DatabaseHelper {
         }
     }
 
-    fun getServerVersion(db: Database): String? {
-        val config = getSystemConfig(db)
-        if (config != null) {
-            return config.getString("Version")
-        }
-        return null
-    }
-
-    private fun getSystemConfig(db: Database): JSONObject? {
-        val configRecord = find(db, "System", "config")
-        if (configRecord != null) {
-            val value = configRecord.getString("value");
-            try {
-                return JSONObject(value)
-            } catch(e: JSONException) {
-                return null
-            }
-        }
-        return null
-    }
-
     private fun setDefaultDatabase(context: Context) {
         val databaseName = "app.db"
         val databasePath = Uri.fromFile(context.filesDir).toString() + "/" + databaseName
@@ -336,7 +320,7 @@ class DatabaseHelper {
     }
 
     private fun insertPost(db: Database, post: JSONObject) {
-        var metadata: JSONObject? = null
+        var metadata: JSONObject?
         var reactions: JSONArray? = null
         var customEmojis: JSONArray? = null
         var files: JSONArray? = null
@@ -390,7 +374,7 @@ class DatabaseHelper {
     }
 
     private fun updatePost(db: Database, post: JSONObject) {
-        var metadata: JSONObject? = null
+        var metadata: JSONObject?
         var reactions: JSONArray? = null
         var customEmojis: JSONArray? = null
 
@@ -441,10 +425,12 @@ class DatabaseHelper {
 
     private fun insertThread(db: Database, thread: ReadableMap) {
         // These fields are not present when we extract threads from posts
-        val isFollowing = try { thread.getBoolean("is_following") } catch (e: NoSuchKeyException) { false };
-        val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { 0 };
-        val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { 0 };
-        val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { 0 };
+        val isFollowing = try { thread.getBoolean("is_following") } catch (e: NoSuchKeyException) { false }
+        val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { 0 }
+        val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { 0 }
+        val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { 0 }
+        val lastReplyAt = try { thread.getDouble("last_reply_at") } catch (e: NoSuchKeyException) { 0 }
+        val replyCount = try { thread.getInt("reply_count") } catch (e: NoSuchKeyException) { 0 }
 
         db.execute(
                 "insert into Thread " +
@@ -452,9 +438,9 @@ class DatabaseHelper {
                         " values (?, ?, 0, ?, ?, ?, ?, ?, 'created')",
                 arrayOf(
                         thread.getString("id"),
-                        thread.getDouble("last_reply_at") ?: 0,
+                        lastReplyAt,
                         lastViewedAt,
-                        thread.getInt("reply_count") ?: 0,
+                        replyCount,
                         isFollowing,
                         unreadReplies,
                         unreadMentions
@@ -464,17 +450,19 @@ class DatabaseHelper {
 
     private fun updateThread(db: Database, thread: ReadableMap, existingRecord: ReadableMap) {
         // These fields are not present when we extract threads from posts
-        val isFollowing = try { thread.getBoolean("is_following") } catch (e: NoSuchKeyException) { existingRecord.getInt("is_following") == 1 };
-        val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { existingRecord.getDouble("last_viewed_at") };
-        val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_replies") };
-        val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_mentions") };
+        val isFollowing = try { thread.getBoolean("is_following") } catch (e: NoSuchKeyException) { existingRecord.getInt("is_following") == 1 }
+        val lastViewedAt = try { thread.getDouble("last_viewed_at") } catch (e: NoSuchKeyException) { existingRecord.getDouble("last_viewed_at") }
+        val unreadReplies = try { thread.getInt("unread_replies") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_replies") }
+        val unreadMentions = try { thread.getInt("unread_mentions") } catch (e: NoSuchKeyException) { existingRecord.getInt("unread_mentions") }
+        val lastReplyAt = try { thread.getDouble("last_reply_at") } catch (e: NoSuchKeyException) { 0 }
+        val replyCount = try { thread.getInt("reply_count") } catch (e: NoSuchKeyException) { 0 }
 
         db.execute(
                 "update Thread SET last_reply_at = ?, last_viewed_at = ?, reply_count = ?, is_following = ?, unread_replies = ?, unread_mentions = ?, _status = 'updated' where id = ?",
                 arrayOf(
-                        thread.getDouble("last_reply_at") ?: 0,
+                        lastReplyAt,
                         lastViewedAt,
-                        thread.getInt("reply_count") ?: 0,
+                        replyCount,
                         isFollowing,
                         unreadReplies,
                         unreadMentions,
@@ -518,9 +506,9 @@ class DatabaseHelper {
     private fun insertFiles(db: Database, files: JSONArray) {
         for (i in 0 until files.length()) {
             val file = files.getJSONObject(i)
-            val miniPreview = try { file.getString("mini_preview") } catch (e: JSONException) { "" };
-            val height = try { file.getInt("height") } catch (e: JSONException) { 0 };
-            val width = try { file.getInt("width") } catch (e: JSONException) { 0 };
+            val miniPreview = try { file.getString("mini_preview") } catch (e: JSONException) { "" }
+            val height = try { file.getInt("height") } catch (e: JSONException) { 0 }
+            val width = try { file.getInt("width") } catch (e: JSONException) { 0 }
             db.execute(
                     "insert into File (id, extension, height, image_thumbnail, local_path, mime_type, name, post_id, size, width, _status) " +
                             "values (?, ?, ?, ?, '', ?, ?, ?, ?, ?, 'created')",
@@ -604,11 +592,11 @@ class DatabaseHelper {
         for (i in 0 until chunks.size()) {
             val chunk = chunks.getMap(i)
             if (earliest >= chunk.getDouble("earliest") || latest <= chunk.getDouble("latest")) {
-                return chunk;
+                return chunk
             }
         }
 
-        return null;
+        return null
     }
 
     private fun insertPostInChannel(db: Database, channelId: String, earliest: Double, latest: Double): ReadableMap {
@@ -666,7 +654,7 @@ class DatabaseHelper {
         }
     }
 
-    private fun JSONObject.toMap(): Map<String, *> = keys().asSequence().associateWith {
+    private fun JSONObject.toMap(): Map<String, *> = keys().asSequence().associateWith { it ->
         when (val value = this[it])
         {
             is JSONArray ->

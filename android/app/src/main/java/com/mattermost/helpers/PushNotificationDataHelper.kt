@@ -2,6 +2,7 @@ package com.mattermost.helpers
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
@@ -25,7 +26,8 @@ class PushNotificationDataHelper(private val context: Context) {
 
 class PushNotificationDataRunnable {
     companion object {
-        private val specialMentions = listOf<String>("all", "here", "channel")
+        private val specialMentions = listOf("all", "here", "channel")
+
         @Synchronized
         suspend fun start(context: Context, initialData: Bundle) {
             try {
@@ -34,6 +36,7 @@ class PushNotificationDataRunnable {
                 val rootId = initialData.getString("root_id")
                 val isCRTEnabled = initialData.getString("is_crt_enabled") == "true"
                 val db = DatabaseHelper.instance!!.getDatabaseForServer(context, serverUrl)
+                Log.i("ReactNative", "Start fetching notification data in server="+serverUrl+" for channel="+channelId)
 
                 if (db != null) {
                     var postData: ReadableMap?
@@ -90,6 +93,7 @@ class PushNotificationDataRunnable {
                     }
 
                     db.close()
+                    Log.i("ReactNative", "Done processing push notification="+serverUrl+" for channel="+channelId)
                 }
             } catch (e: Exception) {
                 e.printStackTrace()
@@ -108,14 +112,13 @@ class PushNotificationDataRunnable {
                 additionalParams = "&collapsedThreads=true&collapsedThreadsExtended=true"
             }
 
-            var endpoint: String
             val receivingThreads = isCRTEnabled && !rootId.isNullOrEmpty()
-            if (receivingThreads) {
-                var queryParams = "?skipFetchThreads=false&perPage=60&fromCreatedAt=0&direction=up"
-                endpoint = "/api/v4/posts/$rootId/thread$queryParams$additionalParams"
+            val endpoint = if (receivingThreads) {
+                val queryParams = "?skipFetchThreads=false&perPage=60&fromCreatedAt=0&direction=up"
+                "/api/v4/posts/$rootId/thread$queryParams$additionalParams"
             } else {
-                var queryParams = if (since == null) "?page=0&per_page=60" else "?since=${since.toLong()}"
-                endpoint = "/api/v4/channels/$channelId/posts$queryParams$additionalParams"
+                val queryParams = if (since == null) "?page=0&per_page=60" else "?since=${since.toLong()}"
+                "/api/v4/channels/$channelId/posts$queryParams$additionalParams"
             }
 
             val postsResponse = fetch(serverUrl, endpoint)
@@ -124,11 +127,11 @@ class PushNotificationDataRunnable {
             if (postsResponse != null) {
                 val data = ReadableMapUtils.toMap(postsResponse)
                 results.putMap("posts", postsResponse)
-                val postsData = data.get("data") as? Map<*, *>
+                val postsData = data["data"] as? Map<*, *>
                 if (postsData != null) {
-                    val postsMap = postsData.get("posts")
+                    val postsMap = postsData["posts"]
                     if (postsMap != null) {
-                        val posts = ReadableMapUtils.toWritableMap(postsMap as? Map<String, Object>)
+                        val posts = ReadableMapUtils.toWritableMap(postsMap as? Map<String, Any>)
                         val iterator = posts.keySetIterator()
                         val userIds = mutableListOf<String>()
                         val usernames = mutableListOf<String>()
@@ -158,8 +161,8 @@ class PushNotificationDataRunnable {
 
                             if (isCRTEnabled) {
                                 // Add root post as a thread
-                                val rootId = post?.getString("root_id")
-                                if (rootId.isNullOrEmpty()) {
+                                val threadId = post?.getString("root_id")
+                                if (threadId.isNullOrEmpty()) {
                                     threads.pushMap(post!!)
                                 }
 
@@ -169,14 +172,14 @@ class PushNotificationDataRunnable {
                                     for (i in 0 until participants.size()) {
                                         val participant = participants.getMap(i)
 
-                                        val userId = participant.getString("id")
-                                        if (userId != currentUserId && userId != null) {
-                                            if (!threadParticipantUserIds.contains(userId)) {
-                                                threadParticipantUserIds.add(userId)
+                                        val participantId = participant.getString("id")
+                                        if (participantId != currentUserId && participantId != null) {
+                                            if (!threadParticipantUserIds.contains(participantId)) {
+                                                threadParticipantUserIds.add(participantId)
                                             }
 
-                                            if (!threadParticipantUsers.containsKey(userId)) {
-                                                threadParticipantUsers[userId!!] = participant
+                                            if (!threadParticipantUsers.containsKey(participantId)) {
+                                                threadParticipantUsers[participantId] = participant
                                             }
                                         }
 
@@ -236,14 +239,14 @@ class PushNotificationDataRunnable {
             val endpoint = "api/v4/users/ids"
             val options = Arguments.createMap()
             options.putArray("body", ReadableArrayUtils.toWritableArray(ReadableArrayUtils.toArray(userIds)))
-            return fetchWithPost(serverUrl, endpoint, options);
+            return fetchWithPost(serverUrl, endpoint, options)
         }
 
         private suspend fun fetchUsersByUsernames(serverUrl: String, usernames: ReadableArray): ReadableMap? {
             val endpoint = "api/v4/users/usernames"
             val options = Arguments.createMap()
             options.putArray("body", ReadableArrayUtils.toWritableArray(ReadableArrayUtils.toArray(usernames)))
-            return fetchWithPost(serverUrl, endpoint, options);
+            return fetchWithPost(serverUrl, endpoint, options)
         }
 
         private suspend fun fetch(serverUrl: String, endpoint: String): ReadableMap? {

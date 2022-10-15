@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useState} from 'react';
+import React, {Dispatch, SetStateAction} from 'react';
 import {useIntl} from 'react-intl';
 
 import {t} from '@i18n';
@@ -14,9 +14,11 @@ const replyHeaderText = {
     id: t('notification_settings.mention.reply'),
     defaultMessage: 'Send reply notifications for',
 };
-
-const ReplySettings = () => {
-    const [replyNotificationType, setReplyNotificationType] = useState('any');
+type ReplySettingsProps = {
+    replyNotificationType: string;
+    setReplyNotificationType: Dispatch<SetStateAction<string>>;
+}
+const ReplySettings = ({replyNotificationType, setReplyNotificationType}: ReplySettingsProps) => {
     const intl = useIntl();
 
     return (
@@ -27,6 +29,7 @@ const ReplySettings = () => {
                 action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_start_participate', defaultMessage: 'Threads that I start or participate in'})}
                 selected={replyNotificationType === 'any'}
+                testID='mention_notification_settings.threads_start_participate.option'
                 type='select'
                 value='any'
             />
@@ -35,6 +38,7 @@ const ReplySettings = () => {
                 action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_start', defaultMessage: 'Threads that I start'})}
                 selected={replyNotificationType === 'root'}
+                testID='mention_notification_settings.threads_start.option'
                 type='select'
                 value='root'
             />
@@ -43,6 +47,7 @@ const ReplySettings = () => {
                 action={setReplyNotificationType}
                 label={intl.formatMessage({id: 'notification_settings.threads_mentions', defaultMessage: 'Mentions in threads'})}
                 selected={replyNotificationType === 'never'}
+                testID='mention_notification_settings.threads_mentions.option'
                 type='select'
                 value='never'
             />

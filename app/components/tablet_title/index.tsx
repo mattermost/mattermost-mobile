@@ -65,7 +65,12 @@ const TabletTitle = ({action, enabled = true, onPress, testID, title}: Props) =>
         <>
             <View style={styles.container}>
                 <View style={styles.titleContainer}>
-                    <Text style={styles.title}>{title}</Text>
+                    <Text
+                        style={styles.title}
+                        testID={`${testID}.title`}
+                    >
+                        {title}
+                    </Text>
                 </View>
                 {Boolean(action) &&
                 <View style={styles.actionContainer}>
@@ -73,7 +78,7 @@ const TabletTitle = ({action, enabled = true, onPress, testID, title}: Props) =>
                         disabled={!enabled}
                         onPress={onPress}
                         type={Platform.select({android: 'native', ios: 'opacity'})}
-                        testID={testID}
+                        testID={`${testID}.${action?.toLocaleLowerCase()}.button`}
                         underlayColor={changeOpacity(theme.centerChannelColor, 0.1)}
                     >
                         <Text style={textStyle}>{action}</Text>

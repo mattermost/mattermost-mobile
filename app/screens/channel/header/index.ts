@@ -6,17 +6,27 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
+import {observeIsCallsFeatureRestricted} from '@calls/observers';
 import {General} from '@constants';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
-import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
-import {getUserCustomStatus, getUserIdFromChannelName, isCustomStatusExpired as checkCustomStatusIsExpired} from '@utils/user';
+import {
+    getUserCustomStatus,
+    getUserIdFromChannelName,
+    isCustomStatusExpired as checkCustomStatusIsExpired,
+} from '@utils/user';
 
 import ChannelHeader from './header';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables(['channelId'], ({channelId, database}: WithDatabaseArgs & {channelId: string}) => {
+type OwnProps = {
+    serverUrl: string;
+    channelId: string;
+};
+
+const enhanced = withObservables(['channelId'], ({serverUrl, channelId, database}: OwnProps & WithDatabaseArgs) => {
     const currentUserId = observeCurrentUserId(database);
     const teamId = observeCurrentTeamId(database);
 
@@ -50,6 +60,8 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: WithData
         switchMap((dm) => of$(checkCustomStatusIsExpired(dm))),
     );
 
+    const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
+
     const searchTerm = channel.pipe(
         combineLatestWith(dmUser),
         switchMap(([c, dm]) => {
@@ -72,11 +84,13 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: WithData
         channelType,
         customStatus,
         displayName,
+        isCustomStatusEnabled,
         isCustomStatusExpired,
         isOwnDirectMessage,
         memberCount,
         searchTerm,
         teamId,
+        callsFeatureRestricted: observeIsCallsFeatureRestricted(database, serverUrl, channelId),
     };
 });
 

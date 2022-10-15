@@ -86,7 +86,7 @@ export type CallsConnection = {
     disconnect: () => void;
     mute: () => void;
     unmute: () => void;
-    waitForReady: () => Promise<void>;
+    waitForPeerConnection: () => Promise<void>;
     raiseHand: () => void;
     unraiseHand: () => void;
 }
@@ -97,6 +97,8 @@ export type ServerCallsConfig = {
     AllowEnableCalls: boolean;
     DefaultEnabled: boolean;
     NeedsTURNCredentials: boolean;
+    sku_short_name: string;
+    MaxCallParticipants: number;
 }
 
 export type CallsConfig = ServerCallsConfig & {
@@ -112,6 +114,8 @@ export const DefaultCallsConfig = {
     DefaultEnabled: false,
     NeedsTURNCredentials: false,
     last_retrieved_at: 0,
+    sku_short_name: '',
+    MaxCallParticipants: 0,
 } as CallsConfig;
 
 export type ICEServersConfigs = Array<ConfigurationParamWithUrls | ConfigurationParamWithUrl>;

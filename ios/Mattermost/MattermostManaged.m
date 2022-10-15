@@ -95,6 +95,48 @@ RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName  shouldRemov
   }
 }
 
+RCT_EXPORT_METHOD(renameDatabase: (NSString *)databaseName  to: (NSString *) newDBName callback: (RCTResponseSenderBlock)callback){
+  @try {
+    NSDictionary *appGroupDir = [self appGroupSharedDirectory];
+    NSString *databaseDir;
+    NSString *newDBDir;
+
+    
+    if(databaseName){
+      databaseDir = [NSString stringWithFormat:@"%@/%@%@", appGroupDir[@"databasePath"], databaseName , @".db"];
+    }
+
+    if (newDBName){
+      newDBDir = [NSString stringWithFormat:@"%@/%@%@", appGroupDir[@"databasePath"], newDBName , @".db"];
+    }
+
+    NSFileManager *fileManager = [NSFileManager defaultManager];
+    NSError *error = nil;
+
+    BOOL destinationHasFile = [fileManager fileExistsAtPath:newDBDir];
+
+    if (!destinationHasFile && [fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@-wal", databaseDir]]) {
+      [fileManager moveItemAtPath:[NSString stringWithFormat:@"%@-wal", databaseDir] toPath:[NSString stringWithFormat:@"%@-wal", newDBDir] error:nil];
+    }
+    
+    if (!destinationHasFile && [fileManager fileExistsAtPath:[NSString stringWithFormat:@"%@-shm", databaseDir]]) {
+      [fileManager moveItemAtPath:[NSString stringWithFormat:@"%@-shm", databaseDir] toPath:[NSString stringWithFormat:@"%@-shm", newDBDir] error:nil];
+    }
+    
+    BOOL  successCode  = destinationHasFile;
+    if (!destinationHasFile &&  [fileManager fileExistsAtPath:databaseDir]){
+      successCode = [fileManager moveItemAtPath:databaseDir toPath: newDBDir error:&error];
+    }
+    NSNumber *success= [NSNumber numberWithBool:successCode];
+
+    callback(@[(error ?: [NSNull null]), success]);
+  }
+  @catch (NSException *exception) {
+      NSLog(@"%@", exception.reason);
+    callback(@[exception.reason, @NO]);
+  }
+}
+
 RCT_EXPORT_METHOD(deleteEntititesFile: (RCTResponseSenderBlock) callback) {
   @try {
     NSDictionary *appGroupDir = [self appGroupSharedDirectory];

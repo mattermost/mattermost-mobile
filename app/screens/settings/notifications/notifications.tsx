@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 
 import {General, Screens} from '@constants';
 import {t} from '@i18n';
-import {goToScreen} from '@screens/navigation';
+import {gotoSettingsScreen} from '@screens/settings/config';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
 
 import SettingContainer from '../setting_container';
@@ -58,8 +58,7 @@ const Notifications = ({
         const id = isCRTEnabled ? t('notification_settings.mentions') : t('notification_settings.mentions_replies');
         const defaultMessage = isCRTEnabled ? 'Mentions' : 'Mentions and Replies';
         const title = intl.formatMessage({id, defaultMessage});
-
-        goToScreen(screen, title);
+        gotoSettingsScreen(screen, title);
     }, [isCRTEnabled]);
 
     const goToNotificationSettingsPush = useCallback(() => {
@@ -69,7 +68,7 @@ const Notifications = ({
             defaultMessage: 'Push Notifications',
         });
 
-        goToScreen(screen, title);
+        gotoSettingsScreen(screen, title);
     }, []);
 
     const goToNotificationAutoResponder = useCallback(() => {
@@ -78,17 +77,17 @@ const Notifications = ({
             id: 'notification_settings.auto_responder',
             defaultMessage: 'Automatic Replies',
         });
-        goToScreen(screen, title);
+        gotoSettingsScreen(screen, title);
     }, []);
 
     const goToEmailSettings = useCallback(() => {
         const screen = Screens.SETTINGS_NOTIFICATION_EMAIL;
         const title = intl.formatMessage({id: 'notification_settings.email', defaultMessage: 'Email Notifications'});
-        goToScreen(screen, title);
+        gotoSettingsScreen(screen, title);
     }, []);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='notification_settings'>
             <SettingItem
                 onPress={goToNotificationSettingsMentions}
                 optionName='mentions'
@@ -96,21 +95,25 @@ const Notifications = ({
                     id: isCRTEnabled ? mentionTexts.crtOn.id : mentionTexts.crtOff.id,
                     defaultMessage: isCRTEnabled ? mentionTexts.crtOn.defaultMessage : mentionTexts.crtOff.defaultMessage,
                 })}
+                testID='notification_settings.mentions.option'
             />
             <SettingItem
                 optionName='push_notification'
                 onPress={goToNotificationSettingsPush}
+                testID='notification_settings.push_notifications.option'
             />
             <SettingItem
                 optionName='email'
                 onPress={goToEmailSettings}
                 info={intl.formatMessage(getEmailIntervalTexts(emailIntervalPref))}
+                testID='notification_settings.email_notifications.option'
             />
             {enableAutoResponder && (
                 <SettingItem
                     onPress={goToNotificationAutoResponder}
                     optionName='automatic_dm_replies'
                     info={currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
+                    testID='notification_settings.automatic_replies.option'
                 />
             )}
         </SettingContainer>

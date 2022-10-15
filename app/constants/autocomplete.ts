@@ -17,11 +17,8 @@ export const ALL_SEARCH_FLAGS_REGEX = /\b\w+:/g;
 
 export const CODE_REGEX = /(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)| *(`{3,}|~{3,})[ .]*(\S+)? *\n([\s\S]*?\s*)\3 *(?:\n+|$)/g;
 
-export const LIST_BOTTOM = -5;
-
-export const MAX_LIST_HEIGHT = 280;
-export const MAX_LIST_DIFF = 50;
-export const MAX_LIST_TABLET_DIFF = 140;
+export const MAX_LIST_HEIGHT = 230;
+export const MAX_LIST_TABLET_DIFF = 90;
 
 export default {
     ALL_SEARCH_FLAGS_REGEX,
@@ -32,7 +29,5 @@ export default {
     CHANNEL_MENTION_SEARCH_REGEX,
     CODE_REGEX,
     DATE_MENTION_SEARCH_REGEX,
-    LIST_BOTTOM,
     MAX_LIST_HEIGHT,
-    MAX_LIST_DIFF,
 };

@@ -15,6 +15,7 @@ import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetch
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
+import {loadCallForChannel} from '@calls/actions/calls';
 import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {queryActiveServer} from '@queries/app/servers';
@@ -293,6 +294,8 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                     models.push(...prepared);
                 }
             }
+
+            loadCallForChannel(serverUrl, channelId);
         } else {
             const addedUser = getUserById(database, userId);
             if (!addedUser) {

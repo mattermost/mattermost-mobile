@@ -81,7 +81,7 @@ const UserStatus = ({currentUser}: Props) => {
                         icon='check-circle'
                         imageStyles={{color: theme.onlineIndicator}}
                         onPress={() => setUserStatus(ONLINE)}
-                        testID='user_status.bottom_sheet.online'
+                        testID='user_status.online.option'
                         text={intl.formatMessage({
                             id: 'mobile.set_status.online',
                             defaultMessage: 'Online',
@@ -92,7 +92,7 @@ const UserStatus = ({currentUser}: Props) => {
                         icon='clock'
                         imageStyles={{color: theme.awayIndicator}}
                         onPress={() => setUserStatus(AWAY)}
-                        testID='user_status.bottom_sheet.away'
+                        testID='user_status.away.option'
                         text={intl.formatMessage({
                             id: 'mobile.set_status.away',
                             defaultMessage: 'Away',
@@ -103,7 +103,7 @@ const UserStatus = ({currentUser}: Props) => {
                         icon='minus-circle'
                         imageStyles={{color: theme.dndIndicator}}
                         onPress={() => setUserStatus(DND)}
-                        testID='user_status.bottom_sheet.dnd'
+                        testID='user_status.dnd.option'
                         text={intl.formatMessage({
                             id: 'mobile.set_status.dnd',
                             defaultMessage: 'Do Not Disturb',
@@ -114,7 +114,7 @@ const UserStatus = ({currentUser}: Props) => {
                         icon='circle-outline'
                         imageStyles={{color: changeOpacity('#B8B8B8', 0.64)}}
                         onPress={() => setUserStatus(OFFLINE)}
-                        testID='user_status.bottom_sheet.offline'
+                        testID='user_status.offline.option'
                         text={intl.formatMessage({
                             id: 'mobile.set_status.offline',
                             defaultMessage: 'Offline',
@@ -160,6 +160,7 @@ const UserStatus = ({currentUser}: Props) => {
     return (
         <TouchableOpacity
             onPress={handleSetStatus}
+            testID='account.user_presence.option'
         >
             <View style={styles.body}>
                 <UserStatusIndicator

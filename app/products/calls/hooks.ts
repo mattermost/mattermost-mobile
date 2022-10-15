@@ -53,7 +53,7 @@ export const useTryCallsFunction = (fn: () => void) => {
         });
         const notAvailable = intl.formatMessage({
             id: 'mobile.calls_not_available_option',
-            defaultMessage: '(Not Available)',
+            defaultMessage: '(Not available)',
         });
 
         Alert.alert(

@@ -147,7 +147,7 @@ extension Database {
             let onlyDMs = term.starts(with: "@") ? "AND c.type = 'D'" : ""
             var username: String = ""
             var displayName: String = ""
-            var searchTerm = term.removePrefix("@").lowercased()
+            let searchTerm = term.removePrefix("@").lowercased()
             var bindings: [String] = []
             if matchStart {
                 username = "u.username LIKE ?"

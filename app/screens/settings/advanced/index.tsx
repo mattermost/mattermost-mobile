@@ -68,7 +68,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const hasData = Boolean(dataSize && (dataSize > 0));
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='advanced_settings'>
             <TouchableOpacity
                 onPress={onPressDeleteData}
                 disabled={!hasData}
@@ -80,6 +80,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                     icon='trash-can-outline'
                     info={getFormattedFileSize(dataSize || 0)}
                     label={intl.formatMessage({id: 'advanced_settings.delete_data', defaultMessage: 'Delete Documents & Data'})}
+                    testID='advanced_settings.delete_data.option'
                     type='none'
                 />
                 <SettingSeparator/>

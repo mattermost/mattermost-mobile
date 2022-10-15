@@ -4,14 +4,13 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
-import {deferredAppEntryActions, entry} from '@actions/remote/entry/common';
-import {graphQLCommon} from '@actions/remote/entry/gql_common';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {deferredAppEntryActions, entry} from '@actions/remote/entry/gql_common';
 import {fetchStatusByIds} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
     handleCallChannelDisabled,
-    handleCallChannelEnabled, handleCallEnded,
+    handleCallChannelEnabled,
+    handleCallEnded,
     handleCallScreenOff,
     handleCallScreenOn,
     handleCallStarted,
@@ -28,7 +27,6 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import ServerDataOperator from '@database/operator/server_data_operator';
 import {getActiveServerUrl, queryActiveServer} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {
@@ -115,20 +113,26 @@ export async function handleClose(serverUrl: string, lastDisconnect: number) {
     });
 }
 
-async function doReconnectRest(serverUrl: string, operator: ServerDataOperator, currentTeamId: string, currentUserId: string, config: ClientConfig, license: ClientLicense, lastDisconnectedAt: number) {
+async function doReconnect(serverUrl: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return;
+    }
+
     const appDatabase = DatabaseManager.appDatabase?.database;
     if (!appDatabase) {
         return;
     }
 
     const {database} = operator;
+
+    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
+    resetWebSocketLastDisconnected(operator);
+
     const currentTeam = await getCurrentTeam(database);
     const currentChannel = await getCurrentChannel(database);
     const currentActiveServerUrl = await getActiveServerUrl(DatabaseManager.appDatabase!.database);
 
-    if (serverUrl === currentActiveServerUrl) {
-        DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
-    }
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
         if (serverUrl === currentActiveServerUrl) {
@@ -172,7 +176,8 @@ async function doReconnectRest(serverUrl: string, operator: ServerDataOperator, 
     await operator.batchRecords(models);
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
 
-    const {locale: currentUserLocale} = (await getCurrentUser(database))!;
+    const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
+    const {config, license} = await getCommonSystemValues(database);
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
 
     if (isSupportedServerCalls(config?.Version)) {
@@ -180,33 +185,6 @@ async function doReconnectRest(serverUrl: string, operator: ServerDataOperator, 
     }
 
     // https://mattermost.atlassian.net/browse/MM-41520
-}
-
-async function doReconnect(serverUrl: string) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
-    const {database} = operator;
-    const system = await getCommonSystemValues(database);
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
-
-    resetWebSocketLastDisconnected(operator);
-    let {config, license} = await fetchConfigAndLicense(serverUrl);
-    if (!config) {
-        config = system.config;
-    }
-
-    if (!license) {
-        license = system.license;
-    }
-
-    if (config.FeatureFlagGraphQL === 'true') {
-        await graphQLCommon(serverUrl, true, system.currentTeamId, system.currentChannelId);
-    } else {
-        await doReconnectRest(serverUrl, operator, system.currentTeamId, system.currentUserId, config, license, lastDisconnectedAt);
-    }
 }
 
 export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {

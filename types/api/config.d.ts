@@ -51,8 +51,8 @@ interface ClientConfig {
     EnableConfirmNotificationsToChannel: string;
     EnableCustomBrand: string;
     EnableCustomEmoji: string;
-    EnableCustomUserStatuses: string;
     EnableCustomTermsOfService: string;
+    EnableCustomUserStatuses: string;
     EnableDeveloper: string;
     EnableDiagnostics: string;
     EnableEmailBatching: string;
@@ -62,8 +62,8 @@ interface ClientConfig {
     EnableGifPicker: string;
     EnableGuestAccounts: string;
     EnableIncomingWebhooks: string;
-    EnableLatex: string;
     EnableInlineLatex: string;
+    EnableLatex: string;
     EnableLdap: string;
     EnableLinkPreviews: string;
     EnableMarketplace: string;
@@ -119,6 +119,7 @@ interface ClientConfig {
     FeatureFlagAppsEnabled?: string;
     FeatureFlagCollapsedThreads?: string;
     FeatureFlagGraphQL?: string;
+    FeatureFlagPostPriority?: string;
     GfycatApiKey: string;
     GfycatApiSecret: string;
     GoogleDeveloperKey: string;
@@ -139,8 +140,8 @@ interface ClientConfig {
     LdapPositionAttributeSet: string;
     LockTeammateNameDisplay: string;
     MaxFileSize: string;
-    MaxPostSize: string;
     MaxNotificationsPerChannel: string;
+    MaxPostSize: string;
     MinimumHashtagLength: string;
     OpenIdButtonColor: string;
     OpenIdButtonText: string;
@@ -151,6 +152,7 @@ interface ClientConfig {
     PasswordRequireUppercase: string;
     PluginsEnabled: string;
     PostEditTimeLimit: string;
+    PostPriority: string;
     PrivacyPolicyLink: string;
     ReportAProblemLink: string;
     RequireEmailVerification: string;
@@ -165,6 +167,7 @@ interface ClientConfig {
     SamlLoginButtonTextColor: string;
     SamlNicknameAttributeSet: string;
     SamlPositionAttributeSet: string;
+    SchemaVersion: string;
     SendEmailNotifications: string;
     SendPushNotifications: string;
     ShowEmailAddress: string;

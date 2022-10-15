@@ -1,20 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
+import React, {useCallback, useMemo, useState} from 'react';
 import {Platform} from 'react-native';
 
 import {updateMe} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import useBackNavigation from '@hooks/navigate_back';
+import {popTopScreen} from '@screens/navigation';
 import SettingSeparator from '@screens/settings/settings_separator';
 import {getNotificationProps} from '@utils/user';
 
-import {getSaveButton} from '../config';
 import SettingContainer from '../setting_container';
 
 import MobileSendPush from './push_send';
@@ -22,8 +19,6 @@ import MobilePushStatus from './push_status';
 import MobilePushThread from './push_thread';
 
 import type UserModel from '@typings/database/models/servers/user';
-
-const SAVE_NOTIF_BUTTON_ID = 'SAVE_NOTIF_BUTTON_ID';
 
 type NotificationMobileProps = {
     componentId: string;
@@ -36,55 +31,43 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
 
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
 
-    const [pushSend, setPushSend] = useState<PushStatus>(notifyProps.push);
-    const [pushStatus, setPushStatus] = useState<PushStatus>(notifyProps.push_status);
-    const [pushThread, setPushThreadPref] = useState<PushStatus>(notifyProps?.push_threads || 'all');
-
-    const intl = useIntl();
-    const theme = useTheme();
+    const [pushSend, setPushSend] = useState<UserNotifyPropsPush>(notifyProps.push);
+    const [pushStatus, setPushStatus] = useState<UserNotifyPropsPushStatus>(notifyProps.push_status);
+    const [pushThread, setPushThreadPref] = useState<UserNotifyPropsPushThreads>(notifyProps?.push_threads || 'all');
 
     const onMobilePushThreadChanged = useCallback(() => {
         setPushThreadPref(pushThread === 'all' ? 'mention' : 'all');
     }, [pushThread]);
 
-    const saveButton = useMemo(() => getSaveButton(SAVE_NOTIF_BUTTON_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
+    const close = () => popTopScreen(componentId);
 
-    const close = useCallback(() => popTopScreen(componentId), [componentId]);
-
-    const saveNotificationSettings = useCallback(() => {
-        const notify_props = {...notifyProps, push: pushSend, push_status: pushStatus, push_threads: pushThread};
-        updateMe(serverUrl, {notify_props} as unknown as UserNotifyProps);
-        close();
-    }, [serverUrl, notifyProps, pushSend, pushStatus, pushThread, close]);
-
-    useEffect(() => {
+    const canSaveSettings = useCallback(() => {
         const p = pushSend !== notifyProps.push;
         const pT = pushThread !== notifyProps.push_threads;
         const pS = pushStatus !== notifyProps.push_status;
+        return p || pT || pS;
+    }, [notifyProps, pushSend, pushStatus, pushThread]);
 
-        const enabled = p || pT || pS;
+    const saveNotificationSettings = useCallback(() => {
+        const canSave = canSaveSettings();
+        if (canSave) {
+            const notify_props: UserNotifyProps = {
+                ...notifyProps,
+                push: pushSend,
+                push_status: pushStatus,
+                push_threads: pushThread,
+            };
+            updateMe(serverUrl, {notify_props});
+        }
+        close();
+    }, [canSaveSettings, close, notifyProps, pushSend, pushStatus, pushThread, serverUrl]);
 
-        const buttons = {
-            rightButtons: [{
-                ...saveButton,
-                enabled,
-            }],
-        };
-        setButtons(componentId, buttons);
-    }, [
-        componentId,
-        notifyProps,
-        pushSend,
-        pushStatus,
-        pushThread,
-    ]);
+    useBackNavigation(saveNotificationSettings);
 
-    useNavButtonPressed(SAVE_NOTIF_BUTTON_ID, componentId, saveNotificationSettings, [saveNotificationSettings]);
-
-    useAndroidHardwareBackHandler(componentId, close);
+    useAndroidHardwareBackHandler(componentId, saveNotificationSettings);
 
     return (
-        <SettingContainer>
+        <SettingContainer testID='push_notification_settings'>
             <MobileSendPush
                 pushStatus={pushSend}
                 sendPushNotifications={sendPushNotifications}

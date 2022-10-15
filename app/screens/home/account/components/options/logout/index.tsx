@@ -41,7 +41,7 @@ const LogOut = () => {
             icon='exit-to-app'
             label={intl.formatMessage({id: 'account.logout', defaultMessage: 'Log out'})}
             optionDescriptionTextStyle={styles.desc}
-            testID='account.logout.action'
+            testID='account.logout.option'
             type='default'
         />
     );

@@ -1,6 +1,7 @@
 package com.mattermost.helpers;
 
 import com.facebook.react.bridge.Arguments;
+import com.facebook.react.bridge.ReadableArray;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableMapKeySetIterator;
 import com.facebook.react.bridge.ReadableType;
@@ -38,10 +39,16 @@ public class ReadableMapUtils {
                     jsonObject.put(key, readableMap.getString(key));
                     break;
                 case Map:
-                    jsonObject.put(key, ReadableMapUtils.toJSONObject(readableMap.getMap(key)));
+                    ReadableMap map = readableMap.getMap(key);
+                    if (map != null) {
+                        jsonObject.put(key, ReadableMapUtils.toJSONObject(map));
+                    }
                     break;
                 case Array:
-                    jsonObject.put(key, ReadableArrayUtils.toJSONArray(readableMap.getArray(key)));
+                    ReadableArray array = readableMap.getArray(key);
+                    if (array != null) {
+                        jsonObject.put(key, ReadableArrayUtils.toJSONArray(array));
+                    }
                     break;
             }
         }
@@ -92,10 +99,16 @@ public class ReadableMapUtils {
                     map.put(key, readableMap.getString(key));
                     break;
                 case Map:
-                    map.put(key, ReadableMapUtils.toMap(readableMap.getMap(key)));
+                    ReadableMap obj = readableMap.getMap(key);
+                    if (obj != null) {
+                        map.put(key, ReadableMapUtils.toMap(obj));
+                    }
                     break;
                 case Array:
-                    map.put(key, ReadableArrayUtils.toArray(readableMap.getArray(key)));
+                    ReadableArray array = readableMap.getArray(key);
+                    if (array != null) {
+                        map.put(key, ReadableArrayUtils.toArray(array));
+                    }
                     break;
             }
         }
@@ -105,26 +118,26 @@ public class ReadableMapUtils {
 
     public static WritableMap toWritableMap(Map<String, Object> map) {
         WritableMap writableMap = Arguments.createMap();
-        Iterator iterator = map.entrySet().iterator();
+        Iterator<Map.Entry<String, Object>> iterator = map.entrySet().iterator();
 
         while (iterator.hasNext()) {
-            Map.Entry pair = (Map.Entry)iterator.next();
+            Map.Entry<String, Object> pair = iterator.next();
             Object value = pair.getValue();
 
             if (value == null) {
-                writableMap.putNull((String) pair.getKey());
+                writableMap.putNull(pair.getKey());
             } else if (value instanceof Boolean) {
-                writableMap.putBoolean((String) pair.getKey(), (Boolean) value);
+                writableMap.putBoolean(pair.getKey(), (Boolean) value);
             } else if (value instanceof Double) {
-                writableMap.putDouble((String) pair.getKey(), (Double) value);
+                writableMap.putDouble(pair.getKey(), (Double) value);
             } else if (value instanceof Integer) {
-                writableMap.putInt((String) pair.getKey(), (Integer) value);
+                writableMap.putInt(pair.getKey(), (Integer) value);
             } else if (value instanceof String) {
-                writableMap.putString((String) pair.getKey(), (String) value);
-            } else if (value instanceof Map) {
-                writableMap.putMap((String) pair.getKey(), ReadableMapUtils.toWritableMap((Map<String, Object>) value));
-            } else if (value.getClass() != null && value.getClass().isArray()) {
-                writableMap.putArray((String) pair.getKey(), ReadableArrayUtils.toWritableArray((Object[]) value));
+                writableMap.putString(pair.getKey(), (String) value);
+            } else if (value instanceof Map)
+                writableMap.putMap(pair.getKey(), ReadableMapUtils.toWritableMap((Map<String, Object>) value));
+            else if (value.getClass().isArray()) {
+                writableMap.putArray(pair.getKey(), ReadableArrayUtils.toWritableArray((Object[]) value));
             }
 
             iterator.remove();

@@ -18,28 +18,19 @@ import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
 import {markThreadAsRead} from '@actions/remote/thread';
-import {Device, Events, Navigation, Screens} from '@constants';
+import {Device, Events, Navigation, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getTotalMentionsForServer} from '@database/subscription/unreads';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
-import {showOverlay} from '@screens/navigation';
+import {dismissOverlay, showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
-
-const CATEGORY = 'CAN_REPLY';
-const REPLY_ACTION = 'REPLY_ACTION';
-const NOTIFICATION_TYPE = {
-    CLEAR: 'clear',
-    MESSAGE: 'message',
-    SESSION: 'session',
-};
 
 class PushNotifications {
     configured = false;
@@ -52,74 +43,20 @@ class PushNotifications {
         Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
     }
 
-    cancelAllLocalNotifications = () => {
-        Notifications.cancelAllLocalNotifications();
-    };
-
-    cancelChannelNotifications = async (channelId: string, rootId?: string, isCRTEnabled?: boolean) => {
-        const notifications = await NativeNotifications.getDeliveredNotifications();
-        this.cancelNotificationsForChannel(notifications, channelId, rootId, isCRTEnabled);
-    };
-
-    cancelChannelsNotifications = async (channelIds: string[]) => {
-        const notifications = await NativeNotifications.getDeliveredNotifications();
-        for (const channelId of channelIds) {
-            this.cancelNotificationsForChannel(notifications, channelId);
-        }
-    };
-
-    cancelNotificationsForChannel = (notifications: NotificationWithChannel[], channelId: string, rootId?: string, isCRTEnabled?: boolean) => {
-        if (Platform.OS === 'android') {
-            NativeNotifications.removeDeliveredNotifications(channelId, rootId, isCRTEnabled);
-        } else {
-            const ids: string[] = [];
-            const clearThreads = Boolean(rootId);
-
-            for (const notification of notifications) {
-                if (notification.channel_id === channelId) {
-                    let doesNotificationMatch = true;
-                    if (clearThreads) {
-                        doesNotificationMatch = notification.thread === rootId;
-                    } else if (isCRTEnabled) {
-                        // Do not match when CRT is enabled BUT post is not a root post
-                        doesNotificationMatch = !notification.root_id;
-                    }
-                    if (doesNotificationMatch) {
-                        ids.push(notification.identifier);
-                    }
-                }
-            }
-
-            if (ids.length) {
-                NativeNotifications.removeDeliveredNotifications(ids);
-            }
-
-            let badgeCount = notifications.length - ids.length;
-
-            const serversUrl = Object.keys(DatabaseManager.serverDatabases);
-            const mentionPromises = serversUrl.map((url) => getTotalMentionsForServer(url));
-            Promise.all(mentionPromises).then((result) => {
-                badgeCount += result.reduce((acc, count) => (acc + count), 0);
-                badgeCount = badgeCount <= 0 ? 0 : badgeCount;
-                Notifications.ios.setBadgeCount(badgeCount);
-            });
-        }
-    };
-
     createReplyCategory = () => {
         const replyTitle = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.title'));
         const replyButton = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.button'));
         const replyPlaceholder = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.placeholder'));
         const replyTextInput: NotificationTextInput = {buttonTitle: replyButton, placeholder: replyPlaceholder};
-        const replyAction = new NotificationAction(REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
-        return new NotificationCategory(CATEGORY, [replyAction]);
+        const replyAction = new NotificationAction(PushNotification.REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
+        return new NotificationCategory(PushNotification.CATEGORY, [replyAction]);
     };
 
     getServerUrlFromNotification = async (notification: NotificationWithData) => {
         const {payload} = notification;
 
         if (!payload?.channel_id && (!payload?.server_url || !payload.server_id)) {
-            return undefined;
+            return payload?.server_url;
         }
 
         let serverUrl = payload.server_url;
@@ -176,10 +113,12 @@ class PushNotifications {
                 const screen = Screens.IN_APP_NOTIFICATION;
                 const passProps = {
                     notification,
-                    overlay: true,
                     serverName,
                     serverUrl,
                 };
+
+                // Dismiss the screen if it's already visible or else it blocks the navigation
+                await dismissOverlay(screen);
 
                 showOverlay(screen, passProps);
             }
@@ -208,7 +147,11 @@ class PushNotifications {
         const serverUrl = await this.getServerUrlFromNotification(notification);
 
         if (serverUrl) {
-            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl});
+            if (notification.userInteraction) {
+                DeviceEventEmitter.emit(Events.SESSION_EXPIRED, serverUrl);
+            } else {
+                DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl});
+            }
         }
     };
 
@@ -217,13 +160,13 @@ class PushNotifications {
 
         if (payload) {
             switch (payload.type) {
-                case NOTIFICATION_TYPE.CLEAR:
+                case PushNotification.NOTIFICATION_TYPE.CLEAR:
                     this.handleClearNotification(notification);
                     break;
-                case NOTIFICATION_TYPE.MESSAGE:
+                case PushNotification.NOTIFICATION_TYPE.MESSAGE:
                     this.handleMessageNotification(notification);
                     break;
-                case NOTIFICATION_TYPE.SESSION:
+                case PushNotification.NOTIFICATION_TYPE.SESSION:
                     this.handleSessionNotification(notification);
                     break;
             }
@@ -236,13 +179,11 @@ class PushNotifications {
 
     // This triggers when a notification is tapped and the app was in the background (iOS)
     onNotificationOpened = (incoming: Notification, completion: () => void) => {
-        if (Platform.OS === 'ios') {
-            const notification = convertToNotificationData(incoming, false);
-            notification.userInteraction = true;
+        const notification = convertToNotificationData(incoming, false);
+        notification.userInteraction = true;
 
-            this.processNotification(notification);
-            completion();
-        }
+        this.processNotification(notification);
+        completion();
     };
 
     // This triggers when the app was in the background (iOS)
@@ -288,6 +229,18 @@ class PushNotifications {
         return null;
     };
 
+    removeChannelNotifications = async (serverUrl: string, channelId: string) => {
+        NativeNotifications.removeChannelNotifications(serverUrl, channelId);
+    };
+
+    removeServerNotifications = (serverUrl: string) => {
+        NativeNotifications.removeServerNotifications(serverUrl);
+    };
+
+    removeThreadNotifications = async (serverUrl: string, threadId: string) => {
+        NativeNotifications.removeThreadNotifications(serverUrl, threadId);
+    };
+
     requestNotificationReplyPermissions = () => {
         if (Platform.OS === 'ios') {
             const replyCategory = this.createReplyCategory();
@@ -301,8 +254,14 @@ class PushNotifications {
                 notification.fireDate = new Date(notification.fireDate).toISOString();
             }
 
-            Notifications.postLocalNotification(notification);
+            return Notifications.postLocalNotification(notification);
         }
+
+        return 0;
+    };
+
+    cancelScheduleNotification = (notificationId: number) => {
+        Notifications.cancelLocalNotification(notificationId);
     };
 }
 

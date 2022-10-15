@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {Platform, StyleProp, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {LayoutChangeEvent, Platform, StyleProp, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -114,6 +114,7 @@ export type OptionItemProps = {
     testID?: string;
     type: OptionType;
     value?: string;
+    onLayout?: (event: LayoutChangeEvent) => void;
 }
 
 const OptionItem = ({
@@ -134,6 +135,7 @@ const OptionItem = ({
     testID = 'optionItem',
     type,
     value,
+    onLayout,
 }: OptionItemProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -227,6 +229,7 @@ const OptionItem = ({
         <View
             testID={testID}
             style={[styles.container, containerStyle]}
+            onLayout={onLayout}
         >
             <View style={styles.row}>
                 <View style={styles.labelContainer}>
@@ -263,7 +266,12 @@ const OptionItem = ({
                 {
                     Boolean(info) &&
                     <View style={styles.infoContainer}>
-                        <Text style={[styles.info, destructive && {color: theme.dndIndicator}]}>{info}</Text>
+                        <Text
+                            style={[styles.info, destructive && {color: theme.dndIndicator}]}
+                            testID={`${testID}.info`}
+                        >
+                            {info}
+                        </Text>
                     </View>
                 }
                 {actionComponent}

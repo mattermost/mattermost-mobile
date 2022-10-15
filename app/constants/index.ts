@@ -17,6 +17,7 @@ import Files from './files';
 import General from './general';
 import Integrations from './integrations';
 import Launch from './launch';
+import License from './license';
 import List from './list';
 import Navigation from './navigation';
 import Network from './network';
@@ -26,6 +27,7 @@ import Post from './post';
 import PostDraft from './post_draft';
 import Preferences from './preferences';
 import Profile from './profile';
+import PushNotification from './push_notification';
 import PushProxy from './push_proxy';
 import Screens from './screens';
 import ServerErrors from './server_errors';
@@ -52,6 +54,7 @@ export {
     General,
     Integrations,
     Launch,
+    License,
     List,
     Navigation,
     Network,
@@ -61,6 +64,7 @@ export {
     PostDraft,
     Preferences,
     Profile,
+    PushNotification,
     PushProxy,
     Screens,
     ServerErrors,

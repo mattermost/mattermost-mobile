@@ -81,7 +81,7 @@ const EditProfile = ({
         return isTablet ? null : {
             id: CLOSE_BUTTON_ID,
             icon: CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor),
-            testID: CLOSE_BUTTON_ID,
+            testID: 'close.edit_profile.button',
         };
     }, [isTablet, theme.centerChannelColor]);
 
@@ -193,7 +193,7 @@ const EditProfile = ({
                     action={buttonText}
                     enabled={canSave}
                     onPress={submitUser}
-                    testID='custom_status.done.button'
+                    testID='edit_profile'
                     title={intl.formatMessage({id: 'mobile.screen.your_profile', defaultMessage: 'Your Profile'})}
                 />
             }

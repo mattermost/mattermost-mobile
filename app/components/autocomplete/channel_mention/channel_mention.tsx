@@ -3,7 +3,7 @@
 
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Platform, SectionList, SectionListData, SectionListRenderItemInfo} from 'react-native';
+import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
 import {searchChannels} from '@actions/remote/channel';
 import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';
@@ -11,13 +11,12 @@ import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
 import {General} from '@constants';
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {hasTrailingSpaces} from '@utils/helpers';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -148,32 +147,24 @@ const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChan
     return newSections;
 };
 
-const filterLocalResults = (channels: ChannelModel[], term: string) => {
-    return channels.filter((c) =>
-        c.name.toLowerCase().startsWith(term) ||
-        c.displayName.toLowerCase().startsWith(term),
-    );
+const filterResults = (channels: Array<Channel | ChannelModel>, term: string) => {
+    return channels.filter((c) => {
+        const displayName = ('displayName' in c ? c.displayName : c.display_name).toLowerCase();
+        return c.name.toLowerCase().includes(term) ||
+            displayName.includes(term);
+    });
 };
 
 type Props = {
     cursorPosition: number;
     isSearch: boolean;
-    maxListHeight: number;
     myMembers: MyChannelModel[];
     updateValue: (v: string) => void;
     onShowingChange: (c: boolean) => void;
     value: string;
     nestedScrollEnabled: boolean;
+    listStyle: StyleProp<ViewStyle>;
 }
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        listView: {
-            backgroundColor: theme.centerChannelBg,
-            borderRadius: 4,
-        },
-    };
-});
 
 const getAllChannels = async (serverUrl: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -186,35 +177,28 @@ const getAllChannels = async (serverUrl: string) => {
 };
 
 const emptySections: Array<SectionListData<Channel>> = [];
-const emptyChannels: Channel[] = [];
-const emptyModelList: ChannelModel[] = [];
+const emptyChannels: Array<Channel | ChannelModel> = [];
 
 const ChannelMention = ({
     cursorPosition,
     isSearch,
-    maxListHeight,
     myMembers,
     updateValue,
     onShowingChange,
     value,
     nestedScrollEnabled,
+    listStyle,
 }: Props) => {
     const serverUrl = useServerUrl();
-    const theme = useTheme();
-    const style = getStyleFromTheme(theme);
 
     const [sections, setSections] = useState<Array<SectionListData<(Channel | ChannelModel)>>>(emptySections);
-    const [channels, setChannels] = useState<Channel[]>(emptyChannels);
+    const [channels, setChannels] = useState<Array<ChannelModel | Channel>>(emptyChannels);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
     const [useLocal, setUseLocal] = useState(true);
     const [localChannels, setlocalChannels] = useState<ChannelModel[]>();
-    const [filteredLocalChannels, setFilteredLocalChannels] = useState(emptyModelList);
-
-    const listStyle = useMemo(() =>
-        [style.listView, {maxHeight: maxListHeight}]
-    , [style, maxListHeight]);
+    const [filteredLocalChannels, setFilteredLocalChannels] = useState(emptyChannels);
 
     const runSearch = useMemo(() => debounce(async (sUrl: string, term: string) => {
         setLoading(true);
@@ -227,17 +211,21 @@ const ChannelMention = ({
                 fallbackChannels = await getAllChannels(sUrl);
                 setlocalChannels(fallbackChannels);
             }
-            const filteredChannels = filterLocalResults(fallbackChannels, term);
-            setFilteredLocalChannels(filteredChannels.length ? filteredChannels : emptyModelList);
+            const filteredChannels = filterResults(fallbackChannels, term);
+            setFilteredLocalChannels(filteredChannels.length ? filteredChannels : emptyChannels);
         } else if (receivedChannels) {
-            setChannels(receivedChannels.length ? receivedChannels : emptyChannels);
+            let channelsToStore: Array<Channel | ChannelModel> = receivedChannels;
+            if (hasTrailingSpaces(term)) {
+                channelsToStore = filterResults(receivedChannels, term);
+            }
+            setChannels(channelsToStore.length ? channelsToStore : emptyChannels);
         }
         setLoading(false);
     }, 200), []);
 
     const matchTerm = getMatchTermForChannelMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
-        setFilteredLocalChannels(emptyModelList);
+        setFilteredLocalChannels(emptyChannels);
         setChannels(emptyChannels);
         setSections(emptySections);
         runSearch.cancel();

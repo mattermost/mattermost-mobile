@@ -195,7 +195,7 @@ describe('Autocomplete - At-Mention', () => {
         await expect(userAtMentionAutocomplete).toBeVisible();
     });
 
-    it('MM-T4878_9 - should stop suggesting user after full name with trailing space -- KNOWN ISSUE: MM-45279', async () => {
+    it('MM-T4878_9 - should stop suggesting user after full name with trailing space', async () => {
         // # Type in "@" to activate at-mention autocomplete
         await ChannelScreen.postInput.typeText('@');
         await Autocomplete.toBeVisible();
@@ -232,7 +232,7 @@ describe('Autocomplete - At-Mention', () => {
         await expect(userAtMentionAutocomplete).not.toBeVisible();
     });
 
-    it('MM-T4878_11 - should be able to select at-mention multiple times', async () => {
+    it('MM-T4878_11 - should be able to select at-mention multiple times -- KNOWN ISSUE: MM-46648', async () => {
         // # Type in "@" to activate at-mention autocomplete
         await expect(Autocomplete.sectionAtMentionList).not.toBeVisible();
         await ChannelScreen.postInput.typeText('@');

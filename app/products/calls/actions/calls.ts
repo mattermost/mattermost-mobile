@@ -6,7 +6,8 @@ import InCallManager from 'react-native-incall-manager';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {
-    getCallsConfig, getCallsState,
+    getCallsConfig,
+    getCallsState,
     myselfLeftCall,
     setCalls,
     setChannelEnabled,
@@ -14,6 +15,7 @@ import {
     setPluginEnabled,
     setScreenShareURL,
     setSpeakerPhone,
+    setCallForChannel,
 } from '@calls/state';
 import {General, Preferences} from '@constants';
 import Calls from '@constants/calls';
@@ -33,6 +35,7 @@ import type {
     Call,
     CallParticipant,
     CallsConnection,
+    ServerCallState,
     ServerChannelState,
 } from '@calls/types/calls';
 import type {Client} from '@client/rest';
@@ -68,7 +71,7 @@ export const loadConfig = async (serverUrl: string, force = false) => {
         return {error};
     }
 
-    const nextConfig = {...config, ...data, last_retrieved_at: now};
+    const nextConfig = {...data, last_retrieved_at: now};
     setConfig(serverUrl, nextConfig);
     return {data: nextConfig};
 };
@@ -94,24 +97,7 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
 
     for (const channel of resp) {
         if (channel.call) {
-            const call = channel.call;
-            callsResults[channel.channel_id] = {
-                participants: channel.call.users.reduce((accum, cur, curIdx) => {
-                    // Add the id to the set of UserModels we want to ensure are loaded.
-                    ids.add(cur);
-
-                    // Create the CallParticipant
-                    const muted = call.states && call.states[curIdx] ? !call.states[curIdx].unmuted : true;
-                    const raisedHand = call.states && call.states[curIdx] ? call.states[curIdx].raised_hand : 0;
-                    accum[cur] = {id: cur, muted, raisedHand};
-                    return accum;
-                }, {} as Dictionary<CallParticipant>),
-                channelId: channel.channel_id,
-                startTime: call.start_at,
-                screenOn: call.screen_sharing_id,
-                threadId: call.thread_id,
-                ownerId: call.owner_id,
-            };
+            callsResults[channel.channel_id] = createCallAndAddToIds(channel.channel_id, channel.call, ids);
         }
         enabledChannels[channel.channel_id] = channel.enabled;
     }
@@ -124,6 +110,58 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
     setCalls(serverUrl, userId, callsResults, enabledChannels);
 
     return {data: {calls: callsResults, enabled: enabledChannels}};
+};
+
+export const loadCallForChannel = async (serverUrl: string, channelId: string) => {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    let resp: ServerChannelState;
+    try {
+        resp = await client.getCallForChannel(channelId);
+    } catch (error) {
+        await forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+
+    let call: Call | undefined;
+    const ids = new Set<string>();
+    if (resp.call) {
+        call = createCallAndAddToIds(channelId, resp.call, ids);
+    }
+
+    // Batch load user models async because we'll need them later
+    if (ids.size > 0) {
+        fetchUsersByIds(serverUrl, Array.from(ids));
+    }
+
+    setCallForChannel(serverUrl, channelId, resp.enabled, call);
+
+    return {data: {call, enabled: resp.enabled}};
+};
+
+const createCallAndAddToIds = (channelId: string, call: ServerCallState, ids: Set<string>) => {
+    return {
+        participants: call.users.reduce((accum, cur, curIdx) => {
+            // Add the id to the set of UserModels we want to ensure are loaded.
+            ids.add(cur);
+
+            // Create the CallParticipant
+            const muted = call.states && call.states[curIdx] ? !call.states[curIdx].unmuted : true;
+            const raisedHand = call.states && call.states[curIdx] ? call.states[curIdx].raised_hand : 0;
+            accum[cur] = {id: cur, muted, raisedHand};
+            return accum;
+        }, {} as Dictionary<CallParticipant>),
+        channelId,
+        startTime: call.start_at,
+        screenOn: call.screen_sharing_id,
+        threadId: call.thread_id,
+        ownerId: call.owner_id,
+    } as Call;
 };
 
 export const loadConfigAndCalls = async (serverUrl: string, userId: string) => {
@@ -151,7 +189,10 @@ export const checkIsCallsPluginEnabled = async (serverUrl: string) => {
     }
 
     const enabled = data.findIndex((m) => m.id === Calls.PluginId) !== -1;
-    setPluginEnabled(serverUrl, enabled);
+    const curEnabled = getCallsConfig(serverUrl).pluginEnabled;
+    if (enabled !== curEnabled) {
+        setPluginEnabled(serverUrl, enabled);
+    }
 
     return {data: enabled};
 };
@@ -199,7 +240,7 @@ export const joinCall = async (serverUrl: string, channelId: string): Promise<{ 
     }
 
     try {
-        await connection.waitForReady();
+        await connection.waitForPeerConnection();
         return {data: channelId};
     } catch (e) {
         connection.disconnect();

@@ -40,7 +40,7 @@ const UserStatus = ({size = 6, status = General.OFFLINE}: UserStatusProps) => {
         <CompassIcon
             name={iconName}
             style={{fontSize: size, color: iconColor}}
-            testID={`user_status.icon.${status}`}
+            testID={`user_status.indicator.${status}`}
         />
     );
 };

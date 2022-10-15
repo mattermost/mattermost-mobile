@@ -1,5 +1,7 @@
 package com.mattermost.helpers;
 
+import androidx.annotation.NonNull;
+
 import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.WritableMap;
 
@@ -18,7 +20,7 @@ public class ResolvePromise implements Promise {
     }
 
     @Override
-    public void reject(String code, WritableMap map) {
+    public void reject(String code, @NonNull WritableMap map) {
 
     }
 
@@ -48,7 +50,7 @@ public class ResolvePromise implements Promise {
     }
 
     @Override
-    public void reject(String code, String message, WritableMap map) {
+    public void reject(String code, String message, @NonNull WritableMap map) {
 
     }
 

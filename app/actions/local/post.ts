@@ -3,7 +3,7 @@
 
 import {ActionType, Post} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getPostById, prepareDeletePost} from '@queries/servers/post';
+import {getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {generateId} from '@utils/general';
@@ -231,5 +231,14 @@ export async function storePostsForChannel(
     } catch (error) {
         logError('storePostsForChannel', error);
         return {error};
+    }
+}
+
+export async function getPosts(serverUrl: string, ids: string[]) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        return queryPostsById(database, ids).fetch();
+    } catch (error) {
+        return [];
     }
 }

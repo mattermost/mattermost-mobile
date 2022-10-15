@@ -1,9 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+import {Client} from '@client/rest';
 import {MEMBERS_PER_PAGE} from '@constants/graphql';
 import NetworkManager from '@managers/network_manager';
-
-import {Client} from '../rest';
 
 import QueryNames from './constants';
 
@@ -16,7 +15,7 @@ const doGQLQuery = async (serverUrl: string, query: string, variables: {[name: s
     }
 
     try {
-        const response = await client.doFetch('/api/v5/graphql', {method: 'post', body: JSON.stringify({query, variables, operationName})}) as GQLResponse;
+        const response = await client.doFetch('/api/v5/graphql', {method: 'post', body: {query, variables, operationName}}) as GQLResponse;
         return response;
     } catch (error) {
         return {error};
@@ -188,6 +187,7 @@ query ${QueryNames.QUERY_ENTRY} {
     }
     teamMembers(userId:"me") {
         deleteAt
+        schemeAdmin
         roles {
             id
             name
@@ -221,6 +221,8 @@ query ${QueryNames.QUERY_CHANNELS}($teamId: String!, $perPage: Int!, $exclude: B
         msgCount
         msgCountRoot
         mentionCount
+        mentionCountRoot
+        schemeAdmin
         lastViewedAt
         notifyProps
         roles {
@@ -234,6 +236,7 @@ query ${QueryNames.QUERY_CHANNELS}($teamId: String!, $perPage: Int!, $exclude: B
             purpose
             type
             createAt
+            updateAt
             creatorId
             deleteAt
             displayName
@@ -253,6 +256,7 @@ query ${QueryNames.QUERY_CHANNELS}($teamId: String!, $perPage: Int!, $exclude: B
     sidebarCategories(userId:"me", teamId:$teamId, excludeTeam:$exclude) {
         displayName
         id
+        sortOrder
         sorting
         type
         muted
@@ -270,6 +274,8 @@ query ${QueryNames.QUERY_CHANNELS_NEXT}($teamId: String!, $perPage: Int!, $exclu
         msgCount
         msgCountRoot
         mentionCount
+        mentionCountRoot
+        schemeAdmin
         lastViewedAt
         notifyProps
         roles {
@@ -283,6 +289,7 @@ query ${QueryNames.QUERY_CHANNELS_NEXT}($teamId: String!, $perPage: Int!, $exclu
             purpose
             type
             createAt
+            updateAt
             creatorId
             deleteAt
             displayName
@@ -309,14 +316,22 @@ query ${QueryNames.QUERY_ALL_CHANNELS}($perPage: Int!){
         msgCount
         msgCountRoot
         mentionCount
+        mentionCountRoot
+        schemeAdmin
         lastViewedAt
         notifyProps
+        roles {
+            id
+            name
+            permissions
+        }
         channel {
             id
             header
             purpose
             type
             createAt
+            updateAt
             creatorId
             deleteAt
             displayName
@@ -343,14 +358,22 @@ query ${QueryNames.QUERY_ALL_CHANNELS_NEXT}($perPage: Int!, $cursor: String!) {
         msgCount
         msgCountRoot
         mentionCount
+        mentionCountRoot
+        schemeAdmin
         lastViewedAt
         notifyProps
+        roles {
+            id
+            name
+            permissions
+        }
         channel {
             id
             header
             purpose
             type
             createAt
+            updateAt
             creatorId
             deleteAt
             displayName

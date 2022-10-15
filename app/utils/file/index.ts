@@ -18,7 +18,7 @@ import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {hashCode} from '@utils/security';
+import {hashCode_DEPRECATED, urlSafeBase64Encode} from '@utils/security';
 
 import type FileModel from '@typings/database/models/servers/file';
 
@@ -165,8 +165,17 @@ export async function deleteV1Data() {
 }
 
 export async function deleteFileCache(serverUrl: string) {
-    const serverDir = hashCode(serverUrl);
-    const cacheDir = `${FileSystem.CachesDirectoryPath}/${serverDir}`;
+    const serverDir = urlSafeBase64Encode(serverUrl);
+    deleteFileCacheByDir(serverDir);
+}
+
+export async function deleteLegacyFileCache(serverUrl: string) {
+    const serverDir = hashCode_DEPRECATED(serverUrl);
+    deleteFileCacheByDir(serverDir);
+}
+
+export async function deleteFileCacheByDir(dir: string) {
+    const cacheDir = `${FileSystem.CachesDirectoryPath}/${dir}`;
     if (cacheDir) {
         const cacheDirInfo = await FileSystem.exists(cacheDir);
         if (cacheDirInfo) {
@@ -258,9 +267,16 @@ export const isImage = (file?: FileInfo | FileModel) => {
         return false;
     }
 
-    const mimeType = 'mime_type' in file ? file.mime_type : file.mimeType;
+    if (isGif(file)) {
+        return true;
+    }
 
-    return (isGif(file) || mimeType.startsWith('image/'));
+    let mimeType = 'mime_type' in file ? file.mime_type : file.mimeType;
+    if (!mimeType) {
+        mimeType = lookupMimeType(file.extension) || lookupMimeType(file.name);
+    }
+
+    return Boolean(mimeType?.startsWith('image/'));
 };
 
 export const isDocument = (file?: FileInfo | FileModel) => {
@@ -340,9 +356,10 @@ export function getFileType(file: FileInfo): string {
 }
 
 export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | FileModel) {
+    const fileIdPath = file.id?.replace(/[^0-9a-z]/g, '');
     if (serverUrl) {
-        const server = hashCode(serverUrl);
-        if (file?.name) {
+        const server = urlSafeBase64Encode(serverUrl);
+        if (file?.name && !file.name.includes('/')) {
             let extension: string | undefined = file.extension;
             let filename = file.name;
 
@@ -362,9 +379,9 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
                 }
             }
 
-            return `${FileSystem.CachesDirectoryPath}/${server}/${filename}-${hashCode(file.id!)}.${extension}`;
+            return `${FileSystem.CachesDirectoryPath}/${server}/${filename}-${fileIdPath}.${extension}`;
         } else if (file?.id && file?.extension) {
-            return `${FileSystem.CachesDirectoryPath}/${server}/${file.id}.${file.extension}`;
+            return `${FileSystem.CachesDirectoryPath}/${server}/${fileIdPath}.${file.extension}`;
         }
     }
 
@@ -504,8 +521,9 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
     try {
         const files: FileSystem.ReadDirItem[][] = [];
 
-        const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${hashCode(serverUrl)}`);
+        const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${urlSafeBase64Encode(serverUrl)}`);
         files.push(directoryFiles);
+
         const flattenedFiles = files.flat();
         const totalSize = flattenedFiles.reduce((acc, file) => acc + file.size, 0);
         return {

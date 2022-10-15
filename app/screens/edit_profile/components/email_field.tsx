@@ -85,13 +85,18 @@ const EmailField = ({
                 onFocusNextField={onFocusNextField}
                 onTextChange={onChange}
                 returnKeyType='next'
-                testID='edit_profile.text_setting.email'
+                testID='edit_profile_form.email'
                 value={email}
             />
             <View
                 style={descContainer}
             >
-                <Text style={style.text}>{fieldDescription}</Text>
+                <Text
+                    style={style.text}
+                    testID='edit_profile_form.email.input.description'
+                >
+                    {fieldDescription}
+                </Text>
             </View>
 
         </>

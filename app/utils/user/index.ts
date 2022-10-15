@@ -91,6 +91,10 @@ export function isSystemAdmin(roles: string): boolean {
     return isRoleInRoles(roles, Permissions.SYSTEM_ADMIN_ROLE);
 }
 
+export function isChannelAdmin(roles: string): boolean {
+    return isRoleInRoles(roles, Permissions.CHANNEL_ADMIN_ROLE);
+}
+
 export const getUsersByUsername = (users: UserModel[]) => {
     const usersByUsername: Dictionary<UserModel> = {};
 

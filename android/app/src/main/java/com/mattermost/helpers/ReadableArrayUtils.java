@@ -99,23 +99,17 @@ public class ReadableArrayUtils {
         for (Object value : array) {
             if (value == null) {
                 writableArray.pushNull();
-            }
-            if (value instanceof Boolean) {
+            } else if (value instanceof Boolean) {
                 writableArray.pushBoolean((Boolean) value);
-            }
-            if (value instanceof Double) {
+            } else if (value instanceof Double) {
                 writableArray.pushDouble((Double) value);
-            }
-            if (value instanceof Integer) {
+            } else if (value instanceof Integer) {
                 writableArray.pushInt((Integer) value);
-            }
-            if (value instanceof String) {
+            } else if (value instanceof String) {
                 writableArray.pushString((String) value);
-            }
-            if (value instanceof Map) {
+            } else if (value instanceof Map) {
                 writableArray.pushMap(ReadableMapUtils.toWritableMap((Map<String, Object>) value));
-            }
-            if (value.getClass().isArray()) {
+            } else if (value.getClass().isArray()) {
                 writableArray.pushArray(ReadableArrayUtils.toWritableArray((Object[]) value));
             }
         }

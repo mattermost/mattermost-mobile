@@ -24,7 +24,7 @@ const Settings = () => {
             action={openSettings}
             icon='settings-outline'
             label={intl.formatMessage({id: 'account.settings', defaultMessage: 'Settings'})}
-            testID='account.settings.action'
+            testID='account.settings.option'
             type='default'
         />
     );

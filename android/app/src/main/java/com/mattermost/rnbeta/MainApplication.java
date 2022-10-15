@@ -1,13 +1,12 @@
 package com.mattermost.rnbeta;
 
 import com.facebook.react.bridge.JSIModuleSpec;
-import com.facebook.react.bridge.JavaScriptContextHolder;
 
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import java.io.File;
-import java.util.Arrays;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -40,10 +39,9 @@ import com.facebook.soloader.SoLoader;
 
 import com.mattermost.networkclient.RCTOkHttpClientFactory;
 import com.mattermost.newarchitecture.MainApplicationReactNativeHost;
-import com.swmansion.reanimated.ReanimatedJSIModulePackage;
 import com.nozbe.watermelondb.jsi.WatermelonDBJSIPackage;
 
-public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
+public class MainApplication extends NavigationApplication implements INotificationsApplication {
   public static MainApplication instance;
 
   public Boolean sharedExtensionIsOpened = false;
@@ -70,8 +68,8 @@ public class MainApplication extends NavigationApplication implements INotificat
                   switch (name) {
                   case "MattermostManaged":
                       return MattermostManagedModule.getInstance(reactContext);
-                    case "NotificationPreferences":
-                      return NotificationPreferencesModule.getInstance(instance, reactContext);
+                    case "Notifications":
+                      return NotificationsModule.getInstance(instance, reactContext);
                     default:
                       throw new IllegalArgumentException("Could not find module " + name);
                   }
@@ -82,7 +80,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                   return () -> {
                     Map<String, ReactModuleInfo> map = new HashMap<>();
                     map.put("MattermostManaged", new ReactModuleInfo("MattermostManaged", "com.mattermost.rnbeta.MattermostManagedModule", false, false, false, false, false));
-                    map.put("NotificationPreferences", new ReactModuleInfo("NotificationPreferences", "com.mattermost.rnbeta.NotificationPreferencesModule", false, false, false, false, false));
+                    map.put("Notifications", new ReactModuleInfo("Notifications", "com.mattermost.rnbeta.NotificationsModule", false, false, false, false, false));
                     return map;
                   };
                 }
@@ -94,18 +92,11 @@ public class MainApplication extends NavigationApplication implements INotificat
 
       @Override
       protected JSIModulePackage getJSIModulePackage() {
-        return new JSIModulePackage() {
-          @Override
-          public List<JSIModuleSpec> getJSIModules(
-            final ReactApplicationContext reactApplicationContext,
-            final JavaScriptContextHolder jsContext
-          ) {
-            List<JSIModuleSpec> modules = Arrays.asList();
-            modules.addAll(new WatermelonDBJSIPackage().getJSIModules(reactApplicationContext, jsContext));
-            modules.addAll(new ReanimatedJSIModulePackage().getJSIModules(reactApplicationContext, jsContext));
+        return (reactApplicationContext, jsContext) -> {
+          List<JSIModuleSpec> modules = Collections.emptyList();
+          modules.addAll(new WatermelonDBJSIPackage().getJSIModules(reactApplicationContext, jsContext));
 
-            return modules;
-          }
+          return modules;
         };
       }
 
@@ -159,11 +150,6 @@ public class MainApplication extends NavigationApplication implements INotificat
             defaultAppLaunchHelper,
             new JsIOHelper()
     );
-  }
-
-  @Override
-  public IPushNotificationsDrawer getPushNotificationsDrawer(Context context, AppLaunchHelper defaultAppLaunchHelper) {
-    return new CustomPushNotificationDrawer(context, defaultAppLaunchHelper);
   }
 
   /**

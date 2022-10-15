@@ -57,26 +57,26 @@ const CameraType = ({onPress}: Props) => {
     const isTablet = useIsTablet();
     const style = getStyle(theme);
 
-    const onPhoto = () => {
+    const onPhoto = async () => {
         const options: CameraOptions = {
             quality: 0.8,
             mediaType: 'photo',
             saveToPhotos: true,
         };
 
+        await dismissBottomSheet();
         onPress(options);
-        dismissBottomSheet();
     };
 
-    const onVideo = () => {
+    const onVideo = async () => {
         const options: CameraOptions = {
             videoQuality: 'high',
             mediaType: 'video',
             saveToPhotos: true,
         };
 
+        await dismissBottomSheet();
         onPress(options);
-        dismissBottomSheet();
     };
 
     return (

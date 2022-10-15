@@ -93,7 +93,7 @@
         "EnableUserCreation": true,
         "EnableOpenServer": true,
         "EnableUserDeactivation": false,
-        "EnableCustomUserStatuses": false,
+        "EnableCustomUserStatuses": true,
         "RestrictCreationToDomains": "",
         "EnableCustomBrand": false,
         "CustomBrandText": "",
@@ -114,7 +114,7 @@
         "EnableConfirmNotificationsToChannel": true,
         "TeammateNameDisplay": "username",
         "ExperimentalViewArchivedChannels": true,
-        "ExperimentalEnableAutomaticReplies": false,
+        "ExperimentalEnableAutomaticReplies": true,
         "ExperimentalHideTownSquareinLHS": false,
         "ExperimentalTownSquareIsReadOnly": false,
         "LockTeammateNameDisplay": false,
@@ -283,7 +283,7 @@
     },
     "DisplaySettings": {
         "CustomUrlSchemes": [],
-        "ExperimentalTimezone": false
+        "ExperimentalTimezone": true
     },
     "GuestAccountsSettings": {
         "Enable": true,
