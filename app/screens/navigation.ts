@@ -421,7 +421,9 @@ export async function dismissAllModalsAndPopToScreen(screenId: string, title: st
         }
         try {
             await Navigation.popTo(screenId, mergeOptions);
-            await Navigation.updateProps(screenId, passProps);
+            if (Object.keys(passProps).length > 0) {
+                await Navigation.updateProps(screenId, passProps);
+            }
         } catch {
             // catch in case there is nothing to pop
         }

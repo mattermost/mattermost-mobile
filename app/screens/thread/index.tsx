@@ -7,7 +7,6 @@ import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {observeCurrentCall} from '@calls/state';
-import {withServerUrl} from '@context/server';
 import {observePost} from '@queries/servers/post';
 
 import Thread from './thread';
@@ -26,4 +25,4 @@ const enhanced = withObservables(['rootId'], ({database, rootId}: WithDatabaseAr
     };
 });
 
-export default withDatabase(withServerUrl(enhanced(Thread)));
+export default withDatabase(enhanced(Thread));
