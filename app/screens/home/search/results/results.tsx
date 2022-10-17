@@ -33,7 +33,6 @@ const getStyles = (dimensions: ScaledSize) => {
             flex: 1,
             width: dimensions.width,
         },
-
     });
 };
 
@@ -106,8 +105,8 @@ const Results = ({
                         canDownloadFiles={canDownloadFiles}
                         fileChannels={fileChannels}
                         fileInfos={fileInfos}
-                        publicLinkEnabled={publicLinkEnabled}
                         paddingTop={paddingTop}
+                        publicLinkEnabled={publicLinkEnabled}
                         searchValue={searchValue}
                     />
                 </View>

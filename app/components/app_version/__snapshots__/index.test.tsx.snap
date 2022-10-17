@@ -3,8 +3,8 @@
 exports[`@components/app_version should match snapshot 1`] = `
 <View
   animatedStyle={
-    Object {
-      "value": Object {
+    {
+      "value": {
         "opacity": 1,
       },
     }
@@ -12,14 +12,14 @@ exports[`@components/app_version should match snapshot 1`] = `
   collapsable={false}
   pointerEvents="none"
   style={
-    Object {
+    {
       "opacity": 1,
     }
   }
 >
   <View
     style={
-      Object {
+      {
         "bottom": 0,
         "marginBottom": 12,
         "marginLeft": 20,
@@ -29,7 +29,7 @@ exports[`@components/app_version should match snapshot 1`] = `
   >
     <Text
       style={
-        Object {
+        {
           "fontSize": 12,
         }
       }

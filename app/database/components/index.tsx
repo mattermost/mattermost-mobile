@@ -19,8 +19,8 @@ type State = {
     serverDisplayName: string;
 };
 
-export function withServerDatabase<T>(Component: ComponentType<T>): ComponentType<T> {
-    return function ServerDatabaseComponent(props) {
+export function withServerDatabase<T extends JSX.IntrinsicAttributes>(Component: ComponentType<T>): ComponentType<T> {
+    return function ServerDatabaseComponent(props: T) {
         const [state, setState] = useState<State | undefined>();
 
         const observer = (servers: ServersModel[]) => {

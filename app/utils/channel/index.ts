@@ -43,7 +43,7 @@ export function selectDefaultChannelForTeam<T extends Channel|ChannelModel>(chan
     let canIJoinPublicChannelsInTeam = false;
 
     if (roles) {
-        canIJoinPublicChannelsInTeam = hasPermission(roles, Permissions.JOIN_PUBLIC_CHANNELS, true);
+        canIJoinPublicChannelsInTeam = hasPermission(roles, Permissions.JOIN_PUBLIC_CHANNELS);
     }
     const defaultChannel = channels?.find((c) => c.name === General.DEFAULT_CHANNEL);
     const membershipIds = new Set(memberships.map((m) => m.channel_id));
