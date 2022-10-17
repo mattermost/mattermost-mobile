@@ -84,14 +84,14 @@ project.ext.react = [
 apply from: "../../node_modules/react-native/react.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
-// if (System.getenv("SENTRY_ENABLED") == "true") {
-//     project.ext.sentryCli = [
-//         logLevel: "error",
-//         flavorAware: false
-//     ]
-//
-//     apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
-// }
+if (System.getenv("SENTRY_ENABLED") == "true") {
+    project.ext.sentryCli = [
+        logLevel: "error",
+        flavorAware: false
+    ]
+
+    apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+}
 
 /**
  * Set this to true to create two separate APKs instead of one:
@@ -144,7 +144,7 @@ android {
         applicationId "com.mattermost.rnbeta"
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 426
+        versionCode 428
         versionName "2.0.0"
         testBuildType System.getProperty('testBuildType', 'debug')
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
@@ -232,10 +232,10 @@ android {
             }
         }
         debug {
-//             storeFile file('debug.keystore')
-//             storePassword 'android'
-//             keyAlias 'androiddebugkey'
-//             keyPassword 'android'
+            storeFile file('debug.keystore')
+            storePassword 'android'
+            keyAlias 'androiddebugkey'
+            keyPassword 'android'
         }
     }
     splits {
