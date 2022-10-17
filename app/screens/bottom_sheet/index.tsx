@@ -127,7 +127,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
         <View
             style={{
                 backgroundColor: theme.centerChannelBg,
-                borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+                borderColor: changeOpacity(theme.centerChannelColor, 0.16),
                 borderWidth: 1,
                 opacity: 1,
                 paddingHorizontal: 20,
