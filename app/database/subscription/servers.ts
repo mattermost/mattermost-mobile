@@ -7,6 +7,7 @@ import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
 import type ServersModel from '@typings/database/models/app/servers';
+import type TeamModel from '@typings/database/models/servers/team';
 
 const {SERVERS} = MM_TABLES.APP;
 
@@ -27,4 +28,3 @@ export const subscribeAllServers = (observer: (servers: ServersModel[]) => void)
         observeWithColumns(['last_active_at']).
         subscribe(observer);
 };
-

@@ -1,23 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
 import {Breadcrumb} from '@sentry/types';
 import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import Config from '@assets/config.json';
-import {MM_TABLES} from '@constants/database';
-import DatabaseManager from '@database/manager';
-import {getCurrentChannel} from '@queries/servers/channel';
-import {getConfig, getCurrentTeamId} from '@queries/servers/system';
-import {getCurrentUser} from '@queries/servers/user';
-import MyChannelModel from '@typings/database/models/servers/my_channel';
 
 import {ClientError} from './client_error';
-import {logError, logWarning} from './log';
-
-import type MyTeamModel from '@typings/database/models/servers/my_team';
+import {logWarning} from './log';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
@@ -70,22 +61,20 @@ function getDsn() {
     return '';
 }
 
-export function captureException(error: Error | string, logger: string) {
+export function captureException(error: Error | string, errorContext: any) {
     if (!Config.SentryEnabled) {
         return;
     }
 
-    if (!error || !logger) {
-        logWarning('captureException called with missing arguments', error, logger);
+    if (!error || !errorContext) {
+        logWarning('captureException called with missing arguments', error, errorContext);
         return;
     }
 
-    capture(() => {
-        Sentry.captureException(error, {logger});
-    });
+    Sentry.captureException(error, {...errorContext});
 }
 
-export function captureJSException(error: Error | ClientError, isFatal: boolean) {
+export function captureJSException(error: Error | ClientError, isFatal: boolean, errorContext: any) {
     if (!Config.SentryEnabled) {
         return;
     }
@@ -98,7 +87,10 @@ export function captureJSException(error: Error | ClientError, isFatal: boolean)
     if (error instanceof ClientError) {
         captureClientErrorAsBreadcrumb(error, isFatal);
     } else {
-        captureException(error, LOGGER_JAVASCRIPT);
+        captureException(error, {
+            logger: LOGGER_JAVASCRIPT,
+            ...errorContext,
+        });
     }
 }
 
@@ -141,154 +133,4 @@ function captureClientErrorAsBreadcrumb(error: ClientError, isFatal: boolean) {
         logWarning('Failed to capture breadcrumb of non-error', e);
     }
 }
-
-// Wrapper function to any calls to Sentry so that we can gather any necessary extra data
-// before sending.
-function capture(captureFunc: () => void, config?: ClientConfig) {
-    if (config?.EnableDiagnostics !== 'true') {
-        return;
-    }
-
-    try {
-        let hasUserContext = false;
-        const userContext = getUserContext();
-        if (userContext) {
-            hasUserContext = true;
-            Sentry.setUserContext(userContext);
-        }
-
-        const extraContext = getExtraContext();
-        if (Object.keys(extraContext).length) {
-            Sentry.setExtraContext(extraContext);
-        }
-
-        const buildTags = getBuildTags();
-        if (buildTags) {
-            Sentry.setTagsContext(buildTags);
-        }
-
-        if (hasUserContext) {
-            logWarning('Capturing with Sentry at ' + getDsn() + '...');
-            captureFunc();
-        } else {
-            logWarning('No user context, skipping capture');
-        }
-    } catch (e) {
-        // Don't want this to get into an infinite loop again...
-        logError('Exception occurred while sending to Sentry');
-        logError(e);
-    }
-}
-
-async function getUserContext() {
-    const currentUser = {
-        id: 'currentUserId',
-        locale: 'en',
-        roles: 'multi-server-test-role',
-    };
-
-    const db = await getActiveServerDatabase();
-    if (db) {
-        const user = await getCurrentUser(db);
-        if (user) {
-            currentUser.id = user.id;
-            currentUser.locale = user.locale;
-            currentUser.roles = user.roles;
-        }
-    }
-
-    return {
-        userID: currentUser.id,
-        email: '',
-        username: '',
-        extra: {
-            locale: currentUser.locale,
-            roles: currentUser.roles,
-        },
-    };
-}
-
-async function getExtraContext() {
-    const context = {
-        config: {},
-        currentChannel: {},
-        currentChannelMember: {},
-        currentTeam: {},
-        currentTeamMember: {},
-    };
-
-    const extraContext = await getServerContext();
-    if (extraContext) {
-        context.config = {
-            BuildDate: extraContext.config?.BuildDate,
-            BuildEnterpriseReady: extraContext.config?.BuildEnterpriseReady,
-            BuildHash: extraContext.config?.BuildHash,
-            BuildHashEnterprise: extraContext.config?.BuildHashEnterprise,
-            BuildNumber: extraContext.config?.BuildNumber,
-        };
-        context.currentChannel = {
-            id: extraContext.channel?.id,
-            type: extraContext.channel?.type,
-        };
-        context.currentChannelMember = {
-            roles: extraContext.channelRoles,
-        };
-        context.currentTeam = {
-            id: extraContext.teamId,
-        };
-        context.currentTeamMember = {
-            roles: extraContext.teamRoles,
-        };
-    }
-
-    return context;
-}
-
-async function getBuildTags() {
-    let tags;
-    const db = await getActiveServerDatabase();
-    if (db) {
-        const config = await getConfig(db);
-        if (config) {
-            tags = {
-                serverBuildHash: config.BuildHash,
-                serverBuildNumber: config.BuildNumber,
-            };
-        }
-    }
-
-    return tags;
-}
-
-const getServerContext = async () => {
-    const db = await getActiveServerDatabase();
-    if (db) {
-        const config = await getConfig(db);
-        const currentTeamId = await getCurrentTeamId(db);
-
-        const myTeam = await db.get<MyTeamModel>(MM_TABLES.SERVER.MY_TEAM).query(Q.where('id', currentTeamId)).fetch();
-        const teamRoles = myTeam?.[0]?.roles;
-
-        const channel = await getCurrentChannel(db);
-        let channelRoles;
-        if (channel) {
-            const myChannel = await db.get<MyChannelModel>(MM_TABLES.SERVER.MY_CHANNEL).query(Q.where('id', channel.id)).fetch();
-            channelRoles = myChannel?.[0]?.roles;
-        }
-
-        return {
-            channel,
-            channelRoles,
-            config,
-            teamId: currentTeamId,
-            teamRoles,
-        };
-    }
-    return null;
-};
-
-const getActiveServerDatabase = async () => {
-    const server = await DatabaseManager.getActiveServerDatabase();
-    return server;
-};
 
