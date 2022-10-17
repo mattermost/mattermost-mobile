@@ -87,11 +87,11 @@ const PrivateChannelIllustration = ({theme}: Props) => (
             />
             <Mask
                 id='a'
+
+                // @ts-expect-error style not intrinsic
                 style={{
                     maskType: 'alpha',
                 }}
-
-                // @ts-expect-error string instead of enum
                 maskUnits='userSpaceOnUse'
                 x={51}
                 y={63}
@@ -132,11 +132,11 @@ const PrivateChannelIllustration = ({theme}: Props) => (
             />
             <Mask
                 id='b'
+
+                // @ts-expect-error style not intrinsic
                 style={{
                     maskType: 'alpha',
                 }}
-
-                // @ts-expect-error string instead of enum
                 maskUnits='userSpaceOnUse'
                 x={41}
                 y={35}

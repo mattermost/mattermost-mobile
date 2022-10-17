@@ -224,18 +224,18 @@ THE SOFTWARE IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES WITH RE
 
 ## @nozbe/watermelondb
 
-This product contains 'cameraroll' by Bartol Karuza.
+This product contains '@nozbe/watermelondb' by Nozbe.
 
-React-native native module that provides access to the local camera roll or photo library
+Build powerful React and React Native apps that scale from hundreds to tens of thousands of records and remain fast ⚡️
 
 * HOMEPAGE:
-  * https://github.com/react-native-community/react-native-cameraroll
+  * https://github.com/Nozbe/WatermelonDB/
 
 * LICENSE: MIT
 
 MIT License
 
-Copyright (c) 2020 Elias Nahum
+Copyright (c) Nozbe
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -293,50 +293,14 @@ SOFTWARE.
 
 ---
 
-## @react-native-community/art
+## @react-native-cameraroll/react-native-cameraroll
 
-This product contains '@react-native-community/art' by react-native-art.
-
-React Native module that allows you to draw vector graphics
-
-* HOMEPAGE:
-  * https://github.com/react-native-art/art
-
-* LICENSE: MIT
-
-MIT License
-
-Copyright (c) 2019 react-native-community
-
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files (the "Software"), to deal
-in the Software without restriction, including without limitation the rights
-to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
-copies of the Software, and to permit persons to whom the Software is
-furnished to do so, subject to the following conditions:
-
-The above copyright notice and this permission notice shall be included in all
-copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
-IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
-FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
-AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
-LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
-OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
-SOFTWARE.
-
-
----
-
-## @react-native-community/cameraroll
-
-This product contains 'cameraroll' by Bartol Karuza.
+This product contains 'react-native-cameraroll' by Bartol Karuza.
 
 React-native native module that provides access to the local camera roll or photo library
 
 * HOMEPAGE:
-  * https://github.com/react-native-community/react-native-cameraroll
+  * https://github.com/react-native-cameraroll/react-native-cameraroll
 
 * LICENSE: MIT
 
@@ -365,14 +329,14 @@ SOFTWARE.
 
 ---
 
-## @react-native-community/clipboard
+## @react-native-clipboard/clipboard
 
-This product contains '@react-native-community/clipboard' by React Native Community.
+This product contains '@react-native-clipboard/clipboard' by React Native Community.
 
 React Native Clipboard API for both iOS and Android
 
 * HOMEPAGE:
-  * https://github.com/react-native-community/clipboard
+  * https://github.com/react-native-clipboard/clipboard
 
 * LICENSE: MIT
 
@@ -2350,20 +2314,20 @@ SOFTWARE.
 
 ---
 
-## react-native-neomorph-shadows
+## react-native-shadow-2
 
-This product contains a modified version of 'react-native-neomorph-shadows' by Daniel.
+This product contains a modified version of 'react-native-shadow-2' by Henrique Bruno Fantauzzi de Almeida.
 
-Shadows and neumorphism/neomorphism for iOS & Android (like iOS).
+Cross-platform shadow for React Native. Supports Android, iOS, Web and Expo.
 
 * HOMEPAGE:
-  * https://github.com/tokkozhin/react-native-neomorph-shadows
+  * https://github.com/SrBrahma/react-native-shadow-2
 
 * LICENSE: MIT
 
 MIT License
 
-Copyright (c) 2020 tokkozhin
+Copyright (c) 2021 Henrique Bruno Fantauzzi de Almeida
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
@@ -2955,41 +2919,6 @@ Permission is hereby granted, free of charge, to any person obtaining a copy of 
 The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
-
-
----
-
-## rn-placeholder
-
-This product contains a modified version of 'rn-placeholder' by Marvin FRACHET.
-
-Display some placeholder stuff before rendering your text or media content in React Native
-
-* HOMEPAGE:
-  * https://github.com/mfrachet/rn-placeholder
-
-* LICENSE: MIT
-
-Copyright (c) 2004-Today Marvin Frachet
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
 
 ---

@@ -830,6 +830,7 @@
   "unreads.empty.paragraph": "Turn off the unread filter to show all your channels.",
   "unreads.empty.show_all": "Show all",
   "unreads.empty.title": "No more unreads",
+  "user_profile.custom_status": "Custom Status",
   "user.edit_profile.email.auth_service": "Login occurs through {service}. Email cannot be updated. Email address used for notifications is {email}.",
   "user.edit_profile.email.web_client": "Email must be updated using a web client or desktop application.",
   "user.settings.general.email": "Email",

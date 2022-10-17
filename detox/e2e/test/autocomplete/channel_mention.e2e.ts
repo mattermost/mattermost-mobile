@@ -252,8 +252,7 @@ describe('Autocomplete - Channel Mention', () => {
         await ChannelScreen.postInput.typeText(testChannel.name);
 
         // * Verify channel mention autocomplete contains current channel
-        const {channelMentionItemChannelDisplayName, channelMentionItemChannelName} = Autocomplete.getChannelMentionItem(testChannel.name);
-        await expect(channelMentionItemChannelDisplayName).toHaveText(`${testChannel.display_name}`);
-        await expect(channelMentionItemChannelName).toHaveText(` ~${testChannel.name}`);
+        const {channelMentionItemChannelDisplayName} = Autocomplete.getChannelMentionItem(testChannel.name);
+        await expect(channelMentionItemChannelDisplayName).toHaveText(`${testChannel.display_name} ~${testChannel.name}`);
     });
 });

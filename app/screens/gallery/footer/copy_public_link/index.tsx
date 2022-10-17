@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Clipboard from '@react-native-community/clipboard';
+import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
@@ -16,6 +16,7 @@ import {useServerUrl} from '@context/server';
 import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
 
 type Props = {
+    galleryView?: boolean;
     item: GalleryItemType;
     setAction: (action: GalleryAction) => void;
 }
@@ -29,7 +30,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const CopyPublicLink = ({item, setAction}: Props) => {
+const CopyPublicLink = ({item, galleryView = true, setAction}: Props) => {
     const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
@@ -37,11 +38,14 @@ const CopyPublicLink = ({item, setAction}: Props) => {
     const [error, setError] = useState('');
     const mounted = useRef(false);
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        position: 'absolute',
-        bottom: GALLERY_FOOTER_HEIGHT + 8 + insets.bottom,
-        opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
-    }));
+    const animatedStyle = useAnimatedStyle(() => {
+        const marginBottom = galleryView ? GALLERY_FOOTER_HEIGHT + 8 : 0;
+        return {
+            position: 'absolute',
+            bottom: insets.bottom + marginBottom,
+            opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
+        };
+    });
 
     const copyLink = async () => {
         try {
@@ -87,7 +91,7 @@ const CopyPublicLink = ({item, setAction}: Props) => {
             animatedStyle={animatedStyle}
             style={error ? styles.error : styles.toast}
             message={error || formatMessage({id: 'public_link_copied', defaultMessage: 'Link copied to clipboard'})}
-            iconName='check'
+            iconName='link-variant'
         />
     );
 };
