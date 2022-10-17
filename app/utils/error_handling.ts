@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from 'react-native';
+import {
+    setJSExceptionHandler,
 
-// import {
-//     setJSExceptionHandler,
-//
-//     // setNativeExceptionHandler
-// } from 'react-native-exception-handler';
+    // setNativeExceptionHandler
+} from 'react-native-exception-handler';
 
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {dismissAllModals} from '@screens/navigation';
@@ -24,9 +23,8 @@ import {logWarning} from './log';
 class JavascriptAndNativeErrorHandler {
     initializeErrorHandling = () => {
         initializeSentry();
+        setJSExceptionHandler(this.errorHandler, false);
 
-        // NOTE: The below methods have been disabled as they interferred with Sentry error reporting.
-        // setJSExceptionHandler(this.errorHandler, true);
         // setNativeExceptionHandler(this.nativeErrorHandler, false);
     };
 
@@ -36,8 +34,6 @@ class JavascriptAndNativeErrorHandler {
     };
 
     errorHandler = (e: Error | ClientError, isFatal: boolean) => {
-        captureJSException(e, isFatal);
-
         if (__DEV__ && !e && !isFatal) {
             // react-native-exception-handler redirects console.error to call this, and React calls
             // console.error without an exception when prop type validation fails, so this ends up
@@ -46,6 +42,7 @@ class JavascriptAndNativeErrorHandler {
         }
 
         logWarning('Handling Javascript error', e, isFatal);
+        captureJSException(e, isFatal);
 
         if (isFatal && e instanceof Error) {
             const translations = getTranslations(DEFAULT_LOCALE);
