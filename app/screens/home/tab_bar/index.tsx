@@ -3,9 +3,9 @@
 
 import React, {useEffect, useState} from 'react';
 import {DeviceEventEmitter, View, TouchableOpacity, useWindowDimensions} from 'react-native';
-import {Shadow} from 'react-native-neomorph-shadows';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Shadow} from 'react-native-shadow-2';
 
 import {Events, Navigation as NavigationConstants, Screens, View as ViewConstants} from '@constants';
 import NavigationStore from '@store/navigation_store';
@@ -50,7 +50,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         left: 10,
         alignItems: 'center',
     },
+    shadowBorder: {
+        borderRadius: 6,
+    },
 }));
+
+const shadowSides = {top: true, bottom: false, end: false, start: false};
+const shadowOffset: [x: number | string, y: number | string] = [0, -0.5];
 
 const TabComponents: Record<string, any> = {
     Account,
@@ -130,16 +136,15 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
     return (
         <Animated.View style={[style.container, style.separator, animatedStyle]}>
             <Shadow
+                startColor='rgba(61, 60, 64, 0.08)'
+                distance={4}
+                offset={shadowOffset}
                 style={{
                     position: 'absolute',
-                    height: 90,
+                    borderRadius: 6,
                     width,
-                    shadowColor: 'rgba(61, 60, 64, 0.08)',
-                    shadowOffset: {width: 0, height: -0.5},
-                    shadowOpacity: 1,
-                    shadowRadius: 6,
-                    backgroundColor: theme.centerChannelBg,
                 }}
+                sides={shadowSides}
             />
             <Animated.View
                 style={[

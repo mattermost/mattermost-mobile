@@ -131,6 +131,12 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
         return;
     }
 
+    // Was the user me?
+    if (userId === callsState.myUserId) {
+        myselfLeftCall();
+        return;
+    }
+
     const nextCurrentCall = {
         ...currentCall,
         participants: {...currentCall.participants},

@@ -8,6 +8,7 @@ import 'react-native-gesture-handler';
 import {ComponentDidAppearEvent, ComponentDidDisappearEvent, ModalDismissedEvent, Navigation, ScreenPoppedEvent} from 'react-native-navigation';
 
 import {Events, Screens} from './app/constants';
+import {OVERLAY_SCREENS} from './app/constants/screens';
 import DatabaseManager from './app/database/manager';
 import {getAllServerCredentials} from './app/init/credentials';
 import {initialLaunch} from './app/init/launch';
@@ -15,6 +16,7 @@ import ManagedApp from './app/init/managed_app';
 import PushNotifications from './app/init/push_notifications';
 import GlobalEventHandler from './app/managers/global_event_handler';
 import NetworkManager from './app/managers/network_manager';
+import SessionManager from './app/managers/session_manager';
 import WebsocketManager from './app/managers/websocket_manager';
 import {registerScreens} from './app/screens';
 import NavigationStore from './app/store/navigation_store';
@@ -75,6 +77,7 @@ Navigation.events().registerAppLaunchedListener(async () => {
         await NetworkManager.init(serverCredentials);
         await WebsocketManager.init(serverCredentials);
         PushNotifications.init();
+        SessionManager.init();
     }
 
     initialLaunch();
@@ -96,8 +99,8 @@ function screenWillAppear({componentId}: ComponentDidAppearEvent) {
     }
 }
 
-function screenDidAppearListener({componentId, passProps, componentType}: ComponentDidAppearEvent) {
-    if (!(passProps as any)?.overlay && componentType === 'Component') {
+function screenDidAppearListener({componentId, componentType}: ComponentDidAppearEvent) {
+    if (!OVERLAY_SCREENS.has(componentId) && componentType === 'Component') {
         NavigationStore.addNavigationComponentId(componentId);
     }
 }

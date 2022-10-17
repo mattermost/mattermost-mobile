@@ -231,15 +231,15 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
 
     ws.on('message', ({data}: { data: string }) => {
         const msg = JSON.parse(data);
-        if (msg.type === 'answer' || msg.type === 'offer') {
+        if (msg.type === 'answer' || msg.type === 'candidate' || msg.type === 'offer') {
             peer?.signal(data);
         }
     });
 
     const waitForPeerConnection = () => {
-        const waitForReadyImpl = (callback: () => void, fail: () => void, timeout: number) => {
+        const waitForReadyImpl = (callback: () => void, fail: (reason: string) => void, timeout: number) => {
             if (timeout <= 0) {
-                fail();
+                fail('timed out waiting for peer connection');
                 return;
             }
             setTimeout(() => {
