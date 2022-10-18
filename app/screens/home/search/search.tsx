@@ -108,6 +108,7 @@ const SearchScreen = ({teamId}: Props) => {
         hideHeader,
         lockValue,
         onScroll,
+        scrollEnabled,
         scrollPaddingTop,
         scrollRef,
         scrollValue,
@@ -211,6 +212,7 @@ const SearchScreen = ({teamId}: Props) => {
             />
         ) : (
             <Initial
+                scrollEnabled={scrollEnabled}
                 searchValue={searchValue}
                 setRecentValue={handleRecentSearch}
                 setSearchValue={handleTextChange}

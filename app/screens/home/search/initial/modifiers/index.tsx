@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {View} from 'react-native';
 import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
@@ -73,18 +73,20 @@ const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
 };
 
 type Props = {
+    scrollEnabled: Animated.SharedValue<boolean>;
     setSearchValue: (value: string) => void;
     searchValue?: string;
     setTeamId: (id: string) => void;
     teamId: string;
 }
-const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
+const Modifiers = ({scrollEnabled, searchValue, setSearchValue, setTeamId, teamId}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
 
     const [showMore, setShowMore] = useState(false);
     const show = useSharedValue(3 * MODIFIER_LABEL_HEIGHT);
     const data = useMemo(() => getModifiersSectionsData(intl), [intl]);
+    const timeoutRef = useRef<NodeJS.Timeout | undefined>();
 
     const styles = getStyleFromTheme(theme);
     const animatedStyle = useAnimatedStyle(() => ({
@@ -96,8 +98,25 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
     const handleShowMore = useCallback(() => {
         const nextShowMore = !showMore;
         setShowMore(nextShowMore);
+        scrollEnabled.value = false;
         show.value = (nextShowMore ? data.length : 3) * MODIFIER_LABEL_HEIGHT;
+
+        if (timeoutRef.current) {
+            clearTimeout(timeoutRef.current);
+        }
+        setTimeout(() => {
+            scrollEnabled.value = true;
+        }, 350);
     }, [showMore]);
+
+    useEffect(() => {
+        return () => {
+            if (timeoutRef.current) {
+                scrollEnabled.value = true;
+                clearTimeout(timeoutRef.current);
+            }
+        };
+    }, []);
 
     const renderModifier = (item: ModifierItem) => {
         return (

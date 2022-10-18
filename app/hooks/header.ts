@@ -59,6 +59,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
     const lockValue = useSharedValue<number | null>(null);
     const autoScroll = useSharedValue(false);
     const snapping = useSharedValue(false);
+    const scrollEnabled = useSharedValue(true);
 
     const headerHeight = useDerivedValue(() => {
         const value = -(scrollValue?.value || 0);
@@ -89,6 +90,11 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
             ctx.dragging = true;
         },
         onScroll: (e, ctx) => {
+            if (!scrollEnabled.value) {
+                scrollTo(animatedRef, 0, headerOffset, false);
+                return;
+            }
+
             if (ctx.dragging || autoScroll.value) {
                 scrollValue.value = e.contentOffset.y;
             } else {
@@ -160,6 +166,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         unlock,
         headerHeight,
         headerOffset,
+        scrollEnabled,
     };
 };
 
