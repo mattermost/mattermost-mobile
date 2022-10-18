@@ -54,6 +54,7 @@ export function initializeSentry() {
                 ),
             }),
         ],
+        sendDefaultPii: false,
         ...Config.SentryOptions,
     });
 }
