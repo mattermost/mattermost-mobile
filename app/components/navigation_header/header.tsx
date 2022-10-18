@@ -165,11 +165,13 @@ const Header = ({
         };
     }, [heightOffset, isLargeTitle, hasSearch]);
 
+    const containerAnimatedStyle = useAnimatedStyle(() => ({
+        height: lockValue?.value || defaultHeight + insets.top,
+        paddingTop: lockValue?.value || insets.top,
+    }), [defaultHeight, lockValue, insets.top]);
+
     const containerStyle = useMemo(() => (
-        [styles.container, {
-            height: lockValue?.value || defaultHeight + insets.top,
-            paddingTop: lockValue?.value || insets.top,
-        }]), [defaultHeight, lockValue?.value, theme, insets.top]);
+        [styles.container, containerAnimatedStyle]), [styles, containerAnimatedStyle]);
 
     const additionalTitleStyle = useMemo(() => ({
         marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),

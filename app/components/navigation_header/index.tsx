@@ -78,7 +78,7 @@ const NavigationHeader = ({
 
     const translateY = useDerivedValue(() => (
         lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, headerOffset)
-    ), [lockValue?.value, minScrollValue.value, headerOffset]);
+    ), [lockValue, minScrollValue, headerOffset]);
 
     const searchTopMargin = useAnimatedStyle(() => {
         const margin = Math.min(-Math.min(minScrollValue.value, headerOffset), headerOffset);
@@ -87,7 +87,7 @@ const NavigationHeader = ({
         return {
             marginTop: bottomMargin - ViewConstants.SEARCH_INPUT_HEIGHT,
         };
-    }, [lockValue?.value, headerOffset, minScrollValue.value]);
+    }, [lockValue, headerOffset, minScrollValue]);
 
     return (
         <>

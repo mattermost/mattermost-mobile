@@ -87,13 +87,11 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
     const data = useMemo(() => getModifiersSectionsData(intl), [intl]);
 
     const styles = getStyleFromTheme(theme);
-    const animatedStyle = useAnimatedStyle(() => (
-        {
-            width: '100%',
-            height: withTiming(show.value, {duration: 300}),
-            overflow: 'hidden',
-        }
-    ));
+    const animatedStyle = useAnimatedStyle(() => ({
+        width: '100%',
+        height: withTiming(show.value, {duration: 300}),
+        overflow: 'hidden',
+    }), []);
 
     const handleShowMore = useCallback(() => {
         const nextShowMore = !showMore;

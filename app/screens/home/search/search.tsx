@@ -239,7 +239,7 @@ const SearchScreen = ({teamId}: Props) => {
     const headerTopStyle = useAnimatedStyle(() => ({
         top: lockValue.value ? lockValue.value : headerHeight.value,
         zIndex: lastSearchedValue ? 10 : 0,
-    }), [headerHeight.value, isTablet, lastSearchedValue, lockValue]);
+    }), [headerHeight, isTablet, lastSearchedValue, lockValue]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
@@ -253,7 +253,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const autocompletePosition = useDerivedValue(() => {
         return headerHeight.value - AutocompletePaddingTop;
-    }, [headerHeight.value]);
+    }, [headerHeight]);
 
     const autocomplete = useMemo(() => (
         <Autocomplete
