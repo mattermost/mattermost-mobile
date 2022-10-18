@@ -9,7 +9,7 @@ import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyTeamsRequest} from '@actions/remote/team';
 import {fetchNewThreads} from '@actions/remote/thread';
-import {updateAllUsersSince} from '@actions/remote/user';
+import {autoUpdateTimezone, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -284,6 +284,8 @@ export async function deferredAppEntryActions(
     } else {
         result = restDeferredAppEntryActions(serverUrl, since, currentUserId, currentUserLocale, preferences, config, license, teamData, chData, initialTeamId, initialChannelId);
     }
+
+    autoUpdateTimezone(serverUrl);
 
     return result;
 }

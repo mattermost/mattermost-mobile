@@ -11,7 +11,7 @@ import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {fetchNewThreads} from '@actions/remote/thread';
-import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
+import {autoUpdateTimezone, fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
 import {General, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -383,6 +383,7 @@ export const syncOtherServers = async (serverUrl: string) => {
             if (server.url !== serverUrl && server.lastActiveAt > 0) {
                 registerDeviceToken(server.url);
                 syncAllChannelMembersAndThreads(server.url);
+                autoUpdateTimezone(server.url);
             }
         }
     }
