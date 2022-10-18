@@ -1,11 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database, Q} from '@nozbe/watermelondb';
 import {Breadcrumb} from '@sentry/types';
 import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import Config from '@assets/config.json';
+import {MM_TABLES} from '@constants/database';
+import {getCurrentChannel} from '@queries/servers/channel';
+import {getConfig, getCurrentTeamId} from '@queries/servers/system';
+import {getCurrentUser} from '@queries/servers/user';
+import MyChannelModel from '@typings/database/models/servers/my_channel';
+import MyTeamModel from '@typings/database/models/servers/my_team';
 
 import {ClientError} from './client_error';
 import {logWarning} from './log';
@@ -133,4 +140,84 @@ function captureClientErrorAsBreadcrumb(error: ClientError, isFatal: boolean) {
         logWarning('Failed to capture breadcrumb of non-error', e);
     }
 }
+
+export const getUserContext = async (database: Database) => {
+    const currentUser = {
+        id: 'currentUserId',
+        locale: 'en',
+        roles: 'multi-server-test-role',
+    };
+
+    const user = await getCurrentUser(database);
+    if (user) {
+        currentUser.id = user.id;
+        currentUser.locale = user.locale;
+        currentUser.roles = user.roles;
+    }
+
+    return {
+        userID: currentUser.id,
+        email: '',
+        username: '',
+
+        locale: currentUser.locale,
+        roles: currentUser.roles,
+
+    };
+};
+
+export const getExtraContext = async (database: Database) => {
+    const context = {
+        config: {},
+        currentChannel: {},
+        currentTeam: {},
+    };
+
+    const config = await getConfig(database);
+    if (config) {
+        context.config = {
+            BuildDate: config.BuildDate,
+            BuildEnterpriseReady: config.BuildEnterpriseReady,
+            BuildHash: config.BuildHash,
+            BuildHashEnterprise: config.BuildHashEnterprise,
+            BuildNumber: config.BuildNumber,
+        };
+    }
+    const currentTeamId = await getCurrentTeamId(database);
+    const myTeam = await database.get<MyTeamModel>(MM_TABLES.SERVER.MY_TEAM).query(Q.where('id', currentTeamId)).fetch();
+    const teamRoles = myTeam?.[0]?.roles;
+    context.currentTeam = {
+        TeamId: currentTeamId,
+        TeamRoles: teamRoles,
+    };
+
+    const channel = await getCurrentChannel(database);
+    let channelRoles;
+    if (channel) {
+        const myChannel = await database.get<MyChannelModel>(MM_TABLES.SERVER.MY_CHANNEL).query(Q.where('id', channel.id)).fetch();
+        channelRoles = myChannel?.[0]?.roles;
+        context.currentChannel = {
+            ChannelId: channel?.id,
+            ChannelRoles: channelRoles,
+            ChannelType: channel?.type,
+        };
+    }
+
+    return context;
+};
+
+export const getBuildTags = async (database: Database) => {
+    const tags = {
+        serverBuildHash: '',
+        serverBuildNumber: '',
+    };
+
+    const config = await getConfig(database);
+    if (config) {
+        tags.serverBuildHash = config.BuildHash;
+        tags.serverBuildNumber = config.BuildNumber;
+    }
+
+    return tags;
+};
 
