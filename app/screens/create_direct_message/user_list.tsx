@@ -18,7 +18,6 @@ import {
     changeOpacity,
     makeStyleSheetFromTheme,
 } from '@utils/theme';
-import {typography} from '@utils/typography';
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
@@ -91,16 +90,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         sectionContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            paddingLeft: 10,
-            paddingVertical: 2,
-            height: 28,
+            paddingLeft: 16,
+            justifyContent: 'center',
+            height: 24,
         },
         sectionWrapper: {
             backgroundColor: theme.centerChannelBg,
         },
         sectionText: {
             color: theme.centerChannelColor,
-            ...typography('Body', 300, 'SemiBold'),
+            fontSize: 12,
         },
     };
 });

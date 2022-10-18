@@ -41,7 +41,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             flexDirection: 'row',
-            paddingHorizontal: 15,
+            paddingHorizontal: 20,
+            height: 58,
             overflow: 'hidden',
         },
         profileContainer: {
@@ -55,12 +56,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'column',
             flex: 1,
         },
-        displayName: {
-            fontSize: 15,
+        username: {
+            fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
-        username: {
-            fontSize: 15,
+        displayName: {
+            fontSize: 16,
+            height: 24,
             color: theme.centerChannelColor,
             maxWidth: '80%',
         },
@@ -215,7 +217,7 @@ export default function UserListRow({
                     <View style={style.profileContainer}>
                         <ProfilePicture
                             author={user}
-                            size={32}
+                            size={40}
                             iconSize={24}
                             testID={`${userItemTestID}.profile_picture`}
                         />
@@ -223,12 +225,12 @@ export default function UserListRow({
                     <View style={style.textContainer}>
                         <View style={style.indicatorContainer}>
                             <Text
-                                style={style.username}
+                                style={style.displayName}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                                 testID={`${userItemTestID}.display_name`}
                             >
-                                {usernameDisplay}
+                                {teammateDisplay}
                             </Text>
                             <BotTag
                                 show={Boolean(user.is_bot)}
@@ -242,12 +244,12 @@ export default function UserListRow({
                         {showTeammateDisplay &&
                         <View>
                             <Text
-                                style={style.displayName}
+                                style={style.username}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                                 testID={`${userItemTestID}.team_display_name`}
                             >
-                                {teammateDisplay}
+                                {usernameDisplay}
                             </Text>
                         </View>
                         }
