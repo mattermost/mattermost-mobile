@@ -24,14 +24,16 @@ export const useDefaultHeaderHeight = (hasSearch = false) => {
     if (isTablet) {
         let tabletHeight = ViewConstants.TABLET_HEADER_HEIGHT;
         if (hasSearch) {
-            tabletHeight = ViewConstants.SEARCH_INPUT_HEIGHT + ViewConstants.TABLET_SEARCH_MARGIN_COLLAPSED;
+            tabletHeight = ViewConstants.SEARCH_INPUT_HEIGHT;
+            tabletHeight += ViewConstants.TABLET_SEARCH_MARGIN_COLLAPSED;
         }
         return tabletHeight + insets.top;
     }
 
     let mobileHeight = ViewConstants.DEFAULT_HEADER_HEIGHT;
     if (hasSearch) {
-        mobileHeight = ViewConstants.SEARCH_INPUT_HEIGHT + ViewConstants.MOBILE_SEARCH_MARGIN_COLLAPSED;
+        mobileHeight = ViewConstants.SEARCH_INPUT_HEIGHT;
+        mobileHeight += ViewConstants.MOBILE_SEARCH_MARGIN_COLLAPSED;
     }
     return mobileHeight + insets.top;
 };
@@ -39,10 +41,14 @@ export const useDefaultHeaderHeight = (hasSearch = false) => {
 export const useLargeHeaderHeight = (hasSearch = false) => {
     const isTablet = useIsTablet();
     const defaultHeight = useDefaultHeaderHeight(hasSearch);
+
+    let height = defaultHeight + ViewConstants.LARGE_HEADER_TITLE_HEIGHT;
     if (isTablet && hasSearch) {
-        return defaultHeight + ViewConstants.LARGE_HEADER_TITLE_HEIGHT + ViewConstants.TABLET_SEARCH_MARGIN_EXPANDED;
+        height += ViewConstants.TABLET_SEARCH_MARGIN_EXPANDED;
+        return height;
     }
-    return defaultHeight + ViewConstants.LARGE_HEADER_TITLE_HEIGHT + ViewConstants.HEADER_WITH_SUBTITLE;
+    height += ViewConstants.HEADER_WITH_SUBTITLE;
+    return height;
 };
 
 export const useHeaderHeight = (hasSearch = false) => {
