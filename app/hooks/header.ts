@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {NativeScrollEvent, Platform} from 'react-native';
+import {NativeScrollEvent} from 'react-native';
 import Animated, {runOnJS, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -19,7 +19,6 @@ export const MAX_OVERSCROLL = 80;
 
 export const useDefaultHeaderHeight = (hasSearch = false) => {
     const insets = useSafeAreaInsets();
-    const isIOS = Platform.OS === 'ios';
     const isTablet = useIsTablet();
 
     if (isTablet) {
@@ -30,7 +29,7 @@ export const useDefaultHeaderHeight = (hasSearch = false) => {
         return tabletHeight + insets.top;
     }
 
-    let mobileHeight = isIOS ? ViewConstants.IOS_DEFAULT_HEADER_HEIGHT : ViewConstants.ANDROID_DEFAULT_HEADER_HEIGHT;
+    let mobileHeight = ViewConstants.DEFAULT_HEADER_HEIGHT;
     if (hasSearch) {
         mobileHeight = ViewConstants.SEARCH_INPUT_HEIGHT + ViewConstants.MOBILE_SEARCH_MARGIN_COLLAPSED;
     }
