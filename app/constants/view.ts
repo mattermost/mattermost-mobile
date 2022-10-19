@@ -24,7 +24,7 @@ export const LOCKED_SEARCH_BOTTOM_MARGIN = Platform.select({android: 11, default
 
 export const TABLET_SEARCH_MARGIN_COLLAPSED = Platform.select({default: 38});
 export const TABLET_SEARCH_MARGIN_EXPANDED = Platform.select({default: 24});
-export const MOBILE_SEARCH_MARGIN_COLLAPSED = Platform.select({default: 15});
+export const MOBILE_SEARCH_MARGIN_COLLAPSED = Platform.select({android: 68, default: 15});
 
 export const JOIN_CALL_BAR_HEIGHT = 38;
 export const CURRENT_CALL_BAR_HEIGHT = 74;
