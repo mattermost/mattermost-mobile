@@ -124,7 +124,7 @@ const NavigationHeader = ({
                         hideHeader={hideHeader}
                         theme={theme}
                         top={0}
-                        topMargin={searchTopMargin}
+                        topStyle={searchTopMargin}
                     />
                 }
             </Animated.View>
