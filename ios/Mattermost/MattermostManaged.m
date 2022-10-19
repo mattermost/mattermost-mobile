@@ -51,12 +51,19 @@ RCT_EXPORT_MODULE();
 }
 
 RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-  BOOL isRunningInFullScreen = CGRectEqualToRect(
-                                                 [UIApplication sharedApplication].delegate.window.frame,
-                                                 [UIApplication sharedApplication].delegate.window.screen.bounds);
-  resolve(@{
-            @"isSplitView": @(!isRunningInFullScreen)
-            });
+  dispatch_block_t splitViewCheck = ^{
+    BOOL isRunningInFullScreen = CGRectEqualToRect(
+                                                   [UIApplication sharedApplication].delegate.window.frame,
+                                                   [UIApplication sharedApplication].delegate.window.screen.bounds);
+    resolve(@{
+              @"isSplitView": @(!isRunningInFullScreen)
+              });
+  };
+  if (dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL) == dispatch_queue_get_label(dispatch_get_main_queue())) {
+    splitViewCheck();
+  } else {
+    dispatch_async(dispatch_get_main_queue(), splitViewCheck);
+  }
 }
 
 RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName  shouldRemoveDirectory: (BOOL) shouldRemoveDirectory callback: (RCTResponseSenderBlock)callback){
