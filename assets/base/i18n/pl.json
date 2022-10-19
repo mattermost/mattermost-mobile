@@ -1,4 +1,4 @@
-{  
+{
   "about.date": "Data Kompilacji:",
   "about.enterpriseEditione1": "Edycja Enterprise",
   "about.enterpriseEditionLearn": "Dowiedz się więcej na temat edycji Enteprise na ",
@@ -187,12 +187,6 @@
   "login.password": "Hasło",
   "login.username": "Nazwa użytkownika",
   "mobile.about.appVersion": "Wersja Aplikacji: {version} (Build {number})",
-  "mobile.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. Wszelkie prawa zastrzeżone",
-  "mobile.about.database": "Baza Danych: {type}",
-  "mobile.about.licensed": "Licencjonowany dla: {company}",
-  "mobile.about.powered_by": "{site} jest napędzana przez Mattermost",
-  "mobile.about.serverVersion": "Wersja Serwera: {version} (Build {number})",
-  "mobile.about.serverVersionNoBuild": "Wersja Serwera: {version}",
   "mobile.account.settings.save": "Zapisz",
   "mobile.action_menu.select": "Wybierz opcję",
   "mobile.android.back_handler_exit": "Naciśnij przycisk wstecz, aby wyjść",
@@ -247,9 +241,6 @@
   "mobile.message_length.title": "Długość Wiadomości",
   "mobile.microphone_permission_denied_description": "Aby wziąć udział w tym połączeniu, otwórz Ustawienia, aby umożliwić Mattermost dostęp do mikrofonu.",
   "mobile.microphone_permission_denied_title": "{applicationName} chce uzyskać dostęp do swojego mikrofonu",
-  "mobile.notice_mobile_link": "aplikacje mobilne",
-  "mobile.notice_platform_link": "serwer",
-  "mobile.notice_text": "Mattermost został stworzony dzięki oprogramowaniu open source używanym w naszej {platform} i {mobile}.",
   "mobile.oauth.failed_to_login": "Twoja próba logowania nie powiodła się. Proszę spróbować ponownie.",
   "mobile.oauth.failed_to_open_link": "Nie udało się otworzyć linku. Proszę spróbować ponownie.",
   "mobile.oauth.something_wrong": "Coś poszło nie tak",
@@ -307,7 +298,6 @@
   "mobile.server_upgrade.title": "Wymagane uaktualnienie serwera",
   "mobile.server_url.empty": "Proszę wprowadzić prawidłowy adres URL serwera",
   "mobile.server_url.invalid_format": "Adres musi zaczynać się od http:// lub https://",
-  "mobile.session_expired": "Sesja wygasła: zaloguj się, aby kontynuować otrzymywanie powiadomień.",
   "mobile.set_status.away": "Zaraz wracam",
   "mobile.set_status.dnd": "Nie przeszkadzać",
   "mobile.set_status.offline": "Offline",
@@ -388,5 +378,5 @@
   "user.settings.general.lastName": "Nazwisko",
   "user.settings.general.nickname": "Pseudonim",
   "user.settings.general.position": "Stanowisko",
-  "user.settings.general.username": "Nazwa użytkownika"
+  "user.settings.general.username": "Nazwa użytkownika",
 }

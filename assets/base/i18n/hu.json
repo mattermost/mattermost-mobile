@@ -1,4 +1,4 @@
-{  
+{
   "about.date": "Kiadás dátuma:",
   "about.enterpriseEditione1": "Enterprise Kiadás",
   "about.enterpriseEditionLearn": "Tudjon meg többet az Enterprise kiadásról: ",
@@ -187,12 +187,6 @@
   "login.password": "Jelszó",
   "login.username": "Felhasználónév",
   "mobile.about.appVersion": "Alkalmazás verzió: {version} (Kiadás {number})",
-  "mobile.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. Minden jog fenntartva",
-  "mobile.about.database": "Adatbázis: {type}",
-  "mobile.about.licensed": "Licenc tulajdonosa: {company}",
-  "mobile.about.powered_by": "{site} rendszert a Mattermost biztosítja",
-  "mobile.about.serverVersion": "Szerver verzió: {version} (Kiadás {number})",
-  "mobile.about.serverVersionNoBuild": "Szerver verzió: {version}",
   "mobile.account.settings.save": "Mentés",
   "mobile.action_menu.select": "Válassz egy opciót",
   "mobile.android.back_handler_exit": "A kilépéshez nyomja meg újra a vissza gombot",
@@ -247,9 +241,6 @@
   "mobile.message_length.title": "Üzenet hossza",
   "mobile.microphone_permission_denied_description": "A hívásban való részvételhez nyissa meg a Beállításokat, hogy a Mattermost hozzáférhessen a mikrofonjához.",
   "mobile.microphone_permission_denied_title": "{applicationName} szeretne hozzáférni a mikrofonjához",
-  "mobile.notice_mobile_link": "mobilalkalmazások",
-  "mobile.notice_platform_link": "szerver",
-  "mobile.notice_text": "A Mattermost-ot a {platform} és a {mobile} rendszerünkben használt nyílt forráskódú szoftver teszi lehetővé.",
   "mobile.oauth.failed_to_login": "A bejelentkezési kísérlet nem sikerült. Kérlek próbáld újra.",
   "mobile.oauth.failed_to_open_link": "A linket nem sikerült megnyitni. Kérlek próbáld újra.",
   "mobile.oauth.something_wrong": "Valami elromlott",
@@ -307,7 +298,6 @@
   "mobile.server_upgrade.title": "Szerver frissítés szükséges",
   "mobile.server_url.empty": "Kérem adjon meg érvényes szerver URL-t",
   "mobile.server_url.invalid_format": "Az URL-nek http:// vagy https:// -el kell kezdődnie",
-  "mobile.session_expired": "A munkamenet lejárt: Jelentkezzen be, hogy továbbra is kapjon értesítéseket. A {siteName} munkamenetei úgy vannak beállítva, hogy minden {daysCount, number} {daysCount, plural, one {naponta} other {naponta}} lejárjanak.",
   "mobile.set_status.away": "Nincs a gépnél",
   "mobile.set_status.dnd": "Ne zavarj",
   "mobile.set_status.offline": "Nem elérhető",
@@ -388,5 +378,5 @@
   "user.settings.general.lastName": "Vezetéknév",
   "user.settings.general.nickname": "Becenév",
   "user.settings.general.position": "Beosztás",
-  "user.settings.general.username": "Felhasználónév"
+  "user.settings.general.username": "Felhasználónév",
 }

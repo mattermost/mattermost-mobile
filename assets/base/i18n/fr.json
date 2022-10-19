@@ -1,4 +1,4 @@
-{  
+{
   "about.date": "Date de compilation :",
   "about.enterpriseEditione1": "Édition Entreprise",
   "about.enterpriseEditionLearn": "Pour en savoir plus sur l’Enterprise Edition : ",
@@ -36,6 +36,7 @@
   "apps.error.parser.missing_list_end": "Marqeur de fin de liste attendu.",
   "apps.error.parser.missing_quote": "Les doubles guillemets doivent être fermés avant la fin du champ de saisie.",
   "apps.error.parser.missing_source": "Le formulaire n'a ni `submit` ni `source`.",
+  "apps.error.parser.missing_submit": "Aucun appel dans le lien ou le formulaire.",
   "apps.error.parser.missing_tick": "Une marqueur de citation correspondant est attendu avant la fin du champ de saisie.",
   "apps.error.parser.multiple_equal": "Les signes `=` multiples ne sont pas autorisés.",
   "apps.error.parser.no_argument_pos_x": "Impossible d'identifier l'argument.",
@@ -186,12 +187,6 @@
   "login.password": "Mot de passe",
   "login.username": "Nom d'utilisateur",
   "mobile.about.appVersion": "Version de l'App : {version} (Build {number})",
-  "mobile.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. Tous droits réservés",
-  "mobile.about.database": "Base de données : {type}",
-  "mobile.about.licensed": "Licence accordée à : {company}",
-  "mobile.about.powered_by": "{site} est propulsé par Mattermost",
-  "mobile.about.serverVersion": "Version du serveur : {version} (Build {number})",
-  "mobile.about.serverVersionNoBuild": "Version du serveur : {version}",
   "mobile.account.settings.save": "Enregistrer",
   "mobile.action_menu.select": "Sélectionnez une option",
   "mobile.android.back_handler_exit": "Appuyez à nouveau sur la touche retour pour quitter",
@@ -246,9 +241,6 @@
   "mobile.message_length.title": "Longueur de message",
   "mobile.microphone_permission_denied_description": "Pour participer à cet appel, ouvrez les paramètres et autorisez Mattermost à accéder à votre microphone.",
   "mobile.microphone_permission_denied_title": "{applicationName} voudrait accéder à votre microphone",
-  "mobile.notice_mobile_link": "applications mobiles",
-  "mobile.notice_platform_link": "serveur",
-  "mobile.notice_text": "Mattermost est rendu possible grâce aux logiciels open source utilisés dans notre {platform} et {mobile}.",
   "mobile.oauth.failed_to_login": "Votre tentative de connexion a échoué. Veuillez réessayer.",
   "mobile.oauth.failed_to_open_link": "Impossible d'ouvrir le lien. Veuillez réessayer.",
   "mobile.oauth.something_wrong": "Une erreur s'est produite",
@@ -306,7 +298,6 @@
   "mobile.server_upgrade.title": "Mise à jour du serveur requise",
   "mobile.server_url.empty": "Veuillez spécifier une URL de serveur valide",
   "mobile.server_url.invalid_format": "L'URL doit commencer par http:// ou https://",
-  "mobile.session_expired": "La session a expiré. Veuillez vous connecter pour continuer à recevoir les notifications.",
   "mobile.set_status.away": "Absent",
   "mobile.set_status.dnd": "Ne pas déranger",
   "mobile.set_status.offline": "Hors ligne",
@@ -387,5 +378,5 @@
   "user.settings.general.lastName": "Nom",
   "user.settings.general.nickname": "Pseudo",
   "user.settings.general.position": "Rôle",
-  "user.settings.general.username": "Nom d'utilisateur"
+  "user.settings.general.username": "Nom d'utilisateur",
 }
