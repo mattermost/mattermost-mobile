@@ -6,7 +6,7 @@ import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {ActivityIndicator, DeviceEventEmitter, FlatList, ListRenderItemInfo, Platform, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {SafeAreaView, Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
 import {fetchRecentMentions} from '@actions/remote/search';
 import NavigationHeader from '@components/navigation_header';
@@ -53,7 +53,6 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     const theme = useTheme();
     const route = useRoute();
     const isFocused = useIsFocused();
-    const insets = useSafeAreaInsets();
     const {formatMessage} = useIntl();
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -87,7 +86,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     }, [serverUrl, isFocused]);
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<FlatList<string>>(true, onSnap);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop, insets.top]);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
 
     const animated = useAnimatedStyle(() => {
