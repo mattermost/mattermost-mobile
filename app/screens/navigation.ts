@@ -686,8 +686,8 @@ export async function openAsBottomSheet({closeButtonId, screen, theme, title, pr
     }
 }
 
-export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
-    const passProps = {form, call};
+export const showAppForm = async (form: AppForm) => {
+    const passProps = {form};
     showModal(Screens.APPS_FORM, form.title || '', passProps);
 };
 

@@ -17,7 +17,7 @@ import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getConfig, getCurrentTeamId} from '@queries/servers/system';
 import {getTeammateNameDisplay, queryUsersByUsername} from '@queries/servers/user';
-import {showModal} from '@screens/navigation';
+import {showAppForm, showModal} from '@screens/navigation';
 import * as DraftUtils from '@utils/draft';
 import {matchDeepLink, tryOpenURL} from '@utils/url';
 import {displayUsername} from '@utils/user';
@@ -112,7 +112,14 @@ const executeAppCommand = async (serverUrl: string, intl: IntlShape, parser: App
             }
             return {data: {}};
         case AppCallResponseTypes.FORM:
+            if (callResp.form) {
+                showAppForm(callResp.form);
+            }
+            return {data: {}};
         case AppCallResponseTypes.NAVIGATE:
+            if (callResp.navigate_to_url) {
+                handleGotoLocation(serverUrl, intl, callResp.navigate_to_url);
+            }
             return {data: {}};
         default:
             return createErrorMessage(intl.formatMessage({
