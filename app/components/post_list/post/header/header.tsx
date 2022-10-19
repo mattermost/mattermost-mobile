@@ -29,6 +29,7 @@ type HeaderProps = {
     enablePostUsernameOverride: boolean;
     isAutoResponse: boolean;
     isCRTEnabled?: boolean;
+    isCustomStatusEnabled: boolean;
     isEphemeral: boolean;
     isMilitaryTime: boolean;
     isPendingOrFailed: boolean;
@@ -76,7 +77,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Header = (props: HeaderProps) => {
     const {
-        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled,
+        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
         isEphemeral, isMilitaryTime, isPendingOrFailed, isPostPriorityEnabled, isSystemPost, isTimezoneEnabled, isWebHook,
         location, post, rootPostAuthor, shouldRenderReplyButton, teammateNameDisplay,
     } = props;
@@ -90,7 +91,7 @@ const Header = (props: HeaderProps) => {
     const customStatus = getUserCustomStatus(author);
     const customStatusExpired = isCustomStatusExpired(author);
     const showCustomStatusEmoji = Boolean(
-        displayName && customStatus &&
+        isCustomStatusEnabled && displayName && customStatus &&
         !(isSystemPost || author?.isBot || isAutoResponse || isWebHook),
     );
 

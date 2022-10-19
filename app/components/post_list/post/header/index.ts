@@ -34,6 +34,7 @@ const withHeaderProps = withObservables(
         const isMilitaryTime = preferences.pipe(map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)));
         const teammateNameDisplay = observeTeammateNameDisplay(database);
         const commentCount = queryPostReplies(database, post.rootId || post.id).observeCount();
+        const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
         const rootPostAuthor = differentThreadSequence ? post.root.observe().pipe(switchMap((root) => {
             if (root.length) {
                 return root[0].author.observe();
@@ -46,6 +47,7 @@ const withHeaderProps = withObservables(
             author,
             commentCount,
             enablePostUsernameOverride,
+            isCustomStatusEnabled,
             isMilitaryTime,
             isTimezoneEnabled,
             rootPostAuthor,
