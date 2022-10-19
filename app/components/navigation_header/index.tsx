@@ -32,9 +32,10 @@ type Props = SearchProps & {
     title?: string;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     container: {
-        backgroundColor: theme.sidebarBg,
+        backgroundColor: 'yellow',
+        marginLeft: 40,
         position: 'absolute',
         width: '100%',
         zIndex: 10,
@@ -84,6 +85,7 @@ const NavigationHeader = ({
         const unlockedBottomMargin = margin + ViewConstants.UNLOCKED_SEARCH_BOTTOM_MARGIN;
         const bottomMargin = lockValue?.value ? -lockValue?.value + ViewConstants.LOCKED_SEARCH_BOTTOM_MARGIN : unlockedBottomMargin;
         return {
+            backgroundColor: 'red',
             marginTop: bottomMargin - ViewConstants.SEARCH_INPUT_HEIGHT,
         };
     }, [lockValue, headerOffset, minScrollValue]);

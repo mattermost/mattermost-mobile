@@ -22,8 +22,9 @@ export const KEYBOARD_TRACKING_OFFSET = 72;
 export const UNLOCKED_SEARCH_BOTTOM_MARGIN = Platform.select({android: -14, default: -14});
 export const LOCKED_SEARCH_BOTTOM_MARGIN = Platform.select({android: 11, default: 0});
 
-export const TABLET_SEARCH_HEIGHT_COLLAPSED = Platform.select({android: 88, default: 98}); // 98 total, insets=24, 74
-export const TABLET_SEARCH_HEIGHT_EXPANDED = Platform.select({android: 145, default: 182}); // 182 total, insets=24, 158
+export const TABLET_SEARCH_MARGIN_COLLAPSED = Platform.select({default: 38});
+export const TABLET_SEARCH_MARGIN_EXPANDED = Platform.select({default: 24});
+export const MOBILE_SEARCH_MARGIN_COLLAPSED = Platform.select({default: 15});
 
 export const JOIN_CALL_BAR_HEIGHT = 38;
 export const CURRENT_CALL_BAR_HEIGHT = 74;
@@ -31,8 +32,9 @@ export const CURRENT_CALL_BAR_HEIGHT = 74;
 export const QUICK_OPTIONS_HEIGHT = 270;
 
 export default {
-    TABLET_SEARCH_HEIGHT_COLLAPSED,
-    TABLET_SEARCH_HEIGHT_EXPANDED,
+    TABLET_SEARCH_MARGIN_COLLAPSED,
+    TABLET_SEARCH_MARGIN_EXPANDED,
+    MOBILE_SEARCH_MARGIN_COLLAPSED,
     UNLOCKED_SEARCH_BOTTOM_MARGIN,
     LOCKED_SEARCH_BOTTOM_MARGIN,
     BOTTOM_TAB_HEIGHT,
