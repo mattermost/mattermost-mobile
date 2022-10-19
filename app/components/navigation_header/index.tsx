@@ -82,7 +82,7 @@ const NavigationHeader = ({
     const searchTopMargin = useAnimatedStyle(() => {
         const margin = clamp(-minScrollValue.value, -headerOffset, headerOffset);
         const unlockedBottomMargin = margin + ViewConstants.UNLOCKED_SEARCH_BOTTOM_MARGIN;
-        const bottomMargin = lockValue?.value ? -lockValue?.value : unlockedBottomMargin;
+        const bottomMargin = lockValue?.value ? -lockValue?.value + ViewConstants.LOCKED_SEARCH_BOTTOM_MARGIN : unlockedBottomMargin;
         return {
             marginTop: bottomMargin - ViewConstants.SEARCH_INPUT_HEIGHT,
         };
