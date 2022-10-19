@@ -1,4 +1,4 @@
-{  
+{
   "about.date": "Дата сборки:",
   "about.enterpriseEditione1": "Корпоративная редакция",
   "about.enterpriseEditionLearn": "Подробнее о Корпоративной редакции читайте на ",
@@ -187,12 +187,6 @@
   "login.password": "Пароль",
   "login.username": "Имя пользователя",
   "mobile.about.appVersion": "Версия приложения: {version} (Сборка {number})",
-  "mobile.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. Все права защищены",
-  "mobile.about.database": "Тип базы данных: {type}",
-  "mobile.about.licensed": "Лицензировано для: {company}",
-  "mobile.about.powered_by": "{site} работает на Mattermost",
-  "mobile.about.serverVersion": "Версия сервера: {version} (Сборка {number})",
-  "mobile.about.serverVersionNoBuild": "Версия сервера: {version}",
   "mobile.account.settings.save": "Сохранить",
   "mobile.action_menu.select": "Выберите опцию",
   "mobile.android.back_handler_exit": "Нажмите еще раз, чтобы выйти",
@@ -247,9 +241,6 @@
   "mobile.message_length.title": "Длина сообщения",
   "mobile.microphone_permission_denied_description": "Чтобы принять участие в этом вызове, откройте «Настройки», чтобы предоставить Mattermost доступ к вашему микрофону.",
   "mobile.microphone_permission_denied_title": "{applicationName} хочет получить доступ к вашему микрофону",
-  "mobile.notice_mobile_link": "мобильных приложениях",
-  "mobile.notice_platform_link": "сервере",
-  "mobile.notice_text": "Mattermost стал возможен благодаря использованию программ с открытым исходным кодом в нашем {platform} и {mobile}.",
   "mobile.oauth.failed_to_login": "Ваша попытка входа не удалась. Пожалуйста, попробуйте ещё раз.",
   "mobile.oauth.failed_to_open_link": "Ссылка не открылась. Пожалуйста, попробуйте еще раз.",
   "mobile.oauth.something_wrong": "Что-то пошло не так",
@@ -307,7 +298,6 @@
   "mobile.server_upgrade.title": "Требуется обновление сервера",
   "mobile.server_url.empty": "Пожалуйста, введите действительный URL-адрес сервера",
   "mobile.server_url.invalid_format": "Адрес должен начинаться с http:// или https://",
-  "mobile.session_expired": "Время сеанса истекло: войдите в систему, чтобы продолжить получать уведомления. Сеансы для {siteName} настроены на истечение каждые {daysCount, number} {daysCount, plural, one {день} few {дня} other {дней}}.",
   "mobile.set_status.away": "Отошёл",
   "mobile.set_status.dnd": "Не беспокоить",
   "mobile.set_status.offline": "Не в сети",
@@ -388,5 +378,5 @@
   "user.settings.general.lastName": "Фамилия",
   "user.settings.general.nickname": "Псевдоним",
   "user.settings.general.position": "Должность",
-  "user.settings.general.username": "Имя пользователя"
+  "user.settings.general.username": "Имя пользователя",
 }

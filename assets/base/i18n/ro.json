@@ -1,4 +1,4 @@
-{  
+{
   "about.date": "Data construcției:",
   "about.enterpriseEditione1": "Ediția Enterprise",
   "about.enterpriseEditionLearn": "Aflați mai multe despre varianta Enterprise la ",
@@ -111,12 +111,6 @@
   "login.password": "Parola",
   "login.username": "Utilizator",
   "mobile.about.appVersion": "Versiunea aplicației: {version} (Build {number})",
-  "mobile.about.copyright": "Drepturi de autor 2015-{currentYear} Mattermost, Inc. Toate drepturile rezervate",
-  "mobile.about.database": "Bază de date: {type}",
-  "mobile.about.licensed": "Licențiat în: {company}",
-  "mobile.about.powered_by": "{site} este alimentat de Mattermost",
-  "mobile.about.serverVersion": "Versiunea serverului: {version} (Build {number})",
-  "mobile.about.serverVersionNoBuild": "Versiunea serverului: {version}",
   "mobile.account.settings.save": "Salvează",
   "mobile.action_menu.select": "Selectează o opțiune",
   "mobile.android.back_handler_exit": "Apăsați inapoi din nou pentru a ieși",
@@ -166,9 +160,6 @@
   "mobile.message_length.message": "Mesajul dvs. curent este prea lung. Număr curent de caractere: {max} / {count}",
   "mobile.message_length.message_split_left": "Mesajul depășește limita de caractere",
   "mobile.message_length.title": "Mesaj Lungime",
-  "mobile.notice_mobile_link": "aplicații pentru mobil",
-  "mobile.notice_platform_link": "server",
-  "mobile.notice_text": "Cel mai important lucru este posibil prin software-ul open source folosit în {platform} și {mobile}.",
   "mobile.oauth.failed_to_login": "Încercarea dvs. de autentificare a eșuat. Vă rugăm să încercați din nou.",
   "mobile.oauth.failed_to_open_link": "Linkul nu a putut fi deschis. Vă rugăm să încercați din nou.",
   "mobile.oauth.something_wrong": "Ceva n-a mers bine",
@@ -223,7 +214,6 @@
   "mobile.server_upgrade.title": "Este necesară actualizarea serverului",
   "mobile.server_url.empty": "Vă rugăm să introduceți o adresă URL de server validă",
   "mobile.server_url.invalid_format": "Adresa URL trebuie să înceapă cu http: // sau https: //",
-  "mobile.session_expired": "Sesiune expirată: vă rugăm să vă autentificați pentru a continua să primiți notificări.",
   "mobile.set_status.away": "Plecat",
   "mobile.set_status.dnd": "Nu deranjaţi",
   "mobile.set_status.offline": "Deconectat",
@@ -294,5 +284,5 @@
   "user.settings.general.lastName": "Nume",
   "user.settings.general.nickname": "Porecla",
   "user.settings.general.position": "Poziție",
-  "user.settings.general.username": "Utilizator"
+  "user.settings.general.username": "Utilizator",
 }

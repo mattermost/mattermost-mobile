@@ -1,4 +1,4 @@
-{  
+{
   "about.date": "Byggdatum:",
   "about.enterpriseEditione1": "Enterprise-utgåva",
   "about.enterpriseEditionLearn": "Läs mer om Enterprise-utgåvan på ",
@@ -105,7 +105,7 @@
   "combined_system_message.removed_from_team.one": "{firstUser} **togs bort från kanalen**.",
   "combined_system_message.removed_from_team.one_you": "Du **togs bort från teamet**.",
   "combined_system_message.removed_from_team.two": "{firstUser} och {secondUser} **togs bort från teamet**.",
-  "combined_system_message.you": "Du",
+  "combined_system_message.you": "dig",
   "create_post.deactivated": "Du visar en arkiverad kanal med ett avstängt användarkonto.",
   "create_post.write": "Skriv i kanalen {channelDisplayName}",
   "custom_status.expiry_dropdown.custom": "Anpassad",
@@ -187,12 +187,6 @@
   "login.password": "Lösenord",
   "login.username": "Användarnamn",
   "mobile.about.appVersion": "App-version: {version} (Build {number})",
-  "mobile.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. Alla rättigheter är reserverade",
-  "mobile.about.database": "Databas: {type}",
-  "mobile.about.licensed": "Licensierad till: {company}",
-  "mobile.about.powered_by": "{site} funkar med hjälp av Mattermost",
-  "mobile.about.serverVersion": "Server-version: {version} (Build {number})",
-  "mobile.about.serverVersionNoBuild": "Server version: {version}",
   "mobile.account.settings.save": "Spara",
   "mobile.action_menu.select": "Välj ett alternativ",
   "mobile.android.back_handler_exit": "Tryck tillbaka igen för att stänga",
@@ -247,9 +241,6 @@
   "mobile.message_length.title": "Meddelandelängd",
   "mobile.microphone_permission_denied_description": "För att delta i samtalet, öppna Inställningar och ge Mattermost tillåtelse att använda mikrofonen.",
   "mobile.microphone_permission_denied_title": "{applicationName} behöver åtkomst till din mikrofon",
-  "mobile.notice_mobile_link": "mobilappar",
-  "mobile.notice_platform_link": "server",
-  "mobile.notice_text": "Mattermost görs möjlig genom den programvaran med öppen källkod som används i vår {platform} och {mobile}.",
   "mobile.oauth.failed_to_login": "Inloggningen misslyckades. Försök igen.",
   "mobile.oauth.failed_to_open_link": "Länken gick inte att öppna. Försök igen.",
   "mobile.oauth.something_wrong": "Något gick fel",
@@ -307,7 +298,6 @@
   "mobile.server_upgrade.title": "Serveruppgradering krävs",
   "mobile.server_url.empty": "Ange en giltig server-URL",
   "mobile.server_url.invalid_format": "Måste börja med http:// eller https://",
-  "mobile.session_expired": "Sessionen har upphört: Logga in på nytt för att ta emot notifieringar. Sessioner i {siteName} löper ut efter {daysCount, number} {daysCount, plural, one {dag} other {dagar}}.",
   "mobile.set_status.away": "Tillfälligt borta",
   "mobile.set_status.dnd": "Stör ej",
   "mobile.set_status.offline": "Offline",
@@ -388,5 +378,5 @@
   "user.settings.general.lastName": "Efternamn",
   "user.settings.general.nickname": "Alias",
   "user.settings.general.position": "Position",
-  "user.settings.general.username": "Användarnamn"
+  "user.settings.general.username": "Användarnamn",
 }
