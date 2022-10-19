@@ -3,7 +3,6 @@
 
 import React from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ViewConstants from '@constants/view';
 import {useTheme} from '@context/theme';
@@ -59,19 +58,18 @@ const NavigationHeader = ({
     ...searchProps
 }: Props) => {
     const theme = useTheme();
-    const insets = useSafeAreaInsets();
     const styles = getStyleSheet(theme);
 
     const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight(hasSearch);
     const containerHeight = useAnimatedStyle(() => {
-        const minHeight = defaultHeight + insets.top;
+        const minHeight = defaultHeight;
         const value = -(scrollValue?.value || 0);
         const calculatedHeight = (isLargeTitle ? largeHeight : defaultHeight) + value;
         const height = lockValue?.value ? lockValue.value : calculatedHeight;
         return {
             height: Math.max(height, minHeight),
             minHeight,
-            maxHeight: largeHeight + insets.top + MAX_OVERSCROLL,
+            maxHeight: largeHeight + MAX_OVERSCROLL,
         };
     });
 

@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {BackHandler, DeviceEventEmitter, LayoutChangeEvent, NativeEventSubscription, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CurrentCallBar from '@calls/components/current_call_bar';
 import FloatingCallContainer from '@calls/components/floating_call_container';
@@ -55,7 +55,6 @@ const Channel = ({
 }: ChannelProps) => {
     const appState = useAppState();
     const isTablet = useIsTablet();
-    const insets = useSafeAreaInsets();
     const [shouldRenderPosts, setShouldRenderPosts] = useState(false);
     const switchingTeam = useTeamSwitch();
     const switchingChannels = useChannelSwitch();
@@ -94,7 +93,7 @@ const Channel = ({
         return () => back?.remove();
     }, [componentId, isTablet]);
 
-    const marginTop = defaultHeight + (isTablet ? insets.top : 0);
+    const marginTop = defaultHeight;
     useEffect(() => {
         // This is done so that the header renders
         // and the screen does not look totally blank

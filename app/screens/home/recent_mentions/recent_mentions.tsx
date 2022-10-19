@@ -87,8 +87,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     }, [serverUrl, isFocused]);
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<FlatList<string>>(true, onSnap);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop - insets.top, flexGrow: 1}), [scrollPaddingTop, insets.top]);
-    const scrollViewStyle = useMemo(() => ({top: insets.top}), [insets.top]);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop, insets.top]);
     const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
 
     const animated = useAnimatedStyle(() => {
@@ -195,7 +194,6 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                         renderItem={renderItem}
                         removeClippedSubviews={true}
                         onViewableItemsChanged={onViewableItemsChanged}
-                        style={scrollViewStyle}
                         testID='recent_mentions.post_list.flat_list'
                     />
                 </Animated.View>
