@@ -79,7 +79,7 @@ const NavigationHeader = ({
         lockValue?.value ? -lockValue.value : Math.min(-minScrollValue.value, headerOffset)
     ), [lockValue, minScrollValue, headerOffset]);
 
-    const searchTopMargin = useAnimatedStyle(() => {
+    const searchTopStyle = useAnimatedStyle(() => {
         const margin = clamp(-minScrollValue.value, -headerOffset, headerOffset);
         const unlockedBottomMargin = margin + ViewConstants.UNLOCKED_SEARCH_BOTTOM_MARGIN;
         const bottomMargin = lockValue?.value ? -lockValue?.value + ViewConstants.LOCKED_SEARCH_BOTTOM_MARGIN : unlockedBottomMargin;
@@ -124,7 +124,7 @@ const NavigationHeader = ({
                         hideHeader={hideHeader}
                         theme={theme}
                         top={0}
-                        topStyle={searchTopMargin}
+                        topStyle={searchTopStyle}
                     />
                 }
             </Animated.View>
