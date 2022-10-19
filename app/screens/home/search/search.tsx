@@ -271,6 +271,8 @@ const SearchScreen = ({teamId}: Props) => {
         />
     ), [cursorPosition, handleTextChange, searchValue, autocompleteMaxHeight, autocompletePosition]);
 
+    // when clearing the input from the search results, scroll the initial view
+    // back to the top so the header is n the collapsed state
     const onFlatLayout = useCallback(() => {
         if (clearRef.current) {
             scrollRef.current?.scrollToOffset({
