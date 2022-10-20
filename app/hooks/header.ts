@@ -32,7 +32,7 @@ export const useDefaultHeaderHeight = (hasSearch = false) => {
 export const useLargeHeaderHeight = (hasSearch = false) => {
     let largeHeight = useDefaultHeaderHeight(hasSearch);
     largeHeight += ViewConstants.LARGE_HEADER_TITLE_HEIGHT;
-    largeHeight += ViewConstants.HEADER_WITH_SUBTITLE;
+    largeHeight += ViewConstants.SUBTITLE_HEIGHT;
     return largeHeight;
 };
 

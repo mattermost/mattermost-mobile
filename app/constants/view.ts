@@ -15,7 +15,7 @@ export const TABLET_SIDEBAR_WIDTH = 320;
 export const IOS_STATUS_BAR_HEIGHT = 20;
 export const DEFAULT_HEADER_HEIGHT = Platform.select({android: 56, default: 44});
 export const LARGE_HEADER_TITLE_HEIGHT = 60;
-export const HEADER_WITH_SUBTITLE = 24;
+export const SUBTITLE_HEIGHT = 24;
 export const KEYBOARD_TRACKING_OFFSET = 72;
 
 export const SEARCH_INPUT_HEIGHT = Platform.select({android: 40, default: 36});
@@ -46,7 +46,7 @@ export default {
     IOS_STATUS_BAR_HEIGHT,
     DEFAULT_HEADER_HEIGHT,
     LARGE_HEADER_TITLE_HEIGHT,
-    HEADER_WITH_SUBTITLE,
+    SUBTITLE_HEIGHT,
     KEYBOARD_TRACKING_OFFSET,
     QUICK_OPTIONS_HEIGHT,
 };
