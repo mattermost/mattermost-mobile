@@ -65,6 +65,12 @@ export type EntryResponse = {
 const FETCH_MISSING_DM_TIMEOUT = 2500;
 export const FETCH_UNREADS_TIMEOUT = 2500;
 
+export const getRemoveTeamIds = async (database: Database, teamData: MyTeamsRequest) => {
+    const myTeams = await queryMyTeams(database).fetch();
+    const joinedTeams = new Set(teamData.memberships?.filter((m) => m.delete_at === 0).map((m) => m.team_id));
+    return myTeams.filter((m) => !joinedTeams.has(m.id)).map((m) => m.id);
+};
+
 export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -162,7 +168,6 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
         fetchMe(serverUrl, fetchOnly),
     ];
 
-    const removeTeamIds: string[] = [];
     const resolution = await Promise.all(promises);
     const [teamData, , meData] = resolution;
     let [, chData] = resolution;
@@ -179,10 +184,7 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
         }
     }
 
-    const removedFromTeam = teamData.memberships?.filter((m) => m.delete_at > 0);
-    if (removedFromTeam?.length) {
-        removeTeamIds.push(...removedFromTeam.map((m) => m.team_id));
-    }
+    const removeTeamIds = await getRemoveTeamIds(database, teamData);
 
     let data: AppEntryData = {
         initialTeamId,
@@ -195,10 +197,6 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
     };
 
     if (teamData.teams?.length === 0 && !teamData.error) {
-        // User is no longer a member of any team
-        const myTeams = await queryMyTeams(database).fetch();
-        removeTeamIds.push(...(myTeams.map((myTeam) => myTeam.id) || []));
-
         return {
             ...data,
             initialTeamId: '',
