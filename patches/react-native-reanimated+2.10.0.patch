@@ -1,3 +1,15 @@
+diff --git a/node_modules/react-native-reanimated/android/build.gradle b/node_modules/react-native-reanimated/android/build.gradle
+index 6b5e3fc..d419b5e 100644
+--- a/node_modules/react-native-reanimated/android/build.gradle
++++ b/node_modules/react-native-reanimated/android/build.gradle
+@@ -301,6 +301,7 @@ android {
+                 "**/libreactnativejni.so",
+                 "**/libjscexecutor.so",
+                 "**/libv8executor.so",
++                "META-INF/MANIFEST.MF",
+         ]
+     }
+     tasks.withType(JavaCompile) {
 diff --git a/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js b/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js
 index d8befd8..6357426 100644
 --- a/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js
