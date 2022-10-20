@@ -3,20 +3,20 @@
 
 export function logError(...args: any[]) {
     // eslint-disable-next-line no-console
-    console.error('Error:', ...args);
+    console.error(...args);
 }
 
 export function logWarning(...args: any[]) {
     // eslint-disable-next-line no-console
-    console.warn('Warning:', ...args);
+    console.warn(...args);
 }
 
 export function logInfo(...args: any[]) {
     // eslint-disable-next-line no-console
-    console.log('Info:', ...args);
+    console.log(...args);
 }
 
 export function logDebug(...args: any[]) {
     // eslint-disable-next-line no-console
-    console.debug('Debug:', ...args);
+    console.debug(...args);
 }

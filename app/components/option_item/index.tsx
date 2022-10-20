@@ -266,7 +266,12 @@ const OptionItem = ({
                 {
                     Boolean(info) &&
                     <View style={styles.infoContainer}>
-                        <Text style={[styles.info, destructive && {color: theme.dndIndicator}]}>{info}</Text>
+                        <Text
+                            style={[styles.info, destructive && {color: theme.dndIndicator}]}
+                            testID={`${testID}.info`}
+                        >
+                            {info}
+                        </Text>
                     </View>
                 }
                 {actionComponent}

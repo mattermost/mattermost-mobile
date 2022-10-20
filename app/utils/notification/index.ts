@@ -9,7 +9,6 @@ import {Events} from '@constants';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import PushNotifications from '@init/push_notifications';
 import {popToRoot} from '@screens/navigation';
-import {sortByNewest} from '@utils/general';
 
 export const convertToNotificationData = (notification: Notification, tapped = true): NotificationWithData => {
     if (!notification.payload) {
@@ -25,7 +24,7 @@ export const convertToNotificationData = (notification: Notification, tapped = t
             channel_name: payload.channel_name,
             identifier: payload.identifier || notification.identifier,
             from_webhook: payload.from_webhook,
-            message: ((payload.type === 'message') ? payload.message || notification.body : undefined),
+            message: ((payload.type === 'message') ? payload.message || notification.body : payload.body),
             override_icon_url: payload.override_icon_url,
             override_username: payload.override_username,
             post_id: payload.post_id,
@@ -75,26 +74,28 @@ export const emitNotificationError = (type: 'Team' | 'Channel') => {
     }, 500);
 };
 
-export const scheduleExpiredNotification = async (sessions: Session[], siteName: string, locale = DEFAULT_LOCALE) => {
-    const session = sessions.sort(sortByNewest)[0];
+export const scheduleExpiredNotification = (serverUrl: string, session: Session, serverName: string, locale = DEFAULT_LOCALE) => {
     const expiresAt = session?.expires_at || 0;
     const expiresInDays = Math.ceil(Math.abs(moment.duration(moment().diff(moment(expiresAt))).asDays()));
     const intl = createIntl({locale, messages: getTranslations(locale)});
     const body = intl.formatMessage({
         id: 'mobile.session_expired',
-        defaultMessage: 'Session Expired: Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.',
-    }, {siteName, daysCount: expiresInDays});
+        defaultMessage: 'Please log in to continue receiving notifications. Sessions for {siteName} are configured to expire every {daysCount, number} {daysCount, plural, one {day} other {days}}.',
+    }, {siteName: serverName, daysCount: expiresInDays});
+    const title = intl.formatMessage({id: 'mobile.session_expired.title', defaultMessage: 'Session Expired'});
 
-    if (expiresAt && body) {
-        //@ts-expect-error: Does not need to set all Notification properties
-        PushNotifications.scheduleNotification({
+    if (expiresAt) {
+        return PushNotifications.scheduleNotification({
             fireDate: expiresAt,
             body,
-            payload: {
-                userInfo: {
-                    local: true,
-                },
-            },
+            title,
+
+            // @ts-expect-error need to be included in the notification payload
+            ack_id: serverUrl,
+            server_url: serverUrl,
+            type: 'session',
         });
     }
+
+    return 0;
 };

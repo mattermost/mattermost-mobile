@@ -5,7 +5,7 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'react-native';
-import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {getPosts} from '@actions/local/post';
@@ -40,7 +40,6 @@ const emptyChannelIds: string[] = [];
 const dummyData = [1];
 
 const AutocompletePaddingTop = 4;
-const AutocompleteZindex = 11;
 
 type Props = {
     teamId: string;
@@ -53,6 +52,9 @@ const styles = StyleSheet.create({
     loading: {
         flex: 1,
         justifyContent: 'center',
+    },
+    autocompleteContainer: {
+        zIndex: 11,
     },
 });
 
@@ -240,12 +242,16 @@ const SearchScreen = ({teamId}: Props) => {
         );
     }
 
-    const autocompleteRemoveFromHeight = headerHeight.value + Platform.select({
-        ios: keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom,
-        default: 0,
-    });
-    const autocompleteMaxHeight = containerHeight - autocompleteRemoveFromHeight;
-    const autocompletePosition = AutocompletePaddingTop;
+    const autocompleteMaxHeight = useDerivedValue(() => {
+        const iosAdjust = keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom;
+        const autocompleteRemoveFromHeight = headerHeight.value + (Platform.OS === 'ios' ? iosAdjust : 0);
+        return containerHeight - autocompleteRemoveFromHeight;
+    }, [keyboardHeight, insets.bottom, containerHeight]);
+
+    const autocompletePosition = useDerivedValue(() => {
+        return headerHeight.value - AutocompletePaddingTop;
+    }, [containerHeight]);
+
     const autocomplete = useMemo(() => (
         <Autocomplete
             updateValue={handleTextChange}
@@ -256,6 +262,7 @@ const SearchScreen = ({teamId}: Props) => {
             availableSpace={autocompleteMaxHeight}
             position={autocompletePosition}
             growDown={true}
+            containerStyle={styles.autocompleteContainer}
         />
     ), [cursorPosition, handleTextChange, searchValue, autocompleteMaxHeight, autocompletePosition]);
 
@@ -276,9 +283,6 @@ const SearchScreen = ({teamId}: Props) => {
                 onCancel={handleCancelAndClearSearch}
                 defaultValue={searchValue}
             />
-            <Animated.View style={[top, {zIndex: AutocompleteZindex}]}>
-                {autocomplete}
-            </Animated.View>
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
@@ -319,6 +323,7 @@ const SearchScreen = ({teamId}: Props) => {
                     }
                 </Animated.View>
             </SafeAreaView>
+            {autocomplete}
         </FreezeScreen>
     );
 };

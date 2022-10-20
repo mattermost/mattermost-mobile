@@ -7,31 +7,41 @@ import {renderWithIntlAndTheme} from '@test/intl-test-helper';
 
 import Threads from './threads_button';
 
+const baseProps = {
+    currentChannelId: 'someChannelId',
+    groupUnreadsSeparately: true,
+    onlyUnreads: false,
+    unreadsAndMentions: {
+        unreads: false,
+        mentions: 0,
+    },
+};
+
 describe('Thread item in the channel list', () => {
     test('Threads Component should match snapshot', () => {
         const {toJSON} = renderWithIntlAndTheme(
-            <Threads
-                currentChannelId='someChannelId'
-                onlyUnreads={false}
-                unreadsAndMentions={{
-                    unreads: false,
-                    mentions: 0,
-                }}
-            />,
+            <Threads {...baseProps}/>,
         );
-
         expect(toJSON()).toMatchSnapshot();
     });
 
     test('Threads Component should match snapshot with only unreads filter', () => {
         const {toJSON} = renderWithIntlAndTheme(
             <Threads
-                currentChannelId='someChannelId'
+                {...baseProps}
                 onlyUnreads={true}
-                unreadsAndMentions={{
-                    unreads: false,
-                    mentions: 0,
-                }}
+            />,
+        );
+
+        expect(toJSON()).toMatchSnapshot();
+    });
+
+    test('Threads Component should match snapshot, groupUnreadsSeparately false, always show', () => {
+        const {toJSON} = renderWithIntlAndTheme(
+            <Threads
+                {...baseProps}
+                groupUnreadsSeparately={false}
+                onlyUnreads={true}
             />,
         );
 

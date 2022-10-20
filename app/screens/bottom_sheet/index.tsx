@@ -65,8 +65,10 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
     }, []);
 
     const handleCloseEnd = useCallback(() => {
-        backdropOpacity.value = 0;
-        setTimeout(close, 250);
+        if (firstRun.current) {
+            backdropOpacity.value = 0;
+            setTimeout(close, 250);
+        }
     }, []);
 
     const handleOpenStart = useCallback(() => {

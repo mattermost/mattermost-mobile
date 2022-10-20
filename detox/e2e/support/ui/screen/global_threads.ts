@@ -11,6 +11,7 @@ import {expect} from 'detox';
 
 class GlobalThreadsScreen {
     testID = {
+        threadItemPrefix: 'global_threads.threads_list.thread_item.',
         globalThreadsScreen: 'global_threads.screen',
         headerAllThreadsButton: 'global_threads.threads_list.header.all_threads.button',
         headerUnreadThreadsButton: 'global_threads.threads_list.header.unread_threads.button',
@@ -32,31 +33,31 @@ class GlobalThreadsScreen {
     backButton = NavigationHeader.backButton;
 
     getThreadItem = (threadId: string) => {
-        return element(by.id(`global_threads.threads_list.thread_item.${threadId}`));
+        return element(by.id(`${this.testID.threadItemPrefix}${threadId}`));
     };
 
     getThreadItemUnreadMentionsBadge = (threadId: string) => {
-        return element(by.id(`global_threads.threads_list.thread_item.${threadId}.unread_mentions.badge`));
+        return element(by.id(`${this.testID.threadItemPrefix}${threadId}.unread_mentions.badge`));
     };
 
     getThreadItemUnreadDotBadge = (threadId: string) => {
-        return element(by.id(`global_threads.threads_list.thread_item.${threadId}.unread_dot.badge`));
+        return element(by.id(`${this.testID.threadItemPrefix}${threadId}.unread_dot.badge`));
     };
 
     getThreadItemThreadStarterUserDisplayName = (threadId: string) => {
-        return element(by.id(`global_threads.threads_list.thread_item.${threadId}.thread_starter.user_display_name`));
+        return element(by.id(`${this.testID.threadItemPrefix}${threadId}.thread_starter.user_display_name`));
     };
 
     getThreadItemThreadStarterChannelDisplayName = (threadId: string) => {
-        return element(by.id(`global_threads.threads_list.thread_item.${threadId}.thread_starter.channel_display_name`));
+        return element(by.id(`${this.testID.threadItemPrefix}${threadId}.thread_starter.channel_display_name`));
     };
 
     getThreadItemFooterUnreadReplies = (threadId: string) => {
-        return element(by.id(`global_threads.threads_list.thread_item.${threadId}.footer.unread_replies`));
+        return element(by.id(`${this.testID.threadItemPrefix}${threadId}.footer.unread_replies`));
     };
 
     getThreadItemFooterReplyCount = (threadId: string) => {
-        return element(by.id(`global_threads.threads_list.thread_item.${threadId}.footer.reply_count`));
+        return element(by.id(`${this.testID.threadItemPrefix}${threadId}.footer.reply_count`));
     };
 
     toBeVisible = async () => {

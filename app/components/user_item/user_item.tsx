@@ -160,7 +160,7 @@ const UserItem = ({
                 <CustomStatusEmoji
                     customStatus={customStatus!}
                     style={style.icon}
-                    testID={testID}
+                    testID={userItemTestId}
                 />
             )}
             {shared && (

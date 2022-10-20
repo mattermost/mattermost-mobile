@@ -251,7 +251,7 @@ export const getDefaultChannelForTeam = async (database: Database, teamId: strin
     const roles = await queryRoles(database).fetch();
 
     if (roles.length) {
-        canIJoinPublicChannelsInTeam = hasPermission(roles, Permissions.JOIN_PUBLIC_CHANNELS, true);
+        canIJoinPublicChannelsInTeam = hasPermission(roles, Permissions.JOIN_PUBLIC_CHANNELS);
     }
 
     const myChannels = await database.get<ChannelModel>(CHANNEL).query(
@@ -433,6 +433,16 @@ export const queryMyChannelUnreads = (database: Database, currentTeamId: string)
         ),
         Q.where('is_unread', Q.eq(true)),
         Q.sortBy('last_post_at', Q.desc),
+    );
+};
+
+export const queryEmptyDirectAndGroupChannels = (database: Database) => {
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
+        Q.on(
+            CHANNEL,
+            Q.where('team_id', Q.eq('')),
+        ),
+        Q.where('last_post_at', Q.eq(0)),
     );
 };
 

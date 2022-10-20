@@ -28,6 +28,7 @@ const CustomTheme = ({setTheme, displayTheme}: CustomThemeProps) => {
                 label={intl.formatMessage({id: 'settings_display.custom_theme', defaultMessage: 'Custom Theme'})}
                 selected={theme.type?.toLowerCase() === displayTheme?.toLowerCase()}
                 radioItemProps={radioItemProps}
+                testID='theme_display_settings.custom.option'
             />
         </>
     );

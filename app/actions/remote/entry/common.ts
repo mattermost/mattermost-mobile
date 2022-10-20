@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
+import {Database, Model} from '@nozbe/watermelondb';
 
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
+import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
@@ -12,7 +13,7 @@ import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRe
 import {fetchNewThreads} from '@actions/remote/thread';
 import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
-import {Preferences} from '@constants';
+import {General, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
@@ -26,13 +27,11 @@ import {prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} fr
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getConfig, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
-import {deleteMyTeams, getAvailableTeamIds, getNthLastChannelFromTeam, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
-import {isDMorGM} from '@utils/channel';
+import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
+import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getMemberChannelsFromGQLQuery, gqlToClientChannelMembership} from '@utils/graphql';
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
-
-import {fetchGroupsForMember} from '../groups';
 
 import type ClientError from '@client/rest/error';
 
@@ -66,6 +65,12 @@ export type EntryResponse = {
 const FETCH_MISSING_DM_TIMEOUT = 2500;
 export const FETCH_UNREADS_TIMEOUT = 2500;
 
+export const getRemoveTeamIds = async (database: Database, teamData: MyTeamsRequest) => {
+    const myTeams = await queryMyTeams(database).fetch();
+    const joinedTeams = new Set(teamData.memberships?.filter((m) => m.delete_at === 0).map((m) => m.team_id));
+    return myTeams.filter((m) => !joinedTeams.has(m.id)).map((m) => m.id);
+};
+
 export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -87,7 +92,7 @@ export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[])
     return [];
 };
 
-export const entry = async (serverUrl: string, teamId?: string, channelId?: string, since = 0): Promise<EntryResponse> => {
+export const entryRest = async (serverUrl: string, teamId?: string, channelId?: string, since = 0): Promise<EntryResponse> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -110,13 +115,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
 
     const rolesData = await fetchRoles(serverUrl, teamData.memberships, chData?.memberships, meData.user, true);
 
-    let initialChannelId = channelId;
-    if (!chData?.channels?.find((c) => c.id === channelId)) {
-        initialChannelId = '';
-    }
-    if (initialTeamId !== teamId || !initialChannelId) {
-        initialChannelId = await getNthLastChannelFromTeam(database, initialTeamId);
-    }
+    const initialChannelId = await entryInitialChannelId(database, channelId, teamId, initialTeamId, meData?.user?.locale || '', chData?.channels, chData?.memberships);
 
     const removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
 
@@ -169,7 +168,6 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
         fetchMe(serverUrl, fetchOnly),
     ];
 
-    const removeTeamIds: string[] = [];
     const resolution = await Promise.all(promises);
     const [teamData, , meData] = resolution;
     let [, chData] = resolution;
@@ -186,10 +184,7 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
         }
     }
 
-    const removedFromTeam = teamData.memberships?.filter((m) => m.delete_at > 0);
-    if (removedFromTeam?.length) {
-        removeTeamIds.push(...removedFromTeam.map((m) => m.team_id));
-    }
+    const removeTeamIds = await getRemoveTeamIds(database, teamData);
 
     let data: AppEntryData = {
         initialTeamId,
@@ -202,10 +197,6 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
     };
 
     if (teamData.teams?.length === 0 && !teamData.error) {
-        // User is no longer a member of any team
-        const myTeams = await queryMyTeams(database).fetch();
-        removeTeamIds.push(...(myTeams.map((myTeam) => myTeam.id) || []));
-
         return {
             ...data,
             initialTeamId: '',
@@ -275,7 +266,45 @@ export const fetchAlternateTeamData = async (
     return {initialTeamId, removeTeamIds};
 };
 
-export async function deferredAppEntryActions(
+export async function entryInitialChannelId(database: Database, requestedChannelId = '', requestedTeamId = '', initialTeamId: string, locale: string, channels?: Channel[], memberships?: ChannelMember[]) {
+    const membershipIds = new Set(memberships?.map((m) => m.channel_id));
+    const requestedChannel = channels?.find((c) => (c.id === requestedChannelId) && membershipIds.has(c.id));
+
+    // If team and channel are the requested, return the channel
+    if (initialTeamId === requestedTeamId && requestedChannel) {
+        return requestedChannelId;
+    }
+
+    // DM or GMs don't care about changes in teams, so return directly
+    if (requestedChannel && isDMorGM(requestedChannel)) {
+        return requestedChannelId;
+    }
+
+    // Check if we are still members of any channel on the history
+    const teamChannelHistory = await getTeamChannelHistory(database, initialTeamId);
+    for (const c of teamChannelHistory) {
+        if (membershipIds.has(c) || c === Screens.GLOBAL_THREADS) {
+            return c;
+        }
+    }
+
+    // Check if we are member of the default channel.
+    const defaultChannel = channels?.find((c) => c.name === General.DEFAULT_CHANNEL && c.team_id === initialTeamId);
+    const iAmMemberOfTheTeamDefaultChannel = Boolean(defaultChannel && membershipIds.has(defaultChannel.id));
+    if (iAmMemberOfTheTeamDefaultChannel) {
+        return defaultChannel!.id;
+    }
+
+    // Get the first channel of the list, based on the locale.
+    const myFirstTeamChannel = channels?.filter((c) =>
+        c.team_id === requestedTeamId &&
+        c.type === General.OPEN_CHANNEL &&
+        membershipIds.has(c.id),
+    ).sort(sortChannelsByDisplayName.bind(null, locale))[0];
+    return myFirstTeamChannel?.id || '';
+}
+
+export async function restDeferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string) {

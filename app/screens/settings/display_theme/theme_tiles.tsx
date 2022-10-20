@@ -56,6 +56,7 @@ type ThemeTileProps = {
     activeTheme: Theme;
     label: React.ReactElement;
     selected: boolean;
+    testID?: string;
     theme: Theme;
 };
 export const ThemeTile = ({
@@ -64,6 +65,7 @@ export const ThemeTile = ({
     activeTheme,
     label,
     selected,
+    testID,
     theme,
 }: ThemeTileProps) => {
     const isTablet = useIsTablet();
@@ -92,6 +94,7 @@ export const ThemeTile = ({
         <TouchableOpacity
             onPress={onPressHandler}
             style={[styles.container, layoutStyle.container]}
+            testID={testID}
         >
             <View style={[styles.imageWrapper, layoutStyle.thumbnail]}>
                 <ThemeThumbnail
@@ -105,6 +108,7 @@ export const ThemeTile = ({
                         name='check-circle'
                         size={31.2}
                         style={styles.check}
+                        testID={`${testID}.selected`}
                     />
                 )}
             </View>
@@ -141,6 +145,7 @@ export const ThemeTiles = ({allowedThemeKeys, onThemeChange, selectedTheme}: The
                             action={onThemeChange}
                             actionValue={themeKey}
                             selected={selectedTheme?.toLowerCase() === themeKey.toLowerCase()}
+                            testID={`theme_display_settings.${themeKey}.option`}
                             theme={Preferences.THEMES[themeKey]}
                             activeTheme={theme}
                         />

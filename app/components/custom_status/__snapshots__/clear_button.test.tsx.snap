@@ -13,7 +13,7 @@ exports[`components/custom_status/clear_button should match snapshot 1`] = `
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    Object {
+    {
       "alignItems": "center",
       "flex": 1,
       "height": 40,
@@ -28,7 +28,7 @@ exports[`components/custom_status/clear_button should match snapshot 1`] = `
     name="close-circle"
     size={20}
     style={
-      Object {
+      {
         "borderRadius": 1000,
         "color": "rgba(63,67,80,0.52)",
       }
