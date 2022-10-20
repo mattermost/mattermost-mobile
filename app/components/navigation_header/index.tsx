@@ -84,10 +84,7 @@ const NavigationHeader = ({
         const unlockedBottomMargin = margin + ViewConstants.UNLOCKED_SEARCH_BOTTOM_MARGIN;
         const lockedBottomMargin = ViewConstants.LOCKED_SEARCH_BOTTOM_MARGIN;
         const bottomMargin = lockValue?.value ? -lockValue?.value + lockedBottomMargin : unlockedBottomMargin;
-        return {
-            backgroundColor: 'red',
-            marginTop: bottomMargin,
-        };
+        return {marginTop: bottomMargin};
     }, [lockValue, headerOffset, minScrollValue]);
 
     return (
