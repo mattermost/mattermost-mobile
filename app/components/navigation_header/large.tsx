@@ -50,14 +50,12 @@ const NavigationHeaderLargeTitle = ({
         return [{height: heightOffset}, styles.container];
     }, [heightOffset, theme]);
 
-    const searchMargin = ({marginTop: hasSearch ? -6 : 0});
-
     return (
         <Animated.View style={[containerStyle, transform]}>
             <Text
                 ellipsizeMode='tail'
                 numberOfLines={1}
-                style={[styles.heading, searchMargin]}
+                style={[styles.heading]}
                 testID='navigation.large_header.title'
             >
                 {title}

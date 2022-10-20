@@ -4,7 +4,7 @@
 import React from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
-import ViewConstants from '@constants/view';
+import {LOCKED_SEARCH_MARGIN, UNLOCKED_SEARCH_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import useHeaderHeight, {MAX_OVERSCROLL} from '@hooks/header';
 import {clamp} from '@utils/gallery';
@@ -81,11 +81,17 @@ const NavigationHeader = ({
 
     const searchTopStyle = useAnimatedStyle(() => {
         const margin = clamp(-minScrollValue.value, -headerOffset, headerOffset);
-        const unlockedBottomMargin = margin + ViewConstants.UNLOCKED_SEARCH_BOTTOM_MARGIN;
-        const lockedBottomMargin = ViewConstants.LOCKED_SEARCH_BOTTOM_MARGIN;
-        const bottomMargin = lockValue?.value ? -lockValue?.value + lockedBottomMargin : unlockedBottomMargin;
-        return {marginTop: bottomMargin};
+
+        const unlockedMargin = margin + UNLOCKED_SEARCH_MARGIN;
+        const lockedMargin = LOCKED_SEARCH_MARGIN;
+
+        const marginTop = lockValue?.value ? -lockValue?.value + lockedMargin : unlockedMargin;
+        return {marginTop};
     }, [lockValue, headerOffset, minScrollValue]);
+
+    const heightOffset = useDerivedValue(() => (
+        lockValue?.value ? lockValue.value : headerOffset
+    ), [lockValue, headerOffset]);
 
     return (
         <>
@@ -94,7 +100,7 @@ const NavigationHeader = ({
                     defaultHeight={defaultHeight}
                     hasSearch={hasSearch}
                     isLargeTitle={isLargeTitle}
-                    heightOffset={headerOffset}
+                    heightOffset={heightOffset.value}
                     leftComponent={leftComponent}
                     onBackPress={onBackPress}
                     onTitlePress={onTitlePress}
@@ -109,7 +115,7 @@ const NavigationHeader = ({
                 />
                 {isLargeTitle &&
                     <NavigationHeaderLargeTitle
-                        heightOffset={headerOffset}
+                        heightOffset={heightOffset.value}
                         hasSearch={hasSearch}
                         subtitle={subtitle}
                         theme={theme}

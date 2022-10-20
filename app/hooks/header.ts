@@ -21,32 +21,19 @@ export const useDefaultHeaderHeight = (hasSearch = false) => {
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
 
+    let headerHeight = ViewConstants.DEFAULT_HEADER_HEIGHT;
     if (isTablet) {
-        let tabletHeight = ViewConstants.TABLET_HEADER_HEIGHT;
-        if (hasSearch) {
-            tabletHeight = ViewConstants.TABLET_SEARCH_HEIGHT_COLLAPSED;
-        }
-        return tabletHeight + insets.top;
+        headerHeight = ViewConstants.TABLET_HEADER_HEIGHT;
+        headerHeight += hasSearch ? 20 : 0;
     }
-
-    let mobileHeight = ViewConstants.DEFAULT_HEADER_HEIGHT;
-    if (hasSearch) {
-        mobileHeight = ViewConstants.MOBILE_SEARCH_HEIGHT_COLLAPSED;
-    }
-    return mobileHeight + insets.top;
+    return headerHeight + insets.top;
 };
 
 export const useLargeHeaderHeight = (hasSearch = false) => {
-    const isTablet = useIsTablet();
-    const defaultHeight = useDefaultHeaderHeight(hasSearch);
-
-    let height = defaultHeight + ViewConstants.LARGE_HEADER_TITLE_HEIGHT;
-    if (isTablet && hasSearch) {
-        height += ViewConstants.TABLET_SEARCH_MARGIN_EXPANDED;
-        return height;
-    }
-    height += ViewConstants.HEADER_WITH_SUBTITLE;
-    return height;
+    let largeHeight = useDefaultHeaderHeight(hasSearch);
+    largeHeight += ViewConstants.LARGE_HEADER_TITLE_HEIGHT;
+    largeHeight += ViewConstants.HEADER_WITH_SUBTITLE;
+    return largeHeight;
 };
 
 export const useHeaderHeight = (hasSearch = false) => {

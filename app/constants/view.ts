@@ -21,13 +21,8 @@ export const KEYBOARD_TRACKING_OFFSET = 72;
 export const SEARCH_INPUT_HEIGHT = Platform.select({android: 40, default: 36});
 
 // margin from bottom of search input to bottom of header height
-export const UNLOCKED_SEARCH_BOTTOM_MARGIN = -(14 + SEARCH_INPUT_HEIGHT);
-export const LOCKED_SEARCH_BOTTOM_MARGIN = Platform.select({android: 11, default: 0}) - SEARCH_INPUT_HEIGHT;
-
-export const TABLET_SEARCH_HEIGHT_COLLAPSED = Platform.select({android: 68, default: 38}) + SEARCH_INPUT_HEIGHT;
-export const MOBILE_SEARCH_HEIGHT_COLLAPSED = Platform.select({android: 68, default: 15}) + SEARCH_INPUT_HEIGHT;
-
-export const TABLET_SEARCH_MARGIN_EXPANDED = Platform.select({default: 24});
+export const UNLOCKED_SEARCH_MARGIN = -(10 + SEARCH_INPUT_HEIGHT);
+export const LOCKED_SEARCH_MARGIN = -(5 + SEARCH_INPUT_HEIGHT);
 
 export const JOIN_CALL_BAR_HEIGHT = 38;
 export const CURRENT_CALL_BAR_HEIGHT = 74;
@@ -35,11 +30,8 @@ export const CURRENT_CALL_BAR_HEIGHT = 74;
 export const QUICK_OPTIONS_HEIGHT = 270;
 
 export default {
-    TABLET_SEARCH_HEIGHT_COLLAPSED,
-    TABLET_SEARCH_MARGIN_EXPANDED,
-    MOBILE_SEARCH_HEIGHT_COLLAPSED,
-    UNLOCKED_SEARCH_BOTTOM_MARGIN,
-    LOCKED_SEARCH_BOTTOM_MARGIN,
+    UNLOCKED_SEARCH_MARGIN,
+    LOCKED_SEARCH_MARGIN,
     BOTTOM_TAB_HEIGHT,
     BOTTOM_TAB_ICON_SIZE,
     PROFILE_PICTURE_SIZE,
