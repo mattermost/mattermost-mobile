@@ -24,16 +24,14 @@ export const useDefaultHeaderHeight = (hasSearch = false) => {
     if (isTablet) {
         let tabletHeight = ViewConstants.TABLET_HEADER_HEIGHT;
         if (hasSearch) {
-            tabletHeight = ViewConstants.SEARCH_INPUT_HEIGHT;
-            tabletHeight += ViewConstants.TABLET_SEARCH_MARGIN_COLLAPSED;
+            tabletHeight = ViewConstants.TABLET_SEARCH_HEIGHT_COLLAPSED;
         }
         return tabletHeight + insets.top;
     }
 
     let mobileHeight = ViewConstants.DEFAULT_HEADER_HEIGHT;
     if (hasSearch) {
-        mobileHeight = ViewConstants.SEARCH_INPUT_HEIGHT;
-        mobileHeight += ViewConstants.MOBILE_SEARCH_MARGIN_COLLAPSED;
+        mobileHeight = ViewConstants.MOBILE_SEARCH_HEIGHT_COLLAPSED;
     }
     return mobileHeight + insets.top;
 };
