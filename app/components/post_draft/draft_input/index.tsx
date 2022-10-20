@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import {PasteInputRef} from '@mattermost/react-native-paste-input';
+import React, {useCallback, useRef} from 'react';
 import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -101,6 +102,11 @@ export default function DraftInput({
         updatePostInputTop(e.nativeEvent.layout.height);
     }, []);
 
+    const inputRef = useRef<PasteInputRef>();
+    const focus = useCallback(() => {
+        inputRef.current?.focus();
+    }, []);
+
     // Render
     const postInputTestID = `${testID}.post.input`;
     const quickActionsTestID = `${testID}.quick_actions`;
@@ -142,6 +148,7 @@ export default function DraftInput({
                         value={value}
                         addFiles={addFiles}
                         sendMessage={sendMessage}
+                        inputRef={inputRef}
                     />
                     <Uploads
                         currentUserId={currentUserId}
@@ -157,6 +164,7 @@ export default function DraftInput({
                             addFiles={addFiles}
                             updateValue={updateValue}
                             value={value}
+                            focus={focus}
                         />
                         <SendAction
                             testID={sendActionTestID}

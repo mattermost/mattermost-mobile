@@ -39,6 +39,7 @@ type Props = {
     cursorPosition: number;
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     sendMessage: () => void;
+    inputRef: React.MutableRefObject<PasteInputRef | undefined>;
 }
 
 const showPasteFilesErrorDialog = (intl: IntlShape) => {
@@ -108,6 +109,7 @@ export default function PostInput({
     cursorPosition,
     updateCursorPosition,
     sendMessage,
+    inputRef,
 }: Props) {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -117,7 +119,7 @@ export default function PostInput({
     const managedConfig = useManagedConfig<ManagedConfig>();
 
     const lastTypingEventSent = useRef(0);
-    const input = useRef<PasteInputRef>();
+
     const lastNativeValue = useRef('');
     const previousAppState = useRef(AppState.currentState);
 
@@ -131,7 +133,7 @@ export default function PostInput({
     }, [maxHeight, style.input]);
 
     const blur = () => {
-        input.current?.blur();
+        inputRef.current?.blur();
     };
 
     const handleAndroidKeyboard = () => {
@@ -272,7 +274,7 @@ export default function PostInput({
                 const draft = value ? `${value} ${text} ` : `${text} `;
                 updateValue(draft);
                 updateCursorPosition(draft.length);
-                input.current?.focus();
+                inputRef.current?.focus();
             }
         });
         return () => listener.remove();
@@ -281,16 +283,10 @@ export default function PostInput({
     useEffect(() => {
         if (value !== lastNativeValue.current) {
             // May change when we implement Fabric
-            input.current?.setNativeProps({
+            inputRef.current?.setNativeProps({
                 text: value,
             });
             lastNativeValue.current = value;
-        }
-    }, [value]);
-
-    useEffect(() => {
-        if (!input.current?.isFocused()) {
-            updateCursorPosition(value.length);
         }
     }, [value]);
 
@@ -305,7 +301,7 @@ export default function PostInput({
         <PasteableTextInput
             allowFontScaling={true}
             testID={testID}
-            ref={input}
+            ref={inputRef}
             disableCopyPaste={disableCopyAndPaste}
             style={pasteInputStyle}
             onChangeText={handleTextChange}

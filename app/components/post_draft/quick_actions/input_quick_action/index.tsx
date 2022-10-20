@@ -13,7 +13,8 @@ type Props = {
     testID?: string;
     disabled?: boolean;
     inputType: 'at' | 'slash';
-    onTextChange: React.Dispatch<React.SetStateAction<string>>;
+    updateValue: React.Dispatch<React.SetStateAction<string>>;
+    focus: () => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -33,16 +34,18 @@ export default function InputQuickAction({
     testID,
     disabled,
     inputType,
-    onTextChange,
+    updateValue,
+    focus,
 }: Props) {
     const theme = useTheme();
     const onPress = useCallback(() => {
-        onTextChange((v) => {
+        updateValue((v) => {
             if (inputType === 'at') {
                 return `${v}@`;
             }
             return '/';
         });
+        focus();
     }, [inputType]);
 
     const actionTestID = disabled ?
