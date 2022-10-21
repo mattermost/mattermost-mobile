@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import {LOCKED_SEARCH_MARGIN, UNLOCKED_SEARCH_MARGIN} from '@constants/view';
@@ -72,9 +72,8 @@ const NavigationHeader = ({
             maxHeight: largeHeight + MAX_OVERSCROLL,
         };
     });
-    const containerStyle = useMemo(() => (
-        [styles.container, containerHeight]
-    ), [styles, containerHeight]);
+
+    const containerStyle = useMemo(() => [styles.container, containerHeight], [styles, containerHeight]);
 
     const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
 
@@ -89,7 +88,7 @@ const NavigationHeader = ({
 
         const marginTop = lockValue?.value ? -lockValue?.value + lockedMargin : unlockedMargin;
         return {marginTop};
-    }, [lockValue, headerOffset, minScrollValue]);
+    }, [lockValue, headerOffset, scrollValue]);
 
     const heightOffset = useDerivedValue(() => (
         lockValue?.value ? lockValue.value : headerOffset

@@ -166,8 +166,8 @@ const Header = ({
     }, [heightOffset, isLargeTitle, hasSearch]);
 
     const containerAnimatedStyle = useAnimatedStyle(() => ({
-        height: lockValue?.value || defaultHeight,
-        paddingTop: lockValue?.value || insets.top,
+        height: defaultHeight,
+        paddingTop: insets.top,
     }), [defaultHeight, lockValue]);
 
     const containerStyle = useMemo(() => (
