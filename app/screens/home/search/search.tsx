@@ -20,7 +20,7 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet, useKeyboardHeight} from '@hooks/device';
+import {useKeyboardHeight} from '@hooks/device';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';
@@ -84,7 +84,6 @@ const SearchScreen = ({teamId}: Props) => {
 
     const clearRef = useRef<boolean>(false);
     const cancelRef = useRef<boolean>(false);
-    const isTablet = useIsTablet();
     const [cursorPosition, setCursorPosition] = useState(searchTerm?.length || 0);
     const [searchValue, setSearchValue] = useState<string>(searchTerm || '');
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
@@ -242,7 +241,7 @@ const SearchScreen = ({teamId}: Props) => {
     const headerTopStyle = useAnimatedStyle(() => ({
         top: lockValue.value ? lockValue.value : headerHeight.value,
         zIndex: lastSearchedValue ? 10 : 0,
-    }), [headerHeight, isTablet, lastSearchedValue, lockValue]);
+    }), [headerHeight, lastSearchedValue, lockValue]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
