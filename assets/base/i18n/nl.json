@@ -381,5 +381,12 @@
     "user.settings.general.username": "Gebruikersnaam",
     "account.settings": "Instellingen",
     "account.logout_from": "Afmelden bij {serverName}",
-    "account.logout": "Afmelden"
+    "account.logout": "Afmelden",
+    "alert.push_proxy_error.title": "Meldingen van deze server kunnen niet ontvangen worden",
+    "alert.push_proxy_error.description": "Door de configuratie voor deze server kunnen meldingen niet worden ontvangen in de mobiele app. Neem contact op met jouw systeembeheerder voor meer informatie.",
+    "alert.channel_deleted.title": "Gearchiveerd kanaal",
+    "alert.channel_deleted.description": "Het kanaal {displayName} is gearchiveerd.",
+    "advanced_settings.delete_data": "Documenten en gegevens wissen",
+    "account.your_profile": "Jouw profiel",
+    "account.user_status.title": "Beschikbaarheid van de gebruiker"
 }
