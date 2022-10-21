@@ -79,6 +79,10 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         }
     }
 
+    const setAutoScroll = (enabled: boolean) => {
+        autoScroll.value = enabled;
+    };
+
     const onScroll = useAnimatedScrollHandler({
         onBeginDrag: (e: NativeScrollEvent, ctx: HeaderScrollContext) => {
             ctx.start = e.contentOffset.y;
@@ -162,6 +166,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         headerHeight,
         headerOffset,
         scrollEnabled,
+        setAutoScroll,
     };
 };
 

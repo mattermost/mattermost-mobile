@@ -11,6 +11,7 @@ import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-cont
 import {getPosts} from '@actions/local/post';
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
+import useDidUpdate from '@app/hooks/did_update';
 import Autocomplete from '@components/autocomplete';
 import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
@@ -112,8 +113,9 @@ const SearchScreen = ({teamId}: Props) => {
         scrollPaddingTop,
         scrollRef,
         scrollValue,
+        setAutoScroll,
         unlock,
-    } = useCollapsibleHeader<FlatList>(true, onSnap, true);
+    } = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const resetToInitial = useCallback(() => {
         unlock();
@@ -234,6 +236,7 @@ const SearchScreen = ({teamId}: Props) => {
 
         return {
             opacity: withTiming(0, {duration: 150}),
+            flex: 1,
             transform: [{translateX: withTiming(stateIndex < searchScreenIndex ? 25 : -25, {duration: 150})}],
         };
     }, [isFocused, stateIndex]);
@@ -282,6 +285,16 @@ const SearchScreen = ({teamId}: Props) => {
             clearRef.current = false;
         }
     }, [headerOffset, scrollRef]);
+
+    useDidUpdate(() => {
+        if (isFocused) {
+            setTimeout(() => {
+                setAutoScroll(true);
+            }, 300);
+        } else {
+            setAutoScroll(false);
+        }
+    }, [isFocused]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
