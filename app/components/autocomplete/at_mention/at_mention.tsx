@@ -180,18 +180,16 @@ const searchGroups = async (serverUrl: string, matchTerm: string, useGroupMentio
         if (useGroupMentions && matchTerm && matchTerm !== '') {
             let g = emptyGroupList;
 
-            // If the channel is constrained, we only show groups for that channel
-            if (isChannelConstrained && channelId) {
-                g = await searchGroupsByNameInChannel(serverUrl, matchTerm, channelId);
-            }
-
-            // If there is no channel constraint, but a team constraint - only show groups for team
-            if (isTeamConstrained && !isChannelConstrained) {
+            if (isChannelConstrained) {
+                // If the channel is constrained, we only show groups for that channel
+                if (channelId) {
+                    g = await searchGroupsByNameInChannel(serverUrl, matchTerm, channelId);
+                }
+            } else if (isTeamConstrained) {
+                // If there is no channel constraint, but a team constraint - only show groups for team
                 g = await searchGroupsByNameInTeam(serverUrl, matchTerm, teamId!);
-            }
-
-            // No constraints? Search all groups
-            if (!isTeamConstrained && !isChannelConstrained) {
+            } else {
+                // No constraints? Search all groups
                 g = await searchGroupsByName(serverUrl, matchTerm || '');
             }
 
