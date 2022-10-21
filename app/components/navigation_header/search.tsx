@@ -72,8 +72,10 @@ const NavigationSearch = ({
         };
     }, []);
 
+    const containerStyle = useMemo(() => ([styles.container, topStyle]), [styles, topStyle]);
+
     return (
-        <Animated.View style={[styles.container, topStyle]}>
+        <Animated.View style={containerStyle}>
             <Search
                 {...searchProps}
                 cancelButtonProps={cancelButtonProps}

@@ -83,8 +83,8 @@ const SearchScreen = ({teamId}: Props) => {
 
     const clearRef = useRef<boolean>(false);
     const isTablet = useIsTablet();
-    const [cursorPosition, setCursorPosition] = useState(searchTerm?.length);
-    const [searchValue, setSearchValue] = useState<string>(searchTerm);
+    const [cursorPosition, setCursorPosition] = useState(searchTerm?.length || 0);
+    const [searchValue, setSearchValue] = useState<string>(searchTerm || '');
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
     const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);

@@ -17,40 +17,39 @@ type HeaderScrollContext = {
 
 export const MAX_OVERSCROLL = 80;
 
-export const useDefaultHeaderHeight = (hasSearch = false) => {
+export const useDefaultHeaderHeight = () => {
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
 
     let headerHeight = ViewConstants.DEFAULT_HEADER_HEIGHT;
     if (isTablet) {
         headerHeight = ViewConstants.TABLET_HEADER_HEIGHT;
-        headerHeight += hasSearch ? 20 : 0;
     }
     return headerHeight + insets.top;
 };
 
-export const useLargeHeaderHeight = (hasSearch = false) => {
-    let largeHeight = useDefaultHeaderHeight(hasSearch);
+export const useLargeHeaderHeight = () => {
+    let largeHeight = useDefaultHeaderHeight();
     largeHeight += ViewConstants.LARGE_HEADER_TITLE_HEIGHT;
     largeHeight += ViewConstants.SUBTITLE_HEIGHT;
     return largeHeight;
 };
 
-export const useHeaderHeight = (hasSearch = false) => {
-    const defaultHeight = useDefaultHeaderHeight(hasSearch);
-    const largeHeight = useLargeHeaderHeight(hasSearch);
+export const useHeaderHeight = () => {
+    const defaultHeight = useDefaultHeaderHeight();
+    const largeHeight = useLargeHeaderHeight();
     const headerOffset = largeHeight - defaultHeight;
     return useMemo(() => ({
         defaultHeight,
         largeHeight,
         headerOffset,
-    }), [defaultHeight, largeHeight, hasSearch]);
+    }), [defaultHeight, largeHeight]);
 };
 
-export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void, hasSearch = false) => {
+export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void) => {
     const insets = useSafeAreaInsets();
     const animatedRef = useAnimatedRef<Animated.ScrollView>();
-    const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight(hasSearch);
+    const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
     const scrollValue = useSharedValue(0);
     const lockValue = useSharedValue<number | null>(null);
     const autoScroll = useSharedValue(false);
@@ -146,9 +145,9 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         }
     }, [largeHeight, defaultHeight]);
 
-    const unlock = () => {
+    const unlock = useCallback(() => {
         lockValue.value = null;
-    };
+    }, []);
 
     return {
         defaultHeight,

@@ -60,7 +60,7 @@ const NavigationHeader = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight(hasSearch);
+    const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
     const containerHeight = useAnimatedStyle(() => {
         const minHeight = defaultHeight;
         const value = -(scrollValue?.value || 0);
@@ -72,6 +72,9 @@ const NavigationHeader = ({
             maxHeight: largeHeight + MAX_OVERSCROLL,
         };
     });
+    const containerStyle = useMemo(() => (
+        [styles.container, containerHeight]
+    ), [styles, containerHeight]);
 
     const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
 
@@ -81,7 +84,6 @@ const NavigationHeader = ({
 
     const searchTopStyle = useAnimatedStyle(() => {
         const margin = clamp(-minScrollValue.value, -headerOffset, headerOffset);
-
         const unlockedMargin = margin + UNLOCKED_SEARCH_MARGIN;
         const lockedMargin = LOCKED_SEARCH_MARGIN;
 
@@ -95,7 +97,7 @@ const NavigationHeader = ({
 
     return (
         <>
-            <Animated.View style={[styles.container, containerHeight]}>
+            <Animated.View style={containerStyle}>
                 <Header
                     defaultHeight={defaultHeight}
                     hasSearch={hasSearch}
