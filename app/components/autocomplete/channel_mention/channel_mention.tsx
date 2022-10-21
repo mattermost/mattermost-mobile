@@ -257,9 +257,6 @@ const ChannelMention = ({
         if (localCursorPosition !== cursorPosition) {
             setLocalCursorPosition(cursorPosition);
         }
-        if (remoteChannels.length) {
-            setRemoteChannels(emptyChannels);
-        }
     }, [cursorPosition]);
 
     useEffect(() => {

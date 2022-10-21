@@ -409,9 +409,6 @@ const AtMention = ({
         if (localCursorPosition !== cursorPosition) {
             setLocalCursorPosition(cursorPosition);
         }
-        setGroups(emptyGroupList);
-        setUsersInChannel(emptyUserlList);
-        setUsersOutOfChannel(emptyUserlList);
     }, [cursorPosition]);
 
     useEffect(() => {
