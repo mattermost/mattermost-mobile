@@ -4,7 +4,7 @@
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, FlatList, ListRenderItemInfo, Platform, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -15,7 +15,6 @@ import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
-import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
@@ -41,7 +40,6 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        marginBottom: Platform.select({ios: BOTTOM_TAB_HEIGHT}),
     },
     empty: {
         alignItems: 'center',
