@@ -83,6 +83,7 @@ const SearchScreen = ({teamId}: Props) => {
     const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
 
     const clearRef = useRef<boolean>(false);
+    const cancelRef = useRef<boolean>(false);
     const isTablet = useIsTablet();
     const [cursorPosition, setCursorPosition] = useState(searchTerm?.length || 0);
     const [searchValue, setSearchValue] = useState<string>(searchTerm || '');
@@ -99,8 +100,8 @@ const SearchScreen = ({teamId}: Props) => {
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
     const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
 
-    const onSnap = (offset: number) => {
-        scrollRef.current?.scrollToOffset({offset, animated: true});
+    const onSnap = (offset: number, animated = true) => {
+        scrollRef.current?.scrollToOffset({offset, animated});
     };
 
     const {
@@ -118,7 +119,6 @@ const SearchScreen = ({teamId}: Props) => {
     } = useCollapsibleHeader<FlatList>(true, onSnap);
 
     const resetToInitial = useCallback(() => {
-        unlock();
         setShowResults(false);
         setSearchValue('');
         setLastSearchedValue('');
@@ -126,16 +126,14 @@ const SearchScreen = ({teamId}: Props) => {
     }, []);
 
     const handleClearSearch = useCallback(() => {
-        resetToInitial();
         clearRef.current = true;
+        resetToInitial();
     }, [resetToInitial]);
 
     const handleCancelSearch = useCallback(() => {
+        cancelRef.current = true;
         resetToInitial();
-        scrollRef.current?.scrollToOffset({
-            offset: 0,
-            animated: true,
-        });
+        onSnap(0);
     }, [resetToInitial]);
 
     const handleTextChange = useCallback((newValue: string) => {
@@ -277,12 +275,15 @@ const SearchScreen = ({teamId}: Props) => {
     // when clearing the input from the search results, scroll the initial view
     // back to the top so the header is in the collapsed state
     const onFlatLayout = useCallback(() => {
+        if (clearRef.current || cancelRef.current) {
+            unlock();
+        }
         if (clearRef.current) {
-            scrollRef.current?.scrollToOffset({
-                offset: headerOffset,
-                animated: false,
-            });
+            onSnap(headerOffset, false);
             clearRef.current = false;
+        } else if (cancelRef.current) {
+            onSnap(0);
+            cancelRef.current = false;
         }
     }, [headerOffset, scrollRef]);
 
