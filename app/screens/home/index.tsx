@@ -127,7 +127,7 @@ export default function HomeScreen(props: HomeProps) {
                 <Tab.Screen
                     name={Screens.SEARCH}
                     component={Search}
-                    options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.search.tab', freezeOnBlur: true}}
+                    options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.search.tab', freezeOnBlur: false}}
                 />
                 <Tab.Screen
                     name={Screens.MENTIONS}
