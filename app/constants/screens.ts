@@ -149,6 +149,12 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
     USER_PROFILE,
 ]);
 
+export const OVERLAY_SCREENS = new Set<string>([
+    IN_APP_NOTIFICATION,
+    GALLERY,
+    SNACK_BAR,
+]);
+
 export const NOT_READY = [
     CHANNEL_ADD_PEOPLE,
     CHANNEL_MENTION,

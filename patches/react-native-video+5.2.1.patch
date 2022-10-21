@@ -1,49 +1,5 @@
-diff --git a/node_modules/react-native-video/Video.js b/node_modules/react-native-video/Video.js
-index b492d48..5f517e9 100644
---- a/node_modules/react-native-video/Video.js
-+++ b/node_modules/react-native-video/Video.js
-@@ -1,6 +1,7 @@
- import React, { Component } from 'react';
- import PropTypes from 'prop-types';
--import { StyleSheet, requireNativeComponent, NativeModules, View, ViewPropTypes, Image, Platform, findNodeHandle } from 'react-native';
-+import { StyleSheet, requireNativeComponent, NativeModules, View, Image, Platform, findNodeHandle } from 'react-native';
-+import { ViewPropTypes, ImagePropTypes } from 'deprecated-react-native-prop-types'
- import resolveAssetSource from 'react-native/Libraries/Image/resolveAssetSource';
- import TextTrackType from './TextTrackType';
- import FilterType from './FilterType';
-@@ -415,7 +416,7 @@ Video.propTypes = {
-   maxBitRate: PropTypes.number,
-   resizeMode: PropTypes.string,
-   poster: PropTypes.string,
--  posterResizeMode: Image.propTypes.resizeMode,
-+  posterResizeMode: ImagePropTypes.resizeMode,
-   repeat: PropTypes.bool,
-   automaticallyWaitsToMinimizeStalling: PropTypes.bool,
-   allowsExternalPlayback: PropTypes.bool,
-diff --git a/node_modules/react-native-video/android-exoplayer/build.gradle b/node_modules/react-native-video/android-exoplayer/build.gradle
-index d005a58..6a9922b 100644
---- a/node_modules/react-native-video/android-exoplayer/build.gradle
-+++ b/node_modules/react-native-video/android-exoplayer/build.gradle
-@@ -28,7 +28,7 @@ android {
- 
- dependencies {
-     implementation "com.facebook.react:react-native:${safeExtGet('reactNativeVersion', '+')}"
--    implementation('com.google.android.exoplayer:exoplayer:2.13.2') {
-+    implementation('com.google.android.exoplayer:exoplayer:2.13.3') {
-         exclude group: 'com.android.support'
-     }
- 
-@@ -37,7 +37,7 @@ dependencies {
-     implementation "androidx.core:core:1.1.0"
-     implementation "androidx.media:media:1.1.0"
- 
--    implementation('com.google.android.exoplayer:extension-okhttp:2.13.2') {
-+    implementation('com.google.android.exoplayer:extension-okhttp:2.13.3') {
-         exclude group: 'com.squareup.okhttp3', module: 'okhttp'
-     }
-     implementation 'com.squareup.okhttp3:okhttp:${OKHTTP_VERSION}'
 diff --git a/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java b/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
-index fe95fdf..e38b9a9 100644
+index fe95fdf..1fd5d23 100644
 --- a/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
 +++ b/node_modules/react-native-video/android-exoplayer/src/main/java/com/brentvatne/exoplayer/ReactExoplayerView.java
 @@ -3,6 +3,7 @@ package com.brentvatne.exoplayer;
@@ -86,7 +42,7 @@ index fe95fdf..e38b9a9 100644
          if (isFullscreen) {
              if (Util.SDK_INT >= 19) { // 4.4+
                  uiOptions = SYSTEM_UI_FLAG_HIDE_NAVIGATION
-@@ -1316,10 +1321,13 @@ class ReactExoplayerView extends FrameLayout implements
+@@ -1316,11 +1321,14 @@ class ReactExoplayerView extends FrameLayout implements
              }
              eventEmitter.fullscreenWillPresent();
              decorView.setSystemUiVisibility(uiOptions);
@@ -96,12 +52,13 @@ index fe95fdf..e38b9a9 100644
          } else {
              uiOptions = View.SYSTEM_UI_FLAG_VISIBLE;
              eventEmitter.fullscreenWillDismiss();
-+            fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_enter);
              decorView.setSystemUiVisibility(uiOptions);
++            fullscreenButton.setImageResource(R.drawable.exo_controls_fullscreen_enter);
              eventEmitter.fullscreenDidDismiss();
          }
+     }
 diff --git a/node_modules/react-native-video/android-exoplayer/src/main/res/layout/exo_player_control_view.xml b/node_modules/react-native-video/android-exoplayer/src/main/res/layout/exo_player_control_view.xml
-index becee6a..96cbfc9 100644
+index becee6a..5d4b2cd 100644
 --- a/node_modules/react-native-video/android-exoplayer/src/main/res/layout/exo_player_control_view.xml
 +++ b/node_modules/react-native-video/android-exoplayer/src/main/res/layout/exo_player_control_view.xml
 @@ -1,5 +1,6 @@
@@ -115,7 +72,7 @@ index becee6a..96cbfc9 100644
              android:paddingRight="4dp"
              android:includeFontPadding="false"
              android:textColor="#FFBEBEBE"/>
-+    <FrameLayout
++        <FrameLayout
 +            android:id="@+id/exo_fullscreen_button"
 +            android:layout_width="32dp"
 +            android:layout_height="wrap_content"

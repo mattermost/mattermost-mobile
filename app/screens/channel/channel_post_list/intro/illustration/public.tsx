@@ -103,11 +103,11 @@ const PublicChannelIllustration = ({theme}: Props) => (
             />
             <Mask
                 id='a'
+
+                // @ts-expect-error style not intrinsic
                 style={{
                     maskType: 'alpha',
                 }}
-
-                // @ts-expect-error string instead of enum
                 maskUnits='userSpaceOnUse'
                 x={77}
                 y={31}

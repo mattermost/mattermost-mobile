@@ -9,7 +9,6 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchSavedPosts} from '@actions/remote/post';
-import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
@@ -163,7 +162,7 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
     }, [currentTimezone, isTimezoneEnabled, theme]);
 
     return (
-        <FreezeScreen freeze={!isFocused}>
+        <>
             <NavigationHeader
                 isLargeTitle={true}
                 showBackButton={false}
@@ -202,7 +201,7 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
                     />
                 </Animated.View>
             </SafeAreaView>
-        </FreezeScreen>
+        </>
     );
 }
 
