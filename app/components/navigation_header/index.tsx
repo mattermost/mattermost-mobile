@@ -4,7 +4,7 @@
 import React, {useMemo} from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
-import {LOCKED_SEARCH_MARGIN, UNLOCKED_SEARCH_MARGIN} from '@constants/view';
+import {SEARCH_INPUT_HEIGHT, SEARCH_INPUT_MARGIN} from '@constants/view';
 import {useTheme} from '@context/theme';
 import useHeaderHeight, {MAX_OVERSCROLL} from '@hooks/header';
 import {clamp} from '@utils/gallery';
@@ -83,10 +83,7 @@ const NavigationHeader = ({
 
     const searchTopStyle = useAnimatedStyle(() => {
         const margin = clamp(-minScrollValue.value, -headerOffset, headerOffset);
-        const unlockedMargin = margin + UNLOCKED_SEARCH_MARGIN;
-        const lockedMargin = LOCKED_SEARCH_MARGIN;
-
-        const marginTop = lockValue?.value ? -lockValue?.value + lockedMargin : unlockedMargin;
+        const marginTop = (lockValue?.value ? -lockValue?.value : margin) - SEARCH_INPUT_HEIGHT - SEARCH_INPUT_MARGIN;
         return {marginTop};
     }, [lockValue, headerOffset, scrollValue]);
 

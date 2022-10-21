@@ -19,10 +19,7 @@ export const SUBTITLE_HEIGHT = 24;
 export const KEYBOARD_TRACKING_OFFSET = 72;
 
 export const SEARCH_INPUT_HEIGHT = Platform.select({android: 40, default: 36});
-
-// margin from bottom of search input to bottom of header height
-export const UNLOCKED_SEARCH_MARGIN = -(5 + SEARCH_INPUT_HEIGHT);
-export const LOCKED_SEARCH_MARGIN = -(5 + SEARCH_INPUT_HEIGHT);
+export const SEARCH_INPUT_MARGIN = 5;
 
 export const JOIN_CALL_BAR_HEIGHT = 38;
 export const CURRENT_CALL_BAR_HEIGHT = 74;
@@ -30,8 +27,6 @@ export const CURRENT_CALL_BAR_HEIGHT = 74;
 export const QUICK_OPTIONS_HEIGHT = 270;
 
 export default {
-    UNLOCKED_SEARCH_MARGIN,
-    LOCKED_SEARCH_MARGIN,
     BOTTOM_TAB_HEIGHT,
     BOTTOM_TAB_ICON_SIZE,
     PROFILE_PICTURE_SIZE,
