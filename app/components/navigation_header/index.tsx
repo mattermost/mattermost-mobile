@@ -114,23 +114,23 @@ const NavigationHeader = ({
                     title={title}
                 />
                 {isLargeTitle &&
-                    <NavigationHeaderLargeTitle
-                        heightOffset={heightOffset.value}
-                        hasSearch={hasSearch}
-                        subtitle={subtitle}
-                        theme={theme}
-                        title={title}
-                        translateY={translateY}
-                    />
+                <NavigationHeaderLargeTitle
+                    heightOffset={heightOffset.value}
+                    hasSearch={hasSearch}
+                    subtitle={subtitle}
+                    theme={theme}
+                    title={title}
+                    translateY={translateY}
+                />
                 }
                 {hasSearch &&
-                    <NavigationSearch
-                        {...searchProps}
-                        hideHeader={hideHeader}
-                        theme={theme}
-                        top={0}
-                        topStyle={searchTopStyle}
-                    />
+                <NavigationSearch
+                    {...searchProps}
+                    hideHeader={hideHeader}
+                    theme={theme}
+                    top={0}
+                    topStyle={searchTopStyle}
+                />
                 }
             </Animated.View>
         </>
