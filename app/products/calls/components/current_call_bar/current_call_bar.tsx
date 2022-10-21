@@ -5,21 +5,18 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, Pressable, Platform, DeviceEventEmitter} from 'react-native';
 import {Options} from 'react-native-navigation';
-import Permissions from 'react-native-permissions';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
+import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
-import {setMicPermissionsErrorDismissed} from '@calls/state';
 import {CurrentCall, VoiceEventData} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
 import {Events, Screens, WebsocketEvents} from '@constants';
-import {CALL_ERROR_BAR_HEIGHT, CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
+import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {goToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -67,7 +64,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 42,
             justifyContent: 'center',
             alignItems: 'center',
-            backgroundColor: '#3DB887',
+            backgroundColor: theme.onlineIndicator,
             borderRadius: 4,
             margin: 4,
             padding: 9,
@@ -82,31 +79,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.sidebarText,
             padding: 8,
             marginRight: 8,
-        },
-        errorWrapper: {
-            padding: 10,
-            paddingTop: 0,
-        },
-        errorBar: {
-            flexDirection: 'row',
-            backgroundColor: theme.dndIndicator,
-            height: CALL_ERROR_BAR_HEIGHT,
-            width: '100%',
-            borderRadius: 5,
-            padding: 10,
-            alignItems: 'center',
-        },
-        errorText: {
-            flex: 1,
-            ...typography('Body', 100, 'SemiBold'),
-            color: '#ffffff',
-        },
-        errorIcon: {
-            color: '#ffffff',
-            fontSize: 18,
-        },
-        pressableIcon: {
-            padding: 9,
         },
     };
 });
@@ -189,14 +161,6 @@ const CurrentCallBar = ({
         }
     };
 
-    const goToSettings = useCallback(() => {
-        Permissions.openSettings();
-    }, []);
-
-    const dismissPermissionsError = useCallback(() => {
-        setMicPermissionsErrorDismissed();
-    }, []);
-
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
 
     return (
@@ -236,33 +200,7 @@ const CurrentCallBar = ({
                     </TouchableOpacity>
                 </View>
             </View>
-            {micPermissionsError &&
-                <View style={style.errorWrapper}>
-                    <Pressable onPress={goToSettings}>
-                        <View style={style.errorBar}>
-                            <CompassIcon
-                                name='microphone-off'
-                                style={[style.errorIcon, {paddingRight: 9}]}
-                            />
-                            <FormattedText
-                                id={'mobile.calls_mic_error'}
-                                defaultMessage={'To participate, open Settings to grant Mattermost access to your microphone.'}
-                                style={style.errorText}
-                            />
-                            <Pressable
-                                onPress={dismissPermissionsError}
-                                hitSlop={20}
-                                style={style.pressable}
-                            >
-                                <CompassIcon
-                                    name='close'
-                                    style={[style.errorIcon, style.pressableIcon]}
-                                />
-                            </Pressable>
-                        </View>
-                    </Pressable>
-                </View>
-            }
+            {micPermissionsError && <PermissionErrorBar/>}
         </>
     );
 };

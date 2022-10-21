@@ -29,10 +29,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: '#3F4350',
             justifyContent: 'center',
             alignItems: 'center',
+            borderWidth: 0.5,
+            borderColor: '#3F4350',
         },
         errorIcon: {
             color: theme.dndIndicator,
-            zIndex: 300,
         },
     };
 });
@@ -51,11 +52,7 @@ const UnavailableIconWrapper = ({name, size, style: providedStyle, unavailable}:
             />
             {unavailable &&
                 <View
-                    style={[style.errorContainer, {
-                        height: errorIconSize + 1,
-                        width: errorIconSize + 1,
-                        borderRadius: errorIconSize / 2,
-                    }]}
+                    style={[style.errorContainer, {borderRadius: errorIconSize / 2}]}
                 >
                     <CompassIcon
                         name={'close-circle'}
