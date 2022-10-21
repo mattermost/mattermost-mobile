@@ -39,6 +39,7 @@ type Props = {
     cursorPosition: number;
     updateCursorPosition: (pos: number) => void;
     sendMessage: () => void;
+    setIsFocused: (isFocused: boolean) => void;
 }
 
 const showPasteFilesErrorDialog = (intl: IntlShape) => {
@@ -108,6 +109,7 @@ export default function PostInput({
     cursorPosition,
     updateCursorPosition,
     sendMessage,
+    setIsFocused,
 }: Props) {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -140,7 +142,12 @@ export default function PostInput({
 
     const onBlur = useCallback(() => {
         updateDraftMessage(serverUrl, channelId, rootId, value);
-    }, [channelId, rootId, value]);
+        setIsFocused(false);
+    }, [channelId, rootId, value, setIsFocused]);
+
+    const onFocus = useCallback(() => {
+        setIsFocused(true);
+    }, [setIsFocused]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -308,6 +315,7 @@ export default function PostInput({
             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
             multiline={true}
             onBlur={onBlur}
+            onFocus={onFocus}
             blurOnSubmit={false}
             underlineColorAndroid='transparent'
             keyboardType={keyboardType}

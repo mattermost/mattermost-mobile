@@ -105,8 +105,8 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     }), [theme]);
 
     useEffect(() => {
-        setValue(props.defaultValue || value || '');
-    }, [props.defaultValue]);
+        setValue(props.defaultValue || props.value || '');
+    }, [props.defaultValue, props.value]);
 
     const clearIcon = (
         <CompassIcon

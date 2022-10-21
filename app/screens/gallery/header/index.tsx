@@ -23,7 +23,7 @@ type Props = {
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
-        backgroundColor: changeOpacity('#000', 0.6),
+        backgroundColor: '#000',
         borderBottomColor: changeOpacity('#fff', 0.4),
         borderBottomWidth: 1,
         flexDirection: 'row',
@@ -39,13 +39,15 @@ const styles = StyleSheet.create({
     },
 });
 
-const edges: Edge[] = ['left', 'right', 'top'];
+const edges: Edge[] = ['left', 'right'];
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 
 const Header = ({index, onClose, style, total}: Props) => {
     const insets = useSafeAreaInsets();
     const {width} = useWindowDimensions();
     const height = useDefaultHeaderHeight() - insets.top;
+    const {top} = useSafeAreaInsets();
+    const topContainerStyle = useMemo(() => [{height: top, backgroundColor: '#000'}], [top]);
     const containerStyle = useMemo(() => [styles.container, {height}], [height]);
     const iconStyle = useMemo(() => [{width: height}, styles.icon], [height]);
     const titleStyle = useMemo(() => ({width: width - (height * 2)}), [height, width]);
@@ -56,6 +58,7 @@ const Header = ({index, onClose, style, total}: Props) => {
             edges={edges}
             style={style}
         >
+            <Animated.View style={topContainerStyle}/>
             <Animated.View style={containerStyle}>
                 <TouchableOpacity
                     onPress={onClose}

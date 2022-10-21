@@ -1,0 +1,205 @@
+diff --git a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
+index 698b62a..c855146 100644
+--- a/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
++++ b/node_modules/react-native/Libraries/Components/ScrollView/ScrollView.js
+@@ -1780,9 +1780,15 @@ class ScrollView extends React.Component<Props, State> {
+         // Note: we should split props.style on the inner and outer props
+         // however, the ScrollView still needs the baseStyle to be scrollable
+         const {outer, inner} = splitLayoutProps(flattenStyle(props.style));
++        let inverted;
++        if (inner.scaleY) {
++          inverted = {scaleY: -1};
++          delete inner['scaleY']
++        }
++
+         return React.cloneElement(
+           refreshControl,
+-          {style: StyleSheet.compose(baseStyle, outer)},
++          {style: [baseStyle, outer, inverted]},
+           <NativeDirectionalScrollView
+             {...props}
+             style={StyleSheet.compose(baseStyle, inner)}
+diff --git a/node_modules/react-native/Libraries/Lists/VirtualizedList.js b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
+index 69e6309..c96ca5a 100644
+--- a/node_modules/react-native/Libraries/Lists/VirtualizedList.js
++++ b/node_modules/react-native/Libraries/Lists/VirtualizedList.js
+@@ -39,6 +39,7 @@ const flattenStyle = require('../StyleSheet/flattenStyle');
+ const StyleSheet = require('../StyleSheet/StyleSheet');
+ const infoLog = require('../Utilities/infoLog');
+ const FillRateHelper = require('./FillRateHelper');
++const Platform = require('../Utilities/Platform');
+ const ViewabilityHelper = require('./ViewabilityHelper');
+ const invariant = require('invariant');
+ 
+@@ -1971,7 +1972,7 @@ type CellRendererState = {
+   ...
+ };
+ 
+-class CellRenderer extends React.Component<
++class CellRenderer extends React.PureComponent<
+   CellRendererProps,
+   CellRendererState,
+ > {
+@@ -1986,12 +1987,16 @@ class CellRenderer extends React.Component<
+     props: CellRendererProps,
+     prevState: CellRendererState,
+   ): ?CellRendererState {
+-    return {
+-      separatorProps: {
+-        ...prevState.separatorProps,
+-        leadingItem: props.item,
+-      },
+-    };
++    if (prevState.separatorProps.leadingItem !== props.item) {
++      return {
++        separatorProps: {
++          ...prevState.separatorProps,
++          leadingItem: props.item,
++        },
++      };
++    } else {
++      return prevState;
++    }
+   }
+ 
+   // TODO: consider factoring separator stuff out of VirtualizedList into FlatList since it's not
+@@ -2171,7 +2176,10 @@ function describeNestedLists(childList: {
+ 
+ const styles = StyleSheet.create({
+   verticallyInverted: {
+-    transform: [{scaleY: -1}],
++    ...Platform.select({
++      android: {scaleY: -1},
++      ios: {transform: [{scaleY: -1}]},
++    }),
+   },
+   horizontallyInverted: {
+     transform: [{scaleX: -1}],
+diff --git a/node_modules/react-native/react.gradle b/node_modules/react-native/react.gradle
+index 912a407..01fa3ba 100644
+--- a/node_modules/react-native/react.gradle
++++ b/node_modules/react-native/react.gradle
+@@ -141,7 +141,7 @@ def enableHermesForVariant = config.enableHermesForVariant ?: {
+ def hermesFlagsForVariant = config.hermesFlagsForVariant ?: {
+     def variant ->
+         def hermesFlags;
+-        if (variant.name.toLowerCase().contains("release")) {
++        if (variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")) {
+             // Can't use ?: since that will also substitute valid empty lists
+             hermesFlags = config.hermesFlagsRelease
+             if (hermesFlags == null) hermesFlags = ["-O", "-output-source-map"]
+@@ -157,7 +157,7 @@ def hermesFlagsForVariant = config.hermesFlagsForVariant ?: {
+ def disableDevForVariant = config.disableDevForVariant ?: {
+     def variant ->
+       config."devDisabledIn${variant.name.capitalize()}" ||
+-      variant.name.toLowerCase().contains("release")
++      variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")
+ }
+ 
+ // Set bundleForVariant to a function to configure per variant,
+@@ -166,13 +166,13 @@ def bundleForVariant = config.bundleForVariant ?: {
+     def variant ->
+       config."bundleIn${variant.name.capitalize()}" ||
+       config."bundleIn${variant.buildType.name.capitalize()}" ||
+-      variant.name.toLowerCase().contains("release")
++      variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")
+ }
+ 
+ // Set deleteDebugFilesForVariant to a function to configure per variant,
+ // defaults to True for Release variants and False for debug variants
+ def deleteDebugFilesForVariant = config.deleteDebugFilesForVariant ?: {
+-    def variant -> variant.name.toLowerCase().contains("release")
++    def variant -> variant.name.toLowerCase().contains("release") || variant.name.toLowerCase().contains("unsigned")
+ }
+ 
+ android {
+diff --git a/node_modules/react-native/sdks/hermes/hermes-engine.podspec b/node_modules/react-native/sdks/hermes/hermes-engine.podspec
+new file mode 100644
+index 0000000..8d331e0
+--- /dev/null
++++ b/node_modules/react-native/sdks/hermes/hermes-engine.podspec
+@@ -0,0 +1,84 @@
++# Copyright (c) Meta Platforms, Inc. and affiliates.
++#
++# This source code is licensed under the MIT license found in the
++# LICENSE file in the root directory of this source tree.
++
++require "json"
++require "open3"
++
++# sdks/hermesc/osx-bin/ImportHermesc.cmake
++import_hermesc_file=File.join(__dir__, "..", "hermesc", "osx-bin", "ImportHermesc.cmake")
++
++# package.json
++package_file = File.join(__dir__, "..", "..", "package.json")
++package = JSON.parse(File.read(package_file))
++version = package['version']
++
++# We need to check the current git branch/remote to verify if
++# we're on a React Native release branch to actually build Hermes.
++currentbranch, err = Open3.capture3("git rev-parse --abbrev-ref HEAD")
++currentremote, err = Open3.capture3("git config --get remote.origin.url")
++
++source = {}
++git = "https://github.com/facebook/hermes.git"
++
++if ENV.has_key?('HERMES_ENGINE_TARBALL_PATH')
++  Pod::UI.puts '[Hermes] Using pre-built Hermes binaries from local path.' if Object.const_defined?("Pod::UI")
++  source[:http] = "file://#{ENV['HERMES_ENGINE_TARBALL_PATH']}"
++elsif version == '1000.0.0'
++  Pod::UI.puts '[Hermes] Hermes needs to be compiled, installing hermes-engine may take a while...'.yellow if Object.const_defined?("Pod::UI")
++  source[:git] = git
++  source[:commit] = `git ls-remote https://github.com/facebook/hermes main | cut -f 1`.strip
++elsif currentremote.strip.end_with?("facebook/react-native.git") and currentbranch.strip.end_with?("-stable")
++  Pod::UI.puts '[Hermes] Detected that you are on a React Native release branch, building Hermes from source...'.yellow if Object.const_defined?("Pod::UI")
++  hermestag_file = File.join(__dir__, "..", ".hermesversion")
++  hermestag = File.read(hermestag_file).strip
++  source[:git] = git
++  source[:tag] = hermestag
++else
++  source[:http] = "https://github.com/facebook/react-native/releases/download/v#{version}/hermes-runtime-darwin-v#{version}.tar.gz"
++end
++
++module HermesHelper
++  # BUILD_TYPE = :debug
++  BUILD_TYPE = :release
++end
++
++Pod::Spec.new do |spec|
++  spec.name        = "hermes-engine"
++  spec.version     = version
++  spec.summary     = "Hermes is a small and lightweight JavaScript engine optimized for running React Native."
++  spec.description = "Hermes is a JavaScript engine optimized for fast start-up of React Native apps. It features ahead-of-time static optimization and compact bytecode."
++  spec.homepage    = "https://hermesengine.dev"
++  spec.license     = package["license"]
++  spec.author      = "Facebook"
++  spec.source      = source
++  spec.platforms   = { :osx => "10.13", :ios => "12.4" }
++
++  spec.preserve_paths      = ["destroot/bin/*"].concat(HermesHelper::BUILD_TYPE == :debug ? ["**/*.{h,c,cpp}"] : [])
++  spec.source_files        = "destroot/include/**/*.h"
++  spec.header_mappings_dir = "destroot/include"
++
++  spec.ios.vendored_frameworks = "destroot/Library/Frameworks/universal/hermes.xcframework"
++  spec.osx.vendored_frameworks = "destroot/Library/Frameworks/macosx/hermes.framework"
++
++  spec.xcconfig            = { "CLANG_CXX_LANGUAGE_STANDARD" => "c++17", "CLANG_CXX_LIBRARY" => "compiler-default", "GCC_PREPROCESSOR_DEFINITIONS" => "HERMES_ENABLE_DEBUGGER=1" }
++
++  if source[:git] then
++    spec.prepare_command = <<-EOS
++      # When true, debug build will be used.
++      # See `build-apple-framework.sh` for details
++      DEBUG=#{HermesHelper::BUILD_TYPE == :debug}
++
++      # Set HERMES_OVERRIDE_HERMESC_PATH if pre-built HermesC is available
++      #{File.exist?(import_hermesc_file) ? "export HERMES_OVERRIDE_HERMESC_PATH=#{import_hermesc_file}" : ""}
++      #{File.exist?(import_hermesc_file) ? "echo \"Overriding HermesC path...\"" : ""}
++
++      # Build iOS framework
++      ./utils/build-ios-framework.sh
++
++      # Build Mac framework
++      ./utils/build-mac-framework.sh
++    EOS
++  end
++end

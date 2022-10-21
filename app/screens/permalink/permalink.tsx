@@ -279,7 +279,7 @@ function Permalink({
         setLoading(true);
         setError(undefined);
         if (error?.teamId && error.channelId) {
-            const {error: joinError} = await joinChannel(serverUrl, currentUserId, error.teamId, error.channelId);
+            const {error: joinError} = await joinChannel(serverUrl, error.teamId, error.channelId);
             if (joinError) {
                 Alert.alert('Error joining the channel', 'There was an error trying to join the channel');
                 setLoading(false);
