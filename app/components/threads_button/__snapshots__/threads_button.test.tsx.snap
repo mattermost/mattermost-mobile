@@ -48,7 +48,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
               "color": "rgba(255,255,255,0.5)",
               "fontSize": 24,
             },
-            undefined,
+            false,
             undefined,
           ]
         }
@@ -132,7 +132,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
               "color": "rgba(255,255,255,0.5)",
               "fontSize": 24,
             },
-            undefined,
+            false,
             Object {
               "color": "rgba(63,67,80,0.72)",
             },
@@ -223,7 +223,7 @@ exports[`Thread item in the channel list Threads Component should match snapshot
               "color": "rgba(255,255,255,0.5)",
               "fontSize": 24,
             },
-            undefined,
+            false,
             undefined,
           ]
         }

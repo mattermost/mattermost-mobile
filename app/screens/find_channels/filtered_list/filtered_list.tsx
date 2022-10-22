@@ -256,7 +256,14 @@ const FilteredList = ({
     }, [onJoinChannel, onOpenDirectMessage, onSwitchToChannel, showTeamName, teammateDisplayNameSetting]);
 
     const data = useMemo(() => {
-        const items: ResultItem[] = [...channelsMatchStart];
+        const items: ResultItem[] = [];
+
+        // Add threads item to show it on the top of the list
+        if (showThreadItem) {
+            items.push('thread');
+        }
+
+        items.push(...channelsMatchStart);
 
         // Channels that matches
         if (items.length < MAX_RESULTS) {
@@ -294,14 +301,7 @@ const FilteredList = ({
             items.push(...archivedAlpha.slice(0, MAX_RESULTS + 1));
         }
 
-        const results = [...new Set(items)].slice(0, MAX_RESULTS + 1);
-
-        // Add threads item to show it on the top of the list
-        if (showThreadItem) {
-            results.unshift('thread');
-        }
-
-        return results;
+        return [...new Set(items)].slice(0, MAX_RESULTS + 1);
     }, [archivedChannels, channelsMatchStart, channelsMatch, remoteChannels, usersMatch, usersMatchStart, locale, teammateDisplayNameSetting, showThreadItem]);
 
     useEffect(() => {
@@ -311,15 +311,19 @@ const FilteredList = ({
         };
     }, []);
 
+    const threadLabel = useMemo(
+        () => formatMessage({
+            id: 'threads',
+            defaultMessage: 'Threads',
+        }).toLowerCase(),
+        [locale],
+    );
+
     useEffect(() => {
         bounce.current = debounce(search, 500);
         bounce.current();
         if (isCRTEnabled) {
-            const label = formatMessage({
-                id: 'threads',
-                defaultMessage: 'Threads',
-            }).toLowerCase();
-            const isThreadTerm = label.indexOf(term.toLowerCase()) === 0;
+            const isThreadTerm = threadLabel.indexOf(term.toLowerCase()) === 0;
             setShowThreadItem(isThreadTerm);
         }
         return () => {
@@ -327,7 +331,7 @@ const FilteredList = ({
                 bounce.current.cancel();
             }
         };
-    }, [isCRTEnabled, term]);
+    }, [isCRTEnabled, term, threadLabel]);
 
     return (
         <Animated.View

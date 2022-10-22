@@ -77,8 +77,8 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUn
 
         const icon = [
             customStyles.icon,
-            isActive || unreads ? customStyles.iconActive : undefined,
-            isInfo ? customStyles.iconInfo : undefined,
+            (isActive || unreads) && customStyles.iconActive,
+            isInfo && customStyles.iconInfo,
         ];
 
         const text = [
@@ -96,7 +96,7 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUn
         ];
 
         return [container, icon, text, badge];
-    }, [customStyles, isActive, styles, unreads]);
+    }, [customStyles, isActive, isInfo, styles, unreads]);
 
     if (groupUnreadsSeparately && (onlyUnreads && !isActive && !unreads && !mentions)) {
         return null;
@@ -129,4 +129,4 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUn
     );
 };
 
-export default ThreadsButton;
+export default React.memo(ThreadsButton);
