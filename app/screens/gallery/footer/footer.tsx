@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {SafeAreaView, Edge} from 'react-native-safe-area-context';
+import {SafeAreaView, Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Events} from '@constants';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
@@ -39,11 +39,11 @@ type Props = {
 }
 
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
-const edges: Edge[] = ['left', 'right', 'bottom'];
+const edges: Edge[] = ['left', 'right'];
 const styles = StyleSheet.create({
     container: {
         alignItems: 'center',
-        backgroundColor: changeOpacity('#000', 0.6),
+        backgroundColor: '#000',
         borderTopColor: changeOpacity('#fff', 0.4),
         borderTopWidth: 1,
         flex: 1,
@@ -71,6 +71,9 @@ const Footer = ({
 }: Props) => {
     const showActions = !hideActions && Boolean(item.id) && !item.id?.startsWith('uid');
     const [action, setAction] = useState<GalleryAction>('none');
+    const {bottom} = useSafeAreaInsets();
+
+    const bottomStyle = useMemo(() => ({height: bottom, backgroundColor: '#000'}), [bottom]);
 
     let overrideIconUrl;
     if (enablePostIconOverride && post?.props?.use_user_icon !== 'true' && post?.props?.override_icon_url) {
@@ -152,6 +155,7 @@ const Footer = ({
                 />
                 }
             </View>
+            <View style={bottomStyle}/>
         </AnimatedSafeAreaView>
     );
 };

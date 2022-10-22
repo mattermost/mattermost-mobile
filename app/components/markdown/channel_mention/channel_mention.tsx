@@ -21,7 +21,6 @@ type ChannelMentionProps = {
     channelName: string;
     channels: ChannelModel[];
     currentTeamId: string;
-    currentUserId: string;
     linkStyle: StyleProp<TextStyle>;
     team: TeamModel;
     textStyle: StyleProp<TextStyle>;
@@ -57,7 +56,7 @@ function getChannelFromChannelName(name: string, channels: ChannelModel[], chann
 }
 
 const ChannelMention = ({
-    channelMentions, channelName, channels, currentTeamId, currentUserId,
+    channelMentions, channelName, channels, currentTeamId,
     linkStyle, team, textStyle,
 }: ChannelMentionProps) => {
     const intl = useIntl();
@@ -68,7 +67,7 @@ const ChannelMention = ({
         let c = channel;
 
         if (!c?.id && c?.display_name) {
-            const result = await joinChannel(serverUrl, currentUserId, currentTeamId, undefined, channelName);
+            const result = await joinChannel(serverUrl, currentTeamId, undefined, channelName);
             if (result.error || !result.channel) {
                 const joinFailedMessage = {
                     id: t('mobile.join_channel.error'),

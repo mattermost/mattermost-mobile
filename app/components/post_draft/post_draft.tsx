@@ -59,6 +59,7 @@ function PostDraft({
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
     const [postInputTop, setPostInputTop] = useState(0);
+    const [isFocused, setIsFocused] = useState(false);
     const isTablet = useIsTablet();
     const keyboardHeight = useKeyboardHeight(keyboardTracker);
     const insets = useSafeAreaInsets();
@@ -113,10 +114,11 @@ function PostDraft({
             updatePostInputTop={setPostInputTop}
             updateValue={setValue}
             value={value}
+            setIsFocused={setIsFocused}
         />
     );
 
-    const autoComplete = (
+    const autoComplete = isFocused ? (
         <Autocomplete
             position={animatedAutocompletePosition}
             updateValue={setValue}
@@ -129,7 +131,7 @@ function PostDraft({
             inPost={true}
             availableSpace={animatedAutocompleteAvailableSpace}
         />
-    );
+    ) : null;
 
     if (Platform.OS === 'android') {
         return (
