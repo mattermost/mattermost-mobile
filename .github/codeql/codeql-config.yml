@@ -1,0 +1,13 @@
+name: "CodeQL config"
+
+query-filters:
+  - exclude:
+      problem.severity:
+        - warning
+        - recommendation
+  - exclude:
+      id: js/insecure-randomness
+
+paths-ignore:
+  - test
+  - '**/*.test.*'

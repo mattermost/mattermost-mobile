@@ -615,10 +615,7 @@ export function showOverlay(name: string, passProps = {}, options = {}) {
         component: {
             id: name,
             name,
-            passProps: {
-                ...passProps,
-                overlay: true,
-            },
+            passProps,
             options: merge(defaultOptions, options),
         },
     });

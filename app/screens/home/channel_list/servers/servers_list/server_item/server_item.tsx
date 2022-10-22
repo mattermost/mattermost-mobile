@@ -311,7 +311,7 @@ const ServerItem = ({
         DeviceEventEmitter.emit(Events.SWIPEABLE, server.url);
     }, [server]);
 
-    const renderActions = useCallback((progress: Animated.AnimatedInterpolation) => {
+    const renderActions = useCallback((progress: Animated.AnimatedInterpolation<number>) => {
         return (
             <Options
                 onEdit={handleEdit}

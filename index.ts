@@ -6,8 +6,10 @@ import {DeviceEventEmitter, LogBox} from 'react-native';
 import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
 import {ComponentDidAppearEvent, ComponentDidDisappearEvent, ModalDismissedEvent, Navigation, ScreenPoppedEvent} from 'react-native-navigation';
+import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
 
 import {Events, Screens} from './app/constants';
+import {OVERLAY_SCREENS} from './app/constants/screens';
 import DatabaseManager from './app/database/manager';
 import {getAllServerCredentials} from './app/init/credentials';
 import {initialLaunch} from './app/init/launch';
@@ -23,6 +25,9 @@ import setFontFamily from './app/utils/font_family';
 import {logInfo} from './app/utils/log';
 
 declare const global: { HermesInternal: null | {} };
+
+// Add scaleY back to work around its removal in React Native 0.70.
+ViewReactNativeStyleAttributes.scaleY = true;
 
 TurboLogger.configure({
     dailyRolling: false,
@@ -98,8 +103,8 @@ function screenWillAppear({componentId}: ComponentDidAppearEvent) {
     }
 }
 
-function screenDidAppearListener({componentId, passProps, componentType}: ComponentDidAppearEvent) {
-    if (!(passProps as any)?.overlay && componentType === 'Component') {
+function screenDidAppearListener({componentId, componentType}: ComponentDidAppearEvent) {
+    if (!OVERLAY_SCREENS.has(componentId) && componentType === 'Component') {
         NavigationStore.addNavigationComponentId(componentId);
     }
 }

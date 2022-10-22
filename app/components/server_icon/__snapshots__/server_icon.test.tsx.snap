@@ -4,7 +4,7 @@ exports[`Server Icon Server Icon Component should match snapshot 1`] = `
 <View>
   <View
     accessibilityState={
-      Object {
+      {
         "disabled": true,
       }
     }
@@ -12,7 +12,7 @@ exports[`Server Icon Server Icon Component should match snapshot 1`] = `
     collapsable={false}
     focusable={false}
     hitSlop={
-      Object {
+      {
         "bottom": 5,
         "left": 40,
         "right": 20,
@@ -27,7 +27,7 @@ exports[`Server Icon Server Icon Component should match snapshot 1`] = `
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      Object {
+      {
         "opacity": 1,
       }
     }
@@ -45,7 +45,7 @@ exports[`Server Icon Server Icon Component should match snapshot with mentions 1
 <View>
   <View
     accessibilityState={
-      Object {
+      {
         "disabled": true,
       }
     }
@@ -53,7 +53,7 @@ exports[`Server Icon Server Icon Component should match snapshot with mentions 1
     collapsable={false}
     focusable={false}
     hitSlop={
-      Object {
+      {
         "bottom": 5,
         "left": 40,
         "right": 20,
@@ -68,7 +68,7 @@ exports[`Server Icon Server Icon Component should match snapshot with mentions 1
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      Object {
+      {
         "opacity": 1,
       }
     }
@@ -83,7 +83,7 @@ exports[`Server Icon Server Icon Component should match snapshot with mentions 1
       collapsable={false}
       numberOfLines={1}
       style={
-        Object {
+        {
           "alignSelf": "flex-end",
           "backgroundColor": "#ffffff",
           "borderColor": "#14213e",
@@ -102,8 +102,8 @@ exports[`Server Icon Server Icon Component should match snapshot with mentions 1
           "position": "absolute",
           "textAlign": "center",
           "top": -8,
-          "transform": Array [
-            Object {
+          "transform": [
+            {
               "scale": 1,
             },
           ],
@@ -121,7 +121,7 @@ exports[`Server Icon Server Icon Component should match snapshot with unreads 1`
 <View>
   <View
     accessibilityState={
-      Object {
+      {
         "disabled": true,
       }
     }
@@ -129,7 +129,7 @@ exports[`Server Icon Server Icon Component should match snapshot with unreads 1`
     collapsable={false}
     focusable={false}
     hitSlop={
-      Object {
+      {
         "bottom": 5,
         "left": 40,
         "right": 20,
@@ -144,7 +144,7 @@ exports[`Server Icon Server Icon Component should match snapshot with unreads 1`
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      Object {
+      {
         "opacity": 1,
       }
     }
@@ -159,7 +159,7 @@ exports[`Server Icon Server Icon Component should match snapshot with unreads 1`
       collapsable={false}
       numberOfLines={1}
       style={
-        Object {
+        {
           "alignSelf": "flex-end",
           "backgroundColor": "#ffffff",
           "borderColor": "#14213e",
@@ -178,8 +178,8 @@ exports[`Server Icon Server Icon Component should match snapshot with unreads 1`
           "position": "absolute",
           "textAlign": "center",
           "top": -5,
-          "transform": Array [
-            Object {
+          "transform": [
+            {
               "scale": 1,
             },
           ],
