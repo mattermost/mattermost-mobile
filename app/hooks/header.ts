@@ -100,7 +100,6 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
                 // here we want to ensure that the scroll position
                 // always start at 0 if the user has not dragged
                 // the scrollview manually
-                scrollValue.value = 0;
                 scrollTo(animatedRef, 0, scrollValue.value, false);
             }
         },
