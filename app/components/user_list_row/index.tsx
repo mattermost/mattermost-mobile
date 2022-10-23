@@ -231,14 +231,16 @@ export default function UserListRow({
                             >
                                 {teammateDisplay}
                             </Text>
-                            <BotTag
-                                show={Boolean(user.is_bot)}
-                                testID={`${userItemTestID}.bot.tag`}
-                            />
-                            <GuestTag
-                                show={isGuest(user.roles)}
-                                testID={`${userItemTestID}.guest.tag`}
-                            />
+                            <View>
+                                <BotTag
+                                    show={Boolean(user.is_bot)}
+                                    testID={`${userItemTestID}.bot.tag`}
+                                />
+                                <GuestTag
+                                    show={isGuest(user.roles)}
+                                    testID={`${userItemTestID}.guest.tag`}
+                                />
+                            </View>
                         </View>
                         {showTeammateDisplay &&
                         <View>
