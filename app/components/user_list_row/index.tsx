@@ -89,7 +89,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         selectorContainer: {
             height: 50,
-            paddingRight: 10,
             alignItems: 'center',
             justifyContent: 'center',
         },
