@@ -37,6 +37,7 @@ type Props = {
     updateValue: React.Dispatch<React.SetStateAction<string>>;
     addFiles: (files: FileInfo[]) => void;
     updatePostInputTop: (top: number) => void;
+    setIsFocused: (isFocused: boolean) => void;
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
@@ -95,6 +96,7 @@ export default function DraftInput({
     updateCursorPosition,
     cursorPosition,
     updatePostInputTop,
+    setIsFocused,
 }: Props) {
     const theme = useTheme();
 
@@ -149,6 +151,7 @@ export default function DraftInput({
                         addFiles={addFiles}
                         sendMessage={sendMessage}
                         inputRef={inputRef}
+                        setIsFocused={setIsFocused}
                     />
                     <Uploads
                         currentUserId={currentUserId}

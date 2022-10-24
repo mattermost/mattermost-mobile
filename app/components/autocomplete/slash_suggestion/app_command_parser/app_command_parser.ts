@@ -1899,7 +1899,7 @@ export class AppCommandParser {
         if (input[0] === '@') {
             input = input.substring(1);
         }
-        const res = await searchUsers(this.serverUrl, input, this.channelID);
+        const res = await searchUsers(this.serverUrl, input, this.teamID, this.channelID);
         return getUserSuggestions(res.users);
     };
 
@@ -1908,7 +1908,7 @@ export class AppCommandParser {
         if (input[0] === '~') {
             input = input.substring(1);
         }
-        const res = await searchChannels(this.serverUrl, input);
+        const res = await searchChannels(this.serverUrl, input, this.teamID);
         return getChannelSuggestions(res.channels);
     };
 

@@ -29,6 +29,7 @@ type Props = {
     testID?: string;
     channelId: string;
     rootId: string;
+    setIsFocused: (isFocused: boolean) => void;
 
     // From database
     currentUserId: string;
@@ -73,6 +74,7 @@ export default function SendHandler({
     uploadFileError,
     updateCursorPosition,
     updatePostInputTop,
+    setIsFocused,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -290,6 +292,7 @@ export default function SendHandler({
             canSend={canSend()}
             maxMessageLength={maxMessageLength}
             updatePostInputTop={updatePostInputTop}
+            setIsFocused={setIsFocused}
         />
     );
 }

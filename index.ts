@@ -6,6 +6,7 @@ import {DeviceEventEmitter, LogBox} from 'react-native';
 import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
 import {ComponentDidAppearEvent, ComponentDidDisappearEvent, ModalDismissedEvent, Navigation, ScreenPoppedEvent} from 'react-native-navigation';
+import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
 
 import {Events, Screens} from './app/constants';
 import {OVERLAY_SCREENS} from './app/constants/screens';
@@ -24,6 +25,9 @@ import setFontFamily from './app/utils/font_family';
 import {logInfo} from './app/utils/log';
 
 declare const global: { HermesInternal: null | {} };
+
+// Add scaleY back to work around its removal in React Native 0.70.
+ViewReactNativeStyleAttributes.scaleY = true;
 
 TurboLogger.configure({
     dailyRolling: false,

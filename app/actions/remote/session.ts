@@ -19,18 +19,16 @@ import EphemeralStore from '@store/ephemeral_store';
 import {logWarning, logError} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
 import {getCSRFFromCookie} from '@utils/security';
-import {getDeviceTimezone, isTimezoneEnabled} from '@utils/timezone';
 
 import {loginEntry} from './entry';
 import {fetchDataRetentionPolicy} from './systems';
-import {autoUpdateTimezone} from './user';
 
 import type ClientError from '@client/rest/error';
 import type {LoginArgs} from '@typings/database/database';
 
 const HTTP_UNAUTHORIZED = 401;
 
-export const completeLogin = async (serverUrl: string, user: UserProfile) => {
+export const completeLogin = async (serverUrl: string) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -41,12 +39,6 @@ export const completeLogin = async (serverUrl: string, user: UserProfile) => {
 
     if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
         return null;
-    }
-
-    // Set timezone
-    if (isTimezoneEnabled(config)) {
-        const timezone = getDeviceTimezone();
-        await autoUpdateTimezone(serverUrl, {deviceTimezone: timezone, userId: user.id});
     }
 
     // Data retention
@@ -165,7 +157,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
 
     try {
         const {error, hasTeams, time} = await loginEntry({serverUrl, user});
-        completeLogin(serverUrl, user);
+        completeLogin(serverUrl);
         return {error: error as ClientError, failed: false, hasTeams, time};
     } catch (error) {
         return {error: error as ClientError, failed: false, time: 0};
@@ -309,7 +301,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
 
     try {
         const {error, hasTeams, time} = await loginEntry({serverUrl, user, deviceToken});
-        completeLogin(serverUrl, user);
+        completeLogin(serverUrl);
         return {error: error as ClientError, failed: false, hasTeams, time};
     } catch (error) {
         return {error: error as ClientError, failed: false, time: 0};
