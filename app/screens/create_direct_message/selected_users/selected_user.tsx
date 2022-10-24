@@ -10,9 +10,9 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import ProfilePicture from '@components/profile_picture';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 type Props = {
@@ -38,6 +38,9 @@ type Props = {
     testID?: string;
 }
 
+export const UserChipHeight = 32;
+export const UserChipBottomMargin = 8;
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
@@ -45,19 +48,27 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             flexDirection: 'row',
             borderRadius: 16,
+            height: UserChipHeight,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            marginBottom: 8,
-            marginRight: 10,
-            paddingLeft: 12,
-            paddingVertical: 8,
-            paddingRight: 7,
+            marginBottom: UserChipBottomMargin,
+            marginRight: 8,
+            paddingHorizontal: 7,
         },
         remove: {
+            justifyContent: 'center',
             marginLeft: 7,
+        },
+        profileContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            marginRight: 8,
+            color: theme.centerChannelColor,
         },
         text: {
             color: theme.centerChannelColor,
-            ...typography('Body', 100, 'SemiBold'),
+            fontSize: 14,
+            lineHeight: 15,
+            fontFamily: 'OpenSans',
         },
     };
 });
@@ -76,11 +87,20 @@ export default function SelectedUser({
         onRemove(user.id);
     }, [onRemove, user.id]);
 
+    const userItemTestID = `${testID}.${user.id}`;
     return (
         <View
             style={style.container}
             testID={`${testID}.${user.id}`}
         >
+            <View style={style.profileContainer}>
+                <ProfilePicture
+                    author={user}
+                    size={20}
+                    iconSize={20}
+                    testID={`${userItemTestID}.profile_picture`}
+                />
+            </View>
             <Text
                 style={style.text}
                 testID={`${testID}.${user.id}.display_name`}
@@ -94,7 +114,7 @@ export default function SelectedUser({
             >
                 <CompassIcon
                     name='close-circle'
-                    size={17}
+                    size={18}
                     color={changeOpacity(theme.centerChannelColor, 0.32)}
                 />
             </TouchableOpacity>

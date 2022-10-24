@@ -365,15 +365,6 @@ export default function CreateDirectMessage({
                     value={term}
                 />
             </View>
-            {selectedCount > 0 &&
-            <SelectedUsers
-                selectedIds={selectedIds}
-                warnCount={5}
-                maxCount={7}
-                onRemove={handleRemoveProfile}
-                teammateNameDisplay={teammateNameDisplay}
-            />
-            }
             <UserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
@@ -387,6 +378,15 @@ export default function CreateDirectMessage({
                 testID='create_direct_message.user_list'
                 tutorialWatched={tutorialWatched}
             />
+            {selectedCount > 0 &&
+            <SelectedUsers
+                selectedIds={selectedIds}
+                warnCount={5}
+                maxCount={7}
+                onRemove={handleRemoveProfile}
+                teammateNameDisplay={teammateNameDisplay}
+            />
+            }
         </SafeAreaView>
     );
 }

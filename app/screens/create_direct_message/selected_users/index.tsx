@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {View} from 'react-native';
+import {ScrollView, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import BottomSheetButton from '@screens/bottom_sheet/button';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import SelectedUser from './selected_user';
+import SelectedUser, {UserChipBottomMargin, UserChipHeight} from './selected_user';
 
 type Props = {
 
@@ -39,14 +40,33 @@ type Props = {
     onRemove: (id: string) => void;
 }
 
+const MaxRows = 3;
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            marginHorizontal: 12,
+            flexShrink: 1,
+            borderWidth: 1,
+            borderBottomWidth: 0,
+            backgroundColor: theme.centerChannelBg,
+            paddingHorizontal: 20,
+            borderTopLeftRadius: 12,
+            borderTopRightRadius: 12,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+            shadowOffset: {width: 0, height: -4},
+            shadowColor: changeOpacity(theme.centerChannelBg, 0.12),
+            shadowRadius: 1,
+        },
+        buttonContainer: {
+            marginVertical: 20,
+        },
+        containerUsers: {
+            marginTop: 20,
+            maxHeight: (UserChipHeight + UserChipBottomMargin) * MaxRows,
         },
         users: {
             alignItems: 'flex-start',
             flexDirection: 'row',
+            flexGrow: 1,
             flexWrap: 'wrap',
         },
         message: {
@@ -128,10 +148,21 @@ export default function SelectedUsers({
 
     return (
         <View style={style.container}>
-            <View style={style.users}>
-                {users}
+            <View style={style.containerUsers}>
+                <ScrollView
+                    contentContainerStyle={style.users}
+                >
+                    {users}
+                </ScrollView>
             </View>
             {message}
+
+            <View style={style.buttonContainer}>
+                <BottomSheetButton
+                    icon={'forum-outline'}
+                    text={'  Start Conversation'}
+                />
+            </View>
         </View>
     );
 }
