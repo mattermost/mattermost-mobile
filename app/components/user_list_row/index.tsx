@@ -34,7 +34,6 @@ type Props = {
     selectable: boolean;
     selected: boolean;
     tutorialWatched?: boolean;
-    enabled: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -80,25 +79,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             opacity: 0.75,
         },
         selector: {
-            height: 28,
-            width: 28,
-            borderRadius: 14,
-            borderWidth: 3,
             borderColor: changeOpacity(theme.centerChannelColor, 0.32),
             alignItems: 'center',
             justifyContent: 'center',
-        },
-        selectorContainer: {
-            height: 58,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        selectorDisabled: {
-            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-        },
-        selectorFilled: {
-            backgroundColor: theme.sidebarBg,
-            borderWidth: 0,
         },
         tutorial: {
             top: Platform.select({ios: -74, default: -94}),
@@ -121,7 +104,6 @@ export default function UserListRow({
     tutorialWatched = false,
     selectable,
     selected,
-    enabled,
 }: Props) {
     const theme = useTheme();
     const intl = useIntl();
@@ -169,25 +151,21 @@ export default function UserListRow({
         onLongPress?.(user);
     }, [onLongPress, user]);
 
-    const iconStyle = useMemo(() => {
-        return [style.selector, (selected && style.selectorFilled), (!enabled && style.selectorDisabled)];
-    }, [style, selected, enabled]);
-
-    const Icon = () => {
+    const iconStyle = useMemo(() => style.selector, [style]);
+    const icon = useMemo(() => {
+        const name = selected ? 'check-circle' : 'circle-outline';
+        const opacity = selectable ? 0.32 : 0.16;
+        const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, opacity);
         return (
-            <View style={style.selectorContainer}>
-                <View style={iconStyle}>
-                    {selected &&
-                        <CompassIcon
-                            name='check'
-                            size={24}
-                            color={theme.sidebarText}
-                        />
-                    }
-                </View>
+            <View style={iconStyle}>
+                <CompassIcon
+                    name={name}
+                    size={28}
+                    color={color}
+                />
             </View>
         );
-    };
+    }, [selectable, selected, theme]);
 
     let usernameDisplay = `@${username}`;
     if (isMyUser) {
@@ -264,9 +242,7 @@ export default function UserListRow({
                         </View>
                         }
                     </View>
-                    {selectable &&
-                    <Icon/>
-                    }
+                    {icon}
                 </View>
             </TouchableWithFeedback>
             {showTutorial &&

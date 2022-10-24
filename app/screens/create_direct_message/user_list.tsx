@@ -181,7 +181,6 @@ export default function UserList({
                 onLongPress={openUserProfile}
                 selectable={canAdd}
                 selected={selected}
-                enabled={canAdd}
                 testID='create_direct_message.user_list.user_item'
                 teammateNameDisplay={teammateNameDisplay}
                 tutorialWatched={tutorialWatched}
