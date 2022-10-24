@@ -57,7 +57,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         username: {
-            color: changeOpacity(theme.centerChannelColor, 0.5),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75, 'Regular'),
         },
         displayName: {
@@ -72,7 +72,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         deactivated: {
             marginTop: 2,
             fontSize: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
         },
         sharedUserIcon: {
             alignSelf: 'center',
@@ -91,8 +91,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const selectableOpacity = 0.32;
-const disabledOpacity = 0.16;
+const disabledOpacity = 0.32;
+const defaultIconOpacity = 0.32;
 
 export default function UserListRow({
     id,
@@ -154,13 +154,12 @@ export default function UserListRow({
     }, [onLongPress, user]);
 
     const icon = useMemo(() => {
-        const name = selected ? 'check-circle' : 'circle-outline';
-        const opacity = selectable ? selectableOpacity : disabledOpacity;
-        const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, opacity);
+        const iconOpacity = defaultIconOpacity * (selectable ? 1 : disabledOpacity);
+        const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
         return (
             <View style={style.selector}>
                 <CompassIcon
-                    name={name}
+                    name={selected ? 'check-circle' : 'circle-outline'}
                     size={28}
                     color={color}
                 />
@@ -180,6 +179,7 @@ export default function UserListRow({
     const showTeammateDisplay = teammateDisplay !== username;
 
     const userItemTestID = `${testID}.${id}`;
+    const containerOpacity = useMemo(() => (selectable || selected ? 1 : disabledOpacity), [selectable, selected]);
 
     return (
         <>
@@ -193,7 +193,7 @@ export default function UserListRow({
                     style={style.container}
                     testID={userItemTestID}
                 >
-                    <View style={style.profileContainer}>
+                    <View style={[style.profileContainer, {opacity: containerOpacity}]}>
                         <ProfilePicture
                             author={user}
                             size={40}
@@ -201,7 +201,7 @@ export default function UserListRow({
                             testID={`${userItemTestID}.profile_picture`}
                         />
                     </View>
-                    <View style={style.textContainer}>
+                    <View style={[style.textContainer, {opacity: containerOpacity}]}>
                         <View style={style.indicatorContainer}>
                             <Text
                                 style={style.displayName}
