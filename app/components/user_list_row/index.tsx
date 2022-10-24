@@ -79,7 +79,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             opacity: 0.75,
         },
         selector: {
-            borderColor: changeOpacity(theme.centerChannelColor, 0.32),
             alignItems: 'center',
             justifyContent: 'center',
         },
@@ -91,6 +90,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const selectableOpacity = 0.32;
+const disabledOpacity = 0.16;
 
 export default function UserListRow({
     id,
@@ -151,13 +153,12 @@ export default function UserListRow({
         onLongPress?.(user);
     }, [onLongPress, user]);
 
-    const iconStyle = useMemo(() => style.selector, [style]);
     const icon = useMemo(() => {
         const name = selected ? 'check-circle' : 'circle-outline';
-        const opacity = selectable ? 0.32 : 0.16;
+        const opacity = selectable ? selectableOpacity : disabledOpacity;
         const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, opacity);
         return (
-            <View style={iconStyle}>
+            <View style={style.selector}>
                 <CompassIcon
                     name={name}
                     size={28}
