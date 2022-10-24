@@ -605,3 +605,61 @@ export const observeChannelsByLastPostAt = (database: Database, myChannels: MyCh
         ORDER BY CASE mc.last_post_at WHEN 0 THEN c.create_at ELSE mc.last_post_at END DESC`),
     ).observe();
 };
+
+export const queryChannelsForAutocomplete = (database: Database, matchTerm: string, isSearch: boolean, teamId: string) => {
+    const likeTerm = `%${Q.sanitizeLikeString(matchTerm)}%`;
+    const clauses: Q.Clause[] = [];
+    if (isSearch) {
+        clauses.push(
+            Q.experimentalJoinTables([CHANNEL_MEMBERSHIP]),
+            Q.experimentalNestedJoin(CHANNEL_MEMBERSHIP, USER),
+        );
+    }
+    const orConditions: Q.Condition[] = [
+        Q.where('display_name', Q.like(matchTerm)),
+        Q.where('name', Q.like(likeTerm)),
+    ];
+
+    if (isSearch) {
+        orConditions.push(
+            Q.and(
+                Q.where('type', Q.oneOf([General.DM_CHANNEL, General.GM_CHANNEL])),
+                Q.on(CHANNEL_MEMBERSHIP, Q.on(USER,
+                    Q.or(
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore: condition type error
+                        Q.unsafeSqlExpr(`first_name || ' ' || last_name LIKE '${likeTerm}'`),
+                        Q.where('nickname', Q.like(likeTerm)),
+                        Q.where('email', Q.like(likeTerm)),
+                        Q.where('username', Q.like(likeTerm)),
+                    ),
+                )),
+            ),
+        );
+    }
+
+    const teamsToSearch = [teamId];
+    if (isSearch) {
+        teamsToSearch.push('');
+    }
+
+    const andConditions: Q.Condition[] = [
+        Q.where('team_id', Q.oneOf(teamsToSearch)),
+    ];
+    if (!isSearch) {
+        andConditions.push(
+            Q.where('type', Q.oneOf([General.OPEN_CHANNEL, General.PRIVATE_CHANNEL])),
+            Q.where('delete_at', 0),
+        );
+    }
+
+    clauses.push(
+        ...andConditions,
+        Q.or(...orConditions),
+        Q.sortBy('display_name', Q.asc),
+        Q.sortBy('name', Q.asc),
+        Q.take(25),
+    );
+
+    return database.get<ChannelModel>(CHANNEL).query(...clauses);
+};
