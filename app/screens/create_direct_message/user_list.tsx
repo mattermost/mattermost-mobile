@@ -18,6 +18,7 @@ import {
     changeOpacity,
     makeStyleSheetFromTheme,
 } from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
@@ -99,7 +100,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         sectionText: {
             color: theme.centerChannelColor,
-            fontSize: 12,
+            ...typography('Body', 75, 'SemiBold'),
         },
     };
 });

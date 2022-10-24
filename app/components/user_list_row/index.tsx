@@ -19,6 +19,7 @@ import TutorialLongPress from '@components/tutorial_highlight/long_press';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername, isGuest} from '@utils/user';
 
 type Props = {
@@ -57,14 +58,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         username: {
-            fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 75, 'Regular'),
         },
         displayName: {
-            fontSize: 16,
             height: 24,
             color: theme.centerChannelColor,
             maxWidth: '80%',
+            ...typography('Body', 200, 'Regular'),
         },
         indicatorContainer: {
             flexDirection: 'row',
@@ -88,7 +89,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
         },
         selectorContainer: {
-            height: 50,
+            height: 58,
             alignItems: 'center',
             justifyContent: 'center',
         },
