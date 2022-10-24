@@ -13,29 +13,29 @@ import SelectedUser from './selected_user';
 type Props = {
 
     /*
-     * An object mapping user ids to a falsey value indicating whether or not they've been selected.
+     * An object mapping user ids to a falsey value indicating whether or not they have been selected.
      */
     selectedIds: {[id: string]: UserProfile};
 
     /*
-         * How to display the names of users.
-         */
+     * How to display the names of users.
+     */
     teammateNameDisplay: string;
 
     /*
-         * The number of users that will be selected when we start to display a message indicating
-         * the remaining number of users that can be selected.
-         */
+     * The number of users that will be selected when we start to display a message indicating
+     * the remaining number of users that can be selected.
+     */
     warnCount: number;
 
     /*
-         * The maximum number of users that can be selected.
-         */
+     * The maximum number of users that can be selected.
+     */
     maxCount: number;
 
     /*
-         * A handler function that will deselect a user when clicked on.
-         */
+     * A handler function that will deselect a user when clicked on.
+     */
     onRemove: (id: string) => void;
 }
 
