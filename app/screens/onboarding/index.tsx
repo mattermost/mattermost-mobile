@@ -1,15 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useRef} from 'react';
-import {Platform, Text, View} from 'react-native';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
+import React, {useCallback, useRef} from 'react';
+import {Platform, Text, View, FlatList, ScrollView, ListRenderItemInfo} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import AppVersion from '@components/app_version';
+import {generateId} from '@app/utils/general';
 import Background from '@screens/background';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import SlideItem from './slide';
+import slidesData from './slides_data';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -22,7 +24,6 @@ const Onboarding = ({
     theme,
 }: OnboardingProps) => {
     const translateX = useSharedValue(0);
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const styles = getStyleSheet(theme);
 
     const transform = useAnimatedStyle(() => {
@@ -32,32 +33,35 @@ const Onboarding = ({
         };
     }, []);
 
+    const renderSlide = useCallback(({item: t}: ListRenderItemInfo<any>) => {
+        return (
+            <SlideItem
+                item={t}
+                theme={theme}
+            />
+        );
+    }, []);
+
     return (
         <View
             style={styles.flex}
-            testID='server.screen'
+            testID='onboarding.screen'
         >
             <Background theme={theme}/>
             <AnimatedSafeArea
-                key={'server_content'}
+                key={'onboarding_content'}
                 style={[styles.flex, transform]}
             >
-                <KeyboardAwareScrollView
+                <FlatList
+                    keyExtractor={(item) => item.id}
+                    data={slidesData}
+                    renderItem={renderSlide}
+                    listKey={generateId()}
+                    horizontal={true}
+                    showsHorizontalScrollIndicator={true}
+                    pagingEnabled={true}
                     bounces={false}
-                    contentContainerStyle={styles.scrollContainer}
-                    enableAutomaticScroll={Platform.OS === 'android'}
-                    enableOnAndroid={false}
-                    enableResetScrollToCoords={true}
-                    extraScrollHeight={20}
-                    keyboardDismissMode='on-drag'
-                    keyboardShouldPersistTaps='handled'
-                    ref={keyboardAwareRef}
-                    scrollToOverflowEnabled={true}
-                    style={styles.flex}
-                >
-                    <Text>{'Hola mundo'}</Text>
-                </KeyboardAwareScrollView>
-                <AppVersion textStyle={styles.appInfo}/>
+                />
             </AnimatedSafeArea>
         </View>
     );
