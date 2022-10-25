@@ -1,15 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef} from 'react';
-import {Platform, Text, View, FlatList, ScrollView, ListRenderItemInfo} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import React, {useCallback, useRef, useState} from 'react';
+import {Platform, Text, View, FlatList, Animated, ListRenderItemInfo, ViewToken} from 'react-native';
+import {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {generateId} from '@app/utils/general';
 import Background from '@screens/background';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import Paginator from './paginator';
 import SlideItem from './slide';
 import slidesData from './slides_data';
 
@@ -25,6 +26,8 @@ const Onboarding = ({
 }: OnboardingProps) => {
     const translateX = useSharedValue(0);
     const styles = getStyleSheet(theme);
+    const [currentIndex, setCurrentIndex] = useState(0);
+    const slidesRef = useRef(null);
 
     const transform = useAnimatedStyle(() => {
         const duration = Platform.OS === 'android' ? 250 : 350;
@@ -33,24 +36,32 @@ const Onboarding = ({
         };
     }, []);
 
-    const renderSlide = useCallback(({item: t}: ListRenderItemInfo<any>) => {
+    const renderSlide = useCallback(({item: i}: ListRenderItemInfo<any>) => {
         return (
             <SlideItem
-                item={t}
+                item={i}
                 theme={theme}
             />
         );
     }, []);
 
+    const scrollX = useRef(new Animated.Value(0)).current;
+
+    const viewableItemsChanged = useRef(({viewableItems}: any) => {
+        setCurrentIndex(viewableItems[0].index);
+    }).current;
+
+    const viewConfig = useRef({viewAreaCoveragePercentThreshold: 50}).current;
+
     return (
         <View
-            style={styles.flex}
+            style={styles.onBoardingContainer}
             testID='onboarding.screen'
         >
             <Background theme={theme}/>
             <AnimatedSafeArea
                 key={'onboarding_content'}
-                style={[styles.flex, transform]}
+                style={[styles.scrollContainer, transform]}
             >
                 <FlatList
                     keyExtractor={(item) => item.id}
@@ -61,20 +72,31 @@ const Onboarding = ({
                     showsHorizontalScrollIndicator={true}
                     pagingEnabled={true}
                     bounces={false}
+                    onScroll={Animated.event([{nativeEvent: {contentOffset: {x: scrollX}}}], {
+                        useNativeDriver: false,
+                    })}
+                    onViewableItemsChanged={viewableItemsChanged}
+                    viewabilityConfig={viewConfig}
+                    scrollEventThrottle={32}
+                    ref={slidesRef}
                 />
             </AnimatedSafeArea>
+            <Paginator
+                data={slidesData}
+                theme={theme}
+            />
         </View>
     );
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    appInfo: {
-        color: changeOpacity(theme.centerChannelColor, 0.56),
-    },
-    flex: {
+    onBoardingContainer: {
         flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
     scrollContainer: {
+        flex: 1,
         alignItems: 'center',
         height: '100%',
         justifyContent: 'center',

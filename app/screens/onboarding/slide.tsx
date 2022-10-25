@@ -33,6 +33,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     itemContainer: {
         flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
     },
 }));
 
