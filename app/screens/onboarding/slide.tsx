@@ -14,22 +14,27 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
-        fontWeight: '800',
-        fontSize: 28,
-        marginBottom: 10,
+        fontWeight: '600',
+        fontSize: 40,
+        marginBottom: 5,
+        height: 100,
         color: theme.centerChannelColor,
         textAlign: 'center',
     },
     description: {
-        fontWeight: '300',
+        fontWeight: '400',
+        fontSize: 16,
         textAlign: 'center',
-        paddingHorizontal: 64,
+        paddingHorizontal: 20,
+        height: 80,
         color: changeOpacity(theme.centerChannelColor, 0.64),
         ...typography('Body', 200, 'Regular'),
     },
     image: {
-        flex: 0.7,
         justifyContent: 'center',
+        height: 60,
+        maxHeight: 120,
+        width: 50,
     },
     itemContainer: {
         flex: 1,

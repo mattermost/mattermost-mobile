@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef, useState} from 'react';
-import {Platform, Text, View, FlatList, Animated, ListRenderItemInfo, ViewToken} from 'react-native';
+import {Platform, View, FlatList, Animated, ListRenderItemInfo} from 'react-native';
 import {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {generateId} from '@app/utils/general';
 import Background from '@screens/background';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import Paginator from './paginator';
 import SlideItem from './slide';
@@ -28,6 +28,18 @@ const Onboarding = ({
     const styles = getStyleSheet(theme);
     const [currentIndex, setCurrentIndex] = useState(0);
     const slidesRef = useRef(null);
+
+    const nextSlide = () => {
+        console.log('\n*** slidesRef 1\n');
+        if (slidesRef.current && currentIndex < slidesData.length - 1) {
+            console.log('\n*** slidesRef 2\n');
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            slidesRef.current.scrollToIndex({index: currentIndex + 1});
+        } else {
+            console.log('*** end of slide');
+        }
+    };
 
     const transform = useAnimatedStyle(() => {
         const duration = Platform.OS === 'android' ? 250 : 350;
@@ -84,6 +96,8 @@ const Onboarding = ({
             <Paginator
                 data={slidesData}
                 theme={theme}
+                scrollX={scrollX}
+                nextSlideHandler={nextSlide}
             />
         </View>
     );
@@ -94,6 +108,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
+        verticalAlign: 'top',
     },
     scrollContainer: {
         flex: 1,
