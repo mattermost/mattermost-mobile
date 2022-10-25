@@ -9,7 +9,7 @@ import {useTheme} from '@context/theme';
 import Button from '@screens/bottom_sheet/button';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import SelectedUser, {UserChipBottomMargin, UserChipHeight} from './selected_user';
+import SelectedUser, {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from './selected_user';
 
 type Props = {
 
@@ -55,7 +55,8 @@ type Props = {
     buttonText: string;
 }
 
-const MaxRows = 3;
+const MAX_ROWS = 3;
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
@@ -81,7 +82,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         containerUsers: {
             marginTop: 20,
-            maxHeight: (UserChipHeight + UserChipBottomMargin) * MaxRows,
+            maxHeight: (USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN) * MAX_ROWS,
         },
         users: {
             alignItems: 'flex-start',

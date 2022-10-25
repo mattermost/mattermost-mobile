@@ -38,8 +38,8 @@ type Props = {
     testID?: string;
 }
 
-export const UserChipHeight = 32;
-export const UserChipBottomMargin = 8;
+export const USER_CHIP_HEIGHT = 32;
+export const USER_CHIP_BOTTOM_MARGIN = 8;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -48,9 +48,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             flexDirection: 'row',
             borderRadius: 16,
-            height: UserChipHeight,
+            height: USER_CHIP_HEIGHT,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            marginBottom: UserChipBottomMargin,
+            marginBottom: USER_CHIP_BOTTOM_MARGIN,
             marginRight: 8,
             paddingHorizontal: 7,
         },
