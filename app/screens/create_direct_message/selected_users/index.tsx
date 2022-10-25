@@ -60,16 +60,21 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
             flexShrink: 1,
-            borderWidth: 1,
-            borderBottomWidth: 0,
             backgroundColor: theme.centerChannelBg,
-            paddingHorizontal: 20,
+            borderBottomWidth: 0,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-            shadowOffset: {width: 0, height: -4},
-            shadowColor: changeOpacity(theme.centerChannelBg, 0.12),
-            shadowRadius: 1,
+            borderWidth: 1,
+            elevation: 4,
+            paddingHorizontal: 20,
+            shadowColor: theme.centerChannelColor,
+            shadowOffset: {
+                width: 0,
+                height: 8,
+            },
+            shadowOpacity: 0.16,
+            shadowRadius: 24,
         },
         buttonContainer: {
             marginVertical: 20,
