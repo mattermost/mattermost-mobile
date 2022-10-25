@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {ScrollView, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
-import BottomSheetButton from '@screens/bottom_sheet/button';
+import Button from '@screens/bottom_sheet/button';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SelectedUser, {UserChipBottomMargin, UserChipHeight} from './selected_user';
@@ -37,7 +37,22 @@ type Props = {
     /*
      * A handler function that will deselect a user when clicked on.
      */
+    onPress?: (selectedId?: {[id: string]: boolean}) => void;
+
+    /*
+     * A handler function that will deselect a user when clicked on.
+     */
     onRemove: (id: string) => void;
+
+    /*
+     * Name of the button Icon
+     */
+    buttonIcon: string;
+
+    /*
+     * Text displayed on the action button
+     */
+    buttonText: string;
 }
 
 const MaxRows = 3;
@@ -84,10 +99,17 @@ export default function SelectedUsers({
     teammateNameDisplay,
     warnCount,
     maxCount,
+    onPress,
     onRemove,
+    buttonIcon,
+    buttonText,
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+
+    const handleOnPress = useCallback(async () => {
+        onPress?.();
+    }, [onPress]);
 
     const users = useMemo(() => {
         const u = [];
@@ -158,9 +180,10 @@ export default function SelectedUsers({
             {message}
 
             <View style={style.buttonContainer}>
-                <BottomSheetButton
-                    icon={'forum-outline'}
-                    text={'  Start Conversation'}
+                <Button
+                    onPress={handleOnPress}
+                    icon={buttonIcon}
+                    text={buttonText}
                 />
             </View>
         </View>

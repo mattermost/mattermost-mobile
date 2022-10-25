@@ -25,7 +25,6 @@ import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 import SelectedUsers from './selected_users';
 import UserList from './user_list';
 
-const START_BUTTON = 'start-conversation';
 const CLOSE_BUTTON = 'close-dms';
 
 type Props = {
@@ -280,7 +279,7 @@ export default function CreateDirectMessage({
         }
     }, [searchUsers, clearSearch]);
 
-    const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
+    const updateNavigationButtons = useCallback(async () => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         setButtons(componentId, {
             leftButtons: [{
@@ -288,33 +287,19 @@ export default function CreateDirectMessage({
                 icon: closeIcon,
                 testID: 'close.create_direct_message.button',
             }],
-            rightButtons: [{
-                color: theme.sidebarHeaderTextColor,
-                id: START_BUTTON,
-                text: formatMessage({id: 'mobile.create_direct_message.start', defaultMessage: 'Start'}),
-                showAsAction: 'always',
-                enabled: startEnabled,
-                testID: 'create_direct_message.start.button',
-            }],
         });
     }, [intl.locale, theme]);
 
-    useNavButtonPressed(START_BUTTON, componentId, startConversation, [startConversation]);
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
     useEffect(() => {
         mounted.current = true;
-        updateNavigationButtons(false);
+        updateNavigationButtons();
         getProfiles();
         return () => {
             mounted.current = false;
         };
     }, []);
-
-    useEffect(() => {
-        const canStart = selectedCount > 0 && !startingConversation;
-        updateNavigationButtons(canStart);
-    }, [selectedCount > 0, startingConversation, updateNavigationButtons]);
 
     const data = useMemo(() => {
         if (term) {
@@ -354,8 +339,8 @@ export default function CreateDirectMessage({
             <View style={style.searchBar}>
                 <Search
                     testID='create_direct_message.search_bar'
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                    placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     onChangeText={onSearch}
                     onSubmitEditing={search}
@@ -385,6 +370,9 @@ export default function CreateDirectMessage({
                 maxCount={7}
                 onRemove={handleRemoveProfile}
                 teammateNameDisplay={teammateNameDisplay}
+                onPress={startConversation}
+                buttonIcon={'forum-outline'}
+                buttonText={formatMessage({id: 'create_direct_message.start', defaultMessage: 'Start Conversation'})}
             />
             }
         </SafeAreaView>
