@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useMemo} from 'react';
 import {ScrollView, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -37,7 +37,7 @@ type Props = {
     /*
      * A handler function that will deselect a user when clicked on.
      */
-    onPress?: (selectedId?: {[id: string]: boolean}) => void;
+    onPress: (selectedId?: {[id: string]: boolean}) => void;
 
     /*
      * A handler function that will deselect a user when clicked on.
@@ -113,9 +113,9 @@ export default function SelectedUsers({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
-    const handleOnPress = useCallback(async () => {
-        onPress?.();
-    }, [onPress]);
+    const handleOnPress = async () => {
+        onPress();
+    };
 
     const users = useMemo(() => {
         const u = [];
