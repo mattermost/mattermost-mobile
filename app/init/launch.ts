@@ -12,7 +12,7 @@ import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from 
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
-import {goToScreen, resetToHome, resetToSelectServer, resetToTeams} from '@screens/navigation';
+import {goToScreen, resetToHome, resetToSelectServer, resetToTeams, resetToOnboarding} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
@@ -58,6 +58,7 @@ const launchAppFromNotification = async (notification: NotificationWithData) => 
     launchApp(props);
 };
 
+// pablo - here I need to validate the logic for launching the onboarding screen
 const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     let serverUrl: string | undefined;
     switch (props?.launchType) {
@@ -126,7 +127,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
-    return launchToServer(props, resetNavigation);
+    return launchToOnboarding(props);
 };
 
 const launchToHome = async (props: LaunchProps) => {
@@ -178,6 +179,10 @@ const launchToServer = (props: LaunchProps, resetNavigation: Boolean) => {
     // the implementation of deep links is complete
     const title = '';
     return goToScreen(Screens.SERVER, title, {...props});
+};
+
+const launchToOnboarding = (props: LaunchProps) => {
+    return resetToOnboarding(props);
 };
 
 export const relaunchApp = (props: LaunchProps, resetNavigation = false) => {

@@ -67,6 +67,7 @@ if (global.HermesInternal) {
 let alreadyInitialized = false;
 Navigation.events().registerAppLaunchedListener(async () => {
     // See caution in the library doc https://wix.github.io/react-native-navigation/docs/app-launch#android
+    console.log('*** already init', alreadyInitialized);
     if (!alreadyInitialized) {
         alreadyInitialized = true;
         GlobalEventHandler.init();
@@ -82,7 +83,11 @@ Navigation.events().registerAppLaunchedListener(async () => {
         await WebsocketManager.init(serverCredentials);
         PushNotifications.init();
         SessionManager.init();
+        console.log('*** already init 2', alreadyInitialized);
     }
+
+    console.log('*** already init 3', alreadyInitialized);
+
 
     initialLaunch();
 });

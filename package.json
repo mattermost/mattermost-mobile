@@ -190,7 +190,7 @@
     "mmjstool": "mmjstool",
     "pod-install": "cd ios && bundle exec pod install",
     "postinstall": "patch-package && ./scripts/postinstall.sh",
-    "preinstall": "npx solidarity",
+    "preinstall": "",
     "prestorybook": "rnstl",
     "start": "react-native start",
     "storybook": "start-storybook -p 7007",

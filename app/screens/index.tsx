@@ -227,6 +227,8 @@ Navigation.setLazyComponentRegistrator((screenName) => {
 export function registerScreens() {
     const homeScreen = require('@screens/home').default;
     const serverScreen = require('@screens/server').default;
+    const onboardingScreen = require('@screens/onboarding').default;
+    Navigation.registerComponent(Screens.ONBOARDING, () => withGestures(withIntl(withManagedConfig<ManagedConfig>(onboardingScreen)), undefined));
     Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig<ManagedConfig>(serverScreen)), undefined));
     Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig<ManagedConfig>(homeScreen))), undefined));
 }

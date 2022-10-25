@@ -281,6 +281,54 @@ export function resetToSelectServer(passProps: LaunchProps) {
     });
 }
 
+export function resetToOnboarding(passProps: LaunchProps) {
+    const theme = getDefaultThemeByAppearance();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
+    NavigationStore.clearNavigationComponents();
+
+    const children = [{
+        component: {
+            id: Screens.ONBOARDING,
+            name: Screens.ONBOARDING,
+            passProps: {
+                ...passProps,
+                theme,
+            },
+            options: {
+                layout: {
+                    backgroundColor: theme.centerChannelBg,
+                    componentBackgroundColor: theme.centerChannelBg,
+                },
+                statusBar: {
+                    visible: true,
+                    backgroundColor: theme.sidebarBg,
+                },
+                topBar: {
+                    backButton: {
+                        color: theme.sidebarHeaderTextColor,
+                        title: '',
+                    },
+                    background: {
+                        color: theme.sidebarBg,
+                    },
+                    visible: false,
+                    height: 0,
+                },
+            },
+        },
+    }];
+
+    return Navigation.setRoot({
+        root: {
+            stack: {
+                children,
+            },
+        },
+    });
+}
+
 export function resetToTeams() {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
