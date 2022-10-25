@@ -6,6 +6,7 @@ import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid} from 'react-native';
+import {REACT_APP_PERFORMANCE_WEBHOOK} from 'react-native-dotenv';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -110,6 +111,16 @@ const ChannelListScreen = (props: ChannelProps) => {
         const back = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
         return () => back.remove();
     }, [handleBackPress]);
+
+    useEffect(() => {
+        if (REACT_APP_PERFORMANCE_WEBHOOK) {
+            fetch(`${REACT_APP_PERFORMANCE_WEBHOOK}/measure`, {
+                method: 'POST',
+                headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
+                body: JSON.stringify({measureId: 'login', type: 'end', measure: Date.now()}),
+            });
+        }
+    }, []);
 
     return (
         <FreezeScreen freeze={!isFocused}>

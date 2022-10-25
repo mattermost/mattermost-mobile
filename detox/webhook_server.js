@@ -38,6 +38,42 @@ server.post('/send_oauth_credentials', postSendOauthCredentials);
 server.get('/start_oauth', getStartOAuth);
 server.get('/complete_oauth', getCompleteOauth);
 server.post('/postOAuthMessage', postOAuthMessage);
+server.post('/start_measures', startMeasures);
+server.post('/finish_measures', finishMeasures);
+server.post('/measure', addMeasure);
+
+let measureId;
+let measures;
+function startMeasures(req, res) {
+    measureId = req.body.measureId;
+    measures = {};
+
+    return res.json({
+        message: 'OK',
+    });
+}
+
+function finishMeasures(req, res) {
+    const outRes = res.json({
+        measures,
+    });
+    measureId = '';
+    measures = [];
+    return outRes;
+}
+
+function addMeasure(req, res) {
+    if (measureId === req.body.measureId) {
+        const type = req.body.type;
+        if (!measures[type]) {
+            measures[type] = [];
+        }
+        measures[type].push(req.body.measure);
+    }
+    return res.json({
+        message: 'OK',
+    });
+}
 
 function ping(req, res) {
     const baseUrl = SITE_URL || 'http://localhost:8065';

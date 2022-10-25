@@ -58,7 +58,10 @@ export const apiEmailTest = async (baseUrl: string): Promise<any> => {
  */
 export const apiGetClientLicense = async (baseUrl: string): Promise<any> => {
     try {
-        const response = await client.get(`${baseUrl}/api/v4/license/client?format=old`);
+        const response = await client.get(
+            `${baseUrl}/api/v4/license/client`,
+            {params: {format: 'old'}},
+        );
 
         return {license: response.data};
     } catch (err) {
@@ -90,7 +93,10 @@ export const apiGetConfig = async (baseUrl: string): Promise<any> => {
  */
 export const apiPingServerStatus = async (baseUrl: string): Promise<any> => {
     try {
-        const response = await client.get(`${baseUrl}/api/v4/system/ping?get_server_status=true`);
+        const response = await client.get(
+            `${baseUrl}/api/v4/system/ping`,
+            {params: {get_server_status: true}},
+        );
         return {data: response.data};
     } catch (err) {
         return getResponseFromError(err);

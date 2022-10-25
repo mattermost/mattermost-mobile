@@ -103,7 +103,9 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
         modelPromises.push(...await prepareMyChannelsForTeam(operator, teamId, channels || [], memberships || []));
 
         const {roles} = await fetchRoles(serverUrl, teamMemberships, memberships, undefined, true);
-        modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
+        if (roles?.length) {
+            modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
+        }
     }
 
     if (teams && teamMemberships) {

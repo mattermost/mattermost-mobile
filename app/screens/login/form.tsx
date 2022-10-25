@@ -6,6 +6,7 @@ import React, {MutableRefObject, useCallback, useEffect, useMemo, useRef, useSta
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, TextInput, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
+import {REACT_APP_PERFORMANCE_WEBHOOK} from 'react-native-dotenv';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {login} from '@actions/remote/session';
@@ -122,6 +123,13 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     });
 
     const signIn = async () => {
+        if (REACT_APP_PERFORMANCE_WEBHOOK) {
+            fetch(`${REACT_APP_PERFORMANCE_WEBHOOK}/measure`, {
+                method: 'POST',
+                headers: {Accept: 'application/json', 'Content-Type': 'application/json'},
+                body: JSON.stringify({measureId: 'login', type: 'start', measure: Date.now()}),
+            });
+        }
         const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
             if (!result.hasTeams && !result.error) {
