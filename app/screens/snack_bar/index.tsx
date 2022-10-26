@@ -45,6 +45,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             position: 'absolute',
             bottom: 104,
         },
+        gestureRootChannelInfoAdjustment: {
+            bottom: 34,
+        },
         toast: {
             width: '100%',
             opacity: 1,
@@ -226,7 +229,9 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
     }, []);
 
     return (
-        <GestureHandlerRootView style={styles.gestureRoot}>
+        <GestureHandlerRootView
+            style={[styles.gestureRoot, sourceScreen === Screens.CHANNEL_INFO && styles.gestureRootChannelInfoAdjustment]}
+        >
             <GestureDetector gesture={gesture}>
                 <Animated.View
                     style={animatedMotion}
