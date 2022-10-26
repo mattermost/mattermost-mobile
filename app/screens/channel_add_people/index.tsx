@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
-import AddMembers from './add_members';
+import ChannelAddPeople from './channel_add_people';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -16,4 +16,4 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default withDatabase(enhanced(AddMembers));
+export default withDatabase(enhanced(ChannelAddPeople));

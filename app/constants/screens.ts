@@ -127,6 +127,7 @@ export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     BROWSE_CHANNELS,
     CHANNEL_INFO,
     CREATE_DIRECT_MESSAGE,
+    CHANNEL_ADD_PEOPLE,
     CREATE_TEAM,
     CUSTOM_STATUS,
     EDIT_POST,
@@ -156,7 +157,6 @@ export const OVERLAY_SCREENS = new Set<string>([
 ]);
 
 export const NOT_READY = [
-    CHANNEL_ADD_PEOPLE,
     CHANNEL_MENTION,
     CREATE_TEAM,
     INTEGRATION_SELECTOR,

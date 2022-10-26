@@ -38,7 +38,7 @@ const close = () => {
     dismissModal();
 };
 
-export default function AddMembers({
+export default function ChannelAddPeople({
     componentId,
     teammateNameDisplay,
 }: Props) {
