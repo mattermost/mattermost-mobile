@@ -29,12 +29,13 @@ const style = StyleSheet.create({
 
 type Props = {
     children: React.ReactNode;
+    threadScreen?: boolean;
 }
 
-const FloatingCallContainer = (props: Props) => {
+const FloatingCallContainer = ({threadScreen, ...props}: Props) => {
     const insets = useSafeAreaInsets();
     const wrapperTop = {
-        top: topBarHeight + insets.top,
+        top: insets.top + (threadScreen ? 0 : topBarHeight),
     };
 
     return (
