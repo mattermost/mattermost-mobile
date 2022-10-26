@@ -23,8 +23,8 @@ const messages = defineMessages({
         defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
     },
     buttonText: {
-        id: t('create_direct_message.start'),
-        defaultMessage: 'Start Conversation',
+        id: t('mobile.channel_add_people.title'),
+        defaultMessage: 'Add Members',
     },
 });
 
@@ -93,7 +93,7 @@ export default function ChannelAddPeople({
     return (
         <MembersModal
             componentId={componentId}
-            selectUsersButtonIcon={'forum-outline'}
+            selectUsersButtonIcon={'account-plus-outline'}
             selectUsersButtonText={intl.formatMessage(messages.buttonText)}
             selectUsersMax={7}
             selectUsersWarn={5}
