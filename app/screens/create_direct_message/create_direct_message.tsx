@@ -12,7 +12,7 @@ import {dismissModal} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {displayUsername} from '@utils/user';
 
-import MembersModal from './members_modal/members_modal';
+import MembersModal from './members_modal';
 
 const messages = defineMessages({
     dm: {
@@ -31,11 +31,7 @@ const messages = defineMessages({
 
 type Props = {
     componentId: string;
-    currentTeamId: string;
-    currentUserId: string;
-    restrictDirectMessage: boolean;
     teammateNameDisplay: string;
-    tutorialWatched: boolean;
 }
 
 const close = () => {
@@ -45,11 +41,7 @@ const close = () => {
 
 export default function CreateDirectMessage({
     componentId,
-    currentTeamId,
-    currentUserId,
-    restrictDirectMessage,
     teammateNameDisplay,
-    tutorialWatched,
 }: Props) {
     const serverUrl = useServerUrl();
     const intl = useIntl();
@@ -102,9 +94,6 @@ export default function CreateDirectMessage({
     return (
         <MembersModal
             componentId={componentId}
-            currentTeamId={currentTeamId}
-            currentUserId={currentUserId}
-            restrictDirectMessage={restrictDirectMessage}
             selectUsersButtonIcon={'forum-outline'}
             selectUsersButtonText={intl.formatMessage(messages.buttonText)}
             selectUsersMax={7}
@@ -113,8 +102,6 @@ export default function CreateDirectMessage({
             setSelectedIds={setSelectedIds}
             startConversation={startConversation}
             startingConversation={startingConversation}
-            teammateNameDisplay={teammateNameDisplay}
-            tutorialWatched={tutorialWatched}
         />
     );
 }
