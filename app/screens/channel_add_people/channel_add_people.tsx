@@ -5,7 +5,7 @@ import React, {useCallback, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard} from 'react-native';
 
-import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
+import {addMembersToChannel, makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import MembersModal from '@screens/members_modal';
@@ -30,6 +30,7 @@ const messages = defineMessages({
 
 type Props = {
     componentId: string;
+    currentChannelId: string;
     teammateNameDisplay: string;
 }
 
@@ -40,6 +41,7 @@ const close = () => {
 
 export default function ChannelAddPeople({
     componentId,
+    currentChannelId,
     teammateNameDisplay,
 }: Props) {
     const serverUrl = useServerUrl();
@@ -48,23 +50,16 @@ export default function ChannelAddPeople({
     const [startingConversation, setStartingConversation] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
 
-    const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
-        const user = selectedIds[id];
-        const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
-        const result = await makeDirectChannel(serverUrl, id, displayName);
+    const addMembers = useCallback(async (ids: string[]): Promise<boolean> => {
+        // addMembersToChannel(serverUrl: string, channelId: string, userIds: string[], postRootId = '', fetchOnly = false) {
+        console.log('currentChannelId', currentChannelId);
+        console.log('ids', ids);
+        const result = await addMembersToChannel(serverUrl, currentChannelId, ids);
         if (result.error) {
-            alertErrorWithFallback(intl, result.error, messages.dm, {displayName});
+            alertErrorWithFallback(intl, result.error, messages.dm);
         }
         return !result.error;
     }, [selectedIds, intl.locale, teammateNameDisplay, serverUrl]);
-
-    const createGroupChannel = useCallback(async (ids: string[]): Promise<boolean> => {
-        const result = await makeGroupChannel(serverUrl, ids);
-        if (result.error) {
-            alertErrorWithFallback(intl, result.error, messages.gm);
-        }
-        return !result.error;
-    }, [serverUrl]);
 
     const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
         if (startingConversation) {
@@ -77,10 +72,10 @@ export default function ChannelAddPeople({
         let success;
         if (idsToUse.length === 0) {
             success = false;
-        } else if (idsToUse.length > 1) {
-            success = await createGroupChannel(idsToUse);
         } else {
-            success = await createDirectChannel(idsToUse[0]);
+            console.log('. IN HERE!');
+
+            success = await addMembers(idsToUse);
         }
 
         if (success) {
@@ -88,7 +83,7 @@ export default function ChannelAddPeople({
         } else {
             setStartingConversation(false);
         }
-    }, [startingConversation, selectedIds, createGroupChannel, createDirectChannel]);
+    }, [startingConversation, selectedIds, addMembers]);
 
     return (
         <MembersModal
