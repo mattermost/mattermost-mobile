@@ -19,8 +19,8 @@ import {dismissModal, setButtons} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
-import SelectedUsers from '../selected_users';
-import UserList from '../user_list';
+import SelectedUsers from './selected_users';
+import UserList from './user_list';
 
 const CLOSE_BUTTON = 'close-dms';
 

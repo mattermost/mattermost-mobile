@@ -38,7 +38,7 @@ const close = () => {
     dismissModal();
 };
 
-export default function CreateDirectMessage({
+export default function AddMembers({
     componentId,
     teammateNameDisplay,
 }: Props) {
