@@ -9,6 +9,7 @@ import {
     View,
 } from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import {useTheme} from '@context/theme';
@@ -66,9 +67,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         text: {
             color: theme.centerChannelColor,
-            fontSize: 14,
-            lineHeight: 15,
-            fontFamily: 'OpenSans',
+            ...typography('Body', 100, 'SemiBold'),
         },
     };
 });

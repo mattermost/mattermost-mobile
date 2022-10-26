@@ -78,7 +78,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             shadowRadius: 24,
         },
         buttonContainer: {
-            marginVertical: 20,
+            marginTop: 12,
         },
         containerUsers: {
             marginTop: 20,
