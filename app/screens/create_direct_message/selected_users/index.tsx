@@ -82,7 +82,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         containerUsers: {
             marginTop: 20,
-            maxHeight: (USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN) * MAX_ROWS,
+            maxHeight: ((USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN) * MAX_ROWS) + (0.33 * USER_CHIP_HEIGHT),
         },
         users: {
             alignItems: 'flex-start',
