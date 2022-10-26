@@ -23,6 +23,10 @@ const messages = defineMessages({
         id: t('mobile.open_gm.error'),
         defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
     },
+    buttonText: {
+        id: t('create_direct_message.start'),
+        defaultMessage: 'Start Conversation',
+    },
 });
 
 type Props = {
@@ -101,6 +105,10 @@ export default function CreateDirectMessage({
             currentTeamId={currentTeamId}
             currentUserId={currentUserId}
             restrictDirectMessage={restrictDirectMessage}
+            selectUsersButtonIcon={'forum-outline'}
+            selectUsersButtonText={intl.formatMessage(messages.buttonText)}
+            selectUsersMax={7}
+            selectUsersWarn={5}
             selectedIds={selectedIds}
             setSelectedIds={setSelectedIds}
             startConversation={startConversation}

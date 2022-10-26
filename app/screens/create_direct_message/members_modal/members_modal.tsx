@@ -25,14 +25,18 @@ import UserList from '../user_list';
 const CLOSE_BUTTON = 'close-dms';
 
 type Props = {
-    startConversation: (selectedId?: {[id: string]: boolean}) => void;
-    startingConversation: boolean;
     componentId: string;
     currentTeamId: string;
     currentUserId: string;
     restrictDirectMessage: boolean;
+    selectUsersButtonIcon: string;
+    selectUsersButtonText: string;
+    selectUsersMax: number;
+    selectUsersWarn: number;
     selectedIds: {[id: string]: UserProfile};
     setSelectedIds: (ids: {[id: string]: UserProfile}) => void;
+    startConversation: (selectedId?: {[id: string]: boolean}) => void;
+    startingConversation: boolean;
     teammateNameDisplay: string;
     tutorialWatched: boolean;
 }
@@ -85,7 +89,11 @@ export default function MembersModal({
     componentId,
     currentTeamId,
     currentUserId,
+    selectUsersMax,
+    selectUsersWarn,
     restrictDirectMessage,
+    selectUsersButtonIcon,
+    selectUsersButtonText,
     selectedIds,
     setSelectedIds,
     startConversation,
@@ -109,7 +117,6 @@ export default function MembersModal({
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
 
-    // const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const selectedCount = Object.keys(selectedIds).length;
 
     const isSearch = Boolean(term);
@@ -225,7 +232,7 @@ export default function MembersModal({
             leftButtons: [{
                 id: CLOSE_BUTTON,
                 icon: closeIcon,
-                testID: 'close.create_direct_message.button',
+                testID: 'close.button',
             }],
         });
     }, [intl.locale, theme]);
@@ -274,11 +281,11 @@ export default function MembersModal({
     return (
         <SafeAreaView
             style={style.container}
-            testID='create_direct_message.screen'
+            testID='members.screen'
         >
             <View style={style.searchBar}>
                 <Search
-                    testID='create_direct_message.search_bar'
+                    testID='search_bar'
                     placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
@@ -300,19 +307,19 @@ export default function MembersModal({
                 teammateNameDisplay={teammateNameDisplay}
                 fetchMore={getProfiles}
                 term={term}
-                testID='create_direct_message.user_list'
+                testID='user_list'
                 tutorialWatched={tutorialWatched}
             />
             {selectedCount > 0 &&
             <SelectedUsers
                 selectedIds={selectedIds}
-                warnCount={5}
-                maxCount={7}
+                warnCount={selectUsersWarn}
+                maxCount={selectUsersMax}
                 onRemove={handleRemoveProfile}
                 teammateNameDisplay={teammateNameDisplay}
                 onPress={startConversation}
-                buttonIcon={'forum-outline'}
-                buttonText={formatMessage({id: 'create_direct_message.start', defaultMessage: 'Start Conversation'})}
+                buttonIcon={selectUsersButtonIcon}
+                buttonText={selectUsersButtonText}
             />
             }
         </SafeAreaView>
