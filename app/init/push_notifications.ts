@@ -95,19 +95,38 @@ class PushNotifications {
             const isTabletDevice = await isTablet();
             const displayName = await queryServerName(DatabaseManager.appDatabase!.database, serverUrl);
             const channelId = await getCurrentChannelId(database);
+            const isCRTEnabled = await getIsCRTEnabled(database);
             let serverName;
             if (Object.keys(DatabaseManager.serverDatabases).length > 1) {
                 serverName = displayName;
             }
 
-            const isDifferentChannel = payload?.channel_id !== channelId;
-            const isVisibleThread = payload?.root_id === EphemeralStore.getCurrentThreadId();
-            let isChannelScreenVisible = NavigationStore.getNavigationTopComponentId() === Screens.CHANNEL;
-            if (isTabletDevice) {
-                isChannelScreenVisible = NavigationStore.getVisibleTab() === Screens.HOME;
-            }
+            const isThreadNotification = Boolean(payload?.root_id);
 
-            if (isDifferentChannel || (!isChannelScreenVisible && !isVisibleThread)) {
+            const isSameChannelNotification = payload?.channel_id === channelId;
+            const isSameThreadNotification = isThreadNotification && payload?.root_id === EphemeralStore.getCurrentThreadId();
+
+            let isInChannelScreen = NavigationStore.getNavigationTopComponentId() === Screens.CHANNEL;
+            if (isTabletDevice) {
+                isInChannelScreen = NavigationStore.getVisibleTab() === Screens.HOME;
+            }
+            const isInThreadScreen = NavigationStore.getNavigationTopComponentId() === Screens.THREAD;
+
+            // Conditions:
+            // 1. If not in channel screen or thread screen, show the notification
+            const condition1 = !isInChannelScreen && !isInThreadScreen;
+
+            // 2. If is in channel screen,
+            //      - Show notifications of other channels
+            //        or
+            //      - Show If CRT is enabled, show thread notifications even if it belongs to the same channel
+            const condition2 = isInChannelScreen && (!isSameChannelNotification || (isCRTEnabled && isThreadNotification));
+
+            // 3. If is in thread screen,
+            //      - If notification doesn't belong to the thread, show the notification
+            const condition3 = isInThreadScreen && !isSameThreadNotification;
+
+            if (condition1 || condition2 || condition3) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
 
                 const screen = Screens.IN_APP_NOTIFICATION;
