@@ -17,6 +17,7 @@ import ShowMoreButton from './show_more';
 
 const MODIFIER_LABEL_HEIGHT = 48;
 const TEAM_PICKER_ICON_SIZE = 32;
+const SHOW_ITEMS = 4;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -47,19 +48,23 @@ const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
             term: 'In:',
             testID: 'search.in_section',
             description: formatMessage({id: 'mobile.search.modifier.in', defaultMessage: ' a specific channel'}),
-        }, {
-            term: 'On:',
-            testID: 'search.on_section',
-            description: formatMessage({id: 'mobile.search.modifier.on', defaultMessage: ' a specific date'}),
-        }, {
-            term: 'After:',
-            testID: 'search.after_section',
-            description: formatMessage({id: 'mobile.search.modifier.after', defaultMessage: ' after a date'}),
-        }, {
-            term: 'Before:',
-            testID: 'search.before_section',
-            description: formatMessage({id: 'mobile.search.modifier.before', defaultMessage: ' before a date'}),
-        }, {
+        },
+
+        // {
+        //     term: 'On:',
+        //     testID: 'search.on_section',
+        //     description: formatMessage({id: 'mobile.search.modifier.on', defaultMessage: ' a specific date'}),
+        // },
+        // {
+        //     term: 'After:',
+        //     testID: 'search.after_section',
+        //     description: formatMessage({id: 'mobile.search.modifier.after', defaultMessage: ' after a date'}),
+        // }, {
+        //     term: 'Before:',
+        //     testID: 'search.before_section',
+        //     description: formatMessage({id: 'mobile.search.modifier.before', defaultMessage: ' before a date'}),
+        // },
+        {
             term: '-',
             testID: 'search.exclude_section',
             description: formatMessage({id: 'mobile.search.modifier.exclude', defaultMessage: ' exclude search terms'}),
@@ -83,14 +88,14 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
     const intl = useIntl();
 
     const [showMore, setShowMore] = useState(false);
-    const show = useSharedValue(3 * MODIFIER_LABEL_HEIGHT);
+    const height = useSharedValue(SHOW_ITEMS * MODIFIER_LABEL_HEIGHT);
     const data = useMemo(() => getModifiersSectionsData(intl), [intl]);
 
     const styles = getStyleFromTheme(theme);
     const animatedStyle = useAnimatedStyle(() => (
         {
             width: '100%',
-            height: withTiming(show.value, {duration: 300}),
+            height: withTiming(height.value, {duration: 300}),
             overflow: 'hidden',
         }
     ));
@@ -98,7 +103,7 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
     const handleShowMore = useCallback(() => {
         const nextShowMore = !showMore;
         setShowMore(nextShowMore);
-        show.value = (nextShowMore ? data.length : 3) * MODIFIER_LABEL_HEIGHT;
+        height.value = (nextShowMore ? data.length : SHOW_ITEMS) * MODIFIER_LABEL_HEIGHT;
     }, [showMore]);
 
     const renderModifier = (item: ModifierItem) => {
@@ -129,10 +134,12 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
             <Animated.View style={animatedStyle}>
                 {data.map((item) => renderModifier(item))}
             </Animated.View>
-            <ShowMoreButton
-                onPress={handleShowMore}
-                showMore={showMore}
-            />
+            {data.length > SHOW_ITEMS &&
+                <ShowMoreButton
+                    onPress={handleShowMore}
+                    showMore={showMore}
+                />
+            }
         </>
     );
 };
