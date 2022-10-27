@@ -52,7 +52,7 @@ export default function PostPriorityAction({
                 onSubmit={handlePostPriorityPicker}
             />
         );
-    }, [postProps]);
+    }, [handlePostPriorityPicker, postProps]);
 
     const onPress = useCallback(() => {
         bottomSheet({
