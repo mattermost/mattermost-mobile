@@ -11,7 +11,7 @@ import {
     setChannelsWithCalls,
     setCurrentCall,
 } from '@calls/state';
-import {Call, CallsConfig, ChannelsWithCalls} from '@calls/types/calls';
+import {Call, CallsConfig, ChannelsWithCalls, DefaultCall} from '@calls/types/calls';
 
 export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
@@ -86,18 +86,6 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
         };
         setCurrentCall(nextCurrentCall);
     }
-
-    // Was it me that joined the call?
-    if (callsState.myUserId === userId) {
-        setCurrentCall({
-            ...nextCall,
-            participants: {...nextCall.participants},
-            serverUrl,
-            myUserId: userId,
-            screenShareURL: '',
-            speakerphoneOn: false,
-        });
-    }
 };
 
 export const userLeftCall = (serverUrl: string, channelId: string, userId: string) => {
@@ -143,6 +131,22 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
     };
     delete nextCurrentCall.participants[userId];
     setCurrentCall(nextCurrentCall);
+};
+
+export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: string) => {
+    let existingCall: Call = DefaultCall;
+    const callsState = getCallsState(serverUrl);
+    if (callsState.calls[channelId]) {
+        existingCall = callsState.calls[channelId];
+    }
+
+    setCurrentCall({
+        ...existingCall,
+        serverUrl,
+        myUserId,
+        screenShareURL: '',
+        speakerphoneOn: false,
+    });
 };
 
 export const myselfLeftCall = () => {

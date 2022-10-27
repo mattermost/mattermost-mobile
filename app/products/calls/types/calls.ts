@@ -11,12 +11,12 @@ export type CallsState = {
     enabled: Dictionary<boolean>;
 }
 
-export const DefaultCallsState = {
+export const DefaultCallsState: CallsState = {
     serverUrl: '',
     myUserId: '',
     calls: {} as Dictionary<Call>,
     enabled: {} as Dictionary<boolean>,
-} as CallsState;
+};
 
 export type Call = {
     participants: Dictionary<CallParticipant>;
@@ -27,22 +27,18 @@ export type Call = {
     ownerId: string;
 }
 
-export const DefaultCall = {
+export const DefaultCall: Call = {
     participants: {} as Dictionary<CallParticipant>,
     channelId: '',
     startTime: 0,
     screenOn: '',
     threadId: '',
+    ownerId: '',
 };
 
-export type CurrentCall = {
+export type CurrentCall = Call & {
     serverUrl: string;
     myUserId: string;
-    participants: Dictionary<CallParticipant>;
-    channelId: string;
-    startTime: number;
-    screenOn: string;
-    threadId: string;
     screenShareURL: string;
     speakerphoneOn: boolean;
 }

@@ -6,6 +6,7 @@ import assert from 'assert';
 import {act, renderHook} from '@testing-library/react-hooks';
 
 import {
+    newCurrentCall,
     setCallsState,
     setChannelsWithCalls,
     setCurrentCall,
@@ -490,6 +491,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test
+        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
         act(() => userJoinedCall('server1', 'channel-1', 'myUserId'));
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], expectedCurrentCallState);
@@ -560,6 +562,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test joining a call and setting url:
+        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
         act(() => userJoinedCall('server1', 'channel-1', 'myUserId'));
         assert.deepEqual((result.current[1] as CurrentCall | null)?.screenShareURL, '');
         act(() => setScreenShareURL('testUrl'));
@@ -603,6 +606,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test
+        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
         act(() => userJoinedCall('server1', 'channel-1', 'myUserId'));
         assert.deepEqual((result.current[1] as CurrentCall | null)?.speakerphoneOn, false);
         act(() => setSpeakerPhone(true));

@@ -8,7 +8,6 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import {
     getCallsConfig,
     getCallsState,
-    myselfLeftCall,
     setCalls,
     setChannelEnabled,
     setConfig,
@@ -218,7 +217,7 @@ export const enableChannelCalls = async (serverUrl: string, channelId: string, e
     return {};
 };
 
-export const joinCall = async (serverUrl: string, channelId: string): Promise<{ error?: string | Error; data?: string }> => {
+export const joinCall = async (serverUrl: string, channelId: string, userId: string): Promise<{ error?: string | Error; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
     const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
@@ -233,7 +232,7 @@ export const joinCall = async (serverUrl: string, channelId: string): Promise<{ 
     setSpeakerphoneOn(false);
 
     try {
-        connection = await newConnection(serverUrl, channelId, () => null, setScreenShareURL);
+        connection = await newConnection(serverUrl, channelId, userId, () => null, setScreenShareURL);
     } catch (error: unknown) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error: error as Error};
@@ -255,7 +254,6 @@ export const leaveCall = () => {
         connection = null;
     }
     setSpeakerphoneOn(false);
-    myselfLeftCall();
 };
 
 export const muteMyself = () => {

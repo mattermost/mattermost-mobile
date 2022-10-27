@@ -11,6 +11,8 @@ import {getConnectionForTesting} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
 import * as State from '@calls/state';
 import {
+    myselfLeftCall,
+    newCurrentCall,
     setCallsConfig,
     setCallsState,
     setChannelsWithCalls,
@@ -139,7 +141,10 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId');
+
+            // manually call newCurrentConnection because newConnection is mocked
+            newCurrentCall('server1', 'channel-id', 'myUserId');
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
 
@@ -163,7 +168,10 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId');
+
+            // manually call newCurrentConnection because newConnection is mocked
+            newCurrentCall('server1', 'channel-id', 'myUserId');
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');
@@ -174,6 +182,9 @@ describe('Actions.Calls', () => {
 
         await act(async () => {
             CallsActions.leaveCall();
+
+            // because disconnect is mocked
+            myselfLeftCall();
         });
 
         expect(disconnectMock).toBeCalled();
@@ -191,7 +202,10 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId');
+
+            // manually call newCurrentConnection because newConnection is mocked
+            newCurrentCall('server1', 'channel-id', 'myUserId');
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');
@@ -218,7 +232,10 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'mysUserId');
+
+            // manually call newCurrentConnection because newConnection is mocked
+            newCurrentCall('server1', 'channel-id', 'myUserId');
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');

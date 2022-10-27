@@ -5,6 +5,8 @@ import {Alert} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, unmuteMyself} from '@calls/actions';
 import {errorAlert} from '@calls/utils';
+import DatabaseManager from '@database/manager';
+import {getCurrentUser} from '@queries/servers/user';
 
 import type {IntlShape} from 'react-intl';
 
@@ -89,6 +91,13 @@ export const leaveAndJoinWithAlert = (
 const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolean, intl: IntlShape) => {
     const {formatMessage} = intl;
 
+    const serverDatabase = await DatabaseManager.getActiveServerDatabase();
+    const user = await getCurrentUser(serverDatabase!);
+    if (!user) {
+        // This shouldn't happen, so don't bother localizing and displaying an alert.
+        return;
+    }
+
     const hasPermission = await hasMicrophonePermission(intl);
     if (!hasPermission) {
         errorAlert(formatMessage({
@@ -98,7 +107,7 @@ const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolea
         return;
     }
 
-    const res = await joinCall(serverUrl, channelId);
+    const res = await joinCall(serverUrl, channelId, user.id);
     if (res.error) {
         const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);
