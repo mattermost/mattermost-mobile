@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {ScrollView, View} from 'react-native';
+import {KeyboardAvoidingView, NativeModules, Platform, ScrollView, View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -56,11 +57,11 @@ type Props = {
 }
 
 const MAX_ROWS = 3;
+const NAVBAR_HEADER_HEIGHT = 64;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            flexShrink: 1,
             backgroundColor: theme.centerChannelBg,
             borderBottomWidth: 0,
             borderColor: changeOpacity(theme.centerChannelColor, 0.16),
@@ -85,7 +86,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             maxHeight: ((USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN) * MAX_ROWS) + (0.33 * USER_CHIP_HEIGHT),
         },
         users: {
-            alignItems: 'flex-start',
             flexDirection: 'row',
             flexGrow: 1,
             flexWrap: 'wrap',
@@ -112,6 +112,8 @@ export default function SelectedUsers({
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+    const {StatusBarManager} = NativeModules;
+    const isTablet = useIsTablet();
 
     const handleOnPress = async () => {
         onPress();
@@ -174,25 +176,32 @@ export default function SelectedUsers({
         return null;
     }, [users.length >= maxCount, showWarn && users.length, theme, maxCount]);
 
-    return (
-        <View style={style.container}>
-            <View style={style.containerUsers}>
-                <ScrollView
-                    contentContainerStyle={style.users}
-                >
-                    {users}
-                </ScrollView>
-            </View>
-            {message}
+    const keyboardVerticalOffset = StatusBarManager.HEIGHT + NAVBAR_HEADER_HEIGHT;
+    const marginBottom = isTablet ? 20 : 0;
 
-            <View style={style.buttonContainer}>
-                <Button
-                    onPress={handleOnPress}
-                    icon={buttonIcon}
-                    text={buttonText}
-                />
+    return (
+        <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+            keyboardVerticalOffset={keyboardVerticalOffset}
+        >
+            <View style={style.container} >
+                <View style={style.containerUsers}>
+                    <ScrollView
+                        contentContainerStyle={style.users}
+                    >
+                        {users}
+                    </ScrollView>
+                </View>
+                {message}
+                <View style={[style.buttonContainer, {marginBottom}]}>
+                    <Button
+                        onPress={handleOnPress}
+                        icon={buttonIcon}
+                        text={buttonText}
+                    />
+                </View>
             </View>
-        </View>
+        </KeyboardAvoidingView>
     );
 }
 

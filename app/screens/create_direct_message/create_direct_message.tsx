@@ -364,16 +364,16 @@ export default function CreateDirectMessage({
                 tutorialWatched={tutorialWatched}
             />
             {selectedCount > 0 &&
-            <SelectedUsers
-                selectedIds={selectedIds}
-                warnCount={5}
-                maxCount={7}
-                onRemove={handleRemoveProfile}
-                teammateNameDisplay={teammateNameDisplay}
-                onPress={startConversation}
-                buttonIcon={'forum-outline'}
-                buttonText={formatMessage({id: 'create_direct_message.start', defaultMessage: 'Start Conversation'})}
-            />
+                <SelectedUsers
+                    selectedIds={selectedIds}
+                    warnCount={5}
+                    maxCount={7}
+                    onRemove={handleRemoveProfile}
+                    teammateNameDisplay={teammateNameDisplay}
+                    onPress={startConversation}
+                    buttonIcon={'forum-outline'}
+                    buttonText={formatMessage({id: 'create_direct_message.start', defaultMessage: 'Start Conversation'})}
+                />
             }
         </SafeAreaView>
     );
