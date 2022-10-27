@@ -15,6 +15,7 @@ type Props = {
     theme: Theme;
     scrollX: any;
     nextSlideHandler: any;
+    signInHandler: any;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -42,7 +43,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Paginator = ({theme, data, scrollX, nextSlideHandler}: Props) => {
+const Paginator = ({
+    theme,
+    data,
+    scrollX,
+    nextSlideHandler,
+    signInHandler,
+}: Props) => {
     const styles = getStyleSheet(theme);
     const {width} = useWindowDimensions();
 
@@ -87,6 +94,17 @@ const Paginator = ({theme, data, scrollX, nextSlideHandler}: Props) => {
                     <CompassIcon
                         name='arrow-forward-ios'
                         style={styles.rowIcon}
+                    />
+                </Button>
+                <Button
+                    testID='mobile.onboaring.sign_in'
+                    onPress={() => signInHandler()}
+                    containerStyle={[styles.button, buttonBackgroundStyle(theme, 'lg', 'link', 'default')]}
+                >
+                    <FormattedText
+                        id='mobile.onboarding.sign_in'
+                        defaultMessage='Sign in'
+                        style={buttonTextStyle(theme, 'm', 'primary', 'inverted')}
                     />
                 </Button>
             </View>

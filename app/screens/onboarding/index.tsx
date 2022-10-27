@@ -40,6 +40,9 @@ const Onboarding = ({
             console.log('*** end of slide');
         }
     };
+    const signInHandler = () => {
+        console.log('sign in handler');
+    };
 
     const transform = useAnimatedStyle(() => {
         const duration = Platform.OS === 'android' ? 250 : 350;
@@ -81,7 +84,7 @@ const Onboarding = ({
                     renderItem={renderSlide}
                     listKey={generateId()}
                     horizontal={true}
-                    showsHorizontalScrollIndicator={true}
+                    showsHorizontalScrollIndicator={false}
                     pagingEnabled={true}
                     bounces={false}
                     onScroll={Animated.event([{nativeEvent: {contentOffset: {x: scrollX}}}], {
@@ -98,6 +101,7 @@ const Onboarding = ({
                 theme={theme}
                 scrollX={scrollX}
                 nextSlideHandler={nextSlide}
+                signInHandler={signInHandler}
             />
         </View>
     );
