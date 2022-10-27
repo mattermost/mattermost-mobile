@@ -27,19 +27,30 @@ const Onboarding = ({
     const translateX = useSharedValue(0);
     const styles = getStyleSheet(theme);
     const [currentIndex, setCurrentIndex] = useState(0);
+    const [isLastSlide, setIsLastSlide] = useState(false);
+    const lastSlideIndex = slidesData.length - 1;
     const slidesRef = useRef(null);
 
     const nextSlide = () => {
-        console.log('\n*** slidesRef 1\n');
-        if (slidesRef.current && currentIndex < slidesData.length - 1) {
-            console.log('\n*** slidesRef 2\n');
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-ignore
-            slidesRef.current.scrollToIndex({index: currentIndex + 1});
+        const nextSlideIndex = currentIndex + 1;
+        if (slidesRef.current && currentIndex < lastSlideIndex) {
+            console.log('*** current slide', currentIndex);
+            console.log('*** next slide', nextSlideIndex);
+            moveToSlide(nextSlideIndex);
         } else {
-            console.log('*** end of slide');
+            console.log('*** end of slide', lastSlideIndex);
         }
     };
+
+    const moveToSlide = (slideIndexToMove: number) => {
+        if (slideIndexToMove === lastSlideIndex) {
+            setIsLastSlide(true);
+        }
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        slidesRef?.current?.scrollToIndex({index: slideIndexToMove});
+    };
+
     const signInHandler = () => {
         console.log('sign in handler');
     };
@@ -100,8 +111,10 @@ const Onboarding = ({
                 data={slidesData}
                 theme={theme}
                 scrollX={scrollX}
+                isLastSlide={isLastSlide}
                 nextSlideHandler={nextSlide}
                 signInHandler={signInHandler}
+                moveToSlide={moveToSlide}
             />
         </View>
     );

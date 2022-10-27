@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View, Animated, useWindowDimensions} from 'react-native';
+import {View, Animated, useWindowDimensions, TouchableOpacity} from 'react-native';
 import Button from 'react-native-button';
 
 import CompassIcon from '@app/components/compass_icon';
@@ -14,8 +14,10 @@ type Props = {
     data: any;
     theme: Theme;
     scrollX: any;
+    isLastSlide: boolean;
     nextSlideHandler: any;
     signInHandler: any;
+    moveToSlide: any;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -49,9 +51,38 @@ const Paginator = ({
     scrollX,
     nextSlideHandler,
     signInHandler,
+    moveToSlide,
+    isLastSlide,
 }: Props) => {
     const styles = getStyleSheet(theme);
     const {width} = useWindowDimensions();
+
+    let mainButtonText = (
+        <>
+            <FormattedText
+                id='mobile.onboarding.next'
+                defaultMessage='Next'
+                style={buttonTextStyle(theme, 'm', 'primary', 'default')}
+            />
+            <CompassIcon
+                name='arrow-forward-ios'
+                style={styles.rowIcon}
+            />
+        </>
+    );
+
+    let mainButtonAction = nextSlideHandler;
+
+    if (isLastSlide) {
+        mainButtonText = (
+            <FormattedText
+                id='mobile.onboarding.sign_in_to_get_started'
+                defaultMessage='Sign in to get started'
+                style={buttonTextStyle(theme, 'm', 'primary', 'default')}
+            />
+        );
+        mainButtonAction = signInHandler;
+    }
 
     return (
         <View style={{flexDirection: 'column', height: 150}}>
@@ -66,35 +97,32 @@ const Paginator = ({
                     });
 
                     return (
-                        <Animated.View
-                            style={[styles.dot, {
-                                shadowOffset: {width: 0, height: 13},
-                                shadowOpacity: 0.7,
-                                shadowColor: theme.buttonBg,
-                                shadowRadius: 6,
-                                elevation: 3,
-                                opacity,
-                            }]}
+                        <TouchableOpacity
+                            onPress={() => moveToSlide(i)}
                             key={item.id}
-                        />
+                        >
+                            <Animated.View
+                                style={[styles.dot, {
+                                    shadowOffset: {width: 0, height: 13},
+                                    shadowOpacity: 0.7,
+                                    shadowColor: theme.buttonBg,
+                                    shadowRadius: 6,
+                                    elevation: 3,
+                                    opacity,
+                                }]}
+                                key={item.id}
+                            />
+                        </TouchableOpacity>
                     );
                 })}
             </View>
             <View style={{marginTop: 15}}>
                 <Button
                     testID='mobile.onboaring.next'
-                    onPress={() => nextSlideHandler()}
-                    containerStyle={[styles.button, buttonBackgroundStyle(theme, 'm', 'primary', 'default')]}
+                    onPress={() => mainButtonAction()}
+                    containerStyle={[styles.button, buttonBackgroundStyle(theme, 'lg', 'primary', 'default')]}
                 >
-                    <FormattedText
-                        id='mobile.onboarding.next'
-                        defaultMessage='Next'
-                        style={buttonTextStyle(theme, 'm', 'primary', 'default')}
-                    />
-                    <CompassIcon
-                        name='arrow-forward-ios'
-                        style={styles.rowIcon}
-                    />
+                    {mainButtonText}
                 </Button>
                 <Button
                     testID='mobile.onboaring.sign_in'
