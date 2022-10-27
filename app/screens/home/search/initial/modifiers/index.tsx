@@ -17,7 +17,7 @@ import ShowMoreButton from './show_more';
 
 const MODIFIER_LABEL_HEIGHT = 48;
 const TEAM_PICKER_ICON_SIZE = 32;
-const SHOW_ITEMS = 4;
+const NUM_ITEMS_BEFORE_EXPAND = 4;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -88,7 +88,7 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
     const intl = useIntl();
 
     const [showMore, setShowMore] = useState(false);
-    const height = useSharedValue(SHOW_ITEMS * MODIFIER_LABEL_HEIGHT);
+    const height = useSharedValue(NUM_ITEMS_BEFORE_EXPAND * MODIFIER_LABEL_HEIGHT);
     const data = useMemo(() => getModifiersSectionsData(intl), [intl]);
 
     const styles = getStyleFromTheme(theme);
@@ -103,7 +103,7 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
     const handleShowMore = useCallback(() => {
         const nextShowMore = !showMore;
         setShowMore(nextShowMore);
-        height.value = (nextShowMore ? data.length : SHOW_ITEMS) * MODIFIER_LABEL_HEIGHT;
+        height.value = (nextShowMore ? data.length : NUM_ITEMS_BEFORE_EXPAND) * MODIFIER_LABEL_HEIGHT;
     }, [showMore]);
 
     const renderModifier = (item: ModifierItem) => {
@@ -134,7 +134,7 @@ const Modifiers = ({searchValue, setSearchValue, setTeamId, teamId}: Props) => {
             <Animated.View style={animatedStyle}>
                 {data.map((item) => renderModifier(item))}
             </Animated.View>
-            {data.length > SHOW_ITEMS &&
+            {data.length > NUM_ITEMS_BEFORE_EXPAND &&
                 <ShowMoreButton
                     onPress={handleShowMore}
                     showMore={showMore}
