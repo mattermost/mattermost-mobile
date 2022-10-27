@@ -117,13 +117,13 @@ class PushNotifications {
             const condition1 = !isInChannelScreen && !isInThreadScreen;
 
             // 2. If is in channel screen,
-            //      - Show notifications of other channels
+            //      - Show notification of other channels
             //        or
-            //      - Show If CRT is enabled, show thread notifications even if it belongs to the same channel
+            //      - Show notification if CRT is enabled and it's a thread notification (doesn't matter if it's the same channel)
             const condition2 = isInChannelScreen && (!isSameChannelNotification || (isCRTEnabled && isThreadNotification));
 
             // 3. If is in thread screen,
-            //      - If notification doesn't belong to the thread, show the notification
+            //      - Show the notification if it doesn't belong to the thread
             const condition3 = isInThreadScreen && !isSameThreadNotification;
 
             if (condition1 || condition2 || condition3) {
