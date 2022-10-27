@@ -64,7 +64,7 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUn
         } else {
             switchToGlobalThreads(serverUrl);
         }
-    }), [serverUrl]);
+    }), [onPress, serverUrl]);
 
     const {unreads, mentions} = unreadsAndMentions;
     const isActive = isTablet && !currentChannelId;
