@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
+import React from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import {SEARCH_INPUT_HEIGHT, SEARCH_INPUT_MARGIN} from '@constants/view';
@@ -73,8 +73,6 @@ const NavigationHeader = ({
         };
     });
 
-    const containerStyle = useMemo(() => [styles.container, containerHeight], [styles, containerHeight]);
-
     const minScrollValue = useDerivedValue(() => scrollValue?.value || 0, [scrollValue]);
 
     const translateY = useDerivedValue(() => (
@@ -93,7 +91,7 @@ const NavigationHeader = ({
 
     return (
         <>
-            <Animated.View style={containerStyle}>
+            <Animated.View style={[styles.container, containerHeight]}>
                 <Header
                     defaultHeight={defaultHeight}
                     hasSearch={hasSearch}
@@ -126,7 +124,6 @@ const NavigationHeader = ({
                     {...searchProps}
                     hideHeader={hideHeader}
                     theme={theme}
-                    top={0}
                     topStyle={searchTopStyle}
                 />
                 }

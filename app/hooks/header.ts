@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {NativeScrollEvent} from 'react-native';
-import Animated, {runOnJS, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
+import Animated, {runOnJS, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ViewConstants from '@constants/view';
@@ -75,7 +75,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
             } else if (dir === 'up' && offset < (defaultHeight)) {
                 runOnJS(onSnap)(headerOffset);
             }
-            snapping.value = false;
+            snapping.value = Boolean(withTiming(0, {duration: 100}));
         }
     }
 
@@ -94,7 +94,7 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
                 return;
             }
 
-            if (ctx.dragging || autoScroll.value) {
+            if (ctx.dragging || autoScroll.value || snapping.value) {
                 scrollValue.value = e.contentOffset.y;
             } else {
                 // here we want to ensure that the scroll position

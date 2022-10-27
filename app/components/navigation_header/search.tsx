@@ -14,7 +14,6 @@ type Props = SearchProps & {
     topStyle: AnimatedStyleProp<ViewStyle>;
     hideHeader?: () => void;
     theme: Theme;
-    top: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -72,10 +71,8 @@ const NavigationSearch = ({
         };
     }, []);
 
-    const containerStyle = useMemo(() => ([styles.container, topStyle]), [styles, topStyle]);
-
     return (
-        <Animated.View style={containerStyle}>
+        <Animated.View style={[styles.container, topStyle]}>
             <Search
                 {...searchProps}
                 cancelButtonProps={cancelButtonProps}
