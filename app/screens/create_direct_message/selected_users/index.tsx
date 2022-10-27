@@ -58,6 +58,7 @@ type Props = {
 
 const MAX_ROWS = 3;
 const NAVBAR_HEADER_HEIGHT = 64;
+const BOTTOM_MARGIN = 20;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -112,8 +113,8 @@ export default function SelectedUsers({
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
-    const {StatusBarManager} = NativeModules;
     const isTablet = useIsTablet();
+    const {StatusBarManager} = NativeModules;
 
     const handleOnPress = async () => {
         onPress();
@@ -176,15 +177,18 @@ export default function SelectedUsers({
         return null;
     }, [users.length >= maxCount, showWarn && users.length, theme, maxCount]);
 
-    const keyboardVerticalOffset = StatusBarManager.HEIGHT + NAVBAR_HEADER_HEIGHT;
-    const marginBottom = isTablet ? 20 : 0;
+    const keyboardBottomMargin = (isTablet ? 0 : BOTTOM_MARGIN);
+    const keyboardVerticalOffset = StatusBarManager.HEIGHT + NAVBAR_HEADER_HEIGHT + keyboardBottomMargin;
+
+    const viewPaddingBottom = {paddingBottom: (Platform.OS === 'android' || isTablet) ? BOTTOM_MARGIN : 0};
 
     return (
         <KeyboardAvoidingView
             behavior={Platform.OS === 'ios' ? 'padding' : undefined}
             keyboardVerticalOffset={keyboardVerticalOffset}
+            style={style.container}
         >
-            <View style={style.container} >
+            <View style={viewPaddingBottom} >
                 <View style={style.containerUsers}>
                     <ScrollView
                         contentContainerStyle={style.users}
@@ -193,7 +197,7 @@ export default function SelectedUsers({
                     </ScrollView>
                 </View>
                 {message}
-                <View style={[style.buttonContainer, {marginBottom}]}>
+                <View style={style.buttonContainer}>
                     <Button
                         onPress={handleOnPress}
                         icon={buttonIcon}

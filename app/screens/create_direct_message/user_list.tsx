@@ -70,11 +70,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         list: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
-            ...Platform.select({
-                android: {
-                    marginBottom: 20,
-                },
-            }),
         },
         container: {
             flexGrow: 1,
