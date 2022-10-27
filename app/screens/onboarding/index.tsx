@@ -15,6 +15,7 @@ import SlideItem from './slide';
 import slidesData from './slides_data';
 
 import type {LaunchProps} from '@typings/launch';
+import FooterButtons from './footer_buttons';
 
 interface OnboardingProps extends LaunchProps {
     theme: Theme;
@@ -34,18 +35,13 @@ const Onboarding = ({
     const nextSlide = () => {
         const nextSlideIndex = currentIndex + 1;
         if (slidesRef.current && currentIndex < lastSlideIndex) {
-            console.log('*** current slide', currentIndex);
-            console.log('*** next slide', nextSlideIndex);
             moveToSlide(nextSlideIndex);
-        } else {
-            console.log('*** end of slide', lastSlideIndex);
         }
     };
 
     const moveToSlide = (slideIndexToMove: number) => {
-        if (slideIndexToMove === lastSlideIndex) {
-            setIsLastSlide(true);
-        }
+        setIsLastSlide(slideIndexToMove === lastSlideIndex);
+        setCurrentIndex(slideIndexToMove);
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
         slidesRef?.current?.scrollToIndex({index: slideIndexToMove});
@@ -67,6 +63,7 @@ const Onboarding = ({
             <SlideItem
                 item={i}
                 theme={theme}
+                scrollX={scrollX}
             />
         );
     }, []);
@@ -75,6 +72,7 @@ const Onboarding = ({
 
     const viewableItemsChanged = useRef(({viewableItems}: any) => {
         setCurrentIndex(viewableItems[0].index);
+        setIsLastSlide(viewableItems[0].index === lastSlideIndex);
     }).current;
 
     const viewConfig = useRef({viewAreaCoveragePercentThreshold: 50}).current;
@@ -89,7 +87,7 @@ const Onboarding = ({
                 key={'onboarding_content'}
                 style={[styles.scrollContainer, transform]}
             >
-                <FlatList
+                <Animated.FlatList
                     keyExtractor={(item) => item.id}
                     data={slidesData}
                     renderItem={renderSlide}
@@ -99,7 +97,7 @@ const Onboarding = ({
                     pagingEnabled={true}
                     bounces={false}
                     onScroll={Animated.event([{nativeEvent: {contentOffset: {x: scrollX}}}], {
-                        useNativeDriver: false,
+                        useNativeDriver: true,
                     })}
                     onViewableItemsChanged={viewableItemsChanged}
                     viewabilityConfig={viewConfig}
@@ -111,10 +109,13 @@ const Onboarding = ({
                 data={slidesData}
                 theme={theme}
                 scrollX={scrollX}
+                moveToSlide={moveToSlide}
+            />
+            <FooterButtons
+                theme={theme}
                 isLastSlide={isLastSlide}
                 nextSlideHandler={nextSlide}
                 signInHandler={signInHandler}
-                moveToSlide={moveToSlide}
             />
         </View>
     );

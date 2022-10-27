@@ -10,6 +10,7 @@ import {typography} from '@utils/typography';
 type Props = {
     item: any;
     theme: Theme;
+    scrollX: any;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -43,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const SlideItem = ({theme, item}: Props) => {
+const SlideItem = ({theme, item, scrollX}: Props) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
     const SvgImg = item.image;
