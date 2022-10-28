@@ -284,10 +284,16 @@ const Markdown = ({
             return renderText({context, literal: `#${hashtag}`});
         }
 
+        const linkStyle = [textStyles.link];
+        const headingIndex = context.findIndex((c) => c.includes('heading'));
+        if (headingIndex > -1) {
+            linkStyle.push(textStyles[context[headingIndex]]);
+        }
+
         return (
             <Hashtag
                 hashtag={hashtag}
-                linkStyle={textStyles.link}
+                linkStyle={linkStyle}
             />
         );
     };
