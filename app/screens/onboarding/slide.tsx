@@ -59,17 +59,17 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
 
     const translateImage = scrollX.interpolate({
         inputRange,
-        outputRange: [width * 0.7, 1, -width * 0.7],
+        outputRange: [width * 2, 0, -width * 2],
     });
 
     const translateTitle = scrollX.interpolate({
         inputRange,
-        outputRange: [width * 0.5, 1, -width * 0.5],
+        outputRange: [width * 0.6, 0, -width * 0.6],
     });
 
     const translateDescription = scrollX.interpolate({
         inputRange,
-        outputRange: [width * 0.3, 1, -width * 0.3],
+        outputRange: [width * 0.2, 0, -width * 0.2],
     });
 
     return (
