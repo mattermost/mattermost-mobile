@@ -151,7 +151,7 @@ const ChannelListItem = ({
     }, [channel.id]);
 
     const textStyles = useMemo(() => [
-        isBolded ? textStyle.bold : textStyle.regular,
+        isBolded && !isMuted ? textStyle.bold : textStyle.regular,
         styles.text,
         isBolded && styles.highlight,
         isActive && isTablet && !isInfo ? styles.textActive : null,
