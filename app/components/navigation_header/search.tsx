@@ -2,35 +2,26 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {DeviceEventEmitter, Keyboard, NativeSyntheticEvent, Platform, TextInputFocusEventData} from 'react-native';
-import Animated, {useAnimatedStyle} from 'react-native-reanimated';
+import {DeviceEventEmitter, Keyboard, NativeSyntheticEvent, Platform, TextInputFocusEventData, ViewStyle} from 'react-native';
+import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
 import Search, {SearchProps} from '@components/search';
 import {Events} from '@constants';
-import {HEADER_SEARCH_HEIGHT} from '@constants/view';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = SearchProps & {
-    defaultHeight: number;
-    largeHeight: number;
-    scrollValue?: Animated.SharedValue<number>;
+    topStyle: AnimatedStyleProp<ViewStyle>;
     hideHeader?: () => void;
     theme: Theme;
-    top: number;
 }
-
-const INITIAL_TOP = -45;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.sidebarBg,
-        height: HEADER_SEARCH_HEIGHT,
-        justifyContent: 'center',
         paddingHorizontal: 20,
         width: '100%',
         zIndex: 10,
-        top: INITIAL_TOP,
     },
     inputContainerStyle: {
         backgroundColor: changeOpacity(theme.sidebarText, 0.12),
@@ -41,11 +32,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const NavigationSearch = ({
-    defaultHeight,
-    largeHeight,
-    scrollValue,
     hideHeader,
     theme,
+    topStyle,
     ...searchProps
 }: Props) => {
     const styles = getStyleSheet(theme);
@@ -57,12 +46,6 @@ const NavigationSearch = ({
         },
         color: theme.sidebarText,
     }), [theme]);
-
-    const searchTop = useAnimatedStyle(() => {
-        const value = scrollValue?.value || 0;
-        const min = (largeHeight - defaultHeight);
-        return {marginTop: Math.min(-Math.min((value), min), min)};
-    }, [largeHeight, defaultHeight]);
 
     const onFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
         hideHeader?.();
@@ -89,7 +72,7 @@ const NavigationSearch = ({
     }, []);
 
     return (
-        <Animated.View style={[styles.container, searchTop]}>
+        <Animated.View style={[styles.container, topStyle]}>
             <Search
                 {...searchProps}
                 cancelButtonProps={cancelButtonProps}

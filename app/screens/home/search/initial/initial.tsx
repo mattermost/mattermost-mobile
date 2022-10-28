@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import Animated from 'react-native-reanimated';
 
 import Modifiers from './modifiers';
 import RecentSearches from './recent_searches';
@@ -10,6 +11,7 @@ import type TeamSearchHistoryModel from '@typings/database/models/servers/team_s
 
 type Props = {
     recentSearches: TeamSearchHistoryModel[];
+    scrollEnabled: Animated.SharedValue<boolean>;
     searchValue?: string;
     setRecentValue: (value: string) => void;
     setSearchValue: (value: string) => void;
@@ -18,7 +20,7 @@ type Props = {
     teamName: string;
 }
 
-const Initial = ({setRecentValue, recentSearches, searchValue, teamId, teamName, setTeamId, setSearchValue}: Props) => {
+const Initial = ({recentSearches, scrollEnabled, searchValue, setRecentValue, teamId, teamName, setTeamId, setSearchValue}: Props) => {
     return (
         <>
             <Modifiers
@@ -26,6 +28,7 @@ const Initial = ({setRecentValue, recentSearches, searchValue, teamId, teamName,
                 setSearchValue={setSearchValue}
                 setTeamId={setTeamId}
                 teamId={teamId}
+                scrollEnabled={scrollEnabled}
             />
             {Boolean(recentSearches.length) &&
                 <RecentSearches
