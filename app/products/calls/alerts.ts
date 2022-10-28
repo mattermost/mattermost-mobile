@@ -7,6 +7,7 @@ import {hasMicrophonePermission, joinCall, unmuteMyself} from '@calls/actions';
 import {errorAlert} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import {getCurrentUser} from '@queries/servers/user';
+import {logError} from '@utils/log';
 
 import type {IntlShape} from 'react-intl';
 
@@ -91,10 +92,17 @@ export const leaveAndJoinWithAlert = (
 const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolean, intl: IntlShape) => {
     const {formatMessage} = intl;
 
-    const serverDatabase = await DatabaseManager.getActiveServerDatabase();
-    const user = await getCurrentUser(serverDatabase!);
-    if (!user) {
-        // This shouldn't happen, so don't bother localizing and displaying an alert.
+    let user;
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        user = await getCurrentUser(database);
+        if (!user) {
+            // This shouldn't happen, so don't bother localizing and displaying an alert.
+            return;
+        }
+    } catch (error) {
+        logError('failed to getServerDatabaseAndOperator in doJoinCall', error);
         return;
     }
 
