@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, View, useWindowDimensions} from 'react-native';
+import {Animated, View, useWindowDimensions} from 'react-native';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -11,16 +11,22 @@ type Props = {
     item: any;
     theme: Theme;
     scrollX: any;
+    index: number;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     title: {
         fontWeight: '600',
-        fontSize: 40,
         marginBottom: 5,
         height: 100,
         color: theme.centerChannelColor,
         textAlign: 'center',
+    },
+    fontTitle: {
+        fontSize: 40,
+    },
+    fontFirstTitle: {
+        fontSize: 66,
     },
     description: {
         fontWeight: '400',
@@ -34,8 +40,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     image: {
         justifyContent: 'center',
         height: 60,
-        maxHeight: 120,
-        width: 50,
+        maxHeight: 180,
+        width: 60,
     },
     itemContainer: {
         flex: 1,
@@ -44,19 +50,63 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const SlideItem = ({theme, item, scrollX}: Props) => {
+const SlideItem = ({theme, item, scrollX, index}: Props) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
     const SvgImg = item.image;
 
+    const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
+
+    const translateImage = scrollX.interpolate({
+        inputRange,
+        outputRange: [width * 0.7, 1, -width * 0.7],
+    });
+
+    const translateTitle = scrollX.interpolate({
+        inputRange,
+        outputRange: [width * 0.5, 1, -width * 0.5],
+    });
+
+    const translateDescription = scrollX.interpolate({
+        inputRange,
+        outputRange: [width * 0.3, 1, -width * 0.3],
+    });
+
     return (
         <View style={[styles.itemContainer, {width}]}>
-            <SvgImg
-                style={[styles.image, {width, resizeMode: 'contain'}]}
-            />
+            <Animated.View
+                style={[{
+                    transform: [{
+                        translateX: translateImage,
+                    }],
+                }]}
+            >
+                <SvgImg
+                    style={[styles.image, {
+                        width,
+                        resizeMode: 'contain',
+                    }]}
+                />
+            </Animated.View>
             <View style={{flex: 0.3}}>
-                <Text style={styles.title}>{item.title}</Text>
-                <Text style={styles.description}>{item.description}</Text>
+                <Animated.Text
+                    style={[styles.title, (index === 0 ? styles.fontFirstTitle : styles.fontTitle), {
+                        transform: [{
+                            translateX: translateTitle,
+                        }],
+                    }]}
+                >
+                    {item.title}
+                </Animated.Text>
+                <Animated.Text
+                    style={[styles.description, {
+                        transform: [{
+                            translateX: translateDescription,
+                        }],
+                    }]}
+                >
+                    {item.description}
+                </Animated.Text>
             </View>
         </View>
     );

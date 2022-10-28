@@ -58,12 +58,13 @@ const Onboarding = ({
         };
     }, []);
 
-    const renderSlide = useCallback(({item: i}: ListRenderItemInfo<any>) => {
+    const renderSlide = useCallback(({item, index}: ListRenderItemInfo<any>) => {
         return (
             <SlideItem
-                item={i}
+                item={item}
                 theme={theme}
                 scrollX={scrollX}
+                index={index}
             />
         );
     }, []);
