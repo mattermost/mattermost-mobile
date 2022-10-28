@@ -8,7 +8,7 @@ import {encode} from '@msgpack/msgpack/dist';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getCommonSystemValues} from '@queries/servers/system';
-import {logDebug, logError, logWarning} from '@utils/log';
+import {logDebug, logError} from '@utils/log';
 
 const wsMinReconnectRetryTimeMs = 1000; // 1 second
 const wsReconnectionTimeout = 30000; // 30 seconds
@@ -101,7 +101,7 @@ export class WebSocketClient extends EventEmitter {
                 }
                 return;
             } else if (!this.connID) {
-                logWarning('calls: ws message received while waiting for hello');
+                logDebug('calls: ws message received while waiting for hello');
                 return;
             }
 
