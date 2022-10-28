@@ -151,7 +151,6 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
         focus: () => {
             searchRef.current?.focus();
         },
-
     }), [searchRef]);
 
     return (
