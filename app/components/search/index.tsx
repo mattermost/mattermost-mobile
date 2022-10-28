@@ -47,9 +47,6 @@ export type SearchRef = {
     cancel?: () => void;
     clear?: () => void;
     focus?: () => void;
-
-    // onSelectionChange: () => void;
-    // selection: {start: number; end: number};
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
