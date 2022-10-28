@@ -48,7 +48,7 @@ index 90969b2..3420045 100644
  
      @ReactMethod
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java
-index eadf41e..3279431 100644
+index c090247..ec219d2 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/RNNotificationsPackage.java
 @@ -15,6 +15,7 @@ import com.wix.reactnativenotifications.core.AppLifecycleFacade;
@@ -59,21 +59,20 @@ index eadf41e..3279431 100644
  import com.wix.reactnativenotifications.core.notification.IPushNotification;
  import com.wix.reactnativenotifications.core.notification.PushNotification;
  import com.wix.reactnativenotifications.core.notification.PushNotificationProps;
-@@ -67,7 +68,12 @@ public class RNNotificationsPackage implements ReactPackage, AppLifecycleFacade.
+@@ -67,7 +68,11 @@ public class RNNotificationsPackage implements ReactPackage, AppLifecycleFacade.
  
      @Override
      public void onActivityStarted(Activity activity) {
--        if (InitialNotificationHolder.getInstance().get() == null) {
+-        if (InitialNotificationHolder.getInstance().get() != null) {
 +        boolean isInitialized = false;
 +        if (AppLifecycleFacadeHolder.get() instanceof ReactAppLifecycleFacade) {
 +            isInitialized = AppLifecycleFacadeHolder.get().isReactInitialized();
 +        }
-+
 +        if (!isInitialized && InitialNotificationHolder.getInstance().get() == null) {
              callOnOpenedIfNeed(activity);
          }
      }
-@@ -96,8 +102,7 @@ public class RNNotificationsPackage implements ReactPackage, AppLifecycleFacade.
+@@ -96,8 +101,7 @@ public class RNNotificationsPackage implements ReactPackage, AppLifecycleFacade.
          Intent intent = activity.getIntent();
          if (NotificationIntentAdapter.canHandleIntent(intent)) {
              Context appContext = mApplication.getApplicationContext();
@@ -206,10 +205,10 @@ index 0000000..433c754
 +    }
 +}
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/IPushNotification.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/IPushNotification.java
-index 0d70024..b9e6c88 100644
+index 0d70024..47b962e 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/IPushNotification.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/IPushNotification.java
-@@ -26,5 +26,21 @@ public interface IPushNotification {
+@@ -26,5 +26,20 @@ public interface IPushNotification {
       */
      int onPostRequest(Integer notificationId);
  
@@ -228,11 +227,10 @@ index 0d70024..b9e6c88 100644
 +     */
 +    int onPostScheduledRequest(Integer notificationId);
 +
-+
      PushNotificationProps asProps();
  }
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
-index 54a5fb8..f38881e 100644
+index 54a5fb8..7d29a9f 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
 @@ -8,6 +8,10 @@ import android.content.Context;
@@ -316,7 +314,7 @@ index 54a5fb8..f38881e 100644
      @Override
      public void onOpened() {
          digestNotification();
-@@ -140,15 +181,16 @@ public class PushNotification implements IPushNotification {
+@@ -140,21 +181,22 @@ public class PushNotification implements IPushNotification {
      }
  
      protected Notification buildNotification(PendingIntent intent) {
@@ -337,6 +335,13 @@ index 54a5fb8..f38881e 100644
                  .setAutoCancel(true);
  
          setUpIcon(notification);
+ 
+         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+-            final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
++            final NotificationManagerCompat notificationManager = NotificationManagerCompat.from(mContext);
+             String channelId = mNotificationProps.getChannelId();
+             NotificationChannel channel = notificationManager.getNotificationChannel(channelId);
+             notification.setChannelId(channel != null ? channelId : DEFAULT_CHANNEL_ID);
 @@ -163,7 +205,7 @@ public class PushNotification implements IPushNotification {
          return notification;
      }
@@ -398,7 +403,7 @@ index 0000000..58ff887
 +    }
 +}
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
-index a14089f..5238c75 100644
+index a14089f..6cb5a86 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notificationdrawer/PushNotificationsDrawer.java
 @@ -2,9 +2,15 @@ package com.wix.reactnativenotifications.core.notificationdrawer;
@@ -445,7 +450,7 @@ index a14089f..5238c75 100644
 +        for (String notificationId : helper.getPreferencesKeys()) {
 +            cancelScheduledNotification(notificationId);
 +        }
-+    }
+     }
 +
 +    protected void cancelScheduledNotification(String notificationId) {
 +        Log.i(LOGTAG, "Cancelling scheduled notification: " + notificationId);
@@ -466,7 +471,7 @@ index a14089f..5238c75 100644
 +        // Remove it from the notification center
 +        final NotificationManager notificationManager = (NotificationManager) mContext.getSystemService(Context.NOTIFICATION_SERVICE);
 +        notificationManager.cancel(Integer.parseInt(notificationId));
-     }
++     }
  }
 diff --git a/node_modules/react-native-notifications/lib/dist/DTO/Notification.d.ts b/node_modules/react-native-notifications/lib/dist/DTO/Notification.d.ts
 index 7b2b3b1..3a2f872 100644
@@ -504,7 +509,7 @@ index afd5c73..6036dda 100644
  }
  
 diff --git a/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m b/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
-index 5c8dd0b..1c7e575 100644
+index 5c8dd0b..7946108 100644
 --- a/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
 +++ b/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
 @@ -6,11 +6,13 @@
@@ -521,10 +526,11 @@ index 5c8dd0b..1c7e575 100644
      return self;
  }
  
-@@ -31,6 +33,15 @@
+@@ -30,7 +32,15 @@
+ 
  - (void)didReceiveNotificationResponse:(UNNotificationResponse *)response completionHandler:(void (^)(void))completionHandler {
      [_store setActionCompletionHandler:completionHandler withCompletionKey:response.notification.request.identifier];
-     [RNEventEmitter sendEvent:RNNotificationOpened body:[RNNotificationParser parseNotificationResponse:response]];
+-    [RNEventEmitter sendEvent:RNNotificationOpened body:[RNNotificationParser parseNotificationResponse:response]];
 +    dispatch_async(dispatch_get_main_queue(), ^{
 +        NSDate* now = [[NSDate alloc] init];
 +        double interval = [now timeIntervalSinceDate:self->wakeTime];
@@ -537,7 +543,7 @@ index 5c8dd0b..1c7e575 100644
  }
  
  - (void)didReceiveBackgroundNotification:(NSDictionary *)userInfo withCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-@@ -38,7 +49,7 @@
+@@ -38,7 +48,7 @@
          NSString *uuid = [[NSUUID UUID] UUIDString];
          __block BOOL completionHandlerCalled = NO;
          dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);
