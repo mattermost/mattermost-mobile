@@ -75,7 +75,7 @@ function PostDraft({
         ios: (keyboardHeight ? keyboardHeight - keyboardAdjustment : (postInputTop + insetsAdjustment)),
         default: postInputTop + insetsAdjustment,
     });
-    const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight + insets.top : 0);
+    const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
