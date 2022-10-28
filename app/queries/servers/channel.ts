@@ -469,6 +469,20 @@ export function observeMyChannelMentionCount(database: Database, teamId?: string
         );
 }
 
+export function queryMyRecentChannels(database: Database, take: number) {
+    const count: Q.Clause[] = [];
+
+    if (take > 0) {
+        count.push(Q.take(take));
+    }
+
+    return queryAllMyChannel(database).extend(
+        Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
+        Q.sortBy('last_viewed_at', Q.desc),
+        ...count,
+    );
+}
+
 export function queryMyChannelsByUnread(database: Database, isUnread: boolean, sortBy: 'last_viewed_at' | 'last_post_at', take: number, excludeIds?: string[]) {
     const clause: Q.Clause[] = [Q.where('is_unread', Q.eq(isUnread))];
     const count: Q.Clause[] = [];
