@@ -17,6 +17,7 @@ import ShowMoreButton from './show_more';
 
 const MODIFIER_LABEL_HEIGHT = 48;
 const TEAM_PICKER_ICON_SIZE = 32;
+const NUM_ITEMS_BEFORE_EXPAND = 4;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -47,19 +48,23 @@ const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
             term: 'In:',
             testID: 'search.in_section',
             description: formatMessage({id: 'mobile.search.modifier.in', defaultMessage: ' a specific channel'}),
-        }, {
-            term: 'On:',
-            testID: 'search.on_section',
-            description: formatMessage({id: 'mobile.search.modifier.on', defaultMessage: ' a specific date'}),
-        }, {
-            term: 'After:',
-            testID: 'search.after_section',
-            description: formatMessage({id: 'mobile.search.modifier.after', defaultMessage: ' after a date'}),
-        }, {
-            term: 'Before:',
-            testID: 'search.before_section',
-            description: formatMessage({id: 'mobile.search.modifier.before', defaultMessage: ' before a date'}),
-        }, {
+        },
+
+        // {
+        //     term: 'On:',
+        //     testID: 'search.on_section',
+        //     description: formatMessage({id: 'mobile.search.modifier.on', defaultMessage: ' a specific date'}),
+        // },
+        // {
+        //     term: 'After:',
+        //     testID: 'search.after_section',
+        //     description: formatMessage({id: 'mobile.search.modifier.after', defaultMessage: ' after a date'}),
+        // }, {
+        //     term: 'Before:',
+        //     testID: 'search.before_section',
+        //     description: formatMessage({id: 'mobile.search.modifier.before', defaultMessage: ' before a date'}),
+        // },
+        {
             term: '-',
             testID: 'search.exclude_section',
             description: formatMessage({id: 'mobile.search.modifier.exclude', defaultMessage: ' exclude search terms'}),
@@ -84,14 +89,14 @@ const Modifiers = ({scrollEnabled, searchValue, setSearchValue, setTeamId, teamI
     const intl = useIntl();
 
     const [showMore, setShowMore] = useState(false);
-    const show = useSharedValue(3 * MODIFIER_LABEL_HEIGHT);
+    const height = useSharedValue(NUM_ITEMS_BEFORE_EXPAND * MODIFIER_LABEL_HEIGHT);
     const data = useMemo(() => getModifiersSectionsData(intl), [intl]);
     const timeoutRef = useRef<NodeJS.Timeout | undefined>();
 
     const styles = getStyleFromTheme(theme);
     const animatedStyle = useAnimatedStyle(() => ({
         width: '100%',
-        height: withTiming(show.value, {duration: 300}),
+        height: withTiming(height.value, {duration: 300}),
         overflow: 'hidden',
     }), []);
 
@@ -99,7 +104,7 @@ const Modifiers = ({scrollEnabled, searchValue, setSearchValue, setTeamId, teamI
         const nextShowMore = !showMore;
         setShowMore(nextShowMore);
         scrollEnabled.value = false;
-        show.value = (nextShowMore ? data.length : 3) * MODIFIER_LABEL_HEIGHT;
+        height.value = (nextShowMore ? data.length : NUM_ITEMS_BEFORE_EXPAND) * MODIFIER_LABEL_HEIGHT;
 
         if (timeoutRef.current) {
             clearTimeout(timeoutRef.current);
@@ -146,10 +151,12 @@ const Modifiers = ({scrollEnabled, searchValue, setSearchValue, setTeamId, teamI
             <Animated.View style={animatedStyle}>
                 {data.map((item) => renderModifier(item))}
             </Animated.View>
-            <ShowMoreButton
-                onPress={handleShowMore}
-                showMore={showMore}
-            />
+            {data.length > NUM_ITEMS_BEFORE_EXPAND &&
+                <ShowMoreButton
+                    onPress={handleShowMore}
+                    showMore={showMore}
+                />
+            }
         </>
     );
 };
