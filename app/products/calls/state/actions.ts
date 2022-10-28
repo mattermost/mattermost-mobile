@@ -141,12 +141,21 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
     }
 
     setCurrentCall({
+        connected: false,
         ...existingCall,
         serverUrl,
         myUserId,
         screenShareURL: '',
         speakerphoneOn: false,
     });
+};
+
+export const setCurrentCallConnected = () => {
+    const currentCall = getCurrentCall();
+    if (!currentCall) {
+        return;
+    }
+    setCurrentCall({...currentCall, connected: true});
 };
 
 export const myselfLeftCall = () => {
@@ -174,10 +183,7 @@ export const callEnded = (serverUrl: string, channelId: string) => {
     delete nextChannelsWithCalls[channelId];
     setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
 
-    const currentCall = getCurrentCall();
-    if (currentCall?.channelId === channelId) {
-        setCurrentCall(null);
-    }
+    // currentCall is set to null by the disconnect.
 };
 
 export const setUserMuted = (serverUrl: string, channelId: string, userId: string, muted: boolean) => {

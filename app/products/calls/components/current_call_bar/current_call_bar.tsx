@@ -10,7 +10,7 @@ import {muteMyself, unmuteMyself} from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
 import {CurrentCall, VoiceEventData} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
-import {Events, Screens, WebsocketEvents} from '@constants';
+import {Screens, WebsocketEvents} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
@@ -93,7 +93,7 @@ const CurrentCallBar = ({
     const [speaker, setSpeaker] = useState<string | null>(null);
     const [talkingMessage, setTalkingMessage] = useState('');
 
-    const isCurrentCall = Boolean(currentCall);
+    const isCurrentCall = Boolean(currentCall?.connected);
     const handleVoiceOn = (data: VoiceEventData) => {
         if (data.channelId === currentCall?.channelId) {
             setSpeaker(data.userId);
@@ -108,9 +108,7 @@ const CurrentCallBar = ({
     useEffect(() => {
         const onVoiceOn = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_ON, handleVoiceOn);
         const onVoiceOff = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_OFF, handleVoiceOff);
-        DeviceEventEmitter.emit(Events.CURRENT_CALL_BAR_VISIBLE, isCurrentCall);
         return () => {
-            DeviceEventEmitter.emit(Events.CURRENT_CALL_BAR_VISIBLE, Boolean(false));
             onVoiceOn.remove();
             onVoiceOff.remove();
         };

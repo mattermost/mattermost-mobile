@@ -12,7 +12,7 @@ import {
     mediaDevices,
 } from 'react-native-webrtc';
 
-import {myselfLeftCall, newCurrentCall} from '@calls/state';
+import {myselfLeftCall, setCurrentCallConnected} from '@calls/state';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
@@ -26,7 +26,7 @@ import type {CallsConnection} from '@calls/types/calls';
 
 const peerConnectTimeout = 5000;
 
-export async function newConnection(serverUrl: string, channelID: string, myUserId: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
+export async function newConnection(serverUrl: string, channelID: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
     let peer: Peer | null = null;
     let stream: MediaStream;
     let voiceTrackAdded = false;
@@ -216,7 +216,7 @@ export async function newConnection(serverUrl: string, channelID: string, myUser
         peer.on('connect', () => {
             InCallManager.start({media: 'audio'});
             InCallManager.stopProximitySensor();
-            newCurrentCall(serverUrl, channelID, myUserId);
+            setCurrentCallConnected();
         });
     });
 

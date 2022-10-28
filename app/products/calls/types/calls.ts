@@ -37,6 +37,7 @@ export const DefaultCall: Call = {
 };
 
 export type CurrentCall = Call & {
+    connected: boolean;
     serverUrl: string;
     myUserId: string;
     screenShareURL: string;
