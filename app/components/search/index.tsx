@@ -42,11 +42,14 @@ export type SearchProps = TextInputProps & {
     showLoading?: boolean;
 };
 
-type SearchRef = {
-    blur: () => void;
-    cancel: () => void;
-    clear: () => void;
-    focus: () => void;
+export type SearchRef = {
+    blur?: () => void;
+    cancel?: () => void;
+    clear?: () => void;
+    focus?: () => void;
+
+    // onSelectionChange: () => void;
+    // selection: {start: number; end: number};
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({

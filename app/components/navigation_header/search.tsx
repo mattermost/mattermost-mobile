@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, Keyboard, NativeSyntheticEvent, Platform, TextInputFocusEventData, ViewStyle} from 'react-native';
 import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
-import Search, {SearchProps} from '@components/search';
+import Search, {SearchProps, SearchRef} from '@components/search';
 import {Events} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -31,13 +31,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const NavigationSearch = ({
-    hideHeader,
-    theme,
-    topStyle,
-    ...searchProps
-}: Props) => {
+const NavigationSearch = forwardRef<SearchRef, Props>((props: Props, ref) => {
+    const {theme, hideHeader, topStyle} = props;
+    const searchProps = props;
+    const searchRef = useRef<SearchRef>(null);
     const styles = getStyleSheet(theme);
+
+    useImperativeHandle(ref, () => ({
+        focus: () => {
+            searchRef.current?.focus?.();
+        },
+    }), [searchRef]);
 
     const cancelButtonProps: SearchProps['cancelButtonProps'] = useMemo(() => ({
         buttonTextStyle: {
@@ -49,8 +53,8 @@ const NavigationSearch = ({
 
     const onFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
         hideHeader?.();
-        searchProps.onFocus?.(e);
-    }, [hideHeader, searchProps.onFocus]);
+        props.onFocus?.(e);
+    }, [hideHeader, props.onFocus]);
 
     useEffect(() => {
         const show = Keyboard.addListener('keyboardDidShow', () => {
@@ -83,10 +87,12 @@ const NavigationSearch = ({
                 placeholderTextColor={changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
                 searchIconColor={theme.sidebarText}
                 selectionColor={theme.sidebarText}
+                ref={searchRef}
             />
         </Animated.View>
     );
-};
+});
 
+NavigationSearch.displayName = 'NavSearch';
 export default NavigationSearch;
 

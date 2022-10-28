@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {forwardRef, useImperativeHandle, useRef} from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import {SEARCH_INPUT_HEIGHT, SEARCH_INPUT_MARGIN} from '@constants/view';
@@ -14,7 +14,7 @@ import Header, {HeaderRightButton} from './header';
 import NavigationHeaderLargeTitle from './large';
 import NavigationSearch from './search';
 
-import type {SearchProps} from '@components/search';
+import type {SearchProps, SearchRef} from '@components/search';
 
 type Props = SearchProps & {
     hasSearch?: boolean;
@@ -41,24 +41,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const NavigationHeader = ({
-    hasSearch = false,
-    isLargeTitle = false,
-    leftComponent,
-    onBackPress,
-    onTitlePress,
-    rightButtons,
-    scrollValue,
-    lockValue,
-    showBackButton,
-    subtitle,
-    subtitleCompanion,
-    title = '',
-    hideHeader,
-    ...searchProps
-}: Props) => {
+const NavigationHeader = forwardRef<SearchRef, Props>((props: Props, ref) => {
+    const {
+        hasSearch = false,
+        isLargeTitle = false,
+        leftComponent,
+        onBackPress,
+        onTitlePress,
+        rightButtons,
+        scrollValue,
+        lockValue,
+        showBackButton,
+        subtitle,
+        subtitleCompanion,
+        title = '',
+        hideHeader,
+    } = props;
+    const searchProps = props;
+
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const searchRef = useRef<SearchRef>(null);
+
+    useImperativeHandle(ref, () => ({
+        focus: () => {
+            searchRef.current?.focus?.();
+        },
+    }), [searchRef]);
 
     const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
     const containerHeight = useAnimatedStyle(() => {
@@ -125,12 +134,14 @@ const NavigationHeader = ({
                     hideHeader={hideHeader}
                     theme={theme}
                     topStyle={searchTopStyle}
+                    ref={searchRef}
                 />
                 }
             </Animated.View>
         </>
     );
-};
+});
 
+NavigationHeader.displayName = 'NavHeader';
 export default NavigationHeader;
 

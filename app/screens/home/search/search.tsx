@@ -4,7 +4,7 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'react-native';
+import {FlatList, LayoutChangeEvent, Platform, StyleSheet, TextInput, ViewProps} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -84,6 +84,8 @@ const SearchScreen = ({teamId}: Props) => {
 
     const clearRef = useRef<boolean>(false);
     const cancelRef = useRef<boolean>(false);
+    const searchRef = useRef<TextInput>(null);
+
     const [cursorPosition, setCursorPosition] = useState(searchTerm?.length || 0);
     const [searchValue, setSearchValue] = useState<string>(searchTerm || '');
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
@@ -141,6 +143,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const handleTextChange = useCallback((newValue: string) => {
         setSearchValue(newValue);
+        searchRef.current?.focus();
         setCursorPosition(newValue.length);
     }, []);
 
@@ -318,6 +321,7 @@ const SearchScreen = ({teamId}: Props) => {
                 onClear={handleClearSearch}
                 onCancel={handleCancelSearch}
                 defaultValue={searchValue}
+                ref={searchRef}
             />
             <SafeAreaView
                 style={styles.flex}
