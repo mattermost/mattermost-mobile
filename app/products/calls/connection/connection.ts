@@ -12,7 +12,7 @@ import {
     mediaDevices,
 } from 'react-native-webrtc';
 
-import {myselfLeftCall, setCurrentCallConnected} from '@calls/state';
+import {setCurrentCallConnected} from '@calls/state';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
@@ -63,7 +63,6 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         }
         isClosed = true;
 
-        myselfLeftCall();
         ws.send('leave');
         ws.close();
 

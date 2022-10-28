@@ -14,7 +14,9 @@ import {
     setPluginEnabled,
     setScreenShareURL,
     setSpeakerPhone,
-    setCallForChannel, newCurrentCall,
+    setCallForChannel,
+    newCurrentCall,
+    myselfLeftCall,
 } from '@calls/state';
 import {General, Preferences} from '@constants';
 import Calls from '@constants/calls';
@@ -233,7 +235,9 @@ export const joinCall = async (serverUrl: string, channelId: string, userId: str
     newCurrentCall(serverUrl, channelId, userId);
 
     try {
-        connection = await newConnection(serverUrl, channelId, () => null, setScreenShareURL);
+        connection = await newConnection(serverUrl, channelId, () => {
+            myselfLeftCall();
+        }, setScreenShareURL);
     } catch (error: unknown) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error: error as Error};
