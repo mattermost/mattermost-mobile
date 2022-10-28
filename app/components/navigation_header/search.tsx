@@ -31,9 +31,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const NavigationSearch = forwardRef<SearchRef, Props>((props: Props, ref) => {
-    const {theme, hideHeader, topStyle} = props;
-    const searchProps = props;
+const NavigationSearch = forwardRef<SearchRef, Props>((searchProps: Props, ref) => {
+    const {theme, hideHeader, topStyle} = searchProps;
     const searchRef = useRef<SearchRef>(null);
     const styles = getStyleSheet(theme);
 
@@ -53,8 +52,8 @@ const NavigationSearch = forwardRef<SearchRef, Props>((props: Props, ref) => {
 
     const onFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
         hideHeader?.();
-        props.onFocus?.(e);
-    }, [hideHeader, props.onFocus]);
+        searchProps.onFocus?.(e);
+    }, [hideHeader, searchProps.onFocus]);
 
     useEffect(() => {
         const show = Keyboard.addListener('keyboardDidShow', () => {

@@ -143,10 +143,10 @@ const SearchScreen = ({teamId}: Props) => {
     }, [resetToInitial]);
 
     const handleTextChange = useCallback((newValue: string) => {
+        searchRef.current?.focus?.();
         setSearchValue(newValue);
         setCursorPosition(newValue.length);
     }, []);
-        searchRef.current?.focus?.();
 
     const handleLoading = useCallback((show: boolean) => {
         (showResults ? setResultsLoading : setLoading)(show);
