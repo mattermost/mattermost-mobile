@@ -742,7 +742,7 @@ platform :android do
           'separateApk' => ENV["SEPARATE_APKS"] || false,
           'universalApk' => ENV["SEPARATE_APKS"] || false,
         },
-        flags: "--debug")
+        flags: "--debug"
     )
   end
 
