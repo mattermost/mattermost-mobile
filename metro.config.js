@@ -21,5 +21,6 @@ module.exports = (async () => {
             assetExts: assetExts.filter((ext) => ext !== 'svg'),
             sourceExts: [...sourceExts, 'svg'],
         },
+        maxWorkers: 2,
     };
 })();
