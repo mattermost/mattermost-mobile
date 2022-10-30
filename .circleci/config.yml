@@ -562,7 +562,9 @@ workflows:
                 - /^build-ios-beta-\d+$/
 
       - build-android-pr:
-          context: mattermost-mobile-android-pr
+          context:
+            - mattermost-mobile-android-pr
+            - mattermost-mobile-sentry
           requires:
             - test
           filters:
@@ -605,7 +607,7 @@ workflows:
           #       - /^build-ios-\d+$/
           #       - /^build-ios-beta-\d+$/
           #       - /^build-ios-sim-\d+$/
-                
+
       # - github-release:
       #     context: mattermost-mobile-unsigned
       #     requires:
