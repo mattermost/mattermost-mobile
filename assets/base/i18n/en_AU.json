@@ -843,5 +843,7 @@
     "channel_intro.createdOn": "Created on {date}",
     "channel_intro.createdBy": "Created by {user} on {date}",
     "channel_info.unarchive_title": "Unarchive {term}",
-    "channel_info.unarchive_failed": "An error occurred while unarchiving the channel {displayName}"
+    "channel_info.unarchive_failed": "An error occurred while unarchiving the channel {displayName}",
+    "mobile.login_options.office365": "Office 365",
+    "alert.push_proxy_unknown.description": "This server was unable to receive push notifications for an unknown reason and will be reattempted next time you connect."
 }
