@@ -43,7 +43,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         canCreateChannels,
-        currentUserId,
         currentTeamId,
         joinedChannels,
         sharedChannelsEnabled,

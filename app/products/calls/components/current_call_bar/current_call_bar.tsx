@@ -13,7 +13,7 @@ import CompassIcon from '@components/compass_icon';
 import {Events, Screens, WebsocketEvents} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
-import {goToScreen} from '@screens/navigation';
+import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
@@ -24,6 +24,7 @@ type Props = {
     currentCall: CurrentCall | null;
     userModelsDict: Dictionary<UserModel>;
     teammateNameDisplay: string;
+    threadScreen?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -85,6 +86,7 @@ const CurrentCallBar = ({
     currentCall,
     userModelsDict,
     teammateNameDisplay,
+    threadScreen,
 }: Props) => {
     const theme = useTheme();
     const {formatMessage} = useIntl();
@@ -128,7 +130,7 @@ const CurrentCallBar = ({
         }
     }, [speaker, setTalkingMessage]);
 
-    const goToCallScreen = useCallback(() => {
+    const goToCallScreen = useCallback(async () => {
         const options: Options = {
             layout: {
                 backgroundColor: '#000',
@@ -143,8 +145,8 @@ const CurrentCallBar = ({
             },
         };
         const title = formatMessage({id: 'mobile.calls_call_screen', defaultMessage: 'Call'});
-        goToScreen(Screens.CALL, title, {}, options);
-    }, []);
+        await dismissAllModalsAndPopToScreen(Screens.CALL, title, {fromThreadScreen: threadScreen}, options);
+    }, [formatMessage, threadScreen]);
 
     const myParticipant = currentCall?.participants[currentCall.myUserId];
 

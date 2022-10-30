@@ -24,6 +24,7 @@ type Props = {
     updatePostInputTop: (top: number) => void;
     updateValue: (value: string) => void;
     value: string;
+    setIsFocused: (isFocused: boolean) => void;
 }
 
 const emptyFileList: FileInfo[] = [];
@@ -47,6 +48,7 @@ export default function DraftHandler(props: Props) {
         updatePostInputTop,
         updateValue,
         value,
+        setIsFocused,
     } = props;
 
     const serverUrl = useServerUrl();
@@ -144,6 +146,7 @@ export default function DraftHandler(props: Props) {
             updateCursorPosition={updateCursorPosition}
             updatePostInputTop={updatePostInputTop}
             updateValue={updateValue}
+            setIsFocused={setIsFocused}
         />
     );
 }

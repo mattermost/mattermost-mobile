@@ -4,12 +4,12 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
-import {of as of$, combineLatest} from 'rxjs';
+import {of as of$, combineLatest, Observable} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions, Preferences} from '@constants';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {queryPostsBetween} from '@queries/servers/post';
+import {observePostAuthor, queryPostsBetween} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
 import {observeIsPostPriorityEnabled, observeConfigBooleanValue} from '@queries/servers/system';
@@ -101,7 +101,7 @@ const withPost = withObservables(
         let isLastReply = of$(true);
         let isPostAddChannelMember = of$(false);
         const isOwner = currentUser.id === post.userId;
-        const author = post.userId ? post.author.observe() : of$(null);
+        const author: Observable<UserModel | undefined | null> = observePostAuthor(database, post);
         const canDelete = observePermissionForPost(database, post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false);
         const isEphemeral = of$(isPostEphemeral(post));
         const isSaved = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, post.id).

@@ -5,12 +5,9 @@ import React from 'react';
 import {View, Platform, StyleSheet} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {ANDROID_DEFAULT_HEADER_HEIGHT, IOS_DEFAULT_HEADER_HEIGHT} from '@constants/view';
+import {DEFAULT_HEADER_HEIGHT} from '@constants/view';
 
-let topBarHeight = ANDROID_DEFAULT_HEADER_HEIGHT;
-if (Platform.OS === 'ios') {
-    topBarHeight = IOS_DEFAULT_HEADER_HEIGHT;
-}
+const topBarHeight = DEFAULT_HEADER_HEIGHT;
 
 const style = StyleSheet.create({
     wrapper: {
@@ -29,12 +26,13 @@ const style = StyleSheet.create({
 
 type Props = {
     children: React.ReactNode;
+    threadScreen?: boolean;
 }
 
-const FloatingCallContainer = (props: Props) => {
+const FloatingCallContainer = ({threadScreen, ...props}: Props) => {
     const insets = useSafeAreaInsets();
     const wrapperTop = {
-        top: topBarHeight + insets.top,
+        top: insets.top + (threadScreen ? 0 : topBarHeight),
     };
 
     return (

@@ -6,6 +6,8 @@ import {DeviceEventEmitter, LayoutChangeEvent, StyleSheet, View} from 'react-nat
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import CurrentCallBar from '@calls/components/current_call_bar';
+import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -23,6 +25,7 @@ import type PostModel from '@typings/database/models/servers/post';
 type ThreadProps = {
     componentId: string;
     rootPost?: PostModel;
+    isInACall: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -31,7 +34,7 @@ const styles = StyleSheet.create({
     flex: {flex: 1},
 });
 
-const Thread = ({componentId, rootPost}: ThreadProps) => {
+const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
     const appState = useAppState();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
@@ -95,6 +98,11 @@ const Thread = ({componentId, rootPost}: ThreadProps) => {
                         isChannelScreen={false}
                     />
                 </>
+                }
+                {isInACall &&
+                    <FloatingCallContainer threadScreen={true}>
+                        <CurrentCallBar threadScreen={true}/>
+                    </FloatingCallContainer>
                 }
             </SafeAreaView>
         </FreezeScreen>

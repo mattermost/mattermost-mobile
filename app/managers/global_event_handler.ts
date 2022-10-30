@@ -2,14 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {Alert, DeviceEventEmitter, Linking} from 'react-native';
+import RNLocalize from 'react-native-localize';
 import semver from 'semver';
 
+import {autoUpdateTimezone} from '@actions/remote/user';
 import LocalConfig from '@assets/config.json';
 import {Events, Sso} from '@constants';
+import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
 import * as analytics from '@managers/analytics';
+import {queryAllServers} from '@queries/app/servers';
+import {logError} from '@utils/log';
 
 import type {jsAndNativeErrorHandler} from '@typings/global/error_handling';
 
@@ -21,6 +26,19 @@ class GlobalEventHandler {
     constructor() {
         DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         DeviceEventEmitter.addListener(Events.CONFIG_CHANGED, this.onServerConfigChanged);
+        RNLocalize.addEventListener('change', async () => {
+            try {
+                const {database} = DatabaseManager.getAppDatabaseAndOperator();
+                const servers = await queryAllServers(database);
+                for (const server of servers) {
+                    if (server.url && server.lastActiveAt > 0) {
+                        autoUpdateTimezone(server.url);
+                    }
+                }
+            } catch (e) {
+                logError('Localize change', e);
+            }
+        });
 
         Linking.addEventListener('url', this.onDeepLink);
     }
