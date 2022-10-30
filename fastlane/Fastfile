@@ -742,7 +742,7 @@ platform :android do
           'separateApk' => ENV["SEPARATE_APKS"] || false,
           'universalApk' => ENV["SEPARATE_APKS"] || false,
         },
-        flags: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=false -D -Dorg.gradle.jvmargs=\"-Xmx2g -XX:+HeapDumpOnOutOfMemoryError\""
+        flags: "-Dorg.gradle.daemon=false -Dorg.gradle.caching=false -Dorg.gradle.jvmargs=\"-Xmx2g -XX:+HeapDumpOnOutOfMemoryError\""
     )
   end
 
