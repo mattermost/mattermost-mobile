@@ -92,7 +92,6 @@ const FilteredList = ({
     const {locale, formatMessage} = useIntl();
     const flatListStyle = useMemo(() => ({flexGrow: 1, paddingBottom: keyboardHeight}), [keyboardHeight]);
     const [remoteChannels, setRemoteChannels] = useState<RemoteChannels>({archived: [], startWith: [], matches: []});
-    const [showThreadItem, setShowThreadItem] = useState<boolean>(false);
 
     const totalLocalResults = channelsMatchStart.length + channelsMatch.length + usersMatchStart.length;
 
@@ -255,12 +254,23 @@ const FilteredList = ({
         );
     }, [onJoinChannel, onOpenDirectMessage, onSwitchToChannel, showTeamName, teammateDisplayNameSetting]);
 
+    const threadLabel = useMemo(
+        () => formatMessage({
+            id: 'threads',
+            defaultMessage: 'Threads',
+        }).toLowerCase(),
+        [locale],
+    );
+
     const data = useMemo(() => {
         const items: ResultItem[] = [];
 
         // Add threads item to show it on the top of the list
-        if (showThreadItem) {
-            items.push('thread');
+        if (isCRTEnabled) {
+            const isThreadTerm = threadLabel.indexOf(term.toLowerCase()) === 0;
+            if (isThreadTerm) {
+                items.push('thread');
+            }
         }
 
         items.push(...channelsMatchStart);
@@ -302,7 +312,7 @@ const FilteredList = ({
         }
 
         return [...new Set(items)].slice(0, MAX_RESULTS + 1);
-    }, [archivedChannels, channelsMatchStart, channelsMatch, remoteChannels, usersMatch, usersMatchStart, locale, teammateDisplayNameSetting, showThreadItem]);
+    }, [archivedChannels, channelsMatchStart, channelsMatch, isCRTEnabled, remoteChannels, usersMatch, usersMatchStart, locale, teammateDisplayNameSetting, term, threadLabel]);
 
     useEffect(() => {
         mounted.current = true;
@@ -311,27 +321,15 @@ const FilteredList = ({
         };
     }, []);
 
-    const threadLabel = useMemo(
-        () => formatMessage({
-            id: 'threads',
-            defaultMessage: 'Threads',
-        }).toLowerCase(),
-        [locale],
-    );
-
     useEffect(() => {
         bounce.current = debounce(search, 500);
         bounce.current();
-        if (isCRTEnabled) {
-            const isThreadTerm = threadLabel.indexOf(term.toLowerCase()) === 0;
-            setShowThreadItem(isThreadTerm);
-        }
         return () => {
             if (bounce.current) {
                 bounce.current.cancel();
             }
         };
-    }, [isCRTEnabled, term, threadLabel]);
+    }, [term]);
 
     return (
         <Animated.View
