@@ -179,7 +179,7 @@ export default function UserListRow({
     const showTeammateDisplay = teammateDisplay !== username;
 
     const userItemTestID = `${testID}.${id}`;
-    const containerOpacity = useMemo(() => (selectable || selected ? 1 : DISABLED_OPACITY), [selectable, selected]);
+    const opacity = selectable || selected ? 1 : DISABLED_OPACITY;
 
     return (
         <>
@@ -193,7 +193,7 @@ export default function UserListRow({
                     style={style.container}
                     testID={userItemTestID}
                 >
-                    <View style={[style.profileContainer, {opacity: containerOpacity}]}>
+                    <View style={[style.profileContainer, {opacity}]}>
                         <ProfilePicture
                             author={user}
                             size={40}
@@ -201,7 +201,7 @@ export default function UserListRow({
                             testID={`${userItemTestID}.profile_picture`}
                         />
                     </View>
-                    <View style={[style.textContainer, {opacity: containerOpacity}]}>
+                    <View style={[style.textContainer, {opacity}]}>
                         <View style={style.indicatorContainer}>
                             <Text
                                 style={style.displayName}
