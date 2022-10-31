@@ -56,9 +56,11 @@ type Props = {
     buttonText: string;
 }
 
-const MAX_ROWS = 3;
-const NAVBAR_HEADER_HEIGHT = 64;
 const BOTTOM_MARGIN = 20;
+const EXPOSED_CHIP_HEIGHT = 0.33 * USER_CHIP_HEIGHT;
+const MAX_CHIP_ROWS = 3;
+const NAVBAR_HEADER_HEIGHT = 64;
+const SCROLL_PADDING_TOP = 20;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -79,14 +81,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             shadowOpacity: 0.16,
             shadowRadius: 24,
         },
-        buttonContainer: {
-            marginTop: 12,
-        },
         containerUsers: {
-            marginTop: 20,
-            maxHeight: ((USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN) * MAX_ROWS) + (0.33 * USER_CHIP_HEIGHT),
+            maxHeight: SCROLL_PADDING_TOP + ((USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN) * MAX_CHIP_ROWS) + EXPOSED_CHIP_HEIGHT,
         },
         users: {
+            paddingTop: SCROLL_PADDING_TOP,
+            paddingBottom: 12,
             flexDirection: 'row',
             flexGrow: 1,
             flexWrap: 'wrap',
@@ -197,13 +197,11 @@ export default function SelectedUsers({
                     </ScrollView>
                 </View>
                 {message}
-                <View style={style.buttonContainer}>
-                    <Button
-                        onPress={handleOnPress}
-                        icon={buttonIcon}
-                        text={buttonText}
-                    />
-                </View>
+                <Button
+                    onPress={handleOnPress}
+                    icon={buttonIcon}
+                    text={buttonText}
+                />
             </View>
         </KeyboardAvoidingView>
     );
