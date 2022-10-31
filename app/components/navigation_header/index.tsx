@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {forwardRef, useImperativeHandle, useRef} from 'react';
+import {NativeSyntheticEvent, TextInputSelectionChangeEventData} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import {SEARCH_INPUT_HEIGHT, SEARCH_INPUT_MARGIN} from '@constants/view';
@@ -30,6 +31,8 @@ type Props = SearchProps & {
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
     title?: string;
+    cursorPosition?: number;
+    selection?: {start: number; end?: number | undefined } | undefined;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -66,6 +69,10 @@ const NavigationHeader = forwardRef<SearchRef, Props>((props: Props, ref) => {
     useImperativeHandle(ref, () => ({
         focus: () => {
             searchRef.current?.focus?.();
+        },
+        onSelectionChange: (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+            // @ts-expect-error cancel is not part of TextInput does exist in SearchBar
+            searchRef.current?.onSelectionChange?.(event);
         },
     }), [searchRef]);
 

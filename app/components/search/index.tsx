@@ -6,7 +6,7 @@
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {ActivityIndicatorProps, Keyboard, Platform, StyleProp, TextInput, TextInputProps, TextStyle, TouchableOpacityProps, ViewStyle} from 'react-native';
+import {ActivityIndicatorProps, Keyboard, NativeSyntheticEvent, Platform, StyleProp, TextInput, TextInputProps, TextInputSelectionChangeEventData, TextStyle, TouchableOpacityProps, ViewStyle} from 'react-native';
 import {SearchBar} from 'react-native-elements';
 
 import CompassIcon from '@components/compass_icon';
@@ -16,6 +16,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 export type SearchProps = TextInputProps & {
+    cursorPosition: number;
+    selection?: {start: number; end?: number | undefined } | undefined;
     cancelIcon?: React.ReactElement;
     cancelButtonProps?: Partial<TouchableOpacityProps> & {
         buttonStyle?: StyleProp<ViewStyle>;
@@ -47,6 +49,7 @@ export type SearchRef = {
     cancel?: () => void;
     clear?: () => void;
     focus?: () => void;
+    onSelectionChange: (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -80,6 +83,32 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const searchClearButtonTestID = `${props.testID}.search.clear.button`;
     const searchCancelButtonTestID = `${props.testID}.search.cancel.button`;
     const searchInputTestID = `${props.testID}.search.input`;
+    const [localCursorPosition, setLocalCursorPosition] = useState(props.cursorPosition);
+
+    useEffect(() => {
+        if (localCursorPosition !== props.cursorPosition) {
+            setLocalCursorPosition(props.cursorPosition);
+        }
+
+        // setLocalSelection({start: props.cursorPosition});
+    }, [props.cursorPosition]);
+
+    const onChangeText = useCallback((text: string) => {
+        setValue(text);
+        props.onChangeText?.(text);
+    }, [props.onChangeText, value, props.selection]);
+
+    const onSelectionChange = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+    // const onSelectionChange = useCallback(({nativeEvent: {selection, text}}) => {
+        console.log('<><> onSelectionChange - selection', event.nativeEvent.selection);
+
+        setLocalCursorPosition(event.nativeEvent.selection.start);
+
+        // setLocalSelection(selection);
+    }, [props.selection]);
+
+    // console.log('props.selection', props.selection, 'localSelection', localSelection);
+    // console.log('props.selection', props.selection);
 
     const onCancel = useCallback(() => {
         Keyboard.dismiss();
@@ -91,11 +120,6 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
         setValue('');
         props.onClear?.();
     }, [props.onClear]);
-
-    const onChangeText = useCallback((text: string) => {
-        setValue(text);
-        props.onChangeText?.(text);
-    }, [props.onChangeText]);
 
     const cancelButtonProps = useMemo(() => ({
         buttonTextStyle: {
@@ -151,6 +175,13 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
         focus: () => {
             searchRef.current?.focus();
         },
+        onSelectionChange: (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+            // console.log('. IN HERE!');
+            console.log('event?.nativeEvent.selection', event);
+
+            // @ts-expect-error cancel is not part of TextInput does exist in SearchBar
+            searchRef.current?.onSelectionChange?.(event);
+        },
     }), [searchRef]);
 
     return (
@@ -171,6 +202,8 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
 
             // @ts-expect-error onChangeText type definition is wrong in elements
             onChangeText={onChangeText}
+            selection={{start: localCursorPosition}}
+            onSelectionChange={onSelectionChange}
             placeholder={props.placeholder || intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
             placeholderTextColor={props.placeholderTextColor || changeOpacity(theme.centerChannelColor, Platform.select({android: 0.56, default: 0.72}))}
             platform={Platform.select({android: 'android', default: 'ios'})}

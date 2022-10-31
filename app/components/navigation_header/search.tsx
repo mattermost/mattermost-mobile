@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, Keyboard, NativeSyntheticEvent, Platform, TextInputFocusEventData, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, Keyboard, NativeSyntheticEvent, Platform, TextInputFocusEventData, TextInputSelectionChangeEventData, ViewStyle} from 'react-native';
 import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
 import Search, {SearchProps, SearchRef} from '@components/search';
@@ -39,6 +39,10 @@ const NavigationSearch = forwardRef<SearchRef, Props>((searchProps: Props, ref) 
     useImperativeHandle(ref, () => ({
         focus: () => {
             searchRef.current?.focus?.();
+        },
+        onSelectionChange: (event: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+            // @ts-expect-error cancel is not part of TextInput does exist in SearchBar
+            searchRef.current?.onSelectionChange(event.nativeEvent);
         },
     }), [searchRef]);
 

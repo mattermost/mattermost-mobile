@@ -21,7 +21,7 @@ export type ModifierItem = {
 
 type Props = {
     item: ModifierItem;
-    setSearchValue: (value: string) => void;
+    setSearchValue: (value: string, cursorOffset?: number) => void;
     searchValue?: string;
 }
 
@@ -40,7 +40,8 @@ const Modifier = ({item, searchValue, setSearchValue}: Props) => {
             newValue = `${searchValue} ${modifierTerm}`;
         }
 
-        setSearchValue(newValue);
+        const cursorPosition = item.testID === 'search.phrases_section' ? -1 : undefined;
+        setSearchValue(newValue, cursorPosition);
     });
 
     return (

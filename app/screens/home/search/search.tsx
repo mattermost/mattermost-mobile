@@ -4,7 +4,7 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'react-native';
+import {FlatList, LayoutChangeEvent, NativeSyntheticEvent, Platform, StyleSheet, TextInputSelectionChangeEventData, ViewProps} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -142,11 +142,28 @@ const SearchScreen = ({teamId}: Props) => {
         onSnap(0);
     }, [resetToInitial]);
 
-    const handleTextChange = useCallback((newValue: string) => {
+    const handleTextChange = useCallback((newValue: string, cursorOffset?: undefined) => {
         searchRef.current?.focus?.();
+        const newCursorPos = (newValue.length + (cursorOffset || 0));
+
+        // console.log(
+        //     'newValue', newValue,
+        //     'newVal.len', newValue.length,
+        //     'offset', cursorOffset,
+        //     'newCursorPos', newCursorPos,
+        // );
+        setCursorPosition(newCursorPos);
         setSearchValue(newValue);
-        setCursorPosition(newValue.length);
-    }, []);
+    }, [cursorPosition, searchRef]);
+
+    const onSelectionChange = (e: NativeSyntheticEvent<TextInputSelectionChangeEventData>) => {
+        console.log('e.nativeEvent', e.nativeEvent);
+        console.log('. IN HERE!');
+    };
+
+    searchRef.current?.onSelectionChange?.(onSelectionChange);
+
+    // console.log('searchValue', searchValue, 'cursorPosition', cursorPosition);
 
     const handleLoading = useCallback((show: boolean) => {
         (showResults ? setResultsLoading : setLoading)(show);
@@ -317,11 +334,15 @@ const SearchScreen = ({teamId}: Props) => {
                 hideHeader={hideHeader}
                 onChangeText={handleTextChange}
                 onSubmitEditing={onSubmit}
+                onSelectionChange={onSelectionChange}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
                 onClear={handleClearSearch}
                 onCancel={handleCancelSearch}
                 defaultValue={searchValue}
+
+                //selection={selection}
+                cursorPosition={cursorPosition}
                 ref={searchRef}
             />
             <SafeAreaView
