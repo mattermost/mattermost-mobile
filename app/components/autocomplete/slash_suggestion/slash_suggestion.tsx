@@ -13,7 +13,6 @@ import {
 
 import {fetchSuggestions} from '@actions/remote/command';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import analytics from '@managers/analytics';
 import IntegrationsManager from '@managers/integrations_manager';
 
@@ -78,9 +77,8 @@ const SlashSuggestion = ({
     listStyle,
 }: Props) => {
     const intl = useIntl();
-    const theme = useTheme();
     const serverUrl = useServerUrl();
-    const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId, theme));
+    const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId));
     const mounted = useRef(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
 

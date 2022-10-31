@@ -43,8 +43,9 @@ const edges: Edge[] = ['left', 'right'];
 const AnimatedSafeAreaView = Animated.createAnimatedComponent(SafeAreaView);
 
 const Header = ({index, onClose, style, total}: Props) => {
+    const insets = useSafeAreaInsets();
     const {width} = useWindowDimensions();
-    const height = useDefaultHeaderHeight();
+    const height = useDefaultHeaderHeight() - insets.top;
     const {top} = useSafeAreaInsets();
     const topContainerStyle = useMemo(() => [{height: top, backgroundColor: '#000'}], [top]);
     const containerStyle = useMemo(() => [styles.container, {height}], [height]);

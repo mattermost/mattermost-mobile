@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {fetchPostAuthors} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
@@ -78,7 +79,7 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
             user_id: authorId,
             channel_id: channeId,
             message,
-            type: Post.POST_TYPES.EPHEMERAL_ADD_TO_CHANNEL as PostType,
+            type: Post.POST_TYPES.EPHEMERAL as PostType,
             create_at: timestamp,
             edit_at: 0,
             update_at: timestamp,
@@ -94,6 +95,7 @@ export const sendEphemeralPost = async (serverUrl: string, message: string, chan
             props: {},
         } as Post;
 
+        await fetchPostAuthors(serverUrl, [post], false);
         await operator.handlePosts({
             actionType: ActionType.POSTS.RECEIVED_NEW,
             order: [post.id],

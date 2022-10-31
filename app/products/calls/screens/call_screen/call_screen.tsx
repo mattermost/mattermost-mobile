@@ -38,7 +38,13 @@ import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {WebsocketEvents, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {bottomSheet, dismissBottomSheet, goToScreen, popTopScreen} from '@screens/navigation';
+import {
+    bottomSheet,
+    dismissAllModalsAndPopToScreen,
+    dismissBottomSheet,
+    goToScreen,
+    popTopScreen,
+} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
@@ -50,6 +56,7 @@ export type Props = {
     currentCall: CurrentCall | null;
     participantsDict: Dictionary<CallParticipant>;
     teammateNameDisplay: string;
+    fromThreadScreen?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -247,17 +254,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDisplay}: Props) => {
+const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDisplay, fromThreadScreen}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const {width, height} = useWindowDimensions();
-    const isLandscape = width > height;
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
-    const myParticipant = currentCall?.participants[currentCall.myUserId];
-    const style = getStyleSheet(theme);
-    const showControls = !isLandscape || showControlsInLandscape;
     const [speakers, setSpeakers] = useState<Dictionary<boolean>>({});
+
+    const style = getStyleSheet(theme);
+    const isLandscape = width > height;
+    const showControls = !isLandscape || showControlsInLandscape;
+    const myParticipant = currentCall?.participants[currentCall.myUserId];
+    const chatThreadTitle = intl.formatMessage({id: 'mobile.calls_chat_thread', defaultMessage: 'Chat thread'});
 
     useEffect(() => {
         mergeNavigationOptions('Call', {
@@ -329,17 +338,20 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
 
         const activeUrl = await DatabaseManager.getActiveServerUrl();
         if (activeUrl === currentCall.serverUrl) {
-            goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
+            await dismissAllModalsAndPopToScreen(Screens.THREAD, chatThreadTitle, {rootId: currentCall.threadId});
             return;
         }
 
         // TODO: this is a temporary solution until we have a proper cross-team thread view.
         //  https://mattermost.atlassian.net/browse/MM-45752
-        popTopScreen(componentId);
+        await popTopScreen(componentId);
+        if (fromThreadScreen) {
+            await popTopScreen(Screens.THREAD);
+        }
         await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
         await appEntry(currentCall.serverUrl, Date.now());
-        goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
-    }, [currentCall?.serverUrl, currentCall?.threadId]);
+        await goToScreen(Screens.THREAD, chatThreadTitle, {rootId: currentCall.threadId});
+    }, [currentCall?.serverUrl, currentCall?.threadId, fromThreadScreen, componentId, chatThreadTitle]);
 
     const showOtherActions = useCallback(() => {
         const renderContent = () => {
@@ -348,7 +360,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                     <SlideUpPanelItem
                         icon='message-text-outline'
                         onPress={switchToThread}
-                        text={intl.formatMessage({id: 'mobile.calls_chat_thread', defaultMessage: 'Chat thread'})}
+                        text={chatThreadTitle}
                     />
                 </View>
             );
