@@ -19,5 +19,6 @@ export default tableSchema({
         {name: 'name', type: 'string'},
         {name: 'type', type: 'string'},
         {name: 'update_at', type: 'number'},
+        {name: 'invite_id', type: 'string'},
     ],
 });

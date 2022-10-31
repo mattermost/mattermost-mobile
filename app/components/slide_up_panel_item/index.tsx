@@ -21,6 +21,7 @@ type SlideUpPanelProps = {
     textStyles?: TextStyle;
     testID?: string;
     text: string;
+    topDivider?: boolean;
 }
 
 export const ITEM_HEIGHT = 48;
@@ -61,10 +62,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
         },
+        divider: {
+            borderTopWidth: 1,
+            borderStyle: 'solid',
+            borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+        },
     };
 });
 
-const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text, textStyles, rightIcon = false}: SlideUpPanelProps) => {
+const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text, textStyles, rightIcon = false, topDivider}: SlideUpPanelProps) => {
     const theme = useTheme();
     const handleOnPress = useCallback(preventDoubleTap(onPress, 500), []);
     const style = getStyleSheet(theme);
@@ -99,10 +105,12 @@ const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text
         }
     }
 
+    const divider = topDivider ? style.divider : {};
+
     return (
         <TouchableHighlight
             onPress={handleOnPress}
-            style={style.container}
+            style={{...style.container, ...divider}}
             testID={testID}
             underlayColor={changeOpacity(theme.buttonBg, 0.08)}
         >

@@ -28,7 +28,9 @@ import PlusMenu from './plus_menu';
 type Props = {
     canCreateChannels: boolean;
     canJoinChannels: boolean;
-    displayName: string;
+    canInvitePeople: boolean;
+    displayName?: string;
+    inviteId?: string;
     iconPad?: boolean;
     onHeaderPress?: () => void;
     pushProxyStatus: string;
@@ -92,7 +94,9 @@ const hitSlop: Insets = {top: 10, bottom: 30, left: 20, right: 20};
 const ChannelListHeader = ({
     canCreateChannels,
     canJoinChannels,
+    canInvitePeople,
     displayName,
+    inviteId,
     iconPad,
     onHeaderPress,
     pushProxyStatus,
@@ -118,6 +122,9 @@ const ChannelListHeader = ({
                 <PlusMenu
                     canCreateChannels={canCreateChannels}
                     canJoinChannels={canJoinChannels}
+                    canInvitePeople={canInvitePeople}
+                    displayName={displayName}
+                    inviteId={inviteId}
                 />
             );
         };
@@ -129,6 +136,10 @@ const ChannelListHeader = ({
         }
 
         if (canJoinChannels) {
+            items += 1;
+        }
+
+        if (canInvitePeople) {
             items += 1;
         }
 
