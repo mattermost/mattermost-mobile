@@ -226,7 +226,7 @@ export default function CreateDirectMessage({
         } else {
             const wasSelected = selectedIds[user.id];
 
-            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM - 1) {
+            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
                 return;
             }
 
@@ -368,8 +368,8 @@ export default function CreateDirectMessage({
             {selectedCount > 0 &&
             <SelectedUsers
                 selectedIds={selectedIds}
-                warnCount={5}
-                maxCount={7}
+                warnCount={General.MAX_USERS_IN_GM - 2}
+                maxCount={General.MAX_USERS_IN_GM}
                 onRemove={handleRemoveProfile}
                 teammateNameDisplay={teammateNameDisplay}
             />
