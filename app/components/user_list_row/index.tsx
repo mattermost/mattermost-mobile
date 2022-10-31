@@ -91,8 +91,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const disabledOpacity = 0.32;
-const defaultIconOpacity = 0.32;
+const DISABLED_OPACITY = 0.32;
+const DEFAULT_ICON_OPACITY = 0.32;
 
 export default function UserListRow({
     id,
@@ -154,7 +154,7 @@ export default function UserListRow({
     }, [onLongPress, user]);
 
     const icon = useMemo(() => {
-        const iconOpacity = defaultIconOpacity * (selectable ? 1 : disabledOpacity);
+        const iconOpacity = DEFAULT_ICON_OPACITY * (selectable ? 1 : DISABLED_OPACITY);
         const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
         return (
             <View style={style.selector}>
@@ -179,7 +179,7 @@ export default function UserListRow({
     const showTeammateDisplay = teammateDisplay !== username;
 
     const userItemTestID = `${testID}.${id}`;
-    const containerOpacity = useMemo(() => (selectable || selected ? 1 : disabledOpacity), [selectable, selected]);
+    const containerOpacity = useMemo(() => (selectable || selected ? 1 : DISABLED_OPACITY), [selectable, selected]);
 
     return (
         <>
