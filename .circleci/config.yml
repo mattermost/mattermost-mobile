@@ -66,9 +66,9 @@ commands:
   gradle-dependencies:
     description: "Get Gradle dependencies"
     steps:
-#      - restore_cache:
-#          name: Restore Gradle cache
-#          key: v1-gradle-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
+      - restore_cache:
+          name: Restore Gradle cache
+          key: v1-gradle-{{ checksum "android/build.gradle" }}-{{ checksum  "android/app/build.gradle" }}
       - run:
           working_directory: android
           name: Download Gradle dependencies
@@ -562,9 +562,7 @@ workflows:
                 - /^build-ios-beta-\d+$/
 
       - build-android-pr:
-          context:
-            - mattermost-mobile-android-pr
-            - mattermost-mobile-sentry
+          context: mattermost-mobile-android-pr
           requires:
             - test
           filters:
@@ -607,7 +605,7 @@ workflows:
           #       - /^build-ios-\d+$/
           #       - /^build-ios-beta-\d+$/
           #       - /^build-ios-sim-\d+$/
-
+                
       # - github-release:
       #     context: mattermost-mobile-unsigned
       #     requires:
