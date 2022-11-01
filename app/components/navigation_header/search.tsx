@@ -32,8 +32,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const NavigationSearch = forwardRef<SearchRef, Props>(({
-    theme,
     hideHeader,
+    theme,
     topStyle,
     ...searchProps
 }: Props, ref) => {
