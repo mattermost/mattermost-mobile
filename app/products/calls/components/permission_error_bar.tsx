@@ -25,7 +25,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => (
         errorBar: {
             flexDirection: 'row',
             backgroundColor: theme.dndIndicator,
-            height: CALL_ERROR_BAR_HEIGHT,
+            minHeight: CALL_ERROR_BAR_HEIGHT,
             width: '100%',
             borderRadius: 5,
             padding: 10,
