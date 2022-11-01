@@ -31,8 +31,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const NavigationSearch = forwardRef<SearchRef, Props>((searchProps: Props, ref) => {
-    const {theme, hideHeader, topStyle} = searchProps;
+const NavigationSearch = forwardRef<SearchRef, Props>(({
+    theme,
+    hideHeader,
+    topStyle,
+    ...searchProps
+}: Props, ref) => {
     const styles = getStyleSheet(theme);
 
     const cancelButtonProps: SearchProps['cancelButtonProps'] = useMemo(() => ({
