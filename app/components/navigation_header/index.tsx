@@ -41,24 +41,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const NavigationHeader = forwardRef<SearchRef, Props>((props: Props, ref) => {
-    const {
-        hasSearch = false,
-        isLargeTitle = false,
-        leftComponent,
-        onBackPress,
-        onTitlePress,
-        rightButtons,
-        scrollValue,
-        lockValue,
-        showBackButton,
-        subtitle,
-        subtitleCompanion,
-        title = '',
-        hideHeader,
-    } = props;
-    const searchProps = props;
-
+const NavigationHeader = forwardRef<SearchRef, Props>(({
+    hasSearch = false,
+    isLargeTitle = false,
+    leftComponent,
+    onBackPress,
+    onTitlePress,
+    rightButtons,
+    scrollValue,
+    lockValue,
+    showBackButton,
+    subtitle,
+    subtitleCompanion,
+    title = '',
+    hideHeader,
+    ...searchProps
+}: Props, ref) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
