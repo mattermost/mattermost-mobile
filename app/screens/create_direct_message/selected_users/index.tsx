@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
+import {useIntl} from 'react-intl';
 import {KeyboardAvoidingView, NativeModules, Platform, ScrollView, View} from 'react-native';
 
-import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
@@ -61,6 +61,7 @@ const EXPOSED_CHIP_HEIGHT = 0.33 * USER_CHIP_HEIGHT;
 const MAX_CHIP_ROWS = 3;
 const NAVBAR_HEADER_HEIGHT = 64;
 const SCROLL_PADDING_TOP = 20;
+const CHIP_HEIGHT_WITH_MARGIN = USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -82,7 +83,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             shadowRadius: 24,
         },
         containerUsers: {
-            maxHeight: SCROLL_PADDING_TOP + ((USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN) * MAX_CHIP_ROWS) + EXPOSED_CHIP_HEIGHT,
+            maxHeight: SCROLL_PADDING_TOP + (CHIP_HEIGHT_WITH_MARGIN * MAX_CHIP_ROWS) + EXPOSED_CHIP_HEIGHT,
         },
         users: {
             paddingTop: SCROLL_PADDING_TOP,
@@ -114,6 +115,7 @@ export default function SelectedUsers({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const isTablet = useIsTablet();
+    const {formatMessage} = useIntl();
     const {StatusBarManager} = NativeModules;
 
     const handleOnPress = async () => {
