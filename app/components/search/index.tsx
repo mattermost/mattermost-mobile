@@ -43,10 +43,10 @@ export type SearchProps = TextInputProps & {
 };
 
 export type SearchRef = {
-    blur?: () => void;
-    cancel?: () => void;
-    clear?: () => void;
-    focus?: () => void;
+    blur: () => void;
+    cancel: () => void;
+    clear: () => void;
+    focus: () => void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({

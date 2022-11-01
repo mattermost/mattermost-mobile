@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {forwardRef, useImperativeHandle, useRef} from 'react';
+import React, {forwardRef} from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import {SEARCH_INPUT_HEIGHT, SEARCH_INPUT_MARGIN} from '@constants/view';
@@ -61,13 +61,6 @@ const NavigationHeader = forwardRef<SearchRef, Props>((props: Props, ref) => {
 
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const searchRef = useRef<SearchRef>(null);
-
-    useImperativeHandle(ref, () => ({
-        focus: () => {
-            searchRef.current?.focus?.();
-        },
-    }), [searchRef]);
 
     const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
     const containerHeight = useAnimatedStyle(() => {
@@ -134,7 +127,7 @@ const NavigationHeader = forwardRef<SearchRef, Props>((props: Props, ref) => {
                     hideHeader={hideHeader}
                     theme={theme}
                     topStyle={searchTopStyle}
-                    ref={searchRef}
+                    ref={ref}
                 />
                 }
             </Animated.View>

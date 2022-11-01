@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef} from 'react';
+import React, {forwardRef, useCallback, useEffect, useMemo} from 'react';
 import {DeviceEventEmitter, Keyboard, NativeSyntheticEvent, Platform, TextInputFocusEventData, ViewStyle} from 'react-native';
 import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
@@ -33,14 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const NavigationSearch = forwardRef<SearchRef, Props>((searchProps: Props, ref) => {
     const {theme, hideHeader, topStyle} = searchProps;
-    const searchRef = useRef<SearchRef>(null);
     const styles = getStyleSheet(theme);
-
-    useImperativeHandle(ref, () => ({
-        focus: () => {
-            searchRef.current?.focus?.();
-        },
-    }), [searchRef]);
 
     const cancelButtonProps: SearchProps['cancelButtonProps'] = useMemo(() => ({
         buttonTextStyle: {
@@ -55,18 +48,21 @@ const NavigationSearch = forwardRef<SearchRef, Props>((searchProps: Props, ref) 
         searchProps.onFocus?.(e);
     }, [hideHeader, searchProps.onFocus]);
 
-    useEffect(() => {
-        const show = Keyboard.addListener('keyboardDidShow', () => {
-            if (Platform.OS === 'android') {
-                DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
-            }
-        });
+    const showEmitter = useCallback(() => {
+        if (Platform.OS === 'android') {
+            DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
+        }
+    }, []);
 
-        const hide = Keyboard.addListener('keyboardDidHide', () => {
-            if (Platform.OS === 'android') {
-                DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
-            }
-        });
+    const hideEmitter = useCallback(() => {
+        if (Platform.OS === 'android') {
+            DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+        }
+    }, []);
+
+    useEffect(() => {
+        const show = Keyboard.addListener('keyboardDidShow', showEmitter);
+        const hide = Keyboard.addListener('keyboardDidHide', hideEmitter);
 
         return () => {
             hide.remove();
@@ -86,7 +82,7 @@ const NavigationSearch = forwardRef<SearchRef, Props>((searchProps: Props, ref) 
                 placeholderTextColor={changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
                 searchIconColor={theme.sidebarText}
                 selectionColor={theme.sidebarText}
-                ref={searchRef}
+                ref={ref}
             />
         </Animated.View>
     );
