@@ -85,6 +85,15 @@ project.ext.react = [
 apply from: "../../node_modules/react-native/react.gradle"
 apply from: "../../node_modules/react-native-vector-icons/fonts.gradle"
 
+if (System.getenv("SENTRY_ENABLED") == "true") {
+    project.ext.sentryCli = [
+        logLevel: "error",
+        flavorAware: false
+    ]
+
+    apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
+}
+
 /**
  * Set this to true to create two separate APKs instead of one:
  *   - An APK that only works on ARM devices
@@ -367,15 +376,6 @@ configurations.all {
 task copyDownloadableDepsToLibs(type: Copy) {
     from configurations.implementation
     into 'libs'
-}
-
-if (System.getenv("SENTRY_ENABLED") == "true") {
-    project.ext.sentryCli = [
-        logLevel: "error",
-        flavorAware: false
-    ]
-
-    apply from: "../../node_modules/@sentry/react-native/sentry.gradle"
 }
 
 apply plugin: 'com.google.gms.google-services'
