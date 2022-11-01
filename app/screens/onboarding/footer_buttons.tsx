@@ -40,9 +40,12 @@ const FooterButtons = ({
 }: Props) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
+    const inputRange = [-width, 0, width];
 
     useEffect(() => {
-        console.log('is last slide');
+        if (isLastSlide) {
+            console.log('is last slide');
+        }
     }, [isLastSlide]);
 
     let mainButtonText = (
