@@ -58,7 +58,7 @@ describe('Teams - Invite people', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T4729_2 - should be able to share a URL invite to the team', async () => {
+    it('MM-T5221 - should be able to share a URL invite to the team', async () => {
         // # Open plus menu
         await ChannelListScreen.headerPlusButton.tap();
 
