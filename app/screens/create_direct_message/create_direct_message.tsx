@@ -38,6 +38,10 @@ const messages = defineMessages({
         id: t('create_direct_message.start'),
         defaultMessage: 'Start Conversation',
     },
+    toastMessage: {
+        id: 'mobile.create_direct_message.max_limit_reached',
+        defaultMessage: 'Group messages are limited to {maxCount} members',
+    },
 });
 
 const CLOSE_BUTTON = 'close-dms';
@@ -120,7 +124,20 @@ export default function CreateDirectMessage({
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
+    const [showToast, setShowToast] = useState(false);
     const selectedCount = Object.keys(selectedIds).length;
+
+    useEffect(() => {
+        setShowToast(selectedCount >= General.MAX_USERS_IN_GM);
+    }, [selectedCount]);
+
+    useEffect(() => {
+        if (showToast) {
+            setTimeout(() => {
+                setShowToast(false);
+            }, 4000);
+        }
+    }, [showToast]);
 
     const isSearch = Boolean(term);
 
@@ -222,6 +239,7 @@ export default function CreateDirectMessage({
             const wasSelected = selectedIds[user.id];
 
             if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+                setShowToast(true);
                 return;
             }
 
@@ -361,9 +379,11 @@ export default function CreateDirectMessage({
             />
             {selectedCount > 0 &&
                 <SelectedUsers
+                    showToast={showToast}
+                    setShowToast={setShowToast}
+                    toastIcon={'check'}
+                    toastMessage={formatMessage(messages.toastMessage, {maxCount: General.MAX_USERS_IN_GM})}
                     selectedIds={selectedIds}
-                    warnCount={General.MAX_USERS_IN_GM - 2}
-                    maxCount={General.MAX_USERS_IN_GM}
                     onRemove={handleRemoveProfile}
                     teammateNameDisplay={teammateNameDisplay}
                     onPress={startConversation}

@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import React, {useCallback, useMemo} from 'react';
 import {KeyboardAvoidingView, NativeModules, Platform, ScrollView, View} from 'react-native';
+import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
+import Toast from '@components/toast';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
@@ -25,17 +27,6 @@ type Props = {
     teammateNameDisplay: string;
 
     /*
-     * The number of users that will be selected when we start to display a message indicating
-     * the remaining number of users that can be selected.
-     */
-    warnCount: number;
-
-    /*
-     * The maximum number of users that can be selected.
-     */
-    maxCount: number;
-
-    /*
      * A handler function that will deselect a user when clicked on.
      */
     onPress: (selectedId?: {[id: string]: boolean}) => void;
@@ -44,6 +35,26 @@ type Props = {
      * A handler function that will deselect a user when clicked on.
      */
     onRemove: (id: string) => void;
+
+    /*
+     * show the toast
+     */
+    showToast: boolean;
+
+    /*
+     * toast Icon
+     */
+    toastIcon?: string;
+
+    /*
+     * toast Message
+     */
+    toastMessage: string;
+
+    /*
+     * callback to set the value of showToast
+     */
+    setShowToast: (show: boolean) => void;
 
     /*
      * Name of the button Icon
@@ -85,6 +96,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         containerUsers: {
             maxHeight: SCROLL_PADDING_TOP + (CHIP_HEIGHT_WITH_MARGIN * MAX_CHIP_ROWS) + EXPOSED_CHIP_HEIGHT,
         },
+        toast: {
+            backgroundColor: theme.centerChannelColor,
+            bottom: 8,
+            color: changeOpacity(theme.centerChannelColor, 0.6),
+            justifyContent: 'bottom',
+            position: 'absolute',
+        },
         users: {
             paddingTop: SCROLL_PADDING_TOP,
             paddingBottom: 12,
@@ -105,8 +123,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 export default function SelectedUsers({
     selectedIds,
     teammateNameDisplay,
-    warnCount,
-    maxCount,
+    showToast = false,
+    setShowToast,
+    toastIcon,
+    toastMessage,
     onPress,
     onRemove,
     buttonIcon,
@@ -115,7 +135,6 @@ export default function SelectedUsers({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const isTablet = useIsTablet();
-    const {formatMessage} = useIntl();
     const {StatusBarManager} = NativeModules;
 
     const handleOnPress = async () => {
@@ -142,42 +161,11 @@ export default function SelectedUsers({
         return u;
     }, [selectedIds, teammateNameDisplay, onRemove]);
 
-    const showWarn = users.length >= warnCount && users.length < maxCount;
+    const onToastPress = useCallback(() => setShowToast(false), []);
 
-    const message = useMemo(() => {
-        if (users.length >= maxCount) {
-            return (
-                <FormattedText
-                    style={style.message}
-                    id='mobile.create_direct_message.cannot_add_more'
-                    defaultMessage='You cannot add more users'
-                />
-            );
-        } else if (users.length >= warnCount) {
-            const remaining = maxCount - users.length;
-            if (remaining === 1) {
-                return (
-                    <FormattedText
-                        style={style.message}
-                        id='mobile.create_direct_message.one_more'
-                        defaultMessage='You can add 1 more user'
-                    />
-                );
-            }
-            return (
-                <FormattedText
-                    style={style.message}
-                    id='mobile.create_direct_message.add_more'
-                    defaultMessage='You can add {remaining, number} more users'
-                    values={{
-                        remaining,
-                    }}
-                />
-            );
-        }
-
-        return null;
-    }, [users.length >= maxCount, showWarn && users.length, theme, maxCount]);
+    const animatedStyle = useAnimatedStyle(() => (
+        {opacity: withTiming(showToast ? 1 : 0, {duration: 300})}
+    ));
 
     const keyboardBottomMargin = (isTablet ? 0 : BOTTOM_MARGIN);
     const keyboardVerticalOffset = StatusBarManager.HEIGHT + NAVBAR_HEADER_HEIGHT + keyboardBottomMargin;
@@ -190,7 +178,17 @@ export default function SelectedUsers({
             keyboardVerticalOffset={keyboardVerticalOffset}
             style={style.container}
         >
-            <View style={viewPaddingBottom} >
+            {showToast &&
+                <TouchableWithFeedback onPress={onToastPress}>
+                    <Toast
+                        animatedStyle={animatedStyle}
+                        iconName={toastIcon}
+                        style={style.toast}
+                        message={toastMessage}
+                    />
+                </TouchableWithFeedback>
+            }
+            <View style={viewPaddingBottom}>
                 <View style={style.containerUsers}>
                     <ScrollView
                         contentContainerStyle={style.users}
@@ -198,7 +196,6 @@ export default function SelectedUsers({
                         {users}
                     </ScrollView>
                 </View>
-                {message}
                 <Button
                     onPress={handleOnPress}
                     icon={buttonIcon}

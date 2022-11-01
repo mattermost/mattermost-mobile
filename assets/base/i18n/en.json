@@ -413,7 +413,7 @@
   "mobile.create_channel": "Create",
   "mobile.create_channel.title": "New channel",
   "mobile.create_direct_message.add_more": "You can add {remaining, number} more users",
-  "mobile.create_direct_message.cannot_add_more": "You cannot add more users",
+  "mobile.create_direct_message.max_limit_reached": "Group messages are limited to {maxCount} members",
   "mobile.create_direct_message.one_more": "You can add 1 more user",
   "mobile.create_direct_message.start": "Start Conversation",
   "mobile.create_direct_message.you": "@{username} - you",
