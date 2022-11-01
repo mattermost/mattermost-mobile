@@ -648,5 +648,12 @@
     "channel_info.unarchive": "Återställ arkiverad kanal",
     "channel_info.set_header": "Ange rubrik",
     "channel_info.send_mesasge": "Skicka meddelande",
-    "channel_info.send_a_mesasge": "Skicka ett meddelande"
+    "channel_info.send_a_mesasge": "Skicka ett meddelande",
+    "mobile.server_upgrade.description": "\nEn uppgradering av serverprogramvaran är nödvändig för att kunna använda Mattermost appen. Prata med din Systemadministratör för detaljer.\n",
+    "mobile.server_requires_client_certificate": "Servern kräver klientcertifikat för autentisering.",
+    "mobile.server_ping_failed": "Det går inte att ansluta till servern.",
+    "mobile.server_name.exists": "Du använder det här namnet för en annan server.",
+    "mobile.server_link.unreachable_user.error": "Vi kan inte omdirigera dig till direktmeddelandet. Den angivna användaren är okänd.",
+    "mobile.server_identifier.exists": "Du är redan ansluten till den här servern.",
+    "mobile.search.team.select": "Välj ett team att söka i"
 }
