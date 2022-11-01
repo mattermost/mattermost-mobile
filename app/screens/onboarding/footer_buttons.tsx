@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
-import {View} from 'react-native';
+import React, {useEffect} from 'react';
+import {useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
 
 import CompassIcon from '@app/components/compass_icon';
@@ -15,6 +15,8 @@ type Props = {
     isLastSlide: boolean;
     nextSlideHandler: any;
     signInHandler: any;
+    scrollX: any;
+
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -34,8 +36,14 @@ const FooterButtons = ({
     nextSlideHandler,
     signInHandler,
     isLastSlide,
+    scrollX,
 }: Props) => {
+    const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
+
+    useEffect(() => {
+        console.log('is last slide');
+    }, [isLastSlide]);
 
     let mainButtonText = (
         <View style={{flexDirection: 'row'}}>

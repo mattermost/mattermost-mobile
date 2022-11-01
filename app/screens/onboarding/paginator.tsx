@@ -4,7 +4,7 @@
 import React from 'react';
 import {View, Animated, useWindowDimensions, TouchableOpacity} from 'react-native';
 
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     data: any;
@@ -13,28 +13,27 @@ type Props = {
     moveToSlide: any;
 };
 
+const DOT_SIZE = 16;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     dot: {
-        height: 8,
+        height: DOT_SIZE / 2,
         borderRadius: 5,
         backgroundColor: theme.buttonBg,
-        marginHorizontal: 8,
-        width: 8,
-
-        // shadow
-        shadowOffset: {width: 0, height: 13},
-        shadowOpacity: 0.7,
-        shadowColor: theme.buttonBg,
-        shadowRadius: 6,
-        elevation: 3,
+        marginHorizontal: DOT_SIZE / 2,
+        width: DOT_SIZE / 2,
+    },
+    outerDot: {
+        height: DOT_SIZE,
+        borderRadius: DOT_SIZE / 2,
+        backgroundColor: theme.buttonBg,
+        marginHorizontal: 4,
+        marginTop: -4,
+        position: 'absolute',
+        width: DOT_SIZE,
     },
     button: {
         marginTop: 5,
-    },
-    rowIcon: {
-        color: theme.buttonColor,
-        fontSize: 12,
-        marginLeft: 5,
     },
 }));
 
@@ -55,7 +54,13 @@ const Paginator = ({
 
                     const opacity = scrollX.interpolate({
                         inputRange,
-                        outputRange: [0.3, 1, 0.3],
+                        outputRange: [0.25, 1, 0.25],
+                        extrapolate: 'clamp',
+                    });
+
+                    const opacityOuterDot = scrollX.interpolate({
+                        inputRange,
+                        outputRange: [0, 0.15, 0],
                         extrapolate: 'clamp',
                     });
 
@@ -65,15 +70,16 @@ const Paginator = ({
                             key={item.id}
                         >
                             <Animated.View
+                                style={[styles.outerDot, {
+                                    opacity: opacityOuterDot,
+                                }]}
+                                key={'outer-' + item.id + i.toString()}
+                            />
+                            <Animated.View
                                 style={[styles.dot, {
-                                    shadowOffset: {width: 0, height: 13},
-                                    shadowOpacity: 0.7,
-                                    shadowColor: theme.buttonBg,
-                                    shadowRadius: 6,
-                                    elevation: 3,
                                     opacity,
                                 }]}
-                                key={item.id}
+                                key={item.id + i.toString()}
                             />
                         </TouchableOpacity>
                     );

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef, useState} from 'react';
-import {Platform, View, FlatList, Animated, ListRenderItemInfo} from 'react-native';
+import {Platform, View, Animated, ListRenderItemInfo} from 'react-native';
 import {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -10,12 +10,12 @@ import {generateId} from '@app/utils/general';
 import Background from '@screens/background';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import FooterButtons from './footer_buttons';
 import Paginator from './paginator';
 import SlideItem from './slide';
 import slidesData from './slides_data';
 
 import type {LaunchProps} from '@typings/launch';
-import FooterButtons from './footer_buttons';
 
 interface OnboardingProps extends LaunchProps {
     theme: Theme;
@@ -117,12 +117,13 @@ const Onboarding = ({
                 isLastSlide={isLastSlide}
                 nextSlideHandler={nextSlide}
                 signInHandler={signInHandler}
+                scrollX={scrollX}
             />
         </View>
     );
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
     onBoardingContainer: {
         flex: 1,
         alignItems: 'center',

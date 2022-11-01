@@ -72,6 +72,11 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
         outputRange: [width * 0.2, 0, -width * 0.2],
     });
 
+    const opacity = scrollX.interpolate({
+        inputRange,
+        outputRange: [0.2, 1, 0.2],
+    });
+
     return (
         <View style={[styles.itemContainer, {width}]}>
             <Animated.View
@@ -94,6 +99,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
                         transform: [{
                             translateX: translateTitle,
                         }],
+                        opacity,
                     }]}
                 >
                     {item.title}
@@ -103,6 +109,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
                         transform: [{
                             translateX: translateDescription,
                         }],
+                        opacity,
                     }]}
                 >
                     {item.description}
