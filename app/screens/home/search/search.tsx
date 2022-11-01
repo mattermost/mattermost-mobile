@@ -143,10 +143,14 @@ const SearchScreen = ({teamId}: Props) => {
     }, [resetToInitial]);
 
     const handleTextChange = useCallback((newValue: string) => {
-        searchRef.current?.focus?.();
         setSearchValue(newValue);
         setCursorPosition(newValue.length);
     }, []);
+
+    const handleModifierTextChange = useCallback((newValue: string) => {
+        searchRef.current?.focus?.();
+        handleTextChange(newValue);
+    }, [handleTextChange]);
 
     const handleLoading = useCallback((show: boolean) => {
         (showResults ? setResultsLoading : setLoading)(show);
@@ -222,7 +226,7 @@ const SearchScreen = ({teamId}: Props) => {
                 scrollEnabled={scrollEnabled}
                 searchValue={searchValue}
                 setRecentValue={handleRecentSearch}
-                setSearchValue={handleTextChange}
+                setSearchValue={handleModifierTextChange}
                 setTeamId={setSearchTeamId}
                 teamId={searchTeamId}
             />
