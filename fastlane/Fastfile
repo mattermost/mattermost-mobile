@@ -742,7 +742,6 @@ platform :android do
           'separateApk' => ENV["SEPARATE_APKS"] || false,
           'universalApk' => ENV["SEPARATE_APKS"] || false,
         },
-        flags: "-Dorg.gradle.daemon=false --max-workers=2 -Dkotlin.compiler.execution.strategy=in-process"
     )
   end
 

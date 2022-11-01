@@ -48466,10 +48466,10 @@ new file mode 100644
 index 0000000..c76d9f1
 Binary files /dev/null and b/node_modules/@sentry/react-native/android/build/tmp/compileReleaseJavaWithJavac/previous-compilation-data.bin differ
 diff --git a/node_modules/@sentry/react-native/sentry.gradle b/node_modules/@sentry/react-native/sentry.gradle
-index c54bf8c..803b360 100644
+index c54bf8c..b9f02fc 100644
 --- a/node_modules/@sentry/react-native/sentry.gradle
 +++ b/node_modules/@sentry/react-native/sentry.gradle
-@@ -44,12 +44,20 @@ gradle.projectsEvaluated {
+@@ -44,141 +44,156 @@ gradle.projectsEvaluated {
  
          (shouldCleanUp, bundleOutput, sourcemapOutput) = forceSourceMapOutputFromBundleTask(bundleTask)
  
@@ -48479,30 +48479,279 @@ index c54bf8c..803b360 100644
 -        //     .collect{it}
 -        //     .findAll{!['class', 'active'].contains(it.key)}
 -        //     .join('\n')
-+            println ">>>> Sentry >>>    bundleTask: " + bundleTask.name
-+            println ">>>> Sentry >>>    shouldCleanUp: " + shouldCleanUp
-+            println ">>>> Sentry >>>    bundleOutput: " + bundleOutput
-+            println ">>>> Sentry >>>    sourcemapOutput: " + sourcemapOutput
+-
+-        def currentVariants = extractCurrentVariants(bundleTask, releases)
+-        if (currentVariants == null) return
+-
+-        def variant = null
+-        def releaseName = null
+-        def versionCode = null
+-        def previousCliTask = null
+-
+-        def nameCleanup = "${bundleTask.name}_SentryUploadCleanUp"
+-        // Upload the source map several times if necessary: once for each release and versionCode.
+-        currentVariants.each { key, currentVariant ->
+-          variant = currentVariant[0]
+-          releaseName = currentVariant[1]
+-          versionCode = currentVariant[2]
+-
+-          try {
+-            if (versionCode instanceof String) {
+-                versionCode = Integer.parseInt(versionCode)
+-                versionCode = Math.abs(versionCode)
+-            }
+-          } catch (NumberFormatException e) {
+-            project.logger.info("versionCode: '$versionCode' isn't an Integer, using the plain value.")
+-          }
+-
+-          // The Sentry server distinguishes source maps by release (`--release` in the command
+-          // below) and distribution identifier (`--dist` below).  Give the task a unique name
+-          // based on where we're uploading to.
+-          def nameCliTask = "${bundleTask.name}_SentryUpload_${releaseName}_${versionCode}"
+-
+-          // If several outputs have the same releaseName and versionCode, we'd do the exact same
+-          // upload for each of them.  No need to repeat.
+-          try { tasks.named(nameCliTask); return } catch (Exception e) {}
+-
+-          /** Upload source map file to the sentry server via CLI call. */
+-          def cliTask = tasks.create(nameCliTask, Exec) {
+-              description = "upload debug symbols to sentry"
+-              group = 'sentry.io'
+-
+-              workingDir reactRoot
+-
+-              def propertiesFile = config.sentryProperties
+-                      ? config.sentryProperties
+-                      : "$reactRoot/android/sentry.properties"
+-
+-              if (config.flavorAware) {
+-                  propertiesFile = "$reactRoot/android/sentry-${variant}.properties"
+-                  project.logger.info("For $variant using: $propertiesFile")
+-              } else {
+-                  environment("SENTRY_PROPERTIES", propertiesFile)
+-              }
+-
+-              Properties sentryProps = new Properties()
+-              try {
+-                  sentryProps.load(new FileInputStream(propertiesFile))
+-              } catch (FileNotFoundException e) {
+-                  project.logger.info("file not found '$propertiesFile' for '$variant'")
+-              }
+-
+-              def resolvedCliPackage = null
+-              try {
+-                  resolvedCliPackage = new File(["node", "--print", "require.resolve('@sentry/cli/package.json')"].execute(null, rootDir).text.trim()).getParentFile();
+-              } catch (Throwable ignored) {}
+-              def cliPackage = resolvedCliPackage != null && resolvedCliPackage.exists() ? resolvedCliPackage.getAbsolutePath() : "$reactRoot/node_modules/@sentry/cli"
+-              def cliExecutable = sentryProps.get("cli.executable", "$cliPackage/bin/sentry-cli")
+-
+-              // fix path separator for Windows
+-              if (Os.isFamily(Os.FAMILY_WINDOWS)) {
+-                  cliExecutable = cliExecutable.replaceAll("/", "\\\\")
+-              }
+-
+-              //
+-              // based on:
+-              //   https://github.com/getsentry/sentry-cli/blob/master/src/commands/react_native_gradle.rs
+-              //
+-              def args = [cliExecutable]
+-
+-              args.addAll(!config.logLevel ? [] : [
+-                      "--log-level", config.logLevel      // control verbosity of the output
+-              ])
+-              args.addAll(!config.flavorAware ? [] : [
+-                      "--url", sentryProps.get("defaults.url"),
+-                      "--auth-token", sentryProps.get("auth.token")
+-              ])
+-              args.addAll(["react-native", "gradle",
+-                           "--bundle", bundleOutput,           // The path to a bundle that should be uploaded.
+-                           "--sourcemap", sourcemapOutput,     // The path to a sourcemap that should be uploaded.
+-                           "--release", releaseName,            // The name of the release to publish.
+-                           "--dist", versionCode
+-              ])
+-              args.addAll(!config.flavorAware ? [] : [
+-                      "--org", sentryProps.get("defaults.org"),
+-                      "--project", sentryProps.get("defaults.project")
+-              ])
+-
+-              project.logger.info("Sentry-CLI arguments: ${args}")
+-
+-              def osCompatibility = Os.isFamily(Os.FAMILY_WINDOWS) ? ['cmd', '/c', 'node'] : []
+-              commandLine(*osCompatibility, *args)
+-
+-              enabled true
+-          }
+-
+-          // chain the upload tasks so they run sequentially in order to run
+-          // the cliCleanUpTask after the final upload task is run
+-          if (previousCliTask != null) {
+-            previousCliTask.finalizedBy cliTask
+-          } else {
+-            bundleTask.finalizedBy cliTask
+-          }
+-          previousCliTask = cliTask
++        println ">>>> Sentry >>>    bundleTask: " + bundleTask.name
++        println ">>>> Sentry >>>    shouldCleanUp: " + shouldCleanUp
++        println ">>>> Sentry >>>    bundleOutput: " + bundleOutput
++        println ">>>> Sentry >>>    sourcemapOutput: " + sourcemapOutput
 +
-+            File bundleOutputFile = new File(bundleOutput)
-+            File sourcemapOutputFile = new File(sourcemapOutput)
-+            if (bundleOutputFile.exists() && sourcemapOutputFile.exists() ){
-+                  // Lets leave this here if we need to debug
-+//          println bundleTask.properties
-+//              .sort{it.key}
-+//              .collect{it}
-+//              .findAll{!['class', 'active'].contains(it.key)}
-+//              .join('\n')
++        File bundleOutputFile = new File(bundleOutput)
++        File sourcemapOutputFile = new File(sourcemapOutput)
++
++        def bofExists = bundleOutputFile.exists()
++        def sofExists = sourcemapOutputFile.exists()
++        println ">>>> Sentry >>>    bofExists: " + bofExists
++        println ">>>> Sentry >>>    sofExists: " + sofExists
++
++        if (bofExists && sofExists){
++            // Lets leave this here if we need to debug
++            //          println bundleTask.properties
++            //              .sort{it.key}
++            //              .collect{it}
++            //              .findAll{!['class', 'active'].contains(it.key)}
++            //              .join('\n')
++
++            def currentVariants = extractCurrentVariants(bundleTask, releases)
++            if (currentVariants == null) return
++
++            def variant = null
++            def releaseName = null
++            def versionCode = null
++            def previousCliTask = null
++
++            def nameCleanup = "${bundleTask.name}_SentryUploadCleanUp"
++            // Upload the source map several times if necessary: once for each release and versionCode.
++            currentVariants.each { key, currentVariant ->
++                    variant = currentVariant[0]
++                    releaseName = currentVariant[1]
++                    versionCode = currentVariant[2]
++
++                    try {
++                    if (versionCode instanceof String) {
++                    versionCode = Integer.parseInt(versionCode)
++                    versionCode = Math.abs(versionCode)
++                    }
++                    } catch (NumberFormatException e) {
++                    project.logger.info("versionCode: '$versionCode' isn't an Integer, using the plain value.")
++                    }
++
++                    // The Sentry server distinguishes source maps by release (`--release` in the command
++                    // below) and distribution identifier (`--dist` below).  Give the task a unique name
++                    // based on where we're uploading to.
++                    def nameCliTask = "${bundleTask.name}_SentryUpload_${releaseName}_${versionCode}"
++
++                    // If several outputs have the same releaseName and versionCode, we'd do the exact same
++                    // upload for each of them.  No need to repeat.
++                    try { tasks.named(nameCliTask); return } catch (Exception e) {}
++
++                    /** Upload source map file to the sentry server via CLI call. */
++                    def cliTask = tasks.create(nameCliTask, Exec) {
++                    description = "upload debug symbols to sentry"
++                    group = 'sentry.io'
++
++                    workingDir reactRoot
++
++                    def propertiesFile = config.sentryProperties
++                    ? config.sentryProperties
++                    : "$reactRoot/android/sentry.properties"
++
++                    if (config.flavorAware) {
++                    propertiesFile = "$reactRoot/android/sentry-${variant}.properties"
++                    project.logger.info("For $variant using: $propertiesFile")
++                    } else {
++                    environment("SENTRY_PROPERTIES", propertiesFile)
++                    }
++
++                    Properties sentryProps = new Properties()
++                    try {
++                    sentryProps.load(new FileInputStream(propertiesFile))
++                    } catch (FileNotFoundException e) {
++                    project.logger.info("file not found '$propertiesFile' for '$variant'")
++                    }
++
++                    def resolvedCliPackage = null
++                    try {
++                    resolvedCliPackage = new File(["node", "--print", "require.resolve('@sentry/cli/package.json')"].execute(null, rootDir).text.trim()).getParentFile();
++                    } catch (Throwable ignored) {}
++                    def cliPackage = resolvedCliPackage != null && resolvedCliPackage.exists() ? resolvedCliPackage.getAbsolutePath() : "$reactRoot/node_modules/@sentry/cli"
++                    def cliExecutable = sentryProps.get("cli.executable", "$cliPackage/bin/sentry-cli")
++
++                    // fix path separator for Windows
++                    if (Os.isFamily(Os.FAMILY_WINDOWS)) {
++                    cliExecutable = cliExecutable.replaceAll("/", "\\\\")
++                    }
++
++                    //
++                    // based on:
++                    //   https://github.com/getsentry/sentry-cli/blob/master/src/commands/react_native_gradle.rs
++                    //
++                    def args = [cliExecutable]
++
++                    args.addAll(!config.logLevel ? [] : [
++                    "--log-level", config.logLevel      // control verbosity of the output
++                    ])
++                    args.addAll(!config.flavorAware ? [] : [
++                    "--url", sentryProps.get("defaults.url"),
++                    "--auth-token", sentryProps.get("auth.token")
++                    ])
++                    args.addAll(["react-native", "gradle",
++                    "--bundle", bundleOutput,           // The path to a bundle that should be uploaded.
++                    "--sourcemap", sourcemapOutput,     // The path to a sourcemap that should be uploaded.
++                    "--release", releaseName,            // The name of the release to publish.
++                    "--dist", versionCode
++                    ])
++                    args.addAll(!config.flavorAware ? [] : [
++                    "--org", sentryProps.get("defaults.org"),
++                    "--project", sentryProps.get("defaults.project")
++                    ])
++
++                    project.logger.info("Sentry-CLI arguments: ${args}")
++                    println ">>>> Sentry >>>    inside variant: " + variant
++                    def osCompatibility = Os.isFamily(Os.FAMILY_WINDOWS) ? ['cmd', '/c', 'node'] : []
++                    commandLine(*osCompatibility, *args)
++
++                    enabled true
++                }
++
++                // chain the upload tasks so they run sequentially in order to run
++                // the cliCleanUpTask after the final upload task is run
++                if (previousCliTask != null) {
++                    previousCliTask.finalizedBy cliTask
++                } else {
++                    bundleTask.finalizedBy cliTask
++                }
++                    previousCliTask = cliTask
+         }
  
-         def currentVariants = extractCurrentVariants(bundleTask, releases)
-         if (currentVariants == null) return
-@@ -177,6 +185,9 @@ gradle.projectsEvaluated {
-         // due to chaining the last value of previousCliTask will be the final
-         // upload task, after which the cleanup can be done
-         previousCliTask.finalizedBy cliCleanUpTask
+-        /** Delete sourcemap files */
+-        def cliCleanUpTask = tasks.create(name: nameCleanup, type: Delete) {
+-            description = "clean up extra sourcemap"
+-            group = 'sentry.io'
++            /** Delete sourcemap files */
++            def cliCleanUpTask = tasks.create(name: nameCleanup, type: Delete) {
++                description = "clean up extra sourcemap"
++                group = 'sentry.io'
+ 
+-            delete sourcemapOutput
+-            delete "$buildDir/intermediates/assets/release/index.android.bundle.map" // react native default bundle dir
+-        }
++                delete sourcemapOutput
++                delete "$buildDir/intermediates/assets/release/index.android.bundle.map" // react native default bundle dir
 +            }
-+
-+      
+ 
+-        // register clean task extension
+-        cliCleanUpTask.onlyIf { shouldCleanUp }
+-        // due to chaining the last value of previousCliTask will be the final
+-        // upload task, after which the cleanup can be done
+-        previousCliTask.finalizedBy cliCleanUpTask
++            // register clean task extension
++            cliCleanUpTask.onlyIf { shouldCleanUp }
++            // due to chaining the last value of previousCliTask will be the final
++            // upload task, after which the cleanup can be done
++            previousCliTask.finalizedBy cliCleanUpTask
      }
  }
++}
  
+ /** Compose lookup map of build variants - to - outputs. */
+ def extractReleasesInfo() {
