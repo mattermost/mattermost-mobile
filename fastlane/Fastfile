@@ -661,14 +661,6 @@ platform :android do
 
     beta_dir = './android/app/src/main/java/com/mattermost/rnbeta/'
     release_dir = "./android/app/src/main/java/#{package_id.gsub '.', '/'}/"
-    if ENV['BUILD_FOR_RELEASE'] == 'true'
-      find_replace_string(
-          path_to_file: "#{beta_dir}MainApplication.java",
-          old_string: 'return BuildConfig.DEBUG;',
-          new_string: 'return false;'
-      )
-    end
-
     if release_dir != beta_dir
       unless Dir.exist?(".#{release_dir}")
         FileUtils.mkdir_p ".#{release_dir}"
@@ -687,6 +679,14 @@ platform :android do
             path_to_file: item[1..-1],
             old_string: 'package com.mattermost.rnbeta;',
             new_string: "package #{package_id};"
+        )
+      end
+      
+      Dir.glob('../android/app/src/main/java/com/mattermost/newarchitecture/*.java') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.BuildConfig;',
+            new_string: "import #{package_id}.BuildConfig;"
         )
       end
 
