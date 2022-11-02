@@ -78,6 +78,7 @@ const NAVBAR_HEADER_HEIGHT = 64;
 const SCROLL_PADDING_TOP = 20;
 const CHIP_HEIGHT_WITH_MARGIN = USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN;
 const TABLET_MARGIN_BOTTOM = 20;
+const SLIDE_DURATION = 200;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -188,8 +189,8 @@ export default function SelectedUsers({
                     keyboardVerticalOffset={keyboardVerticalOffset}
                 >
                     <Animated.View
-                        entering={SlideInDown.duration(200)}
-                        exiting={SlideInUp.duration(200)}
+                        entering={SlideInDown.duration(SLIDE_DURATION)}
+                        exiting={SlideInUp.duration(SLIDE_DURATION)}
                         style={[style.container, {marginBottom: isTablet ? TABLET_MARGIN_BOTTOM : 0}]}
                     >
                         {showToast &&

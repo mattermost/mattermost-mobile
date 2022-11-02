@@ -42,7 +42,7 @@ type Props = {
 
 export const USER_CHIP_HEIGHT = 32;
 export const USER_CHIP_BOTTOM_MARGIN = 8;
-const FADE_TIME = 100;
+const FADE_DURATION = 100;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -91,8 +91,8 @@ export default function SelectedUser({
     const userItemTestID = `${testID}.${user.id}`;
     return (
         <Animated.View
-            entering={FadeIn.duration(FADE_TIME)}
-            exiting={FadeOut.duration(FADE_TIME)}
+            entering={FadeIn.duration(FADE_DURATION)}
+            exiting={FadeOut.duration(FADE_DURATION)}
             style={style.container}
             testID={`${testID}.${user.id}`}
         >
