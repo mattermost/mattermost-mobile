@@ -72,7 +72,7 @@ const NavigationSearch = forwardRef<SearchRef, Props>(({
             hide.remove();
             show.remove();
         };
-    }, []);
+    }, [hideEmitter, showEmitter]);
 
     return (
         <Animated.View style={[styles.container, topStyle]}>
