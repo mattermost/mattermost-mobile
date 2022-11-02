@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo} from 'react';
+import React, {forwardRef, useCallback, useEffect, useMemo} from 'react';
 import {DeviceEventEmitter, Keyboard, NativeSyntheticEvent, Platform, TextInputFocusEventData, ViewStyle} from 'react-native';
 import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
-import Search, {SearchProps} from '@components/search';
+import Search, {SearchProps, SearchRef} from '@components/search';
 import {Events} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -31,12 +31,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const NavigationSearch = ({
+const NavigationSearch = forwardRef<SearchRef, Props>(({
     hideHeader,
     theme,
     topStyle,
     ...searchProps
-}: Props) => {
+}: Props, ref) => {
     const styles = getStyleSheet(theme);
 
     const cancelButtonProps: SearchProps['cancelButtonProps'] = useMemo(() => ({
@@ -52,24 +52,27 @@ const NavigationSearch = ({
         searchProps.onFocus?.(e);
     }, [hideHeader, searchProps.onFocus]);
 
-    useEffect(() => {
-        const show = Keyboard.addListener('keyboardDidShow', () => {
-            if (Platform.OS === 'android') {
-                DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
-            }
-        });
+    const showEmitter = useCallback(() => {
+        if (Platform.OS === 'android') {
+            DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
+        }
+    }, []);
 
-        const hide = Keyboard.addListener('keyboardDidHide', () => {
-            if (Platform.OS === 'android') {
-                DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
-            }
-        });
+    const hideEmitter = useCallback(() => {
+        if (Platform.OS === 'android') {
+            DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+        }
+    }, []);
+
+    useEffect(() => {
+        const show = Keyboard.addListener('keyboardDidShow', showEmitter);
+        const hide = Keyboard.addListener('keyboardDidHide', hideEmitter);
 
         return () => {
             hide.remove();
             show.remove();
         };
-    }, []);
+    }, [hideEmitter, showEmitter]);
 
     return (
         <Animated.View style={[styles.container, topStyle]}>
@@ -83,10 +86,12 @@ const NavigationSearch = ({
                 placeholderTextColor={changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
                 searchIconColor={theme.sidebarText}
                 selectionColor={theme.sidebarText}
+                ref={ref}
             />
         </Animated.View>
     );
-};
+});
 
+NavigationSearch.displayName = 'NavSearch';
 export default NavigationSearch;
 
