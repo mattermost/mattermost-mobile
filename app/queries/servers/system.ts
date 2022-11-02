@@ -431,3 +431,7 @@ export const getExpiredSession = async (database: Database) => {
         return undefined;
     }
 };
+
+export const observeLastDismissedAnnouncement = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_DISMISSED_BANNER).observeWithColumns(['value']);
+};

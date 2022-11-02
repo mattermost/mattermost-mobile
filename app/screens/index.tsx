@@ -99,6 +99,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.EMOJI_PICKER:
             screen = withServerDatabase(require('@screens/emoji_picker').default);
             break;
+        case Screens.EXPANDED_ANNOUNCEMENT_BANNER:
+            screen = withServerDatabase(require('@screens/expanded_announcement_banner').default);
+            break;
         case Screens.FIND_CHANNELS:
             screen = withServerDatabase(require('@screens/find_channels').default);
             break;
