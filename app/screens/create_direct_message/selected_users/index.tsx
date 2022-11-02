@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
-import {KeyboardAvoidingView, NativeModules, Platform, ScrollView, View} from 'react-native';
-import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import {KeyboardAvoidingView, NativeModules, Platform, ScrollView} from 'react-native';
+import Animated, {SlideInDown, SlideInUp, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import Toast from '@components/toast';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -15,6 +15,11 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import SelectedUser, {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from './selected_user';
 
 type Props = {
+
+    /*
+     * An object mapping user ids to a falsey value indicating whether or not they have been selected.
+     */
+    enabled?: boolean;
 
     /*
      * An object mapping user ids to a falsey value indicating whether or not they have been selected.
@@ -67,12 +72,12 @@ type Props = {
     buttonText: string;
 }
 
-const BOTTOM_MARGIN = 20;
 const EXPOSED_CHIP_HEIGHT = 0.33 * USER_CHIP_HEIGHT;
 const MAX_CHIP_ROWS = 3;
 const NAVBAR_HEADER_HEIGHT = 64;
 const SCROLL_PADDING_TOP = 20;
 const CHIP_HEIGHT_WITH_MARGIN = USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN;
+const TABLET_MARGIN_BOTTOM = 20;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -123,6 +128,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 export default function SelectedUsers({
     selectedIds,
     teammateNameDisplay,
+    enabled = true,
     showToast = false,
     setShowToast,
     toastIcon,
@@ -136,6 +142,13 @@ export default function SelectedUsers({
     const style = getStyleFromTheme(theme);
     const isTablet = useIsTablet();
     const {StatusBarManager} = NativeModules;
+    const [isVisible, setIsVisible] = useState(false);
+
+    const keyboardVerticalOffset = StatusBarManager.HEIGHT + NAVBAR_HEADER_HEIGHT;
+
+    useEffect(() => {
+        setIsVisible(Boolean(Object.keys(selectedIds).length));
+    }, [selectedIds]);
 
     const handleOnPress = async () => {
         onPress();
@@ -163,46 +176,47 @@ export default function SelectedUsers({
 
     const onToastPress = useCallback(() => setShowToast(false), []);
 
-    const animatedStyle = useAnimatedStyle(() => (
+    const animatedToastStyle = useAnimatedStyle(() => (
         {opacity: withTiming(showToast ? 1 : 0, {duration: 300})}
     ));
 
-    const keyboardBottomMargin = (isTablet ? 0 : BOTTOM_MARGIN);
-    const keyboardVerticalOffset = StatusBarManager.HEIGHT + NAVBAR_HEADER_HEIGHT + keyboardBottomMargin;
-
-    const viewPaddingBottom = {paddingBottom: (Platform.OS === 'android' || isTablet) ? BOTTOM_MARGIN : 0};
-
     return (
-        <KeyboardAvoidingView
-            behavior={Platform.OS === 'ios' ? 'padding' : undefined}
-            keyboardVerticalOffset={keyboardVerticalOffset}
-            style={style.container}
-        >
-            {showToast &&
-                <TouchableWithFeedback onPress={onToastPress}>
-                    <Toast
-                        animatedStyle={animatedStyle}
-                        iconName={toastIcon}
-                        style={style.toast}
-                        message={toastMessage}
-                    />
-                </TouchableWithFeedback>
-            }
-            <View style={viewPaddingBottom}>
-                <View style={style.containerUsers}>
-                    <ScrollView
-                        contentContainerStyle={style.users}
+        <>
+            {enabled && isVisible && (
+                <KeyboardAvoidingView
+                    behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+                    keyboardVerticalOffset={keyboardVerticalOffset}
+                >
+                    <Animated.View
+                        entering={SlideInDown.duration(200)}
+                        exiting={SlideInUp.duration(200)}
+                        style={[style.container, {marginBottom: isTablet ? TABLET_MARGIN_BOTTOM : 0}]}
                     >
-                        {users}
-                    </ScrollView>
-                </View>
-                <Button
-                    onPress={handleOnPress}
-                    icon={buttonIcon}
-                    text={buttonText}
-                />
-            </View>
-        </KeyboardAvoidingView>
+                        {showToast &&
+                            <TouchableWithFeedback onPress={onToastPress}>
+                                <Toast
+                                    animatedStyle={animatedToastStyle}
+                                    iconName={toastIcon}
+                                    style={style.toast}
+                                    message={toastMessage}
+                                />
+                            </TouchableWithFeedback>
+                        }
+                        <ScrollView
+                            contentContainerStyle={style.users}
+                            style={style.containerUsers}
+                        >
+                            {users}
+                        </ScrollView>
+                        <Button
+                            onPress={handleOnPress}
+                            icon={buttonIcon}
+                            text={buttonText}
+                        />
+                    </Animated.View>
+                </KeyboardAvoidingView>
+            )}
+        </>
     );
 }
 

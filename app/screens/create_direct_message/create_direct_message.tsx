@@ -377,20 +377,18 @@ export default function CreateDirectMessage({
                 testID='create_direct_message.user_list'
                 tutorialWatched={tutorialWatched}
             />
-            {selectedCount > 0 &&
-                <SelectedUsers
-                    showToast={showToast}
-                    setShowToast={setShowToast}
-                    toastIcon={'check'}
-                    toastMessage={formatMessage(messages.toastMessage, {maxCount: General.MAX_USERS_IN_GM})}
-                    selectedIds={selectedIds}
-                    onRemove={handleRemoveProfile}
-                    teammateNameDisplay={teammateNameDisplay}
-                    onPress={startConversation}
-                    buttonIcon={'forum-outline'}
-                    buttonText={formatMessage(messages.buttonText)}
-                />
-            }
+            <SelectedUsers
+                showToast={showToast}
+                setShowToast={setShowToast}
+                toastIcon={'check'}
+                toastMessage={formatMessage(messages.toastMessage, {maxCount: General.MAX_USERS_IN_GM})}
+                selectedIds={selectedIds}
+                onRemove={handleRemoveProfile}
+                teammateNameDisplay={teammateNameDisplay}
+                onPress={startConversation}
+                buttonIcon={'forum-outline'}
+                buttonText={formatMessage(messages.buttonText)}
+            />
         </SafeAreaView>
     );
 }

@@ -8,6 +8,7 @@ import {
     TouchableOpacity,
     View,
 } from 'react-native';
+import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
 import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
@@ -41,6 +42,7 @@ type Props = {
 
 export const USER_CHIP_HEIGHT = 32;
 export const USER_CHIP_BOTTOM_MARGIN = 8;
+const FADE_TIME = 100;
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -88,7 +90,9 @@ export default function SelectedUser({
 
     const userItemTestID = `${testID}.${user.id}`;
     return (
-        <View
+        <Animated.View
+            entering={FadeIn.duration(FADE_TIME)}
+            exiting={FadeOut.duration(FADE_TIME)}
             style={style.container}
             testID={`${testID}.${user.id}`}
         >
@@ -117,6 +121,6 @@ export default function SelectedUser({
                     color={changeOpacity(theme.centerChannelColor, 0.32)}
                 />
             </TouchableOpacity>
-        </View>
+        </Animated.View>
     );
 }
