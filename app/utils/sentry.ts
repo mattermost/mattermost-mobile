@@ -1,13 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Database, Q} from '@nozbe/watermelondb';
 import {Breadcrumb} from '@sentry/types';
 import {Platform} from 'react-native';
+import {Navigation} from 'react-native-navigation';
 
 import Config from '@assets/config.json';
+import {MM_TABLES} from '@constants/database';
+import {getCurrentChannel} from '@queries/servers/channel';
+import {getConfig, getCurrentTeamId} from '@queries/servers/system';
+import {getCurrentUser} from '@queries/servers/user';
+import MyChannelModel from '@typings/database/models/servers/my_channel';
+import MyTeamModel from '@typings/database/models/servers/my_team';
 
 import {ClientError} from './client_error';
-import {logError, logWarning} from './log';
+import {logWarning} from './log';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
@@ -17,6 +25,7 @@ export const LOGGER_JAVASCRIPT_WARNING = 'javascript_warning';
 export const LOGGER_NATIVE = 'native';
 
 let Sentry: any;
+
 export function initializeSentry() {
     if (!Config.SentryEnabled) {
         return;
@@ -33,7 +42,21 @@ export function initializeSentry() {
         return;
     }
 
-    Sentry.init({dsn, ...Config.SentryOptions});
+    Sentry.init({
+        dsn,
+        tracesSampleRate: 0.2,
+        integrations: [
+            new Sentry.ReactNativeTracing({
+
+                // Pass instrumentation to be used as `routingInstrumentation`
+                routingInstrumentation: new Sentry.ReactNativeNavigationInstrumentation(
+                    Navigation,
+                ),
+            }),
+        ],
+        sendDefaultPii: false,
+        ...Config.SentryOptions,
+    });
 }
 
 function getDsn() {
@@ -55,12 +78,7 @@ export function captureException(error: Error | string, logger: string) {
         logWarning('captureException called with missing arguments', error, logger);
         return;
     }
-
-    // TODO: Get current server config and other relevant data
-
-    capture(() => {
-        Sentry.captureException(error, {logger});
-    });
+    Sentry.captureException(error, {logger});
 }
 
 export function captureJSException(error: Error | ClientError, isFatal: boolean) {
@@ -120,128 +138,83 @@ function captureClientErrorAsBreadcrumb(error: ClientError, isFatal: boolean) {
     }
 }
 
-// Wrapper function to any calls to Sentry so that we can gather any necessary extra data
-// before sending.
-function capture(captureFunc: () => void, config?: ClientConfig) {
-    if (config?.EnableDiagnostics !== 'true') {
-        return;
-    }
-
-    try {
-        let hasUserContext = false;
-        const userContext = getUserContext();
-        if (userContext) {
-            hasUserContext = true;
-            Sentry.setUserContext(userContext);
-        }
-
-        const extraContext = getExtraContext();
-        if (Object.keys(extraContext).length) {
-            Sentry.setExtraContext(extraContext);
-        }
-
-        const buildTags = getBuildTags();
-        if (buildTags) {
-            Sentry.setTagsContext(buildTags);
-        }
-
-        if (hasUserContext) {
-            logWarning('Capturing with Sentry at ' + getDsn() + '...');
-
-            captureFunc();
-        } else {
-            logWarning('No user context, skipping capture');
-        }
-    } catch (e) {
-        // Don't want this to get into an infinite loop again...
-        logError('Exception occurred while sending to Sentry');
-        logError(e);
-    }
-}
-
-function getUserContext() {
-    // TODO: Get current user data from active database
+export const getUserContext = async (database: Database) => {
     const currentUser = {
         id: 'currentUserId',
         locale: 'en',
         roles: 'multi-server-test-role',
     };
 
-    if (!currentUser) {
-        return null;
+    const user = await getCurrentUser(database);
+    if (user) {
+        currentUser.id = user.id;
+        currentUser.locale = user.locale;
+        currentUser.roles = user.roles;
     }
 
     return {
-        userID: currentUser.id, // This can be changed to id after we upgrade to Sentry >= 0.14.10,
+        userID: currentUser.id,
         email: '',
         username: '',
-        extra: {
-            locale: currentUser.locale,
-            roles: currentUser.roles,
-        },
+
+        locale: currentUser.locale,
+        roles: currentUser.roles,
+
     };
-}
+};
 
-function getExtraContext() {
-    const context = {};
+export const getExtraContext = async (database: Database) => {
+    const context = {
+        config: {},
+        currentChannel: {},
+        currentTeam: {},
+    };
 
-    // TODO: Add context based on the active database
+    const config = await getConfig(database);
+    if (config) {
+        context.config = {
+            BuildDate: config.BuildDate,
+            BuildEnterpriseReady: config.BuildEnterpriseReady,
+            BuildHash: config.BuildHash,
+            BuildHashEnterprise: config.BuildHashEnterprise,
+            BuildNumber: config.BuildNumber,
+        };
+    }
+    const currentTeamId = await getCurrentTeamId(database);
+    const myTeam = await database.get<MyTeamModel>(MM_TABLES.SERVER.MY_TEAM).query(Q.where('id', currentTeamId)).fetch();
+    const teamRoles = myTeam?.[0]?.roles;
+    context.currentTeam = {
+        TeamId: currentTeamId,
+        TeamRoles: teamRoles,
+    };
 
-    // const currentTeam = getCurrentTeam(state);
-    // if (currentTeam) {
-    //     context.currentTeam = {
-    //         id: currentTeam.id,
-    //     };
-    // }
-
-    // const currentTeamMember = getCurrentTeamMembership(state);
-    // if (currentTeamMember) {
-    //     context.currentTeamMember = {
-    //         roles: currentTeamMember.roles,
-    //     };
-    // }
-
-    // const currentChannel = getCurrentChannel(state);
-    // if (currentChannel) {
-    //     context.currentChannel = {
-    //         id: currentChannel.id,
-    //         type: currentChannel.type,
-    //     };
-    // }
-
-    // const currentChannelMember = getMyCurrentChannelMembership(state);
-    // if (currentChannelMember) {
-    //     context.currentChannelMember = {
-    //         roles: currentChannelMember.roles,
-    //     };
-    // }
-
-    // const config = getConfig(state);
-    // if (config) {
-    //     context.config = {
-    //         BuildDate: config.BuildDate,
-    //         BuildEnterpriseReady: config.BuildEnterpriseReady,
-    //         BuildHash: config.BuildHash,
-    //         BuildHashEnterprise: config.BuildHashEnterprise,
-    //         BuildNumber: config.BuildNumber,
-    //     };
-    // }
+    const channel = await getCurrentChannel(database);
+    let channelRoles;
+    if (channel) {
+        const myChannel = await database.get<MyChannelModel>(MM_TABLES.SERVER.MY_CHANNEL).query(Q.where('id', channel.id)).fetch();
+        channelRoles = myChannel?.[0]?.roles;
+        context.currentChannel = {
+            ChannelId: channel?.id,
+            ChannelRoles: channelRoles,
+            ChannelType: channel?.type,
+        };
+    }
 
     return context;
-}
+};
 
-function getBuildTags() {
-    let tags;
+export const getBuildTags = async (database: Database) => {
+    const tags = {
+        serverBuildHash: '',
+        serverBuildNumber: '',
+    };
 
-    // TODO: Add context based on the active database
-
-    // const config = getConfig(state);
-    // if (config) {
-    //     tags = {
-    //         serverBuildHash: config.BuildHash,
-    //         serverBuildNumber: config.BuildNumber,
-    //     };
-    // }
+    const config = await getConfig(database);
+    if (config) {
+        tags.serverBuildHash = config.BuildHash;
+        tags.serverBuildNumber = config.BuildNumber;
+    }
 
     return tags;
-}
+};
+
