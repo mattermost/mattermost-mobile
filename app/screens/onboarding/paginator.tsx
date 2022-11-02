@@ -25,6 +25,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: DOT_SIZE / 2,
         opacity: 0.25,
     },
+    fixedDot: {
+        height: DOT_SIZE / 2,
+        borderRadius: 5,
+        backgroundColor: theme.buttonBg,
+        marginHorizontal: DOT_SIZE / 2,
+        width: DOT_SIZE / 2,
+        opacity: 0.25,
+        position: 'absolute',
+    },
     outerDot: {
         height: DOT_SIZE,
         borderRadius: DOT_SIZE / 2,
@@ -83,7 +92,7 @@ const Dot = ({item, index, scrollX, theme, moveToSlide}: DotProps) => {
         const opacity = interpolate(
             scrollX.value,
             inputRange,
-            [0.25, 1, 0.25],
+            [0, 1, 0],
         );
 
         return {opacity};
@@ -105,12 +114,16 @@ const Dot = ({item, index, scrollX, theme, moveToSlide}: DotProps) => {
             key={item.id}
         >
             <Animated.View
+                style={[styles.fixedDot]}
+                key={'fixed-' + item.id + index.toString()}
+            />
+            <Animated.View
                 style={[styles.outerDot, outerDotOpacity]}
                 key={'outer-' + item.id + index.toString()}
             />
             <Animated.View
                 style={[styles.dot, dotOpacity]}
-                key={item.id + index.toString()}
+                key={'inner-' + item.id + index.toString()}
             />
         </TouchableOpacity>
     );
