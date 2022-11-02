@@ -45,6 +45,7 @@ export type CurrentCall = {
     threadId: string;
     screenShareURL: string;
     speakerphoneOn: boolean;
+    voiceOn: Dictionary<boolean>;
 }
 
 export type CallParticipant = {
