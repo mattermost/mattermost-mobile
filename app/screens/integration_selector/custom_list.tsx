@@ -1,7 +1,36 @@
-import { Text, Platform } from 'react-native';
+import React, { useCallback, useState } from 'react';
+import {
+    Text, Platform, Keyboard, FlatList, RefreshControl, View, SectionList
+} from 'react-native';
 
 import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
-import { useTheme } from '@app/context/theme';
+import Visibility from '@constants/list';
+
+export const FLATLIST = 'flat';
+export const SECTIONLIST = 'section';
+const INITIAL_BATCH_TO_RENDER = 15;
+const SCROLL_UP_MULTIPLIER = 6;
+
+
+type Props = {
+    data: Array<object>, // TODO?
+    extraData: any,
+    canRefresh: boolean,
+    listType: string,  // TODO Only FlatList or SectionList
+    loading: boolean,
+    loadingComponent: React.ReactNode,
+    noResults: JSX.Element,
+    refreshing: boolean,
+    onRefresh: () => void,
+    onLoadMore: () => void,
+    onRowPress: () => void,
+    onRowSelect: () => void,
+    renderItem: () => JSX.Element,
+    selectable: boolean,
+    theme: object,
+    shouldRenderSeparator: boolean,
+    testID: string,
+}
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -65,13 +94,202 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-function CustomList() {
-    const theme = useTheme();
+function CustomList({
+    data, shouldRenderSeparator, listType, loading, loadingComponent, noResults,
+    onLoadMore, onRowPress, onRowSelect, selectable, renderItem, theme
+}: Props) {
     const style = getStyleFromTheme(theme);
 
-    return (
-        <Text>Custom List</Text>
-    )
+    // Constructor Props
+    let contentOffsetY = 0;
+    const keyboardDismissProp = Platform.select({
+        android: {
+            OnScrollBeginDrag: Keyboard.dismiss,
+        },
+        ios: {
+            keyboardDismissMode: 'on-drag',
+        }
+    });
+
+    // Hooks
+    const [listHeight, setListHeight] = useState(0);
+
+    // Callbacks
+    const handleLayout = (event: any) => {  // TODO
+        const { height } = event.nativeEvent.layout;
+        setListHeight(height);
+    }
+
+    const handleScroll = (event: any) => {  // TODO
+        const pageOffsetY = event.nativeEvent.contentOffset.y;
+
+        if (pageOffsetY > 0) {
+            const contentHeight = event.nativeEvent.contentSize.height;
+            const direction = (contentOffsetY < pageOffsetY) ?
+                Visibility.VISIBILITY_SCROLL_UP :
+                Visibility.VISIBILITY_SCROLL_DOWN;
+
+            contentOffsetY = pageOffsetY;
+
+            if (
+                direction == Visibility.VISIBILITY_SCROLL_UP &&
+                (contentHeight - pageOffsetY) < (listHeight * SCROLL_UP_MULTIPLIER)
+            ) {
+                onLoadMore();
+            }
+        }
+    }
+
+    const keyExtractor = (item: any) => {  // TODO
+        return item.id || item.key || item.value || item;
+    }
+
+    const renderEmptyList = () => {
+        return noResults || null;
+    };
+
+    const renderSeparator = () => {
+        if (!shouldRenderSeparator) {
+            return null;
+        }
+
+        const style = getStyleFromTheme(theme);
+
+        return (
+            <View style={style.separator} />
+        );
+    };
+
+    const setListRef = (ref: any) => {
+        this.list = ref;
+    };
+
+    const renderListItem = ({ item, index, section }) => {  // TODO
+        const props = {
+            id: item.id,
+            item,
+            selected: item.selected,
+            selectable,
+
+            // TODO Can we do this?
+            enabled: true,
+            onPress: null // TODO Type?
+        };
+
+        if ('disableSelect' in item) {
+            props.enabled = !item.disableSelect;
+        }
+
+        if (onRowSelect) {
+            props.onPress = onRowSelect(section.title, index);
+        } else {
+            props.onPress = onRowPress;
+        }
+
+        return renderItem(props);
+    }
+
+    const renderFooter = () => {
+        const { loading, loadingComponent } = this.props;
+
+        if (!loading || !loadingComponent) {
+            return null;
+        }
+
+        return loadingComponent;
+    };
+
+    const renderSectionHeader = ({ section }) => {
+        const { theme } = this.props;
+        const style = getStyleFromTheme(theme);
+
+        return (
+            <View style={style.sectionWrapper}>
+                <View style={style.sectionContainer}>
+                    <Text style={style.sectionText}>{section.id}</Text>
+                </View>
+            </View>
+        );
+    };
+
+    const renderSectionList = () => {
+        const { data, loading, theme } = this.props;
+        const style = getStyleFromTheme(theme);
+
+        return (
+            <SectionList
+                contentContainerStyle={style.container}
+                extraData={loading}
+                keyboardShouldPersistTaps='always'
+                {...keyboardDismissProp}
+                keyExtractor={keyExtractor}
+                initialNumToRender={INITIAL_BATCH_TO_RENDER}
+                ItemSeparatorComponent={renderSeparator}
+                ListEmptyComponent={renderEmptyList}
+                ListFooterComponent={renderFooter}
+                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
+                onLayout={handleLayout}
+                onScroll={handleScroll}
+                ref={setListRef}
+                removeClippedSubviews={true}
+                renderItem={renderListItem}
+                renderSectionHeader={renderSectionHeader}
+                scrollEventThrottle={60}
+                sections={data}
+                style={style.list}
+                stickySectionHeadersEnabled={false}
+                testID={this.props.testID}
+            />
+        );
+    };
+
+    const renderFlatList = () => {
+        const { canRefresh, data, extraData, theme, onRefresh, refreshing } = this.props;
+        const style = getStyleFromTheme(theme);
+
+        let refreshControl;
+        if (canRefresh) {
+            refreshControl = (
+                <RefreshControl
+                    refreshing={refreshing}
+                    onRefresh={onRefresh}
+                    colors={[theme.centerChannelColor]}
+                    tintColor={theme.centerChannelColor}
+                />);
+        }
+
+        return (
+            <FlatList
+                contentContainerStyle={style.container}
+                data={data}
+                extraData={extraData}
+                keyboardShouldPersistTaps='always'
+                {...keyboardDismissProp}
+                keyExtractor={keyExtractor}
+                initialNumToRender={INITIAL_BATCH_TO_RENDER}
+                ItemSeparatorComponent={renderSeparator}
+                ListEmptyComponent={renderEmptyList}
+                ListFooterComponent={renderFooter}
+                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
+                onLayout={handleLayout}
+                onScroll={handleScroll}
+                refreshControl={refreshControl}
+                ref={setListRef}
+                removeClippedSubviews={true}
+                renderItem={renderItem}
+                scrollEventThrottle={60}
+                style={style.list}
+                // stickySectionHeadersEnabled={true}
+                testID={this.props.testID}
+            />
+        );
+    }
+
+    if (listType === FLATLIST) {
+        return renderFlatList();
+    }
+
+    return renderSectionList();
 }
 
 
