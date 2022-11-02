@@ -4,7 +4,7 @@
 import React, {useEffect} from 'react';
 import {Pressable, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {interpolate, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@app/components/compass_icon';
 import FormattedText from '@app/components/formatted_text';
@@ -14,9 +14,11 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 type Props = {
     theme: Theme;
     isLastSlide: boolean;
+    lastSlideIndex: number;
     nextSlideHandler: any;
     signInHandler: any;
-
+    currentIndex: number;
+    scrollX: Animated.SharedValue<number>;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -38,29 +40,40 @@ const FooterButtons = ({
     nextSlideHandler,
     signInHandler,
     isLastSlide,
+    lastSlideIndex,
+    currentIndex,
+    scrollX,
 }: Props) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
+    const BUTTON_SIZE = 80;
 
-    const scaledWidth = useSharedValue(80);
+    // keep in mind penultimate and ultimate slides to run buttons animations
+    const isPenultimateSlide = currentIndex === (lastSlideIndex - 1);
+    const needToAnimate = isLastSlide || isPenultimateSlide;
 
-    const transform = useAnimatedStyle(() => {
-        return {
-            width: scaledWidth.value,
-        };
+    const resizeStyle = useAnimatedStyle(() => {
+        const interpolatedWidth = interpolate(
+            scrollX.value,
+            [(currentIndex - 1) * width, currentIndex * width, (currentIndex + 1) * width],
+            [BUTTON_SIZE, isLastSlide ? width * 0.8 : BUTTON_SIZE, width * 0.8],
+        );
+
+        return {width: needToAnimate ? interpolatedWidth : BUTTON_SIZE};
     });
 
-    useEffect(() => {
-        console.log('** footer buttons rerender', isLastSlide);
-    }, []);
+    const opacityTextStyle = useAnimatedStyle(() => {
+        const interpolatedScale = interpolate(
+            scrollX.value,
+            [(currentIndex - 1) * width, currentIndex * width, (currentIndex + 1) * width],
+            [isPenultimateSlide ? 1 : 0, 1, 0],
+        );
 
-    useEffect(() => {
-        console.log('** footer buttons rerender', isLastSlide);
-        scaledWidth.value = withTiming(isLastSlide ? ((width * 80) / 100) : 80, {duration: 100});
-    }, [isLastSlide]);
+        return {opacity: needToAnimate ? interpolatedScale : 1};
+    });
 
     let mainButtonText = (
-        <View style={{flexDirection: 'row'}}>
+        <Animated.View style={[{flexDirection: 'row'}, opacityTextStyle]}>
             <FormattedText
                 id='mobile.onboarding.next'
                 defaultMessage='Next'
@@ -70,18 +83,20 @@ const FooterButtons = ({
                 name='arrow-forward-ios'
                 style={styles.rowIcon}
             />
-        </View>
+        </Animated.View>
     );
 
     let mainButtonAction = nextSlideHandler;
 
     if (isLastSlide) {
         mainButtonText = (
-            <FormattedText
-                id='mobile.onboarding.sign_in_to_get_started'
-                defaultMessage='Sign in to get started'
-                style={buttonTextStyle(theme, 's', 'primary', 'default')}
-            />
+            <Animated.View style={[{flexDirection: 'row'}, opacityTextStyle]}>
+                <FormattedText
+                    id='mobile.onboarding.sign_in_to_get_started'
+                    defaultMessage='Sign in to get started'
+                    style={buttonTextStyle(theme, 's', 'primary', 'default')}
+                />
+            </Animated.View>
         );
         mainButtonAction = signInHandler;
     }
@@ -91,7 +106,7 @@ const FooterButtons = ({
             <AnimatedButton
                 testID='mobile.onboaring.next'
                 onPress={() => mainButtonAction()}
-                style={[styles.button, buttonBackgroundStyle(theme, 'm', 'primary', 'default'), transform]}
+                style={[styles.button, buttonBackgroundStyle(theme, 'm', 'primary', 'default'), resizeStyle]}
             >
                 {mainButtonText}
             </AnimatedButton>

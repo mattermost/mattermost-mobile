@@ -51,12 +51,12 @@ const Onboarding = ({
         setIsLastSlide(!isLastSlide);
     };
 
-    const transform = useAnimatedStyle(() => {
-        const duration = Platform.OS === 'android' ? 250 : 350;
-        return {
-            transform: [{translateX: withTiming(scrollX.value, {duration})}],
-        };
-    }, []);
+    // const transform = useAnimatedStyle(() => {
+    //     const duration = Platform.OS === 'android' ? 250 : 350;
+    //     return {
+    //         transform: [{translateX: withTiming(scrollX.value, {duration})}],
+    //     };
+    // }, []);
 
     const renderSlide = useCallback(({item, index}: ListRenderItemInfo<any>) => {
         return (
@@ -76,7 +76,7 @@ const Onboarding = ({
 
     const handleScroll = useAnimatedScrollHandler(({contentOffset: {x}}) => {
         const calculatedIndex = Math.round(x / width);
-
+        scrollX.value = x;
         if (calculatedIndex !== currentIndex.value) {
             currentIndex.value = calculatedIndex;
             runOnJS(toogleIsLastSlideValue)(calculatedIndex === lastSlideIndex);
@@ -91,7 +91,7 @@ const Onboarding = ({
             <Background theme={theme}/>
             <AnimatedSafeArea
                 key={'onboarding_content'}
-                style={[styles.scrollContainer, transform]}
+                style={[styles.scrollContainer]}
             >
                 <Animated.ScrollView
                     scrollEventThrottle={16}
@@ -117,6 +117,9 @@ const Onboarding = ({
                     isLastSlide={isLastSlide}
                     nextSlideHandler={nextSlide}
                     signInHandler={signInHandler}
+                    currentIndex={currentIndex.value}
+                    scrollX={scrollX}
+                    lastSlideIndex={lastSlideIndex}
                 />
             </AnimatedSafeArea>
         </View>

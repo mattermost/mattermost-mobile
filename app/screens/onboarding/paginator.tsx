@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {View, useWindowDimensions, TouchableOpacity} from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, {interpolate, useAnimatedStyle} from 'react-native-reanimated';
 
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -23,6 +23,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.buttonBg,
         marginHorizontal: DOT_SIZE / 2,
         width: DOT_SIZE / 2,
+        opacity: 0.25,
     },
     outerDot: {
         height: DOT_SIZE,
@@ -32,6 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginTop: -4,
         position: 'absolute',
         width: DOT_SIZE,
+        opacity: 0.15,
     },
     button: {
         marginTop: 5,
@@ -44,51 +46,73 @@ const Paginator = ({
     scrollX,
     moveToSlide,
 }: Props) => {
-    const styles = getStyleSheet(theme);
-    const {width} = useWindowDimensions();
-
     return (
         <View style={{flexDirection: 'column', height: 10}}>
             <View style={{flexDirection: 'row', height: 5}}>
                 {data.map((item: any, i: number) => {
-                    // const inputRange = [(i - 1) * width, i * width, (i + 1) * width];
-
-                    // const opacity = scrollX.interpolate({
-                    //     inputRange,
-                    //     outputRange: [0.25, 1, 0.25],
-                    //     extrapolate: 'clamp',
-                    // });
-
-                    // const opacityOuterDot = scrollX.interpolate({
-                    //     inputRange,
-                    //     outputRange: [0, 0.15, 0],
-                    //     extrapolate: 'clamp',
-                    // });
-
                     return (
-                        <TouchableOpacity
-                            onPress={() => moveToSlide(i)}
+                        <Dot
+                            item={item}
                             key={item.id}
-                        >
-                            <Animated.View
-                                // style={[styles.outerDot, {
-                                //     opacity: opacityOuterDot,
-                                // }]}
-                                key={'outer-' + item.id + i.toString()}
-                                style={[styles.outerDot]}
-                            />
-                            <Animated.View
-                                // style={[styles.dot, {
-                                //     opacity,
-                                // }]}
-                                key={item.id + i.toString()}
-                                style={[styles.dot]}
-                            />
-                        </TouchableOpacity>
+                            theme={theme}
+                            moveToSlide={moveToSlide}
+                            index={i}
+                            scrollX={scrollX}
+                        />
                     );
                 })}
             </View>
         </View>
+    );
+};
+
+type DotProps = {
+    item: any;
+    index: number;
+    scrollX: Animated.SharedValue<number>;
+    theme: Theme;
+    moveToSlide: any;
+};
+
+const Dot = ({item, index, scrollX, theme, moveToSlide}: DotProps) => {
+    const {width} = useWindowDimensions();
+    const styles = getStyleSheet(theme);
+    const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
+
+    const dotOpacity = useAnimatedStyle(() => {
+        const opacity = interpolate(
+            scrollX.value,
+            inputRange,
+            [0.25, 1, 0.25],
+        );
+
+        return {opacity};
+    });
+
+    const outerDotOpacity = useAnimatedStyle(() => {
+        const opacity = interpolate(
+            scrollX.value,
+            inputRange,
+            [0, 0.15, 0],
+        );
+
+        return {opacity};
+    });
+
+    return (
+        <TouchableOpacity
+            onPress={() => moveToSlide(index)}
+            key={item.id}
+        >
+            <Animated.View
+                style={[styles.outerDot, outerDotOpacity]}
+                key={'outer-' + item.id + index.toString()}
+            />
+            <Animated.View
+                style={[styles.dot, dotOpacity]}
+                key={item.id + index.toString()}
+            />
+        </TouchableOpacity>
     );
 };
 
