@@ -1,22 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
 import {Alert} from 'react-native';
-import {setJSExceptionHandler} from 'react-native-exception-handler';
+import {
+    setJSExceptionHandler,
+
+    // setNativeExceptionHandler
+} from 'react-native-exception-handler';
 
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {dismissAllModals} from '@screens/navigation';
 import {ClientError} from '@utils/client_error';
-import {captureException, captureJSException, initializeSentry, LOGGER_NATIVE} from '@utils/sentry';
+import {
+    captureException,
+    captureJSException,
+    initializeSentry,
+    LOGGER_NATIVE,
+} from '@utils/sentry';
 
 import {logWarning} from './log';
 
 class JavascriptAndNativeErrorHandler {
-    private activeServerDatabase: Database | undefined;
-
-    private errorContext: any;
-
     initializeErrorHandling = () => {
         initializeSentry();
         setJSExceptionHandler(this.errorHandler, false);
@@ -26,7 +30,7 @@ class JavascriptAndNativeErrorHandler {
 
     nativeErrorHandler = (e: string) => {
         logWarning('Handling native error ' + e);
-        captureException(e, {logger: LOGGER_NATIVE, ...this.errorContext});
+        captureException(e, LOGGER_NATIVE);
     };
 
     errorHandler = (e: Error | ClientError, isFatal: boolean) => {
@@ -38,8 +42,7 @@ class JavascriptAndNativeErrorHandler {
         }
 
         logWarning('Handling Javascript error', e, isFatal);
-
-        captureJSException(e, isFatal, {logger: LOGGER_NATIVE, ...this.errorContext});
+        captureJSException(e, isFatal);
 
         if (isFatal && e instanceof Error) {
             const translations = getTranslations(DEFAULT_LOCALE);

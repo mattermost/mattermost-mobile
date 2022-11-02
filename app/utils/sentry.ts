@@ -69,20 +69,19 @@ function getDsn() {
     return '';
 }
 
-export function captureException(error: Error | string, errorContext: any) {
+export function captureException(error: Error | string, logger: string) {
     if (!Config.SentryEnabled) {
         return;
     }
 
-    if (!error || !errorContext) {
-        logWarning('captureException called with missing arguments', error, errorContext);
+    if (!error || !logger) {
+        logWarning('captureException called with missing arguments', error, logger);
         return;
     }
-
-    Sentry.captureException(error, {...errorContext});
+    Sentry.captureException(error, {logger});
 }
 
-export function captureJSException(error: Error | ClientError, isFatal: boolean, errorContext: any) {
+export function captureJSException(error: Error | ClientError, isFatal: boolean) {
     if (!Config.SentryEnabled) {
         return;
     }
@@ -95,10 +94,7 @@ export function captureJSException(error: Error | ClientError, isFatal: boolean,
     if (error instanceof ClientError) {
         captureClientErrorAsBreadcrumb(error, isFatal);
     } else {
-        captureException(error, {
-            logger: LOGGER_JAVASCRIPT,
-            ...errorContext,
-        });
+        captureException(error, LOGGER_JAVASCRIPT);
     }
 }
 
