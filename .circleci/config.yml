@@ -571,7 +571,9 @@ workflows:
             branches:
               only: /^(build|android)-pr-.*/
       - build-ios-pr:
-          context: mattermost-mobile-ios-pr
+          context:
+            - mattermost-mobile-ios-pr
+            - mattermost-mobile-sentry
           requires:
             - test
           filters:
