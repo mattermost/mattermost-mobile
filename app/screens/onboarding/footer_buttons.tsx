@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
-import {useWindowDimensions, View} from 'react-native';
+import {Pressable, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@app/components/compass_icon';
 import FormattedText from '@app/components/formatted_text';
@@ -15,7 +16,6 @@ type Props = {
     isLastSlide: boolean;
     nextSlideHandler: any;
     signInHandler: any;
-    scrollX: any;
 
 };
 
@@ -31,21 +31,32 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const AnimatedButton = Animated.createAnimatedComponent(Pressable);
+
 const FooterButtons = ({
     theme,
     nextSlideHandler,
     signInHandler,
     isLastSlide,
-    scrollX,
 }: Props) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
-    const inputRange = [-width, 0, width];
+
+    const scaledWidth = useSharedValue(80);
+
+    const transform = useAnimatedStyle(() => {
+        return {
+            width: scaledWidth.value,
+        };
+    });
 
     useEffect(() => {
-        if (isLastSlide) {
-            console.log('is last slide');
-        }
+        console.log('** footer buttons rerender', isLastSlide);
+    }, []);
+
+    useEffect(() => {
+        console.log('** footer buttons rerender', isLastSlide);
+        scaledWidth.value = withTiming(isLastSlide ? ((width * 80) / 100) : 80, {duration: 100});
     }, [isLastSlide]);
 
     let mainButtonText = (
@@ -77,13 +88,13 @@ const FooterButtons = ({
 
     return (
         <View style={{flexDirection: 'column', height: 150, marginTop: 15, width: '100%', marginHorizontal: 10, alignItems: 'center'}}>
-            <Button
+            <AnimatedButton
                 testID='mobile.onboaring.next'
                 onPress={() => mainButtonAction()}
-                containerStyle={[styles.button, buttonBackgroundStyle(theme, 'm', 'primary', 'default'), {width: isLastSlide ? '90%' : 80}]}
+                style={[styles.button, buttonBackgroundStyle(theme, 'm', 'primary', 'default'), transform]}
             >
                 {mainButtonText}
-            </Button>
+            </AnimatedButton>
             <Button
                 testID='mobile.onboaring.sign_in'
                 onPress={() => signInHandler()}

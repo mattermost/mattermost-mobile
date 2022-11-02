@@ -1,12 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useState} from 'react';
-import {Platform, View, Animated, ListRenderItemInfo} from 'react-native';
-import {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import React, {useCallback, useState} from 'react';
+import {View, ListRenderItemInfo, useWindowDimensions, Platform, SafeAreaView} from 'react-native';
+import Animated, {runOnJS, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
-import {generateId} from '@app/utils/general';
 import Background from '@screens/background';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -20,41 +18,43 @@ import type {LaunchProps} from '@typings/launch';
 interface OnboardingProps extends LaunchProps {
     theme: Theme;
 }
+
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const Onboarding = ({
     theme,
 }: OnboardingProps) => {
-    const translateX = useSharedValue(0);
+    const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
-    const [currentIndex, setCurrentIndex] = useState(0);
     const [isLastSlide, setIsLastSlide] = useState(false);
     const lastSlideIndex = slidesData.length - 1;
-    const slidesRef = useRef(null);
+    const slidesRef = useAnimatedRef<Animated.ScrollView>();
+    const currentIndex = useSharedValue(0);
+    const scrollX = useSharedValue(0);
 
     const nextSlide = () => {
-        const nextSlideIndex = currentIndex + 1;
-        if (slidesRef.current && currentIndex < lastSlideIndex) {
+        const nextSlideIndex = currentIndex.value + 1;
+        if (slidesRef.current && currentIndex.value < lastSlideIndex) {
             moveToSlide(nextSlideIndex);
         }
     };
 
     const moveToSlide = (slideIndexToMove: number) => {
-        setIsLastSlide(slideIndexToMove === lastSlideIndex);
-        setCurrentIndex(slideIndexToMove);
+        currentIndex.value = slideIndexToMove;
         // eslint-disable-next-line @typescript-eslint/ban-ts-comment
         // @ts-ignore
-        slidesRef?.current?.scrollToIndex({index: slideIndexToMove});
+        slidesRef?.current?.scrollTo({x: (slideIndexToMove * width), animated: true});
     };
 
     const signInHandler = () => {
-        console.log('sign in handler');
+        // temporal validation
+        setIsLastSlide(!isLastSlide);
     };
 
     const transform = useAnimatedStyle(() => {
         const duration = Platform.OS === 'android' ? 250 : 350;
         return {
-            transform: [{translateX: withTiming(translateX.value, {duration})}],
+            transform: [{translateX: withTiming(scrollX.value, {duration})}],
         };
     }, []);
 
@@ -65,18 +65,23 @@ const Onboarding = ({
                 theme={theme}
                 scrollX={scrollX}
                 index={index}
+                key={item.id}
             />
         );
     }, []);
 
-    const scrollX = useRef(new Animated.Value(0)).current;
+    const toogleIsLastSlideValue = (isLast: boolean) => {
+        setIsLastSlide(isLast);
+    };
 
-    const viewableItemsChanged = useRef(({viewableItems}: any) => {
-        setCurrentIndex(viewableItems[0].index);
-        setIsLastSlide(viewableItems[0].index === lastSlideIndex);
-    }).current;
+    const handleScroll = useAnimatedScrollHandler(({contentOffset: {x}}) => {
+        const calculatedIndex = Math.round(x / width);
 
-    const viewConfig = useRef({viewAreaCoveragePercentThreshold: 50}).current;
+        if (calculatedIndex !== currentIndex.value) {
+            currentIndex.value = calculatedIndex;
+            runOnJS(toogleIsLastSlideValue)(calculatedIndex === lastSlideIndex);
+        }
+    });
 
     return (
         <View
@@ -88,37 +93,32 @@ const Onboarding = ({
                 key={'onboarding_content'}
                 style={[styles.scrollContainer, transform]}
             >
-                <Animated.FlatList
-                    keyExtractor={(item) => item.id}
-                    data={slidesData}
-                    renderItem={renderSlide}
-                    listKey={generateId()}
+                <Animated.ScrollView
+                    scrollEventThrottle={16}
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
                     pagingEnabled={true}
                     bounces={false}
-                    onScroll={Animated.event([{nativeEvent: {contentOffset: {x: scrollX}}}], {
-                        useNativeDriver: true,
-                    })}
-                    onViewableItemsChanged={viewableItemsChanged}
-                    viewabilityConfig={viewConfig}
-                    scrollEventThrottle={32}
+                    onMomentumScrollEnd={handleScroll}
                     ref={slidesRef}
+                >
+                    {slidesData.map((item, index) => {
+                        return renderSlide({item, index} as ListRenderItemInfo<any>);
+                    })}
+                </Animated.ScrollView>
+                <Paginator
+                    data={slidesData}
+                    theme={theme}
+                    scrollX={scrollX}
+                    moveToSlide={moveToSlide}
+                />
+                <FooterButtons
+                    theme={theme}
+                    isLastSlide={isLastSlide}
+                    nextSlideHandler={nextSlide}
+                    signInHandler={signInHandler}
                 />
             </AnimatedSafeArea>
-            <Paginator
-                data={slidesData}
-                theme={theme}
-                scrollX={scrollX}
-                moveToSlide={moveToSlide}
-            />
-            <FooterButtons
-                theme={theme}
-                isLastSlide={isLastSlide}
-                nextSlideHandler={nextSlide}
-                signInHandler={signInHandler}
-                scrollX={scrollX}
-            />
         </View>
     );
 };
