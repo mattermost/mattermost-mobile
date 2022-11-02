@@ -14,6 +14,7 @@ import {useTheme} from '@context/theme';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 
 import PlusMenuItem from './item';
+import PlusMenuSeparator from './separator';
 
 type Props = {
     canCreateChannels: boolean;
@@ -128,10 +129,13 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople, disp
                 onPress={openDirectMessage}
             />
             {canInvitePeople &&
-            <PlusMenuItem
-                pickerAction='invitePeopleToTeam'
-                onPress={invitePeopleToTeam}
-            />
+            <>
+                <PlusMenuSeparator/>
+                <PlusMenuItem
+                    pickerAction='invitePeopleToTeam'
+                    onPress={invitePeopleToTeam}
+                />
+            </>
             }
         </>
     );
