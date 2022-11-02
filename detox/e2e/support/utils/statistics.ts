@@ -80,7 +80,7 @@ export function computeStatsFromData(data: number[], baseline?: {av: number; s: 
         T = computeT(baseline.av, average, baseline.s, quasiVariance, baseline.n, data.length);
         alpha = computeAlpha(T, baseline.n + data.length - 2);
         if (significance) {
-            pass = alpha > (1 - significance / 2);
+            pass = alpha < (1 - (significance / 2));
         }
     }
     return {average, quasiVariance, T, alpha, pass};
