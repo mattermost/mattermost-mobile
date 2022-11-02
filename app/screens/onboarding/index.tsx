@@ -51,13 +51,6 @@ const Onboarding = ({
         setIsLastSlide(!isLastSlide);
     };
 
-    // const transform = useAnimatedStyle(() => {
-    //     const duration = Platform.OS === 'android' ? 250 : 350;
-    //     return {
-    //         transform: [{translateX: withTiming(scrollX.value, {duration})}],
-    //     };
-    // }, []);
-
     const renderSlide = useCallback(({item, index}: ListRenderItemInfo<any>) => {
         return (
             <SlideItem

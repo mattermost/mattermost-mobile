@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {View, useWindowDimensions} from 'react-native';
-import Animated from 'react-native-reanimated';
+import Animated, {interpolate, useAnimatedStyle} from 'react-native-reanimated';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -56,65 +56,80 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
     const styles = getStyleSheet(theme);
     const SvgImg = item.image;
 
-    // const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
+    const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
 
-    // const translateImage = scrollX.interpolate({
-    //     inputRange,
-    //     outputRange: [width * 2, 0, -width * 2],
-    // });
+    const translateImage = useAnimatedStyle(() => {
+        const translateImageInterpolate = interpolate(
+            scrollX.value,
+            inputRange,
+            [width * 2, 0, -width * 2],
+        );
 
-    // const translateTitle = scrollX.interpolate({
-    //     inputRange,
-    //     outputRange: [width * 0.6, 0, -width * 0.6],
-    // });
+        return {
+            transform: [{
+                translateX: translateImageInterpolate,
+            }],
+        };
+    });
 
-    // const translateDescription = scrollX.interpolate({
-    //     inputRange,
-    //     outputRange: [width * 0.2, 0, -width * 0.2],
-    // });
+    const translateTitle = useAnimatedStyle(() => {
+        const translateTitleInterpolate = interpolate(
+            scrollX.value,
+            inputRange,
+            [width * 0.6, 0, -width * 0.6],
+        );
 
-    // const opacity = scrollX.interpolate({
-    //     inputRange,
-    //     outputRange: [0.2, 1, 0.2],
-    // });
+        return {
+            transform: [{
+                translateX: translateTitleInterpolate,
+            }],
+        };
+    });
+
+    const translateDescription = useAnimatedStyle(() => {
+        const translateDescriptionInterpolate = interpolate(
+            scrollX.value,
+            inputRange,
+            [width * 0.2, 0, -width * 0.2],
+        );
+
+        return {
+            transform: [{
+                translateX: translateDescriptionInterpolate,
+            }],
+        };
+    });
+
+    const opacity = useAnimatedStyle(() => {
+        const opacityInterpolate = interpolate(
+            scrollX.value,
+            inputRange,
+            [0.2, 1, 0.2],
+        );
+
+        return {opacity: opacityInterpolate};
+    });
 
     return (
         <View style={[styles.itemContainer, {width}]}>
             <Animated.View
-                // style={[{
-                //     transform: [{
-                //         translateX: translateImage,
-                //     }],
-                // }]}
+                style={[translateImage]}
             >
                 <SvgImg
-                    // style={[styles.image, {
-                    //     width,
-                    //     resizeMode: 'contain',
-                    // }]}
-                    style={[styles.image]}
+                    style={[styles.image, {
+                        width,
+                        resizeMode: 'contain',
+                    }]}
                 />
             </Animated.View>
             <View style={{flex: 0.3}}>
                 <Animated.Text
-                    // style={[styles.title, (index === 0 ? styles.fontFirstTitle : styles.fontTitle), {
-                    //     transform: [{
-                    //         translateX: translateTitle,
-                    //     }],
-                    //     opacity,
-                    // }]}
-                    style={[styles.title, (index === 0 ? styles.fontFirstTitle : styles.fontTitle)]}
+                    style={[styles.title, (index === 0 ? styles.fontFirstTitle : styles.fontTitle), translateTitle, opacity]}
                 >
                     {item.title}
                 </Animated.Text>
                 <Animated.Text
-                    // style={[styles.description, {
-                    //     transform: [{
-                    //         translateX: translateDescription,
-                    //     }],
-                    //     opacity,
-                    // }]}
-                    style={[styles.description]}
+                    style={[styles.description, translateDescription, opacity]}
                 >
                     {item.description}
                 </Animated.Text>

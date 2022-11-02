@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React from 'react';
 import {Pressable, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
-import Animated, {interpolate, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {interpolate, useAnimatedStyle} from 'react-native-reanimated';
 
 import CompassIcon from '@app/components/compass_icon';
 import FormattedText from '@app/components/formatted_text';
