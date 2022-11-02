@@ -31,7 +31,6 @@ import {
     setConfig,
     setPluginEnabled,
     setUserVoiceOn,
-    setUserVoiceOff,
 } from '@calls/state/actions';
 import {License} from '@constants';
 
@@ -686,13 +685,13 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], initialCurrentCallState);
 
         // test
-        act(() => setUserVoiceOn('channel-1', 'user-1'));
+        act(() => setUserVoiceOn('channel-1', 'user-1', true));
         assert.deepEqual(result.current[1], {...initialCurrentCallState, voiceOn: {'user-1': true}});
         assert.deepEqual(result.current[0], initialCallsState);
-        act(() => setUserVoiceOn('channel-1', 'user-2'));
+        act(() => setUserVoiceOn('channel-1', 'user-2', true));
         assert.deepEqual(result.current[1], {...initialCurrentCallState, voiceOn: {'user-1': true, 'user-2': true}});
         assert.deepEqual(result.current[0], initialCallsState);
-        act(() => setUserVoiceOff('channel-1', 'user-1'));
+        act(() => setUserVoiceOn('channel-1', 'user-1', false));
         assert.deepEqual(result.current[1], {...initialCurrentCallState, voiceOn: {'user-2': true}});
         assert.deepEqual(result.current[0], initialCallsState);
 

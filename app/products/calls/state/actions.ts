@@ -233,34 +233,22 @@ export const setUserMuted = (serverUrl: string, channelId: string, userId: strin
     setCurrentCall(nextCurrentCall);
 };
 
-export const setUserVoiceOn = (channelId: string, userId: string) => {
+export const setUserVoiceOn = (channelId: string, userId: string, voiceOn: boolean) => {
     const currentCall = getCurrentCall();
     if (!currentCall || currentCall.channelId !== channelId) {
         return;
     }
 
-    const voiceOn = {...currentCall.voiceOn};
-    voiceOn[userId] = true;
-
-    const nextCurrentCall = {
-        ...currentCall,
-        voiceOn,
-    };
-    setCurrentCall(nextCurrentCall);
-};
-
-export const setUserVoiceOff = (channelId: string, userId: string) => {
-    const currentCall = getCurrentCall();
-    if (!currentCall || currentCall.channelId !== channelId) {
-        return;
+    const nextVoiceOn = {...currentCall.voiceOn};
+    if (voiceOn) {
+        nextVoiceOn[userId] = true;
+    } else {
+        delete nextVoiceOn[userId];
     }
 
-    const voiceOn = {...currentCall.voiceOn};
-    delete voiceOn[userId];
-
     const nextCurrentCall = {
         ...currentCall,
-        voiceOn,
+        voiceOn: nextVoiceOn,
     };
     setCurrentCall(nextCurrentCall);
 };
