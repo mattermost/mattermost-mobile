@@ -77,7 +77,7 @@ const PermissionErrorBar = () => {
                 />
                 <FormattedText
                     id={'mobile.calls_mic_error'}
-                    defaultMessage={'To participate, open Settings to grant Mattermost access to your microphone.'}
+                    defaultMessage={'To participate, open Settings to grant Mattermost access to your microphone, then rejoin the call.'}
                     style={style.errorText}
                 />
                 <Pressable

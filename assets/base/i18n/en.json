@@ -376,7 +376,7 @@
   "mobile.calls_limit_msg": "The maximum number of participants per call is {maxParticipants}. Contact your System Admin to increase the limit.",
   "mobile.calls_limit_reached": "Participant limit reached",
   "mobile.calls_lower_hand": "Lower hand",
-  "mobile.calls_mic_error": "To participate, open Settings to grant Mattermost access to your microphone.",
+  "mobile.calls_mic_error": "To participate, open Settings to grant Mattermost access to your microphone, then rejoin the call.",
   "mobile.calls_more": "More",
   "mobile.calls_mute": "Mute",
   "mobile.calls_name_is_talking": "{name} is talking",
