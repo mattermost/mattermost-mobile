@@ -4,9 +4,12 @@
 import React, { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { withDatabase } from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
 
 import SearchBar from '@components/search';
 import { changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme } from '@utils/theme';
+import { searchChannels as searchChannelsRemote } from '@actions/remote/channel';
 import { General } from '@constants';
 import { useTheme } from '@context/theme';
 import FormattedText from '@components/formatted_text';
@@ -22,6 +25,9 @@ import UserListRow from './user_list_row';
 import { useIntl } from 'react-intl';
 import { debounce } from '@app/helpers/api/general';
 import SelectedOptions from './selected_options';
+import { useServerUrl } from '@app/context/server';
+import { observeCurrentTeamId } from '@app/queries/servers/system';
+import { WithDatabaseArgs } from '@typings/database/database';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
@@ -85,6 +91,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 function IntegrationSelector(
     { dataSource, data, isMultiselect, selected, onSelect, actions, currentTeamId }: Props) {
 
+    const serverUrl = useServerUrl();
     const theme = useTheme();
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const style = getStyleSheet(theme);
@@ -325,11 +332,16 @@ function IntegrationSelector(
         // dynamic options are not paged so are not reloaded on scroll
     };
 
-    const searchChannels = (term: string) => {
-        actions.searchChannels(currentTeamId, term.toLowerCase()).then(({ data }: any) => {  // TODO
-            setSearchResults(data);
-            setLoading(false);
-        });
+    const searchChannels = async (term: string) => {
+        const isSearch = true; // TODO?
+        const { channels: receivedChannels } = await searchChannelsRemote(serverUrl, term, currentTeamId, isSearch);
+        setSearchResults(receivedChannels);
+        setLoading(false);
+
+        // searchChannels(currentTeamId, term.toLowerCase()).then(({ data }: any) => {  // TODO
+        //     setSearchResults(data);
+        //     setLoading(false);
+        // });
     };
 
     const searchProfiles = (term: string) => {
@@ -555,4 +567,9 @@ function IntegrationSelector(
     );
 }
 
-export default IntegrationSelector;
+
+const withTeamId = withObservables([], ({ database }: WithDatabaseArgs) => ({
+    currentTeamId: observeCurrentTeamId(database),
+}));
+
+export default withDatabase(withTeamId(IntegrationSelector));
