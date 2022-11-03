@@ -150,7 +150,7 @@ const ChannelListHeader = ({
         bottomSheet({
             closeButtonId,
             renderContent,
-            snapPoints: [bottomSheetSnapPoint(items, ITEM_HEIGHT, insets.bottom, separators, SEPARATOR_HEIGHT), 10],
+            snapPoints: [bottomSheetSnapPoint(items, ITEM_HEIGHT, insets.bottom) + (separators * SEPARATOR_HEIGHT), 10],
             theme,
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
