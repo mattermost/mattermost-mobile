@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, { useState } from 'react';
+import React, { useRef, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -86,6 +86,7 @@ function IntegrationSelector(
     { dataSource, data, isMultiselect, selected, onSelect, actions, currentTeamId }: Props) {
 
     const theme = useTheme();
+    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const style = getStyleSheet(theme);
     const searchBarInput = {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
@@ -103,7 +104,6 @@ function IntegrationSelector(
 
 
     // navigationEventListener ?: EventSubscription;
-    const searchTimeoutId = 0;
     const page = -1;
     // const next: boolean;
     // const searchBarRef = React.createRef<SearchBar>();
@@ -371,9 +371,11 @@ function IntegrationSelector(
     const onSearch = (text: string) => {
         if (text) {
             setTerm(text);
-            clearTimeout(this.searchTimeoutId);
+            if (searchTimeoutId.current) {
+                clearTimeout(searchTimeoutId.current);
+            }
 
-            this.searchTimeoutId = setTimeout(() => {
+            searchTimeoutId.current = setTimeout(() => {
                 if (!dataSource) {
                     // setSearchResults(filterSearchData(null, data, text));
                     return;
@@ -386,7 +388,7 @@ function IntegrationSelector(
                 } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
                     searchDynamicOptions(text);
                 }
-            }, General.SEARCH_TIMEOUT_MILLISECONDS) as any;
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             clearSearch();
         }
