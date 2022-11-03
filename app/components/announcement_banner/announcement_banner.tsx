@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     StyleSheet,
@@ -11,6 +11,7 @@ import {
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {useTheme} from '@app/context/theme';
 import CompassIcon from '@components/compass_icon';
 import RemoveMarkdown from '@components/remove_markdown';
 import {Screens} from '@constants';
@@ -22,17 +23,14 @@ type Props = {
     bannerColor: string;
     bannerDismissed: boolean;
     bannerEnabled: boolean;
-    bannerText: string;
-    bannerTextColor: string;
+    bannerText?: string;
+    bannerTextColor?: string;
 }
 
 const style = StyleSheet.create({
     bannerContainer: {
-        elevation: 2,
         paddingHorizontal: 10,
         overflow: 'hidden',
-        width: '100%',
-        zIndex: 2,
     },
     wrapper: {
         alignItems: 'center',
@@ -50,22 +48,35 @@ const AnnouncementBanner = ({
     bannerColor,
     bannerDismissed,
     bannerEnabled,
-    bannerText,
-    bannerTextColor,
+    bannerText = '',
+    bannerTextColor = '#000',
 }: Props) => {
     const intl = useIntl();
     const insets = useSafeAreaInsets();
     const height = useSharedValue(0);
+    const theme = useTheme();
     const [visible, setVisible] = useState(false);
 
-    const handlePress = () => {
+    const handlePress = useCallback(() => {
         const title = intl.formatMessage({
             id: 'mobile.announcement_banner.title',
             defaultMessage: 'Announcement',
         });
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        const closeButtonId = 'close-channel-info';
 
-        showModal(Screens.EXPANDED_ANNOUNCEMENT_BANNER, title);
-    };
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: closeButtonId,
+                    icon: closeButton,
+                    testID: 'close.channel_info.button',
+                }],
+            },
+        };
+
+        showModal(Screens.EXPANDED_ANNOUNCEMENT_BANNER, title, {closeButtonId}, options);
+    }, [theme.sidebarHeaderTextColor, intl.locale]);
 
     useEffect(() => {
         const showBanner = bannerEnabled && !bannerDismissed && Boolean(bannerText);

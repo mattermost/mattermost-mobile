@@ -3,36 +3,36 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
+import {of as of$, combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeConfig, observeLastDismissedAnnouncement, observeLicense} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeConfigValue, observeLastDismissedAnnouncement, observeLicense} from '@queries/servers/system';
 
 import AnnouncementBanner from './announcement_banner';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type WithConfigArgs = {
-    config?: ClientConfig;
-    license?: ClientLicense;
-}& WithDatabaseArgs;
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const lastDismissed = observeLastDismissedAnnouncement(database);
+    const bannerText = observeConfigValue(database, 'BannerText');
+    const allowBannerDismissal = observeConfigBooleanValue(database, 'AllowBannerDismissal');
 
-const withConfig = withObservables([], ({database}: WithDatabaseArgs) => ({
-    config: observeConfig(database),
-    license: observeLicense(database),
-}));
+    const bannerDismissed = combineLatest([lastDismissed, bannerText, allowBannerDismissal]).pipe(
+        switchMap(([ld, bt, abd]) => of$(abd && (ld === bt))),
+    );
 
-const enhanced = withObservables(['config', 'license'], ({config, license, database}: WithConfigArgs) => {
-    const bannerDismissed = observeLastDismissedAnnouncement(database).pipe(
-        switchMap((aa) => of$((config?.AllowBannerDismissal === 'true') && (aa.length ? aa[0].value === config?.BannerText : false))),
+    const license = observeLicense(database);
+    const enableBannerConfig = observeConfigBooleanValue(database, 'EnableBanner');
+    const bannerEnabled = combineLatest([license, enableBannerConfig]).pipe(
+        switchMap(([lcs, cfg]) => of$(cfg && lcs?.IsLicensed === 'true')),
     );
     return {
-        bannerColor: of$(config?.BannerColor),
-        bannerEnabled: of$(config?.EnableBanner === 'true' && license?.IsLicensed === 'true'),
-        bannerText: of$(config?.BannerText || ''),
-        bannerTextColor: of$(config?.BannerTextColor || '#000'),
+        bannerColor: observeConfigValue(database, 'BannerColor'),
+        bannerEnabled,
+        bannerText,
+        bannerTextColor: observeConfigValue(database, 'BannerTextColor'),
         bannerDismissed,
     };
 });
 
-export default withDatabase(withConfig(enhanced(AnnouncementBanner)));
+export default withDatabase(enhanced(AnnouncementBanner));

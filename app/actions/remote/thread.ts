@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
 import {getPostById} from '@queries/servers/post';
-import {getCommonSystemValues, getCurrentTeamId} from '@queries/servers/system';
+import {getConfigValue, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled, getNewestThreadInTeam, getThreadById} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 
@@ -89,9 +89,9 @@ export const fetchThreads = async (
     }
 
     try {
-        const {config} = await getCommonSystemValues(database);
+        const version = await getConfigValue(database, 'Version');
 
-        const data = await client.getThreads('me', teamId, before, after, perPage, deleted, unread, since, false, config.Version);
+        const data = await client.getThreads('me', teamId, before, after, perPage, deleted, unread, since, false, version);
 
         const {threads} = data;
 
@@ -308,7 +308,7 @@ async function fetchBatchThreads(
         return {error: 'currentUser not found'};
     }
 
-    const {config} = await getCommonSystemValues(operator.database);
+    const version = await getConfigValue(operator.database, 'Version');
     const data: Thread[] = [];
 
     const fetchThreadsFunc = async (opts: FetchThreadsOptions) => {
@@ -316,7 +316,7 @@ async function fetchBatchThreads(
         const {before, after, perPage = General.CRT_CHUNK_SIZE, deleted, unread, since} = opts;
 
         page += 1;
-        const {threads} = await client.getThreads(currentUser.id, teamId, before, after, perPage, deleted, unread, since, false, config.Version);
+        const {threads} = await client.getThreads(currentUser.id, teamId, before, after, perPage, deleted, unread, since, false, version);
         if (threads.length) {
             // Mark all fetched threads as following
             for (const thread of threads) {

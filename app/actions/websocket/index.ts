@@ -30,9 +30,9 @@ import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, queryActiveServer} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {
-    getCommonSystemValues,
     getConfig,
     getCurrentUserId,
+    getLicense,
     getWebSocketLastDisconnected,
     resetWebSocketLastDisconnected,
     setCurrentTeamAndChannelId,
@@ -177,10 +177,11 @@ async function doReconnect(serverUrl: string) {
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
-    const {config, license} = await getCommonSystemValues(database);
+    const license = await getLicense(database);
+    const config = await getConfig(database);
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
 
-    if (isSupportedServerCalls(config?.Version)) {
+    if (isSupportedServerCalls(config.Version)) {
         loadConfigAndCalls(serverUrl, currentUserId);
     }
 

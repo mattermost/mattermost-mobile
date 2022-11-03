@@ -3,10 +3,10 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
+import {of as of$, combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeConfig} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeConfigValue} from '@app/queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {isCustomStatusExpirySupported, isMinimumServerVersion} from '@utils/helpers';
 
@@ -15,16 +15,15 @@ import AccountScreen from './account';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = observeConfig(database);
-    const showFullName = config.pipe((switchMap((cfg) => of$(cfg?.ShowFullName === 'true'))));
-    const enableCustomUserStatuses = config.pipe((switchMap((cfg) => {
-        return of$(cfg?.EnableCustomUserStatuses === 'true' && isMinimumServerVersion(cfg?.Version || '', 5, 36));
-    })));
-    const version = config.pipe(
-        switchMap((cfg) => of$(cfg?.Version || '')),
+    const showFullName = observeConfigBooleanValue(database, 'ShowFullName');
+    const cfgEnableCustomUserStatuses = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
+
+    const version = observeConfigValue(database, 'Version');
+    const customStatusExpirySupported = version.pipe(
+        switchMap((v) => of$(isCustomStatusExpirySupported(v || ''))),
     );
-    const customStatusExpirySupported = config.pipe(
-        switchMap((cfg) => of$(isCustomStatusExpirySupported(cfg?.Version || ''))),
+    const enableCustomUserStatuses = combineLatest([cfgEnableCustomUserStatuses, version]).pipe(
+        switchMap(([cfg, v]) => of$(cfg && isMinimumServerVersion(v || '', 5, 36))),
     );
 
     return {

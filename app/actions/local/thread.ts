@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, PrepareCommonSystemValuesArgs, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, PrepareCommonSystemValuesArgs, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
@@ -74,12 +74,12 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             throw new Error('Channel not found');
         }
 
-        const system = await getCommonSystemValues(database);
+        const currentTeamId = await getCurrentTeamId(database);
         const isTabletDevice = await isTablet();
-        const teamId = channel.teamId || system.currentTeamId;
+        const teamId = channel.teamId || currentTeamId;
 
         let switchingTeams = false;
-        if (system.currentTeamId !== teamId) {
+        if (currentTeamId !== teamId) {
             const modelPromises: Array<Promise<Model[]>> = [];
             switchingTeams = true;
             modelPromises.push(addTeamToTeamHistory(operator, teamId, true));

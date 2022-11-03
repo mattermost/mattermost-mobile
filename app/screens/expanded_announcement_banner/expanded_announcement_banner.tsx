@@ -6,6 +6,7 @@ import {SafeAreaView, ScrollView, View} from 'react-native';
 import Button from 'react-native-button';
 
 import {dismissAnnouncement} from '@actions/local/systems';
+import useNavButtonPressed from '@app/hooks/navigation_button_pressed';
 import FormattedText from '@components/formatted_text';
 import Markdown from '@components/markdown';
 import {Screens} from '@constants';
@@ -18,7 +19,8 @@ import {typography} from '@utils/typography';
 
 type Props = {
     allowDismissal: boolean;
-    bannerText: string;
+    bannerText?: string;
+    closeButtonId: string;
     componentId: string;
 }
 
@@ -62,11 +64,15 @@ const close = () => {
 
 const ExpandedAnnouncementBanner = ({
     allowDismissal,
-    bannerText,
+    bannerText = '',
+    closeButtonId,
+    componentId,
 }: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+
+    useNavButtonPressed(closeButtonId, componentId, close, []);
 
     const dismissBanner = useCallback(() => {
         dismissAnnouncement(serverUrl, bannerText);

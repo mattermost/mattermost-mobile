@@ -7,7 +7,7 @@ import {encode} from '@msgpack/msgpack/dist';
 
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
-import {getCommonSystemValues} from '@queries/servers/system';
+import {getConfigValue} from '@queries/servers/system';
 import {logError} from '@utils/log';
 
 const wsMinReconnectRetryTimeMs = 1000; // 1 second
@@ -42,8 +42,8 @@ export class WebSocketClient extends EventEmitter {
             return;
         }
 
-        const system = await getCommonSystemValues(database);
-        const connectionUrl = (system.config.WebsocketURL || this.serverUrl) + this.wsPath;
+        const websocketURL = await getConfigValue(database, 'WebsocketURL');
+        const connectionUrl = (websocketURL || this.serverUrl) + this.wsPath;
 
         this.ws = new WebSocket(`${connectionUrl}?connection_id=${this.connID}&sequence_number=${this.serverSeqNo}`, [], {headers: {authorization: `Bearer ${this.authToken}`}});
 

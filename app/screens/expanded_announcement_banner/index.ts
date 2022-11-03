@@ -3,28 +3,18 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
 
-import {observeConfig, observeLicense} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeConfigValue} from '@queries/servers/system';
 
 import ExpandedAnnouncementBanner from './expanded_announcement_banner';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type WithConfigArgs = {
-    config?: ClientConfig;
-};
-
-const withConfig = withObservables([], ({database}: WithDatabaseArgs) => ({
-    config: observeConfig(database),
-    license: observeLicense(database),
-}));
-
-const enhanced = withObservables(['config'], ({config}: WithConfigArgs) => {
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
-        allowDismissal: of$(config?.AllowBannerDismissal === 'true'),
-        bannerText: of$(config?.BannerText || ''),
+        allowDismissal: observeConfigBooleanValue(database, 'AllowBannerDismissal'),
+        bannerText: observeConfigValue(database, 'BannerText'),
     };
 });
 
-export default withDatabase(withConfig(enhanced(ExpandedAnnouncementBanner)));
+export default withDatabase(enhanced(ExpandedAnnouncementBanner));
