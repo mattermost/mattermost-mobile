@@ -15,8 +15,8 @@ type Props = {
     theme: Theme;
     isLastSlide: boolean;
     lastSlideIndex: number;
-    nextSlideHandler: any;
-    signInHandler: any;
+    nextSlideHandler: () => void;
+    signInHandler: () => void;
     currentIndex: number;
     scrollX: Animated.SharedValue<number>;
 };
@@ -51,11 +51,12 @@ const FooterButtons = ({
     // keep in mind penultimate and ultimate slides to run buttons animations
     const isPenultimateSlide = currentIndex === (lastSlideIndex - 1);
     const needToAnimate = isLastSlide || isPenultimateSlide;
+    const inputRange = [(currentIndex - 1) * width, currentIndex * width, (currentIndex + 1) * width];
 
     const resizeStyle = useAnimatedStyle(() => {
         const interpolatedWidth = interpolate(
             scrollX.value,
-            [(currentIndex - 1) * width, currentIndex * width, (currentIndex + 1) * width],
+            inputRange,
             [BUTTON_SIZE, isLastSlide ? width * 0.8 : BUTTON_SIZE, width * 0.8],
         );
 
@@ -65,8 +66,18 @@ const FooterButtons = ({
     const opacityTextStyle = useAnimatedStyle(() => {
         const interpolatedScale = interpolate(
             scrollX.value,
-            [(currentIndex - 1) * width, currentIndex * width, (currentIndex + 1) * width],
+            inputRange,
             [isPenultimateSlide ? 1 : 0, 1, 0],
+        );
+
+        return {opacity: needToAnimate ? interpolatedScale : 1};
+    });
+
+    const opacitySignInButton = useAnimatedStyle(() => {
+        const interpolatedScale = interpolate(
+            scrollX.value,
+            inputRange,
+            [1, (isLastSlide ? 0 : 1), 0],
         );
 
         return {opacity: needToAnimate ? interpolatedScale : 1};
@@ -110,17 +121,17 @@ const FooterButtons = ({
             >
                 {mainButtonText}
             </AnimatedButton>
-            <Button
+            <AnimatedButton
                 testID='mobile.onboaring.sign_in'
                 onPress={() => signInHandler()}
-                containerStyle={[styles.button, buttonBackgroundStyle(theme, 'm', 'link', 'default')]}
+                style={[styles.button, buttonBackgroundStyle(theme, 'm', 'link', 'default'), opacitySignInButton]}
             >
                 <FormattedText
                     id='mobile.onboarding.sign_in'
                     defaultMessage='Sign in'
                     style={buttonTextStyle(theme, 's', 'primary', 'inverted')}
                 />
-            </Button>
+            </AnimatedButton>
         </View>
     );
 };

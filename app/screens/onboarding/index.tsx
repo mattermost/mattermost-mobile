@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {View, ListRenderItemInfo, useWindowDimensions, Platform, SafeAreaView} from 'react-native';
-import Animated, {runOnJS, useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView} from 'react-native';
+import Animated, {runOnJS, useAnimatedRef, useAnimatedScrollHandler, useSharedValue} from 'react-native-reanimated';
 
 import Background from '@screens/background';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -11,7 +11,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import FooterButtons from './footer_buttons';
 import Paginator from './paginator';
 import SlideItem from './slide';
-import slidesData from './slides_data';
+import useSlidesData, {OnboardingItem} from './slides_data';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -27,6 +27,7 @@ const Onboarding = ({
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
     const [isLastSlide, setIsLastSlide] = useState(false);
+    const slidesData = useSlidesData().slidesData;
     const lastSlideIndex = slidesData.length - 1;
     const slidesRef = useAnimatedRef<Animated.ScrollView>();
     const currentIndex = useSharedValue(0);
@@ -51,7 +52,7 @@ const Onboarding = ({
         setIsLastSlide(!isLastSlide);
     };
 
-    const renderSlide = useCallback(({item, index}: ListRenderItemInfo<any>) => {
+    const renderSlide = useCallback(({item, index}: ListRenderItemInfo<OnboardingItem>) => {
         return (
             <SlideItem
                 item={item}
@@ -96,7 +97,7 @@ const Onboarding = ({
                     ref={slidesRef}
                 >
                     {slidesData.map((item, index) => {
-                        return renderSlide({item, index} as ListRenderItemInfo<any>);
+                        return renderSlide({item, index} as ListRenderItemInfo<OnboardingItem>);
                     })}
                 </Animated.ScrollView>
                 <Paginator

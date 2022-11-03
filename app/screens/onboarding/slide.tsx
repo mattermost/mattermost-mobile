@@ -3,13 +3,15 @@
 
 import React from 'react';
 import {View, useWindowDimensions} from 'react-native';
-import Animated, {interpolate, useAnimatedStyle} from 'react-native-reanimated';
+import Animated, {Extrapolate, interpolate, useAnimatedStyle} from 'react-native-reanimated';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import {OnboardingItem} from './slides_data';
+
 type Props = {
-    item: any;
+    item: OnboardingItem;
     theme: Theme;
     scrollX: Animated.SharedValue<number>;
     index: number;
@@ -63,6 +65,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
             scrollX.value,
             inputRange,
             [width * 2, 0, -width * 2],
+            Extrapolate.CLAMP,
         );
 
         return {
@@ -77,6 +80,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
             scrollX.value,
             inputRange,
             [width * 0.6, 0, -width * 0.6],
+            Extrapolate.CLAMP,
         );
 
         return {
@@ -91,6 +95,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
             scrollX.value,
             inputRange,
             [width * 0.2, 0, -width * 0.2],
+            Extrapolate.CLAMP,
         );
 
         return {
@@ -105,6 +110,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
             scrollX.value,
             inputRange,
             [0.2, 1, 0.2],
+            Extrapolate.CLAMP,
         );
 
         return {opacity: opacityInterpolate};

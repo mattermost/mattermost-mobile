@@ -7,11 +7,13 @@ import Animated, {interpolate, useAnimatedStyle} from 'react-native-reanimated';
 
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import {OnboardingItem} from './slides_data';
+
 type Props = {
-    data: any;
+    data: OnboardingItem[];
     theme: Theme;
     scrollX: Animated.SharedValue<number>;
-    moveToSlide: any;
+    moveToSlide: (slideIndexToMove: number) => void;
 };
 
 const DOT_SIZE = 16;
@@ -44,9 +46,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: DOT_SIZE,
         opacity: 0.15,
     },
-    button: {
-        marginTop: 5,
-    },
 }));
 
 const Paginator = ({
@@ -56,34 +55,31 @@ const Paginator = ({
     moveToSlide,
 }: Props) => {
     return (
-        <View style={{flexDirection: 'column', height: 10}}>
-            <View style={{flexDirection: 'row', height: 5}}>
-                {data.map((item: any, i: number) => {
-                    return (
-                        <Dot
-                            item={item}
-                            key={item.id}
-                            theme={theme}
-                            moveToSlide={moveToSlide}
-                            index={i}
-                            scrollX={scrollX}
-                        />
-                    );
-                })}
-            </View>
+        <View style={{flexDirection: 'row', height: 15}}>
+            {data.map((item: OnboardingItem, index: number) => {
+                return (
+                    <Dot
+                        key={`${item.id}-${index.toString()}`}
+                        theme={theme}
+                        moveToSlide={moveToSlide}
+                        index={index}
+                        scrollX={scrollX}
+                    />
+                );
+            })}
         </View>
     );
 };
 
 type DotProps = {
-    item: any;
     index: number;
     scrollX: Animated.SharedValue<number>;
     theme: Theme;
-    moveToSlide: any;
+    moveToSlide: (slideIndexToMove: number) => void;
 };
 
-const Dot = ({item, index, scrollX, theme, moveToSlide}: DotProps) => {
+// this has to be extracted as a component since the useAnimatedStyle hook cant be used inside a loop
+const Dot = ({index, scrollX, theme, moveToSlide}: DotProps) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
     const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
@@ -111,19 +107,15 @@ const Dot = ({item, index, scrollX, theme, moveToSlide}: DotProps) => {
     return (
         <TouchableOpacity
             onPress={() => moveToSlide(index)}
-            key={item.id}
         >
             <Animated.View
                 style={[styles.fixedDot]}
-                key={'fixed-' + item.id + index.toString()}
             />
             <Animated.View
                 style={[styles.outerDot, outerDotOpacity]}
-                key={'outer-' + item.id + index.toString()}
             />
             <Animated.View
                 style={[styles.dot, dotOpacity]}
-                key={'inner-' + item.id + index.toString()}
             />
         </TouchableOpacity>
     );
