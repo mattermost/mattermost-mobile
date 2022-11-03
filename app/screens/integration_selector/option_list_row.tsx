@@ -14,7 +14,7 @@ import CustomListRow, { Props as CustomListRowProps } from './custom_list_row';
 type OptionListRowProps = {
     id: string,
     theme: object,
-    item: object,  // TODO I don't think this goes here, but It seems broken in @master
+    item: { text: string, value: string },  // TODO I don't think this goes here, but It seems broken in @master
 }
 
 type Props = OptionListRowProps & CustomListRowProps;
@@ -50,7 +50,7 @@ const OptionListRow = ({
 
     const onPressRow = () => {
         if (onPress) {
-            onPress(id, item);
+            onPress(id);
         }
     };
 

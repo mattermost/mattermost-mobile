@@ -56,10 +56,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 const ChannelListRow = ({
     onPress, id, theme, channel, testID, isArchived,
-    enabled, selectable, selected, item,
+    enabled, selectable, selected,
 }: Props) => {
     const onPressRow = () => {
-        onPress(id, item);
+        if (!onPress) {
+            return;
+        }
+
+        onPress(id);
     };
 
     const style = getStyleFromTheme(theme);
@@ -91,7 +95,7 @@ const ChannelListRow = ({
         <View style={style.outerContainer}>
             <CustomListRow
                 id={id}
-                onPress={onPress ? onPressRow : null}
+                onPress={onPressRow}
                 enabled={enabled}
                 selectable={selectable}
                 selected={selected}

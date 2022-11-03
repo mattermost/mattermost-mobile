@@ -11,12 +11,14 @@ import CompassIcon from '@components/compass_icon';
 
 
 export type Props = {
-    onPress?: (index: string, name: string) => void,
+    id: string,
+    // item: object,
+    onPress?: (index: string) => void,
     enabled: boolean,
     selectable: boolean,
     selected: boolean,
     children: JSX.Element | JSX.Element[],
-    testID: string,
+    testID?: string,
 };
 
 const style = StyleSheet.create({
@@ -59,7 +61,7 @@ const style = StyleSheet.create({
 });
 
 const CustomListRow = ({
-    enabled = true, onPress, testID, selectable, selected, children,
+    enabled = true, id, onPress, testID = "", selectable, selected, children,
 }: Props) => {
     // TODO Replace conditionaltouchable
     return (

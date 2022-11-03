@@ -72,12 +72,11 @@ type UserListRowProps = {
 type Props = UserListRowProps & CustomListRowProps;
 
 const UserListRow = ({
-    id, isMyUser, theme, user, teammateNameDisplay, testID, onPress, item,
-    enabled, selectable, selected,
+    id, isMyUser, theme, user, teammateNameDisplay, testID, onPress, enabled, selectable, selected,
 }: Props) => {
     const onPressRow = () => {
         if (onPress) {
-            onPress(id, item);
+            onPress(id);
         }
     };
 
@@ -88,6 +87,7 @@ const UserListRow = ({
         return (
             <ChannelIcon
                 name=""  // TODO
+                type=""
                 isActive={false}
                 isArchived={false}
                 // isBot={false}

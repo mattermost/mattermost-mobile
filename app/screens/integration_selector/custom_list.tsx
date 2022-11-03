@@ -25,7 +25,7 @@ type Props = {
     onLoadMore: () => void,
     onRowPress: () => void,
     onRowSelect: () => void,
-    renderItem: () => JSX.Element,
+    renderItem: (props: object) => JSX.Element,
     selectable: boolean,
     theme: object,
     shouldRenderSeparator: boolean,
@@ -140,7 +140,7 @@ function CustomList({
         }
     }
 
-    const keyExtractor = (item: any) => {  // TODO
+    const keyExtractor = (item: any, index: number): string => {
         return item.id || item.key || item.value || item;
     }
 
@@ -164,7 +164,7 @@ function CustomList({
         this.list = ref;
     };
 
-    const renderListItem = ({ item, index, section }) => {  // TODO
+    const renderListItem = ({ item, index, section }: any) => {  // TODO
         const props = {
             id: item.id,
             item,
@@ -173,18 +173,18 @@ function CustomList({
 
             // TODO Can we do this?
             enabled: true,
-            onPress: null // TODO Type?
+            // onPress: null // TODO Type?
         };
 
         if ('disableSelect' in item) {
             props.enabled = !item.disableSelect;
         }
 
-        if (onRowSelect) {
-            props.onPress = onRowSelect(section.title, index);
-        } else {
-            props.onPress = onRowPress;
-        }
+        // if (onRowSelect) {
+        //     props.onPress = onRowSelect(section.title, index);
+        // } else {
+        //     props.onPress = onRowPress;
+        // }
 
         return renderItem(props);
     }
@@ -199,7 +199,7 @@ function CustomList({
         return loadingComponent;
     };
 
-    const renderSectionHeader = ({ section }) => {
+    const renderSectionHeader = ({ section }: any) => {
         const { theme } = this.props;
         const style = getStyleFromTheme(theme);
 
@@ -220,8 +220,8 @@ function CustomList({
             <SectionList
                 contentContainerStyle={style.container}
                 extraData={loading}
-                keyboardShouldPersistTaps='always'
-                {...keyboardDismissProp}
+                // keyboardShouldPersistTaps='always'
+                // {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 ItemSeparatorComponent={renderSeparator}
@@ -263,8 +263,8 @@ function CustomList({
                 contentContainerStyle={style.container}
                 data={data}
                 extraData={extraData}
-                keyboardShouldPersistTaps='always'
-                {...keyboardDismissProp}
+                // keyboardShouldPersistTaps='always'
+                // {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 ItemSeparatorComponent={renderSeparator}
