@@ -14,9 +14,9 @@ import ChannelIcon from '@components/channel_icon';
 import ProfilePicture from '@components/profile_picture';
 import { BotTag, GuestTag } from '@components/tag';
 import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
+import { isGuest } from '@utils/user';
 
 import CustomListRow, { Props as CustomListRowProps } from './custom_list_row';
-import type UserModel from '@typings/database/models/servers/user';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -64,7 +64,7 @@ type UserListRowProps = {
     id: string,
     isMyUser: boolean,
     theme: object,
-    user: UserModel,
+    user: UserProfile,
     teammateNameDisplay: string,
     testID: string,
 };
@@ -156,11 +156,11 @@ const UserListRow = ({
                                 {usernameDisplay}
                             </Text>
                             <BotTag
-                                show={Boolean(user.isBot)}
+                                show={Boolean(user.is_bot)}
                             // theme={theme}
                             />
                             <GuestTag
-                                show={user.isGuest}
+                                show={isGuest(user.roles)}
                             // theme={theme}
                             />
                         </View>
@@ -176,7 +176,7 @@ const UserListRow = ({
                             </Text>
                         </View>
                     }
-                    {user.deleteAt > 0 &&
+                    {user.delete_at > 0 &&
                         <View>
                             <Text
                                 style={style.deactivated}

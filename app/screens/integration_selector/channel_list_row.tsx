@@ -10,13 +10,12 @@ import {
 import CompassIcon from '@components/compass_icon';
 import CustomListRow, { Props as CustomListRowProps } from './custom_list_row';
 import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
-import type ChannelModel from '@typings/database/models/servers/channel';
 
 type ChannelListRowProps = {
     id: string,
     isArchived: boolean,
     theme: object,
-    channel: ChannelModel,
+    channel: Channel,
 };
 
 type Props = ChannelListRowProps & CustomListRowProps;
@@ -68,19 +67,18 @@ const ChannelListRow = ({
 
     const style = getStyleFromTheme(theme);
 
-    // TODO
     let purpose = null;
-    // if (channel.purpose) {
-    //     purpose = (
-    //         <Text
-    //             style={style.purpose}
-    //             ellipsizeMode='tail'
-    //             numberOfLines={1}
-    //         >
-    //             {channel.purpose}
-    //         </Text>
-    //     );
-    // }
+    if (channel.purpose) {
+        purpose = (
+            <Text
+                style={style.purpose}
+                ellipsizeMode='tail'
+                numberOfLines={1}
+            >
+                {channel.purpose}
+            </Text>
+        );
+    }
 
     const itemTestID = `${testID}.${id}`;
     const channelDisplayNameTestID = `${testID}.display_name`;
@@ -114,7 +112,7 @@ const ChannelListRow = ({
                             style={style.displayName}
                             testID={channelDisplayNameTestID}
                         >
-                            {channel.displayName}
+                            {channel.display_name}
                         </Text>
                     </View>
                     {purpose}

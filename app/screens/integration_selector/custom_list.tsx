@@ -16,7 +16,7 @@ type Props = {
     data: Array<object>, // TODO?
     extraData?: any,
     canRefresh?: boolean,
-    listType?: string,  // TODO Only FlatList or SectionList
+    listType?: string,
     loading?: boolean,
     loadingComponent?: React.ReactNode,
     noResults: () => JSX.Element | null,
