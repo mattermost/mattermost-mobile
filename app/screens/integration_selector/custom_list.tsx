@@ -14,22 +14,22 @@ const SCROLL_UP_MULTIPLIER = 6;
 
 type Props = {
     data: Array<object>, // TODO?
-    extraData: any,
-    canRefresh: boolean,
-    listType: string,  // TODO Only FlatList or SectionList
-    loading: boolean,
-    loadingComponent: React.ReactNode,
-    noResults: JSX.Element,
-    refreshing: boolean,
-    onRefresh: () => void,
+    extraData?: any,
+    canRefresh?: boolean,
+    listType?: string,  // TODO Only FlatList or SectionList
+    loading?: boolean,
+    loadingComponent?: React.ReactNode,
+    noResults: () => JSX.Element | null,
+    refreshing?: boolean,
+    onRefresh?: () => void,
     onLoadMore: () => void,
-    onRowPress: () => void,
-    onRowSelect: () => void,
+    onRowPress?: (id: string, item: UserProfile | Channel | DialogOption) => any,
+    onRowSelect?: () => void,
     renderItem: (props: object) => JSX.Element,
-    selectable: boolean,
-    theme: object,
-    shouldRenderSeparator: boolean,
-    testID: string,
+    selectable?: boolean,
+    theme?: object,
+    shouldRenderSeparator?: boolean,
+    testID?: string,
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -225,7 +225,7 @@ function CustomList({
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 ItemSeparatorComponent={renderSeparator}
-                ListEmptyComponent={renderEmptyList}
+                ListEmptyComponent={renderEmptyList()}
                 ListFooterComponent={renderFooter}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 onLayout={handleLayout}
@@ -268,7 +268,7 @@ function CustomList({
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 ItemSeparatorComponent={renderSeparator}
-                ListEmptyComponent={renderEmptyList}
+                ListEmptyComponent={renderEmptyList()}
                 ListFooterComponent={renderFooter}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 onLayout={handleLayout}

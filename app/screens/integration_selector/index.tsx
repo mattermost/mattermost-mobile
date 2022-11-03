@@ -7,21 +7,34 @@ import { SafeAreaView } from 'react-native-safe-area-context';
 
 import SearchBar from '@components/search';
 import { changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme } from '@utils/theme';
+import { General } from '@constants';
 import { useTheme } from '@context/theme';
+import FormattedText from '@components/formatted_text';
+import { View as ViewConstants } from '@constants';
+import {
+    popTopScreen,
+} from '@screens/navigation';
 
-import CustomList from './custom_list';
+import CustomList, { FLATLIST, SECTIONLIST } from './custom_list';
+import OptionListRow from './option_list_row';
+import ChannelListRow from './channel_list_row';
+import UserListRow from './user_list_row';
 import { useIntl } from 'react-intl';
+import { debounce } from '@app/helpers/api/general';
+import SelectedOptions from './selected_options';
 
+type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
 type Props = {
-    actions: {
-        getProfiles: (page?: number, perPage?: number, options?: any) => Promise<ActionResult>;
-        getChannels: (teamId: string, page?: number, perPage?: number) => Promise<ActionResult>;
-        searchProfiles: (term: string, options?: any) => Promise<ActionResult>;
-        searchChannels: (teamId: string, term: string, archived?: boolean | undefined) => Promise<ActionResult>;
-    };
-    getDynamicOptions?: (term: string) => Promise<ActionResult>;
+    // actions: {
+    //     getProfiles: (page?: number, perPage?: number, options?: any) => Promise<ActionResult>;
+    //     getChannels: (teamId: string, page?: number, perPage?: number) => Promise<ActionResult>;
+    //     searchProfiles: (term: string, options?: any) => Promise<ActionResult>;
+    //     searchChannels: (teamId: string, term: string, archived?: boolean | undefined) => Promise<ActionResult>;
+    // };
+    // getDynamicOptions?: (term: string) => Promise<ActionResult>;
+    actions: any,
     currentTeamId: string;
-    data?: DataType;
+    data: object[];
     dataSource: string;
     onSelect: (opt: Selection) => void;
     isMultiselect?: boolean;
@@ -65,64 +78,65 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function IntegrationSelector({ }: Props) {
+
+function IntegrationSelector(
+    { dataSource, data, isMultiselect, selected, onSelect, actions, currentTeamId }: Props) {
     // TODO State
-    type State = {
-        data: DataType | Array<{ id: string; data: DataType }>;
-        loading: boolean;
-        searchResults: DialogOption[];
-        term: string;
-        multiselectSelected: MultiselectSelectedMap;
-    }
+    // type State = {
+    //     data: DataType | Array<{ id: string; data: DataType }>;
+    //     loading: boolean;
+    //     searchResults: DialogOption[];
+    //     term: string;
+    //     multiselectSelected: MultiselectSelectedMap;
+    // }
 
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const searchBarInput = ""
-    const term = ""
-    const listType = "FLATLIST"
+    const searchBarInput = {
+        backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+        color: theme.centerChannelColor,
+        fontSize: 15,
+    };
     const intl = useIntl();
+    // TODO DataSource
 
 
     // navigationEventListener ?: EventSubscription;
     const searchTimeoutId = 0;
     const page = -1;
-    const next: boolean;
-    const searchBarRef = React.createRef<SearchBar>();
-    const selectedScroll = React.createRef<ScrollView>();
+    // const next: boolean;
+    // const searchBarRef = React.createRef<SearchBar>();
+    // const selectedScroll = React.createRef<ScrollView>();
 
     // Constructor
-    this.next = props.dataSource === ViewTypes.DATA_SOURCE_USERS || props.dataSource === ViewTypes.DATA_SOURCE_CHANNELS || props.dataSource === ViewTypes.DATA_SOURCE_DYNAMIC;
+    const next = dataSource === ViewConstants.DATA_SOURCE_USERS || dataSource === ViewConstants.DATA_SOURCE_CHANNELS || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC;
 
-    let data: DataType = [];
-    if (!props.dataSource) {
-        data = props.data || [];
-    }
+    // const multiselectSelected: MultiselectSelectedMap = {};
+    // if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(props.dataSource))) {
+    //     selected.forEach((opt) => {
+    //         multiselectSelected[opt.value] = opt;
+    //     });
+    // }
 
-    const multiselectSelected: MultiselectSelectedMap = {};
-    if (props.isMultiselect && props.selected && !([ViewTypes.DATA_SOURCE_USERS, ViewTypes.DATA_SOURCE_CHANNELS].includes(props.dataSource))) {
-        props.selected.forEach((opt) => {
-            multiselectSelected[opt.value] = opt;
-        });
-    }
-
-    this.state = {
-        data,
-        loading: false,
-        searchResults: [],
-        term: '',
-        multiselectSelected,
-    };
+    // this.state = {
+    //     data,
+    //     loading: false,
+    //     searchResults: [],
+    //     term: '',
+    //     multiselectSelected,
+    // };
 
     // Callbacks
-    const componentDidMount() {
-        this.navigationEventListener = Navigation.events().bindComponent(this);
-        const { dataSource } = this.props;
-        if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
-            this.getProfiles();
-        } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-            this.getChannels();
-        } else if (dataSource === ViewTypes.DATA_SOURCE_DYNAMIC) {
-            this.getDynamicOptions();
+    // TODO This is a effect
+    const componentDidMount = () => {
+        // this.navigationEventListener = Navigation.events().bindComponent(this);
+
+        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+            getProfiles();
+        } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
+            getChannels();
+        } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
+            getDynamicOptions();
         }
     }
 
@@ -135,14 +149,14 @@ function IntegrationSelector({ }: Props) {
     };
 
     const handleSelectItem = (id: string, item: UserProfile | Channel | DialogOption) => {
-        if (!this.props.isMultiselect) {
-            this.props.onSelect(item);
-            this.close();
+        if (!isMultiselect) {
+            onSelect(item);
+            close();
             return;
         }
 
-        switch (this.props.dataSource) {
-            case ViewTypes.DATA_SOURCE_USERS: {
+        switch (dataSource) {
+            case ViewConstants.DATA_SOURCE_USERS: {
                 const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
                 const typedItem = item as UserProfile;
                 const multiselectSelected = { ...currentSelected };
@@ -154,7 +168,7 @@ function IntegrationSelector({ }: Props) {
                 this.setState({ multiselectSelected });
                 break;
             }
-            case ViewTypes.DATA_SOURCE_CHANNELS: {
+            case ViewConstants.DATA_SOURCE_CHANNELS: {
                 const currentSelected = this.state.multiselectSelected as Dictionary<Channel>;
                 const typedItem = item as Channel;
                 const multiselectSelected = { ...currentSelected };
@@ -186,20 +200,20 @@ function IntegrationSelector({ }: Props) {
         });
     };
 
-    const navigationButtonPressed({ buttonId }: { buttonId: string }) {
-        switch (buttonId) {
-            case 'submit-form':
-                this.props.onSelect(Object.values(this.state.multiselectSelected));
-                this.close();
-                return;
-            case 'close-dialog':
-                this.close();
-        }
-    }
+    // const navigationButtonPressed = ({ buttonId }: { buttonId: string }) => {
+    //     switch (buttonId) {
+    //         case 'submit-form':
+    //             onSelect(Object.values(this.state.multiselectSelected));
+    //             close();
+    //             return;
+    //         case 'close-dialog':
+    //             close();
+    //     }
+    // }
 
     const handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
-        switch (this.props.dataSource) {
-            case ViewTypes.DATA_SOURCE_USERS: {
+        switch (dataSource) {
+            case ViewConstants.DATA_SOURCE_USERS: {
                 const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
                 const typedItem = item as UserProfile;
                 const multiselectSelected = { ...currentSelected };
@@ -207,7 +221,7 @@ function IntegrationSelector({ }: Props) {
                 this.setState({ multiselectSelected });
                 return;
             }
-            case ViewTypes.DATA_SOURCE_CHANNELS: {
+            case ViewConstants.DATA_SOURCE_CHANNELS: {
                 const currentSelected = this.state.multiselectSelected as Dictionary<Channel>;
                 const typedItem = item as Channel;
                 const multiselectSelected = { ...currentSelected };
@@ -226,7 +240,6 @@ function IntegrationSelector({ }: Props) {
     };
 
     const getChannels = debounce(() => {
-        const { actions, currentTeamId } = this.props;
         const { loading, term } = this.state;
         if (this.next && !loading && !term) {
             this.setState({ loading: true }, () => {
@@ -234,27 +247,24 @@ function IntegrationSelector({ }: Props) {
                     currentTeamId,
                     this.page += 1,
                     General.CHANNELS_CHUNK_SIZE,
-                ).then(this.loadedChannels);
+                ).then(loadedChannels);
             });
         }
     }, 100);
 
     const getDataResults = () => {
-        const { dataSource } = this.props;
-        const { data, searchResults, term } = this.state;
-
         const result = {
             data: data as any,
             listType: FLATLIST
         };
         if (term) {
-            result.data = filterSearchData(dataSource, searchResults, term);
-        } else if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
-            result.data = createProfilesSections(data);
+            // result.data = filterSearchData(dataSource, searchResults, term);
+        } else if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+            // result.data = createProfilesSections(data);
             result.listType = SECTIONLIST;
         }
 
-        if (!dataSource || dataSource === ViewTypes.DATA_SOURCE_DYNAMIC) {
+        if (!dataSource || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
             result.data = result.data.map((value: DialogOption) => {
                 return { ...value, id: (value).value };
             });
@@ -267,12 +277,10 @@ function IntegrationSelector({ }: Props) {
         const { loading, term } = this.state;
         if (this.next && !loading && !term) {
             this.setState({ loading: true }, () => {
-                const { actions } = this.props;
-
                 actions.getProfiles(
                     this.page + 1,
                     General.PROFILE_CHUNK_SIZE,
-                ).then(this.loadedProfiles);
+                ).then(loadedProfiles);
             });
         }
     }, 100);
@@ -285,75 +293,47 @@ function IntegrationSelector({ }: Props) {
     }, 100);
 
     const loadedChannels = ({ data: channels }: { data: Channel[] }) => {
-        const data = this.state.data as Channel[];
         if (channels && !channels.length) {
             this.next = false;
         }
 
+        const channelData = data as Channel[]
+
         this.page += 1;
-        this.setState({ loading: false, data: [...channels, ...data] });
+        this.setState({ loading: false, data: [...channels, ...channelData] });
     };
 
     const loadedProfiles = ({ data: profiles }: { data: UserProfile[] }) => {
-        const data = this.state.data as UserProfile[];
         if (profiles && !profiles.length) {
             this.next = false;
         }
 
+        const userData = data as UserProfile[];
+
         this.page += 1;
-        this.setState({ loading: false, data: [...profiles, ...data] });
+        this.setState({ loading: false, data: [...profiles, ...userData] });
     };
 
     const loadMore = () => {
-        const { dataSource } = this.props;
-
-        if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
+        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
             this.getProfiles();
-        } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
+        } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             this.getChannels();
         }
 
         // dynamic options are not paged so are not reloaded on scroll
     };
 
-    const onSearch = (text: string) => {
-        if (text) {
-            const { dataSource, data } = this.props;
-            this.setState({ term: text });
-            clearTimeout(this.searchTimeoutId);
-
-            this.searchTimeoutId = setTimeout(() => {
-                if (!dataSource) {
-                    this.setState({ searchResults: filterSearchData(null, data, text) });
-                    return;
-                }
-
-                if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
-                    this.searchProfiles(text);
-                } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-                    this.searchChannels(text);
-                } else if (dataSource === ViewTypes.DATA_SOURCE_DYNAMIC) {
-                    this.searchDynamicOptions(text);
-                }
-            }, General.SEARCH_TIMEOUT_MILLISECONDS) as any;
-        } else {
-            this.clearSearch();
-        }
-    };
-
     const searchChannels = (term: string) => {
-        const { actions, currentTeamId } = this.props;
-
-        actions.searchChannels(currentTeamId, term.toLowerCase()).then(({ data }) => {
+        actions.searchChannels(currentTeamId, term.toLowerCase()).then(({ data }: any) => {  // TODO
             this.setState({ searchResults: data, loading: false });
         });
     };
 
     const searchProfiles = (term: string) => {
-        const { actions } = this.props;
         this.setState({ loading: true });
 
-        actions.searchProfiles(term.toLowerCase()).then((results) => {
+        actions.searchProfiles(term.toLowerCase()).then((results: any) => {  // TODO
             let data = [];
             if (results.data) {
                 data = results.data;
@@ -363,30 +343,52 @@ function IntegrationSelector({ }: Props) {
     };
 
     const searchDynamicOptions = (term = '') => {
-        if (!this.props.getDynamicOptions) {
+        if (!getDynamicOptions) {
             return;
         }
 
         this.setState({ loading: true });
 
-        this.props.getDynamicOptions(term.toLowerCase()).then((results) => {
-            let data = [];
-            if (results.data) {
-                data = results.data;
-            }
+        // getDynamicOptions(term.toLowerCase()).then((results: any) => {  // TODO
+        //     let data = [];
+        //     if (results.data) {
+        //         data = results.data;
+        //     }
 
-            if (term) {
-                this.setState({ searchResults: data, loading: false });
-            } else {
-                this.setState({ data, loading: false });
-            }
-        });
+        //     if (term) {
+        //         this.setState({ searchResults: data, loading: false });
+        //     } else {
+        //         this.setState({ data, loading: false });
+        //     }
+        // });
+    };
+
+    const onSearch = (text: string) => {
+        if (text) {
+            this.setState({ term: text });
+            clearTimeout(this.searchTimeoutId);
+
+            this.searchTimeoutId = setTimeout(() => {
+                if (!dataSource) {
+                    // this.setState({ searchResults: filterSearchData(null, data, text) });
+                    return;
+                }
+
+                if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+                    searchProfiles(text);
+                } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
+                    searchChannels(text);
+                } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
+                    searchDynamicOptions(text);
+                }
+            }, General.SEARCH_TIMEOUT_MILLISECONDS) as any;
+        } else {
+            this.clearSearch();
+        }
     };
 
     const renderLoading = () => {
-        const { dataSource, theme } = this.props;
         const { loading } = this.state;
-        const style = getStyleFromTheme(theme);
 
         if (!loading) {
             return null;
@@ -394,18 +396,18 @@ function IntegrationSelector({ }: Props) {
 
         let text;
         switch (dataSource) {
-            case ViewTypes.DATA_SOURCE_USERS:
-                text = loadingText;
+            case ViewConstants.DATA_SOURCE_USERS:
+                // text = loadingText;
                 break;
-            case ViewTypes.DATA_SOURCE_CHANNELS:
+            case ViewConstants.DATA_SOURCE_CHANNELS:
                 text = {
-                    id: t('mobile.loading_channels'),
+                    id: intl.formatMessage({ id: 'mobile.loading_channels' }),
                     defaultMessage: 'Loading Channels...',
                 };
                 break;
             default:
                 text = {
-                    id: t('mobile.loading_options'),
+                    id: intl.formatMessage({ id: 'mobile.loading_options' }),
                     defaultMessage: 'Loading Options...',
                 };
                 break;
@@ -414,6 +416,7 @@ function IntegrationSelector({ }: Props) {
         return (
             <View style={style.loadingContainer}>
                 <FormattedText
+                    id='mobile.custom_list.loading'
                     {...text}
                     style={style.loadingText}
                 />
@@ -421,11 +424,7 @@ function IntegrationSelector({ }: Props) {
         );
     };
 
-    const renderNoResults = () => {
-        const { loading } = this.state;
-        const { theme } = this.props;
-        const style = getStyleFromTheme(theme);
-
+    const renderNoResults = (): JSX.Element | null => {
         if (loading || this.page === -1) {
             return null;
         }
@@ -477,37 +476,30 @@ function IntegrationSelector({ }: Props) {
         );
     };
 
-    const { theme, dataSource } = this.props;
     const { loading, term } = this.state;
-    const style = getStyleFromTheme(theme);
-
-    const searchBarInput = {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-        color: theme.centerChannelColor,
-        fontSize: 15,
-    };
 
     let rowComponent;
-    if (dataSource === ViewTypes.DATA_SOURCE_USERS) {
-        rowComponent = this.renderUserItem;
-    } else if (dataSource === ViewTypes.DATA_SOURCE_CHANNELS) {
-        rowComponent = this.renderChannelItem;
+    if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+        rowComponent = renderUserItem;
+    } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
+        rowComponent = renderChannelItem;
     } else {
-        rowComponent = this.renderOptionItem;
+        rowComponent = renderOptionItem;
     }
 
-    const { data, listType } = this.getDataResults();
+    const { listType } = getDataResults();
 
     let selectedOptionsComponent = null;
-    const selectedItems = Object.values(this.state.multiselectSelected);
+    const selectedItems: any = Object.values(this.state.multiselectSelected);  // TODO
     if (selectedItems.length > 0) {
         selectedOptionsComponent = (
             <>
                 <SelectedOptions
-                    ref={this.selectedScroll}
+                    // ref={selectedScroll}
+                    theme={theme}
                     selectedOptions={selectedItems}
-                    dataSource={this.props.dataSource}
-                    onRemove={this.handleRemoveOption}
+                    dataSource={dataSource}
+                    onRemove={handleRemoveOption}
                 />
                 <View style={style.separator} />
             </>
@@ -522,24 +514,25 @@ function IntegrationSelector({ }: Props) {
             >
                 <SearchBar
                     testID='selector.search_bar'
-                    ref={this.searchBarRef}
+                    // ref={searchBarRef}
                     placeholder={intl.formatMessage({ id: 'search_bar.search', defaultMessage: 'Search' })}
-                    cancelTitle={intl.formatMessage({ id: 'mobile.post.cancel', defaultMessage: 'Cancel' })}
-                    backgroundColor='transparent'
-                    inputHeight={33}
+                    // cancelTitle={intl.formatMessage({ id: 'mobile.post.cancel', defaultMessage: 'Cancel' })}
+                    // backgroundColor='transparent'
+                    // inputHeight={33}
                     inputStyle={searchBarInput}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                    tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                    titleCancelColor={theme.centerChannelColor}
-                    onChangeText={this.onSearch}
-                    onSearchButtonPress={this.onSearch}
-                    onCancelButtonPress={this.clearSearch}
+                    // tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
+                    // tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
+                    // titleCancelColor={theme.centerChannelColor}
+                    onChangeText={onSearch}
+                    // onSearchButtonPress={onSearch}
+                    // onCancelButtonPress={clearSearch}
                     autoCapitalize='none'
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
                 />
             </View>
+
             {selectedOptionsComponent}
 
             <CustomList
@@ -547,10 +540,10 @@ function IntegrationSelector({ }: Props) {
                 key='custom_list'
                 listType={listType}
                 loading={loading}
-                loadingComponent={this.renderLoading()}
-                noResults={this.renderNoResults()}
-                onLoadMore={this.loadMore}
-                onRowPress={this.handleSelectItem}
+                loadingComponent={renderLoading()}
+                noResults={renderNoResults}
+                onLoadMore={loadMore}
+                onRowPress={handleSelectItem}
                 renderItem={rowComponent}
                 theme={theme}
             />
