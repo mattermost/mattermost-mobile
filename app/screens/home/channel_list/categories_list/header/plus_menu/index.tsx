@@ -62,7 +62,7 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople, disp
 
         const url = `${serverUrl}/signup_user_complete/?id=${inviteId}`;
         const title = intl.formatMessage({id: 'invite_people_to_team.title', defaultMessage: 'Join the {team} team'}, {team: displayName});
-        const message = intl.formatMessage({id: 'invite_people_to_team.message', defaultMessage: 'Here´s a link to collaborate and communicate with us on Mattermost.'});
+        const message = intl.formatMessage({id: 'invite_people_to_team.message', defaultMessage: 'Here’s a link to collaborate and communicate with us on Mattermost.'});
         const icon = 'data:<data_type>/<file_extension>;base64,<base64_data>';
 
         const options: ShareOptions = Platform.select({
