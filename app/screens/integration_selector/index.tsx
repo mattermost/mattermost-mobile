@@ -9,8 +9,8 @@ import withObservables from '@nozbe/with-observables';
 
 import SearchBar from '@components/search';
 import { changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme } from '@utils/theme';
-import { searchChannels as searchChannelsRemote } from '@actions/remote/channel';
-import { searchProfiles as searchProfilesRemote } from '@actions/remote/user';
+import { fetchChannels, searchChannels as searchChannelsRemote } from '@actions/remote/channel';
+import { fetchProfiles, searchProfiles as searchProfilesRemote } from '@actions/remote/user';
 import { General } from '@constants';
 import { useTheme } from '@context/theme';
 import FormattedText from '@components/formatted_text';
@@ -35,12 +35,7 @@ type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel
 type MultiselectSelectedMap = Dictionary<DialogOption> | Dictionary<Channel> | Dictionary<UserProfile>;
 
 type Props = {
-    // actions: {
-    //     getProfiles: (page?: number, perPage?: number, options?: any) => Promise<ActionResult>;
-    //     getChannels: (teamId: string, page?: number, perPage?: number) => Promise<ActionResult>;
-    //     searchProfiles: (term: string, options?: any) => Promise<ActionResult>;
-    //     searchChannels: (teamId: string, term: string, archived?: boolean | undefined) => Promise<ActionResult>;
-    // };
+    // TODO
     // getDynamicOptions?: (term: string) => Promise<ActionResult>;
     actions: any,
     currentTeamId: string;
@@ -243,9 +238,15 @@ function IntegrationSelector(
         }
     };
 
-    const getChannels = debounce(() => {
+    const getChannels = debounce(async () => {
         if (this.next && !loading && !term) {
             setLoading(true);
+            const { channels: channelData } = await fetchChannels(serverUrl, currentTeamId)  // TODO Page?
+
+            if (channelData) {
+                loadedChannels({ data: channelData });
+            }
+
             // TODO Use Effect
             // this.setState({ loading: true }, () => {
             //     actions.getChannels(
@@ -281,8 +282,12 @@ function IntegrationSelector(
     const getProfiles = debounce(async () => {
         if (this.next && !loading && !term) {
             setLoading(true);
-            // TODO
-            const results = await searchProfilesRemote(serverUrl, term.toLowerCase(), { team_id: currentTeamId, allow_inactive: true });
+            const { users: userData } = await fetchProfiles(serverUrl);  // TODO Page?
+
+            if (userData) {
+                loadedProfiles({ data: userData });
+            }
+
             // TODO Use effect
             // this.setState({ loading: true }, () => {
             //     actions.getProfiles(
@@ -305,9 +310,7 @@ function IntegrationSelector(
         }
 
         const channelData = data as Channel[]
-
         // this.page += 1;
-        // this.setState({ loading: false, data: [...channels, ...channelData] });
         setLoading(false);
         setIntegrationData([...channels, ...channelData]);
     };
@@ -318,11 +321,9 @@ function IntegrationSelector(
         }
 
         const userData = data as UserProfile[];
-
         // this.page += 1;
         setLoading(false);
         setIntegrationData([...profiles, ...userData]);
-        // this.setState({ loading: false, data: [...profiles, ...userData] });
     };
 
     const loadMore = () => {
@@ -338,8 +339,12 @@ function IntegrationSelector(
     const searchChannels = async (term: string) => {
         const isSearch = true; // TODO?
         const { channels: receivedChannels } = await searchChannelsRemote(serverUrl, term, currentTeamId, isSearch);
-        setSearchResults(receivedChannels);
         setLoading(false);
+
+        if (receivedChannels) {
+            // TODO Transform Channel[] to DialogOption[]
+            setSearchResults(receivedChannels);
+        }
 
         // searchChannels(currentTeamId, term.toLowerCase()).then(({ data }: any) => {  // TODO
         //     setSearchResults(data);
@@ -347,17 +352,25 @@ function IntegrationSelector(
         // });
     };
 
-    const searchProfiles = (term: string) => {
+    const searchProfiles = async (term: string) => {
         setLoading(true)
 
-        actions.searchProfiles(term.toLowerCase()).then((results: any) => {  // TODO
-            let data = [];
-            if (results.data) {
-                data = results.data;
-            }
-            setLoading(false);
-            setSearchResults(data);
-        });
+        const { data: userData } = await searchProfilesRemote(serverUrl, term.toLowerCase(), { team_id: currentTeamId, allow_inactive: true });
+        setLoading(false);
+
+        if (userData) {
+            // TODO Transform UserProfile[] to DialogOption[]
+            setSearchResults(userData);
+        }
+
+        // actions.searchProfiles(term.toLowerCase()).then((results: any) => {  // TODO
+        //     let data = [];
+        //     if (results.data) {
+        //         data = results.data;
+        //     }
+        //     setLoading(false);
+        //     setSearchResults(data);
+        // });
     };
 
     const searchDynamicOptions = (term = '') => {
