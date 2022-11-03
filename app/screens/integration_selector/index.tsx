@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, { useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 
@@ -23,7 +23,10 @@ import { useIntl } from 'react-intl';
 import { debounce } from '@app/helpers/api/general';
 import SelectedOptions from './selected_options';
 
+type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
+type MultiselectSelectedMap = Dictionary<DialogOption> | Dictionary<Channel> | Dictionary<UserProfile>;
+
 type Props = {
     // actions: {
     //     getProfiles: (page?: number, perPage?: number, options?: any) => Promise<ActionResult>;
@@ -34,7 +37,7 @@ type Props = {
     // getDynamicOptions?: (term: string) => Promise<ActionResult>;
     actions: any,
     currentTeamId: string;
-    data: object[];
+    data?: DataType;
     dataSource: string;
     onSelect: (opt: Selection) => void;
     isMultiselect?: boolean;
@@ -81,14 +84,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 function IntegrationSelector(
     { dataSource, data, isMultiselect, selected, onSelect, actions, currentTeamId }: Props) {
-    // TODO State
-    // type State = {
-    //     data: DataType | Array<{ id: string; data: DataType }>;
-    //     loading: boolean;
-    //     searchResults: DialogOption[];
-    //     term: string;
-    //     multiselectSelected: MultiselectSelectedMap;
-    // }
 
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -98,7 +93,13 @@ function IntegrationSelector(
         fontSize: 15,
     };
     const intl = useIntl();
-    // TODO DataSource
+
+    // HOOKS
+    const [integrationData, setIntegrationData] = useState<DataType>(data || []);
+    const [loading, setLoading] = useState<boolean>(false);
+    const [term, setTerm] = useState<string>("");
+    const [searchResults, setSearchResults] = useState<DialogOption[]>([]);
+    const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
 
 
     // navigationEventListener ?: EventSubscription;
@@ -111,20 +112,14 @@ function IntegrationSelector(
     // Constructor
     const next = dataSource === ViewConstants.DATA_SOURCE_USERS || dataSource === ViewConstants.DATA_SOURCE_CHANNELS || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC;
 
-    // const multiselectSelected: MultiselectSelectedMap = {};
-    // if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(props.dataSource))) {
-    //     selected.forEach((opt) => {
-    //         multiselectSelected[opt.value] = opt;
-    //     });
-    // }
+    let multiselectItems: MultiselectSelectedMap = {}
+    if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
+        selected.forEach((opt) => {
+            multiselectItems[opt.value] = opt;
+        });
 
-    // this.state = {
-    //     data,
-    //     loading: false,
-    //     searchResults: [],
-    //     term: '',
-    //     multiselectSelected,
-    // };
+        setMultiselectSelected(multiselectItems);
+    }
 
     // Callbacks
     // TODO This is a effect
@@ -141,7 +136,8 @@ function IntegrationSelector(
     }
 
     const clearSearch = () => {
-        this.setState({ term: '', searchResults: [] });
+        setTerm('');
+        setSearchResults([]);
     };
 
     const close = () => {
@@ -157,39 +153,39 @@ function IntegrationSelector(
 
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS: {
-                const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
+                const currentSelected = multiselectSelected as Dictionary<UserProfile>;
                 const typedItem = item as UserProfile;
-                const multiselectSelected = { ...currentSelected };
+                const multiselectSelectedItems = { ...currentSelected };
                 if (currentSelected[typedItem.id]) {
-                    delete multiselectSelected[typedItem.id];
+                    delete multiselectSelectedItems[typedItem.id];
                 } else {
-                    multiselectSelected[typedItem.id] = typedItem;
+                    multiselectSelectedItems[typedItem.id] = typedItem;
                 }
-                this.setState({ multiselectSelected });
+                setMultiselectSelected(multiselectSelectedItems);
                 break;
             }
             case ViewConstants.DATA_SOURCE_CHANNELS: {
-                const currentSelected = this.state.multiselectSelected as Dictionary<Channel>;
+                const currentSelected = multiselectSelected as Dictionary<Channel>;
                 const typedItem = item as Channel;
-                const multiselectSelected = { ...currentSelected };
+                const multiselectSelectedItems = { ...currentSelected };
                 if (currentSelected[typedItem.id]) {
-                    delete multiselectSelected[typedItem.id];
+                    delete multiselectSelectedItems[typedItem.id];
                 } else {
-                    multiselectSelected[typedItem.id] = typedItem;
+                    multiselectSelectedItems[typedItem.id] = typedItem;
                 }
-                this.setState({ multiselectSelected });
+                setMultiselectSelected(multiselectSelectedItems);
                 break;
             }
             default: {
-                const currentSelected = this.state.multiselectSelected as Dictionary<DialogOption>;
+                const currentSelected = multiselectSelected as Dictionary<DialogOption>;
                 const typedItem = item as DialogOption;
-                const multiselectSelected = { ...currentSelected };
+                const multiselectSelectedItems = { ...currentSelected };
                 if (currentSelected[typedItem.value]) {
-                    delete multiselectSelected[typedItem.value];
+                    delete multiselectSelectedItems[typedItem.value];
                 } else {
-                    multiselectSelected[typedItem.value] = typedItem;
+                    multiselectSelectedItems[typedItem.value] = typedItem;
                 }
-                this.setState({ multiselectSelected });
+                setMultiselectSelected(multiselectSelectedItems);
             }
         }
 
@@ -203,7 +199,7 @@ function IntegrationSelector(
     // const navigationButtonPressed = ({ buttonId }: { buttonId: string }) => {
     //     switch (buttonId) {
     //         case 'submit-form':
-    //             onSelect(Object.values(this.state.multiselectSelected));
+    //             onSelect(Object.values(multiselectSelected));
     //             close();
     //             return;
     //         case 'close-dialog':
@@ -214,47 +210,48 @@ function IntegrationSelector(
     const handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS: {
-                const currentSelected = this.state.multiselectSelected as Dictionary<UserProfile>;
+                const currentSelected = multiselectSelected as Dictionary<UserProfile>;
                 const typedItem = item as UserProfile;
-                const multiselectSelected = { ...currentSelected };
-                delete multiselectSelected[typedItem.id];
-                this.setState({ multiselectSelected });
+                const multiselectSelectedItems = { ...currentSelected };
+                delete multiselectSelectedItems[typedItem.id];
+                setMultiselectSelected(multiselectSelectedItems);
                 return;
             }
             case ViewConstants.DATA_SOURCE_CHANNELS: {
-                const currentSelected = this.state.multiselectSelected as Dictionary<Channel>;
+                const currentSelected = multiselectSelected as Dictionary<Channel>;
                 const typedItem = item as Channel;
-                const multiselectSelected = { ...currentSelected };
-                delete multiselectSelected[typedItem.id];
-                this.setState({ multiselectSelected });
+                const multiselectSelectedItems = { ...currentSelected };
+                delete multiselectSelectedItems[typedItem.id];
+                setMultiselectSelected(multiselectSelectedItems);
                 return;
             }
             default: {
-                const currentSelected = this.state.multiselectSelected as Dictionary<DialogOption>;
+                const currentSelected = multiselectSelected as Dictionary<DialogOption>;
                 const typedItem = item as DialogOption;
-                const multiselectSelected = { ...currentSelected };
-                delete multiselectSelected[typedItem.value];
-                this.setState({ multiselectSelected });
+                const multiselectSelectedItems = { ...currentSelected };
+                delete multiselectSelectedItems[typedItem.value];
+                setMultiselectSelected(multiselectSelectedItems);
             }
         }
     };
 
     const getChannels = debounce(() => {
-        const { loading, term } = this.state;
         if (this.next && !loading && !term) {
-            this.setState({ loading: true }, () => {
-                actions.getChannels(
-                    currentTeamId,
-                    this.page += 1,
-                    General.CHANNELS_CHUNK_SIZE,
-                ).then(loadedChannels);
-            });
+            setLoading(true);
+            // TODO Use Effect
+            // this.setState({ loading: true }, () => {
+            //     actions.getChannels(
+            //         currentTeamId,
+            //         this.page += 1,
+            //         General.CHANNELS_CHUNK_SIZE,
+            //     ).then(loadedChannels);
+            // });
         }
     }, 100);
 
     const getDataResults = () => {
         const result = {
-            data: data as any,
+            data: integrationData,
             listType: FLATLIST
         };
         if (term) {
@@ -265,7 +262,7 @@ function IntegrationSelector(
         }
 
         if (!dataSource || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
-            result.data = result.data.map((value: DialogOption) => {
+            result.data = result.data.map((value: any) => {  // TODO DialogOption before?
                 return { ...value, id: (value).value };
             });
         }
@@ -274,19 +271,19 @@ function IntegrationSelector(
     };
 
     const getProfiles = debounce(() => {
-        const { loading, term } = this.state;
         if (this.next && !loading && !term) {
-            this.setState({ loading: true }, () => {
-                actions.getProfiles(
-                    this.page + 1,
-                    General.PROFILE_CHUNK_SIZE,
-                ).then(loadedProfiles);
-            });
+            setLoading(true);
+            // TODO Use effect
+            // this.setState({ loading: true }, () => {
+            //     actions.getProfiles(
+            //         this.page + 1,
+            //         General.PROFILE_CHUNK_SIZE,
+            //     ).then(loadedProfiles);
+            // });
         }
     }, 100);
 
     const getDynamicOptions = debounce(() => {
-        const { loading, term } = this.state;
         if (this.next && !loading && !term) {
             this.searchDynamicOptions('');
         }
@@ -300,7 +297,9 @@ function IntegrationSelector(
         const channelData = data as Channel[]
 
         this.page += 1;
-        this.setState({ loading: false, data: [...channels, ...channelData] });
+        // this.setState({ loading: false, data: [...channels, ...channelData] });
+        setLoading(false);
+        setIntegrationData([...channels, ...channelData]);
     };
 
     const loadedProfiles = ({ data: profiles }: { data: UserProfile[] }) => {
@@ -311,7 +310,9 @@ function IntegrationSelector(
         const userData = data as UserProfile[];
 
         this.page += 1;
-        this.setState({ loading: false, data: [...profiles, ...userData] });
+        setLoading(false);
+        setIntegrationData([...profiles, ...userData]);
+        // this.setState({ loading: false, data: [...profiles, ...userData] });
     };
 
     const loadMore = () => {
@@ -326,19 +327,21 @@ function IntegrationSelector(
 
     const searchChannels = (term: string) => {
         actions.searchChannels(currentTeamId, term.toLowerCase()).then(({ data }: any) => {  // TODO
-            this.setState({ searchResults: data, loading: false });
+            setSearchResults(data);
+            setLoading(false);
         });
     };
 
     const searchProfiles = (term: string) => {
-        this.setState({ loading: true });
+        setLoading(true)
 
         actions.searchProfiles(term.toLowerCase()).then((results: any) => {  // TODO
             let data = [];
             if (results.data) {
                 data = results.data;
             }
-            this.setState({ searchResults: data, loading: false });
+            setLoading(false);
+            setSearchResults(data);
         });
     };
 
@@ -347,7 +350,7 @@ function IntegrationSelector(
             return;
         }
 
-        this.setState({ loading: true });
+        setLoading(true);
 
         // getDynamicOptions(term.toLowerCase()).then((results: any) => {  // TODO
         //     let data = [];
@@ -356,21 +359,23 @@ function IntegrationSelector(
         //     }
 
         //     if (term) {
-        //         this.setState({ searchResults: data, loading: false });
+        // setLoading(false);
+        // setSearchResults(data);
         //     } else {
-        //         this.setState({ data, loading: false });
+        // setIntegrationData(data);
+        // setLoading(false);
         //     }
         // });
     };
 
     const onSearch = (text: string) => {
         if (text) {
-            this.setState({ term: text });
+            setTerm(text);
             clearTimeout(this.searchTimeoutId);
 
             this.searchTimeoutId = setTimeout(() => {
                 if (!dataSource) {
-                    // this.setState({ searchResults: filterSearchData(null, data, text) });
+                    // setSearchResults(filterSearchData(null, data, text));
                     return;
                 }
 
@@ -383,13 +388,11 @@ function IntegrationSelector(
                 }
             }, General.SEARCH_TIMEOUT_MILLISECONDS) as any;
         } else {
-            this.clearSearch();
+            clearSearch();
         }
     };
 
-    const renderLoading = () => {
-        const { loading } = this.state;
-
+    const renderLoading = (): React.ReactElement<any, string> | null => {
         if (!loading) {
             return null;
         }
@@ -441,7 +444,7 @@ function IntegrationSelector(
     };
 
     const renderChannelItem = (props: any) => {
-        const selected = Boolean(this.state.multiselectSelected[props.id]);
+        const selected = Boolean(multiselectSelected[props.id]);
         return (
             <ChannelListRow
                 key={props.id}
@@ -453,7 +456,7 @@ function IntegrationSelector(
     };
 
     const renderOptionItem = (props: any) => {
-        const selected = Boolean(this.state.multiselectSelected[props.id]);
+        const selected = Boolean(multiselectSelected[props.id]);
         return (
             <OptionListRow
                 key={props.id}
@@ -465,7 +468,7 @@ function IntegrationSelector(
     };
 
     const renderUserItem = (props: any) => {
-        const selected = Boolean(this.state.multiselectSelected[props.id]);
+        const selected = Boolean(multiselectSelected[props.id]);
         return (
             <UserListRow
                 key={props.id}
@@ -475,8 +478,6 @@ function IntegrationSelector(
             />
         );
     };
-
-    const { loading, term } = this.state;
 
     let rowComponent;
     if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
@@ -490,7 +491,7 @@ function IntegrationSelector(
     const { listType } = getDataResults();
 
     let selectedOptionsComponent = null;
-    const selectedItems: any = Object.values(this.state.multiselectSelected);  // TODO
+    const selectedItems: any = Object.values(multiselectSelected);  // TODO
     if (selectedItems.length > 0) {
         selectedOptionsComponent = (
             <>
@@ -536,7 +537,7 @@ function IntegrationSelector(
             {selectedOptionsComponent}
 
             <CustomList
-                data={data}
+                data={integrationData}
                 key='custom_list'
                 listType={listType}
                 loading={loading}

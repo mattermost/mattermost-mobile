@@ -11,14 +11,15 @@ export const SECTIONLIST = 'section';
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_UP_MULTIPLIER = 6;
 
+type DataType = DialogOption[] | Channel[] | UserProfile[];
 
 type Props = {
-    data: Array<object>, // TODO?
+    data: DataType, // TODO?
     extraData?: any,
     canRefresh?: boolean,
     listType?: string,
     loading?: boolean,
-    loadingComponent?: React.ReactNode,
+    loadingComponent?: React.ReactElement<any, string> | null,
     noResults: () => JSX.Element | null,
     refreshing?: boolean,
     onRefresh?: () => void,
@@ -96,7 +97,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 function CustomList({
     data, shouldRenderSeparator, listType, loading, loadingComponent, noResults,
-    onLoadMore, onRowPress, onRowSelect, selectable, renderItem, theme
+    onLoadMore, onRowPress, onRowSelect, selectable, renderItem, theme,
+    canRefresh = true, extraData, testID, refreshing = false, onRefresh,
 }: Props) {
     const style = getStyleFromTheme(theme);
 
@@ -189,18 +191,14 @@ function CustomList({
         return renderItem(props);
     }
 
-    const renderFooter = () => {
-        const { loading, loadingComponent } = this.props;
-
+    const renderFooter = (): React.ReactElement<any, string> | null => {
         if (!loading || !loadingComponent) {
             return null;
         }
-
         return loadingComponent;
     };
 
     const renderSectionHeader = ({ section }: any) => {
-        const { theme } = this.props;
         const style = getStyleFromTheme(theme);
 
         return (
@@ -213,7 +211,6 @@ function CustomList({
     };
 
     const renderSectionList = () => {
-        const { data, loading, theme } = this.props;
         const style = getStyleFromTheme(theme);
 
         return (
@@ -235,16 +232,15 @@ function CustomList({
                 renderItem={renderListItem}
                 renderSectionHeader={renderSectionHeader}
                 scrollEventThrottle={60}
-                sections={data}
+                sections={[{ title: 'My Test Title', data: ['item1', 'item2'] }]}  // TODO (data)
                 style={style.list}
                 stickySectionHeadersEnabled={false}
-                testID={this.props.testID}
+                testID={testID}
             />
         );
     };
 
     const renderFlatList = () => {
-        const { canRefresh, data, extraData, theme, onRefresh, refreshing } = this.props;
         const style = getStyleFromTheme(theme);
 
         let refreshControl;
@@ -253,8 +249,8 @@ function CustomList({
                 <RefreshControl
                     refreshing={refreshing}
                     onRefresh={onRefresh}
-                    colors={[theme.centerChannelColor]}
-                    tintColor={theme.centerChannelColor}
+                // colors={[theme.centerChannelColor]}
+                // tintColor={theme.centerChannelColor}
                 />);
         }
 
@@ -280,7 +276,7 @@ function CustomList({
                 scrollEventThrottle={60}
                 style={style.list}
                 // stickySectionHeadersEnabled={true}
-                testID={this.props.testID}
+                testID={testID}
             />
         );
     }
