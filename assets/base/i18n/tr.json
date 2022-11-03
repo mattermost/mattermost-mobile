@@ -386,5 +386,10 @@
     "account.user_status.title": "Kullanıcı varoluşu",
     "account.settings": "Ayarlar",
     "account.logout_from": "{serverName} oturumunu kapat",
-    "account.logout": "Oturumu kapat"
+    "account.logout": "Oturumu kapat",
+    "alert.push_proxy.button": "Tamam",
+    "alert.push_proxy_unknown.title": "Bu sunucudan bildirimler alınamadı",
+    "alert.push_proxy_unknown.description": "Bu sunucu bilinmeyen bir nedenle anlık bildirimleri alamadı. Bir sonraki kez bağlandığınızda yeniden denenecek.",
+    "alert.push_proxy_error.title": "Bu sunucudan bildirimler alınamaz",
+    "alert.push_proxy_error.description": "Bu sunucunun yapılandırması nedeniyle, bildirimler mobil uygulamada alınamaz. Ayrıntılı bilgi almak için sistem yöneticinizle görüşün."
 }
