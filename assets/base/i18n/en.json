@@ -315,7 +315,7 @@
   "intro.welcome": "Welcome to {displayName} channel.",
   "intro.welcome.private": "Only invited members can see messages posted in this private channel.",
   "intro.welcome.public": "Add some more team members to the channel or start a conversation below.",
-  "invite_people_to_team.message": "Here´s a link to collaborate and communicate with us on Mattermost.",
+  "invite_people_to_team.message": "Here’s a link to collaborate and communicate with us on Mattermost.",
   "invite_people_to_team.title": "Join the {team} team",
   "last_users_message.added_to_channel.type": "were **added to the channel** by {actor}.",
   "last_users_message.added_to_team.type": "were **added to the team** by {actor}.",
