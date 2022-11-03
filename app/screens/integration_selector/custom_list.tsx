@@ -178,10 +178,12 @@ function CustomList({
             // onPress: null // TODO Type?
         };
 
-        if ('disableSelect' in item) {
-            props.enabled = !item.disableSelect;
-        }
+        // TODO
+        // if ('disableSelect' in item) {
+        //     props.enabled = !item.disableSelect;
+        // }
 
+        // TODO
         // if (onRowSelect) {
         //     props.onPress = onRowSelect(section.title, index);
         // } else {

@@ -10,6 +10,7 @@ import withObservables from '@nozbe/with-observables';
 import SearchBar from '@components/search';
 import { changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme } from '@utils/theme';
 import { searchChannels as searchChannelsRemote } from '@actions/remote/channel';
+import { searchProfiles as searchProfilesRemote } from '@actions/remote/user';
 import { General } from '@constants';
 import { useTheme } from '@context/theme';
 import FormattedText from '@components/formatted_text';
@@ -277,9 +278,11 @@ function IntegrationSelector(
         return result;
     };
 
-    const getProfiles = debounce(() => {
+    const getProfiles = debounce(async () => {
         if (this.next && !loading && !term) {
             setLoading(true);
+            // TODO
+            const results = await searchProfilesRemote(serverUrl, term.toLowerCase(), { team_id: currentTeamId, allow_inactive: true });
             // TODO Use effect
             // this.setState({ loading: true }, () => {
             //     actions.getProfiles(
