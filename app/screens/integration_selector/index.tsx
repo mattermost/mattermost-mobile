@@ -296,7 +296,7 @@ function IntegrationSelector(
 
         const channelData = data as Channel[]
 
-        this.page += 1;
+        // this.page += 1;
         // this.setState({ loading: false, data: [...channels, ...channelData] });
         setLoading(false);
         setIntegrationData([...channels, ...channelData]);
@@ -309,7 +309,7 @@ function IntegrationSelector(
 
         const userData = data as UserProfile[];
 
-        this.page += 1;
+        // this.page += 1;
         setLoading(false);
         setIntegrationData([...profiles, ...userData]);
         // this.setState({ loading: false, data: [...profiles, ...userData] });
@@ -428,7 +428,8 @@ function IntegrationSelector(
     };
 
     const renderNoResults = (): JSX.Element | null => {
-        if (loading || this.page === -1) {
+        // if (loading || this.page === -1) {
+        if (loading) {
             return null;
         }
 

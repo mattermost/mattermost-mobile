@@ -163,7 +163,7 @@ function CustomList({
     };
 
     const setListRef = (ref: any) => {
-        this.list = ref;
+        // this.list = ref;
     };
 
     const renderListItem = ({ item, index, section }: any) => {  // TODO
