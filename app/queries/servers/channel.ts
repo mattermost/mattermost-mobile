@@ -483,26 +483,6 @@ export function queryMyRecentChannels(database: Database, take: number) {
     );
 }
 
-export function queryMyChannelsByUnread(database: Database, isUnread: boolean, sortBy: 'last_viewed_at' | 'last_post_at', take: number, excludeIds?: string[]) {
-    const clause: Q.Clause[] = [Q.where('is_unread', Q.eq(isUnread))];
-    const count: Q.Clause[] = [];
-
-    if (excludeIds?.length) {
-        clause.push(Q.where('id', Q.notIn(excludeIds)));
-    }
-
-    if (take > 0) {
-        count.push(Q.take(take));
-    }
-
-    return queryAllMyChannel(database).extend(
-        Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
-        ...clause,
-        Q.sortBy(sortBy, Q.desc),
-        ...count,
-    );
-}
-
 export const observeDirectChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
     const onlyDMs = term.startsWith('@') ? "AND c.type='D'" : '';
     const value = Q.sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
