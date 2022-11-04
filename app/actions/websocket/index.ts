@@ -27,6 +27,7 @@ import {isSupportedServerCalls} from '@calls/utils';
 import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import AppsManager from '@managers/apps_manager';
 import {getActiveServerUrl, queryActiveServer} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {
@@ -185,7 +186,7 @@ async function doReconnect(serverUrl: string) {
         loadConfigAndCalls(serverUrl, currentUserId);
     }
 
-    // https://mattermost.atlassian.net/browse/MM-41520
+    AppsManager.refreshAppBindings(serverUrl);
 }
 
 export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {

@@ -10,7 +10,6 @@ import AtMentionItem from '@components/autocomplete/at_mention_item';
 import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
 import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@constants/apps';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import analytics from '@managers/analytics';
 
 import {AppCommandParser, ExtendedAutocompleteSuggestion} from '../app_command_parser/app_command_parser';
@@ -48,9 +47,8 @@ const AppSlashSuggestion = ({
     listStyle,
 }: Props) => {
     const intl = useIntl();
-    const theme = useTheme();
     const serverUrl = useServerUrl();
-    const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId, theme));
+    const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId));
     const [dataSource, setDataSource] = useState<AutocompleteSuggestion[]>(emptySuggestonList);
     const active = isAppsEnabled && Boolean(dataSource.length);
     const mounted = useRef(false);

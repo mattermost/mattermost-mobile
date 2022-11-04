@@ -8,6 +8,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import {View as ViewConstants} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
@@ -62,6 +63,7 @@ function PostDraft({
     const keyboardHeight = useKeyboardHeight(keyboardTracker);
     const insets = useSafeAreaInsets();
     const headerHeight = useDefaultHeaderHeight();
+    const serverUrl = useServerUrl();
 
     // Update draft in case we switch channels or threads
     useEffect(() => {
@@ -127,6 +129,7 @@ function PostDraft({
             hasFilesAttached={Boolean(files?.length)}
             inPost={true}
             availableSpace={animatedAutocompleteAvailableSpace}
+            serverUrl={serverUrl}
         />
     ) : null;
 

@@ -6,9 +6,10 @@ import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
+import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
 import {getPostById} from '@queries/servers/post';
-import {getConfigValue, getCurrentTeamId} from '@queries/servers/system';
+import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled, getNewestThreadInTeam, getThreadById} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 
@@ -55,6 +56,20 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
     }
 
     await switchToThread(serverUrl, rootId, isFromNotification);
+
+    if (await AppsManager.isAppsEnabled(serverUrl)) {
+        // Getting the post again in case we didn't had it at the beginning
+        const post = await getPostById(database, rootId);
+        const currentChannelId = await getCurrentChannelId(database);
+
+        if (post) {
+            if (currentChannelId === post?.channelId) {
+                AppsManager.copyMainBindingsToThread(serverUrl, currentChannelId);
+            } else {
+                AppsManager.fetchBindings(serverUrl, post.channelId, true);
+            }
+        }
+    }
 
     return {};
 };

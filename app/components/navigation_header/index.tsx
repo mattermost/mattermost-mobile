@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {forwardRef} from 'react';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import {SEARCH_INPUT_HEIGHT, SEARCH_INPUT_MARGIN} from '@constants/view';
@@ -14,7 +14,7 @@ import Header, {HeaderRightButton} from './header';
 import NavigationHeaderLargeTitle from './large';
 import NavigationSearch from './search';
 
-import type {SearchProps} from '@components/search';
+import type {SearchProps, SearchRef} from '@components/search';
 
 type Props = SearchProps & {
     hasSearch?: boolean;
@@ -41,7 +41,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const NavigationHeader = ({
+const NavigationHeader = forwardRef<SearchRef, Props>(({
     hasSearch = false,
     isLargeTitle = false,
     leftComponent,
@@ -56,7 +56,7 @@ const NavigationHeader = ({
     title = '',
     hideHeader,
     ...searchProps
-}: Props) => {
+}: Props, ref) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -125,12 +125,14 @@ const NavigationHeader = ({
                     hideHeader={hideHeader}
                     theme={theme}
                     topStyle={searchTopStyle}
+                    ref={ref}
                 />
                 }
             </Animated.View>
         </>
     );
-};
+});
 
+NavigationHeader.displayName = 'NavHeader';
 export default NavigationHeader;
 

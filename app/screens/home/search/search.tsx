@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
@@ -17,6 +17,7 @@ import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
+import {SearchRef} from '@components/search';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -84,6 +85,8 @@ const SearchScreen = ({teamId}: Props) => {
 
     const clearRef = useRef<boolean>(false);
     const cancelRef = useRef<boolean>(false);
+    const searchRef = useRef<SearchRef>(null);
+
     const [cursorPosition, setCursorPosition] = useState(searchTerm?.length || 0);
     const [searchValue, setSearchValue] = useState<string>(searchTerm || '');
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
@@ -98,6 +101,10 @@ const SearchScreen = ({teamId}: Props) => {
     const [posts, setPosts] = useState<PostModel[]>(emptyPosts);
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
     const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
+
+    useEffect(() => {
+        setSearchTeamId(teamId);
+    }, [teamId]);
 
     const onSnap = (offset: number, animated = true) => {
         scrollRef.current?.scrollToOffset({offset, animated});
@@ -139,6 +146,11 @@ const SearchScreen = ({teamId}: Props) => {
         setSearchValue(newValue);
         setCursorPosition(newValue.length);
     }, []);
+
+    const handleModifierTextChange = useCallback((newValue: string) => {
+        searchRef.current?.focus?.();
+        handleTextChange(newValue);
+    }, [handleTextChange]);
 
     const handleLoading = useCallback((show: boolean) => {
         (showResults ? setResultsLoading : setLoading)(show);
@@ -214,7 +226,7 @@ const SearchScreen = ({teamId}: Props) => {
                 scrollEnabled={scrollEnabled}
                 searchValue={searchValue}
                 setRecentValue={handleRecentSearch}
-                setSearchValue={handleTextChange}
+                setSearchValue={handleModifierTextChange}
                 setTeamId={setSearchTeamId}
                 teamId={searchTeamId}
             />
@@ -314,6 +326,7 @@ const SearchScreen = ({teamId}: Props) => {
                 onClear={handleClearSearch}
                 onCancel={handleCancelSearch}
                 defaultValue={searchValue}
+                ref={searchRef}
             />
             <SafeAreaView
                 style={styles.flex}
