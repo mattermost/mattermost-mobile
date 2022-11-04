@@ -13,6 +13,7 @@ import {Events, General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
@@ -1023,6 +1024,10 @@ export async function switchToChannelById(serverUrl: string, channelId: string, 
 
     DeviceEventEmitter.emit(Events.CHANNEL_SWITCH, false);
 
+    if (await AppsManager.isAppsEnabled(serverUrl)) {
+        AppsManager.fetchBindings(serverUrl, channelId);
+    }
+
     return {};
 }
 
@@ -1056,7 +1061,7 @@ export async function switchToLastChannel(serverUrl: string, teamId?: string) {
     }
 }
 
-export async function searchChannels(serverUrl: string, term: string, isSearch = false) {
+export async function searchChannels(serverUrl: string, term: string, teamId: string, isSearch = false) {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -1070,9 +1075,8 @@ export async function searchChannels(serverUrl: string, term: string, isSearch =
     }
 
     try {
-        const currentTeamId = await getCurrentTeamId(database);
         const autoCompleteFunc = isSearch ? client.autocompleteChannelsForSearch : client.autocompleteChannels;
-        const channels = await autoCompleteFunc(currentTeamId, term);
+        const channels = await autoCompleteFunc(teamId, term);
         return {channels};
     } catch (error) {
         return {error};

@@ -21,9 +21,9 @@ type Props = {
     maxFileSize: number;
     maxFileCount: number;
     canUploadFiles: boolean;
-    updateCursorPosition: (cursorPosition: number) => void;
+    updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     updatePostInputTop: (top: number) => void;
-    updateValue: (value: string) => void;
+    updateValue: React.Dispatch<React.SetStateAction<string>>;
     value: string;
     setIsFocused: (isFocused: boolean) => void;
 }

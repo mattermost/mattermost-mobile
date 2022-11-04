@@ -47,8 +47,8 @@ type Props = {
     value: string;
     files: FileInfo[];
     clearDraft: () => void;
-    updateValue: (message: string) => void;
-    updateCursorPosition: (cursorPosition: number) => void;
+    updateValue: React.Dispatch<React.SetStateAction<string>>;
+    updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     updatePostInputTop: (top: number) => void;
     addFiles: (file: FileInfo[]) => void;
     uploadFileError: React.ReactNode;

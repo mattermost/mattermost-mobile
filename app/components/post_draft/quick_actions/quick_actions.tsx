@@ -26,6 +26,7 @@ type Props = {
     addFiles: (file: FileInfo[]) => void;
     postProps: Post['props'];
     updatePostProps: (postProps: Post['props']) => void;
+    focus: () => void;
 }
 
 const style = StyleSheet.create({
@@ -58,6 +59,7 @@ export default function QuickActions({
     addFiles,
     postProps,
     updatePostProps,
+    focus,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
@@ -86,15 +88,15 @@ export default function QuickActions({
                 testID={atInputActionTestID}
                 disabled={atDisabled}
                 inputType='at'
-                onTextChange={updateValue}
-                value={value}
+                updateValue={updateValue}
+                focus={focus}
             />
             <InputAction
                 testID={slashInputActionTestID}
                 disabled={slashDisabled}
                 inputType='slash'
-                onTextChange={updateValue}
-                value={''} // Only enabled when value == ''
+                updateValue={updateValue}
+                focus={focus}
             />
             <FileAction
                 testID={fileActionTestID}

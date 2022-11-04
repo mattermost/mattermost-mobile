@@ -20,7 +20,7 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type AvatarProps = {
-    author: UserModel;
+    author?: UserModel;
     enablePostIconOverride?: boolean;
     isAutoReponse: boolean;
     location: string;
@@ -91,6 +91,9 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
     }
 
     const openUserProfile = preventDoubleTap(() => {
+        if (!author) {
+            return;
+        }
         const screen = Screens.USER_PROFILE;
         const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const closeButtonId = 'close-user-profile';
@@ -112,8 +115,8 @@ const Avatar = ({author, enablePostIconOverride, isAutoReponse, location, post}:
             author={author}
             size={ViewConstant.PROFILE_PICTURE_SIZE}
             iconSize={24}
-            showStatus={!isAutoReponse || author.isBot}
-            testID={`post_avatar.${author.id}.profile_picture`}
+            showStatus={!isAutoReponse || author?.isBot}
+            testID={`post_avatar.${author?.id}.profile_picture`}
         />
     );
 

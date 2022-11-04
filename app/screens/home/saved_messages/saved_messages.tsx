@@ -4,9 +4,9 @@
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, FlatList, ListRenderItemInfo, Platform, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchSavedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';
@@ -15,7 +15,6 @@ import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
-import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
@@ -41,7 +40,6 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        marginBottom: Platform.select({ios: BOTTOM_TAB_HEIGHT}),
     },
     empty: {
         alignItems: 'center',
@@ -58,7 +56,6 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
     const serverUrl = useServerUrl();
     const route = useRoute();
     const isFocused = useIsFocused();
-    const insets = useSafeAreaInsets();
 
     const params = route.params as {direction: string};
     const toLeft = params.direction === 'left';
@@ -88,8 +85,7 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
     }, [serverUrl, isFocused]);
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<FlatList<string>>(true, onSnap);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop - insets.top, flexGrow: 1}), [scrollPaddingTop, insets.top]);
-    const scrollViewStyle = useMemo(() => ({top: insets.top}), [insets.top]);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
     const animated = useAnimatedStyle(() => {
@@ -196,7 +192,6 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
                         onScroll={onScroll}
                         removeClippedSubviews={true}
                         onViewableItemsChanged={onViewableItemsChanged}
-                        style={scrollViewStyle}
                         testID='saved_messages.post_list.flat_list'
                     />
                 </Animated.View>

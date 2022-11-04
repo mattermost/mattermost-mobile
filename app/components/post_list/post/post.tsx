@@ -144,13 +144,13 @@ const Post = ({
         }
 
         const isValidSystemMessage = isAutoResponder || !isSystemPost;
-        if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
+        if (isEphemeral || hasBeenDeleted) {
+            removePost(serverUrl, post);
+        } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
                 const postRootId = post.rootId || post.id;
                 fetchAndSwitchToThread(serverUrl, postRootId);
             }
-        } else if ((isEphemeral || hasBeenDeleted)) {
-            removePost(serverUrl, post);
         }
 
         setTimeout(() => {

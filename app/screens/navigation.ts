@@ -403,7 +403,7 @@ export async function dismissAllModalsAndPopToRoot() {
  * (if the screen is not in the stack, it will push a new one)
  * @param screenId Screen to pop or display
  * @param title Title to be shown in the top bar
- * @param passProps Props to pass to the screen (Only if the screen does not exist in the stack)
+ * @param passProps Props to pass to the screen
  * @param options Navigation options
  */
 export async function dismissAllModalsAndPopToScreen(screenId: string, title: string, passProps = {}, options = {}) {
@@ -421,6 +421,9 @@ export async function dismissAllModalsAndPopToScreen(screenId: string, title: st
         }
         try {
             await Navigation.popTo(screenId, mergeOptions);
+            if (Object.keys(passProps).length > 0) {
+                await Navigation.updateProps(screenId, passProps);
+            }
         } catch {
             // catch in case there is nothing to pop
         }
@@ -686,8 +689,8 @@ export async function openAsBottomSheet({closeButtonId, screen, theme, title, pr
     }
 }
 
-export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
-    const passProps = {form, call};
+export const showAppForm = async (form: AppForm) => {
+    const passProps = {form};
     showModal(Screens.APPS_FORM, form.title || '', passProps);
 };
 

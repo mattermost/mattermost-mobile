@@ -31,7 +31,7 @@ const contentType: Record<string, string> = {
 
 const Content = ({isReplyPost, layoutWidth, location, post, theme}: ContentProps) => {
     let type: string | undefined = post.metadata?.embeds?.[0].type;
-    if (!type && post.props?.attachments?.length) {
+    if (!type && post.props?.app_bindings?.length) {
         type = contentType.app_bindings;
     }
 
