@@ -234,7 +234,7 @@ function CustomList({
                 renderItem={renderListItem}
                 renderSectionHeader={renderSectionHeader}
                 scrollEventThrottle={60}
-                sections={[{ title: 'My Test Title', data: ['item1', 'item2'] }]}  // TODO (data)
+                sections={data}  // TODO (data)
                 style={style.list}
                 stickySectionHeadersEnabled={false}
                 testID={testID}

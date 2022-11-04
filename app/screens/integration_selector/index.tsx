@@ -26,6 +26,8 @@ import UserListRow from './user_list_row';
 import { useIntl } from 'react-intl';
 import { debounce } from '@app/helpers/api/general';
 import SelectedOptions from './selected_options';
+import { createProfilesSections } from '@app/screens/create_direct_message/user_list';
+
 import { useServerUrl } from '@app/context/server';
 import { observeCurrentTeamId } from '@app/queries/servers/system';
 import { WithDatabaseArgs } from '@typings/database/database';
@@ -35,8 +37,8 @@ type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel
 type MultiselectSelectedMap = Dictionary<DialogOption> | Dictionary<Channel> | Dictionary<UserProfile>;
 
 type Props = {
-    // TODO
-    // getDynamicOptions?: (term: string) => Promise<ActionResult>;
+    getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
+    options?: PostActionOption[];
     actions: any,
     currentTeamId: string;
     data?: DataType;
@@ -85,7 +87,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 
 function IntegrationSelector(
-    { dataSource, data, isMultiselect, selected, onSelect, currentTeamId }: Props) {
+    { dataSource, data, isMultiselect, selected, onSelect,
+        currentTeamId, getDynamicOptions, options }: Props) {
 
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -267,9 +270,10 @@ function IntegrationSelector(
         }
     };
 
-    const getDynamicOptions = () => {
-        if (next && !loading && !term) {
-            this.searchDynamicOptions('');
+    const getDynamicOptionsLocally = () => {
+        // TODO Next doesn't seem to work with dynamic
+        if (!loading && !term) {
+            searchDynamicOptions('');
         }
     };
 
@@ -288,10 +292,9 @@ function IntegrationSelector(
             setNext(false);
         }
 
-        const userData = data as UserProfile[];
         setCurrentPage(currentPage + 1);
         setLoading(false);
-        setIntegrationData([...profiles, ...userData]);
+        setIntegrationData(profiles);
     };
 
     const loadMore = () => {
@@ -326,27 +329,30 @@ function IntegrationSelector(
     };
 
     const searchDynamicOptions = (term = '') => {
+        if (options) {
+            setIntegrationData(options);
+        }
+
         if (!getDynamicOptions) {
             return;
         }
 
         setLoading(true);
 
-        // TODO
-        // getDynamicOptions(term.toLowerCase()).then((results: any) => {  // TODO
-        //     let data = [];
-        //     if (results.data) {
-        //         data = results.data;
-        //     }
+        getDynamicOptions(term.toLowerCase()).then((results: any) => {  // TODO
+            let data = [];
+            if (results.data) {
+                data = results.data;
+            }
 
-        //     if (term) {
-        // setLoading(false);
-        // setSearchResults(data);
-        //     } else {
-        // setIntegrationData(data);
-        // setLoading(false);
-        //     }
-        // });
+            if (term) {
+                setLoading(false);
+                setSearchResults(data);
+            } else {
+                setIntegrationData(data);
+                setLoading(false);
+            }
+        });
     };
 
     const onSearch = (text: string) => {
@@ -381,7 +387,7 @@ function IntegrationSelector(
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             getChannels();
         } else {
-            getDynamicOptions();
+            getDynamicOptionsLocally();  // TODO Think of a better name
         }
     }, [])
 
@@ -463,6 +469,7 @@ function IntegrationSelector(
             <OptionListRow
                 key={props.id}
                 {...props}
+                theme={theme}
                 selectable={true}
                 selected={selected}
             />
@@ -475,13 +482,22 @@ function IntegrationSelector(
             <UserListRow
                 key={props.id}
                 {...props}
+                theme={theme}
                 selectable={true}
                 selected={selected}
             />
         );
     };
 
+    // TODO Refactor this once working
     const listType = dataSource === ViewConstants.DATA_SOURCE_USERS ? SECTIONLIST : FLATLIST;
+
+    let customListData = integrationData;
+    if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+        // TODO
+        // customListData = createProfilesSections(integrationData);
+    }
+
     let rowComponent;
     if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
         rowComponent = renderUserItem;
@@ -538,7 +554,7 @@ function IntegrationSelector(
             {/* {selectedOptionsComponent} */}
 
             <CustomList
-                data={integrationData}
+                data={customListData}
                 key='custom_list'
                 listType={listType}
                 loading={loading}
