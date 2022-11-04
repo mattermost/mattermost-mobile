@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, { useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { withDatabase } from '@nozbe/watermelondb/DatabaseProvider';
@@ -85,7 +85,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 
 function IntegrationSelector(
-    { dataSource, data, isMultiselect, selected, onSelect, actions, currentTeamId }: Props) {
+    { dataSource, data, isMultiselect, selected, onSelect, currentTeamId }: Props) {
 
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -104,16 +104,12 @@ function IntegrationSelector(
     const [term, setTerm] = useState<string>("");
     const [searchResults, setSearchResults] = useState<DialogOption[]>([]);
     const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
-
+    const [currentPage, setCurrentPage] = useState<number>(-1);
+    const [next, setNext] = useState<boolean>(dataSource === ViewConstants.DATA_SOURCE_USERS || dataSource === ViewConstants.DATA_SOURCE_CHANNELS || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC);
 
     // navigationEventListener ?: EventSubscription;
-    const page = -1;
-    // const next: boolean;
     // const searchBarRef = React.createRef<SearchBar>();
     // const selectedScroll = React.createRef<ScrollView>();
-
-    // Constructor
-    const next = dataSource === ViewConstants.DATA_SOURCE_USERS || dataSource === ViewConstants.DATA_SOURCE_CHANNELS || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC;
 
     let multiselectItems: MultiselectSelectedMap = {}
     if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
@@ -125,19 +121,6 @@ function IntegrationSelector(
     }
 
     // Callbacks
-    // TODO This is a effect
-    const componentDidMount = () => {
-        // this.navigationEventListener = Navigation.events().bindComponent(this);
-
-        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            getProfiles();
-        } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-            getChannels();
-        } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
-            getDynamicOptions();
-        }
-    }
-
     const clearSearch = () => {
         setTerm('');
         setSearchResults([]);
@@ -210,127 +193,112 @@ function IntegrationSelector(
     //     }
     // }
 
-    const handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
-        switch (dataSource) {
-            case ViewConstants.DATA_SOURCE_USERS: {
-                const currentSelected = multiselectSelected as Dictionary<UserProfile>;
-                const typedItem = item as UserProfile;
-                const multiselectSelectedItems = { ...currentSelected };
-                delete multiselectSelectedItems[typedItem.id];
-                setMultiselectSelected(multiselectSelectedItems);
-                return;
-            }
-            case ViewConstants.DATA_SOURCE_CHANNELS: {
-                const currentSelected = multiselectSelected as Dictionary<Channel>;
-                const typedItem = item as Channel;
-                const multiselectSelectedItems = { ...currentSelected };
-                delete multiselectSelectedItems[typedItem.id];
-                setMultiselectSelected(multiselectSelectedItems);
-                return;
-            }
-            default: {
-                const currentSelected = multiselectSelected as Dictionary<DialogOption>;
-                const typedItem = item as DialogOption;
-                const multiselectSelectedItems = { ...currentSelected };
-                delete multiselectSelectedItems[typedItem.value];
-                setMultiselectSelected(multiselectSelectedItems);
-            }
-        }
-    };
+    // const handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
+    //     switch (dataSource) {
+    //         case ViewConstants.DATA_SOURCE_USERS: {
+    //             const currentSelected = multiselectSelected as Dictionary<UserProfile>;
+    //             const typedItem = item as UserProfile;
+    //             const multiselectSelectedItems = { ...currentSelected };
+    //             delete multiselectSelectedItems[typedItem.id];
+    //             setMultiselectSelected(multiselectSelectedItems);
+    //             return;
+    //         }
+    //         case ViewConstants.DATA_SOURCE_CHANNELS: {
+    //             const currentSelected = multiselectSelected as Dictionary<Channel>;
+    //             const typedItem = item as Channel;
+    //             const multiselectSelectedItems = { ...currentSelected };
+    //             delete multiselectSelectedItems[typedItem.id];
+    //             setMultiselectSelected(multiselectSelectedItems);
+    //             return;
+    //         }
+    //         default: {
+    //             const currentSelected = multiselectSelected as Dictionary<DialogOption>;
+    //             const typedItem = item as DialogOption;
+    //             const multiselectSelectedItems = { ...currentSelected };
+    //             delete multiselectSelectedItems[typedItem.value];
+    //             setMultiselectSelected(multiselectSelectedItems);
+    //         }
+    //     }
+    // };
 
-    const getChannels = debounce(async () => {
-        if (this.next && !loading && !term) {
+    const getChannels = async () => {
+        if (next && !loading && !term) {
             setLoading(true);
-            const { channels: channelData } = await fetchChannels(serverUrl, currentTeamId)  // TODO Page?
+            setCurrentPage(currentPage + 1);
+            const { channels: channelData } = await fetchChannels(serverUrl, currentTeamId);
 
             if (channelData) {
                 loadedChannels({ data: channelData });
             }
-
-            // TODO Use Effect
-            // this.setState({ loading: true }, () => {
-            //     actions.getChannels(
-            //         currentTeamId,
-            //         this.page += 1,
-            //         General.CHANNELS_CHUNK_SIZE,
-            //     ).then(loadedChannels);
-            // });
         }
-    }, 100);
-
-    const getDataResults = () => {
-        const result = {
-            data: integrationData,
-            listType: FLATLIST
-        };
-        if (term) {
-            // result.data = filterSearchData(dataSource, searchResults, term);
-        } else if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            // result.data = createProfilesSections(data);
-            result.listType = SECTIONLIST;
-        }
-
-        if (!dataSource || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
-            result.data = result.data.map((value: any) => {  // TODO DialogOption before?
-                return { ...value, id: (value).value };
-            });
-        }
-
-        return result;
     };
 
-    const getProfiles = debounce(async () => {
-        if (this.next && !loading && !term) {
+    // const getDataResults = () => {
+    //     const result = {
+    //         data: integrationData,
+    //         listType: FLATLIST
+    //     };
+
+    //     if (term) {
+    //         // result.data = filterSearchData(dataSource, searchResults, term);
+    //     } else if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+    //         // result.data = createProfilesSections(data);
+    //         result.listType = SECTIONLIST;
+    //     }
+
+    //     if (!dataSource || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
+    //         result.data = result.data.map((value: any) => {  // TODO DialogOption before?
+    //             return { ...value, id: (value).value };
+    //         });
+    //     }
+
+    //     return result;
+    // };
+
+    const getProfiles = async () => {
+        if (next && !loading && !term) {
             setLoading(true);
-            const { users: userData } = await fetchProfiles(serverUrl);  // TODO Page?
+            setCurrentPage(currentPage + 1);
+            const { users: userData } = await fetchProfiles(serverUrl, currentPage);
 
             if (userData) {
                 loadedProfiles({ data: userData });
             }
-
-            // TODO Use effect
-            // this.setState({ loading: true }, () => {
-            //     actions.getProfiles(
-            //         this.page + 1,
-            //         General.PROFILE_CHUNK_SIZE,
-            //     ).then(loadedProfiles);
-            // });
         }
-    }, 100);
+    };
 
-    const getDynamicOptions = debounce(() => {
-        if (this.next && !loading && !term) {
+    const getDynamicOptions = () => {
+        if (next && !loading && !term) {
             this.searchDynamicOptions('');
         }
-    }, 100);
+    };
 
     const loadedChannels = ({ data: channels }: { data: Channel[] }) => {
         if (channels && !channels.length) {
-            this.next = false;
+            setNext(false);
         }
 
-        const channelData = data as Channel[]
-        // this.page += 1;
+        setCurrentPage(currentPage + 1);
         setLoading(false);
-        setIntegrationData([...channels, ...channelData]);
+        setIntegrationData(channels);
     };
 
     const loadedProfiles = ({ data: profiles }: { data: UserProfile[] }) => {
         if (profiles && !profiles.length) {
-            this.next = false;
+            setNext(false);
         }
 
         const userData = data as UserProfile[];
-        // this.page += 1;
+        setCurrentPage(currentPage + 1);
         setLoading(false);
         setIntegrationData([...profiles, ...userData]);
     };
 
     const loadMore = () => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            this.getProfiles();
+            getProfiles();
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-            this.getChannels();
+            getChannels();
         }
 
         // dynamic options are not paged so are not reloaded on scroll
@@ -342,14 +310,8 @@ function IntegrationSelector(
         setLoading(false);
 
         if (receivedChannels) {
-            // TODO Transform Channel[] to DialogOption[]
             setSearchResults(receivedChannels);
         }
-
-        // searchChannels(currentTeamId, term.toLowerCase()).then(({ data }: any) => {  // TODO
-        //     setSearchResults(data);
-        //     setLoading(false);
-        // });
     };
 
     const searchProfiles = async (term: string) => {
@@ -359,18 +321,8 @@ function IntegrationSelector(
         setLoading(false);
 
         if (userData) {
-            // TODO Transform UserProfile[] to DialogOption[]
             setSearchResults(userData);
         }
-
-        // actions.searchProfiles(term.toLowerCase()).then((results: any) => {  // TODO
-        //     let data = [];
-        //     if (results.data) {
-        //         data = results.data;
-        //     }
-        //     setLoading(false);
-        //     setSearchResults(data);
-        // });
     };
 
     const searchDynamicOptions = (term = '') => {
@@ -380,6 +332,7 @@ function IntegrationSelector(
 
         setLoading(true);
 
+        // TODO
         // getDynamicOptions(term.toLowerCase()).then((results: any) => {  // TODO
         //     let data = [];
         //     if (results.data) {
@@ -422,6 +375,16 @@ function IntegrationSelector(
         }
     };
 
+    useEffect(() => {
+        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+            getProfiles();
+        } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
+            getChannels();
+        } else {
+            getDynamicOptions();
+        }
+    }, [])
+
     const renderLoading = (): React.ReactElement<any, string> | null => {
         if (!loading) {
             return null;
@@ -430,7 +393,10 @@ function IntegrationSelector(
         let text;
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
-                // text = loadingText;
+                text = {
+                    id: intl.formatMessage({ id: 'mobile.loading_users' }),  // TODO
+                    defaultMessage: 'Loading Channels...',
+                };
                 break;
             case ViewConstants.DATA_SOURCE_CHANNELS:
                 text = {
@@ -449,7 +415,6 @@ function IntegrationSelector(
         return (
             <View style={style.loadingContainer}>
                 <FormattedText
-                    id='mobile.custom_list.loading'
                     {...text}
                     style={style.loadingText}
                 />
@@ -458,8 +423,7 @@ function IntegrationSelector(
     };
 
     const renderNoResults = (): JSX.Element | null => {
-        // if (loading || this.page === -1) {
-        if (loading) {
+        if (loading || currentPage === -1) {
             return null;
         }
 
@@ -479,7 +443,14 @@ function IntegrationSelector(
         return (
             <ChannelListRow
                 key={props.id}
-                {...props}
+                id={props.id}
+
+                isArchived={false}  // TODO
+                enabled={true}
+                children={[]}
+
+                theme={theme}
+                channel={props.item}
                 selectable={true}
                 selected={selected}
             />
@@ -510,6 +481,7 @@ function IntegrationSelector(
         );
     };
 
+    const listType = dataSource === ViewConstants.DATA_SOURCE_USERS ? SECTIONLIST : FLATLIST;
     let rowComponent;
     if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
         rowComponent = renderUserItem;
@@ -519,24 +491,22 @@ function IntegrationSelector(
         rowComponent = renderOptionItem;
     }
 
-    const { listType } = getDataResults();
-
-    let selectedOptionsComponent = null;
-    const selectedItems: any = Object.values(multiselectSelected);  // TODO
-    if (selectedItems.length > 0) {
-        selectedOptionsComponent = (
-            <>
-                <SelectedOptions
-                    // ref={selectedScroll}
-                    theme={theme}
-                    selectedOptions={selectedItems}
-                    dataSource={dataSource}
-                    onRemove={handleRemoveOption}
-                />
-                <View style={style.separator} />
-            </>
-        );
-    }
+    // let selectedOptionsComponent = null;
+    // const selectedItems: any = Object.values(multiselectSelected);  // TODO
+    // if (selectedItems.length > 0) {
+    //     selectedOptionsComponent = (
+    //         <>
+    //             <SelectedOptions
+    //                 // ref={selectedScroll}
+    //                 theme={theme}
+    //                 selectedOptions={selectedItems}
+    //                 dataSource={dataSource}
+    //                 onRemove={handleRemoveOption}
+    //             />
+    //             <View style={style.separator} />
+    //         </>
+    //     );
+    // }
 
     return (
         <SafeAreaView style={style.container}>
@@ -565,7 +535,7 @@ function IntegrationSelector(
                 />
             </View>
 
-            {selectedOptionsComponent}
+            {/* {selectedOptionsComponent} */}
 
             <CustomList
                 data={integrationData}
@@ -582,7 +552,6 @@ function IntegrationSelector(
         </SafeAreaView>
     );
 }
-
 
 const withTeamId = withObservables([], ({ database }: WithDatabaseArgs) => ({
     currentTeamId: observeCurrentTeamId(database),

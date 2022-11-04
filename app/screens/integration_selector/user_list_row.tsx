@@ -102,7 +102,6 @@ const UserListRow = ({
         );
     };
 
-
     const intl = useIntl();
     const { username } = user;
     const userID = user.id;

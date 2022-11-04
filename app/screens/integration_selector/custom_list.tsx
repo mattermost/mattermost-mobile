@@ -1,6 +1,6 @@
-import React, { useCallback, useState } from 'react';
+import React, { useState } from 'react';
 import {
-    Text, Platform, Keyboard, FlatList, RefreshControl, View, SectionList
+    Text, Platform, FlatList, RefreshControl, View, SectionList, Keyboard
 } from 'react-native';
 
 import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
@@ -281,6 +281,11 @@ function CustomList({
                 testID={testID}
             />
         );
+    }
+
+    // TODO This shouldn't be needed
+    if (data.length === 0) {
+        return <></>;
     }
 
     if (listType === FLATLIST) {
