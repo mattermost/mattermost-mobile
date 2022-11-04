@@ -111,7 +111,9 @@ commands:
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
       - run:
           name: Getting JavaScript dependencies
-          command: NODE_ENV=development npm ci --ignore-scripts
+          command: |
+            NODE_ENV=development npm ci --ignore-scripts
+            node node_modules/\@sentry/cli/scripts/install.js
       - save_cache:
           name: Save npm cache
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
@@ -562,7 +564,7 @@ workflows:
                 - /^build-ios-beta-\d+$/
 
       - build-android-pr:
-          context:
+          context: 
             - mattermost-mobile-android-pr
             - mattermost-mobile-sentry
           requires:
@@ -571,9 +573,7 @@ workflows:
             branches:
               only: /^(build|android)-pr-.*/
       - build-ios-pr:
-          context:
-            - mattermost-mobile-ios-pr
-            - mattermost-mobile-sentry
+          context: mattermost-mobile-ios-pr
           requires:
             - test
           filters:
@@ -609,7 +609,7 @@ workflows:
           #       - /^build-ios-\d+$/
           #       - /^build-ios-beta-\d+$/
           #       - /^build-ios-sim-\d+$/
-
+                
       # - github-release:
       #     context: mattermost-mobile-unsigned
       #     requires:
