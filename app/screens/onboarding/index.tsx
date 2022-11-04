@@ -93,7 +93,7 @@ const Onboarding = ({
                     showsHorizontalScrollIndicator={false}
                     pagingEnabled={true}
                     bounces={false}
-                    onMomentumScrollEnd={handleScroll}
+                    onScroll={handleScroll}
                     ref={slidesRef}
                 >
                     {slidesData.map((item, index) => {

@@ -3,8 +3,7 @@
 
 import React from 'react';
 import {Pressable, useWindowDimensions, View} from 'react-native';
-import Button from 'react-native-button';
-import Animated, {interpolate, useAnimatedStyle} from 'react-native-reanimated';
+import Animated, {Extrapolate, interpolate, useAnimatedStyle} from 'react-native-reanimated';
 
 import CompassIcon from '@app/components/compass_icon';
 import FormattedText from '@app/components/formatted_text';
@@ -58,6 +57,7 @@ const FooterButtons = ({
             scrollX.value,
             inputRange,
             [BUTTON_SIZE, isLastSlide ? width * 0.8 : BUTTON_SIZE, width * 0.8],
+            Extrapolate.CLAMP,
         );
 
         return {width: needToAnimate ? interpolatedWidth : BUTTON_SIZE};
@@ -68,6 +68,7 @@ const FooterButtons = ({
             scrollX.value,
             inputRange,
             [isPenultimateSlide ? 1 : 0, 1, 0],
+            Extrapolate.CLAMP,
         );
 
         return {opacity: needToAnimate ? interpolatedScale : 1};
@@ -78,6 +79,7 @@ const FooterButtons = ({
             scrollX.value,
             inputRange,
             [1, (isLastSlide ? 0 : 1), 0],
+            Extrapolate.CLAMP,
         );
 
         return {opacity: needToAnimate ? interpolatedScale : 1};

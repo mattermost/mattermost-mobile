@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import {View, useWindowDimensions} from 'react-native';
-import Animated, {Extrapolate, interpolate, useAnimatedStyle} from 'react-native-reanimated';
+import Animated, {Extrapolate, interpolate, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -31,6 +31,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     fontFirstTitle: {
         fontSize: 66,
     },
+    firstSlideInitialPosition: {
+        left: 200,
+        opacity: 0,
+    },
     description: {
         fontWeight: '400',
         fontSize: 16,
@@ -56,7 +60,58 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const SlideItem = ({theme, item, scrollX, index}: Props) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
+    const FIRST_SLIDE = 0;
     const SvgImg = item.image;
+
+    /**
+     * Code used to animate the first image load
+     */
+    const FIRST_LOAD_ELEMENTS_POSITION = 400;
+    const [firstLoad, setFirstLoad] = useState(true);
+
+    const initialImagePosition = useSharedValue(FIRST_LOAD_ELEMENTS_POSITION);
+    const initialTitlePosition = useSharedValue(FIRST_LOAD_ELEMENTS_POSITION);
+    const initialDescriptionPosition = useSharedValue(FIRST_LOAD_ELEMENTS_POSITION);
+
+    const initialElementsOpacity = useSharedValue(0);
+
+    useEffect(() => {
+        if (index === FIRST_SLIDE) {
+            initialImagePosition.value = withTiming(0, {duration: 1000});
+            initialTitlePosition.value = withTiming(0, {duration: 1250});
+            initialDescriptionPosition.value = withTiming(0, {duration: 1500});
+
+            initialElementsOpacity.value = withTiming(1, {duration: 1500});
+            setFirstLoad(false);
+        }
+    }, []);
+
+    const translateFirstImageOnLoad = useAnimatedStyle(() => {
+        return {
+            transform: [{
+                translateX: initialImagePosition.value,
+            }],
+            opacity: initialElementsOpacity.value,
+        };
+    });
+
+    const translateFirstTitleOnLoad = useAnimatedStyle(() => {
+        return {
+            transform: [{
+                translateX: initialTitlePosition.value,
+            }],
+            opacity: initialElementsOpacity.value,
+        };
+    });
+
+    const translateFirstDescriptionOnLoad = useAnimatedStyle(() => {
+        return {
+            transform: [{
+                translateX: initialDescriptionPosition.value,
+            }],
+            opacity: initialElementsOpacity.value,
+        };
+    });// end of code for animating first image load
 
     const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
 
@@ -119,7 +174,11 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
     return (
         <View style={[styles.itemContainer, {width}]}>
             <Animated.View
-                style={[translateImage]}
+                style={[
+                    translateImage,
+                    translateFirstImageOnLoad,
+                    (index === FIRST_SLIDE && firstLoad ? styles.firstSlideInitialPosition : undefined),
+                ]}
             >
                 <SvgImg
                     style={[styles.image, {
@@ -130,12 +189,25 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
             </Animated.View>
             <View style={{flex: 0.3}}>
                 <Animated.Text
-                    style={[styles.title, (index === 0 ? styles.fontFirstTitle : styles.fontTitle), translateTitle, opacity]}
+                    style={[
+                        styles.title,
+                        (index === FIRST_SLIDE ? styles.fontFirstTitle : styles.fontTitle),
+                        translateTitle,
+                        opacity,
+                        translateFirstTitleOnLoad,
+                        (index === FIRST_SLIDE && firstLoad ? styles.firstSlideInitialPosition : undefined),
+                    ]}
                 >
                     {item.title}
                 </Animated.Text>
                 <Animated.Text
-                    style={[styles.description, translateDescription, opacity]}
+                    style={[
+                        styles.description,
+                        translateDescription,
+                        opacity,
+                        (index === FIRST_SLIDE && firstLoad ? styles.firstSlideInitialPosition : undefined),
+                        translateFirstDescriptionOnLoad,
+                    ]}
                 >
                     {item.description}
                 </Animated.Text>
