@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
-import {View} from 'react-native';
+import React, { useMemo } from 'react';
+import { View } from 'react-native';
 
-import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import { useTheme } from '@context/theme';
+import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
 
 import Footer from '../footer';
 import Label from '../label';
@@ -50,7 +50,7 @@ function RadioSetting({
             return [];
         }
         const elements = [];
-        for (const [i, {value: entryValue, text}] of options.entries()) {
+        for (const [i, { value: entryValue, text }] of options.entries()) {
             elements.push(
                 <RadioEntry
                     handleChange={onChange}
