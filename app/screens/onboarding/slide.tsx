@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, { useEffect, useState } from 'react';
-import {View, useWindowDimensions} from 'react-native';
+import {View, useWindowDimensions, Text} from 'react-native';
 import Animated, {Extrapolate, interpolate, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -176,6 +176,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
             <Animated.View
                 style={[
                     translateImage,
+                    opacity,
                     translateFirstImageOnLoad,
                     (index === FIRST_SLIDE && firstLoad ? styles.firstSlideInitialPosition : undefined),
                 ]}
