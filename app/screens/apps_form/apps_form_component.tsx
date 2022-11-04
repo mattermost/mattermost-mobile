@@ -244,7 +244,6 @@ function AppsFormComponent({
     }, [form, values, refreshOnSelect, updateErrors, intl]);
 
     const handleSubmit = useCallback(async (button?: string) => {
-        console.log('handleSubmit')
         if (submitting) {
             return;
         }

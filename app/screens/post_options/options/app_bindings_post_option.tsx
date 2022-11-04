@@ -14,13 +14,11 @@ import AppsManager from '@app/managers/apps_manager';
 import {observeCurrentTeamId} from '@app/queries/servers/system';
 import {createCallContext} from '@app/utils/apps';
 import {preventDoubleTap} from '@app/utils/tap';
-import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
-import {t} from '@i18n';
 import {dismissBottomSheet, showAppForm} from '@screens/navigation';
+import {WithDatabaseArgs} from '@typings/database/database';
 
 import type PostModel from '@typings/database/models/servers/post';
-import {WithDatabaseArgs} from '@typings/database/database';
 
 type Props = {
     bindings: AppBinding[];

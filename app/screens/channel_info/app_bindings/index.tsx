@@ -5,21 +5,17 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {combineLatest, of as of$} from 'rxjs';
 
-import {handleBindingClick, postEphemeralCallResponseForChannel, postEphemeralCallResponseForPost} from '@actions/remote/apps';
+import {handleBindingClick, postEphemeralCallResponseForChannel} from '@actions/remote/apps';
 import {handleGotoLocation} from '@actions/remote/command';
 import OptionItem from '@app/components/option_item';
 import {AppBindingLocations, AppCallResponseTypes} from '@app/constants/apps';
-import {useServerUrl, withServerUrl} from '@app/context/server';
-import {observeChannel} from '@app/queries/servers/channel';
-import {observeCurrentChannelId, observeCurrentTeamId} from '@app/queries/servers/system';
+import {observeCurrentTeamId} from '@app/queries/servers/system';
+import {showAppForm} from '@app/screens/navigation';
 import {createCallContext} from '@app/utils/apps';
 import {preventDoubleTap} from '@app/utils/tap';
-
 import AppsManager from '@managers/apps_manager';
 import {WithDatabaseArgs} from '@typings/database/database';
-import {showAppForm} from '@app/screens/navigation';
 
 type Props = {
     channelId: string;
