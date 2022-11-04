@@ -47,42 +47,47 @@ const FooterButtons = ({
     const styles = getStyleSheet(theme);
     const BUTTON_SIZE = 80;
 
-    // keep in mind penultimate and ultimate slides to run buttons animations
+    // keep in mind penultimate and ultimate slides to run buttons text/opacity/size animations
+    const penultimateSlide = lastSlideIndex - 1;
     const isPenultimateSlide = currentIndex === (lastSlideIndex - 1);
     const needToAnimate = isLastSlide || isPenultimateSlide;
-    const inputRange = [(currentIndex - 1) * width, currentIndex * width, (currentIndex + 1) * width];
 
+    const inputRange = [penultimateSlide * width, lastSlideIndex * width];
+
+    // the next button must resize in the last slide to be the 80% wide of the screen with animation
     const resizeStyle = useAnimatedStyle(() => {
         const interpolatedWidth = interpolate(
             scrollX.value,
             inputRange,
-            [BUTTON_SIZE, isLastSlide ? width * 0.8 : BUTTON_SIZE, width * 0.8],
+            [BUTTON_SIZE, width * 0.8],
             Extrapolate.CLAMP,
         );
 
-        return {width: needToAnimate ? interpolatedWidth : BUTTON_SIZE};
+        return {width: interpolatedWidth};
     });
 
+    // use for the opacity of the button text in the penultimate and last slide
     const opacityTextStyle = useAnimatedStyle(() => {
         const interpolatedScale = interpolate(
             scrollX.value,
             inputRange,
-            [isPenultimateSlide ? 1 : 0, 1, 0],
+            isLastSlide ? [0, 1] : [1, 0], // from last to penultimate it must fade out (from 1 to 0), once it starts getting the penultimate range it must fade in again (from 0 to 1)
             Extrapolate.CLAMP,
         );
 
         return {opacity: needToAnimate ? interpolatedScale : 1};
     });
 
+    // the sign in button should fade out until dissappear in the last slide
     const opacitySignInButton = useAnimatedStyle(() => {
         const interpolatedScale = interpolate(
             scrollX.value,
             inputRange,
-            [1, (isLastSlide ? 0 : 1), 0],
+            [1, 0],
             Extrapolate.CLAMP,
         );
 
-        return {opacity: needToAnimate ? interpolatedScale : 1};
+        return {opacity: interpolatedScale};
     });
 
     let mainButtonText = (
