@@ -5,7 +5,6 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 
 import {useServerUrl} from '@app/context/server';
-
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -14,12 +13,12 @@ import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
 import {isSystemMessage} from '@utils/post';
 
+import AppBindingsPostOptions from './options/app_bindings_post_option';
 import CopyTextOption from './options/copy_text_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
 import PinChannelOption from './options/pin_channel_option';
-import AppBindingsPostOptions from './options/app_bindings_post_option';
 import ReactionBar from './reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';

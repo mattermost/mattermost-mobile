@@ -6,7 +6,6 @@ import {ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {useServerUrl} from '@app/context/server';
-
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ChannelActions from '@components/channel_actions';
 import {useTheme} from '@context/theme';
@@ -14,8 +13,8 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import DestructiveOptions from './destructive_options';
 import ChannelInfoAppBindings from './app_bindings';
+import DestructiveOptions from './destructive_options';
 import Extra from './extra';
 import Options from './options';
 import Title from './title';

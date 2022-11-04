@@ -1,26 +1,26 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
+import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/remote/apps';
+import {handleGotoLocation} from '@actions/remote/command';
+import OptionItem from '@app/components/option_item';
+import {AppBindingLocations, AppCallResponseTypes} from '@app/constants/apps';
+import AppsManager from '@app/managers/apps_manager';
+import {observeCurrentTeamId} from '@app/queries/servers/system';
+import {createCallContext} from '@app/utils/apps';
+import {preventDoubleTap} from '@app/utils/tap';
 import {BaseOption} from '@components/common_post_options';
 import {Screens} from '@constants';
 import {t} from '@i18n';
 import {dismissBottomSheet, showAppForm} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
-import AppsManager from '@app/managers/apps_manager';
-import {AppBindingLocations, AppCallResponseTypes} from '@app/constants/apps';
-import {createCallContext} from '@app/utils/apps';
-import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/remote/apps';
-import {handleGotoLocation} from '@actions/remote/command';
-import {preventDoubleTap} from '@app/utils/tap';
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import {WithDatabaseArgs} from '@typings/database/database';
-import {observeCurrentTeamId} from '@app/queries/servers/system';
-import OptionItem from '@app/components/option_item';
 
 type Props = {
     bindings: AppBinding[];

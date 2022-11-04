@@ -1,22 +1,25 @@
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
+// See LICENSE.txt for license information.
+
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
+import React, {useCallback} from 'react';
+import {useIntl} from 'react-intl';
+import {combineLatest, of as of$} from 'rxjs';
+
+import {handleBindingClick, postEphemeralCallResponseForChannel, postEphemeralCallResponseForPost} from '@actions/remote/apps';
+import {handleGotoLocation} from '@actions/remote/command';
 import OptionItem from '@app/components/option_item';
 import {AppBindingLocations, AppCallResponseTypes} from '@app/constants/apps';
 import {useServerUrl, withServerUrl} from '@app/context/server';
+import {observeChannel} from '@app/queries/servers/channel';
+import {observeCurrentChannelId, observeCurrentTeamId} from '@app/queries/servers/system';
+import {createCallContext} from '@app/utils/apps';
 import {preventDoubleTap} from '@app/utils/tap';
-import React, {useCallback} from 'react';
-import {combineLatest, of as of$} from 'rxjs';
-
-import {useIntl} from 'react-intl';
 
 import AppsManager from '@managers/apps_manager';
-import {createCallContext} from '@app/utils/apps';
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import {WithDatabaseArgs} from '@typings/database/database';
-import {observeCurrentChannelId, observeCurrentTeamId} from '@app/queries/servers/system';
-import {handleBindingClick, postEphemeralCallResponseForChannel, postEphemeralCallResponseForPost} from '@actions/remote/apps';
-import {handleGotoLocation} from '@actions/remote/command';
 import {showAppForm} from '@app/screens/navigation';
-import {observeChannel} from '@app/queries/servers/channel';
 
 type Props = {
     channelId: string;
@@ -93,7 +96,7 @@ const ChannelInfoAppBindings = ({channelId, teamId, dismissChannelInfo, serverUr
     ));
 
     return <>{options}</>;
-}
+};
 
 type OwnProps = {
     channelId: string;
