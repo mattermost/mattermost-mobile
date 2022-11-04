@@ -16,7 +16,7 @@ type Props = {
     channelId: string;
     cursorPosition: number;
     rootId?: string;
-    location: string;
+    canShowPostPriority?: boolean;
     files?: FileInfo[];
     maxFileSize: number;
     maxFileCount: number;
@@ -41,7 +41,7 @@ export default function DraftHandler(props: Props) {
         channelId,
         cursorPosition,
         rootId = '',
-        location,
+        canShowPostPriority,
         files,
         maxFileSize,
         maxFileCount,
@@ -137,7 +137,7 @@ export default function DraftHandler(props: Props) {
             testID={testID}
             channelId={channelId}
             rootId={rootId}
-            location={location}
+            canShowPostPriority={canShowPostPriority}
 
             // From draft handler
             cursorPosition={cursorPosition}

@@ -21,7 +21,7 @@ type Props = {
     channelId: string;
     rootId?: string;
     currentUserId: string;
-    location: string;
+    canShowPostPriority?: boolean;
 
     // Post Props
     postProps: Post['props'];
@@ -94,7 +94,7 @@ export default function DraftInput({
     testID,
     channelId,
     currentUserId,
-    location,
+    canShowPostPriority,
     files,
     maxMessageLength,
     rootId = '',
@@ -187,7 +187,7 @@ export default function DraftInput({
                             value={value}
                             postProps={postProps}
                             updatePostProps={updatePostProps}
-                            location={location}
+                            canShowPostPriority={canShowPostPriority}
                             focus={focus}
                         />
                         <SendAction

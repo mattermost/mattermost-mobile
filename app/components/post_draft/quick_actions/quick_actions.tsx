@@ -4,8 +4,6 @@
 import React from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 
-import {Screens} from '@constants';
-
 import CameraAction from './camera_quick_action';
 import FileAction from './file_quick_action';
 import ImageAction from './image_quick_action';
@@ -17,7 +15,7 @@ type Props = {
     canUploadFiles: boolean;
     fileCount: number;
     isPostPriorityEnabled: boolean;
-    location: string;
+    canShowPostPriority: string;
     maxFileCount: number;
 
     // Draft Handler
@@ -53,7 +51,7 @@ export default function QuickActions({
     value,
     fileCount,
     isPostPriorityEnabled,
-    location,
+    canShowPostPriority,
     maxFileCount,
     updateValue,
     addFiles,
@@ -110,7 +108,7 @@ export default function QuickActions({
                 testID={cameraActionTestID}
                 {...uploadProps}
             />
-            {isPostPriorityEnabled && location !== Screens.THREAD && (
+            {isPostPriorityEnabled && canShowPostPriority && (
                 <PostPriorityAction
                     testID={postPriorityActionTestID}
                     postProps={postProps}

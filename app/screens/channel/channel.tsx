@@ -11,7 +11,7 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import JoinCallBanner from '@calls/components/join_call_banner';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
-import {Events, Screens} from '@constants';
+import {Events} from '@constants';
 import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useChannelSwitch} from '@hooks/channel_switch';
 import {useAppState, useIsTablet} from '@hooks/device';
@@ -166,7 +166,7 @@ const Channel = ({
                         testID='channel.post_draft'
                         containerHeight={containerHeight}
                         isChannelScreen={true}
-                        location={Screens.CHANNEL}
+                        canShowPostPriority={true}
                     />
                 </>
                 }

@@ -29,7 +29,7 @@ type Props = {
     testID?: string;
     channelId: string;
     rootId: string;
-    location: string;
+    canShowPostPriority: string;
     setIsFocused: (isFocused: boolean) => void;
 
     // From database
@@ -65,7 +65,7 @@ export default function SendHandler({
     membersCount = 0,
     cursorPosition,
     rootId,
-    location,
+    canShowPostPriority,
     useChannelMentions,
     userIsOutOfOffice,
     customEmojis,
@@ -290,7 +290,7 @@ export default function SendHandler({
             channelId={channelId}
             currentUserId={currentUserId}
             rootId={rootId}
-            location={location}
+            canShowPostPriority={canShowPostPriority}
             cursorPosition={cursorPosition}
             updateCursorPosition={updateCursorPosition}
             value={value}

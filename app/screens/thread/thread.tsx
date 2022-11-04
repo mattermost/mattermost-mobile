@@ -11,7 +11,7 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {Events, Screens} from '@constants';
+import {Events} from '@constants';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
@@ -96,7 +96,6 @@ const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
                         testID='thread.post_draft'
                         containerHeight={containerHeight}
                         isChannelScreen={false}
-                        location={Screens.THREAD}
                     />
                 </>
                 }
