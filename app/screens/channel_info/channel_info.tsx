@@ -5,6 +5,8 @@ import React, {useCallback} from 'react';
 import {ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {useServerUrl} from '@app/context/server';
+
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ChannelActions from '@components/channel_actions';
 import {useTheme} from '@context/theme';
@@ -13,6 +15,7 @@ import {dismissModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DestructiveOptions from './destructive_options';
+import ChannelInfoAppBindings from './app_bindings';
 import Extra from './extra';
 import Options from './options';
 import Title from './title';
@@ -54,6 +57,7 @@ const ChannelInfo = ({
     isCallsFeatureRestricted,
 }: Props) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
     const callsAvailable = isCallsEnabledInChannel && !isCallsFeatureRestricted;
 
@@ -103,6 +107,11 @@ const ChannelInfo = ({
                         <View style={styles.separator}/>
                     </>
                 }
+                <ChannelInfoAppBindings
+                    channelId={channelId}
+                    serverUrl={serverUrl}
+                    dismissChannelInfo={onPressed}
+                />
                 <DestructiveOptions
                     channelId={channelId}
                     componentId={componentId}

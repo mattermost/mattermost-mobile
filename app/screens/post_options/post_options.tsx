@@ -4,6 +4,8 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 
+import {useServerUrl} from '@app/context/server';
+
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -17,6 +19,7 @@ import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
 import MarkAsUnreadOption from './options/mark_unread_option';
 import PinChannelOption from './options/pin_channel_option';
+import AppBindingsPostOptions from './options/app_bindings_post_option';
 import ReactionBar from './reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -45,6 +48,7 @@ const PostOptions = ({
     sourceScreen, post, thread,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const serverUrl = useServerUrl();
 
     const close = () => {
         dismissModal({componentId});
@@ -115,6 +119,10 @@ const PostOptions = ({
                     combinedPost={combinedPost}
                     post={post}
                 />}
+                <AppBindingsPostOptions
+                    post={post}
+                    serverUrl={serverUrl}
+                />
             </>
         );
     };

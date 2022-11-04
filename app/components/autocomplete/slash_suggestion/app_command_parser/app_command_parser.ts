@@ -1432,8 +1432,7 @@ export class AppCommandParser {
     // getCommandBindings returns the commands in the redux store.
     // They are grouped by app id since each app has one base command
     private getCommandBindings = (): AppBinding[] => {
-        const bindings = AppsManager.getBindings(this.serverUrl, AppBindingLocations.COMMAND, Boolean(this.rootPostID));
-        return bindings.reduce<AppBinding[]>((acc, v) => (v.bindings ? acc.concat(v.bindings) : acc), []);
+        return AppsManager.getBindings(this.serverUrl, AppBindingLocations.COMMAND, Boolean(this.rootPostID));
     };
 
     // getChannel gets the channel in which the user is typing the command
