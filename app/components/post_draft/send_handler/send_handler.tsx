@@ -208,11 +208,6 @@ export default function SendHandler({
 
         clearDraft();
 
-        // TODO Apps related https://mattermost.atlassian.net/browse/MM-41233
-        // if (data?.form) {
-        //     showAppForm(data.form, data.call, theme);
-        // }
-
         if (data?.goto_location && !value.startsWith('/leave')) {
             handleGotoLocation(serverUrl, intl, data.goto_location);
         }
