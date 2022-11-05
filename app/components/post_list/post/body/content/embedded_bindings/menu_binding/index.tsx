@@ -78,7 +78,7 @@ const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
                 return;
             case AppCallResponseTypes.FORM:
                 if (callResp.form) {
-                    showAppForm(callResp.form);
+                    showAppForm(callResp.form, context);
                 }
                 return;
             default: {
