@@ -172,11 +172,6 @@
     "underscore": "1.13.6",
     "util": "0.12.4"
   },
-  "overrides": {
-    "react-native": {
-      "react": "^18.2.0"
-    }
-  },
   "scripts": {
     "android": "react-native run-android",
     "ios": "react-native run-ios",
