@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import {
-    Text, Platform, FlatList, RefreshControl, View, SectionList, Keyboard
+    Text, Platform, FlatList, RefreshControl, View, SectionList, Keyboard, LayoutChangeEvent, NativeSyntheticEvent, NativeScrollEvent
 } from 'react-native';
 
 import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
@@ -14,7 +14,7 @@ const SCROLL_UP_MULTIPLIER = 6;
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 
 type Props = {
-    data: DataType, // TODO?
+    data: DataType,
     extraData?: any,
     canRefresh?: boolean,
     listType?: string,
@@ -25,7 +25,6 @@ type Props = {
     onRefresh?: () => void,
     onLoadMore: () => void,
     onRowPress?: (id: string, item: UserProfile | Channel | DialogOption) => any,
-    onRowSelect?: () => void,
     renderItem: (props: object) => JSX.Element,
     selectable?: boolean,
     theme?: object,
@@ -97,7 +96,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 function CustomList({
     data, shouldRenderSeparator, listType, loading, loadingComponent, noResults,
-    onLoadMore, onRowPress, onRowSelect, selectable, renderItem, theme,
+    onLoadMore, onRowPress, selectable, renderItem, theme,
     canRefresh = true, extraData, testID, refreshing = false, onRefresh,
 }: Props) {
     const style = getStyleFromTheme(theme);
@@ -117,12 +116,12 @@ function CustomList({
     const [listHeight, setListHeight] = useState(0);
 
     // Callbacks
-    const handleLayout = (event: any) => {  // TODO
+    const handleLayout = (event: LayoutChangeEvent): void => {
         const { height } = event.nativeEvent.layout;
         setListHeight(height);
     }
 
-    const handleScroll = (event: any) => {  // TODO
+    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
         const pageOffsetY = event.nativeEvent.contentOffset.y;
 
         if (pageOffsetY > 0) {
@@ -166,29 +165,28 @@ function CustomList({
         // this.list = ref;
     };
 
-    const renderListItem = ({ item, index, section }: any) => {  // TODO
-        const props = {
-            id: item.id,
+    const renderListItem = ({ item, index, section }: any) => {
+        type listItemProps = {
+            id: string,
+            item: any, // TODO?
+            selected: boolean,
+            selectable?: boolean,
+            enabled: boolean,
+            onPress?: (id: string, item: DialogOption) => void,
+        }
+
+        let props: listItemProps = {
+            id: item.key,
             item,
             selected: item.selected,
             selectable,
-
-            // TODO Can we do this?
             enabled: true,
-            // onPress: null // TODO Type?
+            onPress: onRowPress,
         };
 
-        // TODO
-        // if ('disableSelect' in item) {
-        //     props.enabled = !item.disableSelect;
-        // }
-
-        // TODO
-        // if (onRowSelect) {
-        //     props.onPress = onRowSelect(section.title, index);
-        // } else {
-        //     props.onPress = onRowPress;
-        // }
+        if ('disableSelect' in item) {
+            props.enabled = !item.disableSelect;
+        }
 
         return renderItem(props);
     }
@@ -234,7 +232,7 @@ function CustomList({
                 renderItem={renderListItem}
                 renderSectionHeader={renderSectionHeader}
                 scrollEventThrottle={60}
-                sections={data}  // TODO (data)
+                sections={data}
                 style={style.list}
                 stickySectionHeadersEnabled={false}
                 testID={testID}

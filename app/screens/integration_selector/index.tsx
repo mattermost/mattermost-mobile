@@ -26,11 +26,11 @@ import UserListRow from './user_list_row';
 import { useIntl } from 'react-intl';
 import { debounce } from '@app/helpers/api/general';
 import SelectedOptions from './selected_options';
-import { createProfilesSections } from '@app/screens/create_direct_message/user_list';
 
 import { useServerUrl } from '@app/context/server';
 import { observeCurrentTeamId } from '@app/queries/servers/system';
 import { WithDatabaseArgs } from '@typings/database/database';
+import { createProfilesSections } from '../create_direct_message/user_list';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
@@ -265,7 +265,7 @@ function IntegrationSelector(
             const { users: userData } = await fetchProfiles(serverUrl, currentPage);
 
             if (userData) {
-                loadedProfiles({ data: userData });
+                loadedProfiles(userData);
             }
         }
     };
@@ -287,7 +287,7 @@ function IntegrationSelector(
         setIntegrationData(channels);
     };
 
-    const loadedProfiles = ({ data: profiles }: { data: UserProfile[] }) => {
+    const loadedProfiles = (profiles: UserProfile[]) => {
         if (profiles && !profiles.length) {
             setNext(false);
         }
@@ -484,6 +484,7 @@ function IntegrationSelector(
                 {...props}
                 theme={theme}
                 selectable={true}
+                user={props.item}
                 selected={selected}
             />
         );
@@ -494,8 +495,7 @@ function IntegrationSelector(
 
     let customListData = integrationData;
     if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-        // TODO
-        // customListData = createProfilesSections(integrationData);
+        customListData = createProfilesSections(integrationData);
     }
 
     let rowComponent;
@@ -532,19 +532,10 @@ function IntegrationSelector(
             >
                 <SearchBar
                     testID='selector.search_bar'
-                    // ref={searchBarRef}
                     placeholder={intl.formatMessage({ id: 'search_bar.search', defaultMessage: 'Search' })}
-                    // cancelTitle={intl.formatMessage({ id: 'mobile.post.cancel', defaultMessage: 'Cancel' })}
-                    // backgroundColor='transparent'
-                    // inputHeight={33}
                     inputStyle={searchBarInput}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    // tintColorSearch={changeOpacity(theme.centerChannelColor, 0.5)}
-                    // tintColorDelete={changeOpacity(theme.centerChannelColor, 0.5)}
-                    // titleCancelColor={theme.centerChannelColor}
                     onChangeText={onSearch}
-                    // onSearchButtonPress={onSearch}
-                    // onCancelButtonPress={clearSearch}
                     autoCapitalize='none'
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
