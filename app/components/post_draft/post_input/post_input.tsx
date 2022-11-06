@@ -34,11 +34,13 @@ type Props = {
     enableUserTypingMessage: boolean;
     membersInChannel: number;
     value: string;
-    updateValue: (value: string) => void;
+    updateValue: React.Dispatch<React.SetStateAction<string>>;
     addFiles: (files: ExtractedFileInfo[]) => void;
     cursorPosition: number;
-    updateCursorPosition: (pos: number) => void;
+    updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     sendMessage: () => void;
+    inputRef: React.MutableRefObject<PasteInputRef | undefined>;
+    setIsFocused: (isFocused: boolean) => void;
 }
 
 const showPasteFilesErrorDialog = (intl: IntlShape) => {
@@ -108,6 +110,8 @@ export default function PostInput({
     cursorPosition,
     updateCursorPosition,
     sendMessage,
+    inputRef,
+    setIsFocused,
 }: Props) {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -117,7 +121,7 @@ export default function PostInput({
     const managedConfig = useManagedConfig<ManagedConfig>();
 
     const lastTypingEventSent = useRef(0);
-    const input = useRef<PasteInputRef>();
+
     const lastNativeValue = useRef('');
     const previousAppState = useRef(AppState.currentState);
 
@@ -131,7 +135,7 @@ export default function PostInput({
     }, [maxHeight, style.input]);
 
     const blur = () => {
-        input.current?.blur();
+        inputRef.current?.blur();
     };
 
     const handleAndroidKeyboard = () => {
@@ -140,7 +144,12 @@ export default function PostInput({
 
     const onBlur = useCallback(() => {
         updateDraftMessage(serverUrl, channelId, rootId, value);
-    }, [channelId, rootId, value]);
+        setIsFocused(false);
+    }, [channelId, rootId, value, setIsFocused]);
+
+    const onFocus = useCallback(() => {
+        setIsFocused(true);
+    }, [setIsFocused]);
 
     const checkMessageLength = useCallback((newValue: string) => {
         const valueLength = newValue.trim().length;
@@ -231,12 +240,12 @@ export default function PostInput({
                     sendMessage();
                     break;
                 case 'shift-enter':
-                    updateValue(value.substring(0, cursorPosition) + '\n' + value.substring(cursorPosition));
-                    updateCursorPosition(cursorPosition + 1);
+                    updateValue((v) => v.substring(0, cursorPosition) + '\n' + v.substring(cursorPosition));
+                    updateCursorPosition((pos) => pos + 1);
                     break;
             }
         }
-    }, [sendMessage, updateValue, value, cursorPosition, isTablet]);
+    }, [sendMessage, updateValue, cursorPosition, isTablet]);
 
     const onAppStateChange = useCallback((appState: AppStateStatus) => {
         if (appState !== 'active' && previousAppState.current === 'active') {
@@ -272,7 +281,7 @@ export default function PostInput({
                 const draft = value ? `${value} ${text} ` : `${text} `;
                 updateValue(draft);
                 updateCursorPosition(draft.length);
-                input.current?.focus();
+                inputRef.current?.focus();
             }
         });
         return () => listener.remove();
@@ -281,7 +290,7 @@ export default function PostInput({
     useEffect(() => {
         if (value !== lastNativeValue.current) {
             // May change when we implement Fabric
-            input.current?.setNativeProps({
+            inputRef.current?.setNativeProps({
                 text: value,
             });
             lastNativeValue.current = value;
@@ -299,7 +308,7 @@ export default function PostInput({
         <PasteableTextInput
             allowFontScaling={true}
             testID={testID}
-            ref={input}
+            ref={inputRef}
             disableCopyPaste={disableCopyAndPaste}
             style={pasteInputStyle}
             onChangeText={handleTextChange}
@@ -308,6 +317,7 @@ export default function PostInput({
             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
             multiline={true}
             onBlur={onBlur}
+            onFocus={onFocus}
             blurOnSubmit={false}
             underlineColorAndroid='transparent'
             keyboardType={keyboardType}
