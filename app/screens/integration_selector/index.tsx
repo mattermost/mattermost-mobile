@@ -26,6 +26,8 @@ import UserListRow from './user_list_row';
 import { useIntl } from 'react-intl';
 import { debounce } from '@app/helpers/api/general';
 import SelectedOptions from './selected_options';
+import { filterProfilesMatchingTerm } from '@utils/user';
+import { filterChannelsMatchingTerm } from '@utils/channel';
 
 import { useServerUrl } from '@app/context/server';
 import { observeCurrentTeamId } from '@app/queries/servers/system';
@@ -110,10 +112,6 @@ function IntegrationSelector(
     const [currentPage, setCurrentPage] = useState<number>(-1);
     const [next, setNext] = useState<boolean>(dataSource === ViewConstants.DATA_SOURCE_USERS || dataSource === ViewConstants.DATA_SOURCE_CHANNELS || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC);
 
-    // navigationEventListener ?: EventSubscription;
-    // const searchBarRef = React.createRef<SearchBar>();
-    // const selectedScroll = React.createRef<ScrollView>();
-
     let multiselectItems: MultiselectSelectedMap = {}
     if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
         selected.forEach((opt) => {
@@ -185,44 +183,33 @@ function IntegrationSelector(
         });
     };
 
-    // const navigationButtonPressed = ({ buttonId }: { buttonId: string }) => {
-    //     switch (buttonId) {
-    //         case 'submit-form':
-    //             onSelect(Object.values(multiselectSelected));
-    //             close();
-    //             return;
-    //         case 'close-dialog':
-    //             close();
-    //     }
-    // }
-
-    // const handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
-    //     switch (dataSource) {
-    //         case ViewConstants.DATA_SOURCE_USERS: {
-    //             const currentSelected = multiselectSelected as Dictionary<UserProfile>;
-    //             const typedItem = item as UserProfile;
-    //             const multiselectSelectedItems = { ...currentSelected };
-    //             delete multiselectSelectedItems[typedItem.id];
-    //             setMultiselectSelected(multiselectSelectedItems);
-    //             return;
-    //         }
-    //         case ViewConstants.DATA_SOURCE_CHANNELS: {
-    //             const currentSelected = multiselectSelected as Dictionary<Channel>;
-    //             const typedItem = item as Channel;
-    //             const multiselectSelectedItems = { ...currentSelected };
-    //             delete multiselectSelectedItems[typedItem.id];
-    //             setMultiselectSelected(multiselectSelectedItems);
-    //             return;
-    //         }
-    //         default: {
-    //             const currentSelected = multiselectSelected as Dictionary<DialogOption>;
-    //             const typedItem = item as DialogOption;
-    //             const multiselectSelectedItems = { ...currentSelected };
-    //             delete multiselectSelectedItems[typedItem.value];
-    //             setMultiselectSelected(multiselectSelectedItems);
-    //         }
-    //     }
-    // };
+    const handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
+        switch (dataSource) {
+            case ViewConstants.DATA_SOURCE_USERS: {
+                const currentSelected = multiselectSelected as Dictionary<UserProfile>;
+                const typedItem = item as UserProfile;
+                const multiselectSelectedItems = { ...currentSelected };
+                delete multiselectSelectedItems[typedItem.id];
+                setMultiselectSelected(multiselectSelectedItems);
+                return;
+            }
+            case ViewConstants.DATA_SOURCE_CHANNELS: {
+                const currentSelected = multiselectSelected as Dictionary<Channel>;
+                const typedItem = item as Channel;
+                const multiselectSelectedItems = { ...currentSelected };
+                delete multiselectSelectedItems[typedItem.id];
+                setMultiselectSelected(multiselectSelectedItems);
+                return;
+            }
+            default: {
+                const currentSelected = multiselectSelected as Dictionary<DialogOption>;
+                const typedItem = item as DialogOption;
+                const multiselectSelectedItems = { ...currentSelected };
+                delete multiselectSelectedItems[typedItem.value];
+                setMultiselectSelected(multiselectSelectedItems);
+            }
+        }
+    };
 
     const getChannels = async () => {
         if (next && !loading && !term) {
@@ -364,7 +351,7 @@ function IntegrationSelector(
 
             searchTimeoutId.current = setTimeout(() => {
                 if (!dataSource) {
-                    // setSearchResults(filterSearchData(null, data, text));
+                    setSearchResults(filterSearchData(null, data, text));
                     return;
                 }
 
@@ -380,6 +367,25 @@ function IntegrationSelector(
             clearSearch();
         }
     };
+
+    const filterSearchData = (dataSource: string, data: DataType, term: string) => {
+        if (!data) {
+            return [];
+        }
+
+        const lowerCasedTerm = term.toLowerCase();
+
+        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+            return filterProfilesMatchingTerm(data as UserProfile[], lowerCasedTerm);
+        } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
+            return filterChannelsMatchingTerm(data as Channel[], lowerCasedTerm);
+        } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
+            return data;
+        }
+
+        return (data as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().startsWith(lowerCasedTerm));
+    };
+
 
     useEffect(() => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
@@ -507,6 +513,7 @@ function IntegrationSelector(
         rowComponent = renderOptionItem;
     }
 
+    // TODO
     // let selectedOptionsComponent = null;
     // const selectedItems: any = Object.values(multiselectSelected);  // TODO
     // if (selectedItems.length > 0) {
