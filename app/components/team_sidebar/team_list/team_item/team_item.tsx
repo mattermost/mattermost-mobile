@@ -35,11 +35,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         containerSelected: {
             borderWidth: 3,
-            borderRadius: 12,
+            borderRadius: 14,
             borderColor: theme.sidebarTextActiveBorder,
         },
         unread: {
-            left: 40,
+            left: 43,
             top: 3,
         },
         mentionsOneDigit: {
@@ -102,7 +102,7 @@ export default function TeamItem({team, hasUnreads, mentionCount, selected}: Pro
                 </TouchableWithFeedback>
             </View>
             <Badge
-                borderColor={theme.sidebarTeamBarBg}
+                borderColor={theme.sidebarHeaderBg}
                 visible={hasBadge && !selected}
                 style={badgeStyle}
                 value={value}
