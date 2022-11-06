@@ -272,7 +272,7 @@ function CustomList({
                 refreshControl={refreshControl}
                 ref={setListRef}
                 removeClippedSubviews={true}
-                renderItem={renderItem}
+                renderItem={renderListItem}
                 scrollEventThrottle={60}
                 style={style.list}
                 // stickySectionHeadersEnabled={true}

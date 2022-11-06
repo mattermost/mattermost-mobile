@@ -455,11 +455,7 @@ function IntegrationSelector(
         return (
             <ChannelListRow
                 key={props.id}
-                id={props.id}
-
-                isArchived={false}  // TODO
-                enabled={true}
-                children={[]}
+                {...props}
 
                 theme={theme}
                 channel={props.item}

@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {
+    GestureResponderEvent,
     Text,
     View,
 } from 'react-native';
@@ -48,9 +49,9 @@ const OptionListRow = ({
     const { text, value } = item;
     const style = getStyleFromTheme(theme);
 
-    const onPressRow = () => {
+    const onPressRow = (event: GestureResponderEvent): void => {
         if (onPress) {
-            onPress(id);
+            onPress(id, item);
         }
     };
 

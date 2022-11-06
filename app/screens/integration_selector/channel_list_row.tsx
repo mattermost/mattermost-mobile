@@ -3,6 +3,7 @@
 
 import React from 'react';
 import {
+    GestureResponderEvent,
     Text,
     View,
 } from 'react-native';
@@ -57,12 +58,12 @@ const ChannelListRow = ({
     onPress, id, theme, channel, testID, isArchived,
     enabled, selectable, selected,
 }: Props) => {
-    const onPressRow = () => {
+    const onPressRow = (event: GestureResponderEvent): void => {
         if (!onPress) {
             return;
         }
 
-        onPress(id);
+        onPress(id, channel);
     };
 
     const style = getStyleFromTheme(theme);

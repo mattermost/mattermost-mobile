@@ -3,7 +3,9 @@
 
 import React from 'react';
 import {
+    GestureResponderEvent,
     StyleSheet,
+    TouchableOpacity,
     View,
 } from 'react-native';
 
@@ -12,8 +14,7 @@ import CompassIcon from '@components/compass_icon';
 
 export type Props = {
     id: string,
-    // item: object,
-    onPress?: (index: string) => void,
+    onPress?: (event: GestureResponderEvent) => void,
     enabled: boolean,
     selectable: boolean,
     selected: boolean,
@@ -63,26 +64,30 @@ const style = StyleSheet.create({
 const CustomListRow = ({
     enabled = true, id, onPress, testID = "", selectable, selected, children,
 }: Props) => {
-    // TODO Replace conditionaltouchable
     return (
-        <View style={style.container}>
-            {selectable &&
-                <View style={style.selectorContainer}>
-                    <View style={[style.selector, (selected && style.selectorFilled), (!enabled && style.selectorDisabled)]}>
-                        {selected &&
-                            <CompassIcon
-                                name='check'
-                                size={24}
-                                color='#fff'
-                            />
-                        }
+        <TouchableOpacity
+            onPress={onPress}
+        >
+            <View style={style.container}>
+
+                {selectable &&
+                    <View style={style.selectorContainer}>
+                        <View style={[style.selector, (selected && style.selectorFilled), (!enabled && style.selectorDisabled)]}>
+                            {selected &&
+                                <CompassIcon
+                                    name='check'
+                                    size={24}
+                                    color='#fff'
+                                />
+                            }
+                        </View>
                     </View>
+                }
+                <View style={style.children}>
+                    {children}
                 </View>
-            }
-            <View style={style.children}>
-                {children}
             </View>
-        </View>
+        </TouchableOpacity>
     );
 }
 
