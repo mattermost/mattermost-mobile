@@ -49,6 +49,7 @@ type Props = {
     isMultiselect?: boolean;
     selected?: DialogOption[];
     theme: Theme;
+    teammateNameDisplay: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -90,7 +91,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 function IntegrationSelector(
     { dataSource, data, isMultiselect, selected, handleSelect,
-        currentTeamId, getDynamicOptions, options }: Props) {
+        currentTeamId, getDynamicOptions, options, teammateNameDisplay }: Props) {
 
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -487,6 +488,7 @@ function IntegrationSelector(
                 theme={theme}
                 selectable={true}
                 user={props.item}
+                teammateNameDisplay={teammateNameDisplay}
                 selected={selected}
             />
         );

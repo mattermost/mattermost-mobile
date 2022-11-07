@@ -15,7 +15,7 @@ import ChannelIcon from '@components/channel_icon';
 import ProfilePicture from '@components/profile_picture';
 import { BotTag, GuestTag } from '@components/tag';
 import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
-import { isGuest } from '@utils/user';
+import { isGuest, isShared } from '@utils/user';
 
 import CustomListRow, { Props as CustomListRowProps } from './custom_list_row';
 
@@ -82,23 +82,20 @@ const UserListRow = ({
     };
 
     const renderIcon = (style: StyleProp<ViewStyle>) => {
-        // if (!isShared(user)) {  // TODO IsShared came from redux
-        //     return null;
-        // }
+        if (!isShared(user)) {
+            return null;
+        }
+
         return (
             <ChannelIcon
                 name=""  // TODO
                 type=""
                 isActive={false}
                 isArchived={false}
-                // isBot={false}
                 isUnread={true}
                 isInfo={true}
                 size={18}
                 shared={true}
-            // style={style.sharedUserIcon}
-            // theme={theme}
-            // type={General.DM_CHANNEL}  // TODO This came from redux
             />
         );
     };
@@ -116,9 +113,7 @@ const UserListRow = ({
         }, { username });
     }
 
-    // const teammateDisplay = displayUsername(user, teammateNameDisplay);  // TODO This came from Redux
-    const teammateDisplay = "";
-    const showTeammateDisplay = teammateDisplay !== username;
+    const showTeammateDisplay = teammateNameDisplay !== username;
     const itemTestID = `${testID}.${userID}`;
     const displayUsernameTestID = `${testID}.display_username`;
     const profilePictureTestID = `${itemTestID}.profile_picture`;
@@ -135,7 +130,6 @@ const UserListRow = ({
             >
                 <View style={style.profileContainer}>
                     <ProfilePicture
-                        // userId={userID}
                         size={32}
                         iconSize={24}
                         testID={profilePictureTestID}
@@ -157,11 +151,9 @@ const UserListRow = ({
                             </Text>
                             <BotTag
                                 show={Boolean(user.is_bot)}
-                            // theme={theme}
                             />
                             <GuestTag
                                 show={isGuest(user.roles)}
-                            // theme={theme}
                             />
                         </View>
                     </View>
@@ -172,7 +164,7 @@ const UserListRow = ({
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                             >
-                                {teammateDisplay}
+                                {teammateNameDisplay}
                             </Text>
                         </View>
                     }
