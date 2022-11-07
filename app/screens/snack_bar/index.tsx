@@ -16,6 +16,7 @@ import Animated, {
     useSharedValue,
     withTiming,
 } from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Toast, {TOAST_HEIGHT} from '@components/toast';
 import {Navigation as NavigationConstants, Screens} from '@constants';
@@ -44,9 +45,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             width: '100%',
             position: 'absolute',
             bottom: 104,
-        },
-        gestureRootChannelInfoAdjustment: {
-            bottom: 34,
         },
         toast: {
             width: '100%',
@@ -90,9 +88,11 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
     const baseTimer = useRef<NodeJS.Timeout>();
     const mounted = useRef(false);
     const userHasUndo = useRef(false);
+    const {bottom} = useSafeAreaInsets();
 
     const config = SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
+    const gestureRootChannelInfoAdjustment = useMemo(() => ({bottom: bottom || 8}), [bottom]);
 
     const snackBarStyle = useMemo(() => {
         const diffWidth = windowWidth - TABLET_SIDEBAR_WIDTH;
@@ -230,7 +230,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
 
     return (
         <GestureHandlerRootView
-            style={[styles.gestureRoot, sourceScreen === Screens.CHANNEL_INFO && styles.gestureRootChannelInfoAdjustment]}
+            style={[styles.gestureRoot, sourceScreen === Screens.CHANNEL_INFO && gestureRootChannelInfoAdjustment]}
         >
             <GestureDetector gesture={gesture}>
                 <Animated.View
