@@ -270,14 +270,7 @@ export const unmuteMyself = () => {
     }
 };
 
-export const raiseHand = async () => {
-    try {
-        const devices = await InCallManager.detectAvailableDevices();
-        console.log('<><> devices:', devices);
-    } catch (e) {
-        console.log('<><> error:', e);
-    }
-
+export const raiseHand = () => {
     if (connection) {
         connection.raiseHand();
     }
@@ -289,7 +282,7 @@ export const unraiseHand = () => {
     }
 };
 
-export const setSpeakerphoneOn = async (speakerphoneOn: boolean) => {
+export const setSpeakerphoneOn = (speakerphoneOn: boolean) => {
     InCallManager.setSpeakerphoneOn(speakerphoneOn);
     setSpeakerPhone(speakerphoneOn);
 };
