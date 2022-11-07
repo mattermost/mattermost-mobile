@@ -23,6 +23,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flexGrow: 1,
+            paddingHorizontal: 32,
             height: '100%',
             alignItems: 'center' as const,
             justifyContent: 'center' as const,
