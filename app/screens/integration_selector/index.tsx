@@ -111,6 +111,10 @@ function IntegrationSelector(
         fontSize: 15,
     };
     const intl = useIntl();
+    const VALID_DATASOURCES = [
+        ViewConstants.DATA_SOURCE_CHANNELS,
+        ViewConstants.DATA_SOURCE_USERS,
+        ViewConstants.DATA_SOURCE_DYNAMIC];
 
     // HOOKS
     const [integrationData, setIntegrationData] = useState<DataType>(data || []);
@@ -119,7 +123,7 @@ function IntegrationSelector(
     const [searchResults, setSearchResults] = useState<DataType>([]);
     const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
     const [currentPage, setCurrentPage] = useState<number>(-1);
-    const [next, setNext] = useState<boolean>(dataSource === ViewConstants.DATA_SOURCE_USERS || dataSource === ViewConstants.DATA_SOURCE_CHANNELS || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC);
+    const [next, setNext] = useState<boolean>(VALID_DATASOURCES.includes(dataSource));
     const [customListData, setCustomListData] = useState<DataType | UserProfileSection[]>([]);
 
     let selectedScroll = React.createRef<ScrollView>();
