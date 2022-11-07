@@ -45,7 +45,7 @@ type Props = {
     currentTeamId: string;
     data?: DataType;
     dataSource: string;
-    onSelect: (opt: Selection) => void;
+    handleSelect: (opt: Selection) => void;
     isMultiselect?: boolean;
     selected?: DialogOption[];
     theme: Theme;
@@ -89,7 +89,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 
 function IntegrationSelector(
-    { dataSource, data, isMultiselect, selected, onSelect,
+    { dataSource, data, isMultiselect, selected, handleSelect,
         currentTeamId, getDynamicOptions, options }: Props) {
 
     const serverUrl = useServerUrl();
@@ -133,7 +133,7 @@ function IntegrationSelector(
 
     const handleSelectItem = (id: string, item: UserProfile | Channel | DialogOption) => {
         if (!isMultiselect) {
-            onSelect(item);
+            handleSelect(item);
             close();
             return;
         }
