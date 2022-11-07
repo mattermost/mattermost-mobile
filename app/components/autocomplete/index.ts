@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
 
 import AppsManager from '@managers/apps_manager';
 
@@ -12,7 +13,7 @@ type OwnProps = {
 }
 
 const enhanced = withObservables(['serverUrl'], ({serverUrl}: OwnProps) => ({
-    isAppsEnabled: serverUrl ? AppsManager.observeIsAppsEnabled(serverUrl) : false,
+    isAppsEnabled: serverUrl ? AppsManager.observeIsAppsEnabled(serverUrl) : of$(false),
 }));
 
 export default enhanced(Autocomplete);
