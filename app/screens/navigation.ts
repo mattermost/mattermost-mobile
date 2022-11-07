@@ -158,7 +158,7 @@ Appearance.addChangeListener(() => {
     }
 });
 
-function getThemeFromState(): Theme {
+export function getThemeFromState(): Theme {
     if (EphemeralStore.theme) {
         return EphemeralStore.theme;
     }
@@ -193,7 +193,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
         dismissModal({componentId: Screens.SSO});
         dismissModal({componentId: Screens.BOTTOM_SHEET});
         DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
-        return;
+        return '';
     }
 
     NavigationStore.clearNavigationComponents();
@@ -228,7 +228,7 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
         }],
     };
 
-    Navigation.setRoot({
+    return Navigation.setRoot({
         root: {stack},
     });
 }
@@ -272,7 +272,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
         },
     }];
 
-    Navigation.setRoot({
+    return Navigation.setRoot({
         root: {
             stack: {
                 children,
@@ -288,7 +288,7 @@ export function resetToTeams() {
 
     NavigationStore.clearNavigationComponents();
 
-    Navigation.setRoot({
+    return Navigation.setRoot({
         root: {
             stack: {
                 children: [{
@@ -324,7 +324,7 @@ export function resetToTeams() {
 
 export function goToScreen(name: string, title: string, passProps = {}, options = {}) {
     if (!isScreenRegistered(name)) {
-        return;
+        return '';
     }
 
     const theme = getThemeFromState();
@@ -361,7 +361,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
         },
     };
 
-    Navigation.push(componentId, {
+    return Navigation.push(componentId, {
         component: {
             id: name,
             name,
@@ -403,7 +403,7 @@ export async function dismissAllModalsAndPopToRoot() {
  * (if the screen is not in the stack, it will push a new one)
  * @param screenId Screen to pop or display
  * @param title Title to be shown in the top bar
- * @param passProps Props to pass to the screen (Only if the screen does not exist in the stack)
+ * @param passProps Props to pass to the screen
  * @param options Navigation options
  */
 export async function dismissAllModalsAndPopToScreen(screenId: string, title: string, passProps = {}, options = {}) {
@@ -421,6 +421,9 @@ export async function dismissAllModalsAndPopToScreen(screenId: string, title: st
         }
         try {
             await Navigation.popTo(screenId, mergeOptions);
+            if (Object.keys(passProps).length > 0) {
+                await Navigation.updateProps(screenId, passProps);
+            }
         } catch {
             // catch in case there is nothing to pop
         }
@@ -615,10 +618,7 @@ export function showOverlay(name: string, passProps = {}, options = {}) {
         component: {
             id: name,
             name,
-            passProps: {
-                ...passProps,
-                overlay: true,
-            },
+            passProps,
             options: merge(defaultOptions, options),
         },
     });
@@ -689,8 +689,8 @@ export async function openAsBottomSheet({closeButtonId, screen, theme, title, pr
     }
 }
 
-export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
-    const passProps = {form, call};
+export const showAppForm = async (form: AppForm) => {
+    const passProps = {form};
     showModal(Screens.APPS_FORM, form.title || '', passProps);
 };
 

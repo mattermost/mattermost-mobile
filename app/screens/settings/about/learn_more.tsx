@@ -57,7 +57,7 @@ const LearnMore = ({config, onHandleAboutEnterprise, onHandleAboutTeam}: LearnMo
                 id={id}
                 defaultMessage={defaultMessage}
                 style={style.learn}
-                testID='about.learn_more'
+                testID='about.learn_more.text'
             />
             <TouchableOpacity onPress={onPress}>
                 <Text

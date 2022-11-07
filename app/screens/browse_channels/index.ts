@@ -39,11 +39,10 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap((values) => queryRolesByNames(database, values).observeWithColumns(['permissions'])),
     );
 
-    const canCreateChannels = roles.pipe(switchMap((r) => of$(hasPermission(r, Permissions.CREATE_PUBLIC_CHANNEL, false))));
+    const canCreateChannels = roles.pipe(switchMap((r) => of$(hasPermission(r, Permissions.CREATE_PUBLIC_CHANNEL))));
 
     return {
         canCreateChannels,
-        currentUserId,
         currentTeamId,
         joinedChannels,
         sharedChannelsEnabled,

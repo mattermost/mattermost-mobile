@@ -12,6 +12,7 @@ interface ComponentProps {
     textStyle?: TextStyle;
     ellipsizeMode?: 'head' | 'middle' | 'tail' | 'clip';
     numberOfLines?: number;
+    testID?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -25,11 +26,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const CustomStatusText = ({text, theme, textStyle, ellipsizeMode, numberOfLines}: ComponentProps) => (
+const CustomStatusText = ({text, theme, textStyle, ellipsizeMode, numberOfLines, testID}: ComponentProps) => (
     <Text
         style={[getStyleSheet(theme).label, textStyle]}
         ellipsizeMode={ellipsizeMode}
         numberOfLines={numberOfLines}
+        testID={testID}
     >
         {text}
     </Text>

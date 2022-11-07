@@ -2,10 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useWindowDimensions, View} from 'react-native';
-import {Shadow} from 'react-native-neomorph-shadows';
+import {View} from 'react-native';
 
-import {View as ViewConstants} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CustomStatus from './custom_status';
@@ -28,10 +26,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             backgroundColor: theme.centerChannelBg,
-            flex: 1,
+            height: '100%',
             borderTopRightRadius: 12,
             borderTopLeftRadius: 12,
             paddingTop: 12,
+            shadowColor: 'rgba(0, 0, 0, 0.12)',
+            shadowOffset: {width: 0, height: -2},
+            shadowOpacity: 1,
+            shadowRadius: 6,
         },
         divider: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
@@ -48,46 +50,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const AccountOptions = ({user, enableCustomUserStatuses, isCustomStatusExpirySupported, isTablet, theme}: AccountScreenProps) => {
     const styles = getStyleSheet(theme);
-    const dimensions = useWindowDimensions();
-    const width = dimensions.width - (isTablet ? ViewConstants.TABLET_SIDEBAR_WIDTH : 0);
 
     return (
-        <Shadow
-            style={{
-                height: dimensions.height,
-                width,
-                shadowColor: 'rgba(61, 60, 64, 0.08)',
-                shadowOffset: {width: 0, height: -2},
-                shadowOpacity: 1,
-                shadowRadius: 6,
-            }}
-        >
-            <View style={styles.container}>
-                <View style={styles.group}>
-                    <UserPresence
-                        currentUser={user}
-                    />
-                    {enableCustomUserStatuses &&
-                    <CustomStatus
-                        isCustomStatusExpirySupported={isCustomStatusExpirySupported}
-                        isTablet={isTablet}
-                        currentUser={user}
-                    />}
-                </View>
-                <View style={styles.divider}/>
-                <View style={styles.group}>
-                    <YourProfile
-                        isTablet={isTablet}
-                        theme={theme}
-                    />
-                    <Settings/>
-                </View>
-                <View style={styles.divider}/>
-                <View style={styles.group}>
-                    <Logout/>
-                </View>
+        <View style={styles.container}>
+            <View style={styles.group}>
+                <UserPresence
+                    currentUser={user}
+                />
+                {enableCustomUserStatuses &&
+                <CustomStatus
+                    isCustomStatusExpirySupported={isCustomStatusExpirySupported}
+                    isTablet={isTablet}
+                    currentUser={user}
+                />}
             </View>
-        </Shadow>
+            <View style={styles.divider}/>
+            <View style={styles.group}>
+                <YourProfile
+                    isTablet={isTablet}
+                    theme={theme}
+                />
+                <Settings/>
+            </View>
+            <View style={styles.divider}/>
+            <View style={styles.group}>
+                <Logout/>
+            </View>
+        </View>
     );
 };
 

@@ -3,22 +3,22 @@
 exports[`components/channel_list/header Channel List Header Component should match snapshot 1`] = `
 <View
   animatedStyle={
-    Object {
-      "value": Object {
+    {
+      "value": {
         "marginLeft": 0,
       },
     }
   }
   collapsable={false}
   style={
-    Object {
+    {
       "marginLeft": 0,
     }
   }
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "flexDirection": "row",
         "justifyContent": "space-between",
@@ -27,7 +27,6 @@ exports[`components/channel_list/header Channel List Header Component should mat
   >
     <View
       accessible={true}
-      collapsable={false}
       focusable={false}
       onClick={[Function]}
       onResponderGrant={[Function]}
@@ -37,60 +36,34 @@ exports[`components/channel_list/header Channel List Header Component should mat
       onResponderTerminationRequest={[Function]}
       onStartShouldSetResponder={[Function]}
       style={
-        Object {
-          "opacity": 1,
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+          "justifyContent": "space-between",
         }
       }
     >
-      <View
+      <Text
         style={
-          Object {
-            "alignItems": "center",
-            "flexDirection": "row",
-            "justifyContent": "space-between",
+          {
+            "color": "#ffffff",
+            "fontFamily": "Metropolis-SemiBold",
+            "fontSize": 28,
+            "fontWeight": "600",
+            "lineHeight": 36,
           }
         }
+        testID="channel_list_header.team_display_name"
       >
-        <Text
-          style={
-            Object {
-              "color": "#ffffff",
-              "fontFamily": "Metropolis-SemiBold",
-              "fontSize": 28,
-              "fontWeight": "600",
-              "lineHeight": 36,
-            }
-          }
-          testID="channel_list_header.team_display_name"
-        >
-          Test!
-        </Text>
-        <View
-          style={
-            Object {
-              "marginLeft": 4,
-            }
-          }
-          testID="channel_list_header.chevron.button"
-        >
-          <Icon
-            name="chevron-down"
-            style={
-              Object {
-                "color": "rgba(255,255,255,0.8)",
-                "fontSize": 24,
-              }
-            }
-          />
-        </View>
-      </View>
+        Test!
+      </Text>
     </View>
     <View
       accessible={true}
       collapsable={false}
       focusable={true}
       hitSlop={
-        Object {
+        {
           "bottom": 30,
           "left": 20,
           "right": 20,
@@ -105,7 +78,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
       onResponderTerminationRequest={[Function]}
       onStartShouldSetResponder={[Function]}
       style={
-        Object {
+        {
           "alignItems": "center",
           "backgroundColor": "rgba(255,255,255,0.08)",
           "borderRadius": 14,
@@ -120,7 +93,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
       <Icon
         name="plus"
         style={
-          Object {
+          {
             "color": "rgba(255,255,255,0.8)",
             "fontSize": 18,
           }
@@ -130,7 +103,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
   </View>
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "flexDirection": "row",
         "paddingRight": 60,
@@ -141,7 +114,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
-        Object {
+        {
           "color": "rgba(255,255,255,0.64)",
           "fontFamily": "OpenSans-SemiBold",
           "fontSize": 11,
@@ -153,11 +126,11 @@ exports[`components/channel_list/header Channel List Header Component should mat
     />
     <View
       animatedStyle={
-        Object {
-          "value": Object {
+        {
+          "value": {
             "opacity": 1,
-            "transform": Array [
-              Object {
+            "transform": [
+              {
                 "rotateZ": "0deg",
               },
             ],
@@ -166,7 +139,7 @@ exports[`components/channel_list/header Channel List Header Component should mat
       }
       collapsable={false}
       style={
-        Object {
+        {
           "borderBottomColor": "rgba(255,255,255,0.16)",
           "borderLeftColor": "#ffffff",
           "borderRadius": 7,
@@ -176,8 +149,8 @@ exports[`components/channel_list/header Channel List Header Component should mat
           "height": 14,
           "marginLeft": 5,
           "opacity": 1,
-          "transform": Array [
-            Object {
+          "transform": [
+            {
               "rotateZ": "0deg",
             },
           ],

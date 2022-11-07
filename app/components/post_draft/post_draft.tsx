@@ -2,12 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {RefObject, useEffect, useState} from 'react';
-import {Platform, View} from 'react-native';
+import {Platform} from 'react-native';
 import {KeyboardTrackingView, KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import {View as ViewConstants} from '@constants';
+import {useServerUrl} from '@context/server';
+import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 
@@ -56,16 +58,28 @@ function PostDraft({
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
     const [postInputTop, setPostInputTop] = useState(0);
+    const [isFocused, setIsFocused] = useState(false);
     const isTablet = useIsTablet();
     const keyboardHeight = useKeyboardHeight(keyboardTracker);
     const insets = useSafeAreaInsets();
     const headerHeight = useDefaultHeaderHeight();
+    const serverUrl = useServerUrl();
 
     // Update draft in case we switch channels or threads
     useEffect(() => {
         setValue(message);
         setCursorPosition(message.length);
     }, [channelId, rootId]);
+
+    const keyboardAdjustment = (isTablet && isChannelScreen) ? KEYBOARD_TRACKING_OFFSET : 0;
+    const insetsAdjustment = (isTablet && isChannelScreen) ? 0 : insets.bottom;
+    const autocompletePosition = AUTOCOMPLETE_ADJUST + Platform.select({
+        ios: (keyboardHeight ? keyboardHeight - keyboardAdjustment : (postInputTop + insetsAdjustment)),
+        default: postInputTop + insetsAdjustment,
+    });
+    const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
+
+    const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
     if (channelIsArchived || deactivatedChannel) {
         const archivedTestID = `${testID}.archived`;
@@ -99,20 +113,13 @@ function PostDraft({
             updatePostInputTop={setPostInputTop}
             updateValue={setValue}
             value={value}
+            setIsFocused={setIsFocused}
         />
     );
 
-    const keyboardAdjustment = (isTablet && isChannelScreen) ? KEYBOARD_TRACKING_OFFSET : 0;
-    const insetsAdjustment = (isTablet && isChannelScreen) ? 0 : insets.bottom;
-    const autocompletePosition = AUTOCOMPLETE_ADJUST + Platform.select({
-        ios: (keyboardHeight ? keyboardHeight - keyboardAdjustment : (postInputTop + insetsAdjustment)),
-        default: postInputTop + insetsAdjustment,
-    });
-    const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight + insets.top : 0);
-
-    const autoComplete = (
+    const autoComplete = isFocused ? (
         <Autocomplete
-            position={autocompletePosition}
+            position={animatedAutocompletePosition}
             updateValue={setValue}
             rootId={rootId}
             channelId={channelId}
@@ -121,9 +128,10 @@ function PostDraft({
             isSearch={isSearch}
             hasFilesAttached={Boolean(files?.length)}
             inPost={true}
-            availableSpace={autocompleteAvailableSpace}
+            availableSpace={animatedAutocompleteAvailableSpace}
+            serverUrl={serverUrl}
         />
-    );
+    ) : null;
 
     if (Platform.OS === 'android') {
         return (
@@ -144,9 +152,7 @@ function PostDraft({
             >
                 {draftHandler}
             </KeyboardTrackingView>
-            <View>
-                {autoComplete}
-            </View>
+            {autoComplete}
         </>
     );
 }

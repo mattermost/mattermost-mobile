@@ -11,9 +11,7 @@ import Search from '@components/search';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {popTopScreen, setButtons} from '@screens/navigation';
-import {getSaveButton} from '@screens/settings/config';
+import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getTimezoneRegion} from '@utils/user';
@@ -48,7 +46,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const EDGES: Edge[] = ['left', 'right'];
 const EMPTY_TIMEZONES: string[] = [];
 const ITEM_HEIGHT = 48;
-const SAVE_DISPLAY_TZ_BTN_ID = 'SAVE_DISPLAY_TZ_BTN_ID';
 const keyExtractor = (item: string) => item;
 const getItemLayout = (_data: string[], index: number) => ({
     length: ITEM_HEIGHT,
@@ -66,7 +63,7 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const initialTimezones = useMemo(() => currentTimezone, []);
+
     const cancelButtonProps = useMemo(() => ({
         buttonTextStyle: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -80,7 +77,6 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
     const [timezones, setTimezones] = useState<string[]>(EMPTY_TIMEZONES);
     const [initialScrollIndex, setInitialScrollIndex] = useState<number|undefined>();
     const [searchRegion, setSearchRegion] = useState<string|undefined>(undefined);
-    const [manualTimezone, setManualTimezone] = useState(currentTimezone);
 
     const filteredTimezones = useCallback(() => {
         if (!searchRegion) {
@@ -103,26 +99,24 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
         ));
     }, [searchRegion, timezones, initialScrollIndex]);
 
-    const onPressTimezone = useCallback((tz: string) => {
-        setManualTimezone(tz);
+    const close = (newTimezone?: string) => {
+        onBack(newTimezone || currentTimezone);
+        popTopScreen(componentId);
+    };
+
+    const onPressTimezone = useCallback((selectedTimezone: string) => {
+        close(selectedTimezone);
     }, []);
 
     const renderItem = useCallback(({item: timezone}: {item: string}) => {
         return (
             <TimezoneRow
-                isSelected={timezone === manualTimezone}
+                isSelected={timezone === currentTimezone}
                 onPressTimezone={onPressTimezone}
                 timezone={timezone}
             />
         );
-    }, [manualTimezone, onPressTimezone]);
-
-    const saveButton = useMemo(() => getSaveButton(SAVE_DISPLAY_TZ_BTN_ID, intl, theme.sidebarHeaderTextColor), [theme.sidebarHeaderTextColor]);
-
-    const close = () => {
-        onBack(manualTimezone);
-        popTopScreen(componentId);
-    };
+    }, [currentTimezone, onPressTimezone]);
 
     useEffect(() => {
         // let's get all supported timezones
@@ -139,25 +133,13 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
         getSupportedTimezones();
     }, []);
 
-    useEffect(() => {
-        const buttons = {
-            rightButtons: [{
-                ...saveButton,
-                enabled: initialTimezones !== manualTimezone,
-            }],
-        };
-        setButtons(componentId, buttons);
-    }, [componentId, saveButton, initialTimezones, manualTimezone]);
-
-    useNavButtonPressed(SAVE_DISPLAY_TZ_BTN_ID, componentId, close, [manualTimezone]);
-
     useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <SafeAreaView
             edges={EDGES}
             style={styles.container}
-            testID='settings.select_timezone.screen'
+            testID='select_timezone.screen'
         >
             <Search
                 autoCapitalize='none'
@@ -170,13 +152,12 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
                 placeholder={intl.formatMessage({id: 'search_bar.search.placeholder', defaultMessage: 'Search timezone'})}
                 placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                 selectionColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                testID='settings.select_timezone.search_bar'
+                testID='select_timezone.search_bar'
                 value={searchRegion}
             />
             <FlatList
                 contentContainerStyle={styles.flexGrow}
                 data={searchRegion?.length ? filteredTimezones() : timezones}
-                extraData={manualTimezone}
                 getItemLayout={getItemLayout}
                 initialScrollIndex={initialScrollIndex}
                 keyExtractor={keyExtractor}
@@ -184,6 +165,7 @@ const SelectTimezones = ({componentId, onBack, currentTimezone}: SelectTimezones
                 keyboardShouldPersistTaps='always'
                 removeClippedSubviews={true}
                 renderItem={renderItem}
+                testID='select_timezone.timezone.flat_list'
             />
         </SafeAreaView>
     );

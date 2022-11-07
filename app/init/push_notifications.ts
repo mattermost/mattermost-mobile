@@ -18,27 +18,19 @@ import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
 import {backgroundNotification, openNotification} from '@actions/remote/notifications';
 import {markThreadAsRead} from '@actions/remote/thread';
-import {Device, Events, Navigation, Screens} from '@constants';
+import {Device, Events, Navigation, PushNotification, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
 import {queryServerName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
-import {showOverlay} from '@screens/navigation';
+import {dismissOverlay, showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
-
-const CATEGORY = 'CAN_REPLY';
-const REPLY_ACTION = 'REPLY_ACTION';
-const NOTIFICATION_TYPE = {
-    CLEAR: 'clear',
-    MESSAGE: 'message',
-    SESSION: 'session',
-};
 
 class PushNotifications {
     configured = false;
@@ -56,15 +48,15 @@ class PushNotifications {
         const replyButton = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.button'));
         const replyPlaceholder = getLocalizedMessage(DEFAULT_LOCALE, t('mobile.push_notification_reply.placeholder'));
         const replyTextInput: NotificationTextInput = {buttonTitle: replyButton, placeholder: replyPlaceholder};
-        const replyAction = new NotificationAction(REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
-        return new NotificationCategory(CATEGORY, [replyAction]);
+        const replyAction = new NotificationAction(PushNotification.REPLY_ACTION, 'background', replyTitle, true, replyTextInput);
+        return new NotificationCategory(PushNotification.CATEGORY, [replyAction]);
     };
 
     getServerUrlFromNotification = async (notification: NotificationWithData) => {
         const {payload} = notification;
 
         if (!payload?.channel_id && (!payload?.server_url || !payload.server_id)) {
-            return undefined;
+            return payload?.server_url;
         }
 
         let serverUrl = payload.server_url;
@@ -103,28 +95,49 @@ class PushNotifications {
             const isTabletDevice = await isTablet();
             const displayName = await queryServerName(DatabaseManager.appDatabase!.database, serverUrl);
             const channelId = await getCurrentChannelId(database);
+            const isCRTEnabled = await getIsCRTEnabled(database);
             let serverName;
             if (Object.keys(DatabaseManager.serverDatabases).length > 1) {
                 serverName = displayName;
             }
 
-            const isDifferentChannel = payload?.channel_id !== channelId;
-            const isVisibleThread = payload?.root_id === EphemeralStore.getCurrentThreadId();
-            let isChannelScreenVisible = NavigationStore.getNavigationTopComponentId() === Screens.CHANNEL;
-            if (isTabletDevice) {
-                isChannelScreenVisible = NavigationStore.getVisibleTab() === Screens.HOME;
-            }
+            const isThreadNotification = Boolean(payload?.root_id);
 
-            if (isDifferentChannel || (!isChannelScreenVisible && !isVisibleThread)) {
+            const isSameChannelNotification = payload?.channel_id === channelId;
+            const isSameThreadNotification = isThreadNotification && payload?.root_id === EphemeralStore.getCurrentThreadId();
+
+            let isInChannelScreen = NavigationStore.getNavigationTopComponentId() === Screens.CHANNEL;
+            if (isTabletDevice) {
+                isInChannelScreen = NavigationStore.getVisibleTab() === Screens.HOME;
+            }
+            const isInThreadScreen = NavigationStore.getNavigationTopComponentId() === Screens.THREAD;
+
+            // Conditions:
+            // 1. If not in channel screen or thread screen, show the notification
+            const condition1 = !isInChannelScreen && !isInThreadScreen;
+
+            // 2. If is in channel screen,
+            //      - Show notification of other channels
+            //        or
+            //      - Show notification if CRT is enabled and it's a thread notification (doesn't matter if it's the same channel)
+            const condition2 = isInChannelScreen && (!isSameChannelNotification || (isCRTEnabled && isThreadNotification));
+
+            // 3. If is in thread screen,
+            //      - Show the notification if it doesn't belong to the thread
+            const condition3 = isInThreadScreen && !isSameThreadNotification;
+
+            if (condition1 || condition2 || condition3) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
 
                 const screen = Screens.IN_APP_NOTIFICATION;
                 const passProps = {
                     notification,
-                    overlay: true,
                     serverName,
                     serverUrl,
                 };
+
+                // Dismiss the screen if it's already visible or else it blocks the navigation
+                await dismissOverlay(screen);
 
                 showOverlay(screen, passProps);
             }
@@ -153,7 +166,11 @@ class PushNotifications {
         const serverUrl = await this.getServerUrlFromNotification(notification);
 
         if (serverUrl) {
-            DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl});
+            if (notification.userInteraction) {
+                DeviceEventEmitter.emit(Events.SESSION_EXPIRED, serverUrl);
+            } else {
+                DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl});
+            }
         }
     };
 
@@ -162,13 +179,13 @@ class PushNotifications {
 
         if (payload) {
             switch (payload.type) {
-                case NOTIFICATION_TYPE.CLEAR:
+                case PushNotification.NOTIFICATION_TYPE.CLEAR:
                     this.handleClearNotification(notification);
                     break;
-                case NOTIFICATION_TYPE.MESSAGE:
+                case PushNotification.NOTIFICATION_TYPE.MESSAGE:
                     this.handleMessageNotification(notification);
                     break;
-                case NOTIFICATION_TYPE.SESSION:
+                case PushNotification.NOTIFICATION_TYPE.SESSION:
                     this.handleSessionNotification(notification);
                     break;
             }
@@ -181,13 +198,11 @@ class PushNotifications {
 
     // This triggers when a notification is tapped and the app was in the background (iOS)
     onNotificationOpened = (incoming: Notification, completion: () => void) => {
-        if (Platform.OS === 'ios') {
-            const notification = convertToNotificationData(incoming, false);
-            notification.userInteraction = true;
+        const notification = convertToNotificationData(incoming, false);
+        notification.userInteraction = true;
 
-            this.processNotification(notification);
-            completion();
-        }
+        this.processNotification(notification);
+        completion();
     };
 
     // This triggers when the app was in the background (iOS)
@@ -258,8 +273,14 @@ class PushNotifications {
                 notification.fireDate = new Date(notification.fireDate).toISOString();
             }
 
-            Notifications.postLocalNotification(notification);
+            return Notifications.postLocalNotification(notification);
         }
+
+        return 0;
+    };
+
+    cancelScheduleNotification = (notificationId: number) => {
+        Notifications.cancelLocalNotification(notificationId);
     };
 }
 

@@ -54,6 +54,7 @@ const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, 
                 <CustomStatusText
                     isStatusSet={Boolean(isStatusSet)}
                     customStatus={customStatus}
+                    testID='account.custom_status.custom_status_text'
                 />
                 {Boolean(isStatusSet && isCustomStatusExpirySupported && customStatus?.duration) && (
                     <CustomStatusExpiry
@@ -62,7 +63,7 @@ const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, 
                         textStyles={styles.customStatusExpiryText}
                         withinBrackets={true}
                         showPrefix={true}
-                        testID={'custom_status.expiry'}
+                        testID={`account.custom_status.custom_status_duration.${customStatus.duration}.custom_status_expiry`}
                     />
                 )}
             </View>
@@ -71,6 +72,7 @@ const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, 
                     id={'custom_status.failure_message'}
                     defaultMessage='Failed to update status. Try again'
                     style={styles.retryMessage}
+                    testID='account.custom_status.failure_message'
                 />
             )}
             {isStatusSet && (
@@ -78,7 +80,7 @@ const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, 
                     <ClearButton
                         handlePress={onClearCustomStatus}
                         theme={theme}
-                        testID='settings.sidebar.custom_status.action.clear'
+                        testID='account.custom_status.clear.button'
                     />
                 </View>
             )}

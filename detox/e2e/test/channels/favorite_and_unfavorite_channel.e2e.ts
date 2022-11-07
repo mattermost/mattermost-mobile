@@ -9,6 +9,7 @@
 
 import {
     Channel,
+    Post,
     Setup,
     Team,
     User,
@@ -112,10 +113,14 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
     });
 
     it('MM-T4929_3 - should be able to favorite/unfavorite a direct message channel from channel intro', async () => {
-        // # Open a direct message channel screen, tap on intro favorite action to favorite the channel, and go back to channel list screen
+        // # Open a direct message channel screen, post a message, tap on intro favorite action to favorite the channel, and go back to channel list screen
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, newUser.id, testTeam.id);
         const {channel: directMessageChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, newUser.id]);
+        await Post.apiCreatePost(siteOneUrl, {
+            channelId: directMessageChannel.id,
+            message: 'test',
+        });
         await device.reloadReactNative();
         await ChannelScreen.open(directMessagesCategory, directMessageChannel.name);
         await ChannelScreen.introFavoriteAction.tap();

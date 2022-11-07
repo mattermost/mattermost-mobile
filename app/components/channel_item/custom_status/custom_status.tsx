@@ -11,6 +11,7 @@ type Props = {
     customStatusExpired: boolean;
     isCustomStatusEnabled: boolean;
     isInfo?: boolean;
+    testID?: string;
 }
 
 const style = StyleSheet.create({
@@ -24,7 +25,7 @@ const style = StyleSheet.create({
     },
 });
 
-const CustomStatus = ({customStatus, customStatusExpired, isCustomStatusEnabled, isInfo}: Props) => {
+const CustomStatus = ({customStatus, customStatusExpired, isCustomStatusEnabled, isInfo, testID}: Props) => {
     const showCustomStatusEmoji = Boolean(isCustomStatusEnabled && customStatus?.emoji && !customStatusExpired);
 
     if (!showCustomStatusEmoji) {
@@ -35,7 +36,7 @@ const CustomStatus = ({customStatus, customStatusExpired, isCustomStatusEnabled,
         <CustomStatusEmoji
             customStatus={customStatus!}
             style={[style.customStatusEmoji, isInfo && style.info]}
-            testID={`channel_item.custom_status.${customStatus!.emoji}-${customStatus!.text}`}
+            testID={testID}
         />
     );
 };

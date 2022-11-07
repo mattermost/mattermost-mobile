@@ -53,7 +53,7 @@ export function observePermissionForChannel(database: Database, channel: Channel
             rolesArray.push(...mt.roles.split(' '));
         }
         return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']).pipe(
-            switchMap((r) => of$(hasPermission(r, permission, defaultValue))),
+            switchMap((r) => of$(hasPermission(r, permission))),
         );
     }),
     distinctUntilChanged(),
@@ -74,7 +74,7 @@ export function observePermissionForTeam(database: Database, team: TeamModel | u
             }
 
             return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']).pipe(
-                switchMap((roles) => of$(hasPermission(roles, permission, defaultValue))),
+                switchMap((roles) => of$(hasPermission(roles, permission))),
             );
         }),
         distinctUntilChanged(),

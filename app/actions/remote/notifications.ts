@@ -3,7 +3,7 @@
 
 import {Platform} from 'react-native';
 
-import {updatePostSinceCache, updatePostsInThreadsSinceCache} from '@actions/local/notification';
+// import {updatePostSinceCache, updatePostsInThreadsSinceCache} from '@actions/local/notification';
 import {fetchDirectChannelsInfo, fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
@@ -101,15 +101,15 @@ export const backgroundNotification = async (serverUrl: string, notification: No
 
     const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
     if (lastDisconnectedAt) {
-        if (Platform.OS === 'ios') {
-            const isCRTEnabled = await getIsCRTEnabled(database);
-            const isThreadNotification = isCRTEnabled && Boolean(notification.payload?.root_id);
-            if (isThreadNotification) {
-                updatePostsInThreadsSinceCache(serverUrl, notification);
-            } else {
-                updatePostSinceCache(serverUrl, notification);
-            }
-        }
+        // if (Platform.OS === 'ios') {
+        //     const isCRTEnabled = await getIsCRTEnabled(database);
+        //     const isThreadNotification = isCRTEnabled && Boolean(notification.payload?.root_id);
+        //     if (isThreadNotification) {
+        //         updatePostsInThreadsSinceCache(serverUrl, notification);
+        //     } else {
+        //         updatePostSinceCache(serverUrl, notification);
+        //     }
+        // }
 
         await fetchNotificationData(serverUrl, notification, true);
     }

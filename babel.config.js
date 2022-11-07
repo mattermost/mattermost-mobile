@@ -6,11 +6,6 @@ module.exports = {
         '@babel/preset-typescript',
         ['@babel/preset-env', {targets: {node: 'current'}}],
     ],
-    env: {
-        production: {
-            plugins: ['transform-remove-console'],
-        },
-    },
     plugins: [
         '@babel/plugin-transform-runtime',
         ['@babel/plugin-proposal-decorators', {legacy: true}],

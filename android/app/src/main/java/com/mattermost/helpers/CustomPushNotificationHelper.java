@@ -46,6 +46,9 @@ public class CustomPushNotificationHelper {
     public static final int MESSAGE_NOTIFICATION_ID = 435345;
     public static final String NOTIFICATION_ID = "notificationId";
     public static final String NOTIFICATION = "notification";
+    public static final String PUSH_TYPE_MESSAGE = "message";
+    public static final String PUSH_TYPE_CLEAR = "clear";
+    public static final String PUSH_TYPE_SESSION = "session";
 
     private static NotificationChannel mHighImportanceChannel;
     private static NotificationChannel mMinImportanceChannel;
@@ -54,17 +57,11 @@ public class CustomPushNotificationHelper {
         String message = bundle.getString("message", bundle.getString("body"));
         String senderId = bundle.getString("sender_id");
         String serverUrl = bundle.getString("server_url");
+        String type = bundle.getString("type");
         if (senderId == null) {
             senderId = "sender_id";
         }
-        Bundle userInfoBundle = bundle.getBundle("userInfo");
         String senderName = getSenderName(bundle);
-        if (userInfoBundle != null) {
-            boolean localPushNotificationTest = userInfoBundle.getBoolean("test");
-            if (localPushNotificationTest) {
-                senderName = "Test";
-            }
-        }
 
         if (conversationTitle == null || !android.text.TextUtils.isEmpty(senderName.trim())) {
             message = removeSenderNameFromMessage(message, senderName);
@@ -75,7 +72,7 @@ public class CustomPushNotificationHelper {
                 .setKey(senderId)
                 .setName(senderName);
 
-        if (serverUrl != null) {
+        if (serverUrl != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
             try {
                 sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, senderId))));
             } catch (IOException e) {
@@ -246,6 +243,10 @@ public class CustomPushNotificationHelper {
             title = bundle.getString("sender_name");
         }
 
+        if (android.text.TextUtils.isEmpty(title)) {
+            title = bundle.getString("title", "");
+        }
+
         return title;
     }
 
@@ -259,14 +260,15 @@ public class CustomPushNotificationHelper {
 
     private static NotificationCompat.MessagingStyle getMessagingStyle(Context context, Bundle bundle) {
         NotificationCompat.MessagingStyle messagingStyle;
-        String senderId = "me";
+        final String senderId = "me";
         final String serverUrl = bundle.getString("server_url");
+        final String type = bundle.getString("type");
 
         Person.Builder sender = new Person.Builder()
                 .setKey(senderId)
                 .setName("Me");
 
-        if (serverUrl != null) {
+        if (serverUrl != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
             try {
                 sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, "me"))));
             } catch (IOException e) {
@@ -362,19 +364,6 @@ public class CustomPushNotificationHelper {
         }
 
         NotificationChannel notificationChannel = mHighImportanceChannel;
-
-        boolean testNotification = false;
-        boolean localNotification = false;
-        Bundle userInfoBundle = bundle.getBundle("userInfo");
-        if (userInfoBundle != null) {
-            testNotification = userInfoBundle.getBoolean("test");
-            localNotification = userInfoBundle.getBoolean("local");
-        }
-
-        if (testNotification || localNotification) {
-            notificationChannel = mMinImportanceChannel;
-        }
-
         notification.setChannelId(notificationChannel.getId());
     }
 

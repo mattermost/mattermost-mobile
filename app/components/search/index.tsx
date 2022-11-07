@@ -42,7 +42,7 @@ export type SearchProps = TextInputProps & {
     showLoading?: boolean;
 };
 
-type SearchRef = {
+export type SearchRef = {
     blur: () => void;
     cancel: () => void;
     clear: () => void;
@@ -90,7 +90,7 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     const onClear = useCallback(() => {
         setValue('');
         props.onClear?.();
-    }, []);
+    }, [props.onClear]);
 
     const onChangeText = useCallback((text: string) => {
         setValue(text);
@@ -105,8 +105,8 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
     }), [theme]);
 
     useEffect(() => {
-        setValue(props.defaultValue || value || '');
-    }, [props.defaultValue]);
+        setValue(props.defaultValue || props.value || '');
+    }, [props.defaultValue, props.value]);
 
     const clearIcon = (
         <CompassIcon
@@ -151,7 +151,6 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
         focus: () => {
             searchRef.current?.focus();
         },
-
     }), [searchRef]);
 
     return (

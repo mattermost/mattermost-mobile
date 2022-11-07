@@ -345,7 +345,6 @@ platform :ios do
     update_identifiers
     replace_assets
 
-    sh 'rm -rf ../ios/build/'
     sh 'rm -rf ../build-ios/'
     sh 'cd ../ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -sdk iphoneos -configuration Release -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO'
     sh 'cd ../build-ios/ && mkdir -p Payload && cp -R ../ios/Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/'

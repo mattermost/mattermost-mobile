@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Text, TextStyle} from 'react-native';
+import {StyleProp, Text, TextStyle} from 'react-native';
 
 import {popToRoot, dismissAllModals} from '@screens/navigation';
 
 type HashtagProps = {
     hashtag: string;
-    linkStyle: TextStyle;
+    linkStyle: StyleProp<TextStyle>;
 };
 
 const Hashtag = ({hashtag, linkStyle}: HashtagProps) => {

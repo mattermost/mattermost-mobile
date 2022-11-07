@@ -4,7 +4,6 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
@@ -31,6 +30,7 @@ type ChannelProps = {
     channelId: string;
     channelType: ChannelType;
     customStatus?: UserCustomStatus;
+    isCustomStatusEnabled: boolean;
     isCustomStatusExpired: boolean;
     componentId?: string;
     displayName: string;
@@ -66,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const ChannelHeader = ({
     channelId, channelType, componentId, customStatus, displayName,
-    isCustomStatusExpired, isOwnDirectMessage, memberCount,
+    isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
     searchTerm, teamId, callsEnabledInChannel, callsFeatureRestricted,
 }: ChannelProps) => {
     const intl = useIntl();
@@ -74,13 +74,12 @@ const ChannelHeader = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const defaultHeight = useDefaultHeaderHeight();
-    const insets = useSafeAreaInsets();
     const callsAvailable = callsEnabledInChannel && !callsFeatureRestricted;
 
     const isDMorGM = isTypeDMorGM(channelType);
     const contextStyle = useMemo(() => ({
-        top: defaultHeight + insets.top,
-    }), [defaultHeight, insets.top]);
+        top: defaultHeight,
+    }), [defaultHeight]);
 
     const leftComponent = useMemo(() => {
         if (isTablet || !channelId || !teamId) {
@@ -194,11 +193,12 @@ const ChannelHeader = ({
         } else if (customStatus && customStatus.text) {
             return (
                 <View style={styles.customStatusContainer}>
-                    {Boolean(customStatus.emoji) &&
+                    {isCustomStatusEnabled && Boolean(customStatus.emoji) &&
                     <CustomStatusEmoji
                         customStatus={customStatus}
                         emojiSize={13}
                         style={styles.customStatusEmoji}
+                        testID='channel_header'
                     />
                     }
                     <View style={styles.customStatusText}>
@@ -206,6 +206,7 @@ const ChannelHeader = ({
                             numberOfLines={1}
                             ellipsizeMode='tail'
                             style={styles.subtitle}
+                            testID='channel_header.custom_status.custom_status_text'
                         >
                             {customStatus.text}
                         </Text>

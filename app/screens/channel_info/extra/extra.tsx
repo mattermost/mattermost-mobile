@@ -22,6 +22,7 @@ type Props = {
     createdBy: string;
     customStatus?: UserCustomStatus;
     header?: string;
+    isCustomStatusEnabled: boolean;
 }
 
 const headerMetadata = {header: {width: 1, height: 1}};
@@ -65,7 +66,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const Extra = ({channelId, createdAt, createdBy, customStatus, header}: Props) => {
+const Extra = ({channelId, createdAt, createdBy, customStatus, header, isCustomStatusEnabled}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const blockStyles = getMarkdownBlockStyles(theme);
@@ -82,7 +83,7 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header}: Props) =
 
     return (
         <View style={styles.container}>
-            {Boolean(customStatus) &&
+            {isCustomStatusEnabled && Boolean(customStatus) &&
             <View style={styles.item}>
                 <FormattedText
                     id='channel_info.custom_status'
@@ -91,7 +92,10 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header}: Props) =
                 />
                 <View style={styles.customStatus}>
                     {Boolean(customStatus?.emoji) &&
-                    <View style={styles.customStatusEmoji}>
+                    <View
+                        style={styles.customStatusEmoji}
+                        testID={`channel_info.custom_status.custom_status_emoji.${customStatus?.emoji}`}
+                    >
                         <Emoji
                             emojiName={customStatus!.emoji!}
                             size={24}
@@ -99,7 +103,10 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header}: Props) =
                     </View>
                     }
                     {Boolean(customStatus?.text) &&
-                    <Text style={styles.customStatusLabel}>
+                    <Text
+                        style={styles.customStatusLabel}
+                        testID='channel_info.custom_status.custom_status_text'
+                    >
                         {customStatus?.text}
                     </Text>
                     }
@@ -112,6 +119,7 @@ const Extra = ({channelId, createdAt, createdBy, customStatus, header}: Props) =
                         showPrefix={true}
                         showToday={true}
                         showTimeCompulsory={false}
+                        testID={`channel_info.custom_status.custom_status_duration.${customStatus?.duration}.custom_status_expiry`}
                     />
                     }
                 </View>

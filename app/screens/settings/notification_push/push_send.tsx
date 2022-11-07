@@ -30,9 +30,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type MobileSendPushProps = {
-    pushStatus: PushStatus;
+    pushStatus: UserNotifyPropsPushStatus;
     sendPushNotifications: boolean;
-    setMobilePushPref: (status: PushStatus) => void;
+    setMobilePushPref: (status: UserNotifyPropsPushStatus) => void;
 }
 const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: MobileSendPushProps) => {
     const theme = useTheme();
@@ -49,7 +49,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                         action={setMobilePushPref}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.all_new_messages', defaultMessage: 'All new messages'})}
                         selected={pushStatus === 'all'}
-                        testID='notification_settings.pushNotification.allActivity'
+                        testID='push_notification_settings.all_new_messages.option'
                         type='select'
                         value='all'
                     />
@@ -58,7 +58,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                         action={setMobilePushPref}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.mentions_only', defaultMessage: 'Mentions, direct messages only (default)'})}
                         selected={pushStatus === 'mention'}
-                        testID='notification_settings.pushNotification.onlyMentions'
+                        testID='push_notification_settings.mentions_only.option'
                         type='select'
                         value='mention'
                     />
@@ -67,7 +67,7 @@ const MobileSendPush = ({sendPushNotifications, pushStatus, setMobilePushPref}: 
                         action={setMobilePushPref}
                         label={intl.formatMessage({id: 'notification_settings.pushNotification.nothing', defaultMessage: 'Nothing'})}
                         selected={pushStatus === 'none'}
-                        testID='notification_settings.pushNotification.never'
+                        testID='push_notification_settings.nothing.option'
                         type='select'
                         value='none'
                     />

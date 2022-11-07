@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {NativeScrollEvent, Platform} from 'react-native';
-import Animated, {runOnJS, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
+import {NativeScrollEvent} from 'react-native';
+import Animated, {runOnJS, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ViewConstants from '@constants/view';
@@ -18,52 +18,52 @@ type HeaderScrollContext = {
 export const MAX_OVERSCROLL = 80;
 
 export const useDefaultHeaderHeight = () => {
+    const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
 
+    let headerHeight = ViewConstants.DEFAULT_HEADER_HEIGHT;
     if (isTablet) {
-        return ViewConstants.TABLET_HEADER_HEIGHT;
+        headerHeight = ViewConstants.TABLET_HEADER_HEIGHT;
     }
-
-    if (Platform.OS === 'ios') {
-        return ViewConstants.IOS_DEFAULT_HEADER_HEIGHT;
-    }
-
-    return ViewConstants.ANDROID_DEFAULT_HEADER_HEIGHT;
+    return headerHeight + insets.top;
 };
 
 export const useLargeHeaderHeight = () => {
-    const defaultHeight = useDefaultHeaderHeight();
-    return defaultHeight + ViewConstants.LARGE_HEADER_TITLE + ViewConstants.HEADER_WITH_SUBTITLE;
+    let largeHeight = useDefaultHeaderHeight();
+    largeHeight += ViewConstants.LARGE_HEADER_TITLE_HEIGHT;
+    largeHeight += ViewConstants.SUBTITLE_HEIGHT;
+    return largeHeight;
 };
 
 export const useHeaderHeight = () => {
     const defaultHeight = useDefaultHeaderHeight();
     const largeHeight = useLargeHeaderHeight();
-    return useMemo(() => {
-        return {
-            defaultHeight,
-            largeHeight,
-        };
-    }, [defaultHeight, largeHeight]);
+    const headerOffset = largeHeight - defaultHeight;
+    return useMemo(() => ({
+        defaultHeight,
+        largeHeight,
+        headerOffset,
+    }), [defaultHeight, largeHeight]);
 };
 
 export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset: number) => void) => {
     const insets = useSafeAreaInsets();
     const animatedRef = useAnimatedRef<Animated.ScrollView>();
-    const {largeHeight, defaultHeight} = useHeaderHeight();
+    const {largeHeight, defaultHeight, headerOffset} = useHeaderHeight();
     const scrollValue = useSharedValue(0);
+    const lockValue = useSharedValue<number | null>(null);
     const autoScroll = useSharedValue(false);
     const snapping = useSharedValue(false);
+    const scrollEnabled = useSharedValue(true);
 
     const headerHeight = useDerivedValue(() => {
-        const minHeight = defaultHeight + insets.top;
         const value = -(scrollValue?.value || 0);
-        const header = (isLargeTitle ? largeHeight : defaultHeight);
-        const height = header + value + insets.top;
-        if (height > header + (insets.top * 2)) {
-            return Math.min(height, largeHeight + insets.top + MAX_OVERSCROLL);
+        const heightWithScroll = (isLargeTitle ? largeHeight : defaultHeight) + value;
+        let height = Math.max(heightWithScroll, defaultHeight);
+        if (value > insets.top) {
+            height = Math.min(heightWithScroll, largeHeight + MAX_OVERSCROLL);
         }
-        return Math.max(height, minHeight);
+        return height;
     });
 
     function snapIfNeeded(dir: string, offset: number) {
@@ -72,12 +72,16 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
             snapping.value = true;
             if (dir === 'down' && offset < largeHeight) {
                 runOnJS(onSnap)(0);
-            } else if (dir === 'up' && offset < (defaultHeight + insets.top)) {
-                runOnJS(onSnap)((largeHeight - defaultHeight));
+            } else if (dir === 'up' && offset < (defaultHeight)) {
+                runOnJS(onSnap)(headerOffset);
             }
-            snapping.value = false;
+            snapping.value = Boolean(withTiming(0, {duration: 100}));
         }
     }
+
+    const setAutoScroll = (enabled: boolean) => {
+        autoScroll.value = enabled;
+    };
 
     const onScroll = useAnimatedScrollHandler({
         onBeginDrag: (e: NativeScrollEvent, ctx: HeaderScrollContext) => {
@@ -85,14 +89,18 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
             ctx.dragging = true;
         },
         onScroll: (e, ctx) => {
-            if (ctx.dragging || autoScroll.value) {
+            if (!scrollEnabled.value) {
+                scrollTo(animatedRef, 0, headerOffset, false);
+                return;
+            }
+
+            if (ctx.dragging || autoScroll.value || snapping.value) {
                 scrollValue.value = e.contentOffset.y;
             } else {
                 // here we want to ensure that the scroll position
                 // always start at 0 if the user has not dragged
                 // the scrollview manually
-                scrollValue.value = 0;
-                scrollTo(animatedRef, 0, 0, false);
+                scrollTo(animatedRef, 0, scrollValue.value, false);
             }
         },
         onEndDrag: (e, ctx) => {
@@ -119,8 +127,12 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         },
     }, [insets, defaultHeight, largeHeight, animatedRef]);
 
-    const hideHeader = useCallback(() => {
-        const offset = largeHeight - defaultHeight;
+    const hideHeader = useCallback((lock = false) => {
+        if (lock) {
+            lockValue.value = defaultHeight;
+        }
+
+        const offset = headerOffset;
         if (animatedRef?.current && Math.abs((scrollValue?.value || 0)) <= insets.top) {
             autoScroll.value = true;
             if ('scrollTo' in animatedRef.current) {
@@ -136,15 +148,24 @@ export const useCollapsibleHeader = <T>(isLargeTitle: boolean, onSnap?: (offset:
         }
     }, [largeHeight, defaultHeight]);
 
+    const unlock = useCallback(() => {
+        lockValue.value = null;
+    }, []);
+
     return {
         defaultHeight,
         largeHeight,
-        scrollPaddingTop: (isLargeTitle ? largeHeight : defaultHeight) + insets.top,
+        scrollPaddingTop: (isLargeTitle ? largeHeight : defaultHeight),
         scrollRef: animatedRef as unknown as React.RefObject<T>,
         scrollValue,
         onScroll,
         hideHeader,
+        lockValue,
+        unlock,
         headerHeight,
+        headerOffset,
+        scrollEnabled,
+        setAutoScroll,
     };
 };
 
