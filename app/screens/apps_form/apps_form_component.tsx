@@ -144,7 +144,7 @@ function AppsFormComponent({
             undefined,
             intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'}),
         );
-        base.enabled = submitting;
+        base.enabled = !submitting;
         base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
