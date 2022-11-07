@@ -88,7 +88,7 @@ const UserListRow = ({
 
         return (
             <ChannelIcon
-                name=""  // TODO
+                name={user.username}
                 type=""
                 isActive={false}
                 isArchived={false}
