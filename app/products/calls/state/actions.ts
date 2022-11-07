@@ -29,9 +29,12 @@ export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<
         return;
     }
 
+    // Edge case: if the app went into the background and lost the main ws connection, we don't know who is currently
+    // talking. Instead of guessing, erase voiceOn state (same state as when joining an ongoing call).
     const nextCall = {
         ...currentCall,
         ...calls[currentCall.channelId],
+        voiceOn: {},
     };
     setCurrentCall(nextCall);
 };
@@ -92,9 +95,13 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
     // Did the user join the current call? If so, update that too.
     const currentCall = getCurrentCall();
     if (currentCall && currentCall.channelId === channelId) {
+        const voiceOn = {...currentCall.voiceOn};
+        delete voiceOn[userId];
+
         const nextCurrentCall = {
             ...currentCall,
             participants: {...currentCall.participants, [userId]: nextCall.participants[userId]},
+            voiceOn,
         };
         setCurrentCall(nextCurrentCall);
     }
@@ -108,6 +115,7 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
             myUserId: userId,
             screenShareURL: '',
             speakerphoneOn: false,
+            voiceOn: {},
         });
     }
 };
@@ -149,9 +157,14 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
         return;
     }
 
+    // Clear them from the voice list
+    const voiceOn = {...currentCall.voiceOn};
+    delete voiceOn[userId];
+
     const nextCurrentCall = {
         ...currentCall,
         participants: {...currentCall.participants},
+        voiceOn,
     };
     delete nextCurrentCall.participants[userId];
     setCurrentCall(nextCurrentCall);
@@ -216,6 +229,26 @@ export const setUserMuted = (serverUrl: string, channelId: string, userId: strin
             ...currentCall.participants,
             [userId]: {...currentCall.participants[userId], muted},
         },
+    };
+    setCurrentCall(nextCurrentCall);
+};
+
+export const setUserVoiceOn = (channelId: string, userId: string, voiceOn: boolean) => {
+    const currentCall = getCurrentCall();
+    if (!currentCall || currentCall.channelId !== channelId) {
+        return;
+    }
+
+    const nextVoiceOn = {...currentCall.voiceOn};
+    if (voiceOn) {
+        nextVoiceOn[userId] = true;
+    } else {
+        delete nextVoiceOn[userId];
+    }
+
+    const nextCurrentCall = {
+        ...currentCall,
+        voiceOn: nextVoiceOn,
     };
     setCurrentCall(nextCurrentCall);
 };
