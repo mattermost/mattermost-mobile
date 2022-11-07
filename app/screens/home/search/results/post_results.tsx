@@ -4,6 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
+import {searchTermsToPatterns} from '@components/markdown/transform';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
@@ -48,6 +49,7 @@ const PostResults = ({
             return (
                 <PostWithChannelInfo
                     location={Screens.SEARCH}
+                    searchPatterns={searchTermsToPatterns(searchValue)}
                     post={item}
                     testID='search_results.post_list'
                 />
