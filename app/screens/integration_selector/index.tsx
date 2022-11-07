@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useMemo, useRef, useState } from 'react';
 import { View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { withDatabase } from '@nozbe/watermelondb/DatabaseProvider';
@@ -16,8 +16,10 @@ import { useTheme } from '@context/theme';
 import FormattedText from '@components/formatted_text';
 import { View as ViewConstants } from '@constants';
 import {
-    popTopScreen,
+    buildNavigationButton,
+    popTopScreen, setButtons,
 } from '@screens/navigation';
+import { Navigation } from 'react-native-navigation';
 
 import CustomList, { FLATLIST, SECTIONLIST } from './custom_list';
 import OptionListRow from './option_list_row';
@@ -51,6 +53,7 @@ type Props = {
     selected?: DialogOption[];
     theme: Theme;
     teammateNameDisplay: string;
+    componentId: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -92,7 +95,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 function IntegrationSelector(
     { dataSource, data, isMultiselect, selected, handleSelect,
-        currentTeamId, getDynamicOptions, options, teammateNameDisplay }: Props) {
+        currentTeamId, componentId, getDynamicOptions, options, teammateNameDisplay }: Props) {
 
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -134,6 +137,21 @@ function IntegrationSelector(
     const close = () => {
         popTopScreen();
     };
+
+    // This is the button to submit multiselect options
+    const SUBMIT_BUTTON_ID = 'submit-integration-selector-multiselect';
+    const rightButton = useMemo(() => {
+        const base = buildNavigationButton(
+            SUBMIT_BUTTON_ID,
+            'integration_selector.multiselect.submit.button',
+            undefined,
+            intl.formatMessage({ id: 'integration_selector.multiselect.submit', defaultMessage: 'Done' }),
+        );
+        base.enabled = true;
+        base.showAsAction = 'always';
+        base.color = theme.sidebarHeaderTextColor;
+        return base;
+    }, [theme.sidebarHeaderTextColor, intl]);
 
     const handleSelectItem = (item: UserProfile | Channel | DialogOption) => {
         if (!isMultiselect) {
@@ -364,7 +382,11 @@ function IntegrationSelector(
         return (data as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().startsWith(lowerCasedTerm));
     };
 
+    const handleMultiselectSubmit = () => {
+        // TODO Will be finished once we have Apps multiselect
+    }
 
+    // Effects
     useEffect(() => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
             getProfiles();
@@ -393,6 +415,25 @@ function IntegrationSelector(
 
     }, [searchResults, integrationData]);
 
+    useEffect(() => {
+        if (!isMultiselect) {
+            return;
+        }
+
+        setButtons(componentId, {
+            rightButtons: [rightButton],
+        });
+
+        Navigation.events().registerComponentListener({
+            navigationButtonPressed: ({ buttonId }: { buttonId: string }) => {
+                if (buttonId == SUBMIT_BUTTON_ID) {
+                    handleMultiselectSubmit();
+                }
+            },
+        }, componentId);
+    }, [rightButton, componentId]);
+
+    // Renders
     const renderLoading = (): React.ReactElement<any, string> | null => {
         if (!loading) {
             return null;
