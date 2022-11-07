@@ -300,6 +300,10 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         }
     }, [myParticipant?.raisedHand]);
 
+    const toggleSpeakerPhone = useCallback(() => {
+        setSpeakerphoneOn(!currentCall?.speakerphoneOn);
+    }, [currentCall?.speakerphoneOn]);
+
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
     }, [showControlsInLandscape]);
@@ -519,7 +523,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                         <Pressable
                             testID={'toggle-speakerphone'}
                             style={style.button}
-                            onPress={() => setSpeakerphoneOn(!currentCall.speakerphoneOn)}
+                            onPress={toggleSpeakerPhone}
                         >
                             <CompassIcon
                                 name={'volume-high'}
