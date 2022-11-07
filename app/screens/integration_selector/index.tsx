@@ -212,7 +212,7 @@ function IntegrationSelector(
         }
     };
 
-    const getChannels = async () => {
+    const getChannels = debounce(async () => {
         if (next && !loading && !term) {
             setLoading(true);
             setCurrentPage(currentPage + 1);
@@ -222,9 +222,9 @@ function IntegrationSelector(
                 loadedChannels({ data: channelData });
             }
         }
-    };
+    }, 100);
 
-    const getProfiles = async () => {
+    const getProfiles = debounce(async () => {
         if (next && !loading && !term) {
             setLoading(true);
             setCurrentPage(currentPage + 1);
@@ -234,10 +234,9 @@ function IntegrationSelector(
                 loadedProfiles(userData);
             }
         }
-    };
+    }, 100);
 
     const getDynamicOptionsLocally = () => {
-        // TODO Next doesn't seem to work with dynamic
         if (!loading && !term) {
             searchDynamicOptions('');
         }
@@ -274,7 +273,7 @@ function IntegrationSelector(
     };
 
     const searchChannels = async (term: string) => {
-        const isSearch = true; // TODO?
+        const isSearch = true;
         const { channels: receivedChannels } = await searchChannelsRemote(serverUrl, term, currentTeamId, isSearch);
         setLoading(false);
 
@@ -305,19 +304,16 @@ function IntegrationSelector(
 
         setLoading(true);
 
-        getDynamicOptions(term.toLowerCase()).then((results: any) => {  // TODO
-            let data = [];
-            if (results.data) {
-                data = results.data;
-            }
+        getDynamicOptions(term.toLowerCase()).then((results: DialogOption[]) => {
+            let data = results || [];
 
             if (term) {
-                setLoading(false);
                 setSearchResults(data);
             } else {
                 setIntegrationData(data);
-                setLoading(false);
             }
+
+            setLoading(false);
         });
     };
 
@@ -372,7 +368,7 @@ function IntegrationSelector(
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             getChannels();
         } else {
-            getDynamicOptionsLocally();  // TODO Think of a better name
+            getDynamicOptionsLocally();
         }
     }, [])
 
@@ -385,19 +381,19 @@ function IntegrationSelector(
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
                 text = {
-                    id: intl.formatMessage({ id: 'mobile.loading_users' }),  // TODO
+                    id: intl.formatMessage({ id: 'mobile.integration_selector.loading_users' }),
                     defaultMessage: 'Loading Channels...',
                 };
                 break;
             case ViewConstants.DATA_SOURCE_CHANNELS:
                 text = {
-                    id: intl.formatMessage({ id: 'mobile.loading_channels' }),
+                    id: intl.formatMessage({ id: 'mobile.integration_selector.loading_channels' }),
                     defaultMessage: 'Loading Channels...',
                 };
                 break;
             default:
                 text = {
-                    id: intl.formatMessage({ id: 'mobile.loading_options' }),
+                    id: intl.formatMessage({ id: 'mobile.integration_selector.loading_options' }),
                     defaultMessage: 'Loading Options...',
                 };
                 break;
