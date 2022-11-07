@@ -20,7 +20,7 @@ import {Events, Screens} from '@constants';
 import {CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {withServerUrl} from '@context/server';
 import {withTheme} from '@context/theme';
-import {observeConfig, observeRecentCustomStatus} from '@queries/servers/system';
+import {observeConfigValue, observeRecentCustomStatus} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, goToScreen, showModal} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
@@ -404,11 +404,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
 
 const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = observeConfig(database);
     return {
         currentUser: observeCurrentUser(database),
-        customStatusExpirySupported: config.pipe(
-            switchMap((cfg) => of$(isCustomStatusExpirySupported(cfg?.Version || ''))),
+        customStatusExpirySupported: observeConfigValue(database, 'Version').pipe(
+            switchMap((v) => of$(isCustomStatusExpirySupported(v || ''))),
         ),
         recentCustomStatuses: observeRecentCustomStatus(database),
     };

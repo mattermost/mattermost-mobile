@@ -4,9 +4,10 @@
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
-import {schemaMigrations, addColumns} from '@nozbe/watermelondb/Schema/migrations';
+import {schemaMigrations, addColumns, createTable} from '@nozbe/watermelondb/Schema/migrations';
 
 import {MM_TABLES} from '@constants/database';
+import {tableSchemaSpec as configSpec} from '@database/schema/server/table_schemas/config';
 
 const {SERVER: {
     GROUP,
@@ -15,6 +16,12 @@ const {SERVER: {
 }} = MM_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 4,
+        steps: [
+            createTable(configSpec),
+        ],
+    },
     {
         toVersion: 3,
         steps: [
