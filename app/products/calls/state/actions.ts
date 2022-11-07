@@ -22,6 +22,18 @@ export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<
     setChannelsWithCalls(serverUrl, channelsWithCalls);
 
     setCallsState(serverUrl, {serverUrl, myUserId, calls, enabled});
+
+    // Does the current call need to be updated?
+    const currentCall = getCurrentCall();
+    if (!currentCall || !calls[currentCall.channelId]) {
+        return;
+    }
+
+    const nextCall = {
+        ...currentCall,
+        ...calls[currentCall.channelId],
+    };
+    setCurrentCall(nextCall);
 };
 
 export const setCallForChannel = (serverUrl: string, channelId: string, enabled: boolean, call?: Call) => {
