@@ -11,6 +11,7 @@ import SelectedOption from './selected_option';
 
 
 type Props = {
+    ref: React.Ref<ScrollView>;
     theme: Theme;
     selectedOptions: DialogOption[] | UserProfile[] | Channel[];
     dataSource: string;
@@ -33,8 +34,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme(() => {
     };
 });
 
-const SelectedOptions = (props: Props, ref: React.Ref<ScrollView>) => {
-    const { theme, selectedOptions, onRemove, dataSource } = props;
+const SelectedOptions = ({
+    theme, ref, selectedOptions, onRemove, dataSource
+}: Props) => {
     const options: React.ReactNode[] = [];
 
     for (const option of selectedOptions) {

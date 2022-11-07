@@ -33,6 +33,7 @@ import { useServerUrl } from '@app/context/server';
 import { observeCurrentTeamId } from '@app/queries/servers/system';
 import { WithDatabaseArgs } from '@typings/database/database';
 import { createProfilesSections } from '../create_direct_message/user_list';
+import { ScrollView } from 'react-native-gesture-handler';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
@@ -114,6 +115,7 @@ function IntegrationSelector(
     const [next, setNext] = useState<boolean>(dataSource === ViewConstants.DATA_SOURCE_USERS || dataSource === ViewConstants.DATA_SOURCE_CHANNELS || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC);
     const [customListData, setCustomListData] = useState([]);
 
+    let selectedScroll = React.createRef<ScrollView>();
     let multiselectItems: MultiselectSelectedMap = {}
     if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
         selected.forEach((opt) => {
@@ -179,8 +181,8 @@ function IntegrationSelector(
         }
 
         setTimeout(() => {
-            if (this.selectedScroll.current) {
-                this.selectedScroll.current.scrollToEnd();
+            if (selectedScroll.current) {
+                selectedScroll.current.scrollToEnd();
             }
         });
     };
@@ -497,23 +499,22 @@ function IntegrationSelector(
         rowComponent = renderOptionItem;
     }
 
-    // TODO
-    // let selectedOptionsComponent = null;
-    // const selectedItems: any = Object.values(multiselectSelected);  // TODO
-    // if (selectedItems.length > 0) {
-    //     selectedOptionsComponent = (
-    //         <>
-    //             <SelectedOptions
-    //                 // ref={selectedScroll}
-    //                 theme={theme}
-    //                 selectedOptions={selectedItems}
-    //                 dataSource={dataSource}
-    //                 onRemove={handleRemoveOption}
-    //             />
-    //             <View style={style.separator} />
-    //         </>
-    //     );
-    // }
+    let selectedOptionsComponent = null;
+    const selectedItems: any = Object.values(multiselectSelected);
+    if (selectedItems.length > 0) {
+        selectedOptionsComponent = (
+            <>
+                <SelectedOptions
+                    ref={selectedScroll}
+                    theme={theme}
+                    selectedOptions={selectedItems}
+                    dataSource={dataSource}
+                    onRemove={handleRemoveOption}
+                />
+                <View style={style.separator} />
+            </>
+        );
+    }
 
     return (
         <SafeAreaView style={style.container}>
@@ -533,7 +534,7 @@ function IntegrationSelector(
                 />
             </View>
 
-            {/* {selectedOptionsComponent} */}
+            {selectedOptionsComponent}
 
             <CustomList
                 data={customListData}

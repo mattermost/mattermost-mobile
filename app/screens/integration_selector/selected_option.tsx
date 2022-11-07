@@ -19,8 +19,7 @@ type Props = {
     onRemove: (opt: DialogOption | UserProfile | Channel) => void;
 }
 
-const SelectedOption = (props: Props) => {
-    const { theme, option, onRemove, dataSource } = props;
+const SelectedOption = ({ theme, option, onRemove, dataSource }: Props) => {
     const style = getStyleFromTheme(theme);
     const onPress = useCallback(
         () => onRemove(option),

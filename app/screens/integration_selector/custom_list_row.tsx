@@ -69,7 +69,10 @@ const CustomListRow = ({
 
             {selectable &&
                 <View style={style.selectorContainer}>
-                    <View style={[style.selector, (selected && style.selectorFilled), (!enabled && style.selectorDisabled)]}>
+                    <TouchableOpacity
+                        onPress={onPress}
+                        style={[style.selector, (selected && style.selectorFilled), (!enabled && style.selectorDisabled)]}
+                    >
                         {selected &&
                             <CompassIcon
                                 name='check'
@@ -77,7 +80,7 @@ const CustomListRow = ({
                                 color='#fff'
                             />
                         }
-                    </View>
+                    </TouchableOpacity>
                 </View>
             }
             <TouchableOpacity
