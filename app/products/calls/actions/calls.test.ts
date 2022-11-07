@@ -139,7 +139,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', true);
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
 
@@ -163,7 +163,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', true);
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');
@@ -191,7 +191,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', true);
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');
@@ -218,7 +218,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', true);
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');

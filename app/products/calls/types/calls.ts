@@ -111,6 +111,7 @@ export type CallsConnection = {
     waitForPeerConnection: () => Promise<void>;
     raiseHand: () => void;
     unraiseHand: () => void;
+    initializeVoiceTrack: () => void;
 }
 
 export type ServerCallsConfig = {
