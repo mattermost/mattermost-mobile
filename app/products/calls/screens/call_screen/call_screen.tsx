@@ -30,6 +30,7 @@ import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
+import {usePermissionsChecker} from '@calls/hooks';
 import RaisedHandIcon from '@calls/icons/raised_hand_icon';
 import UnraisedHandIcon from '@calls/icons/unraised_hand_icon';
 import {CallParticipant, CurrentCall, VoiceEventData} from '@calls/types/calls';
@@ -272,6 +273,7 @@ const CallScreen = ({
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const {width, height} = useWindowDimensions();
+    usePermissionsChecker(micPermissionsGranted);
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
     const [speakers, setSpeakers] = useState<Dictionary<boolean>>({});
 

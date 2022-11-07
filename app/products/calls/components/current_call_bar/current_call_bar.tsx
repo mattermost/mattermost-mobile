@@ -10,6 +10,7 @@ import {muteMyself, unmuteMyself} from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
+import {usePermissionsChecker} from '@calls/hooks';
 import {CurrentCall, VoiceEventData} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
 import {Events, Screens, WebsocketEvents} from '@constants';
@@ -95,6 +96,7 @@ const CurrentCallBar = ({
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const {formatMessage} = useIntl();
+    usePermissionsChecker(micPermissionsGranted);
     const [speaker, setSpeaker] = useState<string | null>(null);
     const [talkingMessage, setTalkingMessage] = useState('');
 

@@ -270,7 +270,7 @@ export const unmuteMyself = () => {
     }
 };
 
-export const micPermissionsGranted = () => {
+export const initializeVoiceTrack = () => {
     if (connection) {
         connection.initializeVoiceTrack();
     }
