@@ -259,7 +259,7 @@ function CustomList({
                 contentContainerStyle={style.container}
                 data={data}
                 extraData={extraData}
-                // keyboardShouldPersistTaps='always'
+                keyboardShouldPersistTaps='always'
                 // {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
@@ -275,15 +275,9 @@ function CustomList({
                 renderItem={renderListItem}
                 scrollEventThrottle={60}
                 style={style.list}
-                // stickySectionHeadersEnabled={true}
                 testID={testID}
             />
         );
-    }
-
-    // TODO This shouldn't be needed
-    if (data.length === 0) {
-        return <></>;
     }
 
     if (listType === FLATLIST) {
