@@ -496,10 +496,13 @@ function IntegrationSelector(
 
     // TODO Refactor this once working
     const listType = dataSource === ViewConstants.DATA_SOURCE_USERS ? SECTIONLIST : FLATLIST;
-
     let customListData = integrationData;
+    if (term) {
+        customListData = searchResults;
+    }
+
     if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-        customListData = createProfilesSections(integrationData);
+        customListData = createProfilesSections(customListData);
     }
 
     let rowComponent;
