@@ -88,8 +88,8 @@ PODS:
   - libwebp/mux (1.2.3):
     - libwebp/demux
   - libwebp/webp (1.2.3)
-  - MMKV (1.2.10):
-    - MMKVCore (~> 1.2.10)
+  - MMKV (1.2.13):
+    - MMKVCore (~> 1.2.13)
   - MMKVCore (1.2.14)
   - OpenSSL-Universal (1.1.1100)
   - Permission-Camera (3.6.1):
@@ -328,8 +328,8 @@ PODS:
     - React-Core
   - react-native-local-auth (1.6.0):
     - React
-  - react-native-mmkv-storage (0.6.11):
-    - MMKV (= 1.2.10)
+  - react-native-mmkv-storage (0.8.0):
+    - MMKV (= 1.2.13)
     - React-Core
   - react-native-netinfo (9.3.6):
     - React-Core
@@ -865,7 +865,7 @@ SPEC CHECKSUMS:
   jail-monkey: de7eab0c9cbe4e7cdd2f80d04f812337ae94b2e0
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: 60305b2e989864154bd9be3d772730f08fc6a59c
-  MMKV: 76033b9ace2006623308910a3afcc0e25eba3140
+  MMKV: aac95d817a100479445633f2b3ed8961b4ac5043
   MMKVCore: 89f5c8a66bba2dcd551779dea4d412eeec8ff5bb
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: bf6791b17c7f614b6826019fcfdcc286d3a107f6
@@ -895,7 +895,7 @@ SPEC CHECKSUMS:
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 4bc9ed38c8be255b515d8c88babbaf74973f91a8
   react-native-local-auth: 49d336dcf0cb0268a930100013a6525844093844
-  react-native-mmkv-storage: 2b57ca101fae52428f6cef6552793f83c0cdbc46
+  react-native-mmkv-storage: 8ba3c0216a6df283ece11205b442a3e435aec4e5
   react-native-netinfo: f80db8cac2151405633324cb645c60af098ee461
   react-native-notifications: 33ec77006f7987bb22de8f1665889abc633b9196
   react-native-passcode-status: e78f76b3c8db613e6ced6bd40b54aa4f53374173
