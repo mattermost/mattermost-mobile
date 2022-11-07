@@ -18,6 +18,7 @@ import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
 import { isGuest, isShared } from '@utils/user';
 
 import CustomListRow, { Props as CustomListRowProps } from './custom_list_row';
+import { General } from '@app/constants';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -89,7 +90,7 @@ const UserListRow = ({
         return (
             <ChannelIcon
                 name={user.username}
-                type=""
+                type={General.DM_CHANNEL}
                 isActive={false}
                 isArchived={false}
                 isUnread={true}

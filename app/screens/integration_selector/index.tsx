@@ -112,6 +112,7 @@ function IntegrationSelector(
     const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
     const [currentPage, setCurrentPage] = useState<number>(-1);
     const [next, setNext] = useState<boolean>(dataSource === ViewConstants.DATA_SOURCE_USERS || dataSource === ViewConstants.DATA_SOURCE_CHANNELS || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC);
+    const [customListData, setCustomListData] = useState([]);
 
     let multiselectItems: MultiselectSelectedMap = {}
     if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
@@ -372,6 +373,24 @@ function IntegrationSelector(
         }
     }, [])
 
+    useEffect(() => {
+        let listData = integrationData;
+        if (term) {
+            listData = searchResults;
+        }
+
+        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+            listData = createProfilesSections(listData);
+        }
+
+        if (!dataSource || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
+            listData = (integrationData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().includes(term));
+        }
+
+        setCustomListData(listData);
+
+    }, [searchResults, integrationData]);
+
     const renderLoading = (): React.ReactElement<any, string> | null => {
         if (!loading) {
             return null;
@@ -468,21 +487,7 @@ function IntegrationSelector(
         );
     };
 
-    // TODO Refactor this once working
     const listType = dataSource === ViewConstants.DATA_SOURCE_USERS ? SECTIONLIST : FLATLIST;
-    let customListData = integrationData;
-    if (term) {
-        customListData = searchResults;
-    }
-
-    if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-        customListData = createProfilesSections(customListData);
-    }
-
-    if (!dataSource || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
-        customListData = (integrationData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().includes(term));
-    }
-
     let rowComponent;
     if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
         rowComponent = renderUserItem;

@@ -164,7 +164,7 @@ function CustomList({
     const renderListItem = ({ item, index, section }: any) => {
         type listItemProps = {
             id: string,
-            item: any, // TODO?
+            item: DialogOption | Channel | UserProfile,
             selected: boolean,
             selectable?: boolean,
             enabled: boolean,
@@ -213,8 +213,6 @@ function CustomList({
             <SectionList
                 contentContainerStyle={style.container}
                 extraData={loading}
-                // keyboardShouldPersistTaps='always'
-                // {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 ItemSeparatorComponent={renderSeparator}
@@ -253,7 +251,6 @@ function CustomList({
                 data={data}
                 extraData={extraData}
                 keyboardShouldPersistTaps='always'
-                // {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 ItemSeparatorComponent={renderSeparator}
