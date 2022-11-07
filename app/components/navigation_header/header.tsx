@@ -4,9 +4,11 @@
 import React, {useMemo} from 'react';
 import {Platform, Text, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import ViewConstants from '@constants/view';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -24,18 +26,18 @@ type Props = {
     defaultHeight: number;
     hasSearch: boolean;
     isLargeTitle: boolean;
-    largeHeight: number;
+    heightOffset: number;
     leftComponent?: React.ReactElement;
     onBackPress?: () => void;
     onTitlePress?: () => void;
     rightButtons?: HeaderRightButton[];
     scrollValue?: Animated.SharedValue<number>;
+    lockValue?: Animated.SharedValue<number | null>;
     showBackButton?: boolean;
     subtitle?: string;
     subtitleCompanion?: React.ReactElement;
     theme: Theme;
     title?: string;
-    top: number;
 }
 
 const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
@@ -127,20 +129,21 @@ const Header = ({
     defaultHeight,
     hasSearch,
     isLargeTitle,
-    largeHeight,
+    heightOffset,
     leftComponent,
     onBackPress,
     onTitlePress,
     rightButtons,
     scrollValue,
+    lockValue,
     showBackButton = true,
     subtitle,
     subtitleCompanion,
     theme,
     title,
-    top,
 }: Props) => {
     const styles = getStyleSheet(theme);
+    const insets = useSafeAreaInsets();
 
     const opacity = useAnimatedStyle(() => {
         if (!isLargeTitle) {
@@ -151,8 +154,7 @@ const Header = ({
             return {opacity: 0};
         }
 
-        const largeTitleLabelHeight = 60;
-        const barHeight = (largeHeight - defaultHeight) - largeTitleLabelHeight;
+        const barHeight = heightOffset - ViewConstants.LARGE_HEADER_TITLE_HEIGHT;
         const val = (scrollValue?.value ?? 0);
         const showDuration = 200;
         const hideDuration = 50;
@@ -161,11 +163,15 @@ const Header = ({
         return {
             opacity: withTiming(opacityValue, {duration}),
         };
-    }, [defaultHeight, largeHeight, isLargeTitle, hasSearch]);
+    }, [heightOffset, isLargeTitle, hasSearch]);
 
-    const containerStyle = useMemo(() => {
-        return [styles.container, {height: defaultHeight + top, paddingTop: top}];
-    }, [defaultHeight, theme]);
+    const containerAnimatedStyle = useAnimatedStyle(() => ({
+        height: defaultHeight,
+        paddingTop: insets.top,
+    }), [defaultHeight, lockValue]);
+
+    const containerStyle = useMemo(() => (
+        [styles.container, containerAnimatedStyle]), [styles, containerAnimatedStyle]);
 
     const additionalTitleStyle = useMemo(() => ({
         marginLeft: Platform.select({android: showBackButton && !leftComponent ? 20 : 0}),
