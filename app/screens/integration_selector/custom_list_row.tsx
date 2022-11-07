@@ -65,29 +65,28 @@ const CustomListRow = ({
     enabled = true, id, onPress, testID = "", selectable, selected, children,
 }: Props) => {
     return (
-        <TouchableOpacity
-            onPress={onPress}
-        >
-            <View style={style.container}>
+        <View style={style.container}>
 
-                {selectable &&
-                    <View style={style.selectorContainer}>
-                        <View style={[style.selector, (selected && style.selectorFilled), (!enabled && style.selectorDisabled)]}>
-                            {selected &&
-                                <CompassIcon
-                                    name='check'
-                                    size={24}
-                                    color='#fff'
-                                />
-                            }
-                        </View>
+            {selectable &&
+                <View style={style.selectorContainer}>
+                    <View style={[style.selector, (selected && style.selectorFilled), (!enabled && style.selectorDisabled)]}>
+                        {selected &&
+                            <CompassIcon
+                                name='check'
+                                size={24}
+                                color='#fff'
+                            />
+                        }
                     </View>
-                }
-                <View style={style.children}>
-                    {children}
                 </View>
-            </View>
-        </TouchableOpacity>
+            }
+            <TouchableOpacity
+                onPress={onPress}
+                style={style.children}
+            >
+                {children}
+            </TouchableOpacity>
+        </View>
     );
 }
 
