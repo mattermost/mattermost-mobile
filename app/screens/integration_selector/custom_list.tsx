@@ -161,10 +161,6 @@ function CustomList({
         );
     };
 
-    const setListRef = (ref: any) => {
-        // this.list = ref;
-    };
-
     const renderListItem = ({ item, index, section }: any) => {
         type listItemProps = {
             id: string,
@@ -227,7 +223,6 @@ function CustomList({
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
                 onLayout={handleLayout}
                 onScroll={handleScroll}
-                ref={setListRef}
                 removeClippedSubviews={true}
                 renderItem={renderListItem}
                 renderSectionHeader={renderSectionHeader}
@@ -249,8 +244,6 @@ function CustomList({
                 <RefreshControl
                     refreshing={refreshing}
                     onRefresh={onRefresh}
-                // colors={[theme.centerChannelColor]}
-                // tintColor={theme.centerChannelColor}
                 />);
         }
 
@@ -270,7 +263,6 @@ function CustomList({
                 onLayout={handleLayout}
                 onScroll={handleScroll}
                 refreshControl={refreshControl}
-                ref={setListRef}
                 removeClippedSubviews={true}
                 renderItem={renderListItem}
                 scrollEventThrottle={60}
