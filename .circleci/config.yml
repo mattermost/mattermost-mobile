@@ -1,20 +1,20 @@
 version: 2.1
 orbs:
   owasp: entur/owasp@0.0.10
-  node: circleci/node@5.0.3
+  node: circleci/node@4.5.1
 
 executors:
   android:
     parameters:
       resource_class:
-        default: xlarge
+        default: large
         type: string
     environment:
       NODE_OPTIONS: --max_old_space_size=12000
       NODE_ENV: production
       BABEL_ENV: production
     docker:
-      - image: cimg/android:2022.09.2-node
+      - image: circleci/android:api-30-node
     working_directory: ~/mattermost-mobile
     resource_class: <<parameters.resource_class>>
 
@@ -24,7 +24,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     macos:
-      xcode: "14.0.0"
+      xcode: "13.0.0"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
 
@@ -93,7 +93,8 @@ commands:
     description: "Get JavaScript dependencies"
     steps:
       - node/install:
-          node-version: '16.15.0'
+          node-version: '16.2.0'
+          install-npm: false
       - restore_cache:
           name: Restore npm cache
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}

@@ -1,0 +1,13 @@
+diff --git a/node_modules/@rudderstack/rudder-sdk-react-native/android/build.gradle b/node_modules/@rudderstack/rudder-sdk-react-native/android/build.gradle
+index 1536175..1c40b7f 100644
+--- a/node_modules/@rudderstack/rudder-sdk-react-native/android/build.gradle
++++ b/node_modules/@rudderstack/rudder-sdk-react-native/android/build.gradle
+@@ -15,7 +15,7 @@ android {
+     compileSdkVersion 29
+ 
+     defaultConfig {
+-        minSdkVersion 16
++        minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : 19
+         targetSdkVersion 29
+         versionCode 1
+         versionName "1.0"

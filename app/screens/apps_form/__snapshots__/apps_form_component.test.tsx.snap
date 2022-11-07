@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`AppsForm should set match snapshot 1`] = `
-<ForwardRef
+<RNCSafeAreaView
   style={
-    {
+    Object {
       "backgroundColor": "rgba(63,67,80,0.03)",
       "height": "100%",
     }
@@ -12,7 +12,7 @@ exports[`AppsForm should set match snapshot 1`] = `
 >
   <ScrollView
     style={
-      {
+      Object {
         "marginBottom": 20,
         "marginTop": 10,
       }
@@ -21,7 +21,7 @@ exports[`AppsForm should set match snapshot 1`] = `
     <Connect(StatusBar) />
     <DialogIntroductionText
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -53,7 +53,7 @@ exports[`AppsForm should set match snapshot 1`] = `
     />
     <AppsFormField
       field={
-        {
+        Object {
           "name": "bool1",
           "type": "bool",
         }
@@ -63,7 +63,7 @@ exports[`AppsForm should set match snapshot 1`] = `
       onChange={[Function]}
       performLookup={[Function]}
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -95,7 +95,7 @@ exports[`AppsForm should set match snapshot 1`] = `
     />
     <AppsFormField
       field={
-        {
+        Object {
           "name": "bool2",
           "type": "bool",
           "value": false,
@@ -106,7 +106,7 @@ exports[`AppsForm should set match snapshot 1`] = `
       onChange={[Function]}
       performLookup={[Function]}
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -138,7 +138,7 @@ exports[`AppsForm should set match snapshot 1`] = `
     />
     <AppsFormField
       field={
-        {
+        Object {
           "name": "bool3",
           "type": "bool",
           "value": true,
@@ -149,7 +149,7 @@ exports[`AppsForm should set match snapshot 1`] = `
       onChange={[Function]}
       performLookup={[Function]}
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -181,7 +181,7 @@ exports[`AppsForm should set match snapshot 1`] = `
     />
     <AppsFormField
       field={
-        {
+        Object {
           "name": "text1",
           "type": "text",
           "value": "initial text",
@@ -192,7 +192,7 @@ exports[`AppsForm should set match snapshot 1`] = `
       onChange={[Function]}
       performLookup={[Function]}
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -224,20 +224,20 @@ exports[`AppsForm should set match snapshot 1`] = `
     />
     <AppsFormField
       field={
-        {
+        Object {
           "name": "select1",
-          "options": [
-            {
+          "options": Array [
+            Object {
               "label": "Label1",
               "value": "Value1",
             },
-            {
+            Object {
               "label": "Label2",
               "value": "Value2",
             },
           ],
           "type": "static_select",
-          "value": {
+          "value": Object {
             "label": "Label1",
             "value": "Value1",
           },
@@ -248,7 +248,7 @@ exports[`AppsForm should set match snapshot 1`] = `
       onChange={[Function]}
       performLookup={[Function]}
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -277,7 +277,7 @@ exports[`AppsForm should set match snapshot 1`] = `
         }
       }
       value={
-        {
+        Object {
           "label": "Label1",
           "value": "Value1",
         }
@@ -285,14 +285,14 @@ exports[`AppsForm should set match snapshot 1`] = `
     />
     <View
       style={
-        {
+        Object {
           "marginHorizontal": 5,
         }
       }
     >
       <Button
         containerStyle={
-          {
+          Object {
             "alignItems": "center",
             "alignSelf": "stretch",
             "borderColor": "#2389D7",
@@ -307,7 +307,7 @@ exports[`AppsForm should set match snapshot 1`] = `
       >
         <Text
           style={
-            {
+            Object {
               "color": "#2389D7",
               "fontSize": 17,
               "textAlign": "center",
@@ -319,7 +319,7 @@ exports[`AppsForm should set match snapshot 1`] = `
       </Button>
       <Button
         containerStyle={
-          {
+          Object {
             "alignItems": "center",
             "alignSelf": "stretch",
             "borderColor": "#2389D7",
@@ -334,7 +334,7 @@ exports[`AppsForm should set match snapshot 1`] = `
       >
         <Text
           style={
-            {
+            Object {
               "color": "#2389D7",
               "fontSize": 17,
               "textAlign": "center",
@@ -346,5 +346,5 @@ exports[`AppsForm should set match snapshot 1`] = `
       </Button>
     </View>
   </ScrollView>
-</ForwardRef>
+</RNCSafeAreaView>
 `;

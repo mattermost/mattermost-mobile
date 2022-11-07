@@ -3,7 +3,7 @@
 exports[`SelectedOptions should match snapshot 1`] = `
 <ScrollView
   style={
-    {
+    Object {
       "flexGrow": 0,
       "marginBottom": 5,
       "marginLeft": 5,
@@ -13,7 +13,7 @@ exports[`SelectedOptions should match snapshot 1`] = `
 >
   <View
     style={
-      {
+      Object {
         "alignItems": "flex-start",
         "flexDirection": "row",
         "flexWrap": "wrap",
@@ -24,13 +24,13 @@ exports[`SelectedOptions should match snapshot 1`] = `
       dataSource=""
       onRemove={[MockFunction]}
       option={
-        {
+        Object {
           "text": "text1",
           "value": "value1",
         }
       }
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -63,13 +63,13 @@ exports[`SelectedOptions should match snapshot 1`] = `
       dataSource=""
       onRemove={[MockFunction]}
       option={
-        {
+        Object {
           "text": "text2",
           "value": "value2",
         }
       }
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -102,13 +102,13 @@ exports[`SelectedOptions should match snapshot 1`] = `
       dataSource=""
       onRemove={[MockFunction]}
       option={
-        {
+        Object {
           "text": "text3",
           "value": "value3",
         }
       }
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",

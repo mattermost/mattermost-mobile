@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`SelectorScreen should match snapshot for channels 1`] = `
-<ForwardRef
+<RNCSafeAreaView
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -11,7 +11,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "height": 38,
         "marginVertical": 5,
         "paddingLeft": 8,
@@ -30,7 +30,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
       editable={true}
       inputHeight={33}
       inputStyle={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "color": "#3f4350",
           "fontSize": 15,
@@ -60,7 +60,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
   </View>
   <CustomList
     canRefresh={true}
-    data={[]}
+    data={Array []}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -71,7 +71,7 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
     shouldRenderSeparator={true}
     showNoResults={true}
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -100,13 +100,13 @@ exports[`SelectorScreen should match snapshot for channels 1`] = `
       }
     }
   />
-</ForwardRef>
+</RNCSafeAreaView>
 `;
 
 exports[`SelectorScreen should match snapshot for channels 2`] = `
-<ForwardRef
+<RNCSafeAreaView
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -114,7 +114,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "height": 38,
         "marginVertical": 5,
         "paddingLeft": 8,
@@ -133,7 +133,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
       editable={true}
       inputHeight={33}
       inputStyle={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "color": "#3f4350",
           "fontSize": 15,
@@ -163,7 +163,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
   </View>
   <CustomList
     canRefresh={true}
-    data={[]}
+    data={Array []}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -174,7 +174,7 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
     shouldRenderSeparator={true}
     showNoResults={true}
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -203,13 +203,13 @@ exports[`SelectorScreen should match snapshot for channels 2`] = `
       }
     }
   />
-</ForwardRef>
+</RNCSafeAreaView>
 `;
 
 exports[`SelectorScreen should match snapshot for explicit options 1`] = `
-<ForwardRef
+<RNCSafeAreaView
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -217,7 +217,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "height": 38,
         "marginVertical": 5,
         "paddingLeft": 8,
@@ -236,7 +236,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
       editable={true}
       inputHeight={33}
       inputStyle={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "color": "#3f4350",
           "fontSize": 15,
@@ -267,8 +267,8 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
   <CustomList
     canRefresh={true}
     data={
-      [
-        {
+      Array [
+        Object {
           "id": "value",
           "text": "text",
           "value": "value",
@@ -285,7 +285,7 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
     shouldRenderSeparator={true}
     showNoResults={true}
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -314,13 +314,13 @@ exports[`SelectorScreen should match snapshot for explicit options 1`] = `
       }
     }
   />
-</ForwardRef>
+</RNCSafeAreaView>
 `;
 
 exports[`SelectorScreen should match snapshot for searching 1`] = `
-<ForwardRef
+<RNCSafeAreaView
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -328,7 +328,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "height": 38,
         "marginVertical": 5,
         "paddingLeft": 8,
@@ -347,7 +347,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
       editable={true}
       inputHeight={33}
       inputStyle={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "color": "#3f4350",
           "fontSize": 15,
@@ -377,7 +377,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
   </View>
   <CustomList
     canRefresh={true}
-    data={[]}
+    data={Array []}
     listType="flat"
     loading={false}
     loadingComponent={null}
@@ -388,7 +388,7 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
     shouldRenderSeparator={true}
     showNoResults={true}
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -417,13 +417,13 @@ exports[`SelectorScreen should match snapshot for searching 1`] = `
       }
     }
   />
-</ForwardRef>
+</RNCSafeAreaView>
 `;
 
 exports[`SelectorScreen should match snapshot for users 1`] = `
-<ForwardRef
+<RNCSafeAreaView
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -431,7 +431,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "height": 38,
         "marginVertical": 5,
         "paddingLeft": 8,
@@ -450,7 +450,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
       editable={true}
       inputHeight={33}
       inputStyle={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "color": "#3f4350",
           "fontSize": 15,
@@ -480,7 +480,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
   </View>
   <CustomList
     canRefresh={true}
-    data={[]}
+    data={Array []}
     listType="section"
     loading={false}
     loadingComponent={null}
@@ -491,7 +491,7 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
     shouldRenderSeparator={true}
     showNoResults={true}
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -520,13 +520,13 @@ exports[`SelectorScreen should match snapshot for users 1`] = `
       }
     }
   />
-</ForwardRef>
+</RNCSafeAreaView>
 `;
 
 exports[`SelectorScreen should match snapshot for users 2`] = `
-<ForwardRef
+<RNCSafeAreaView
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -534,7 +534,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "height": 38,
         "marginVertical": 5,
         "paddingLeft": 8,
@@ -553,7 +553,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
       editable={true}
       inputHeight={33}
       inputStyle={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "color": "#3f4350",
           "fontSize": 15,
@@ -583,7 +583,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
   </View>
   <CustomList
     canRefresh={true}
-    data={[]}
+    data={Array []}
     listType="section"
     loading={false}
     loadingComponent={null}
@@ -594,7 +594,7 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
     shouldRenderSeparator={true}
     showNoResults={true}
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -623,5 +623,5 @@ exports[`SelectorScreen should match snapshot for users 2`] = `
       }
     }
   />
-</ForwardRef>
+</RNCSafeAreaView>
 `;

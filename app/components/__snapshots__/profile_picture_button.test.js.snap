@@ -9,14 +9,14 @@ exports[`profile_picture_button should match snapshot 1`] = `
   canTakePhoto={true}
   canTakeVideo={true}
   extraOptions={
-    [
+    Array [
       null,
     ]
   }
   maxFileCount={5}
   maxFileSize={20971520}
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -45,6 +45,6 @@ exports[`profile_picture_button should match snapshot 1`] = `
     }
   }
   uploadFiles={[MockFunction]}
-  validMimeTypes={[]}
+  validMimeTypes={Array []}
 />
 `;

@@ -5,8 +5,8 @@ exports[`screens/clear_after_modal should match snapshot 1`] = `
   handleClearAfterClick={[MockFunction]}
   initialDuration=""
   intl={
-    {
-      "defaultFormats": {},
+    Object {
+      "defaultFormats": Object {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -15,8 +15,8 @@ exports[`screens/clear_after_modal should match snapshot 1`] = `
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": {},
-      "formatters": {
+      "formats": Object {},
+      "formatters": Object {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -24,7 +24,7 @@ exports[`screens/clear_after_modal should match snapshot 1`] = `
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": {},
+      "messages": Object {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
@@ -32,7 +32,7 @@ exports[`screens/clear_after_modal should match snapshot 1`] = `
     }
   }
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",

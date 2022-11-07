@@ -3,7 +3,7 @@
 exports[`Action should match snapshot 1`] = `
 <View
   style={
-    {
+    Object {
       "height": 51,
       "width": "100%",
     }
@@ -12,7 +12,7 @@ exports[`Action should match snapshot 1`] = `
   <TouchableHighlight
     onPress={[Function]}
     style={
-      {
+      Object {
         "flex": 1,
         "flexDirection": "row",
       }
@@ -22,7 +22,7 @@ exports[`Action should match snapshot 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "flex": 1,
           "flexDirection": "row",
         }
@@ -30,7 +30,7 @@ exports[`Action should match snapshot 1`] = `
     >
       <View
         style={
-          {
+          Object {
             "alignItems": "center",
             "height": 50,
             "justifyContent": "center",
@@ -42,8 +42,8 @@ exports[`Action should match snapshot 1`] = `
           name="test-icon"
           size={24}
           style={
-            [
-              {
+            Array [
+              Object {
                 "color": "rgba(63,67,80,0.64)",
               },
               null,
@@ -53,7 +53,7 @@ exports[`Action should match snapshot 1`] = `
       </View>
       <View
         style={
-          {
+          Object {
             "flex": 1,
             "height": 50,
             "justifyContent": "center",
@@ -63,8 +63,8 @@ exports[`Action should match snapshot 1`] = `
       >
         <Text
           style={
-            [
-              {
+            Array [
+              Object {
                 "color": "#3f4350",
                 "fontSize": 16,
                 "letterSpacing": -0.45,
@@ -82,7 +82,7 @@ exports[`Action should match snapshot 1`] = `
   </TouchableHighlight>
   <View
     style={
-      {
+      Object {
         "borderBottomColor": "rgba(63,67,80,0.2)",
         "borderBottomWidth": 0.5,
         "marginHorizontal": 17,
@@ -95,7 +95,7 @@ exports[`Action should match snapshot 1`] = `
 exports[`Action should match snapshot when is destructive 1`] = `
 <View
   style={
-    {
+    Object {
       "height": 51,
       "width": "100%",
     }
@@ -104,7 +104,7 @@ exports[`Action should match snapshot when is destructive 1`] = `
   <TouchableHighlight
     onPress={[Function]}
     style={
-      {
+      Object {
         "flex": 1,
         "flexDirection": "row",
       }
@@ -114,7 +114,7 @@ exports[`Action should match snapshot when is destructive 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "flex": 1,
           "flexDirection": "row",
         }
@@ -122,7 +122,7 @@ exports[`Action should match snapshot when is destructive 1`] = `
     >
       <View
         style={
-          {
+          Object {
             "alignItems": "center",
             "height": 50,
             "justifyContent": "center",
@@ -134,11 +134,11 @@ exports[`Action should match snapshot when is destructive 1`] = `
           name="test-icon"
           size={24}
           style={
-            [
-              {
+            Array [
+              Object {
                 "color": "rgba(63,67,80,0.64)",
               },
-              {
+              Object {
                 "color": "#D0021B",
               },
             ]
@@ -147,7 +147,7 @@ exports[`Action should match snapshot when is destructive 1`] = `
       </View>
       <View
         style={
-          {
+          Object {
             "flex": 1,
             "height": 50,
             "justifyContent": "center",
@@ -157,15 +157,15 @@ exports[`Action should match snapshot when is destructive 1`] = `
       >
         <Text
           style={
-            [
-              {
+            Array [
+              Object {
                 "color": "#3f4350",
                 "fontSize": 16,
                 "letterSpacing": -0.45,
                 "lineHeight": 19,
                 "opacity": 0.9,
               },
-              {
+              Object {
                 "color": "#D0021B",
               },
             ]
@@ -178,7 +178,7 @@ exports[`Action should match snapshot when is destructive 1`] = `
   </TouchableHighlight>
   <View
     style={
-      {
+      Object {
         "borderBottomColor": "rgba(63,67,80,0.2)",
         "borderBottomWidth": 0.5,
         "marginHorizontal": 17,

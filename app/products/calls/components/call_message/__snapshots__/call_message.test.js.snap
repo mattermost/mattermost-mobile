@@ -3,7 +3,7 @@
 exports[`CallMessage should match snapshot 1`] = `
 <View
   style={
-    {
+    Object {
       "color": "rgba(63,67,80,0.6)",
       "flexDirection": "row",
       "fontSize": 15,
@@ -17,7 +17,7 @@ exports[`CallMessage should match snapshot 1`] = `
     name="phone-in-talk"
     size={16}
     style={
-      {
+      Object {
         "backgroundColor": "#339970",
         "borderRadius": 8,
         "color": "white",
@@ -29,14 +29,14 @@ exports[`CallMessage should match snapshot 1`] = `
   />
   <View
     style={
-      {
+      Object {
         "flex": 1,
       }
     }
   >
     <Text
       style={
-        {
+        Object {
           "color": "#3f4350",
           "fontWeight": "bold",
         }
@@ -46,7 +46,7 @@ exports[`CallMessage should match snapshot 1`] = `
     </Text>
     <FormattedRelativeTime
       style={
-        {
+        Object {
           "color": "#3f4350",
         }
       }
@@ -57,8 +57,8 @@ exports[`CallMessage should match snapshot 1`] = `
   <TouchableOpacity
     onPress={[Function]}
     style={
-      [
-        {
+      Array [
+        Object {
           "alignContent": "center",
           "alignItems": "center",
           "backgroundColor": "#339970",
@@ -74,8 +74,8 @@ exports[`CallMessage should match snapshot 1`] = `
       name="phone-outline"
       size={16}
       style={
-        [
-          {
+        Array [
+          Object {
             "color": "white",
             "marginRight": 5,
           },
@@ -85,8 +85,8 @@ exports[`CallMessage should match snapshot 1`] = `
     />
     <Text
       style={
-        [
-          {
+        Array [
+          Object {
             "color": "white",
           },
           undefined,
@@ -102,7 +102,7 @@ exports[`CallMessage should match snapshot 1`] = `
 exports[`CallMessage should match snapshot for ended call 1`] = `
 <View
   style={
-    {
+    Object {
       "color": "rgba(63,67,80,0.6)",
       "flexDirection": "row",
       "fontSize": 15,
@@ -116,7 +116,7 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
     name="phone-hangup"
     size={16}
     style={
-      {
+      Object {
         "backgroundColor": "rgba(63,67,80,0.6)",
         "borderRadius": 8,
         "color": "white",
@@ -128,14 +128,14 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
   />
   <View
     style={
-      {
+      Object {
         "flex": 1,
       }
     }
   >
     <Text
       style={
-        {
+        Object {
           "color": "#3f4350",
           "fontWeight": "bold",
         }
@@ -145,7 +145,7 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
     </Text>
     <View
       style={
-        {
+        Object {
           "alignContent": "center",
           "alignItems": "center",
           "flexDirection": "row",
@@ -154,7 +154,7 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
     >
       <Text
         style={
-          {
+          Object {
             "color": "#3f4350",
           }
         }
@@ -168,7 +168,7 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
       />
       <Text
         style={
-          {
+          Object {
             "color": "#3f4350",
             "marginLeft": 5,
             "marginRight": 5,
@@ -179,7 +179,7 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
       </Text>
       <Text
         style={
-          {
+          Object {
             "color": "#3f4350",
           }
         }
@@ -194,7 +194,7 @@ exports[`CallMessage should match snapshot for ended call 1`] = `
 exports[`CallMessage should match snapshot for the call already in the current channel 1`] = `
 <View
   style={
-    {
+    Object {
       "color": "rgba(63,67,80,0.6)",
       "flexDirection": "row",
       "fontSize": 15,
@@ -208,7 +208,7 @@ exports[`CallMessage should match snapshot for the call already in the current c
     name="phone-in-talk"
     size={16}
     style={
-      {
+      Object {
         "backgroundColor": "#339970",
         "borderRadius": 8,
         "color": "white",
@@ -220,14 +220,14 @@ exports[`CallMessage should match snapshot for the call already in the current c
   />
   <View
     style={
-      {
+      Object {
         "flex": 1,
       }
     }
   >
     <Text
       style={
-        {
+        Object {
           "color": "#3f4350",
           "fontWeight": "bold",
         }
@@ -237,7 +237,7 @@ exports[`CallMessage should match snapshot for the call already in the current c
     </Text>
     <FormattedRelativeTime
       style={
-        {
+        Object {
           "color": "#3f4350",
         }
       }
@@ -248,8 +248,8 @@ exports[`CallMessage should match snapshot for the call already in the current c
   <TouchableOpacity
     onPress={[Function]}
     style={
-      [
-        {
+      Array [
+        Object {
           "alignContent": "center",
           "alignItems": "center",
           "backgroundColor": "#339970",
@@ -265,8 +265,8 @@ exports[`CallMessage should match snapshot for the call already in the current c
       name="phone-outline"
       size={16}
       style={
-        [
-          {
+        Array [
+          Object {
             "color": "white",
             "marginRight": 5,
           },
@@ -276,8 +276,8 @@ exports[`CallMessage should match snapshot for the call already in the current c
     />
     <Text
       style={
-        [
-          {
+        Array [
+          Object {
             "color": "white",
           },
           undefined,

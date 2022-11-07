@@ -8,7 +8,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
 >
   <View
     style={
-      {
+      Object {
         "alignItems": "center",
         "flex": 1,
         "flexDirection": "row",
@@ -19,7 +19,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
   >
     <Text
       style={
-        {
+        Object {
           "color": "#3f4350",
           "flex": 1,
           "fontSize": 14,
@@ -33,7 +33,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
     <TouchableOpacity
       onPress={[Function]}
       style={
-        {
+        Object {
           "alignItems": "center",
           "height": 42,
           "justifyContent": "center",

@@ -23,7 +23,6 @@ export default class EditChannel extends PureComponent<EditChannelProps> {
     };
 
     handleChannelEdit = preventDoubleTap(() => {
-        // @ts-expect-error context type definition
         const {intl} = this.context;
         const id = t('mobile.channel_info.edit');
         const defaultMessage = 'Edit Channel';

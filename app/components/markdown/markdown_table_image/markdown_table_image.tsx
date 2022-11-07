@@ -114,6 +114,8 @@ const MarkTableImage = ({disable, imagesMetadata, postId, serverURL, source, the
                         style={styles.container}
                         width={width}
                         height={height}
+
+                        //@ts-expect-error onError not defined in the types
                         onError={onLoadFailed}
                     />
                 </View>

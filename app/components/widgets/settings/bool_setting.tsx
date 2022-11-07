@@ -19,7 +19,7 @@ import {
 
 type Props = {
     id: string;
-    label?: string;
+    label?: string | {id: string; defaultMessage: string};
     value: boolean;
     placeholder?: string;
     helpText?: string;

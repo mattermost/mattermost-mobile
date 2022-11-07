@@ -3,7 +3,7 @@
 exports[`CallOtherActions should match snapshot 1`] = `
 <View
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -12,7 +12,7 @@ exports[`CallOtherActions should match snapshot 1`] = `
     initialPosition={0.24}
     onRequestClose={[Function]}
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -47,7 +47,7 @@ exports[`CallOtherActions should match snapshot 1`] = `
       onPress={[Function]}
       text="Chat thread"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",

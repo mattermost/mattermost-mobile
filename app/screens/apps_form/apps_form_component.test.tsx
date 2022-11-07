@@ -72,21 +72,21 @@ describe('AppsForm', () => {
     };
 
     test('should set match snapshot', () => {
-        const wrapper: ShallowWrapper<Props, State, typeof AppsFormComponent> = shallowWithIntl(
+        const wrapper: ShallowWrapper<Props, State, AppsFormComponent> = shallowWithIntl(
             <AppsFormComponent
                 {...baseProps}
             />,
-        ) as unknown as ShallowWrapper<Props, State, typeof AppsFormComponent>;
+        ) as unknown as ShallowWrapper<Props, State, AppsFormComponent>;
 
         expect(wrapper).toMatchSnapshot();
     });
 
     test('should set initial form values', () => {
-        const wrapper: ShallowWrapper<Props, State, typeof AppsFormComponent> = shallowWithIntl(
+        const wrapper: ShallowWrapper<Props, State, AppsFormComponent> = shallowWithIntl(
             <AppsFormComponent
                 {...baseProps}
             />,
-        ) as unknown as ShallowWrapper<Props, State, typeof AppsFormComponent>;
+        ) as unknown as ShallowWrapper<Props, State, AppsFormComponent>;
 
         expect(wrapper.state().values).toEqual({
             bool1: false,
@@ -109,18 +109,15 @@ describe('AppsForm', () => {
             },
         };
 
-        const wrapper: ShallowWrapper<Props, State, typeof AppsFormComponent> = shallowWithIntl(
+        const wrapper: ShallowWrapper<Props, State, AppsFormComponent> = shallowWithIntl(
             <AppsFormComponent
                 {...props}
             />,
-        ) as unknown as ShallowWrapper<Props, State, typeof AppsFormComponent>;
+        ) as unknown as ShallowWrapper<Props, State, AppsFormComponent>;
 
         const hide = jest.fn();
-
-        // @ts-expect-error handleHide is defined
         wrapper.instance().handleHide = hide;
 
-        // @ts-expect-error doSubmit is defined
         await wrapper.instance().doSubmit();
 
         expect(submit).toHaveBeenCalledWith({

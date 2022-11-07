@@ -20,7 +20,7 @@ exports[`PostInput should match, full snapshot 1`] = `
   placeholderTextColor="rgba(63,67,80,0.5)"
   screenId="Channel"
   style={
-    {
+    Object {
       "color": "#3f4350",
       "fontSize": 15,
       "lineHeight": 20,

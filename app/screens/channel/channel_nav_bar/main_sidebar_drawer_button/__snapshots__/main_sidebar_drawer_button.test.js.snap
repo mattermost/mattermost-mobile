@@ -8,15 +8,15 @@ exports[`MainSidebarDrawerButton should match, full snapshot 1`] = `
   accessible={true}
   onPress={[Function]}
   style={
-    {
+    Object {
       "width": 10,
     }
   }
 >
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "alignItems": "center",
           "flex": 1,
           "flexDirection": "column",
@@ -30,7 +30,7 @@ exports[`MainSidebarDrawerButton should match, full snapshot 1`] = `
     <View>
       <View
         style={
-          {
+          Object {
             "height": 25,
           }
         }
@@ -48,15 +48,15 @@ exports[`MainSidebarDrawerButton should match, full snapshot 2`] = `
   accessible={true}
   onPress={[Function]}
   style={
-    {
+    Object {
       "width": 55,
     }
   }
 >
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "alignItems": "center",
           "flex": 1,
           "flexDirection": "column",
@@ -75,7 +75,7 @@ exports[`MainSidebarDrawerButton should match, full snapshot 2`] = `
       />
       <Badge
         containerStyle={
-          {
+          Object {
             "borderColor": "#192a4d",
             "borderRadius": 14,
             "borderWidth": 2,
@@ -86,7 +86,7 @@ exports[`MainSidebarDrawerButton should match, full snapshot 2`] = `
         }
         count={1}
         countStyle={
-          {
+          Object {
             "color": "#1e325c",
             "fontSize": 10,
             "fontWeight": "bold",
@@ -97,7 +97,7 @@ exports[`MainSidebarDrawerButton should match, full snapshot 2`] = `
         minWidth={18}
         onPress={[Function]}
         style={
-          {
+          Object {
             "backgroundColor": "#ffffff",
             "height": 18,
             "padding": 3,
