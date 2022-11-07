@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`CallScreen Landscape should match snapshot 1`] = `
-<ForwardRef(SafeAreaView)
+<RCTSafeAreaView
   style={
     {
       "flex": 1,
@@ -386,11 +386,11 @@ exports[`CallScreen Landscape should match snapshot 1`] = `
       </View>
     </View>
   </View>
-</ForwardRef(SafeAreaView)>
+</RCTSafeAreaView>
 `;
 
 exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
-<ForwardRef(SafeAreaView)
+<RCTSafeAreaView
   style={
     {
       "flex": 1,
@@ -724,11 +724,11 @@ exports[`CallScreen Landscape should match snapshot with screenshare 1`] = `
       </View>
     </View>
   </View>
-</ForwardRef(SafeAreaView)>
+</RCTSafeAreaView>
 `;
 
 exports[`CallScreen Portrait should match snapshot 1`] = `
-<ForwardRef(SafeAreaView)
+<RCTSafeAreaView
   style={
     {
       "flex": 1,
@@ -1104,11 +1104,11 @@ exports[`CallScreen Portrait should match snapshot 1`] = `
       </View>
     </View>
   </View>
-</ForwardRef(SafeAreaView)>
+</RCTSafeAreaView>
 `;
 
 exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
-<ForwardRef(SafeAreaView)
+<RCTSafeAreaView
   style={
     {
       "flex": 1,
@@ -1518,11 +1518,11 @@ exports[`CallScreen Portrait should match snapshot with screenshare 1`] = `
       </View>
     </View>
   </View>
-</ForwardRef(SafeAreaView)>
+</RCTSafeAreaView>
 `;
 
 exports[`CallScreen should show controls in landscape view on click the screen share 1`] = `
-<ForwardRef(SafeAreaView)
+<RCTSafeAreaView
   style={
     {
       "flex": 1,
@@ -1856,11 +1856,11 @@ exports[`CallScreen should show controls in landscape view on click the screen s
       </View>
     </View>
   </View>
-</ForwardRef(SafeAreaView)>
+</RCTSafeAreaView>
 `;
 
 exports[`CallScreen should show controls in landscape view on click the users list 1`] = `
-<ForwardRef(SafeAreaView)
+<RCTSafeAreaView
   style={
     {
       "flex": 1,
@@ -2245,5 +2245,5 @@ exports[`CallScreen should show controls in landscape view on click the users li
       </View>
     </View>
   </View>
-</ForwardRef(SafeAreaView)>
+</RCTSafeAreaView>
 `;
