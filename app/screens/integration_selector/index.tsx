@@ -224,28 +224,6 @@ function IntegrationSelector(
         }
     };
 
-    // const getDataResults = () => {
-    //     const result = {
-    //         data: integrationData,
-    //         listType: FLATLIST
-    //     };
-
-    //     if (term) {
-    //         // result.data = filterSearchData(dataSource, searchResults, term);
-    //     } else if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-    //         // result.data = createProfilesSections(data);
-    //         result.listType = SECTIONLIST;
-    //     }
-
-    //     if (!dataSource || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
-    //         result.data = result.data.map((value: any) => {  // TODO DialogOption before?
-    //             return { ...value, id: (value).value };
-    //         });
-    //     }
-
-    //     return result;
-    // };
-
     const getProfiles = async () => {
         if (next && !loading && !term) {
             setLoading(true);
@@ -503,6 +481,10 @@ function IntegrationSelector(
 
     if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
         customListData = createProfilesSections(customListData);
+    }
+
+    if (!dataSource || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
+        customListData = (integrationData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().includes(term));
     }
 
     let rowComponent;
