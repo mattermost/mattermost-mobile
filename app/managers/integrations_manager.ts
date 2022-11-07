@@ -14,12 +14,6 @@ class ServerIntegrationsManager {
     private triggerId = '';
     private storedDialog?: InteractiveDialogConfig;
 
-    private bindings: AppBinding[] = [];
-    private rhsBindings: AppBinding[] = [];
-
-    private commandForms: {[key: string]: AppForm | undefined} = {};
-    private rhsCommandForms: {[key: string]: AppForm | undefined} = {};
-
     constructor(serverUrl: string) {
         this.serverUrl = serverUrl;
     }
@@ -42,29 +36,6 @@ class ServerIntegrationsManager {
         } catch {
             return [];
         }
-    }
-
-    public getCommandBindings() {
-        // TODO filter bindings
-        return this.bindings;
-    }
-
-    public getRHSCommandBindings() {
-        // TODO filter bindings
-        return this.rhsBindings;
-    }
-
-    public getAppRHSCommandForm(key: string) {
-        return this.rhsCommandForms[key];
-    }
-    public getAppCommandForm(key: string) {
-        return this.commandForms[key];
-    }
-    public setAppRHSCommandForm(key: string, form: AppForm) {
-        this.rhsCommandForms[key] = form;
-    }
-    public setAppCommandForm(key: string, form: AppForm) {
-        this.commandForms[key] = form;
     }
 
     public setTriggerId(id: string) {

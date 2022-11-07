@@ -92,7 +92,7 @@ const Channel = ({
         return () => back?.remove();
     }, [componentId, isTablet]);
 
-    const marginTop = defaultHeight + (isTablet ? insets.top : 0);
+    const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
     useEffect(() => {
         // This is done so that the header renders
         // and the screen does not look totally blank

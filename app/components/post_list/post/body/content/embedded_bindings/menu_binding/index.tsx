@@ -8,10 +8,12 @@ import {useIntl} from 'react-intl';
 import {map} from 'rxjs/operators';
 
 import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/remote/apps';
+import {handleGotoLocation} from '@actions/remote/command';
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {observeCurrentTeamId} from '@queries/servers/system';
+import {showAppForm} from '@screens/navigation';
 import {createCallContext} from '@utils/apps';
 import {logDebug} from '@utils/log';
 
@@ -70,7 +72,14 @@ const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
                 }
                 return;
             case AppCallResponseTypes.NAVIGATE:
+                if (callResp.navigate_to_url) {
+                    handleGotoLocation(serverUrl, intl, callResp.navigate_to_url);
+                }
+                return;
             case AppCallResponseTypes.FORM:
+                if (callResp.form) {
+                    showAppForm(callResp.form);
+                }
                 return;
             default: {
                 const errorMessage = intl.formatMessage({

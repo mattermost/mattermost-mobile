@@ -254,6 +254,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 position={animatedAutocompletePosition}
                 availableSpace={animatedAutocompleteAvailableSpace}
                 inPost={false}
+                serverUrl={serverUrl}
             />
         </>
     );

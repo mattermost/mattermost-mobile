@@ -12,6 +12,7 @@ import {
     setChannelEnabled,
     setRaisedHand,
     setUserMuted,
+    setUserVoiceOn,
     userJoinedCall,
     userLeftCall,
 } from '@calls/state';
@@ -38,17 +39,11 @@ export const handleCallUserUnmuted = (serverUrl: string, msg: WebSocketMessage) 
 };
 
 export const handleCallUserVoiceOn = (msg: WebSocketMessage) => {
-    DeviceEventEmitter.emit(WebsocketEvents.CALLS_USER_VOICE_ON, {
-        channelId: msg.broadcast.channel_id,
-        userId: msg.data.userID,
-    });
+    setUserVoiceOn(msg.broadcast.channel_id, msg.data.userID, true);
 };
 
 export const handleCallUserVoiceOff = (msg: WebSocketMessage) => {
-    DeviceEventEmitter.emit(WebsocketEvents.CALLS_USER_VOICE_OFF, {
-        channelId: msg.broadcast.channel_id,
-        userId: msg.data.userID,
-    });
+    setUserVoiceOn(msg.broadcast.channel_id, msg.data.userID, false);
 };
 
 export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage) => {

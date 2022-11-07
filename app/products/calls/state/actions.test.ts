@@ -9,7 +9,8 @@ import {
     newCurrentCall,
     setCallsState,
     setChannelsWithCalls,
-    setCurrentCall, setCurrentCallConnected,
+    setCurrentCall,
+    setCurrentCallConnected,
     useCallsConfig,
     useCallsState,
     useChannelsWithCalls,
@@ -31,6 +32,7 @@ import {
     setSpeakerPhone,
     setConfig,
     setPluginEnabled,
+    setUserVoiceOn,
 } from '@calls/state/actions';
 import {License} from '@constants';
 
@@ -108,39 +110,70 @@ describe('useCallsState', () => {
         const initialChannelsWithCallsState = {
             'channel-1': true,
         };
+        const initialCurrentCallState: CurrentCall = {
+            connected: false,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+            screenShareURL: '',
+            speakerphoneOn: false,
+            voiceOn: {},
+        };
+        const testNewCall1 = {
+            ...call1,
+            participants: {
+                'user-1': {id: 'user-1', muted: false, raisedHand: 0},
+                'user-2': {id: 'user-2', muted: true, raisedHand: 0},
+                'user-3': {id: 'user-3', muted: false, raisedHand: 123},
+            },
+        };
         const test = {
-            calls: {'channel-1': call2, 'channel-2': call3},
+            calls: {'channel-1': testNewCall1, 'channel-2': call2, 'channel-3': call3},
             enabled: {'channel-2': true},
         };
+
         const expectedCallsState = {
             ...initialCallsState,
             serverUrl: 'server1',
             myUserId: 'myId',
-            calls: {'channel-1': call2, 'channel-2': call3},
+            calls: {'channel-1': testNewCall1, 'channel-2': call2, 'channel-3': call3},
             enabled: {'channel-2': true},
         };
         const expectedChannelsWithCallsState = {
             ...initialChannelsWithCallsState,
             'channel-2': true,
+            'channel-3': true,
+        };
+        const expectedCurrentCallState = {
+            ...initialCurrentCallState,
+            ...testNewCall1,
         };
 
         // setup
         const {result} = renderHook(() => {
-            return [useCallsState('server1'), useCallsState('server1'), useChannelsWithCalls('server1')];
+            return [
+                useCallsState('server1'),
+                useCallsState('server1'),
+                useChannelsWithCalls('server1'),
+                useCurrentCall(),
+            ];
         });
         act(() => {
             setCallsState('server1', initialCallsState);
             setChannelsWithCalls('server1', initialChannelsWithCallsState);
+            setCurrentCall(initialCurrentCallState);
         });
         assert.deepEqual(result.current[0], initialCallsState);
         assert.deepEqual(result.current[1], initialCallsState);
         assert.deepEqual(result.current[2], initialChannelsWithCallsState);
+        assert.deepEqual(result.current[3], initialCurrentCallState);
 
         // test
         act(() => setCalls('server1', 'myId', test.calls, test.enabled));
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], expectedCallsState);
         assert.deepEqual(result.current[2], expectedChannelsWithCallsState);
+        assert.deepEqual(result.current[3], expectedCurrentCallState);
     });
 
     it('joinedCall', () => {
@@ -158,6 +191,7 @@ describe('useCallsState', () => {
             ...call1,
             screenShareURL: '',
             speakerphoneOn: false,
+            voiceOn: {},
         };
         const expectedCallsState = {
             'channel-1': {
@@ -218,6 +252,7 @@ describe('useCallsState', () => {
             ...call1,
             screenShareURL: '',
             speakerphoneOn: false,
+            voiceOn: {},
         };
         const expectedCallsState = {
             'channel-1': {
@@ -321,6 +356,7 @@ describe('useCallsState', () => {
             ...call1,
             screenShareURL: '',
             speakerphoneOn: false,
+            voiceOn: {},
         };
 
         // setup
@@ -363,12 +399,13 @@ describe('useCallsState', () => {
         };
         const initialChannelsWithCallsState = {'channel-1': true, 'channel-2': true};
         const initialCurrentCallState: CurrentCall = {
-            connected: true,
+            connected: false,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
             screenShareURL: '',
             speakerphoneOn: false,
+            voiceOn: {},
         };
 
         // setup
@@ -428,6 +465,7 @@ describe('useCallsState', () => {
             ...call1,
             screenShareURL: '',
             speakerphoneOn: false,
+            voiceOn: {},
         };
         const expectedCurrentCallState = {
             ...initialCurrentCallState,
@@ -487,6 +525,7 @@ describe('useCallsState', () => {
             screenShareURL: '',
             speakerphoneOn: false,
             ...newCall1,
+            voiceOn: {},
         };
 
         // setup
@@ -633,6 +672,51 @@ describe('useCallsState', () => {
         });
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], null);
+    });
+
+    it('voiceOn and Off', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const initialCurrentCallState: CurrentCall = {
+            connected: false,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+            screenShareURL: '',
+            speakerphoneOn: false,
+            voiceOn: {},
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => {
+            setCallsState('server1', initialCallsState);
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+
+        // test
+        act(() => setUserVoiceOn('channel-1', 'user-1', true));
+        assert.deepEqual(result.current[1], {...initialCurrentCallState, voiceOn: {'user-1': true}});
+        assert.deepEqual(result.current[0], initialCallsState);
+        act(() => setUserVoiceOn('channel-1', 'user-2', true));
+        assert.deepEqual(result.current[1], {...initialCurrentCallState, voiceOn: {'user-1': true, 'user-2': true}});
+        assert.deepEqual(result.current[0], initialCallsState);
+        act(() => setUserVoiceOn('channel-1', 'user-1', false));
+        assert.deepEqual(result.current[1], {...initialCurrentCallState, voiceOn: {'user-2': true}});
+        assert.deepEqual(result.current[0], initialCallsState);
+
+        // test that voice state is cleared on reconnect
+        act(() => setCalls('server1', 'myUserId', initialCallsState.calls, {}));
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+        assert.deepEqual(result.current[0], initialCallsState);
     });
 
     it('config', () => {

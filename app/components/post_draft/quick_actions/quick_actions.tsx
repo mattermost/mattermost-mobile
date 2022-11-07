@@ -19,6 +19,7 @@ type Props = {
     value: string;
     updateValue: (value: string) => void;
     addFiles: (file: FileInfo[]) => void;
+    focus: () => void;
 }
 
 const style = StyleSheet.create({
@@ -47,6 +48,7 @@ export default function QuickActions({
     maxFileCount,
     updateValue,
     addFiles,
+    focus,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
@@ -74,15 +76,15 @@ export default function QuickActions({
                 testID={atInputActionTestID}
                 disabled={atDisabled}
                 inputType='at'
-                onTextChange={updateValue}
-                value={value}
+                updateValue={updateValue}
+                focus={focus}
             />
             <InputAction
                 testID={slashInputActionTestID}
                 disabled={slashDisabled}
                 inputType='slash'
-                onTextChange={updateValue}
-                value={''} // Only enabled when value == ''
+                updateValue={updateValue}
+                focus={focus}
             />
             <FileAction
                 testID={fileActionTestID}

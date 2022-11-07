@@ -28,7 +28,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingTop: 10,
         },
         listContainer: {
-            backgroundColor: theme.sidebarTeamBarBg,
+            backgroundColor: theme.sidebarHeaderBg,
             borderTopRightRadius: 12,
             flex: 1,
         },

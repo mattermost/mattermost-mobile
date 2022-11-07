@@ -91,16 +91,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         sectionContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            paddingLeft: 10,
-            paddingVertical: 2,
-            height: 28,
+            paddingLeft: 16,
+            justifyContent: 'center',
+            height: 24,
         },
         sectionWrapper: {
             backgroundColor: theme.centerChannelBg,
         },
         sectionText: {
             color: theme.centerChannelColor,
-            ...typography('Body', 300, 'SemiBold'),
+            ...typography('Body', 75, 'SemiBold'),
         },
     };
 });
@@ -181,7 +181,6 @@ export default function UserList({
                 onLongPress={openUserProfile}
                 selectable={canAdd}
                 selected={selected}
-                enabled={canAdd}
                 testID='create_direct_message.user_list.user_item'
                 teammateNameDisplay={teammateNameDisplay}
                 tutorialWatched={tutorialWatched}
