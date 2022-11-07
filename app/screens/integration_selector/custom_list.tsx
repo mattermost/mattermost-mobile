@@ -24,7 +24,7 @@ type Props = {
     refreshing?: boolean,
     onRefresh?: () => void,
     onLoadMore: () => void,
-    onRowPress?: (id: string, item: UserProfile | Channel | DialogOption) => any,
+    onRowPress?: (item: UserProfile | Channel | DialogOption) => void,
     renderItem: (props: object) => JSX.Element,
     selectable?: boolean,
     theme?: object,
@@ -168,7 +168,7 @@ function CustomList({
             selected: boolean,
             selectable?: boolean,
             enabled: boolean,
-            onPress?: (id: string, item: DialogOption) => void,
+            onPress?: (item: DialogOption) => void,
         }
 
         let props: listItemProps = {

@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {
-    GestureResponderEvent,
     Text,
     View,
 } from 'react-native';
@@ -17,6 +16,7 @@ type ChannelListRowProps = {
     isArchived: boolean,
     theme: object,
     channel: Channel,
+    onPress: (item: Channel) => void,
 };
 
 type Props = ChannelListRowProps & CustomListRowProps;
@@ -58,12 +58,12 @@ const ChannelListRow = ({
     onPress, id, theme, channel, testID, isArchived,
     enabled, selectable, selected,
 }: Props) => {
-    const onPressRow = (event: GestureResponderEvent): void => {
+    const onPressRow = (): void => {
         if (!onPress) {
             return;
         }
 
-        onPress(id, channel);
+        onPress(channel);
     };
 
     const style = getStyleFromTheme(theme);

@@ -3,7 +3,6 @@
 
 import React from 'react';
 import {
-    GestureResponderEvent,
     Text,
     View,
 } from 'react-native';
@@ -16,6 +15,7 @@ type OptionListRowProps = {
     id: string,
     theme: object,
     item: { text: string, value: string },  // TODO I don't think this goes here, but It seems broken in @master
+    onPress: (item: DialogOption) => void,
 }
 
 type Props = OptionListRowProps & CustomListRowProps;
@@ -49,9 +49,9 @@ const OptionListRow = ({
     const { text, value } = item;
     const style = getStyleFromTheme(theme);
 
-    const onPressRow = (event: GestureResponderEvent): void => {
+    const onPressRow = (): void => {
         if (onPress) {
-            onPress(id, item);
+            onPress(item);
         }
     };
 

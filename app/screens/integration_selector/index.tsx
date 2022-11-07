@@ -133,7 +133,7 @@ function IntegrationSelector(
         popTopScreen();
     };
 
-    const handleSelectItem = (id: string, item: UserProfile | Channel | DialogOption) => {
+    const handleSelectItem = (item: UserProfile | Channel | DialogOption) => {
         if (!isMultiselect) {
             handleSelect(item);
             close();

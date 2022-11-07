@@ -8,7 +8,6 @@ import {
     View,
     StyleProp,
     ViewStyle,
-    GestureResponderEvent,
 } from 'react-native';
 
 import ChannelIcon from '@components/channel_icon';
@@ -69,6 +68,7 @@ type UserListRowProps = {
     user: UserProfile,
     teammateNameDisplay: string,
     testID: string,
+    onPress: (item: UserProfile) => void,
 };
 
 type Props = UserListRowProps & CustomListRowProps;
@@ -76,9 +76,9 @@ type Props = UserListRowProps & CustomListRowProps;
 const UserListRow = ({
     id, isMyUser, theme, user, teammateNameDisplay, testID, onPress, enabled, selectable, selected,
 }: Props) => {
-    const onPressRow = (event: GestureResponderEvent): void => {
+    const onPressRow = (): void => {
         if (onPress) {
-            onPress(id, user);
+            onPress(user);
         }
     };
 
