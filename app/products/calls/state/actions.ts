@@ -168,6 +168,7 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
         connected: false,
         ...existingCall,
         serverUrl,
+        channelId,
         myUserId,
         screenShareURL: '',
         speakerphoneOn: false,
@@ -195,6 +196,21 @@ export const callStarted = (serverUrl: string, call: Call) => {
 
     const nextChannelsWithCalls = {...getChannelsWithCalls(serverUrl), [call.channelId]: true};
     setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
+
+    // If we started a call, we will get a callStarted event with the 'official' data from the server.
+    // Save that in our currentCall.
+    const currentCall = getCurrentCall();
+    if (!currentCall || currentCall.channelId !== call.channelId) {
+        return;
+    }
+
+    const nextCurrentCall = {
+        ...currentCall,
+        startTime: call.startTime,
+        threadId: call.threadId,
+        ownerId: call.ownerId,
+    };
+    setCurrentCall(nextCurrentCall);
 };
 
 export const callEnded = (serverUrl: string, channelId: string) => {

@@ -47,9 +47,11 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         logError('Unable to get media device:', err);
     }
 
+    InCallManager.start({media: 'audio'});
+    InCallManager.stopProximitySensor();
+
     // getClient can throw an error, which will be handled by the caller.
     const client = NetworkManager.getClient(serverUrl);
-
     const credentials = await getServerCredentials(serverUrl);
 
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
@@ -213,8 +215,6 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         });
 
         peer.on('connect', () => {
-            InCallManager.start({media: 'audio'});
-            InCallManager.stopProximitySensor();
             setCurrentCallConnected();
         });
     });
