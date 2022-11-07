@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, { useEffect, useState } from 'react';
-import {View, useWindowDimensions, Text} from 'react-native';
+import React, {useEffect, useState} from 'react';
+import {View, useWindowDimensions} from 'react-native';
 import Animated, {Extrapolate, interpolate, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -61,7 +61,6 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
     const FIRST_SLIDE = 0;
-    const SvgImg = item.image;
 
     /**
      * Code used to animate the first image load
@@ -181,12 +180,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
                     (index === FIRST_SLIDE && firstLoad ? styles.firstSlideInitialPosition : undefined),
                 ]}
             >
-                <SvgImg
-                    style={[styles.image, {
-                        width,
-                        resizeMode: 'contain',
-                    }]}
-                />
+                {item.image}
             </Animated.View>
             <View style={{flex: 0.3}}>
                 <Animated.Text
