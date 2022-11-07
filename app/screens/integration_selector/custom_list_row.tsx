@@ -66,8 +66,7 @@ const CustomListRow = ({
 }: Props) => {
     return (
         <View style={style.container}>
-
-            {selectable &&
+            {/* {selectable &&
                 <View style={style.selectorContainer}>
                     <TouchableOpacity
                         onPress={onPress}
@@ -82,7 +81,7 @@ const CustomListRow = ({
                         }
                     </TouchableOpacity>
                 </View>
-            }
+            } */}
             <TouchableOpacity
                 onPress={onPress}
                 style={style.children}

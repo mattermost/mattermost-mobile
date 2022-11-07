@@ -489,6 +489,28 @@ function IntegrationSelector(
         );
     };
 
+    const renderSelectedOptions = (): React.ReactElement<any, string> | null => {
+        const selectedItems: any = Object.values(multiselectSelected);
+        let optionComponents: React.ReactElement<any, string> | null = null;
+
+        if (selectedItems.length > 0) {
+            optionComponents = (
+                <>
+                    <SelectedOptions
+                        ref={selectedScroll}
+                        theme={theme}
+                        selectedOptions={selectedItems}
+                        dataSource={dataSource}
+                        onRemove={handleRemoveOption}
+                    />
+                    <View style={style.separator} />
+                </>
+            );
+        }
+
+        return optionComponents;
+    }
+
     const listType = dataSource === ViewConstants.DATA_SOURCE_USERS ? SECTIONLIST : FLATLIST;
     let rowComponent;
     if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
@@ -499,22 +521,7 @@ function IntegrationSelector(
         rowComponent = renderOptionItem;
     }
 
-    let selectedOptionsComponent = null;
-    const selectedItems: any = Object.values(multiselectSelected);
-    if (selectedItems.length > 0) {
-        selectedOptionsComponent = (
-            <>
-                <SelectedOptions
-                    ref={selectedScroll}
-                    theme={theme}
-                    selectedOptions={selectedItems}
-                    dataSource={dataSource}
-                    onRemove={handleRemoveOption}
-                />
-                <View style={style.separator} />
-            </>
-        );
-    }
+    let selectedOptionsComponent = renderSelectedOptions();
 
     return (
         <SafeAreaView style={style.container}>
