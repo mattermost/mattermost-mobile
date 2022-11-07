@@ -40,6 +40,10 @@ import { ScrollView } from 'react-native-gesture-handler';
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
 type MultiselectSelectedMap = Dictionary<DialogOption> | Dictionary<Channel> | Dictionary<UserProfile>;
+type UserProfileSection = {
+    id: string,
+    data: UserProfile[]
+};
 
 type Props = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
@@ -112,11 +116,11 @@ function IntegrationSelector(
     const [integrationData, setIntegrationData] = useState<DataType>(data || []);
     const [loading, setLoading] = useState<boolean>(false);
     const [term, setTerm] = useState<string>("");
-    const [searchResults, setSearchResults] = useState<DialogOption[]>([]);
+    const [searchResults, setSearchResults] = useState<DataType>([]);
     const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
     const [currentPage, setCurrentPage] = useState<number>(-1);
     const [next, setNext] = useState<boolean>(dataSource === ViewConstants.DATA_SOURCE_USERS || dataSource === ViewConstants.DATA_SOURCE_CHANNELS || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC);
-    const [customListData, setCustomListData] = useState([]);
+    const [customListData, setCustomListData] = useState<DataType | UserProfileSection[]>([]);
 
     let selectedScroll = React.createRef<ScrollView>();
     let multiselectItems: MultiselectSelectedMap = {}
@@ -347,7 +351,7 @@ function IntegrationSelector(
 
             searchTimeoutId.current = setTimeout(() => {
                 if (!dataSource) {
-                    setSearchResults(filterSearchData(null, data, text));
+                    setSearchResults(filterSearchData('', integrationData, text));
                     return;
                 }
 
@@ -398,13 +402,13 @@ function IntegrationSelector(
     }, [])
 
     useEffect(() => {
-        let listData = integrationData;
+        let listData: (DataType | UserProfileSection[]) = integrationData;
         if (term) {
             listData = searchResults;
         }
 
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            listData = createProfilesSections(listData);
+            listData = createProfilesSections(listData as UserProfile[]);
         }
 
         if (!dataSource || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
