@@ -467,5 +467,7 @@
     "channel_info.notification.default": "Varsayılan",
     "channel_info.notification.all": "Tümü",
     "channel_info.nickname": "Takma ad",
-    "channel_info.muted": "Bildirimleri kapat"
+    "channel_info.muted": "Bildirimleri kapat",
+    "channel_modal.headerHelp": "Kanal adının yanında kanal başlığında görüntülenecek metni yazın. Örnek: [Bağlantı başlığı](http://kurulus.com) gibi sık kullanılan bağlantıları yazabilirsiniz.",
+    "channel_modal.headerEx": "Başlık metnini biçimlendirmek için Markdown kullanılsın"
 }
