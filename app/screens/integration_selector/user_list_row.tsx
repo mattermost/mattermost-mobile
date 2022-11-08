@@ -74,7 +74,7 @@ type UserListRowProps = {
 type Props = UserListRowProps & CustomListRowProps;
 
 const UserListRow = ({
-    id, isMyUser, theme, user, teammateNameDisplay, testID, onPress, enabled, selectable, selected,
+    isMyUser, theme, user, teammateNameDisplay, testID, onPress, enabled, selectable, selected,
 }: Props) => {
     const onPressRow = (): void => {
         if (onPress) {

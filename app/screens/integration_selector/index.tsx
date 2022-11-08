@@ -115,6 +115,7 @@ function IntegrationSelector(
         ViewConstants.DATA_SOURCE_CHANNELS,
         ViewConstants.DATA_SOURCE_USERS,
         ViewConstants.DATA_SOURCE_DYNAMIC];
+    const INITIAL_PAGE = 0;
 
     // HOOKS
     const [integrationData, setIntegrationData] = useState<DataType>(data || []);
@@ -122,7 +123,7 @@ function IntegrationSelector(
     const [term, setTerm] = useState<string>("");
     const [searchResults, setSearchResults] = useState<DataType>([]);
     const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
-    const [currentPage, setCurrentPage] = useState<number>(-1);
+    const [currentPage, setCurrentPage] = useState<number>(INITIAL_PAGE);
     const [next, setNext] = useState<boolean>(VALID_DATASOURCES.includes(dataSource));
     const [customListData, setCustomListData] = useState<DataType | UserProfileSection[]>([]);
 
@@ -245,10 +246,11 @@ function IntegrationSelector(
         if (next && !loading && !term) {
             setLoading(true);
             setCurrentPage(currentPage + 1);
-            const { channels: channelData } = await fetchChannels(serverUrl, currentTeamId);
+            const { channels: channelData } = await fetchChannels(serverUrl, currentTeamId, currentPage);
+            setLoading(false);
 
-            if (channelData) {
-                loadedChannels({ data: channelData });
+            if (channelData && channelData.length > 0) {
+                loadedChannels([...integrationData as Channel[], ...channelData]);
             }
         }
     }, 100);
@@ -258,9 +260,10 @@ function IntegrationSelector(
             setLoading(true);
             setCurrentPage(currentPage + 1);
             const { users: userData } = await fetchProfiles(serverUrl, currentPage);
+            setLoading(false);
 
-            if (userData) {
-                loadedProfiles(userData);
+            if (userData && userData.length > 0) {
+                loadedProfiles([...integrationData as UserProfile[], ...userData]);
             }
         }
     }, 100);
@@ -271,13 +274,10 @@ function IntegrationSelector(
         }
     };
 
-    const loadedChannels = ({ data: channels }: { data: Channel[] }) => {
+    const loadedChannels = (channels: Channel[]) => {
         if (channels && !channels.length) {
             setNext(false);
         }
-
-        setCurrentPage(currentPage + 1);
-        setLoading(false);
         setIntegrationData(channels);
     };
 
@@ -285,9 +285,6 @@ function IntegrationSelector(
         if (profiles && !profiles.length) {
             setNext(false);
         }
-
-        setCurrentPage(currentPage + 1);
-        setLoading(false);
         setIntegrationData(profiles);
     };
 
@@ -313,7 +310,6 @@ function IntegrationSelector(
 
     const searchProfiles = async (term: string) => {
         setLoading(true)
-
         const { data: userData } = await searchProfilesRemote(serverUrl, term.toLowerCase(), { team_id: currentTeamId, allow_inactive: true });
         setLoading(false);
 
@@ -480,7 +476,7 @@ function IntegrationSelector(
     };
 
     const renderNoResults = (): JSX.Element | null => {
-        if (loading || currentPage === -1) {
+        if (loading || currentPage === INITIAL_PAGE) {
             return null;
         }
 
