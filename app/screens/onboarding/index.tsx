@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback} from 'react';
 import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView} from 'react-native';
-import Animated, {runOnJS, useAnimatedRef, useAnimatedScrollHandler, useSharedValue} from 'react-native-reanimated';
+import Animated, {useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
 
+import {Screens} from '@app/constants';
 import Background from '@screens/background';
+import {goToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import FooterButtons from './footer_buttons';
@@ -26,31 +28,30 @@ const Onboarding = ({
 }: OnboardingProps) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
-    const [isLastSlide, setIsLastSlide] = useState(false);
     const slidesData = useSlidesData().slidesData;
     const lastSlideIndex = slidesData.length - 1;
     const slidesRef = useAnimatedRef<Animated.ScrollView>();
-    const currentIndex = useSharedValue(0);
-    const scrollX = useSharedValue(0);
 
-    const nextSlide = () => {
+    // const currentIndex = useSharedValue(0);
+    const scrollX = useSharedValue(0);
+    const currentIndex = useDerivedValue(() => Math.round(scrollX.value / width));
+
+    const moveToSlide = useCallback((slideIndexToMove: number) => {
+        slidesRef.current?.scrollTo({x: (slideIndexToMove * width), animated: true});
+    }, [slidesRef.current]);
+
+    const nextSlide = useCallback(() => {
         const nextSlideIndex = currentIndex.value + 1;
         if (slidesRef.current && currentIndex.value < lastSlideIndex) {
             moveToSlide(nextSlideIndex);
+        } else if (slidesRef.current && currentIndex.value === lastSlideIndex) {
+            signInHandler();
         }
-    };
+    }, [currentIndex.value, slidesRef.current, moveToSlide]);
 
-    const moveToSlide = (slideIndexToMove: number) => {
-        currentIndex.value = slideIndexToMove;
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        slidesRef?.current?.scrollTo({x: (slideIndexToMove * width), animated: true});
-    };
-
-    const signInHandler = () => {
-        // temporal validation
-        setIsLastSlide(!isLastSlide);
-    };
+    const signInHandler = useCallback(() => {
+        goToScreen(Screens.SERVER, '', {theme});
+    }, []);
 
     const renderSlide = useCallback(({item, index}: ListRenderItemInfo<OnboardingItem>) => {
         return (
@@ -64,17 +65,10 @@ const Onboarding = ({
         );
     }, []);
 
-    const toogleIsLastSlideValue = (isLast: boolean) => {
-        setIsLastSlide(isLast);
-    };
-
-    const handleScroll = useAnimatedScrollHandler(({contentOffset: {x}}) => {
-        const calculatedIndex = Math.round(x / width);
-        scrollX.value = x;
-        if (calculatedIndex !== currentIndex.value) {
-            currentIndex.value = calculatedIndex;
-            runOnJS(toogleIsLastSlideValue)(calculatedIndex === lastSlideIndex);
-        }
+    const scrollHandler = useAnimatedScrollHandler({
+        onScroll: (event) => {
+            scrollX.value = event.contentOffset.x;
+        },
     });
 
     return (
@@ -93,7 +87,7 @@ const Onboarding = ({
                     showsHorizontalScrollIndicator={false}
                     pagingEnabled={true}
                     bounces={false}
-                    onScroll={handleScroll}
+                    onScroll={scrollHandler}
                     ref={slidesRef}
                 >
                     {slidesData.map((item, index) => {
@@ -108,10 +102,8 @@ const Onboarding = ({
                 />
                 <FooterButtons
                     theme={theme}
-                    isLastSlide={isLastSlide}
                     nextSlideHandler={nextSlide}
                     signInHandler={signInHandler}
-                    currentIndex={currentIndex.value}
                     scrollX={scrollX}
                     lastSlideIndex={lastSlideIndex}
                 />

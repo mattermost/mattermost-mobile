@@ -12,11 +12,9 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     theme: Theme;
-    isLastSlide: boolean;
     lastSlideIndex: number;
     nextSlideHandler: () => void;
     signInHandler: () => void;
-    currentIndex: number;
     scrollX: Animated.SharedValue<number>;
 };
 
@@ -38,9 +36,7 @@ const FooterButtons = ({
     theme,
     nextSlideHandler,
     signInHandler,
-    isLastSlide,
     lastSlideIndex,
-    currentIndex,
     scrollX,
 }: Props) => {
     const {width} = useWindowDimensions();
@@ -49,10 +45,8 @@ const FooterButtons = ({
 
     // keep in mind penultimate and ultimate slides to run buttons text/opacity/size animations
     const penultimateSlide = lastSlideIndex - 1;
-    const isPenultimateSlide = currentIndex === (lastSlideIndex - 1);
-    const needToAnimate = isLastSlide || isPenultimateSlide;
 
-    const inputRange = [penultimateSlide * width, lastSlideIndex * width];
+    const inputRange = [(penultimateSlide * width), lastSlideIndex * width];
 
     // the next button must resize in the last slide to be the 80% wide of the screen with animation
     const resizeStyle = useAnimatedStyle(() => {
@@ -67,15 +61,26 @@ const FooterButtons = ({
     });
 
     // use for the opacity of the button text in the penultimate and last slide
-    const opacityTextStyle = useAnimatedStyle(() => {
+    const opacityNextTextStyle = useAnimatedStyle(() => {
         const interpolatedScale = interpolate(
             scrollX.value,
-            inputRange,
-            isLastSlide ? [0, 1] : [1, 0], // from last to penultimate it must fade out (from 1 to 0), once it starts getting the penultimate range it must fade in again (from 0 to 1)
+            [penultimateSlide * width, ((penultimateSlide * width) + (width / 2))],
+            [1, 0], // from last to penultimate it must fade out (from 1 to 0), once it starts getting the penultimate range it must fade in again (from 0 to 1)
             Extrapolate.CLAMP,
         );
 
-        return {opacity: needToAnimate ? interpolatedScale : 1};
+        return {opacity: interpolatedScale};
+    });
+
+    const opacitySignInTextStyle = useAnimatedStyle(() => {
+        const interpolatedScale = interpolate(
+            scrollX.value,
+            [lastSlideIndex * width, ((penultimateSlide * width) + (width / 2))],
+            [1, 0], // from last to penultimate it must fade out (from 1 to 0), once it starts getting the penultimate range it must fade in again (from 0 to 1)
+            Extrapolate.CLAMP,
+        );
+
+        return {opacity: interpolatedScale};
     });
 
     // the sign in button should fade out until dissappear in the last slide
@@ -90,8 +95,8 @@ const FooterButtons = ({
         return {opacity: interpolatedScale};
     });
 
-    let mainButtonText = (
-        <Animated.View style={[{flexDirection: 'row'}, opacityTextStyle]}>
+    const nextButtonText = (
+        <Animated.View style={[{flexDirection: 'row', position: 'absolute'}, opacityNextTextStyle]}>
             <FormattedText
                 id='mobile.onboarding.next'
                 defaultMessage='Next'
@@ -104,29 +109,25 @@ const FooterButtons = ({
         </Animated.View>
     );
 
-    let mainButtonAction = nextSlideHandler;
-
-    if (isLastSlide) {
-        mainButtonText = (
-            <Animated.View style={[{flexDirection: 'row'}, opacityTextStyle]}>
-                <FormattedText
-                    id='mobile.onboarding.sign_in_to_get_started'
-                    defaultMessage='Sign in to get started'
-                    style={buttonTextStyle(theme, 's', 'primary', 'default')}
-                />
-            </Animated.View>
-        );
-        mainButtonAction = signInHandler;
-    }
+    const signInButtonText = (
+        <Animated.View style={[{flexDirection: 'row'}, opacitySignInTextStyle]}>
+            <FormattedText
+                id='mobile.onboarding.sign_in_to_get_started'
+                defaultMessage='Sign in to get started'
+                style={buttonTextStyle(theme, 's', 'primary', 'default')}
+            />
+        </Animated.View>
+    );
 
     return (
         <View style={{flexDirection: 'column', height: 150, marginTop: 15, width: '100%', marginHorizontal: 10, alignItems: 'center'}}>
             <AnimatedButton
                 testID='mobile.onboaring.next'
-                onPress={() => mainButtonAction()}
+                onPress={() => nextSlideHandler()}
                 style={[styles.button, buttonBackgroundStyle(theme, 'm', 'primary', 'default'), resizeStyle]}
             >
-                {mainButtonText}
+                {nextButtonText}
+                {signInButtonText}
             </AnimatedButton>
             <AnimatedButton
                 testID='mobile.onboaring.sign_in'
