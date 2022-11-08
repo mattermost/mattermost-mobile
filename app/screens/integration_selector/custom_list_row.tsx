@@ -9,6 +9,8 @@ import {
     View,
 } from 'react-native';
 
+import CompassIcon from '@app/components/compass_icon';
+
 export type Props = {
     id: string;
     onPress?: (event: GestureResponderEvent) => void;
@@ -59,11 +61,34 @@ const style = StyleSheet.create({
 });
 
 const CustomListRow = ({
-    onPress, children,
+    onPress, children, enabled, selectable, selected, id, testID,
 }: Props) => {
     return (
-        <View style={style.container}>
+        <View
+            style={style.container}
+            testID={testID}
+        >
+            {selectable &&
+                <View style={style.selectorContainer}>
+                    <TouchableOpacity
+                        testID={id}
+                        onPress={onPress}
+                        style={[style.selector, (selected && style.selectorFilled), (!enabled &&
+ style.selectorDisabled)]}
+                    >
+                        {selected &&
+                            <CompassIcon
+                                name='check'
+                                size={24}
+                                color='#fff'
+                            />
+                        }
+                    </TouchableOpacity>
+                </View>
+            }
+
             <TouchableOpacity
+                testID={id}
                 onPress={onPress}
                 style={style.children}
             >

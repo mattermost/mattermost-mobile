@@ -45,7 +45,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 const OptionListRow = ({
     enabled, selectable, selected, theme, item, onPress, id,
 }: Props) => {
-    const {text, value} = item;
+    const {text} = item;
     const style = getStyleFromTheme(theme);
 
     const onPressRow = (): void => {
@@ -57,7 +57,7 @@ const OptionListRow = ({
     return (
         <View style={style.container}>
             <CustomListRow
-                id={value}
+                id={id}
                 onPress={onPressRow}
                 enabled={enabled}
                 selectable={selectable}

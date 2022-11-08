@@ -1,23 +1,21 @@
-// Copyright (c) 2022-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import { useIntl } from 'react-intl';
+import {useIntl} from 'react-intl';
 import {
     Text,
     View,
-    StyleProp,
-    ViewStyle,
 } from 'react-native';
 
+import {General} from '@app/constants';
 import ChannelIcon from '@components/channel_icon';
 import ProfilePicture from '@components/profile_picture';
-import { BotTag, GuestTag } from '@components/tag';
-import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
-import { isGuest, isShared } from '@utils/user';
+import {BotTag, GuestTag} from '@components/tag';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {isGuest, isShared} from '@utils/user';
 
-import CustomListRow, { Props as CustomListRowProps } from './custom_list_row';
-import { General } from '@app/constants';
+import CustomListRow, {Props as CustomListRowProps} from './custom_list_row';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -61,14 +59,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-type UserListRowProps = {
-    id: string,
-    isMyUser: boolean,
-    theme: object,
-    user: UserProfile,
-    teammateNameDisplay: string,
-    testID: string,
-    onPress: (item: UserProfile) => void,
+export type UserListRowProps = {
+    id: string;
+    isMyUser: boolean;
+    theme: object;
+    user: UserProfile;
+    teammateNameDisplay: string;
+    testID: string;
+    onPress: (item: UserProfile) => void;
 };
 
 type Props = UserListRowProps & CustomListRowProps;
@@ -82,7 +80,7 @@ const UserListRow = ({
         }
     };
 
-    const renderIcon = (style: StyleProp<ViewStyle>) => {
+    const renderIcon = (): JSX.Element | null => {
         if (!isShared(user)) {
             return null;
         }
@@ -102,7 +100,7 @@ const UserListRow = ({
     };
 
     const intl = useIntl();
-    const { username } = user;
+    const {username} = user;
     const userID = user.id;
     const style = getStyleFromTheme(theme);
 
@@ -111,7 +109,7 @@ const UserListRow = ({
         usernameDisplay = intl.formatMessage({
             id: 'mobile.more_dms.you',
             defaultMessage: '@{username} - you',
-        }, { username });
+        }, {username});
     }
 
     const showTeammateDisplay = teammateNameDisplay !== username;
@@ -174,15 +172,17 @@ const UserListRow = ({
                             <Text
                                 style={style.deactivated}
                             >
-                                {intl.formatMessage({ id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated' })}
+                                {intl.formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}
                             </Text>
                         </View>
                     }
                 </View>
-                {renderIcon(style)}
+
+                {renderIcon()}
+
             </CustomListRow>
         </View>
     );
-}
+};
 
 export default UserListRow;

@@ -489,7 +489,7 @@ function IntegrationSelector(
     };
 
     const renderChannelItem = (props: any) => {
-        const selected = Boolean(multiselectSelected[props.id]);
+        const itemSelected = Boolean(multiselectSelected[props.id]);
         return (
             <ChannelListRow
                 key={props.id}
@@ -498,26 +498,26 @@ function IntegrationSelector(
                 theme={theme}
                 channel={props.item}
                 selectable={true}
-                selected={selected}
+                selected={itemSelected}
             />
         );
     };
 
     const renderOptionItem = (props: any) => {
-        const selected = Boolean(multiselectSelected[props.id]);
+        const itemSelected = Boolean(multiselectSelected[props.id]);
         return (
             <OptionListRow
                 key={props.id}
                 {...props}
                 theme={theme}
                 selectable={true}
-                selected={selected}
+                selected={itemSelected}
             />
         );
     };
 
-    const renderUserItem = (props: any) => {
-        const selected = Boolean(multiselectSelected[props.id]);
+    const renderUserItem = (props: any): JSX.Element => {
+        const itemSelected = Boolean(multiselectSelected[props.id]);
         return (
             <UserListRow
                 key={props.id}
@@ -526,7 +526,7 @@ function IntegrationSelector(
                 selectable={true}
                 user={props.item}
                 teammateNameDisplay={teammateNameDisplay}
-                selected={selected}
+                selected={itemSelected}
             />
         );
     };

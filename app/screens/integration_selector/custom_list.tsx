@@ -153,7 +153,7 @@ function CustomList({
         );
     };
 
-    const renderListItem = ({item, index, section}: any) => {
+    const renderListItem = ({item}: any) => {
         type listItemProps = {
             id: string;
             item: DialogOption | Channel | UserProfile;
