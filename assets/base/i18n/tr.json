@@ -485,5 +485,14 @@
     "channel_modal.purposeEx": "Hataların ve geliştirmelerin bildirileceği bir kanal",
     "channel_modal.nameEx": "Hatalar, pazarlama",
     "channel_modal.makePrivate.label": "Özel yap",
-    "channel_modal.makePrivate.description": "Bir kanal özel olarak ayarlandığında, yalnızca çağrılan takım üyeleri bu kanala erişebilir ve katılabilir"
+    "channel_modal.makePrivate.description": "Bir kanal özel olarak ayarlandığında, yalnızca çağrılan takım üyeleri bu kanala erişebilir ve katılabilir",
+    "find_channels.new_channel": "Yeni kanal",
+    "find_channels.directory": "Dizin",
+    "emoji_picker.recent": "Son kullanılanlar",
+    "edit_server.title": "Sunucu adını düzenle",
+    "edit_server.saving": "Kaydediliyor",
+    "edit_server.save": "Kaydet",
+    "edit_server.display_help": "Sunucu: {url}",
+    "edit_server.description": "Bu sunucunun görüntülenecek adını belirtin",
+    "download.error": "Dosya indirilemedi. Bir süre sonra yeniden deneyin"
 }
