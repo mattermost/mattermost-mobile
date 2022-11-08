@@ -137,7 +137,7 @@ function AutoCompleteSelector({
 
     const goToSelectorScreen = useCallback(preventDoubleTap(() => {
         const screen = Screens.INTEGRATION_SELECTOR;
-        goToScreen(screen, title, { dataSource, handleSelect, options, getDynamicOptions, selected, isMultiselect, teammateNameDisplay });
+        goToScreen(screen, title, {dataSource, handleSelect, options, getDynamicOptions, selected, isMultiselect, teammateNameDisplay});
     }), [dataSource, options, getDynamicOptions]);
 
     const handleSelect = useCallback((item?: Selection) => {
