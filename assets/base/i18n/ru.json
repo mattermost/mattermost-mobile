@@ -239,7 +239,6 @@
     "mobile.message_length.message": "Слишком длинное сообщение. Текущее количество знаков: {count}/{max}",
     "mobile.message_length.message_split_left": "Сообщение превышает лимит символов",
     "mobile.message_length.title": "Длина сообщения",
-    "mobile.microphone_permission_denied_title": "{applicationName} хочет получить доступ к вашему микрофону",
     "mobile.oauth.failed_to_login": "Ваша попытка входа не удалась. Пожалуйста, попробуйте ещё раз.",
     "mobile.oauth.failed_to_open_link": "Ссылка не открылась. Пожалуйста, попробуйте еще раз.",
     "mobile.oauth.something_wrong": "Что-то пошло не так",

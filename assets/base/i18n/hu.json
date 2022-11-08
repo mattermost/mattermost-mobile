@@ -239,7 +239,6 @@
     "mobile.message_length.message": "A jelenlegi üzenete túl hosszú. Jelenlegi karakterek száma: {count}/{max}",
     "mobile.message_length.message_split_left": "Az üzenet meghaladja a karakter korlátot",
     "mobile.message_length.title": "Üzenet hossza",
-    "mobile.microphone_permission_denied_title": "{applicationName} szeretne hozzáférni a mikrofonjához",
     "mobile.oauth.failed_to_login": "A bejelentkezési kísérlet nem sikerült. Kérlek próbáld újra.",
     "mobile.oauth.failed_to_open_link": "A linket nem sikerült megnyitni. Kérlek próbáld újra.",
     "mobile.oauth.something_wrong": "Valami elromlott",
