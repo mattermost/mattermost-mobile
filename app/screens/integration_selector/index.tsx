@@ -47,7 +47,6 @@ type UserProfileSection = {
 type Props = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     options?: PostActionOption[];
-    actions: any;
     currentTeamId: string;
     data?: DataType;
     dataSource: string;
