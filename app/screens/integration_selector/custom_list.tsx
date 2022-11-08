@@ -14,7 +14,11 @@ export const SECTIONLIST = 'section';
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_UP_MULTIPLIER = 6;
 
-type DataType = DialogOption[] | Channel[] | UserProfile[];
+type UserProfileSection = {
+    id: string;
+    data: UserProfile[];
+};
+type DataType = DialogOption[] | Channel[] | UserProfile[] | UserProfileSection[];
 
 type Props = {
     data: DataType;
@@ -213,7 +217,7 @@ function CustomList({
                 renderItem={renderListItem}
                 renderSectionHeader={renderSectionHeader}
                 scrollEventThrottle={60}
-                sections={data}
+                sections={data as UserProfileSection[]}
                 style={style.list}
                 stickySectionHeadersEnabled={false}
                 testID={testID}
