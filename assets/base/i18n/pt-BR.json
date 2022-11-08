@@ -239,7 +239,6 @@
     "mobile.message_length.message": "Sua mensagem atual é muito grande. Contagem corrente de caracters: {max}/{count}",
     "mobile.message_length.message_split_left": "Mensagem excede o limite de caracteres",
     "mobile.message_length.title": "Tamanho da Mensagem",
-    "mobile.microphone_permission_denied_title": "{applicationName} gostaria de acessar seu microfone",
     "mobile.oauth.failed_to_login": "Sua tentativa de login falhou. Por favor, tente novamente.",
     "mobile.oauth.failed_to_open_link": "O link falhou ao abrir. Por favor, tente novamente.",
     "mobile.oauth.something_wrong": "Algo deu errado",
