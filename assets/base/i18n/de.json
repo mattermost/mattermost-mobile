@@ -839,5 +839,9 @@
     "mobile.write_storage_permission_denied_description": "Speichere Dateien auf deinem Gerät. Öffne die Einstellungen, um {applicationName} Schreibzugriff auf Dateien auf diesem Gerät zu gewähren.",
     "mobile.storage_permission_denied_description": "Lade Dateien auf deinen Server hoch. Öffne die Einstellungen, um {applicationName} Lese- und Schreibzugriff auf Dateien auf diesem Gerät zu gewähren.",
     "mobile.session_expired": "Bitte melde dich an, um weiter Benachrichtigungen zu erhalten. Sitzungen für {siteName} sind so konfiguriert, dass sie alle {daysCount, number} {daysCount, plural, one {Tag} other {Tage}} ablaufen.",
-    "mobile.post_pre_header.pinned_saved": "Angeheftet und gespeichert"
+    "mobile.post_pre_header.pinned_saved": "Angeheftet und gespeichert",
+    "plus_menu.invite_people_to_team.title": "Lade Benutzer zum Team ein",
+    "mobile.calls_mic_error": "Um teilzunehmen, öffne die Einstellungen, um Mattermost Zugriff auf dein Mikrofon zu gewähren.",
+    "invite_people_to_team.title": "Werde Mitglied des {team} Teams",
+    "invite_people_to_team.message": "Hier ist ein Link, um mit uns auf Mattermost zusammenzuarbeiten und zu kommunizieren."
 }
