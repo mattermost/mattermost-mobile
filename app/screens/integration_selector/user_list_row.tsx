@@ -116,6 +116,7 @@ const UserListRow = ({
     const itemTestID = `${testID}.${userID}`;
     const displayUsernameTestID = `${testID}.display_username`;
     const profilePictureTestID = `${itemTestID}.profile_picture`;
+    const userIcon = renderIcon() || (<></>);
 
     return (
         <View style={style.container}>
@@ -178,7 +179,7 @@ const UserListRow = ({
                     }
                 </View>
 
-                {renderIcon()}
+                {userIcon}
 
             </CustomListRow>
         </View>
