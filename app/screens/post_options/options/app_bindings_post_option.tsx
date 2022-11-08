@@ -81,13 +81,11 @@ const AppBindingsPostOptions = ({serverUrl, post, teamId, bindings}: Props) => {
         }
     }, [bindings, post, serverUrl, teamId, intl]);
 
-    const icon = ''; // TODO: Support icons
-
     const options = bindings.map((binding) => (
         <OptionItem
             key={binding.location}
             label={binding.label}
-            icon={icon}
+            icon={binding.icon}
             action={preventDoubleTap(() => onPress(binding))}
             type='default'
             testID={`post_options.app_binding.option.${binding.location}`}

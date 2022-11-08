@@ -78,13 +78,11 @@ const ChannelInfoAppBindings = ({channelId, teamId, dismissChannelInfo, serverUr
         }
     }, [channelId, teamId, dismissChannelInfo, serverUrl, bindings, intl]);
 
-    const icon = ''; // TODO: Support icons
-
     const options = bindings.map((binding) => (
         <OptionItem
             key={binding.location}
             label={binding.label}
-            icon={icon}
+            icon={binding.icon}
             action={preventDoubleTap(() => tryOnPress(binding))}
             type='default'
             testID={`channel_info.options.app_binding.option.${binding.location}`}

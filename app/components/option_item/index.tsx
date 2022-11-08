@@ -10,6 +10,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import OptionIcon from './option_icon';
 import RadioItem, {RadioItemProps} from './radio_item';
 
 const TouchableOptionTypes = {
@@ -233,12 +234,11 @@ const OptionItem = ({
         >
             <View style={styles.row}>
                 <View style={styles.labelContainer}>
-                    {Boolean(icon) && (
+                    {icon && (
                         <View style={styles.iconContainer}>
-                            <CompassIcon
-                                name={icon!}
-                                size={24}
-                                color={destructive ? theme.dndIndicator : changeOpacity(theme.centerChannelColor, 0.64)}
+                            <OptionIcon
+                                icon={icon}
+                                destructive={destructive}
                             />
                         </View>
                     )}
