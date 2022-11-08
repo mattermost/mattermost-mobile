@@ -109,7 +109,7 @@ class DatabaseManager {
 
             return this.appDatabase;
         } catch (e) {
-            // TODO : report to sentry? Show something on the UI ?
+            logError('Unable to create the App Database!!', e);
         }
 
         return undefined;
@@ -163,8 +163,6 @@ class DatabaseManager {
 
                 return serverDatabase;
             } catch (e) {
-                // TODO : report to sentry? Show something on the UI ?
-
                 logError('Error initializing database', e);
             }
         }
@@ -223,7 +221,7 @@ class DatabaseManager {
                 }
             }
         } catch (e) {
-            // TODO : report to sentry? Show something on the UI ?
+            logError('Error adding server to App database', e);
         }
     };
 
