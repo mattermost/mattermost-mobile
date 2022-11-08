@@ -35,22 +35,19 @@ export type Call = {
     ownerId: string;
 }
 
-export const DefaultCall = {
+export const DefaultCall: Call = {
     participants: {} as Dictionary<CallParticipant>,
     channelId: '',
     startTime: 0,
     screenOn: '',
     threadId: '',
+    ownerId: '',
 };
 
-export type CurrentCall = {
+export type CurrentCall = Call & {
+    connected: boolean;
     serverUrl: string;
     myUserId: string;
-    participants: Dictionary<CallParticipant>;
-    channelId: string;
-    startTime: number;
-    screenOn: string;
-    threadId: string;
     screenShareURL: string;
     speakerphoneOn: boolean;
     voiceOn: Dictionary<boolean>;
@@ -58,6 +55,7 @@ export type CurrentCall = {
 }
 
 export const DefaultCurrentCall: CurrentCall = {
+    connected: false,
     serverUrl: '',
     myUserId: '',
     participants: {},
@@ -65,6 +63,7 @@ export const DefaultCurrentCall: CurrentCall = {
     startTime: 0,
     screenOn: '',
     threadId: '',
+    ownerId: '',
     screenShareURL: '',
     speakerphoneOn: false,
     voiceOn: {},

@@ -60,7 +60,6 @@ export async function newConnection(
 
     // getClient can throw an error, which will be handled by the caller.
     const client = NetworkManager.getClient(serverUrl);
-
     const credentials = await getServerCredentials(serverUrl);
 
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
@@ -198,6 +197,7 @@ export async function newConnection(
 
         InCallManager.start({media: 'audio'});
         InCallManager.stopProximitySensor();
+
         peer = new Peer(null, iceConfigs);
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {

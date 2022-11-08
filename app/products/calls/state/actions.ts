@@ -13,7 +13,7 @@ import {
     setCurrentCall,
     setGlobalCallsState,
 } from '@calls/state';
-import {Call, CallsConfig, ChannelsWithCalls} from '@calls/types/calls';
+import {Call, CallsConfig, ChannelsWithCalls, DefaultCall, DefaultCurrentCall} from '@calls/types/calls';
 
 export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
@@ -105,21 +105,13 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
             participants: {...currentCall.participants, [userId]: nextCall.participants[userId]},
             voiceOn,
         };
-        setCurrentCall(nextCurrentCall);
-    }
 
-    // Was it me that joined the call?
-    if (callsState.myUserId === userId) {
-        setCurrentCall({
-            ...nextCall,
-            participants: {...nextCall.participants},
-            serverUrl,
-            myUserId: userId,
-            screenShareURL: '',
-            speakerphoneOn: false,
-            voiceOn: {},
-            micPermissionsErrorDismissed: false,
-        });
+        // If this is the currentUser, that means we've connected to the call we created.
+        if (userId === nextCurrentCall.myUserId) {
+            nextCurrentCall.connected = true;
+        }
+
+        setCurrentCall(nextCurrentCall);
     }
 };
 
@@ -173,6 +165,22 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
     setCurrentCall(nextCurrentCall);
 };
 
+export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: string) => {
+    let existingCall: Call = DefaultCall;
+    const callsState = getCallsState(serverUrl);
+    if (callsState.calls[channelId]) {
+        existingCall = callsState.calls[channelId];
+    }
+
+    setCurrentCall({
+        ...DefaultCurrentCall,
+        ...existingCall,
+        serverUrl,
+        channelId,
+        myUserId,
+    });
+};
+
 export const myselfLeftCall = () => {
     setCurrentCall(null);
 };
@@ -185,6 +193,21 @@ export const callStarted = (serverUrl: string, call: Call) => {
 
     const nextChannelsWithCalls = {...getChannelsWithCalls(serverUrl), [call.channelId]: true};
     setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
+
+    // If we started a call, we will get a callStarted event with the 'official' data from the server.
+    // Save that in our currentCall.
+    const currentCall = getCurrentCall();
+    if (!currentCall || currentCall.channelId !== call.channelId) {
+        return;
+    }
+
+    const nextCurrentCall = {
+        ...currentCall,
+        startTime: call.startTime,
+        threadId: call.threadId,
+        ownerId: call.ownerId,
+    };
+    setCurrentCall(nextCurrentCall);
 };
 
 export const callEnded = (serverUrl: string, channelId: string) => {
@@ -198,10 +221,7 @@ export const callEnded = (serverUrl: string, channelId: string) => {
     delete nextChannelsWithCalls[channelId];
     setChannelsWithCalls(serverUrl, nextChannelsWithCalls);
 
-    const currentCall = getCurrentCall();
-    if (currentCall?.channelId === channelId) {
-        setCurrentCall(null);
-    }
+    // currentCall is set to null by the disconnect.
 };
 
 export const setUserMuted = (serverUrl: string, channelId: string, userId: string, muted: boolean) => {
