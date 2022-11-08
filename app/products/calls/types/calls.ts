@@ -53,6 +53,7 @@ export type CurrentCall = {
     threadId: string;
     screenShareURL: string;
     speakerphoneOn: boolean;
+    voiceOn: Dictionary<boolean>;
     micPermissionsErrorDismissed: boolean;
 }
 
@@ -66,6 +67,7 @@ export const DefaultCurrentCall: CurrentCall = {
     threadId: '',
     screenShareURL: '',
     speakerphoneOn: false,
+    voiceOn: {},
     micPermissionsErrorDismissed: false,
 };
 

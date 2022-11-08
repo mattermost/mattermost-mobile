@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, TouchableOpacity, Pressable, Platform, DeviceEventEmitter} from 'react-native';
+import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
 import {Options} from 'react-native-navigation';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
@@ -11,9 +11,9 @@ import CallAvatar from '@calls/components/call_avatar';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
-import {CurrentCall, VoiceEventData} from '@calls/types/calls';
+import {CurrentCall} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
-import {Events, Screens, WebsocketEvents} from '@constants';
+import {Screens} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
@@ -97,45 +97,6 @@ const CurrentCallBar = ({
     const style = getStyleSheet(theme);
     const {formatMessage} = useIntl();
     usePermissionsChecker(micPermissionsGranted);
-    const [speaker, setSpeaker] = useState<string | null>(null);
-    const [talkingMessage, setTalkingMessage] = useState('');
-
-    const isCurrentCall = Boolean(currentCall);
-    const handleVoiceOn = (data: VoiceEventData) => {
-        if (data.channelId === currentCall?.channelId) {
-            setSpeaker(data.userId);
-        }
-    };
-    const handleVoiceOff = (data: VoiceEventData) => {
-        if (data.channelId === currentCall?.channelId && ((speaker === data.userId) || !speaker)) {
-            setSpeaker(null);
-        }
-    };
-
-    useEffect(() => {
-        const onVoiceOn = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_ON, handleVoiceOn);
-        const onVoiceOff = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_OFF, handleVoiceOff);
-        DeviceEventEmitter.emit(Events.CURRENT_CALL_BAR_VISIBLE, isCurrentCall);
-        return () => {
-            DeviceEventEmitter.emit(Events.CURRENT_CALL_BAR_VISIBLE, Boolean(false));
-            onVoiceOn.remove();
-            onVoiceOff.remove();
-        };
-    }, [isCurrentCall]);
-
-    useEffect(() => {
-        if (speaker) {
-            setTalkingMessage(formatMessage({
-                id: 'mobile.calls_name_is_talking',
-                defaultMessage: '{name} is talking',
-            }, {name: displayUsername(userModelsDict[speaker], teammateNameDisplay)}));
-        } else {
-            setTalkingMessage(formatMessage({
-                id: 'mobile.calls_noone_talking',
-                defaultMessage: 'No one is talking',
-            }));
-        }
-    }, [speaker, setTalkingMessage]);
 
     const goToCallScreen = useCallback(async () => {
         const options: Options = {
@@ -156,6 +117,21 @@ const CurrentCallBar = ({
     }, [formatMessage, threadScreen]);
 
     const myParticipant = currentCall?.participants[currentCall.myUserId];
+
+    // Since we can only see one user talking, it doesn't really matter who we show here (e.g., we can't
+    // tell who is speaking louder).
+    const talkingUsers = Object.keys(currentCall?.voiceOn || {});
+    const speaker = talkingUsers.length > 0 ? talkingUsers[0] : '';
+    let talkingMessage = formatMessage({
+        id: 'mobile.calls_noone_talking',
+        defaultMessage: 'No one is talking',
+    });
+    if (speaker) {
+        talkingMessage = formatMessage({
+            id: 'mobile.calls_name_is_talking',
+            defaultMessage: '{name} is talking',
+        }, {name: displayUsername(userModelsDict[speaker], teammateNameDisplay)});
+    }
 
     const muteUnmute = () => {
         if (myParticipant?.muted) {

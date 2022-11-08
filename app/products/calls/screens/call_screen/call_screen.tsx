@@ -33,7 +33,7 @@ import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
 import RaisedHandIcon from '@calls/icons/raised_hand_icon';
 import UnraisedHandIcon from '@calls/icons/unraised_hand_icon';
-import {CallParticipant, CurrentCall, VoiceEventData} from '@calls/types/calls';
+import {CallParticipant, CurrentCall} from '@calls/types/calls';
 import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -275,7 +275,6 @@ const CallScreen = ({
     const {width, height} = useWindowDimensions();
     usePermissionsChecker(micPermissionsGranted);
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
-    const [speakers, setSpeakers] = useState<Dictionary<boolean>>({});
 
     const style = getStyleSheet(theme);
     const isLandscape = width > height;
@@ -294,30 +293,6 @@ const CallScreen = ({
             },
         });
     }, []);
-
-    useEffect(() => {
-        const handleVoiceOn = (data: VoiceEventData) => {
-            if (data.channelId === currentCall?.channelId) {
-                setSpeakers((prev) => ({...prev, [data.userId]: true}));
-            }
-        };
-        const handleVoiceOff = (data: VoiceEventData) => {
-            if (data.channelId === currentCall?.channelId && speakers.hasOwnProperty(data.userId)) {
-                setSpeakers((prev) => {
-                    const next = {...prev};
-                    delete next[data.userId];
-                    return next;
-                });
-            }
-        };
-
-        const onVoiceOn = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_ON, handleVoiceOn);
-        const onVoiceOff = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_OFF, handleVoiceOff);
-        return () => {
-            onVoiceOn.remove();
-            onVoiceOff.remove();
-        };
-    }, [speakers, currentCall?.channelId]);
 
     const leaveCallHandler = useCallback(() => {
         popTopScreen();
@@ -340,6 +315,10 @@ const CallScreen = ({
             raiseHand();
         }
     }, [myParticipant?.raisedHand]);
+
+    const toggleSpeakerPhone = useCallback(() => {
+        setSpeakerphoneOn(!currentCall?.speakerphoneOn);
+    }, [currentCall?.speakerphoneOn]);
 
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
@@ -440,8 +419,8 @@ const CallScreen = ({
         usersList = (
             <ScrollView
                 alwaysBounceVertical={false}
-                horizontal={currentCall?.screenOn !== ''}
-                contentContainerStyle={[isLandscape && currentCall?.screenOn && style.usersScrollLandscapeScreenOn]}
+                horizontal={currentCall.screenOn !== ''}
+                contentContainerStyle={[isLandscape && currentCall.screenOn && style.usersScrollLandscapeScreenOn]}
             >
                 <Pressable
                     testID='users-list'
@@ -451,12 +430,12 @@ const CallScreen = ({
                     {participants.map((user) => {
                         return (
                             <View
-                                style={[style.user, currentCall?.screenOn && style.userScreenOn]}
+                                style={[style.user, currentCall.screenOn && style.userScreenOn]}
                                 key={user.id}
                             >
                                 <CallAvatar
                                     userModel={user.userModel}
-                                    volume={speakers[user.id] ? 1 : 0}
+                                    volume={currentCall.voiceOn[user.id] ? 1 : 0}
                                     muted={user.muted}
                                     sharingScreen={user.id === currentCall.screenOn}
                                     raisedHand={Boolean(user.raisedHand)}
@@ -563,12 +542,12 @@ const CallScreen = ({
                         <Pressable
                             testID={'toggle-speakerphone'}
                             style={style.button}
-                            onPress={() => setSpeakerphoneOn(!currentCall?.speakerphoneOn)}
+                            onPress={toggleSpeakerPhone}
                         >
                             <CompassIcon
                                 name={'volume-high'}
                                 size={24}
-                                style={[style.buttonIcon, style.speakerphoneIcon, currentCall?.speakerphoneOn && style.speakerphoneIconOn]}
+                                style={[style.buttonIcon, style.speakerphoneIcon, currentCall.speakerphoneOn && style.speakerphoneIconOn]}
                             />
                             <FormattedText
                                 id={'mobile.calls_speaker'}

@@ -179,11 +179,12 @@ async function doReconnect(serverUrl: string) {
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
     const {config, license} = await getCommonSystemValues(database);
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
 
     if (isSupportedServerCalls(config?.Version)) {
         loadConfigAndCalls(serverUrl, currentUserId);
     }
+
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
 
     AppsManager.refreshAppBindings(serverUrl);
 }
