@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Insets, Text, View} from 'react-native';
+import {Insets, Text, TouchableWithoutFeedback, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -173,9 +173,8 @@ const ChannelListHeader = ({
         header = (
             <>
                 <View style={styles.headerRow}>
-                    <TouchableWithFeedback
+                    <TouchableWithoutFeedback
                         onPress={onHeaderPress}
-                        type='opacity'
                     >
                         <View style={styles.headerRow}>
                             <Text
@@ -184,17 +183,8 @@ const ChannelListHeader = ({
                             >
                                 {displayName}
                             </Text>
-                            <View
-                                style={styles.chevronButton}
-                                testID='channel_list_header.chevron.button'
-                            >
-                                <CompassIcon
-                                    style={styles.chevronIcon}
-                                    name={'chevron-down'}
-                                />
-                            </View>
                         </View>
-                    </TouchableWithFeedback>
+                    </TouchableWithoutFeedback>
                     <TouchableWithFeedback
                         hitSlop={hitSlop}
                         onPress={onPress}
