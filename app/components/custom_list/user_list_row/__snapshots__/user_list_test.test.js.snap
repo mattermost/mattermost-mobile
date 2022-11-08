@@ -3,7 +3,7 @@
 exports[`UserListRow should match snapshot 1`] = `
 <View
   style={
-    {
+    Object {
       "flex": 1,
       "flexDirection": "row",
       "overflow": "hidden",
@@ -19,7 +19,7 @@ exports[`UserListRow should match snapshot 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "alignItems": "center",
           "color": "#3f4350",
           "flexDirection": "row",
@@ -35,7 +35,7 @@ exports[`UserListRow should match snapshot 1`] = `
     </View>
     <View
       style={
-        {
+        Object {
           "flex": 1,
           "flexDirection": "column",
           "justifyContent": "center",
@@ -47,7 +47,7 @@ exports[`UserListRow should match snapshot 1`] = `
       <View>
         <View
           style={
-            {
+            Object {
               "flexDirection": "row",
             }
           }
@@ -56,7 +56,7 @@ exports[`UserListRow should match snapshot 1`] = `
             ellipsizeMode="tail"
             numberOfLines={1}
             style={
-              {
+              Object {
                 "color": "#3f4350",
                 "fontSize": 15,
               }
@@ -68,7 +68,7 @@ exports[`UserListRow should match snapshot 1`] = `
           <BotTag
             show={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -100,7 +100,7 @@ exports[`UserListRow should match snapshot 1`] = `
           <GuestTag
             show={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -139,7 +139,7 @@ exports[`UserListRow should match snapshot 1`] = `
 exports[`UserListRow should match snapshot for  currentUser with (you) populated in list 1`] = `
 <View
   style={
-    {
+    Object {
       "flex": 1,
       "flexDirection": "row",
       "overflow": "hidden",
@@ -155,7 +155,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
   >
     <View
       style={
-        {
+        Object {
           "alignItems": "center",
           "color": "#3f4350",
           "flexDirection": "row",
@@ -171,7 +171,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
     </View>
     <View
       style={
-        {
+        Object {
           "flex": 1,
           "flexDirection": "column",
           "justifyContent": "center",
@@ -183,7 +183,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
       <View>
         <View
           style={
-            {
+            Object {
               "flexDirection": "row",
             }
           }
@@ -192,7 +192,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
             ellipsizeMode="tail"
             numberOfLines={1}
             style={
-              {
+              Object {
                 "color": "#3f4350",
                 "fontSize": 15,
               }
@@ -204,7 +204,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
           <BotTag
             show={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -236,7 +236,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
           <GuestTag
             show={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -275,7 +275,7 @@ exports[`UserListRow should match snapshot for  currentUser with (you) populated
 exports[`UserListRow should match snapshot for deactivated user 1`] = `
 <View
   style={
-    {
+    Object {
       "flex": 1,
       "flexDirection": "row",
       "overflow": "hidden",
@@ -291,7 +291,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "alignItems": "center",
           "color": "#3f4350",
           "flexDirection": "row",
@@ -307,7 +307,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
     </View>
     <View
       style={
-        {
+        Object {
           "flex": 1,
           "flexDirection": "column",
           "justifyContent": "center",
@@ -319,7 +319,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
       <View>
         <View
           style={
-            {
+            Object {
               "flexDirection": "row",
             }
           }
@@ -328,7 +328,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
             ellipsizeMode="tail"
             numberOfLines={1}
             style={
-              {
+              Object {
                 "color": "#3f4350",
                 "fontSize": 15,
               }
@@ -340,7 +340,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
           <BotTag
             show={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -372,7 +372,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
           <GuestTag
             show={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -406,7 +406,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
       <View>
         <Text
           style={
-            {
+            Object {
               "color": undefined,
               "fontSize": 12,
               "marginTop": 2,
@@ -424,7 +424,7 @@ exports[`UserListRow should match snapshot for deactivated user 1`] = `
 exports[`UserListRow should match snapshot for guest user 1`] = `
 <View
   style={
-    {
+    Object {
       "flex": 1,
       "flexDirection": "row",
       "overflow": "hidden",
@@ -440,7 +440,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "alignItems": "center",
           "color": "#3f4350",
           "flexDirection": "row",
@@ -456,7 +456,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
     </View>
     <View
       style={
-        {
+        Object {
           "flex": 1,
           "flexDirection": "column",
           "justifyContent": "center",
@@ -468,7 +468,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
       <View>
         <View
           style={
-            {
+            Object {
               "flexDirection": "row",
             }
           }
@@ -477,7 +477,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
             ellipsizeMode="tail"
             numberOfLines={1}
             style={
-              {
+              Object {
                 "color": "#3f4350",
                 "fontSize": 15,
               }
@@ -489,7 +489,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
           <BotTag
             show={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -521,7 +521,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
           <GuestTag
             show={true}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -560,7 +560,7 @@ exports[`UserListRow should match snapshot for guest user 1`] = `
 exports[`UserListRow should match snapshot for remote user 1`] = `
 <View
   style={
-    {
+    Object {
       "flex": 1,
       "flexDirection": "row",
       "overflow": "hidden",
@@ -576,7 +576,7 @@ exports[`UserListRow should match snapshot for remote user 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "alignItems": "center",
           "color": "#3f4350",
           "flexDirection": "row",
@@ -592,7 +592,7 @@ exports[`UserListRow should match snapshot for remote user 1`] = `
     </View>
     <View
       style={
-        {
+        Object {
           "flex": 1,
           "flexDirection": "column",
           "justifyContent": "center",
@@ -604,7 +604,7 @@ exports[`UserListRow should match snapshot for remote user 1`] = `
       <View>
         <View
           style={
-            {
+            Object {
               "flexDirection": "row",
             }
           }
@@ -613,7 +613,7 @@ exports[`UserListRow should match snapshot for remote user 1`] = `
             ellipsizeMode="tail"
             numberOfLines={1}
             style={
-              {
+              Object {
                 "color": "#3f4350",
                 "fontSize": 15,
               }
@@ -625,7 +625,7 @@ exports[`UserListRow should match snapshot for remote user 1`] = `
           <BotTag
             show={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -657,7 +657,7 @@ exports[`UserListRow should match snapshot for remote user 1`] = `
           <GuestTag
             show={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -700,13 +700,13 @@ exports[`UserListRow should match snapshot for remote user 1`] = `
       shared={true}
       size={18}
       style={
-        {
+        Object {
           "alignSelf": "center",
           "opacity": 0.75,
         }
       }
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",

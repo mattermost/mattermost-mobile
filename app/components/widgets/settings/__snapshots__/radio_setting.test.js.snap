@@ -4,7 +4,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
 <View>
   <View
     style={
-      {
+      Object {
         "flexDirection": "row",
         "marginBottom": 10,
         "marginTop": 15,
@@ -13,7 +13,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
   >
     <Text
       style={
-        {
+        Object {
           "color": "#3f4350",
           "fontSize": 14,
           "marginLeft": 15,
@@ -24,7 +24,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
     </Text>
     <Text
       style={
-        {
+        Object {
           "color": "#d24b4e",
           "fontSize": 14,
         }
@@ -35,7 +35,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
   </View>
   <View
     style={
-      {
+      Object {
         "backgroundColor": "#ffffff",
         "borderBottomColor": "rgba(63,67,80,0.1)",
         "borderBottomWidth": 1,
@@ -49,7 +49,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
     >
       <View
         style={
-          {
+          Object {
             "alignItems": "center",
             "flexDirection": "row",
             "paddingHorizontal": 15,
@@ -58,7 +58,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
       >
         <View
           style={
-            {
+            Object {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "row",
@@ -73,7 +73,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
       </View>
       <View
         style={
-          {
+          Object {
             "backgroundColor": "rgba(63,67,80,0.1)",
             "flex": 1,
             "height": 1,
@@ -87,7 +87,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
     >
       <View
         style={
-          {
+          Object {
             "alignItems": "center",
             "flexDirection": "row",
             "paddingHorizontal": 15,
@@ -96,7 +96,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
       >
         <View
           style={
-            {
+            Object {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "row",
@@ -111,7 +111,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
       </View>
       <View
         style={
-          {
+          Object {
             "backgroundColor": "rgba(63,67,80,0.1)",
             "flex": 1,
             "height": 1,
@@ -125,7 +125,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
     >
       <View
         style={
-          {
+          Object {
             "alignItems": "center",
             "flexDirection": "row",
             "paddingHorizontal": 15,
@@ -134,7 +134,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
       >
         <View
           style={
-            {
+            Object {
               "alignItems": "center",
               "flex": 1,
               "flexDirection": "row",
@@ -149,7 +149,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
         <CompassIcon
           name="check"
           style={
-            {
+            Object {
               "color": "#386fe5",
               "fontSize": 12,
             }
@@ -161,7 +161,7 @@ exports[`components/widgets/settings/RadioSetting should match snapshot when err
   <View>
     <Text
       style={
-        {
+        Object {
           "color": "#d24b4e",
           "fontSize": 12,
           "marginHorizontal": 15,

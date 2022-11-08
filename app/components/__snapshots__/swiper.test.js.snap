@@ -4,8 +4,8 @@ exports[`Swiper should match snapshot 1`] = `
 <View
   onLayout={[Function]}
   style={
-    [
-      {
+    Array [
+      Object {
         "backgroundColor": "transparent",
         "flex": 1,
         "position": "relative",
@@ -17,8 +17,8 @@ exports[`Swiper should match snapshot 1`] = `
     automaticallyAdjustContentInsets={true}
     bounces={false}
     contentContainerStyle={
-      [
-        {
+      Array [
+        Object {
           "backgroundColor": "transparent",
         },
         undefined,

@@ -3,7 +3,7 @@
 exports[`SearchResultPost should match snapshot when no team is provided 1`] = `
 <View
   style={
-    {
+    Object {
       "alignItems": "baseline",
       "flexDirection": "row",
       "marginTop": 5,
@@ -14,7 +14,7 @@ exports[`SearchResultPost should match snapshot when no team is provided 1`] = `
   <Text
     numberOfLines={1}
     style={
-      {
+      Object {
         "color": "rgba(63,67,80,0.8)",
         "flexShrink": 1,
         "fontSize": 14,
@@ -30,7 +30,7 @@ exports[`SearchResultPost should match snapshot when no team is provided 1`] = `
 exports[`SearchResultPost should match snapshot when team is provided 1`] = `
 <View
   style={
-    {
+    Object {
       "alignItems": "baseline",
       "flexDirection": "row",
       "marginTop": 5,
@@ -41,7 +41,7 @@ exports[`SearchResultPost should match snapshot when team is provided 1`] = `
   <Text
     numberOfLines={1}
     style={
-      {
+      Object {
         "color": "rgba(63,67,80,0.8)",
         "flexShrink": 1,
         "fontSize": 14,
@@ -54,7 +54,7 @@ exports[`SearchResultPost should match snapshot when team is provided 1`] = `
   <React.Fragment>
     <View
       style={
-        {
+        Object {
           "alignSelf": "stretch",
           "borderLeftColor": "rgba(63,67,80,0.2)",
           "borderLeftWidth": 1,
@@ -68,7 +68,7 @@ exports[`SearchResultPost should match snapshot when team is provided 1`] = `
     <Text
       numberOfLines={1}
       style={
-        {
+        Object {
           "color": "rgba(63,67,80,0.5)",
           "flexShrink": 2,
           "fontSize": 12,

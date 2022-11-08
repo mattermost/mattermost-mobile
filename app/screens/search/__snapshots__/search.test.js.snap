@@ -5,7 +5,7 @@ exports[`Search should match snapshot 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "backgroundColor": "#192a4d",
         "height": 61,
         "paddingLeft": 14,
@@ -16,9 +16,9 @@ exports[`Search should match snapshot 1`] = `
     }
     testID="search.screen"
   >
-    <ForwardRef
+    <RNCSafeAreaView
       edges={
-        [
+        Array [
           "left",
           "right",
         ]
@@ -32,7 +32,7 @@ exports[`Search should match snapshot 1`] = `
         cancelTitle="Cancel"
         containerHeight={33}
         containerStyle={
-          {
+          Object {
             "padding": 0,
           }
         }
@@ -40,7 +40,7 @@ exports[`Search should match snapshot 1`] = `
         editable={true}
         inputHeight={33}
         inputStyle={
-          {
+          Object {
             "backgroundColor": "rgba(255,255,255,0.2)",
             "color": "#ffffff",
             "fontSize": 15,
@@ -68,18 +68,18 @@ exports[`Search should match snapshot 1`] = `
         titleCancelColor="#ffffff"
         value="initial value "
       />
-    </ForwardRef>
+    </RNCSafeAreaView>
   </View>
-  <ForwardRef
+  <RNCSafeAreaView
     edges={
-      [
+      Array [
         "bottom",
         "left",
         "right",
       ]
     }
     style={
-      {
+      Object {
         "flex": 1,
       }
     }
@@ -95,35 +95,35 @@ exports[`Search should match snapshot 1`] = `
       renderSectionHeader={[Function]}
       scrollEventThrottle={60}
       sections={
-        [
-          {
+        Array [
+          Object {
             "ItemSeparatorComponent": [Function],
-            "data": [
-              {
+            "data": Array [
+              Object {
                 "description": "to find posts from specific users",
                 "modifier": "username",
                 "testID": "search.from_section",
                 "value": "from:",
               },
-              {
+              Object {
                 "description": "to find posts in specific channels",
                 "modifier": "channel-name",
                 "testID": "search.in_section",
                 "value": "in:",
               },
-              {
+              Object {
                 "description": "to find posts on a specific date",
                 "modifier": "YYYY-MM-DD",
                 "testID": "search.on_section",
                 "value": "on:",
               },
-              {
+              Object {
                 "description": "to find posts after a specific date",
                 "modifier": "YYYY-MM-DD",
                 "testID": "search.after_section",
                 "value": "after:",
               },
-              {
+              Object {
                 "description": "to find posts before a specific date",
                 "modifier": "YYYY-MM-DD",
                 "testID": "search.before_section",
@@ -135,8 +135,8 @@ exports[`Search should match snapshot 1`] = `
             "renderItem": [Function],
             "title": "",
           },
-          {
-            "data": [],
+          Object {
+            "data": Array [],
             "key": "results",
             "keyExtractor": [Function],
             "renderItem": [Function],
@@ -146,13 +146,13 @@ exports[`Search should match snapshot 1`] = `
       }
       stickySectionHeadersEnabled={true}
       style={
-        {
+        Object {
           "flex": 1,
         }
       }
       testID="search.results_list"
     />
-  </ForwardRef>
+  </RNCSafeAreaView>
   <Connect(Autocomplete)
     cursorPosition={14}
     enableDateSuggestion={true}

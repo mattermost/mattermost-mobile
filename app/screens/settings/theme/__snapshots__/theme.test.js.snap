@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Theme should match snapshot 1`] = `
-<ForwardRef
+<ScrollView
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -11,7 +11,7 @@ exports[`Theme should match snapshot 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "backgroundColor": "rgba(63,67,80,0.06)",
         "flex": 1,
         "paddingTop": 35,
@@ -20,7 +20,7 @@ exports[`Theme should match snapshot 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "backgroundColor": "#ffffff",
           "borderBottomColor": "rgba(63,67,80,0.1)",
           "borderBottomWidth": 1,
@@ -37,7 +37,7 @@ exports[`Theme should match snapshot 1`] = `
         action={[Function]}
         actionValue="denim"
         activeTheme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -74,7 +74,7 @@ exports[`Theme should match snapshot 1`] = `
         }
         selected={true}
         tileTheme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -108,7 +108,7 @@ exports[`Theme should match snapshot 1`] = `
         action={[Function]}
         actionValue="sapphire"
         activeTheme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -145,7 +145,7 @@ exports[`Theme should match snapshot 1`] = `
         }
         selected={false}
         tileTheme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -179,7 +179,7 @@ exports[`Theme should match snapshot 1`] = `
         action={[Function]}
         actionValue="quartz"
         activeTheme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -216,7 +216,7 @@ exports[`Theme should match snapshot 1`] = `
         }
         selected={false}
         tileTheme={
-          {
+          Object {
             "awayIndicator": "#f5ab07",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -250,7 +250,7 @@ exports[`Theme should match snapshot 1`] = `
         action={[Function]}
         actionValue="indigo"
         activeTheme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -287,7 +287,7 @@ exports[`Theme should match snapshot 1`] = `
         }
         selected={false}
         tileTheme={
-          {
+          Object {
             "awayIndicator": "#f5ab00",
             "buttonBg": "#386fe5",
             "buttonColor": "#ffffff",
@@ -321,7 +321,7 @@ exports[`Theme should match snapshot 1`] = `
         action={[Function]}
         actionValue="onyx"
         activeTheme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -358,7 +358,7 @@ exports[`Theme should match snapshot 1`] = `
         }
         selected={false}
         tileTheme={
-          {
+          Object {
             "awayIndicator": "#f5ab00",
             "buttonBg": "#386fe5",
             "buttonColor": "#ffffff",
@@ -390,5 +390,5 @@ exports[`Theme should match snapshot 1`] = `
       />
     </View>
   </View>
-</ForwardRef>
+</ScrollView>
 `;

@@ -4,10 +4,10 @@ exports[`Fade should render {opacity: 0} 1`] = `
 <ForwardRef(AnimatedComponentWrapper)
   pointerEvents="box-none"
   style={
-    {
+    Object {
       "opacity": 0,
-      "transform": [
-        {
+      "transform": Array [
+        Object {
           "scale": 0,
         },
       ],
@@ -24,10 +24,10 @@ exports[`Fade should render {opacity: 1} 1`] = `
 <ForwardRef(AnimatedComponentWrapper)
   pointerEvents="box-none"
   style={
-    {
+    Object {
       "opacity": 1,
-      "transform": [
-        {
+      "transform": Array [
+        Object {
           "scale": 1,
         },
       ],

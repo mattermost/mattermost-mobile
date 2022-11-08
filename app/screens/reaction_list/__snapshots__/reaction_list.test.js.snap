@@ -3,7 +3,7 @@
 exports[`ReactionList should match snapshot 1`] = `
 <View
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -15,7 +15,7 @@ exports[`ReactionList should match snapshot 1`] = `
     initialPosition={0.55}
     onRequestClose={[Function]}
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -46,7 +46,7 @@ exports[`ReactionList should match snapshot 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "height": 45,
           "justifyContent": "center",
         }
@@ -56,7 +56,7 @@ exports[`ReactionList should match snapshot 1`] = `
         emojiName="+1"
         teammateNameDisplay="username"
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -85,7 +85,7 @@ exports[`ReactionList should match snapshot 1`] = `
           }
         }
         user={
-          {
+          Object {
             "id": "user_id_2",
             "username": "username_2",
           }
@@ -93,7 +93,7 @@ exports[`ReactionList should match snapshot 1`] = `
       />
       <View
         style={
-          {
+          Object {
             "backgroundColor": "rgba(63,67,80,0.2)",
             "height": 1,
           }
@@ -102,7 +102,7 @@ exports[`ReactionList should match snapshot 1`] = `
     </View>
     <View
       style={
-        {
+        Object {
           "height": 45,
           "justifyContent": "center",
         }
@@ -112,7 +112,7 @@ exports[`ReactionList should match snapshot 1`] = `
         emojiName="smile"
         teammateNameDisplay="username"
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -141,7 +141,7 @@ exports[`ReactionList should match snapshot 1`] = `
           }
         }
         user={
-          {
+          Object {
             "id": "user_id_1",
             "username": "username_1",
           }
@@ -149,7 +149,7 @@ exports[`ReactionList should match snapshot 1`] = `
       />
       <View
         style={
-          {
+          Object {
             "backgroundColor": "rgba(63,67,80,0.2)",
             "height": 1,
           }
@@ -161,10 +161,10 @@ exports[`ReactionList should match snapshot 1`] = `
 `;
 
 exports[`ReactionList should match snapshot, renderReactionRows 1`] = `
-[
+Array [
   <View
     style={
-      {
+      Object {
         "height": 45,
         "justifyContent": "center",
       }
@@ -174,7 +174,7 @@ exports[`ReactionList should match snapshot, renderReactionRows 1`] = `
       emojiName="+1"
       teammateNameDisplay="username"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -203,7 +203,7 @@ exports[`ReactionList should match snapshot, renderReactionRows 1`] = `
         }
       }
       user={
-        {
+        Object {
           "id": "user_id_2",
           "username": "username_2",
         }
@@ -211,7 +211,7 @@ exports[`ReactionList should match snapshot, renderReactionRows 1`] = `
     />
     <View
       style={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "height": 1,
         }
@@ -220,7 +220,7 @@ exports[`ReactionList should match snapshot, renderReactionRows 1`] = `
   </View>,
   <View
     style={
-      {
+      Object {
         "height": 45,
         "justifyContent": "center",
       }
@@ -230,7 +230,7 @@ exports[`ReactionList should match snapshot, renderReactionRows 1`] = `
       emojiName="smile"
       teammateNameDisplay="username"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -259,7 +259,7 @@ exports[`ReactionList should match snapshot, renderReactionRows 1`] = `
         }
       }
       user={
-        {
+        Object {
           "id": "user_id_1",
           "username": "username_1",
         }
@@ -267,7 +267,7 @@ exports[`ReactionList should match snapshot, renderReactionRows 1`] = `
     />
     <View
       style={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "height": 1,
         }

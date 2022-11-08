@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {expect} from 'detox';
-
 import {DisplaySettingsScreen} from '@support/ui/screen';
 import {isAndroid} from '@support/utils';
 

@@ -4,7 +4,7 @@ exports[`ChannelInfo -> Archive should match snapshot for Archive Channel 1`] = 
 <React.Fragment>
   <Separator
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -43,7 +43,7 @@ exports[`ChannelInfo -> Archive should match snapshot for Archive Channel 1`] = 
     textColor="#CA3B27"
     textId="mobile.routes.channelInfo.delete_channel"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -80,7 +80,7 @@ exports[`ChannelInfo -> Archive should match snapshot for Unarchive Channel 1`] 
 <React.Fragment>
   <Separator
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -117,7 +117,7 @@ exports[`ChannelInfo -> Archive should match snapshot for Unarchive Channel 1`] 
     shouldRender={true}
     textId="mobile.routes.channelInfo.unarchive_channel"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",

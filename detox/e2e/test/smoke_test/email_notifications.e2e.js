@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {expect} from 'detox';
+import jestExpect from 'expect';
 
 import {
     Channel,
@@ -32,8 +32,6 @@ import {
     splitEmailBodyText,
     verifyEmailBody,
 } from '@support/utils';
-
-const {expect: jestExpect} = require('@jest/globals');
 
 describe('Email Notifications', () => {
     let testUser;

@@ -6,7 +6,7 @@ exports[`ChannelsList List should match snapshot 1`] = `
 >
   <SectionList
     contentContainerStyle={
-      {
+      Object {
         "paddingBottom": 44,
       }
     }
@@ -18,11 +18,11 @@ exports[`ChannelsList List should match snapshot 1`] = `
     onViewableItemsChanged={[Function]}
     renderItem={[Function]}
     renderSectionHeader={[Function]}
-    sections={[]}
+    sections={Array []}
     stickySectionHeadersEnabled={true}
     testID="main.sidebar.channels_list.list"
     viewabilityConfig={
-      {
+      Object {
         "itemVisiblePercentThreshold": 100,
         "waitForInteraction": true,
       }
@@ -38,7 +38,7 @@ exports[`ChannelsList List should match snapshot with collapsed threads enabled 
   <Connect(ThreadsEntry) />
   <SectionList
     contentContainerStyle={
-      {
+      Object {
         "paddingBottom": 44,
       }
     }
@@ -50,11 +50,11 @@ exports[`ChannelsList List should match snapshot with collapsed threads enabled 
     onViewableItemsChanged={[Function]}
     renderItem={[Function]}
     renderSectionHeader={[Function]}
-    sections={[]}
+    sections={Array []}
     stickySectionHeadersEnabled={true}
     testID="main.sidebar.channels_list.list"
     viewabilityConfig={
-      {
+      Object {
         "itemVisiblePercentThreshold": 100,
         "waitForInteraction": true,
       }
@@ -63,15 +63,15 @@ exports[`ChannelsList List should match snapshot with collapsed threads enabled 
   <UnreadIndicatorIOS
     onPress={[Function]}
     style={
-      [
+      Array [
         undefined,
-        {
+        Object {
           "marginTop": 64,
         },
       ]
     }
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -110,7 +110,7 @@ exports[`ChannelsList List should match snapshot with unreads not on top 1`] = `
 >
   <SectionList
     contentContainerStyle={
-      {
+      Object {
         "paddingBottom": 44,
       }
     }
@@ -122,11 +122,11 @@ exports[`ChannelsList List should match snapshot with unreads not on top 1`] = `
     onViewableItemsChanged={[Function]}
     renderItem={[Function]}
     renderSectionHeader={[Function]}
-    sections={[]}
+    sections={Array []}
     stickySectionHeadersEnabled={true}
     testID="main.sidebar.channels_list.list"
     viewabilityConfig={
-      {
+      Object {
         "itemVisiblePercentThreshold": 100,
         "waitForInteraction": true,
       }
@@ -135,12 +135,12 @@ exports[`ChannelsList List should match snapshot with unreads not on top 1`] = `
   <UnreadIndicatorIOS
     onPress={[Function]}
     style={
-      [
+      Array [
         undefined,
       ]
     }
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",

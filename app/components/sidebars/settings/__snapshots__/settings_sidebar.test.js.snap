@@ -5,7 +5,7 @@ exports[`SettingsSidebar Custom Status should close sidebar when update custom s
   drawerPosition="right"
   drawerWidth={710}
   forwardRef={
-    {
+    Object {
       "current": null,
     }
   }
@@ -21,7 +21,7 @@ exports[`SettingsSidebar Custom Status should keep sidebar open when update cust
   drawerPosition="right"
   drawerWidth={710}
   forwardRef={
-    {
+    Object {
       "current": null,
     }
   }
@@ -37,7 +37,7 @@ exports[`SettingsSidebar should match snapshot 1`] = `
   drawerPosition="right"
   drawerWidth={710}
   forwardRef={
-    {
+    Object {
       "current": null,
     }
   }
@@ -53,7 +53,7 @@ exports[`SettingsSidebar should match snapshot with custom status enabled 1`] = 
   drawerPosition="right"
   drawerWidth={710}
   forwardRef={
-    {
+    Object {
       "current": null,
     }
   }
@@ -69,7 +69,7 @@ exports[`SettingsSidebar should match snapshot with custom status expiry 1`] = `
   drawerPosition="right"
   drawerWidth={710}
   forwardRef={
-    {
+    Object {
       "current": null,
     }
   }

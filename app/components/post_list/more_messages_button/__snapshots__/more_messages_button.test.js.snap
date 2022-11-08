@@ -3,8 +3,8 @@
 exports[`MoreMessagesButton should match snapshot 1`] = `
 <ForwardRef(AnimatedComponentWrapper)
   style={
-    [
-      {
+    Array [
+      Object {
         "backgroundColor": "#1c58d9",
         "elevation": 1,
         "flex": 1,
@@ -12,12 +12,12 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
         "position": "absolute",
         "zIndex": 1,
       },
-      {
+      Object {
         "borderRadius": 4,
       },
-      {
-        "transform": [
-          {
+      Object {
+        "transform": Array [
+          Object {
             "translateY": -550,
           },
         ],
@@ -28,7 +28,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
   <TouchableWithFeedbackIOS
     onPress={[Function]}
     style={
-      {
+      Object {
         "borderRadius": 4,
       }
     }
@@ -37,8 +37,8 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
   >
     <View
       style={
-        [
-          {
+        Array [
+          Object {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -48,7 +48,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
             "paddingRight": 5,
             "paddingVertical": 1,
             "shadowColor": "#3f4350",
-            "shadowOffset": {
+            "shadowOffset": Object {
               "height": 6,
               "width": 0,
             },
@@ -56,7 +56,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
             "shadowRadius": 4,
             "width": "100%",
           },
-          {
+          Object {
             "borderRadius": 4,
           },
         ]
@@ -64,7 +64,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
     >
       <View
         style={
-          {
+          Object {
             "width": 22,
           }
         }
@@ -72,7 +72,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
         <CompassIcon
           name="arrow-up"
           style={
-            {
+            Object {
               "alignSelf": "center",
               "color": "#ffffff",
               "fontSize": 18,
@@ -83,7 +83,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
       </View>
       <View
         style={
-          {
+          Object {
             "alignItems": "flex-start",
             "flex": 10,
             "flexDirection": "row",
@@ -93,7 +93,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
       >
         <Text
           style={
-            {
+            Object {
               "alignSelf": "center",
               "color": "#ffffff",
               "fontWeight": "bold",
@@ -110,7 +110,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
       >
         <View
           style={
-            {
+            Object {
               "alignItems": "flex-end",
               "flex": 1,
             }
@@ -119,7 +119,7 @@ exports[`MoreMessagesButton should match snapshot 1`] = `
           <CompassIcon
             name="close"
             style={
-              {
+              Object {
                 "alignSelf": "center",
                 "color": "#ffffff",
                 "fontSize": 18,

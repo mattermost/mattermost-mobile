@@ -57,7 +57,6 @@ export const useCallsChannelSettings = () => {
 
     useEffect(() => {
         if (pluginEnabled) {
-            // @ts-expect-error ActionFunc
             dispatch(loadConfig());
         }
     }, []);

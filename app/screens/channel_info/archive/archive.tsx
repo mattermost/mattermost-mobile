@@ -38,7 +38,6 @@ export default class Archive extends PureComponent<ArchiveProps> {
     };
 
     alertAndHandleYesAction = (title: FormattedMsg, message: FormattedMsg, onPressAction: () => void) => {
-        // @ts-expect-error context type definition
         const {formatMessage} = this.context.intl;
         const {displayName, isPublic} = this.props;
 
@@ -75,8 +74,6 @@ export default class Archive extends PureComponent<ArchiveProps> {
             const result = await deleteChannel(channelId);
             if (result.error) {
                 alertErrorWithFallback(
-
-                    // @ts-expect-error context type definition
                     this.context.intl,
                     result.error,
                     {
@@ -112,8 +109,6 @@ export default class Archive extends PureComponent<ArchiveProps> {
             const result = await this.props.unarchiveChannel(channelId);
             if (result.error) {
                 alertErrorWithFallback(
-
-                    // @ts-expect-error context type definition
                     this.context.intl,
                     result.error,
                     {

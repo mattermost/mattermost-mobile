@@ -62,33 +62,6 @@ index fabd291..45b322b 100644
                  } else {
                      reject(@"error", error.localizedDescription, nil);
                      [root dismissViewControllerAnimated:YES completion:nil];
-diff --git a/node_modules/react-native-youtube/YouTube.android.js b/node_modules/react-native-youtube/YouTube.android.js
-index 0430b71..8506d33 100644
---- a/node_modules/react-native-youtube/YouTube.android.js
-+++ b/node_modules/react-native-youtube/YouTube.android.js
-@@ -1,8 +1,8 @@
-+import {ViewPropTypes} from 'deprecated-react-native-prop-types';
- import React from 'react';
- import PropTypes from 'prop-types';
- import ReactNative, {
-   View,
--  ViewPropTypes,
-   Text,
-   StyleSheet,
-   requireNativeComponent,
-diff --git a/node_modules/react-native-youtube/YouTube.ios.js b/node_modules/react-native-youtube/YouTube.ios.js
-index 2e1bf41..f623049 100644
---- a/node_modules/react-native-youtube/YouTube.ios.js
-+++ b/node_modules/react-native-youtube/YouTube.ios.js
-@@ -1,6 +1,7 @@
-+import {ViewPropTypes} from 'deprecated-react-native-prop-types';
- import React from 'react';
- import PropTypes from 'prop-types';
--import ReactNative, { requireNativeComponent, NativeModules, ViewPropTypes } from 'react-native';
-+import ReactNative, { requireNativeComponent, NativeModules } from 'react-native';
- 
- const RCTYouTube = requireNativeComponent('RCTYouTube', null);
- 
 diff --git a/node_modules/react-native-youtube/YouTubeStandalone.ios.js b/node_modules/react-native-youtube/YouTubeStandalone.ios.js
 index 0ee59c6..4a8294b 100644
 --- a/node_modules/react-native-youtube/YouTubeStandalone.ios.js
@@ -100,10 +73,10 @@ index 0ee59c6..4a8294b 100644
 -  : { playVideo: (videoId) => YouTubeStandalone.playVideo(videoId) };
 +  : { playVideo: (videoId, startTime) => YouTubeStandalone.playVideo(videoId, startTime) };
 diff --git a/node_modules/react-native-youtube/main.d.ts b/node_modules/react-native-youtube/main.d.ts
-index 80c7df5..849104b 100644
+index d771db7..410709d 100644
 --- a/node_modules/react-native-youtube/main.d.ts
 +++ b/node_modules/react-native-youtube/main.d.ts
-@@ -36,7 +36,7 @@ declare class YouTube extends React.Component<YouTubeProps> {
+@@ -35,7 +35,7 @@ declare class YouTube extends React.Component<YouTubeProps> {
  }
  
  export declare const YouTubeStandaloneIOS: {

@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {expect} from 'detox';
-
 import ChannelsList from './channels_list';
 import TeamsList from './teams_list';
 

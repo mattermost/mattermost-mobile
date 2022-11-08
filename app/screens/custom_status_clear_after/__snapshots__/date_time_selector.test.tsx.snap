@@ -3,7 +3,7 @@
 exports[`screens/date_time_selector should match snapshot 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "flex": 1,
       "paddingTop": 10,
@@ -12,7 +12,7 @@ exports[`screens/date_time_selector should match snapshot 1`] = `
 >
   <View
     style={
-      {
+      Object {
         "alignItems": "center",
         "flex": 1,
         "flexDirection": "row",
@@ -34,7 +34,7 @@ exports[`screens/date_time_selector should match snapshot 1`] = `
       onResponderTerminationRequest={[Function]}
       onStartShouldSetResponder={[Function]}
       style={
-        {
+        Object {
           "opacity": 1,
         }
       }
@@ -42,21 +42,21 @@ exports[`screens/date_time_selector should match snapshot 1`] = `
     >
       <View
         style={
-          [
-            {},
+          Array [
+            Object {},
           ]
         }
       >
         <Text
           style={
-            [
-              {
+            Array [
+              Object {
                 "color": "#007AFF",
                 "fontSize": 18,
                 "margin": 8,
                 "textAlign": "center",
               },
-              {
+              Object {
                 "color": "#1c58d9",
               },
             ]
@@ -79,7 +79,7 @@ exports[`screens/date_time_selector should match snapshot 1`] = `
       onResponderTerminationRequest={[Function]}
       onStartShouldSetResponder={[Function]}
       style={
-        {
+        Object {
           "opacity": 1,
         }
       }
@@ -87,21 +87,21 @@ exports[`screens/date_time_selector should match snapshot 1`] = `
     >
       <View
         style={
-          [
-            {},
+          Array [
+            Object {},
           ]
         }
       >
         <Text
           style={
-            [
-              {
+            Array [
+              Object {
                 "color": "#007AFF",
                 "fontSize": 18,
                 "margin": 8,
                 "textAlign": "center",
               },
-              {
+              Object {
                 "color": "#1c58d9",
               },
             ]

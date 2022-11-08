@@ -10,7 +10,7 @@ exports[`ChannelInfo -> Favorite should match snapshot for Favorite Channel 1`] 
   shouldRender={true}
   textId="mobile.routes.channelInfo.favorite"
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -52,7 +52,7 @@ exports[`ChannelInfo -> Favorite should match snapshot for Unfavorite Channel 1`
   shouldRender={true}
   textId="mobile.routes.channelInfo.favorite"
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",

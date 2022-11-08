@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import React from 'react';
 import {injectIntl, intlShape} from 'react-intl';
-import {FlatList, NativeSyntheticEvent, NativeScrollEvent, Platform, View, ListRenderItemInfo} from 'react-native';
+import {FlatList, NativeSyntheticEvent, NativeScrollEvent, Platform, View} from 'react-native';
 
 import EmptyState from '@components/global_threads/empty_state';
 import ThreadItem from '@components/global_threads/thread_item';
@@ -44,9 +44,9 @@ function ThreadList({haveUnreads, intl, isLoading, isRefreshing, loadMoreThreads
         loadMoreThreads();
     }, [loadMoreThreads, viewingUnreads]);
 
-    const keyExtractor = React.useCallback((item: string) => item, []);
+    const keyExtractor = React.useCallback((item) => item, []);
 
-    const renderPost = React.useCallback(({item}: ListRenderItemInfo<string>) => {
+    const renderPost = React.useCallback(({item}) => {
         return (
             <ThreadItem
                 testID={testID}

@@ -3,7 +3,7 @@
 exports[`QuickActions should match snapshot 1`] = `
 <View
   style={
-    {
+    Object {
       "display": "flex",
       "flexDirection": "row",
       "height": 44,
@@ -17,7 +17,7 @@ exports[`QuickActions should match snapshot 1`] = `
     onTextChange={[Function]}
     testID="post_draft.quick_actions.at_input_action"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -53,7 +53,7 @@ exports[`QuickActions should match snapshot 1`] = `
     onTextChange={[Function]}
     testID="post_draft.quick_actions.slash_input_action"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -90,7 +90,7 @@ exports[`QuickActions should match snapshot 1`] = `
     onUploadFiles={[Function]}
     testID="post_draft.quick_actions.file_action"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -126,7 +126,7 @@ exports[`QuickActions should match snapshot 1`] = `
     onUploadFiles={[Function]}
     testID="post_draft.quick_actions.image_action"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -162,7 +162,7 @@ exports[`QuickActions should match snapshot 1`] = `
     onUploadFiles={[Function]}
     testID="post_draft.quick_actions.camera_action"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",

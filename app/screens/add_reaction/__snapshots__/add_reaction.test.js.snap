@@ -3,7 +3,7 @@
 exports[`AddReaction should match snapshot 1`] = `
 <View
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
