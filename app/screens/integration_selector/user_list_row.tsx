@@ -130,6 +130,7 @@ const UserListRow = ({
             >
                 <View style={style.profileContainer}>
                     <ProfilePicture
+                        author={user}
                         size={32}
                         iconSize={24}
                         testID={profilePictureTestID}
