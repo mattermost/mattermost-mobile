@@ -239,7 +239,6 @@
     "mobile.message_length.message": "您的消息过长。目前字数：{max}/{count}",
     "mobile.message_length.message_split_left": "消息超过字数限制",
     "mobile.message_length.title": "消息长度",
-    "mobile.microphone_permission_denied_description": "若要参与此呼叫，请打开“设置”以授予对您的麦克风“授权使用”的权限。",
     "mobile.microphone_permission_denied_title": "{applicationName} 想使用您的麦克风",
     "mobile.oauth.failed_to_login": "登入失败。请重试。",
     "mobile.oauth.failed_to_open_link": "打开链接失败。请重试。",
