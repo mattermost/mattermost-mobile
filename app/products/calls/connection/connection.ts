@@ -12,7 +12,6 @@ import {
     mediaDevices,
 } from 'react-native-webrtc';
 
-import {setCurrentCallConnected} from '@calls/state';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
@@ -58,9 +57,6 @@ export async function newConnection(
             logError('Unable to get media device:', err);
         }
     };
-
-    InCallManager.start({media: 'audio'});
-    InCallManager.stopProximitySensor();
 
     // getClient can throw an error, which will be handled by the caller.
     const client = NetworkManager.getClient(serverUrl);
@@ -199,6 +195,9 @@ export async function newConnection(
             }
         }
 
+        InCallManager.start({media: 'audio'});
+        InCallManager.stopProximitySensor();
+
         peer = new Peer(null, iceConfigs);
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {
@@ -228,10 +227,6 @@ export async function newConnection(
             if (!isClosed) {
                 disconnect();
             }
-        });
-
-        peer.on('connect', () => {
-            setCurrentCallConnected();
         });
     });
 

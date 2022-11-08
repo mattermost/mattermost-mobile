@@ -13,7 +13,7 @@ import {
     setCurrentCall,
     setGlobalCallsState,
 } from '@calls/state';
-import {Call, CallsConfig, ChannelsWithCalls, DefaultCall} from '@calls/types/calls';
+import {Call, CallsConfig, ChannelsWithCalls, DefaultCall, DefaultCurrentCall} from '@calls/types/calls';
 
 export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
@@ -105,6 +105,12 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
             participants: {...currentCall.participants, [userId]: nextCall.participants[userId]},
             voiceOn,
         };
+
+        // If this is the currentUser, that means we've connected to the call we created.
+        if (userId === nextCurrentCall.myUserId) {
+            nextCurrentCall.connected = true;
+        }
+
         setCurrentCall(nextCurrentCall);
     }
 };
@@ -167,23 +173,12 @@ export const newCurrentCall = (serverUrl: string, channelId: string, myUserId: s
     }
 
     setCurrentCall({
-        connected: false,
+        ...DefaultCurrentCall,
         ...existingCall,
         serverUrl,
         channelId,
         myUserId,
-        screenShareURL: '',
-        speakerphoneOn: false,
-        voiceOn: {},
     });
-};
-
-export const setCurrentCallConnected = () => {
-    const currentCall = getCurrentCall();
-    if (!currentCall) {
-        return;
-    }
-    setCurrentCall({...currentCall, connected: true});
 };
 
 export const myselfLeftCall = () => {

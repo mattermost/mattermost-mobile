@@ -12,7 +12,6 @@ import {
     setCurrentCall,
     setMicPermissionsErrorDismissed,
     setMicPermissionsGranted,
-    setCurrentCallConnected,
     useCallsConfig,
     useCallsState,
     useChannelsWithCalls,
@@ -537,9 +536,6 @@ describe('useCallsState', () => {
         act(() => {
             newCurrentCall('server1', 'channel-1', 'myUserId');
             userJoinedCall('server1', 'channel-1', 'myUserId');
-
-            // manually set connected, b/c this is done by connection.ts
-            setCurrentCallConnected();
         });
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], expectedCurrentCallState);
@@ -696,6 +692,7 @@ describe('useCallsState', () => {
             ...DefaultCurrentCall,
             serverUrl: 'server1',
             myUserId: 'myUserId',
+            connected: true,
             ...newCall1,
         };
         const secondExpectedCurrentCallState: CurrentCall = {
@@ -718,6 +715,7 @@ describe('useCallsState', () => {
         // join call
         act(() => {
             setMicPermissionsGranted(false);
+            newCurrentCall('server1', 'channel-1', 'myUserId');
             userJoinedCall('server1', 'channel-1', 'myUserId');
         });
         assert.deepEqual(result.current[0], expectedCallsState);
