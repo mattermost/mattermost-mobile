@@ -28,6 +28,9 @@ import {
 } from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
+import PermissionErrorBar from '@calls/components/permission_error_bar';
+import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
+import {usePermissionsChecker} from '@calls/hooks';
 import RaisedHandIcon from '@calls/icons/raised_hand_icon';
 import UnraisedHandIcon from '@calls/icons/unraised_hand_icon';
 import {CallParticipant, CurrentCall} from '@calls/types/calls';
@@ -48,13 +51,14 @@ import {
 import NavigationStore from '@store/navigation_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
 export type Props = {
     componentId: string;
     currentCall: CurrentCall | null;
     participantsDict: Dictionary<CallParticipant>;
+    micPermissionsGranted: boolean;
     teammateNameDisplay: string;
     fromThreadScreen?: boolean;
 }
@@ -252,19 +256,31 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: 'white',
         margin: 3,
     },
+    unavailableText: {
+        color: changeOpacity(theme.sidebarText, 0.32),
+    },
 }));
 
-const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDisplay, fromThreadScreen}: Props) => {
+const CallScreen = ({
+    componentId,
+    currentCall,
+    participantsDict,
+    micPermissionsGranted,
+    teammateNameDisplay,
+    fromThreadScreen,
+}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const {width, height} = useWindowDimensions();
+    usePermissionsChecker(micPermissionsGranted);
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
 
     const style = getStyleSheet(theme);
     const isLandscape = width > height;
     const showControls = !isLandscape || showControlsInLandscape;
     const myParticipant = currentCall?.participants[currentCall.myUserId];
+    const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
     const chatThreadTitle = intl.formatMessage({id: 'mobile.calls_chat_thread', defaultMessage: 'Chat thread'});
 
     useEffect(() => {
@@ -463,7 +479,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         <FormattedText
             id={'mobile.calls_unmute'}
             defaultMessage={'Unmute'}
-            style={style.buttonText}
+            style={[style.buttonText, !micPermissionsGranted && style.unavailableText]}
         />);
 
     return (
@@ -487,6 +503,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                 </View>
                 {usersList}
                 {screenShareView}
+                {micPermissionsError && <PermissionErrorBar/>}
                 <View
                     style={[style.buttons, isLandscape && style.buttonsLandscape, !showControls && style.buttonsLandscapeNoControls]}
                 >
@@ -495,10 +512,12 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                             testID='mute-unmute'
                             style={[style.mute, myParticipant.muted && style.muteMuted]}
                             onPress={muteUnmuteHandler}
+                            disabled={!micPermissionsGranted}
                         >
-                            <CompassIcon
+                            <UnavailableIconWrapper
                                 name={myParticipant.muted ? 'microphone-off' : 'microphone'}
                                 size={24}
+                                unavailable={!micPermissionsGranted}
                                 style={style.muteIcon}
                             />
                             {myParticipant.muted ? UnmuteText : MuteText}

@@ -6,10 +6,12 @@ import {
     getCallsState,
     getChannelsWithCalls,
     getCurrentCall,
+    getGlobalCallsState,
     setCallsConfig,
     setCallsState,
     setChannelsWithCalls,
     setCurrentCall,
+    setGlobalCallsState,
 } from '@calls/state';
 import {Call, CallsConfig, ChannelsWithCalls} from '@calls/types/calls';
 
@@ -116,6 +118,7 @@ export const userJoinedCall = (serverUrl: string, channelId: string, userId: str
             screenShareURL: '',
             speakerphoneOn: false,
             voiceOn: {},
+            micPermissionsErrorDismissed: false,
         });
     }
 };
@@ -362,4 +365,27 @@ export const setConfig = (serverUrl: string, config: Partial<CallsConfig>) => {
 export const setPluginEnabled = (serverUrl: string, pluginEnabled: boolean) => {
     const callsConfig = getCallsConfig(serverUrl);
     setCallsConfig(serverUrl, {...callsConfig, pluginEnabled});
+};
+
+export const setMicPermissionsGranted = (granted: boolean) => {
+    const globalState = getGlobalCallsState();
+
+    const nextGlobalState = {
+        ...globalState,
+        micPermissionsGranted: granted,
+    };
+    setGlobalCallsState(nextGlobalState);
+};
+
+export const setMicPermissionsErrorDismissed = () => {
+    const currentCall = getCurrentCall();
+    if (!currentCall) {
+        return;
+    }
+
+    const nextCurrentCall = {
+        ...currentCall,
+        micPermissionsErrorDismissed: true,
+    };
+    setCurrentCall(nextCurrentCall);
 };

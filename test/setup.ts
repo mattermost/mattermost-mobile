@@ -128,6 +128,10 @@ jest.doMock('react-native', () => {
                 },
             }),
         },
+        WebRTCModule: {
+            senderGetCapabilities: jest.fn().mockReturnValue(null),
+            receiverGetCapabilities: jest.fn().mockReturnValue(null),
+        },
     };
 
     const Linking = {
