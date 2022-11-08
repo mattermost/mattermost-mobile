@@ -690,7 +690,7 @@
   "post_body.check_for_out_of_channel_mentions.message.multiple": "niet door deze vermelding op de hoogte zijn gebracht omdat ze niet in het kanaal aanwezig zijn. Wil je ",
   "post_body.check_for_out_of_channel_mentions.message.one": "niet door deze vermelding op de hoogte zijn gebracht omdat ze niet in het kanaal aanwezig zijn. Wil je ",
   "post_body.check_for_out_of_channel_mentions.message_last": "? Ze zullen toegang hebben tot de volledige berichtgeschiedenis.",
-  "post_body.commentedOn": "Gaf commentaaar op het bericht van {name}{apostrophe}: ",
+  "post_body.commentedOn": "Gaf commentaar op het bericht van {name}{apostrophe}: ",
   "post_body.deleted": "(bericht verwijderd)",
   "post_info.auto_responder": "AUTOMATISCH ANTWOORD",
   "post_info.bot": "BOT",
