@@ -1,4 +1,4 @@
-// Copyright (c) 2022-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
 import React from 'react';
@@ -7,15 +7,15 @@ import {
     View,
 } from 'react-native';
 
-import { makeStyleSheetFromTheme } from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import CustomListRow, { Props as CustomListRowProps } from './custom_list_row';
+import CustomListRow, {Props as CustomListRowProps} from './custom_list_row';
 
 type OptionListRowProps = {
-    id: string,
-    theme: object,
-    item: { text: string, value: string },  // TODO I don't think this goes here, but It seems broken in @master
-    onPress: (item: DialogOption) => void,
+    id: string;
+    theme: object;
+    item: { text: string; value: string }; // TODO I don't think this goes here, but It seems broken in @master
+    onPress: (item: DialogOption) => void;
 }
 
 type Props = OptionListRowProps & CustomListRowProps;
@@ -42,11 +42,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-
 const OptionListRow = ({
     enabled, selectable, selected, theme, item, onPress, id,
 }: Props) => {
-    const { text, value } = item;
+    const {text, value} = item;
     const style = getStyleFromTheme(theme);
 
     const onPressRow = (): void => {
@@ -74,7 +73,6 @@ const OptionListRow = ({
             </CustomListRow>
         </View>
     );
-}
-
+};
 
 export default OptionListRow;

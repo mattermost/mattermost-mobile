@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, { useCallback } from 'react';
+import React, {useCallback} from 'react';
 import {
     Text,
     TouchableOpacity,
@@ -9,8 +9,8 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import { View as ViewConstants } from '@constants';
-import { changeOpacity, makeStyleSheetFromTheme } from '@utils/theme';
+import {View as ViewConstants} from '@constants';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     theme: Theme;
@@ -19,7 +19,7 @@ type Props = {
     onRemove: (opt: DialogOption | UserProfile | Channel) => void;
 }
 
-const SelectedOption = ({ theme, option, onRemove, dataSource }: Props) => {
+const SelectedOption = ({theme, option, onRemove, dataSource}: Props) => {
     const style = getStyleFromTheme(theme);
     const onPress = useCallback(
         () => onRemove(option),
@@ -58,7 +58,7 @@ const SelectedOption = ({ theme, option, onRemove, dataSource }: Props) => {
             </TouchableOpacity>
         </View>
     );
-}
+};
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {

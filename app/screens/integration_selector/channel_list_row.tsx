@@ -8,15 +8,16 @@ import {
 } from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import CustomListRow, { Props as CustomListRowProps } from './custom_list_row';
-import { makeStyleSheetFromTheme, changeOpacity } from '@utils/theme';
+import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+
+import CustomListRow, {Props as CustomListRowProps} from './custom_list_row';
 
 type ChannelListRowProps = {
-    id: string,
-    isArchived: boolean,
-    theme: object,
-    channel: Channel,
-    onPress: (item: Channel) => void,
+    id: string;
+    isArchived: boolean;
+    theme: object;
+    channel: Channel;
+    onPress: (item: Channel) => void;
 };
 
 type Props = ChannelListRowProps & CustomListRowProps;

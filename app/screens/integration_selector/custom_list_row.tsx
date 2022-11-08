@@ -1,4 +1,4 @@
-// Copyright (c) 2022-present Mattermost, Inc. All Rights Reserved.
+// Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
 import React from 'react';
@@ -9,15 +9,14 @@ import {
     View,
 } from 'react-native';
 
-
 export type Props = {
-    id: string,
-    onPress?: (event: GestureResponderEvent) => void,
-    enabled: boolean,
-    selectable: boolean,
-    selected: boolean,
-    children: JSX.Element | JSX.Element[],
-    testID?: string,
+    id: string;
+    onPress?: (event: GestureResponderEvent) => void;
+    enabled: boolean;
+    selectable: boolean;
+    selected: boolean;
+    children: JSX.Element | JSX.Element[];
+    testID?: string;
 };
 
 const style = StyleSheet.create({
@@ -72,6 +71,6 @@ const CustomListRow = ({
             </TouchableOpacity>
         </View>
     );
-}
+};
 
 export default CustomListRow;

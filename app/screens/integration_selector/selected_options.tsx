@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import { View, ScrollView } from 'react-native';
+import {View, ScrollView} from 'react-native';
 
-import { View as ViewConstants } from '@constants';
-import { makeStyleSheetFromTheme } from '@utils/theme';
+import {View as ViewConstants} from '@constants';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import SelectedOption from './selected_option';
-
 
 type Props = {
     ref: React.Ref<ScrollView>;
@@ -35,7 +34,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme(() => {
 });
 
 const SelectedOptions = ({
-    theme, ref, selectedOptions, onRemove, dataSource
+    theme, ref, selectedOptions, onRemove, dataSource,
 }: Props) => {
     const options: React.ReactNode[] = [];
 
@@ -80,6 +79,6 @@ const SelectedOptions = ({
             </View>
         </ScrollView>
     );
-}
+};
 
 export default SelectedOptions;

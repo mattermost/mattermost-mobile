@@ -1,54 +1,53 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
-import { withDatabase } from '@nozbe/watermelondb/DatabaseProvider';
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import React, {useEffect, useMemo, useRef, useState} from 'react';
+import {useIntl} from 'react-intl';
+import {View} from 'react-native';
+import {ScrollView} from 'react-native-gesture-handler';
+import {Navigation} from 'react-native-navigation';
+import {SafeAreaView} from 'react-native-safe-area-context';
 
-import SearchBar from '@components/search';
-import { changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme } from '@utils/theme';
-import { fetchChannels, searchChannels as searchChannelsRemote } from '@actions/remote/channel';
-import { fetchProfiles, searchProfiles as searchProfilesRemote } from '@actions/remote/user';
-import { General } from '@constants';
-import { useTheme } from '@context/theme';
+import {fetchChannels, searchChannels as searchChannelsRemote} from '@actions/remote/channel';
+import {fetchProfiles, searchProfiles as searchProfilesRemote} from '@actions/remote/user';
+import {useServerUrl} from '@app/context/server';
+import {debounce} from '@app/helpers/api/general';
+import {observeCurrentTeamId} from '@app/queries/servers/system';
 import FormattedText from '@components/formatted_text';
-import { View as ViewConstants } from '@constants';
+import SearchBar from '@components/search';
+import {General, View as ViewConstants} from '@constants';
+import {useTheme} from '@context/theme';
 import {
     buildNavigationButton,
     popTopScreen, setButtons,
 } from '@screens/navigation';
-import { Navigation } from 'react-native-navigation';
+import {WithDatabaseArgs} from '@typings/database/database';
+import {filterChannelsMatchingTerm} from '@utils/channel';
+import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {filterProfilesMatchingTerm} from '@utils/user';
 
-import CustomList, { FLATLIST, SECTIONLIST } from './custom_list';
-import OptionListRow from './option_list_row';
+import {createProfilesSections} from '../create_direct_message/user_list';
+
 import ChannelListRow from './channel_list_row';
-import UserListRow from './user_list_row';
-import { useIntl } from 'react-intl';
-import { debounce } from '@app/helpers/api/general';
+import CustomList, {FLATLIST, SECTIONLIST} from './custom_list';
+import OptionListRow from './option_list_row';
 import SelectedOptions from './selected_options';
-import { filterProfilesMatchingTerm } from '@utils/user';
-import { filterChannelsMatchingTerm } from '@utils/channel';
-
-import { useServerUrl } from '@app/context/server';
-import { observeCurrentTeamId } from '@app/queries/servers/system';
-import { WithDatabaseArgs } from '@typings/database/database';
-import { createProfilesSections } from '../create_direct_message/user_list';
-import { ScrollView } from 'react-native-gesture-handler';
+import UserListRow from './user_list_row';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
 type MultiselectSelectedMap = Dictionary<DialogOption> | Dictionary<Channel> | Dictionary<UserProfile>;
 type UserProfileSection = {
-    id: string,
-    data: UserProfile[]
+    id: string;
+    data: UserProfile[];
 };
 
 type Props = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     options?: PostActionOption[];
-    actions: any,
+    actions: any;
     currentTeamId: string;
     data?: DataType;
     dataSource: string;
@@ -96,11 +95,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-
 function IntegrationSelector(
-    { dataSource, data, isMultiselect, selected, handleSelect,
-        currentTeamId, componentId, getDynamicOptions, options, teammateNameDisplay }: Props) {
-
+    {dataSource, data, isMultiselect, selected, handleSelect,
+        currentTeamId, componentId, getDynamicOptions, options, teammateNameDisplay}: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
@@ -120,15 +117,15 @@ function IntegrationSelector(
     // HOOKS
     const [integrationData, setIntegrationData] = useState<DataType>(data || []);
     const [loading, setLoading] = useState<boolean>(false);
-    const [term, setTerm] = useState<string>("");
+    const [term, setTerm] = useState<string>('');
     const [searchResults, setSearchResults] = useState<DataType>([]);
     const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
     const [currentPage, setCurrentPage] = useState<number>(INITIAL_PAGE);
     const [next, setNext] = useState<boolean>(VALID_DATASOURCES.includes(dataSource));
     const [customListData, setCustomListData] = useState<DataType | UserProfileSection[]>([]);
 
-    let selectedScroll = React.createRef<ScrollView>();
-    let multiselectItems: MultiselectSelectedMap = {}
+    const selectedScroll = React.createRef<ScrollView>();
+    const multiselectItems: MultiselectSelectedMap = {};
     if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
         selected.forEach((opt) => {
             multiselectItems[opt.value] = opt;
@@ -154,7 +151,7 @@ function IntegrationSelector(
             SUBMIT_BUTTON_ID,
             'integration_selector.multiselect.submit.button',
             undefined,
-            intl.formatMessage({ id: 'integration_selector.multiselect.submit', defaultMessage: 'Done' }),
+            intl.formatMessage({id: 'integration_selector.multiselect.submit', defaultMessage: 'Done'}),
         );
         base.enabled = true;
         base.showAsAction = 'always';
@@ -173,7 +170,7 @@ function IntegrationSelector(
             case ViewConstants.DATA_SOURCE_USERS: {
                 const currentSelected = multiselectSelected as Dictionary<UserProfile>;
                 const typedItem = item as UserProfile;
-                const multiselectSelectedItems = { ...currentSelected };
+                const multiselectSelectedItems = {...currentSelected};
                 if (currentSelected[typedItem.id]) {
                     delete multiselectSelectedItems[typedItem.id];
                 } else {
@@ -185,7 +182,7 @@ function IntegrationSelector(
             case ViewConstants.DATA_SOURCE_CHANNELS: {
                 const currentSelected = multiselectSelected as Dictionary<Channel>;
                 const typedItem = item as Channel;
-                const multiselectSelectedItems = { ...currentSelected };
+                const multiselectSelectedItems = {...currentSelected};
                 if (currentSelected[typedItem.id]) {
                     delete multiselectSelectedItems[typedItem.id];
                 } else {
@@ -197,7 +194,7 @@ function IntegrationSelector(
             default: {
                 const currentSelected = multiselectSelected as Dictionary<DialogOption>;
                 const typedItem = item as DialogOption;
-                const multiselectSelectedItems = { ...currentSelected };
+                const multiselectSelectedItems = {...currentSelected};
                 if (currentSelected[typedItem.value]) {
                     delete multiselectSelectedItems[typedItem.value];
                 } else {
@@ -219,7 +216,7 @@ function IntegrationSelector(
             case ViewConstants.DATA_SOURCE_USERS: {
                 const currentSelected = multiselectSelected as Dictionary<UserProfile>;
                 const typedItem = item as UserProfile;
-                const multiselectSelectedItems = { ...currentSelected };
+                const multiselectSelectedItems = {...currentSelected};
                 delete multiselectSelectedItems[typedItem.id];
                 setMultiselectSelected(multiselectSelectedItems);
                 return;
@@ -227,7 +224,7 @@ function IntegrationSelector(
             case ViewConstants.DATA_SOURCE_CHANNELS: {
                 const currentSelected = multiselectSelected as Dictionary<Channel>;
                 const typedItem = item as Channel;
-                const multiselectSelectedItems = { ...currentSelected };
+                const multiselectSelectedItems = {...currentSelected};
                 delete multiselectSelectedItems[typedItem.id];
                 setMultiselectSelected(multiselectSelectedItems);
                 return;
@@ -235,7 +232,7 @@ function IntegrationSelector(
             default: {
                 const currentSelected = multiselectSelected as Dictionary<DialogOption>;
                 const typedItem = item as DialogOption;
-                const multiselectSelectedItems = { ...currentSelected };
+                const multiselectSelectedItems = {...currentSelected};
                 delete multiselectSelectedItems[typedItem.value];
                 setMultiselectSelected(multiselectSelectedItems);
             }
@@ -245,7 +242,7 @@ function IntegrationSelector(
     const getChannels = debounce(async () => {
         if (next && !loading && !term) {
             setCurrentPage(currentPage + 1);
-            const { channels: channelData } = await fetchChannels(serverUrl, currentTeamId, currentPage);
+            const {channels: channelData} = await fetchChannels(serverUrl, currentTeamId, currentPage);
 
             if (channelData && channelData.length > 0) {
                 loadedChannels([...integrationData as Channel[], ...channelData]);
@@ -256,7 +253,7 @@ function IntegrationSelector(
     const getProfiles = debounce(async () => {
         if (next && !loading && !term) {
             setCurrentPage(currentPage + 1);
-            const { users: userData } = await fetchProfiles(serverUrl, currentPage);
+            const {users: userData} = await fetchProfiles(serverUrl, currentPage);
 
             if (userData && userData.length > 0) {
                 loadedProfiles([...integrationData as UserProfile[], ...userData]);
@@ -298,24 +295,24 @@ function IntegrationSelector(
         // dynamic options are not paged so are not reloaded on scroll
     };
 
-    const searchChannels = async (term: string) => {
+    const searchChannels = async (searchTerm: string) => {
         const isSearch = true;
-        const { channels: receivedChannels } = await searchChannelsRemote(serverUrl, term, currentTeamId, isSearch);
+        const {channels: receivedChannels} = await searchChannelsRemote(serverUrl, searchTerm, currentTeamId, isSearch);
 
         if (receivedChannels) {
             setSearchResults(receivedChannels);
         }
     };
 
-    const searchProfiles = async (term: string) => {
-        const { data: userData } = await searchProfilesRemote(serverUrl, term.toLowerCase(), { team_id: currentTeamId, allow_inactive: true });
+    const searchProfiles = async (searchTerm: string) => {
+        const {data: userData} = await searchProfilesRemote(serverUrl, searchTerm.toLowerCase(), {team_id: currentTeamId, allow_inactive: true});
 
         if (userData) {
             setSearchResults(userData);
         }
     };
 
-    const searchDynamicOptions = (term = '') => {
+    const searchDynamicOptions = (searchTerm = '') => {
         if (options) {
             setIntegrationData(options);
         }
@@ -324,13 +321,13 @@ function IntegrationSelector(
             return;
         }
 
-        getDynamicOptions(term.toLowerCase()).then((results: DialogOption[]) => {
-            let data = results || [];
+        getDynamicOptions(searchTerm.toLowerCase()).then((results: DialogOption[]) => {
+            const searchData = results || [];
 
             if (term) {
-                setSearchResults(data);
+                setSearchResults(searchData);
             } else {
-                setIntegrationData(data);
+                setIntegrationData(searchData);
             }
         });
     };
@@ -365,27 +362,27 @@ function IntegrationSelector(
         }
     };
 
-    const filterSearchData = (dataSource: string, data: DataType, term: string) => {
+    const filterSearchData = (source: string, searchData: DataType, searchTerm: string) => {
         if (!data) {
             return [];
         }
 
-        const lowerCasedTerm = term.toLowerCase();
+        const lowerCasedTerm = searchTerm.toLowerCase();
 
-        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            return filterProfilesMatchingTerm(data as UserProfile[], lowerCasedTerm);
-        } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-            return filterChannelsMatchingTerm(data as Channel[], lowerCasedTerm);
-        } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
-            return data;
+        if (source === ViewConstants.DATA_SOURCE_USERS) {
+            return filterProfilesMatchingTerm(searchData as UserProfile[], lowerCasedTerm);
+        } else if (source === ViewConstants.DATA_SOURCE_CHANNELS) {
+            return filterChannelsMatchingTerm(searchData as Channel[], lowerCasedTerm);
+        } else if (source === ViewConstants.DATA_SOURCE_DYNAMIC) {
+            return searchData;
         }
 
-        return (data as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().startsWith(lowerCasedTerm));
+        return (searchData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().startsWith(lowerCasedTerm));
     };
 
     const handleMultiselectSubmit = () => {
-        // TODO Will be finished once we have Apps multiselect
-    }
+        // This will be finished once we have Apps multiselect
+    };
 
     // Effects
     useEffect(() => {
@@ -400,7 +397,7 @@ function IntegrationSelector(
         }
 
         setLoading(false);
-    }, [])
+    }, []);
 
     useEffect(() => {
         let listData: (DataType | UserProfileSection[]) = integrationData;
@@ -417,7 +414,6 @@ function IntegrationSelector(
         }
 
         setCustomListData(listData);
-
     }, [searchResults, integrationData]);
 
     useEffect(() => {
@@ -430,8 +426,8 @@ function IntegrationSelector(
         });
 
         Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({ buttonId }: { buttonId: string }) => {
-                if (buttonId == SUBMIT_BUTTON_ID) {
+            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
+                if (buttonId === SUBMIT_BUTTON_ID) {
                     handleMultiselectSubmit();
                 }
             },
@@ -448,19 +444,19 @@ function IntegrationSelector(
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
                 text = {
-                    id: intl.formatMessage({ id: 'mobile.integration_selector.loading_users' }),
+                    id: intl.formatMessage({id: 'mobile.integration_selector.loading_users'}),
                     defaultMessage: 'Loading Channels...',
                 };
                 break;
             case ViewConstants.DATA_SOURCE_CHANNELS:
                 text = {
-                    id: intl.formatMessage({ id: 'mobile.integration_selector.loading_channels' }),
+                    id: intl.formatMessage({id: 'mobile.integration_selector.loading_channels'}),
                     defaultMessage: 'Loading Channels...',
                 };
                 break;
             default:
                 text = {
-                    id: intl.formatMessage({ id: 'mobile.integration_selector.loading_options' }),
+                    id: intl.formatMessage({id: 'mobile.integration_selector.loading_options'}),
                     defaultMessage: 'Loading Options...',
                 };
                 break;
@@ -549,13 +545,13 @@ function IntegrationSelector(
                         dataSource={dataSource}
                         onRemove={handleRemoveOption}
                     />
-                    <View style={style.separator} />
+                    <View style={style.separator}/>
                 </>
             );
         }
 
         return optionComponents;
-    }
+    };
 
     const listType = dataSource === ViewConstants.DATA_SOURCE_USERS ? SECTIONLIST : FLATLIST;
     let rowComponent;
@@ -567,7 +563,7 @@ function IntegrationSelector(
         rowComponent = renderOptionItem;
     }
 
-    let selectedOptionsComponent = renderSelectedOptions();
+    const selectedOptionsComponent = renderSelectedOptions();
 
     return (
         <SafeAreaView style={style.container}>
@@ -577,7 +573,7 @@ function IntegrationSelector(
             >
                 <SearchBar
                     testID='selector.search_bar'
-                    placeholder={intl.formatMessage({ id: 'search_bar.search', defaultMessage: 'Search' })}
+                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     inputStyle={searchBarInput}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     onChangeText={onSearch}
@@ -605,7 +601,7 @@ function IntegrationSelector(
     );
 }
 
-const withTeamId = withObservables([], ({ database }: WithDatabaseArgs) => ({
+const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentTeamId: observeCurrentTeamId(database),
 }));
 
