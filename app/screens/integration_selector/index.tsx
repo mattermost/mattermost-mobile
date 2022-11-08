@@ -488,43 +488,43 @@ function IntegrationSelector(
         );
     };
 
-    const renderChannelItem = (props: any) => {
-        const itemSelected = Boolean(multiselectSelected[props.id]);
+    const renderChannelItem = (itemProps: any) => {
+        const itemSelected = Boolean(multiselectSelected[itemProps.id]);
         return (
             <ChannelListRow
-                key={props.id}
-                {...props}
+                key={itemProps.id}
+                {...itemProps}
 
                 theme={theme}
-                channel={props.item}
-                selectable={isMultiselect}
+                channel={itemProps.item as Channel}
+                selectable={isMultiselect || false}
                 selected={itemSelected}
             />
         );
     };
 
-    const renderOptionItem = (props: any) => {
-        const itemSelected = Boolean(multiselectSelected[props.id]);
+    const renderOptionItem = (itemProps: any) => {
+        const itemSelected = Boolean(multiselectSelected[itemProps.id]);
         return (
             <OptionListRow
-                key={props.id}
-                {...props}
+                key={itemProps.id}
+                {...itemProps}
                 theme={theme}
-                selectable={isMultiselect}
+                selectable={isMultiselect || false}
                 selected={itemSelected}
             />
         );
     };
 
-    const renderUserItem = (props: any): JSX.Element => {
-        const itemSelected = Boolean(multiselectSelected[props.id]);
+    const renderUserItem = (itemProps: any): JSX.Element => {
+        const itemSelected = Boolean(multiselectSelected[itemProps.id]);
         return (
             <UserListRow
-                key={props.id}
-                {...props}
+                key={itemProps.id}
+                {...itemProps}
                 theme={theme}
-                selectable={isMultiselect}
-                user={props.item}
+                selectable={isMultiselect || false}
+                user={itemProps.item}
                 teammateNameDisplay={teammateNameDisplay}
                 selected={itemSelected}
             />
