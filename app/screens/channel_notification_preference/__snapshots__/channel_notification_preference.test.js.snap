@@ -3,7 +3,7 @@
 exports[`ChannelNotificationPreference should match snapshot 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "rgba(63,67,80,0.03)",
       "flex": 1,
     }
@@ -11,9 +11,9 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
   testID="channel_notification_preference.screen"
 >
   <Connect(StatusBar) />
-  <ForwardRef
+  <RNCSafeAreaView
     edges={
-      [
+      Array [
         "left",
         "right",
       ]
@@ -23,7 +23,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
       defaultMessage="Send Notifications"
       id="channel_notifications.preference.header"
       style={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.03)",
           "color": "rgba(63,67,80,0.56)",
           "fontSize": 13,
@@ -33,25 +33,25 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
         }
       }
     />
-  </ForwardRef>
+  </RNCSafeAreaView>
   <ScrollView
     alwaysBounceVertical={false}
     contentContainerStyle={
-      {
+      Object {
         "backgroundColor": "rgba(63,67,80,0.03)",
       }
     }
   >
     <View
       style={
-        {
+        Object {
           "backgroundColor": "rgba(255,255,255,1)",
         }
       }
     >
-      <ForwardRef
+      <RNCSafeAreaView
         edges={
-          [
+          Array [
             "left",
             "right",
           ]
@@ -60,7 +60,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
         <View>
           <View
             style={
-              {
+              Object {
                 "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "marginLeft": 16,
@@ -77,7 +77,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
                 defaultMessage="Global default ({notifyLevel})"
                 id="channel_notifications.preference.global_default"
                 values={
-                  {
+                  Object {
                     "notifyLevel": "Mentions",
                   }
                 }
@@ -85,7 +85,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             }
             selected={true}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -118,7 +118,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
         <View>
           <View
             style={
-              {
+              Object {
                 "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "marginLeft": 16,
@@ -138,7 +138,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             }
             selected={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -171,7 +171,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
         <View>
           <View
             style={
-              {
+              Object {
                 "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "marginLeft": 16,
@@ -191,7 +191,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             }
             selected={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -224,7 +224,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
         <View>
           <View
             style={
-              {
+              Object {
                 "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "marginLeft": 16,
@@ -244,7 +244,7 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             }
             selected={false}
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -274,10 +274,10 @@ exports[`ChannelNotificationPreference should match snapshot 1`] = `
             }
           />
         </View>
-      </ForwardRef>
+      </RNCSafeAreaView>
       <View
         style={
-          {
+          Object {
             "backgroundColor": "rgba(63,67,80,0.1)",
             "height": 1,
             "marginLeft": 16,

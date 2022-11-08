@@ -8,8 +8,8 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
   bannerText="Banner Text"
   bannerTextColor="#fff"
   intl={
-    {
-      "defaultFormats": {},
+    Object {
+      "defaultFormats": Object {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -18,8 +18,8 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": {},
-      "formatters": {
+      "formats": Object {},
+      "formatters": Object {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -27,7 +27,7 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": {},
+      "messages": Object {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
@@ -35,7 +35,7 @@ exports[`AnnouncementBanner should match snapshot 1`] = `
     }
   }
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -74,8 +74,8 @@ exports[`AnnouncementBanner should match snapshot 2`] = `
   bannerText="Banner Text"
   bannerTextColor="#fff"
   intl={
-    {
-      "defaultFormats": {},
+    Object {
+      "defaultFormats": Object {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -84,8 +84,8 @@ exports[`AnnouncementBanner should match snapshot 2`] = `
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": {},
-      "formatters": {
+      "formats": Object {},
+      "formatters": Object {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -93,7 +93,7 @@ exports[`AnnouncementBanner should match snapshot 2`] = `
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": {},
+      "messages": Object {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
@@ -101,7 +101,7 @@ exports[`AnnouncementBanner should match snapshot 2`] = `
     }
   }
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",

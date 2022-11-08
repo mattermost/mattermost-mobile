@@ -6,16 +6,16 @@ exports[`CustomList should match snapshot with FlatList 1`] = `
   ListEmptyComponent={[Function]}
   ListFooterComponent={[Function]}
   contentContainerStyle={
-    {
+    Object {
       "flexGrow": 1,
     }
   }
   data={
-    [
-      {
+    Array [
+      Object {
         "username": "username_1",
       },
-      {
+      Object {
         "username": "username_2",
       },
     ]
@@ -32,7 +32,7 @@ exports[`CustomList should match snapshot with FlatList 1`] = `
   scrollEventThrottle={60}
   stickySectionHeadersEnabled={true}
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "flex": 1,
     }
@@ -46,7 +46,7 @@ exports[`CustomList should match snapshot with SectionList 1`] = `
   ListEmptyComponent={[Function]}
   ListFooterComponent={[Function]}
   contentContainerStyle={
-    {
+    Object {
       "flexGrow": 1,
     }
   }
@@ -63,18 +63,18 @@ exports[`CustomList should match snapshot with SectionList 1`] = `
   renderSectionHeader={[Function]}
   scrollEventThrottle={60}
   sections={
-    [
-      {
+    Array [
+      Object {
         "username": "username_1",
       },
-      {
+      Object {
         "username": "username_2",
       },
     ]
   }
   stickySectionHeadersEnabled={false}
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "flex": 1,
     }
@@ -89,14 +89,14 @@ exports[`CustomList should match snapshot, renderFooter 2`] = `<View />`;
 exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
     }
   }
 >
   <View
     style={
-      {
+      Object {
         "backgroundColor": "rgba(63,67,80,0.07)",
         "paddingLeft": 10,
         "paddingVertical": 2,
@@ -105,7 +105,7 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
   >
     <Text
       style={
-        {
+        Object {
           "color": "#3f4350",
           "fontWeight": "600",
         }
@@ -120,7 +120,7 @@ exports[`CustomList should match snapshot, renderSectionHeader 1`] = `
 exports[`CustomList should match snapshot, renderSeparator 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "rgba(63,67,80,0.1)",
       "flex": 1,
       "height": 1,

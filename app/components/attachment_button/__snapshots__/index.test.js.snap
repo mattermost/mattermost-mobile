@@ -4,7 +4,7 @@ exports[`AttachmentButton should match snapshot 1`] = `
 <TouchableWithFeedbackIOS
   onPress={[Function]}
   style={
-    {
+    Object {
       "alignItems": "center",
       "height": 34,
       "justifyContent": "center",
@@ -18,7 +18,7 @@ exports[`AttachmentButton should match snapshot 1`] = `
     name="plus"
     size={30}
     style={
-      {
+      Object {
         "marginTop": 2,
       }
     }

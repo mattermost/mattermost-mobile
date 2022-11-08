@@ -4,7 +4,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
 <NativeViewGestureHandler>
   <ForwardRef(AnimatedComponentWrapper)
     style={
-      {
+      Object {
         "backgroundColor": "#ffffff",
         "borderTopLeftRadius": 10,
         "borderTopRightRadius": 10,
@@ -26,7 +26,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
         highlight={true}
         onPress={[Function]}
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -61,7 +61,7 @@ exports[`ReactionHeader should match snapshot 1`] = `
         highlight={false}
         onPress={[Function]}
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -96,14 +96,14 @@ exports[`ReactionHeader should match snapshot 1`] = `
 `;
 
 exports[`ReactionHeader should match snapshot, renderContent 1`] = `
-[
+Array [
   <ReactionHeaderItem
     count={2}
     emojiName="smile"
     highlight={true}
     onPress={[Function]}
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -138,7 +138,7 @@ exports[`ReactionHeader should match snapshot, renderContent 1`] = `
     highlight={false}
     onPress={[Function]}
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",

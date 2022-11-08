@@ -25,19 +25,16 @@ import com.wix.reactnativenotifications.core.JsIOHelper;
 import com.facebook.react.PackageList;
 import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactPackage;
-import com.facebook.react.config.ReactFeatureFlags;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.TurboReactPackage;
-import com.facebook.react.bridge.JSIModulePackage;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactContext;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.module.model.ReactModuleInfo;
 import com.facebook.react.module.model.ReactModuleInfoProvider;
 import com.facebook.soloader.SoLoader;
-import com.facebook.react.config.ReactFeatureFlags;
 
-import com.mattermost.newarchitecture.MainApplicationReactNativeHost;
+import com.facebook.react.bridge.JSIModulePackage;
 
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication, INotificationsDrawerApplication {
@@ -47,75 +44,68 @@ public class MainApplication extends NavigationApplication implements INotificat
 
   private Bundle mManagedConfig = null;
 
-  private final ReactNativeHost mReactNativeHost =
-    new ReactNativeHost(this) {
-      @Override
-      public boolean getUseDeveloperSupport() {
-        return BuildConfig.DEBUG;
-      }
+private final ReactNativeHost mReactNativeHost =
+  new ReactNativeHost(this) {
+    @Override
+    public boolean getUseDeveloperSupport() {
+      return BuildConfig.DEBUG;
+    }
 
-      @Override
-      protected List<ReactPackage> getPackages() {
-        List<ReactPackage> packages = new PackageList(this).getPackages();
-        // Packages that cannot be auto linked yet can be added manually here, for example:
-        // packages.add(new MyReactNativePackage());
-        packages.add(new RNNotificationsPackage(MainApplication.this));
-        packages.add(
-          new TurboReactPackage() {
-                @Override
-                public NativeModule getModule(String name, ReactApplicationContext reactContext) {
-                  switch (name) {
-                    case "MattermostManaged":
-                      return MattermostManagedModule.getInstance(reactContext);
-                    case "MattermostShare":
-                      return new ShareModule(instance, reactContext);
-                    case "NotificationPreferences":
-                      return NotificationPreferencesModule.getInstance(instance, reactContext);
-                    case "RNTextInputReset":
-                      return new RNTextInputResetModule(reactContext);
-                    default:
-                      throw new IllegalArgumentException("Could not find module " + name);
-                  }
-                }
-
-                @Override
-                public ReactModuleInfoProvider getReactModuleInfoProvider() {
-                  return () -> {
-                    Map<String, ReactModuleInfo> map = new HashMap<>();
-                    map.put("MattermostManaged", new ReactModuleInfo("MattermostManaged", "com.mattermost.rnbeta.MattermostManagedModule", false, false, false, false, false));
-                    map.put("MattermostShare", new ReactModuleInfo("MattermostShare", "com.mattermost.share.ShareModule", false, false, true, false, false));
-                    map.put("NotificationPreferences", new ReactModuleInfo("NotificationPreferences", "com.mattermost.rnbeta.NotificationPreferencesModule", false, false, false, false, false));
-                    map.put("RNTextInputReset", new ReactModuleInfo("RNTextInputReset", "com.mattermost.rnbeta.RNTextInputResetModule", false, false, false, false, false));
-                    return map;
-                  };
+    @Override
+    protected List<ReactPackage> getPackages() {
+      List<ReactPackage> packages = new PackageList(this).getPackages();
+      // Packages that cannot be auto linked yet can be added manually here, for example:
+      // packages.add(new MyReactNativePackage());
+      packages.add(new RNNotificationsPackage(MainApplication.this));
+      packages.add(
+        new TurboReactPackage() {
+              @Override
+              public NativeModule getModule(String name, ReactApplicationContext reactContext) {
+                switch (name) {
+                  case "MattermostManaged":
+                    return MattermostManagedModule.getInstance(reactContext);
+                  case "MattermostShare":
+                    return new ShareModule(instance, reactContext);
+                  case "NotificationPreferences":
+                    return NotificationPreferencesModule.getInstance(instance, reactContext);
+                  case "RNTextInputReset":
+                    return new RNTextInputResetModule(reactContext);
+                  default:
+                    throw new IllegalArgumentException("Could not find module " + name);
                 }
               }
-        );
 
-        return packages;
-      }
+              @Override
+              public ReactModuleInfoProvider getReactModuleInfoProvider() {
+                return () -> {
+                  Map<String, ReactModuleInfo> map = new HashMap<>();
+                  map.put("MattermostManaged", new ReactModuleInfo("MattermostManaged", "com.mattermost.rnbeta.MattermostManagedModule", false, false, false, false, false));
+                  map.put("MattermostShare", new ReactModuleInfo("MattermostShare", "com.mattermost.share.ShareModule", false, false, true, false, false));
+                  map.put("NotificationPreferences", new ReactModuleInfo("NotificationPreferences", "com.mattermost.rnbeta.NotificationPreferencesModule", false, false, false, false, false));
+                  map.put("RNTextInputReset", new ReactModuleInfo("RNTextInputReset", "com.mattermost.rnbeta.RNTextInputResetModule", false, false, false, false, false));
+                  return map;
+                };
+              }
+            }
+      );
 
-      @Override
-      protected String getJSMainModuleName() {
-        return "index";
-      }
+      return packages;
+    }
 
-      @Override
-      protected JSIModulePackage getJSIModulePackage() {
-        return (JSIModulePackage) new CustomMMKVJSIModulePackage();
-      }
+    @Override
+    protected String getJSMainModuleName() {
+      return "index";
+    }
+
+    @Override
+    protected JSIModulePackage getJSIModulePackage() {
+      return (JSIModulePackage) new CustomMMKVJSIModulePackage();
+    }
   };
-
-  private final ReactNativeHost mNewArchitectureNativeHost =
-      new MainApplicationReactNativeHost(this);
 
   @Override
   public ReactNativeHost getReactNativeHost() {
-    if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-      return mNewArchitectureNativeHost;
-    } else {
-      return mReactNativeHost;
-    }
+    return mReactNativeHost;
   }
 
   @Override
@@ -128,8 +118,6 @@ public class MainApplication extends NavigationApplication implements INotificat
     RealPathUtil.deleteTempFiles(tempFolder);
     Log.i("ReactNative", "Cleaning temp cache " + tempFolder.getAbsolutePath());
 
-    // If you opted-in for the New Architecture, we enable the TurboModule system
-    ReactFeatureFlags.useTurboModules = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
     SoLoader.init(this, /* native exopackage */ false);
     initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
   }

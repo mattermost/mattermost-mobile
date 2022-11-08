@@ -11,7 +11,7 @@ exports[`NotificationPreference should match snapshot 1`] = `
   testID="test-id"
   textId="channel_header.notificationPreference"
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",

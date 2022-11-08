@@ -182,14 +182,12 @@ const GalleryViewer = (props: GalleryProps) => {
             );
         }
 
-        // @ts-expect-error IntrinsicAttributes
-        const galleryFile = <GalleryFile {...itemProps}/>;
         return (
             <View
                 key={file.id}
                 style={styles.item}
             >
-                {galleryFile}
+                <GalleryFile {...itemProps}/>
             </View>
         );
     });

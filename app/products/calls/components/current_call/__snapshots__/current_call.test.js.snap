@@ -3,14 +3,14 @@
 exports[`CurrentCall should match snapshot muted 1`] = `
 <View
   style={
-    {
+    Object {
       "padding": 10,
     }
   }
 >
   <View
     style={
-      {
+      Object {
         "alignItems": "center",
         "backgroundColor": "#3F4350",
         "borderRadius": 5,
@@ -27,14 +27,14 @@ exports[`CurrentCall should match snapshot muted 1`] = `
     />
     <View
       style={
-        {
+        Object {
           "flex": 1,
         }
       }
     >
       <Text
         style={
-          {
+          Object {
             "color": "#ffffff",
             "fontSize": 16,
             "fontWeight": "600",
@@ -45,7 +45,7 @@ exports[`CurrentCall should match snapshot muted 1`] = `
       </Text>
       <Text
         style={
-          {
+          Object {
             "color": "#ffffff",
             "opacity": 0.64,
           }
@@ -57,7 +57,7 @@ exports[`CurrentCall should match snapshot muted 1`] = `
     <Pressable
       onPressIn={[Function]}
       style={
-        {
+        Object {
           "zIndex": 10,
         }
       }
@@ -66,7 +66,7 @@ exports[`CurrentCall should match snapshot muted 1`] = `
         name="arrow-expand"
         size={24}
         style={
-          {
+          Object {
             "color": "#ffffff",
             "marginRight": 8,
             "padding": 8,
@@ -77,7 +77,7 @@ exports[`CurrentCall should match snapshot muted 1`] = `
     <TouchableOpacity
       onPress={[Function]}
       style={
-        {
+        Object {
           "zIndex": 10,
         }
       }
@@ -86,8 +86,8 @@ exports[`CurrentCall should match snapshot muted 1`] = `
         name="microphone-off"
         size={24}
         style={
-          [
-            {
+          Array [
+            Object {
               "backgroundColor": "#3DB887",
               "borderRadius": 4,
               "color": "#ffffff",
@@ -100,7 +100,7 @@ exports[`CurrentCall should match snapshot muted 1`] = `
               "textAlignVertical": "center",
               "width": 42,
             },
-            {
+            Object {
               "backgroundColor": "transparent",
             },
           ]
@@ -114,14 +114,14 @@ exports[`CurrentCall should match snapshot muted 1`] = `
 exports[`CurrentCall should match snapshot unmuted 1`] = `
 <View
   style={
-    {
+    Object {
       "padding": 10,
     }
   }
 >
   <View
     style={
-      {
+      Object {
         "alignItems": "center",
         "backgroundColor": "#3F4350",
         "borderRadius": 5,
@@ -138,14 +138,14 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
     />
     <View
       style={
-        {
+        Object {
           "flex": 1,
         }
       }
     >
       <Text
         style={
-          {
+          Object {
             "color": "#ffffff",
             "fontSize": 16,
             "fontWeight": "600",
@@ -156,7 +156,7 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
       </Text>
       <Text
         style={
-          {
+          Object {
             "color": "#ffffff",
             "opacity": 0.64,
           }
@@ -168,7 +168,7 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
     <Pressable
       onPressIn={[Function]}
       style={
-        {
+        Object {
           "zIndex": 10,
         }
       }
@@ -177,7 +177,7 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
         name="arrow-expand"
         size={24}
         style={
-          {
+          Object {
             "color": "#ffffff",
             "marginRight": 8,
             "padding": 8,
@@ -188,7 +188,7 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
     <TouchableOpacity
       onPress={[Function]}
       style={
-        {
+        Object {
           "zIndex": 10,
         }
       }
@@ -197,8 +197,8 @@ exports[`CurrentCall should match snapshot unmuted 1`] = `
         name="microphone"
         size={24}
         style={
-          [
-            {
+          Array [
+            Object {
               "backgroundColor": "#3DB887",
               "borderRadius": 4,
               "color": "#ffffff",

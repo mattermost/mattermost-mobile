@@ -471,7 +471,6 @@ export default class SelectorScreen extends PureComponent<Props, State> {
     };
 
     render() {
-        // @ts-expect-error context type definition
         const {formatMessage} = this.context.intl;
         const {theme, dataSource} = this.props;
         const {loading, term} = this.state;

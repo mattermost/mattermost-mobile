@@ -12,7 +12,7 @@ exports[`SearchResultPost should match snapshot 1`] = `
   skipPinnedHeader={false}
   testID="search_result_post.post"
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",

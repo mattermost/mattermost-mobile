@@ -2,37 +2,10 @@
 
 exports[`ChannelNavBar should match, full snapshot 1`] = `
 <RNCSafeAreaProvider
-  intl={
-    {
-      "defaultFormats": {},
-      "defaultLocale": "en",
-      "formatDate": [Function],
-      "formatHTMLMessage": [Function],
-      "formatMessage": [Function],
-      "formatNumber": [Function],
-      "formatPlural": [Function],
-      "formatRelative": [Function],
-      "formatTime": [Function],
-      "formats": {},
-      "formatters": {
-        "getDateTimeFormat": [Function],
-        "getMessageFormat": [Function],
-        "getNumberFormat": [Function],
-        "getPluralFormat": [Function],
-        "getRelativeFormat": [Function],
-      },
-      "locale": "en",
-      "messages": {},
-      "now": [Function],
-      "onError": [Function],
-      "textComponent": "span",
-      "timeZone": null,
-    }
-  }
   onInsetsChange={[Function]}
   style={
-    [
-      {
+    Array [
+      Object {
         "flex": 1,
       },
       undefined,
@@ -41,7 +14,7 @@ exports[`ChannelNavBar should match, full snapshot 1`] = `
 >
   <Context.Provider
     value={
-      {
+      Object {
         "height": 0,
         "width": 0,
         "x": 0,
@@ -51,7 +24,7 @@ exports[`ChannelNavBar should match, full snapshot 1`] = `
   >
     <Context.Provider
       value={
-        {
+        Object {
           "bottom": 0,
           "left": 0,
           "right": 0,
@@ -65,7 +38,7 @@ exports[`ChannelNavBar should match, full snapshot 1`] = `
         openMainSidebar={[MockFunction]}
         openSettingsSidebar={[MockFunction]}
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",

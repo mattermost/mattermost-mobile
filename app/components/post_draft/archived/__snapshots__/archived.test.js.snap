@@ -4,8 +4,8 @@ exports[`PostDraft Archived should match snapshot 1`] = `
 <Connect(Archived)
   deactivated={false}
   intl={
-    {
-      "defaultFormats": {},
+    Object {
+      "defaultFormats": Object {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -14,8 +14,8 @@ exports[`PostDraft Archived should match snapshot 1`] = `
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": {},
-      "formatters": {
+      "formats": Object {},
+      "formatters": Object {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -23,7 +23,7 @@ exports[`PostDraft Archived should match snapshot 1`] = `
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": {},
+      "messages": Object {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
@@ -36,7 +36,7 @@ exports[`PostDraft Archived should match snapshot 1`] = `
   teamId="team-id"
   testID="post_draft.archived"
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",

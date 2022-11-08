@@ -7,7 +7,7 @@ exports[`DrawerItem should match snapshot 1`] = `
 >
   <View
     style={
-      {
+      Object {
         "backgroundColor": "#ffffff",
         "flexDirection": "row",
         "minHeight": 50,
@@ -16,7 +16,7 @@ exports[`DrawerItem should match snapshot 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "alignItems": "center",
           "height": 50,
           "justifyContent": "center",
@@ -28,12 +28,12 @@ exports[`DrawerItem should match snapshot 1`] = `
       <CompassIcon
         name="icon-name"
         style={
-          [
-            {
+          Array [
+            Object {
               "color": "rgba(63,67,80,0.64)",
               "fontSize": 24,
             },
-            {
+            Object {
               "color": "#d24b4e",
             },
           ]
@@ -42,14 +42,14 @@ exports[`DrawerItem should match snapshot 1`] = `
     </View>
     <View
       style={
-        {
+        Object {
           "flex": 1,
         }
       }
     >
       <View
         style={
-          {
+          Object {
             "flex": 1,
             "justifyContent": "center",
             "paddingBottom": 14,
@@ -61,17 +61,17 @@ exports[`DrawerItem should match snapshot 1`] = `
           defaultMessage="default message"
           id="i18-id"
           style={
-            [
-              {
+            Array [
+              Object {
                 "color": "rgba(63,67,80,0.5)",
                 "fontSize": 17,
                 "includeFontPadding": false,
                 "textAlignVertical": "center",
               },
-              {
+              Object {
                 "color": "#d24b4e",
               },
-              {
+              Object {
                 "textAlign": "center",
                 "textAlignVertical": "center",
               },
@@ -81,7 +81,7 @@ exports[`DrawerItem should match snapshot 1`] = `
       </View>
       <View
         style={
-          {
+          Object {
             "backgroundColor": "rgba(63,67,80,0.2)",
             "height": 1,
           }
@@ -99,7 +99,7 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
 >
   <View
     style={
-      {
+      Object {
         "backgroundColor": "#ffffff",
         "flexDirection": "row",
         "minHeight": 50,
@@ -108,7 +108,7 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
   >
     <View
       style={
-        {
+        Object {
           "alignItems": "center",
           "height": 50,
           "justifyContent": "center",
@@ -120,12 +120,12 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
       <CompassIcon
         name="icon-name"
         style={
-          [
-            {
+          Array [
+            Object {
               "color": "rgba(63,67,80,0.64)",
               "fontSize": 24,
             },
-            {
+            Object {
               "color": "#d24b4e",
             },
           ]
@@ -134,14 +134,14 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
     </View>
     <View
       style={
-        {
+        Object {
           "flex": 1,
         }
       }
     >
       <View
         style={
-          {
+          Object {
             "flex": 1,
             "justifyContent": "center",
             "paddingBottom": 14,
@@ -153,17 +153,17 @@ exports[`DrawerItem should match snapshot without separator and centered false 1
           defaultMessage="default message"
           id="i18-id"
           style={
-            [
-              {
+            Array [
+              Object {
                 "color": "rgba(63,67,80,0.5)",
                 "fontSize": 17,
                 "includeFontPadding": false,
                 "textAlignVertical": "center",
               },
-              {
+              Object {
                 "color": "#d24b4e",
               },
-              {},
+              Object {},
             ]
           }
         />

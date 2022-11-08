@@ -4,7 +4,7 @@ exports[`SelectTeam should match snapshot for fail of teams 1`] = `
 <Connect(FailedNetworkAction)
   onRetry={[Function]}
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -36,9 +36,9 @@ exports[`SelectTeam should match snapshot for fail of teams 1`] = `
 `;
 
 exports[`SelectTeam should match snapshot for teams 1`] = `
-<ForwardRef
+<RNCSafeAreaView
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -47,7 +47,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "alignItems": "center",
         "flexDirection": "row",
         "marginHorizontal": 16,
@@ -57,7 +57,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "marginRight": 15,
         }
       }
@@ -66,7 +66,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
         defaultMessage="Open teams you can join"
         id="mobile.select_team.join_open"
         style={
-          {
+          Object {
             "color": undefined,
             "fontSize": 13,
           }
@@ -75,7 +75,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
     </View>
     <View
       style={
-        {
+        Object {
           "backgroundColor": undefined,
           "flex": 1,
           "height": 1,
@@ -86,8 +86,8 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
   <CustomList
     canRefresh={true}
     data={
-      [
-        {
+      Array [
+        Object {
           "id": "kemjcpu9bi877yegqjs18ndp4r",
           "invite_id": "ojsnudhqzbfzpk6e4n6ip1hwae",
           "name": "test",
@@ -100,7 +100,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
     loadingComponent={
       <View
         style={
-          {
+          Object {
             "marginVertical": 10,
           }
         }
@@ -108,7 +108,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
         <Loading
           color="#3f4350"
           size="small"
-          style={{}}
+          style={Object {}}
         />
       </View>
     }
@@ -120,7 +120,7 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
     showNoResults={true}
     testID="select_team.custom_list"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -149,13 +149,13 @@ exports[`SelectTeam should match snapshot for teams 1`] = `
       }
     }
   />
-</ForwardRef>
+</RNCSafeAreaView>
 `;
 
 exports[`SelectTeam should match snapshot when user is a guest 1`] = `
 <View
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -164,7 +164,7 @@ exports[`SelectTeam should match snapshot when user is a guest 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "alignItems": "center",
         "flexDirection": "row",
         "marginHorizontal": 16,
@@ -176,7 +176,7 @@ exports[`SelectTeam should match snapshot when user is a guest 1`] = `
       defaultMessage="Your guest account has no teams or channels assigned. Please contact an administrator."
       id="mobile.select_team.guest_cant_join_team"
       style={
-        {
+        Object {
           "color": undefined,
           "fontSize": 13,
         }

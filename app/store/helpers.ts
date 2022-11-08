@@ -23,7 +23,7 @@ export async function getStoredState() {
     let storeKeys: string[] = [];
 
     try {
-        const allKeys: readonly string[] = await AsyncStorage.getAllKeys();
+        const allKeys: string[] = await AsyncStorage.getAllKeys();
         storeKeys = allKeys.filter((key) => key.includes(KEY_PREFIX));
 
         const values = await AsyncStorage.multiGet(storeKeys);

@@ -8,7 +8,7 @@ exports[`screens/clear_after_menu_item should match snapshot 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "backgroundColor": "#ffffff",
           "display": "flex",
           "flexDirection": "row",
@@ -18,7 +18,7 @@ exports[`screens/clear_after_menu_item should match snapshot 1`] = `
     >
       <View
         style={
-          {
+          Object {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -32,12 +32,12 @@ exports[`screens/clear_after_menu_item should match snapshot 1`] = `
         <CustomStatusText
           text="Don't clear"
           textStyle={
-            {
+            Object {
               "color": "#3f4350",
             }
           }
           theme={
-            {
+            Object {
               "awayIndicator": "#ffbc1f",
               "buttonBg": "#1c58d9",
               "buttonColor": "#ffffff",
@@ -80,7 +80,7 @@ exports[`screens/clear_after_menu_item should match snapshot with separator and 
   >
     <View
       style={
-        {
+        Object {
           "backgroundColor": "#ffffff",
           "display": "flex",
           "flexDirection": "row",
@@ -90,7 +90,7 @@ exports[`screens/clear_after_menu_item should match snapshot with separator and 
     >
       <View
         style={
-          {
+          Object {
             "alignItems": "center",
             "flex": 1,
             "flexDirection": "row",
@@ -104,12 +104,12 @@ exports[`screens/clear_after_menu_item should match snapshot with separator and 
         <CustomStatusText
           text="Don't clear"
           textStyle={
-            {
+            Object {
               "color": "#3f4350",
             }
           }
           theme={
-            {
+            Object {
               "awayIndicator": "#ffbc1f",
               "buttonBg": "#1c58d9",
               "buttonColor": "#ffffff",
@@ -140,7 +140,7 @@ exports[`screens/clear_after_menu_item should match snapshot with separator and 
         />
         <View
           style={
-            {
+            Object {
               "position": "absolute",
               "right": 14,
             }
@@ -150,7 +150,7 @@ exports[`screens/clear_after_menu_item should match snapshot with separator and 
             name="check"
             size={24}
             style={
-              {
+              Object {
                 "borderRadius": 1000,
                 "color": "#1c58d9",
               }
@@ -161,7 +161,7 @@ exports[`screens/clear_after_menu_item should match snapshot with separator and 
     </View>
     <View
       style={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.2)",
           "height": 1,
           "marginHorizontal": 16,

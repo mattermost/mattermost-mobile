@@ -3,8 +3,8 @@
 exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] = `
 <View
   style={
-    [
-      {
+    Array [
+      Object {
         "alignItems": "flex-start",
         "flexDirection": "row",
         "flexWrap": "wrap",
@@ -15,27 +15,27 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
   <Text>
     <Text
       style={
-        [
-          {
+        Array [
+          Object {
             "color": "rgba(63,67,80,0.6)",
             "fontSize": 15,
             "lineHeight": 20,
           },
-          {
+          Object {
             "opacity": 1,
           },
         ]
       }
     >
       <Text
-        style={[]}
+        style={Array []}
       >
         @username
       </Text>
     </Text>
     <Text
       style={
-        {
+        Object {
           "color": "rgba(63,67,80,0.6)",
           "fontSize": 15,
           "lineHeight": 20,
@@ -52,8 +52,8 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
 exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
 <View
   style={
-    [
-      {
+    Array [
+      Object {
         "alignItems": "flex-start",
         "flexDirection": "row",
         "flexWrap": "wrap",
@@ -64,27 +64,27 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
   <Text>
     <Text
       style={
-        [
-          {
+        Array [
+          Object {
             "color": "rgba(63,67,80,0.6)",
             "fontSize": 15,
             "lineHeight": 20,
           },
-          {
+          Object {
             "opacity": 1,
           },
         ]
       }
     >
       <Text
-        style={[]}
+        style={Array []}
       >
         @username
       </Text>
     </Text>
     <Text
       style={
-        {
+        Object {
           "color": "rgba(63,67,80,0.6)",
           "fontSize": 15,
           "lineHeight": 20,
@@ -101,7 +101,7 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
 exports[`renderSystemMessage uses renderer for Channel Purpose update 1`] = `
 <Text
   style={
-    {
+    Object {
       "color": "rgba(63,67,80,0.6)",
       "fontSize": 15,
       "lineHeight": 20,
@@ -115,8 +115,8 @@ exports[`renderSystemMessage uses renderer for Channel Purpose update 1`] = `
 exports[`renderSystemMessage uses renderer for Guest added and join to channel 1`] = `
 <View
   style={
-    [
-      {
+    Array [
+      Object {
         "alignItems": "flex-start",
         "flexDirection": "row",
         "flexWrap": "wrap",
@@ -127,27 +127,27 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
   <Text>
     <Text
       style={
-        [
-          {
+        Array [
+          Object {
             "color": "rgba(63,67,80,0.6)",
             "fontSize": 15,
             "lineHeight": 20,
           },
-          {
+          Object {
             "opacity": 1,
           },
         ]
       }
     >
       <Text
-        style={[]}
+        style={Array []}
       >
         @username
       </Text>
     </Text>
     <Text
       style={
-        {
+        Object {
           "color": "rgba(63,67,80,0.6)",
           "fontSize": 15,
           "lineHeight": 20,
@@ -164,8 +164,8 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
 exports[`renderSystemMessage uses renderer for Guest added and join to channel 2`] = `
 <View
   style={
-    [
-      {
+    Array [
+      Object {
         "alignItems": "flex-start",
         "flexDirection": "row",
         "flexWrap": "wrap",
@@ -176,27 +176,27 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
   <Text>
     <Text
       style={
-        [
-          {
+        Array [
+          Object {
             "color": "rgba(63,67,80,0.6)",
             "fontSize": 15,
             "lineHeight": 20,
           },
-          {
+          Object {
             "opacity": 1,
           },
         ]
       }
     >
       <Text
-        style={[]}
+        style={Array []}
       >
         @other.user
       </Text>
     </Text>
     <Text
       style={
-        {
+        Object {
           "color": "rgba(63,67,80,0.6)",
           "fontSize": 15,
           "lineHeight": 20,
@@ -208,20 +208,20 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
     </Text>
     <Text
       style={
-        [
-          {
+        Array [
+          Object {
             "color": "rgba(63,67,80,0.6)",
             "fontSize": 15,
             "lineHeight": 20,
           },
-          {
+          Object {
             "opacity": 1,
           },
         ]
       }
     >
       <Text
-        style={[]}
+        style={Array []}
       >
         @username.
       </Text>
@@ -233,8 +233,8 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
 exports[`renderSystemMessage uses renderer for OLD archived channel without a username 1`] = `
 <View
   style={
-    [
-      {
+    Array [
+      Object {
         "alignItems": "flex-start",
         "flexDirection": "row",
         "flexWrap": "wrap",
@@ -245,7 +245,7 @@ exports[`renderSystemMessage uses renderer for OLD archived channel without a us
   <Text>
     <Text
       style={
-        {
+        Object {
           "color": "rgba(63,67,80,0.6)",
           "fontSize": 15,
           "lineHeight": 20,
@@ -262,8 +262,8 @@ exports[`renderSystemMessage uses renderer for OLD archived channel without a us
 exports[`renderSystemMessage uses renderer for archived channel 1`] = `
 <View
   style={
-    [
-      {
+    Array [
+      Object {
         "alignItems": "flex-start",
         "flexDirection": "row",
         "flexWrap": "wrap",
@@ -274,27 +274,27 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
   <Text>
     <Text
       style={
-        [
-          {
+        Array [
+          Object {
             "color": "rgba(63,67,80,0.6)",
             "fontSize": 15,
             "lineHeight": 20,
           },
-          {
+          Object {
             "opacity": 1,
           },
         ]
       }
     >
       <Text
-        style={[]}
+        style={Array []}
       >
         @username
       </Text>
     </Text>
     <Text
       style={
-        {
+        Object {
           "color": "rgba(63,67,80,0.6)",
           "fontSize": 15,
           "lineHeight": 20,
@@ -311,8 +311,8 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
 exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
 <View
   style={
-    [
-      {
+    Array [
+      Object {
         "alignItems": "flex-start",
         "flexDirection": "row",
         "flexWrap": "wrap",
@@ -323,27 +323,27 @@ exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
   <Text>
     <Text
       style={
-        [
-          {
+        Array [
+          Object {
             "color": "rgba(63,67,80,0.6)",
             "fontSize": 15,
             "lineHeight": 20,
           },
-          {
+          Object {
             "opacity": 1,
           },
         ]
       }
     >
       <Text
-        style={[]}
+        style={Array []}
       >
         @username
       </Text>
     </Text>
     <Text
       style={
-        {
+        Object {
           "color": "rgba(63,67,80,0.6)",
           "fontSize": 15,
           "lineHeight": 20,

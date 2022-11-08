@@ -33,7 +33,6 @@ function SSO({intl, ssoType}: SSOProps) {
 
     const [loginError, setLoginError] = React.useState<string>('');
 
-    // @ts-expect-error Dispatch type
     const asyncDispatch: DispatchFunc = useDispatch();
     const dispatch = useDispatch();
 
@@ -95,7 +94,6 @@ function SSO({intl, ssoType}: SSOProps) {
     };
 
     const scheduleSessionExpiredNotification = () => {
-        // @ts-expect-error ActionFunc type
         dispatch(scheduleExpiredNotification(intl));
     };
 

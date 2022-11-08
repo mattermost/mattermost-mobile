@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`InteractiveDialog should display introduction text if present 1`] = `
-<ForwardRef
+<RNCSafeAreaView
   style={
-    {
+    Object {
       "backgroundColor": "rgba(63,67,80,0.03)",
     }
   }
@@ -11,7 +11,7 @@ exports[`InteractiveDialog should display introduction text if present 1`] = `
 >
   <ScrollView
     style={
-      {
+      Object {
         "marginBottom": 20,
         "marginTop": 10,
       }
@@ -20,7 +20,7 @@ exports[`InteractiveDialog should display introduction text if present 1`] = `
     <Connect(StatusBar) />
     <DialogIntroductionText
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -51,5 +51,5 @@ exports[`InteractiveDialog should display introduction text if present 1`] = `
       value="**Some** _introduction_ text"
     />
   </ScrollView>
-</ForwardRef>
+</RNCSafeAreaView>
 `;

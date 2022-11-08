@@ -10,7 +10,7 @@ exports[`RadioButtonGroup should match snapshot 1`] = `
     onCheck={[Function]}
     testID="radio-1"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -48,7 +48,7 @@ exports[`RadioButtonGroup should match snapshot 1`] = `
     onCheck={[Function]}
     testID="radio-2"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",

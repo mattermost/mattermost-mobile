@@ -5,7 +5,7 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 1`] = `n
 exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
 <FlatList
   data={
-    [
+    Array [
       "+1",
       "-1",
       "100",
@@ -2342,9 +2342,9 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
     ]
   }
   extraData={
-    {
+    Object {
       "active": true,
-      "dataSource": [
+      "dataSource": Array [
         "+1",
         "-1",
         "100",
@@ -4689,13 +4689,13 @@ exports[`components/autocomplete/emoji_suggestion should match snapshot 2`] = `
   removeClippedSubviews={true}
   renderItem={[Function]}
   style={
-    [
-      {
+    Array [
+      Object {
         "backgroundColor": "#ffffff",
         "borderRadius": 4,
         "paddingTop": 16,
       },
-      {
+      Object {
         "maxHeight": undefined,
       },
     ]

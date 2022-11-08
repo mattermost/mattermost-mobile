@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ViewPropTypes, TextPropTypes} from 'deprecated-react-native-prop-types';
 import PropTypes from 'prop-types';
 import React, {PureComponent} from 'react';
 import {
@@ -10,6 +9,7 @@ import {
     Text,
     TouchableWithoutFeedback,
     View,
+    ViewPropTypes,
 } from 'react-native';
 
 import {CHANNEL_ITEM_LARGE_BADGE_MAX_WIDTH, CHANNEL_ITEM_SMALL_BADGE_MAX_WIDTH, LARGE_BADGE_MAX_WIDTH, SMALL_BADGE_MAX_WIDTH} from '@constants/view';
@@ -27,7 +27,7 @@ export default class Badge extends PureComponent {
         count: PropTypes.number.isRequired,
         extraPaddingHorizontal: PropTypes.number,
         style: ViewPropTypes.style,
-        countStyle: TextPropTypes.style,
+        countStyle: Text.propTypes.style,
         minHeight: PropTypes.number,
         minWidth: PropTypes.number,
         isChannelItem: PropTypes.bool,
