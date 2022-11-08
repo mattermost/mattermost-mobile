@@ -118,7 +118,7 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     useEffect(() => {
         const activeServerUrlObserver = async (servers: ServersModel[]) => {
-            const server = servers?.length ? servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a)) : undefined;
+            const server = servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a));
 
             if (server) {
                 const database = DatabaseManager.serverDatabases[server.url]?.database;

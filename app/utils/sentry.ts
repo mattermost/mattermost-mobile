@@ -1,18 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Database} from '@nozbe/watermelondb';
 import {Breadcrumb} from '@sentry/types';
 import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import Config from '@assets/config.json';
-import {MM_TABLES} from '@constants/database';
-import {getCurrentChannel} from '@queries/servers/channel';
+import {getCurrentChannel, getMyChannel} from '@queries/servers/channel';
 import {getConfig, getCurrentTeamId} from '@queries/servers/system';
+import {getMyTeamById} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import MyChannelModel from '@typings/database/models/servers/my_channel';
-import MyTeamModel from '@typings/database/models/servers/my_team';
 
 import {ClientError} from './client_error';
 import {logWarning} from './log';
@@ -146,20 +144,13 @@ export const getUserContext = async (database: Database) => {
     };
 
     const user = await getCurrentUser(database);
-    if (user) {
-        currentUser.id = user.id;
-        currentUser.locale = user.locale;
-        currentUser.roles = user.roles;
-    }
 
     return {
-        userID: currentUser.id,
+        userID: user?.id ?? currentUser.id,
         email: '',
         username: '',
-
-        locale: currentUser.locale,
-        roles: currentUser.roles,
-
+        locale: user?.locale ?? currentUser.locale,
+        roles: user?.roles ?? currentUser.roles,
     };
 };
 
@@ -181,8 +172,8 @@ export const getExtraContext = async (database: Database) => {
         };
     }
     const currentTeamId = await getCurrentTeamId(database);
-    const myTeam = await database.get<MyTeamModel>(MM_TABLES.SERVER.MY_TEAM).query(Q.where('id', currentTeamId)).fetch();
-    const teamRoles = myTeam?.[0]?.roles;
+    const myTeam = await getMyTeamById(database, currentTeamId);
+    const teamRoles = myTeam?.roles;
     context.currentTeam = {
         TeamId: currentTeamId,
         TeamRoles: teamRoles,
@@ -191,8 +182,8 @@ export const getExtraContext = async (database: Database) => {
     const channel = await getCurrentChannel(database);
     let channelRoles;
     if (channel) {
-        const myChannel = await database.get<MyChannelModel>(MM_TABLES.SERVER.MY_CHANNEL).query(Q.where('id', channel.id)).fetch();
-        channelRoles = myChannel?.[0]?.roles;
+        const myChannel = await getMyChannel(database, channel.id);
+        channelRoles = myChannel?.roles;
         context.currentChannel = {
             ChannelId: channel?.id,
             ChannelRoles: channelRoles,
