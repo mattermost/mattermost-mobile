@@ -497,7 +497,7 @@ function IntegrationSelector(
 
                 theme={theme}
                 channel={props.item}
-                selectable={true}
+                selectable={isMultiselect}
                 selected={itemSelected}
             />
         );
@@ -510,7 +510,7 @@ function IntegrationSelector(
                 key={props.id}
                 {...props}
                 theme={theme}
-                selectable={true}
+                selectable={isMultiselect}
                 selected={itemSelected}
             />
         );
@@ -523,7 +523,7 @@ function IntegrationSelector(
                 key={props.id}
                 {...props}
                 theme={theme}
-                selectable={true}
+                selectable={isMultiselect}
                 user={props.item}
                 teammateNameDisplay={teammateNameDisplay}
                 selected={itemSelected}
