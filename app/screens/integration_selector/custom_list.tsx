@@ -145,6 +145,7 @@ function CustomList({
         return item.id || item.key || item.value || item;
     }
 
+    // Renders
     const renderEmptyList = () => {
         return noResults || null;
     };

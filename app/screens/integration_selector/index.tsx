@@ -593,7 +593,7 @@ function IntegrationSelector(
             {selectedOptionsComponent}
 
             <CustomList
-                data={customListData}
+                data={customListData as DataType}
                 key='custom_list'
                 listType={listType}
                 loading={loading}
