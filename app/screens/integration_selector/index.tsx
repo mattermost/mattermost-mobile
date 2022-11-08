@@ -244,10 +244,8 @@ function IntegrationSelector(
 
     const getChannels = debounce(async () => {
         if (next && !loading && !term) {
-            setLoading(true);
             setCurrentPage(currentPage + 1);
             const { channels: channelData } = await fetchChannels(serverUrl, currentTeamId, currentPage);
-            setLoading(false);
 
             if (channelData && channelData.length > 0) {
                 loadedChannels([...integrationData as Channel[], ...channelData]);
@@ -257,10 +255,8 @@ function IntegrationSelector(
 
     const getProfiles = debounce(async () => {
         if (next && !loading && !term) {
-            setLoading(true);
             setCurrentPage(currentPage + 1);
             const { users: userData } = await fetchProfiles(serverUrl, currentPage);
-            setLoading(false);
 
             if (userData && userData.length > 0) {
                 loadedProfiles([...integrationData as UserProfile[], ...userData]);
@@ -289,11 +285,15 @@ function IntegrationSelector(
     };
 
     const loadMore = () => {
+        setLoading(true);
+
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
             getProfiles();
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             getChannels();
         }
+
+        setLoading(false);
 
         // dynamic options are not paged so are not reloaded on scroll
     };
@@ -301,7 +301,6 @@ function IntegrationSelector(
     const searchChannels = async (term: string) => {
         const isSearch = true;
         const { channels: receivedChannels } = await searchChannelsRemote(serverUrl, term, currentTeamId, isSearch);
-        setLoading(false);
 
         if (receivedChannels) {
             setSearchResults(receivedChannels);
@@ -309,9 +308,7 @@ function IntegrationSelector(
     };
 
     const searchProfiles = async (term: string) => {
-        setLoading(true)
         const { data: userData } = await searchProfilesRemote(serverUrl, term.toLowerCase(), { team_id: currentTeamId, allow_inactive: true });
-        setLoading(false);
 
         if (userData) {
             setSearchResults(userData);
@@ -327,8 +324,6 @@ function IntegrationSelector(
             return;
         }
 
-        setLoading(true);
-
         getDynamicOptions(term.toLowerCase()).then((results: DialogOption[]) => {
             let data = results || [];
 
@@ -337,8 +332,6 @@ function IntegrationSelector(
             } else {
                 setIntegrationData(data);
             }
-
-            setLoading(false);
         });
     };
 
@@ -355,6 +348,8 @@ function IntegrationSelector(
                     return;
                 }
 
+                setLoading(true);
+
                 if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
                     searchProfiles(text);
                 } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
@@ -362,6 +357,8 @@ function IntegrationSelector(
                 } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
                     searchDynamicOptions(text);
                 }
+
+                setLoading(false);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             clearSearch();
@@ -392,6 +389,8 @@ function IntegrationSelector(
 
     // Effects
     useEffect(() => {
+        setLoading(true);
+
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
             getProfiles();
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
@@ -399,6 +398,8 @@ function IntegrationSelector(
         } else {
             getDynamicOptionsLocally();
         }
+
+        setLoading(false);
     }, [])
 
     useEffect(() => {
