@@ -37,7 +37,7 @@ import {
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 3,
+    version: 4,
     tables: [
         CategorySchema,
         CategoryChannelSchema,

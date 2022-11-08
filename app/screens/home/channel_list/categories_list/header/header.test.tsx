@@ -15,6 +15,7 @@ describe('components/channel_list/header', () => {
                 pushProxyStatus={PUSH_PROXY_STATUS_VERIFIED}
                 canCreateChannels={true}
                 canJoinChannels={true}
+                canInvitePeople={true}
                 displayName={'Test!'}
             />,
         );

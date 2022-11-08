@@ -87,6 +87,9 @@ export default class TeamModel extends Model implements TeamModelInterface {
     /** allowed_domains : List of domains that can join this team */
     @field('allowed_domains') allowedDomains!: string;
 
+    /** invite_id : The token id to use in invites to the team */
+    @field('invite_id') inviteId!: string;
+
     /** categories : All the categories associated with this team */
     @children(CATEGORY) categories!: Query<CategoryModel>;
 
