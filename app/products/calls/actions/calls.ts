@@ -219,7 +219,7 @@ export const enableChannelCalls = async (serverUrl: string, channelId: string, e
     return {};
 };
 
-export const joinCall = async (serverUrl: string, channelId: string, userId: string): Promise<{ error?: string | Error; data?: string }> => {
+export const joinCall = async (serverUrl: string, channelId: string, userId: string, hasMicPermission: boolean): Promise<{ error?: string | Error; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
     const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
@@ -237,7 +237,7 @@ export const joinCall = async (serverUrl: string, channelId: string, userId: str
     try {
         connection = await newConnection(serverUrl, channelId, () => {
             myselfLeftCall();
-        }, setScreenShareURL);
+        }, setScreenShareURL, hasMicPermission);
     } catch (error: unknown) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error: error as Error};
@@ -270,6 +270,12 @@ export const muteMyself = () => {
 export const unmuteMyself = () => {
     if (connection) {
         connection.unmute();
+    }
+};
+
+export const initializeVoiceTrack = () => {
+    if (connection) {
+        connection.initializeVoiceTrack();
     }
 };
 

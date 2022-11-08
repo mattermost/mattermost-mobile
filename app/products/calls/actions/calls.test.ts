@@ -141,7 +141,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true);
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
@@ -168,7 +168,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true);
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
@@ -202,7 +202,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true);
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
@@ -232,7 +232,7 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id', 'mysUserId');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'mysUserId', true);
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');

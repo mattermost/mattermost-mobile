@@ -10,11 +10,14 @@ import {
     setCallsState,
     setChannelsWithCalls,
     setCurrentCall,
+    setMicPermissionsErrorDismissed,
+    setMicPermissionsGranted,
     setCurrentCallConnected,
     useCallsConfig,
     useCallsState,
     useChannelsWithCalls,
     useCurrentCall,
+    useGlobalCallsState,
 } from '@calls/state';
 import {
     setCalls,
@@ -36,9 +39,18 @@ import {
 } from '@calls/state/actions';
 import {License} from '@constants';
 
-import {CallsState, CurrentCall, DefaultCallsConfig, DefaultCallsState} from '../types/calls';
+import {
+    Call,
+    CallsState,
+    CurrentCall,
+    DefaultCallsConfig,
+    DefaultCallsState,
+    DefaultCurrentCall,
+    DefaultGlobalCallsState,
+    GlobalCallsState,
+} from '../types/calls';
 
-const call1 = {
+const call1: Call = {
     participants: {
         'user-1': {id: 'user-1', muted: false, raisedHand: 0},
         'user-2': {id: 'user-2', muted: true, raisedHand: 0},
@@ -49,7 +61,7 @@ const call1 = {
     threadId: 'thread-1',
     ownerId: 'user-1',
 };
-const call2 = {
+const call2: Call = {
     participants: {
         'user-3': {id: 'user-3', muted: false, raisedHand: 0},
         'user-4': {id: 'user-4', muted: true, raisedHand: 0},
@@ -60,7 +72,7 @@ const call2 = {
     threadId: 'thread-2',
     ownerId: 'user-3',
 };
-const call3 = {
+const call3: Call = {
     participants: {
         'user-5': {id: 'user-5', muted: false, raisedHand: 0},
         'user-6': {id: 'user-6', muted: true, raisedHand: 0},
@@ -111,13 +123,10 @@ describe('useCallsState', () => {
             'channel-1': true,
         };
         const initialCurrentCallState: CurrentCall = {
-            connected: false,
+            ...DefaultCurrentCall,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-            voiceOn: {},
         };
         const testNewCall1 = {
             ...call1,
@@ -184,14 +193,13 @@ describe('useCallsState', () => {
         const initialChannelsWithCallsState = {
             'channel-1': true,
         };
+
         const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
             connected: true,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-            voiceOn: {},
         };
         const expectedCallsState = {
             'channel-1': {
@@ -246,13 +254,11 @@ describe('useCallsState', () => {
             'channel-1': true,
         };
         const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
             connected: true,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-            voiceOn: {},
         };
         const expectedCallsState = {
             'channel-1': {
@@ -350,13 +356,11 @@ describe('useCallsState', () => {
         };
         const initialChannelsWithCallsState = {'channel-1': true, 'channel-2': true};
         const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
             connected: true,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-            voiceOn: {},
         };
 
         // setup
@@ -399,13 +403,10 @@ describe('useCallsState', () => {
         };
         const initialChannelsWithCallsState = {'channel-1': true, 'channel-2': true};
         const initialCurrentCallState: CurrentCall = {
-            connected: false,
+            ...DefaultCurrentCall,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-            voiceOn: {},
         };
 
         // setup
@@ -459,13 +460,11 @@ describe('useCallsState', () => {
             },
         };
         const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
             connected: true,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-            voiceOn: {},
         };
         const expectedCurrentCallState = {
             ...initialCurrentCallState,
@@ -519,13 +518,11 @@ describe('useCallsState', () => {
             },
         };
         const expectedCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
             connected: true,
             serverUrl: 'server1',
             myUserId: 'myUserId',
-            screenShareURL: '',
-            speakerphoneOn: false,
             ...newCall1,
-            voiceOn: {},
         };
 
         // setup
@@ -674,6 +671,79 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
     });
 
+    it('MicPermissions', () => {
+        const initialGlobalState = DefaultGlobalCallsState;
+        const initialCallsState: CallsState = {
+            ...DefaultCallsState,
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const newCall1: Call = {
+            ...call1,
+            participants: {
+                ...call1.participants,
+                myUserId: {id: 'myUserId', muted: true, raisedHand: 0},
+            },
+        };
+        const expectedCallsState: CallsState = {
+            ...initialCallsState,
+            calls: {
+                ...initialCallsState.calls,
+                'channel-1': newCall1,
+            },
+        };
+        const expectedCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...newCall1,
+        };
+        const secondExpectedCurrentCallState: CurrentCall = {
+            ...expectedCurrentCallState,
+            micPermissionsErrorDismissed: true,
+        };
+        const expectedGlobalState: GlobalCallsState = {
+            micPermissionsGranted: true,
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall(), useGlobalCallsState()];
+        });
+        act(() => setCallsState('server1', initialCallsState));
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+        assert.deepEqual(result.current[2], initialGlobalState);
+
+        // join call
+        act(() => {
+            setMicPermissionsGranted(false);
+            userJoinedCall('server1', 'channel-1', 'myUserId');
+        });
+        assert.deepEqual(result.current[0], expectedCallsState);
+        assert.deepEqual(result.current[1], expectedCurrentCallState);
+        assert.deepEqual(result.current[2], initialGlobalState);
+
+        // dismiss mic error
+        act(() => setMicPermissionsErrorDismissed());
+        assert.deepEqual(result.current[0], expectedCallsState);
+        assert.deepEqual(result.current[1], secondExpectedCurrentCallState);
+        assert.deepEqual(result.current[2], initialGlobalState);
+
+        // grant permissions
+        act(() => setMicPermissionsGranted(true));
+        assert.deepEqual(result.current[0], expectedCallsState);
+        assert.deepEqual(result.current[1], secondExpectedCurrentCallState);
+        assert.deepEqual(result.current[2], expectedGlobalState);
+
+        act(() => {
+            myselfLeftCall();
+            userLeftCall('server1', 'channel-1', 'myUserId');
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+    });
+
     it('voiceOn and Off', () => {
         const initialCallsState = {
             ...DefaultCallsState,
@@ -682,13 +752,10 @@ describe('useCallsState', () => {
             calls: {'channel-1': call1, 'channel-2': call2},
         };
         const initialCurrentCallState: CurrentCall = {
-            connected: false,
+            ...DefaultCurrentCall,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-            voiceOn: {},
         };
 
         // setup

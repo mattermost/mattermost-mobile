@@ -4,6 +4,7 @@
 import {Alert} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, unmuteMyself} from '@calls/actions';
+import {setMicPermissionsGranted} from '@calls/state';
 import {errorAlert} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import {getCurrentUser} from '@queries/servers/user';
@@ -106,16 +107,10 @@ const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolea
         return;
     }
 
-    const hasPermission = await hasMicrophonePermission(intl);
-    if (!hasPermission) {
-        errorAlert(formatMessage({
-            id: 'mobile.calls_error_permissions',
-            defaultMessage: 'No permissions to microphone, unable to start call',
-        }), intl);
-        return;
-    }
+    const hasPermission = await hasMicrophonePermission();
+    setMicPermissionsGranted(hasPermission);
 
-    const res = await joinCall(serverUrl, channelId, user.id);
+    const res = await joinCall(serverUrl, channelId, user.id, hasPermission);
     if (res.error) {
         const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);

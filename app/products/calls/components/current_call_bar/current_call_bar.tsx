@@ -8,6 +8,9 @@ import {Options} from 'react-native-navigation';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
+import PermissionErrorBar from '@calls/components/permission_error_bar';
+import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
+import {usePermissionsChecker} from '@calls/hooks';
 import {CurrentCall} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
@@ -24,6 +27,7 @@ type Props = {
     currentCall: CurrentCall | null;
     userModelsDict: Dictionary<UserModel>;
     teammateNameDisplay: string;
+    micPermissionsGranted: boolean;
     threadScreen?: boolean;
 }
 
@@ -57,18 +61,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.sidebarText,
             opacity: 0.64,
         },
-        micIcon: {
-            color: theme.sidebarText,
+        micIconContainer: {
             width: 42,
             height: 42,
-            textAlign: 'center',
-            textAlignVertical: 'center',
             justifyContent: 'center',
-            backgroundColor: '#3DB887',
+            alignItems: 'center',
+            backgroundColor: theme.onlineIndicator,
             borderRadius: 4,
             margin: 4,
             padding: 9,
-            overflow: 'hidden',
+        },
+        micIcon: {
+            color: theme.sidebarText,
         },
         muted: {
             backgroundColor: 'transparent',
@@ -86,10 +90,13 @@ const CurrentCallBar = ({
     currentCall,
     userModelsDict,
     teammateNameDisplay,
+    micPermissionsGranted,
     threadScreen,
 }: Props) => {
     const theme = useTheme();
+    const style = getStyleSheet(theme);
     const {formatMessage} = useIntl();
+    usePermissionsChecker(micPermissionsGranted);
 
     const goToCallScreen = useCallback(async () => {
         const options: Options = {
@@ -134,42 +141,48 @@ const CurrentCallBar = ({
         }
     };
 
-    const style = getStyleSheet(theme);
+    const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
 
     return (
-        <View style={style.wrapper}>
-            <View style={style.container}>
-                <CallAvatar
-                    userModel={userModelsDict[speaker || '']}
-                    volume={speaker ? 0.5 : 0}
-                    serverUrl={currentCall?.serverUrl || ''}
-                />
-                <View style={style.userInfo}>
-                    <Text style={style.speakingUser}>{talkingMessage}</Text>
-                    <Text style={style.currentChannel}>{`~${displayName}`}</Text>
+        <>
+            <View style={style.wrapper}>
+                <View style={style.container}>
+                    <CallAvatar
+                        userModel={userModelsDict[speaker || '']}
+                        volume={speaker ? 0.5 : 0}
+                        serverUrl={currentCall?.serverUrl || ''}
+                    />
+                    <View style={style.userInfo}>
+                        <Text style={style.speakingUser}>{talkingMessage}</Text>
+                        <Text style={style.currentChannel}>{`~${displayName}`}</Text>
+                    </View>
+                    <Pressable
+                        onPressIn={goToCallScreen}
+                        style={style.pressable}
+                    >
+                        <CompassIcon
+                            name='arrow-expand'
+                            size={24}
+                            style={style.expandIcon}
+                        />
+                    </Pressable>
+                    <TouchableOpacity
+                        onPress={muteUnmute}
+                        style={[style.pressable, style.micIconContainer, myParticipant?.muted && style.muted]}
+                        disabled={!micPermissionsGranted}
+                    >
+                        <UnavailableIconWrapper
+                            name={myParticipant?.muted ? 'microphone-off' : 'microphone'}
+                            size={24}
+                            unavailable={!micPermissionsGranted}
+                            style={[style.micIcon]}
+                        />
+                    </TouchableOpacity>
                 </View>
-                <Pressable
-                    onPressIn={goToCallScreen}
-                    style={style.pressable}
-                >
-                    <CompassIcon
-                        name='arrow-expand'
-                        size={24}
-                        style={style.expandIcon}
-                    />
-                </Pressable>
-                <TouchableOpacity
-                    onPress={muteUnmute}
-                    style={style.pressable}
-                >
-                    <CompassIcon
-                        name={myParticipant?.muted ? 'microphone-off' : 'microphone'}
-                        size={24}
-                        style={[style.micIcon, myParticipant?.muted ? style.muted : undefined]}
-                    />
-                </TouchableOpacity>
             </View>
-        </View>
+            {micPermissionsError && <PermissionErrorBar/>}
+        </>
     );
 };
+
 export default CurrentCallBar;
