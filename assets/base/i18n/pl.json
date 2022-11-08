@@ -648,5 +648,16 @@
     "mobile.join_channel.error": "Nie mogliśmy dołączyć do kanału {displayName}.",
     "mobile.ios.photos_permission_denied_description": "Prześlij zdjęcia i filmy na serwer lub zapisz je w swoim urządzeniu. Otwórz Ustawienia, aby przyznać {applicationName} dostęp do odczytu i zapisu do biblioteki zdjęć i filmów.",
     "mobile.search.show_more": "Pokaż więcej",
-    "mobile.search.show_less": "Pokaż mniej"
+    "mobile.search.show_less": "Pokaż mniej",
+    "mobile.storage_permission_denied_description": "Prześlij pliki na swój serwer. Otwórz Ustawienia, aby przyznać {applicationName} dostęp do odczytu i zapisu plików na tym urządzeniu.",
+    "mobile.session_expired.title": "Sesja Wygasła",
+    "mobile.session_expired": "Zaloguj się, aby nadal otrzymywać powiadomienia. Sesje dla {siteName} są skonfigurowane tak, aby wygasały co {daysCount, number} {daysCount, plural, one {dzień} other {dni}}.",
+    "mobile.server_url.deeplink.emm.denied": "Ta aplikacja jest kontrolowana przez EMM, a adres url serwera DeepLink nie pasuje do dozwolonego serwera EMM",
+    "mobile.server_upgrade.description": "\nDo korzystania z aplikacji Mattermost wymagane jest uaktualnienie serwera. Proszę zapytać administratora systemu o szczegóły.\n",
+    "mobile.server_requires_client_certificate": "Serwer wymaga certyfikatu klienta do uwierzytelnienia.",
+    "mobile.server_ping_failed": "Nie można połączyć się z serwerem.",
+    "mobile.server_name.exists": "Używasz tej nazwy dla innego serwera.",
+    "mobile.server_link.unreachable_user.error": "Nie możemy przekierować Cię na DM. Podany użytkownik jest nieznany.",
+    "mobile.server_identifier.exists": "Jesteś już podłączony do tego serwera.",
+    "mobile.search.team.select": "Wybierz zespół do przeszukania"
 }
