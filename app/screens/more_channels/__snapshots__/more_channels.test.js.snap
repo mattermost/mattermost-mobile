@@ -1,9 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`MoreChannels should match snapshot 1`] = `
-<ForwardRef
+<RNCSafeAreaView
   style={
-    {
+    Object {
       "flex": 1,
     }
   }
@@ -13,7 +13,7 @@ exports[`MoreChannels should match snapshot 1`] = `
     <React.Fragment>
       <View
         style={
-          {
+          Object {
             "height": 38,
             "marginVertical": 5,
           }
@@ -31,7 +31,7 @@ exports[`MoreChannels should match snapshot 1`] = `
           editable={true}
           inputHeight={33}
           inputStyle={
-            {
+            Object {
               "backgroundColor": "rgba(63,67,80,0.2)",
               "color": "#3f4350",
               "fontSize": 15,
@@ -66,7 +66,7 @@ exports[`MoreChannels should match snapshot 1`] = `
           accessibilityRole="button"
           onPress={[Function]}
           style={
-            {
+            Object {
               "color": "#3f4350",
               "fontWeight": "bold",
               "marginBottom": 10,
@@ -86,8 +86,8 @@ exports[`MoreChannels should match snapshot 1`] = `
       <CustomList
         canRefresh={false}
         data={
-          [
-            {
+          Array [
+            Object {
               "display_name": "display_name",
               "id": "id",
               "name": "name",
@@ -100,7 +100,7 @@ exports[`MoreChannels should match snapshot 1`] = `
         loadingComponent={
           <View
             style={
-              {
+              Object {
                 "alignItems": "center",
                 "backgroundColor": "#ffffff",
                 "height": 70,
@@ -112,7 +112,7 @@ exports[`MoreChannels should match snapshot 1`] = `
               defaultMessage="Loading Channels..."
               id="mobile.loading_channels"
               style={
-                {
+                Object {
                   "color": "rgba(63,67,80,0.6)",
                 }
               }
@@ -127,7 +127,7 @@ exports[`MoreChannels should match snapshot 1`] = `
         showNoResults={true}
         testID="more_channels.custom_list"
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -158,5 +158,5 @@ exports[`MoreChannels should match snapshot 1`] = `
       />
     </React.Fragment>
   </Connect(KeyboardLayout)>
-</ForwardRef>
+</RNCSafeAreaView>
 `;

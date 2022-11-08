@@ -18,7 +18,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 1`] = `
   }
   testID="notification_settings_email.send.action"
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -61,32 +61,32 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
     testID="notification_settings_email.send.modal"
   >
     <View
-      style={{}}
+      style={Object {}}
     >
       <View
-        style={{}}
+        style={Object {}}
       >
         <View
-          style={{}}
+          style={Object {}}
         >
           <InjectIntl(FormattedText)
             defaultMessage="Send email notifications"
             id="user.settings.notifications.email.send"
-            style={{}}
+            style={Object {}}
           />
         </View>
         <RadioButtonGroup
           name="emailSettings"
           onSelect={[Function]}
           options={
-            [
-              {
+            Array [
+              Object {
                 "checked": true,
                 "label": "Immediately",
                 "testID": "notification_settings_email.immediately.action",
                 "value": "30",
               },
-              {
+              Object {
                 "checked": false,
                 "label": "Never",
                 "testID": "notification_settings_email.never.action",
@@ -98,46 +98,46 @@ exports[`NotificationSettingsEmailAndroid should match snapshot 2`] = `
         <InjectIntl(FormattedText)
           defaultMessage="Email notifications are sent for mentions and direct messages when you are offline or away for more than 5 minutes."
           id="user.settings.notifications.emailInfo"
-          style={{}}
+          style={Object {}}
         />
       </View>
       <View
-        style={{}}
+        style={Object {}}
       >
         <View
-          style={{}}
+          style={Object {}}
         />
         <View
-          style={{}}
+          style={Object {}}
         >
           <TouchableOpacity
             onPress={[Function]}
-            style={{}}
+            style={Object {}}
             testID="notification_settings_email.send_modal_cancel.button"
           >
             <InjectIntl(FormattedText)
               defaultMessage="CANCEL"
               id="mobile.notification_settings.modal_cancel"
-              style={{}}
+              style={Object {}}
             />
           </TouchableOpacity>
           <View>
             <View
               style={
-                {
+                Object {
                   "marginRight": 10,
                 }
               }
             />
             <TouchableOpacity
               onPress={[Function]}
-              style={{}}
+              style={Object {}}
               testID="notification_settings_email.send_modal_save.button"
             >
               <InjectIntl(FormattedText)
                 defaultMessage="SAVE"
                 id="mobile.notification_settings.modal_save"
-                style={{}}
+                style={Object {}}
               />
             </TouchableOpacity>
           </View>
@@ -167,7 +167,7 @@ exports[`NotificationSettingsEmailAndroid should match snapshot, renderEmailThre
     }
     selected={true}
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",

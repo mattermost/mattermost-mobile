@@ -131,7 +131,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                 values[element.name],
             );
             if (error) {
-                // @ts-expect-error context type definition
                 fieldErrors[element.name] = this.context.intl.formatMessage(error.id, error.defaultMessage, error.values);
             }
         });
@@ -172,15 +171,12 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
             return;
         case AppCallResponseTypes.NAVIGATE:
             await this.handleHide();
-
-            // @ts-expect-error context type definition
             this.props.actions.handleGotoLocation(callResponse.navigate_to_url!, this.context.intl);
             return;
         case AppCallResponseTypes.FORM:
             this.submitting = false;
             return;
         default:
-            // @ts-expect-error context type definition
             this.updateErrors([], undefined, this.context.intl.formatMessage({
                 id: 'apps.error.responses.unknown_type',
                 defaultMessage: 'App response type not supported. Response type: {type}.',
@@ -207,8 +203,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                 state.fieldErrors = fieldErrors;
             } else if (!state.formError) {
                 const field = Object.keys(fieldErrors)[0];
-
-                // @ts-expect-error context type definition
                 state.formError = this.context.intl.formatMessage({
                     id: 'apps.error.responses.unknown_field_error',
                     defaultMessage: 'Received an error for an unkown field. Field name: `{field}`. Error: `{error}`.',
@@ -229,7 +223,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
     };
 
     performLookup = async (name: string, userInput: string): Promise<AppSelectOption[]> => {
-        // @ts-expect-error context type definition
         const intl = this.context.intl;
         const field = this.props.form.fields?.find((f) => f.name === name);
         if (!field) {
@@ -324,7 +317,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                     return;
                 case AppCallResponseTypes.OK:
                 case AppCallResponseTypes.NAVIGATE:
-                    // @ts-expect-error context type definition
                     this.updateErrors([], undefined, this.context.intl.formatMessage({
                         id: 'apps.error.responses.unexpected_type',
                         defaultMessage: 'App response type was not expected. Response type: {type}.',
@@ -333,7 +325,6 @@ export default class AppsFormComponent extends PureComponent<Props, State> {
                     }));
                     return;
                 default:
-                    // @ts-expect-error context type definition
                     this.updateErrors([], undefined, this.context.intl.formatMessage({
                         id: 'apps.error.responses.unknown_type',
                         defaultMessage: 'App response type not supported. Response type: {type}.',

@@ -3,7 +3,7 @@
 exports[`channel_info_header should match snapshot 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "borderBottomColor": undefined,
       "borderBottomWidth": 1,
@@ -14,13 +14,13 @@ exports[`channel_info_header should match snapshot 1`] = `
 >
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "alignItems": "center",
           "flexDirection": "row",
           "paddingVertical": 10,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -36,7 +36,7 @@ exports[`channel_info_header should match snapshot 1`] = `
       size={24}
       testID="channel_info.header.channel_icon"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -70,7 +70,7 @@ exports[`channel_info_header should match snapshot 1`] = `
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
-        {
+        Object {
           "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
@@ -85,7 +85,7 @@ exports[`channel_info_header should match snapshot 1`] = `
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -95,7 +95,7 @@ exports[`channel_info_header should match snapshot 1`] = `
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -104,7 +104,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -114,7 +114,7 @@ exports[`channel_info_header should match snapshot 1`] = `
         />
         <Text
           style={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
@@ -129,7 +129,7 @@ exports[`channel_info_header should match snapshot 1`] = `
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -139,7 +139,7 @@ exports[`channel_info_header should match snapshot 1`] = `
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -148,7 +148,7 @@ exports[`channel_info_header should match snapshot 1`] = `
           defaultMessage="Header"
           id="channel_info.header"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -158,23 +158,23 @@ exports[`channel_info_header should match snapshot 1`] = `
         />
         <Connect(Markdown)
           baseTextStyle={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
           }
           blockStyles={
-            {
-              "adjacentParagraph": {
+            Object {
+              "adjacentParagraph": Object {
                 "marginTop": 6,
               },
-              "horizontalRule": {
+              "horizontalRule": Object {
                 "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
-              "quoteBlockIcon": {
+              "quoteBlockIcon": Object {
                 "color": undefined,
               },
             }
@@ -184,86 +184,86 @@ exports[`channel_info_header should match snapshot 1`] = `
           onChannelLinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
-            {
-              "code": {
+            Object {
+              "code": Object {
                 "alignSelf": "center",
                 "backgroundColor": undefined,
                 "fontFamily": "Menlo",
               },
-              "codeBlock": {
+              "codeBlock": Object {
                 "fontFamily": "Menlo",
               },
-              "del": {
+              "del": Object {
                 "textDecorationLine": "line-through",
               },
-              "emph": {
+              "emph": Object {
                 "fontStyle": "italic",
               },
-              "error": {
+              "error": Object {
                 "color": "#d24b4e",
               },
-              "heading1": {
+              "heading1": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading1Text": {
+              "heading1Text": Object {
                 "paddingBottom": 8,
               },
-              "heading2": {
+              "heading2": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading2Text": {
+              "heading2Text": Object {
                 "paddingBottom": 8,
               },
-              "heading3": {
+              "heading3": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading3Text": {
+              "heading3Text": Object {
                 "paddingBottom": 8,
               },
-              "heading4": {
+              "heading4": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading4Text": {
+              "heading4Text": Object {
                 "paddingBottom": 8,
               },
-              "heading5": {
+              "heading5": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading5Text": {
+              "heading5Text": Object {
                 "paddingBottom": 8,
               },
-              "heading6": {
+              "heading6": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading6Text": {
+              "heading6Text": Object {
                 "paddingBottom": 8,
               },
-              "link": {
+              "link": Object {
                 "color": "#386fe5",
               },
-              "mention": {
+              "mention": Object {
                 "color": "#386fe5",
               },
-              "mention_highlight": {
+              "mention_highlight": Object {
                 "backgroundColor": "#ffd470",
                 "color": "#1b1d22",
               },
-              "strong": {
+              "strong": Object {
                 "fontWeight": "bold",
               },
-              "table_header_row": {
+              "table_header_row": Object {
                 "fontWeight": "700",
               },
             }
@@ -275,15 +275,15 @@ exports[`channel_info_header should match snapshot 1`] = `
   </View>
   <Text
     style={
-      [
-        {
+      Array [
+        Object {
           "backgroundColor": "transparent",
           "color": undefined,
           "flexDirection": "row",
           "fontSize": 12,
           "marginTop": 5,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -293,7 +293,7 @@ exports[`channel_info_header should match snapshot 1`] = `
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
-        {
+        Object {
           "creator": "Creator",
         }
       }
@@ -309,7 +309,7 @@ exports[`channel_info_header should match snapshot 1`] = `
 exports[`channel_info_header should match snapshot when DM and hasGuests and is the teammate 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "borderBottomColor": undefined,
       "borderBottomWidth": 1,
@@ -320,13 +320,13 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
 >
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "alignItems": "center",
           "flexDirection": "row",
           "paddingVertical": 10,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -342,7 +342,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       size={24}
       testID="channel_info.header.channel_icon"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -376,7 +376,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
-        {
+        Object {
           "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
@@ -391,14 +391,14 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
   >
     <View
       style={
-        {
+        Object {
           "paddingHorizontal": 15,
         }
       }
@@ -407,7 +407,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
         defaultMessage="This person is a guest"
         id="channel.isGuest"
         style={
-          {
+          Object {
             "backgroundColor": "transparent",
             "color": "#3f4350",
             "fontSize": 13,
@@ -419,7 +419,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -429,7 +429,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -438,7 +438,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -448,7 +448,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
         />
         <Text
           style={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
@@ -463,7 +463,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -473,7 +473,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -482,7 +482,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           defaultMessage="Header"
           id="channel_info.header"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -492,23 +492,23 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
         />
         <Connect(Markdown)
           baseTextStyle={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
           }
           blockStyles={
-            {
-              "adjacentParagraph": {
+            Object {
+              "adjacentParagraph": Object {
                 "marginTop": 6,
               },
-              "horizontalRule": {
+              "horizontalRule": Object {
                 "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
-              "quoteBlockIcon": {
+              "quoteBlockIcon": Object {
                 "color": undefined,
               },
             }
@@ -518,86 +518,86 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
           onChannelLinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
-            {
-              "code": {
+            Object {
+              "code": Object {
                 "alignSelf": "center",
                 "backgroundColor": undefined,
                 "fontFamily": "Menlo",
               },
-              "codeBlock": {
+              "codeBlock": Object {
                 "fontFamily": "Menlo",
               },
-              "del": {
+              "del": Object {
                 "textDecorationLine": "line-through",
               },
-              "emph": {
+              "emph": Object {
                 "fontStyle": "italic",
               },
-              "error": {
+              "error": Object {
                 "color": "#d24b4e",
               },
-              "heading1": {
+              "heading1": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading1Text": {
+              "heading1Text": Object {
                 "paddingBottom": 8,
               },
-              "heading2": {
+              "heading2": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading2Text": {
+              "heading2Text": Object {
                 "paddingBottom": 8,
               },
-              "heading3": {
+              "heading3": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading3Text": {
+              "heading3Text": Object {
                 "paddingBottom": 8,
               },
-              "heading4": {
+              "heading4": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading4Text": {
+              "heading4Text": Object {
                 "paddingBottom": 8,
               },
-              "heading5": {
+              "heading5": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading5Text": {
+              "heading5Text": Object {
                 "paddingBottom": 8,
               },
-              "heading6": {
+              "heading6": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading6Text": {
+              "heading6Text": Object {
                 "paddingBottom": 8,
               },
-              "link": {
+              "link": Object {
                 "color": "#386fe5",
               },
-              "mention": {
+              "mention": Object {
                 "color": "#386fe5",
               },
-              "mention_highlight": {
+              "mention_highlight": Object {
                 "backgroundColor": "#ffd470",
                 "color": "#1b1d22",
               },
-              "strong": {
+              "strong": Object {
                 "fontWeight": "bold",
               },
-              "table_header_row": {
+              "table_header_row": Object {
                 "fontWeight": "700",
               },
             }
@@ -609,15 +609,15 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
   </View>
   <Text
     style={
-      [
-        {
+      Array [
+        Object {
           "backgroundColor": "transparent",
           "color": undefined,
           "flexDirection": "row",
           "fontSize": 12,
           "marginTop": 5,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -627,7 +627,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
-        {
+        Object {
           "creator": "Creator",
         }
       }
@@ -643,7 +643,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests and is 
 exports[`channel_info_header should match snapshot when DM and hasGuests but its me and not the teammate 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "borderBottomColor": undefined,
       "borderBottomWidth": 1,
@@ -654,13 +654,13 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
 >
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "alignItems": "center",
           "flexDirection": "row",
           "paddingVertical": 10,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -676,7 +676,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       size={24}
       testID="channel_info.header.channel_icon"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -710,7 +710,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
-        {
+        Object {
           "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
@@ -725,7 +725,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -735,7 +735,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -744,7 +744,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -754,7 +754,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
         />
         <Text
           style={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
@@ -769,7 +769,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -779,7 +779,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -788,7 +788,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           defaultMessage="Header"
           id="channel_info.header"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -798,23 +798,23 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
         />
         <Connect(Markdown)
           baseTextStyle={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
           }
           blockStyles={
-            {
-              "adjacentParagraph": {
+            Object {
+              "adjacentParagraph": Object {
                 "marginTop": 6,
               },
-              "horizontalRule": {
+              "horizontalRule": Object {
                 "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
-              "quoteBlockIcon": {
+              "quoteBlockIcon": Object {
                 "color": undefined,
               },
             }
@@ -824,86 +824,86 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
           onChannelLinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
-            {
-              "code": {
+            Object {
+              "code": Object {
                 "alignSelf": "center",
                 "backgroundColor": undefined,
                 "fontFamily": "Menlo",
               },
-              "codeBlock": {
+              "codeBlock": Object {
                 "fontFamily": "Menlo",
               },
-              "del": {
+              "del": Object {
                 "textDecorationLine": "line-through",
               },
-              "emph": {
+              "emph": Object {
                 "fontStyle": "italic",
               },
-              "error": {
+              "error": Object {
                 "color": "#d24b4e",
               },
-              "heading1": {
+              "heading1": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading1Text": {
+              "heading1Text": Object {
                 "paddingBottom": 8,
               },
-              "heading2": {
+              "heading2": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading2Text": {
+              "heading2Text": Object {
                 "paddingBottom": 8,
               },
-              "heading3": {
+              "heading3": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading3Text": {
+              "heading3Text": Object {
                 "paddingBottom": 8,
               },
-              "heading4": {
+              "heading4": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading4Text": {
+              "heading4Text": Object {
                 "paddingBottom": 8,
               },
-              "heading5": {
+              "heading5": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading5Text": {
+              "heading5Text": Object {
                 "paddingBottom": 8,
               },
-              "heading6": {
+              "heading6": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading6Text": {
+              "heading6Text": Object {
                 "paddingBottom": 8,
               },
-              "link": {
+              "link": Object {
                 "color": "#386fe5",
               },
-              "mention": {
+              "mention": Object {
                 "color": "#386fe5",
               },
-              "mention_highlight": {
+              "mention_highlight": Object {
                 "backgroundColor": "#ffd470",
                 "color": "#1b1d22",
               },
-              "strong": {
+              "strong": Object {
                 "fontWeight": "bold",
               },
-              "table_header_row": {
+              "table_header_row": Object {
                 "fontWeight": "700",
               },
             }
@@ -915,15 +915,15 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
   </View>
   <Text
     style={
-      [
-        {
+      Array [
+        Object {
           "backgroundColor": "transparent",
           "color": undefined,
           "flexDirection": "row",
           "fontSize": 12,
           "marginTop": 5,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -933,7 +933,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
-        {
+        Object {
           "creator": "Creator",
         }
       }
@@ -949,7 +949,7 @@ exports[`channel_info_header should match snapshot when DM and hasGuests but its
 exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "borderBottomColor": undefined,
       "borderBottomWidth": 1,
@@ -960,13 +960,13 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
 >
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "alignItems": "center",
           "flexDirection": "row",
           "paddingVertical": 10,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -982,7 +982,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       size={24}
       testID="channel_info.header.channel_icon"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -1016,7 +1016,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
-        {
+        Object {
           "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
@@ -1031,14 +1031,14 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
   >
     <View
       style={
-        {
+        Object {
           "paddingHorizontal": 15,
         }
       }
@@ -1047,7 +1047,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
         defaultMessage="This group message has guests"
         id="channel.hasGuests"
         style={
-          {
+          Object {
             "backgroundColor": "transparent",
             "color": "#3f4350",
             "fontSize": 13,
@@ -1059,7 +1059,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -1069,7 +1069,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -1078,7 +1078,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -1088,7 +1088,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
         />
         <Text
           style={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
@@ -1103,7 +1103,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -1113,7 +1113,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -1122,7 +1122,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           defaultMessage="Header"
           id="channel_info.header"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -1132,23 +1132,23 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
         />
         <Connect(Markdown)
           baseTextStyle={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
           }
           blockStyles={
-            {
-              "adjacentParagraph": {
+            Object {
+              "adjacentParagraph": Object {
                 "marginTop": 6,
               },
-              "horizontalRule": {
+              "horizontalRule": Object {
                 "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
-              "quoteBlockIcon": {
+              "quoteBlockIcon": Object {
                 "color": undefined,
               },
             }
@@ -1158,86 +1158,86 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
           onChannelLinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
-            {
-              "code": {
+            Object {
+              "code": Object {
                 "alignSelf": "center",
                 "backgroundColor": undefined,
                 "fontFamily": "Menlo",
               },
-              "codeBlock": {
+              "codeBlock": Object {
                 "fontFamily": "Menlo",
               },
-              "del": {
+              "del": Object {
                 "textDecorationLine": "line-through",
               },
-              "emph": {
+              "emph": Object {
                 "fontStyle": "italic",
               },
-              "error": {
+              "error": Object {
                 "color": "#d24b4e",
               },
-              "heading1": {
+              "heading1": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading1Text": {
+              "heading1Text": Object {
                 "paddingBottom": 8,
               },
-              "heading2": {
+              "heading2": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading2Text": {
+              "heading2Text": Object {
                 "paddingBottom": 8,
               },
-              "heading3": {
+              "heading3": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading3Text": {
+              "heading3Text": Object {
                 "paddingBottom": 8,
               },
-              "heading4": {
+              "heading4": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading4Text": {
+              "heading4Text": Object {
                 "paddingBottom": 8,
               },
-              "heading5": {
+              "heading5": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading5Text": {
+              "heading5Text": Object {
                 "paddingBottom": 8,
               },
-              "heading6": {
+              "heading6": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading6Text": {
+              "heading6Text": Object {
                 "paddingBottom": 8,
               },
-              "link": {
+              "link": Object {
                 "color": "#386fe5",
               },
-              "mention": {
+              "mention": Object {
                 "color": "#386fe5",
               },
-              "mention_highlight": {
+              "mention_highlight": Object {
                 "backgroundColor": "#ffd470",
                 "color": "#1b1d22",
               },
-              "strong": {
+              "strong": Object {
                 "fontWeight": "bold",
               },
-              "table_header_row": {
+              "table_header_row": Object {
                 "fontWeight": "700",
               },
             }
@@ -1249,15 +1249,15 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
   </View>
   <Text
     style={
-      [
-        {
+      Array [
+        Object {
           "backgroundColor": "transparent",
           "color": undefined,
           "flexDirection": "row",
           "fontSize": 12,
           "marginTop": 5,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -1267,7 +1267,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
-        {
+        Object {
           "creator": "Creator",
         }
       }
@@ -1283,7 +1283,7 @@ exports[`channel_info_header should match snapshot when GM and hasGuests 1`] = `
 exports[`channel_info_header should match snapshot when is group constrained 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "borderBottomColor": undefined,
       "borderBottomWidth": 1,
@@ -1294,13 +1294,13 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
 >
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "alignItems": "center",
           "flexDirection": "row",
           "paddingVertical": 10,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -1316,7 +1316,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       size={24}
       testID="channel_info.header.channel_icon"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -1350,7 +1350,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
-        {
+        Object {
           "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
@@ -1365,7 +1365,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -1375,7 +1375,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -1384,7 +1384,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -1394,7 +1394,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
         />
         <Text
           style={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
@@ -1409,7 +1409,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -1419,7 +1419,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -1428,7 +1428,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           defaultMessage="Header"
           id="channel_info.header"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -1438,23 +1438,23 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
         />
         <Connect(Markdown)
           baseTextStyle={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
           }
           blockStyles={
-            {
-              "adjacentParagraph": {
+            Object {
+              "adjacentParagraph": Object {
                 "marginTop": 6,
               },
-              "horizontalRule": {
+              "horizontalRule": Object {
                 "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
-              "quoteBlockIcon": {
+              "quoteBlockIcon": Object {
                 "color": undefined,
               },
             }
@@ -1464,86 +1464,86 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
           onChannelLinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
-            {
-              "code": {
+            Object {
+              "code": Object {
                 "alignSelf": "center",
                 "backgroundColor": undefined,
                 "fontFamily": "Menlo",
               },
-              "codeBlock": {
+              "codeBlock": Object {
                 "fontFamily": "Menlo",
               },
-              "del": {
+              "del": Object {
                 "textDecorationLine": "line-through",
               },
-              "emph": {
+              "emph": Object {
                 "fontStyle": "italic",
               },
-              "error": {
+              "error": Object {
                 "color": "#d24b4e",
               },
-              "heading1": {
+              "heading1": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading1Text": {
+              "heading1Text": Object {
                 "paddingBottom": 8,
               },
-              "heading2": {
+              "heading2": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading2Text": {
+              "heading2Text": Object {
                 "paddingBottom": 8,
               },
-              "heading3": {
+              "heading3": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading3Text": {
+              "heading3Text": Object {
                 "paddingBottom": 8,
               },
-              "heading4": {
+              "heading4": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading4Text": {
+              "heading4Text": Object {
                 "paddingBottom": 8,
               },
-              "heading5": {
+              "heading5": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading5Text": {
+              "heading5Text": Object {
                 "paddingBottom": 8,
               },
-              "heading6": {
+              "heading6": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading6Text": {
+              "heading6Text": Object {
                 "paddingBottom": 8,
               },
-              "link": {
+              "link": Object {
                 "color": "#386fe5",
               },
-              "mention": {
+              "mention": Object {
                 "color": "#386fe5",
               },
-              "mention_highlight": {
+              "mention_highlight": Object {
                 "backgroundColor": "#ffd470",
                 "color": "#1b1d22",
               },
-              "strong": {
+              "strong": Object {
                 "fontWeight": "bold",
               },
-              "table_header_row": {
+              "table_header_row": Object {
                 "fontWeight": "700",
               },
             }
@@ -1555,15 +1555,15 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
   </View>
   <Text
     style={
-      [
-        {
+      Array [
+        Object {
           "backgroundColor": "transparent",
           "color": undefined,
           "flexDirection": "row",
           "fontSize": 12,
           "marginTop": 5,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -1576,15 +1576,15 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
   </Text>
   <Text
     style={
-      [
-        {
+      Array [
+        Object {
           "backgroundColor": "transparent",
           "color": undefined,
           "flexDirection": "row",
           "fontSize": 12,
           "marginTop": 5,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -1594,7 +1594,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
-        {
+        Object {
           "creator": "Creator",
         }
       }
@@ -1610,7 +1610,7 @@ exports[`channel_info_header should match snapshot when is group constrained 1`]
 exports[`channel_info_header should match snapshot when public channel and hasGuests 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "borderBottomColor": undefined,
       "borderBottomWidth": 1,
@@ -1621,13 +1621,13 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
 >
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "alignItems": "center",
           "flexDirection": "row",
           "paddingVertical": 10,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -1643,7 +1643,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       size={24}
       testID="channel_info.header.channel_icon"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -1677,7 +1677,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
-        {
+        Object {
           "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
@@ -1692,14 +1692,14 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
   >
     <View
       style={
-        {
+        Object {
           "paddingHorizontal": 15,
         }
       }
@@ -1708,7 +1708,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
         defaultMessage="This channel has guests"
         id="channel.channelHasGuests"
         style={
-          {
+          Object {
             "backgroundColor": "transparent",
             "color": "#3f4350",
             "fontSize": 13,
@@ -1720,7 +1720,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -1730,7 +1730,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -1739,7 +1739,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -1749,7 +1749,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
         />
         <Text
           style={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
@@ -1764,7 +1764,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -1774,7 +1774,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -1783,7 +1783,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           defaultMessage="Header"
           id="channel_info.header"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -1793,23 +1793,23 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
         />
         <Connect(Markdown)
           baseTextStyle={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
           }
           blockStyles={
-            {
-              "adjacentParagraph": {
+            Object {
+              "adjacentParagraph": Object {
                 "marginTop": 6,
               },
-              "horizontalRule": {
+              "horizontalRule": Object {
                 "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
-              "quoteBlockIcon": {
+              "quoteBlockIcon": Object {
                 "color": undefined,
               },
             }
@@ -1819,86 +1819,86 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
           onChannelLinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
-            {
-              "code": {
+            Object {
+              "code": Object {
                 "alignSelf": "center",
                 "backgroundColor": undefined,
                 "fontFamily": "Menlo",
               },
-              "codeBlock": {
+              "codeBlock": Object {
                 "fontFamily": "Menlo",
               },
-              "del": {
+              "del": Object {
                 "textDecorationLine": "line-through",
               },
-              "emph": {
+              "emph": Object {
                 "fontStyle": "italic",
               },
-              "error": {
+              "error": Object {
                 "color": "#d24b4e",
               },
-              "heading1": {
+              "heading1": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading1Text": {
+              "heading1Text": Object {
                 "paddingBottom": 8,
               },
-              "heading2": {
+              "heading2": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading2Text": {
+              "heading2Text": Object {
                 "paddingBottom": 8,
               },
-              "heading3": {
+              "heading3": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading3Text": {
+              "heading3Text": Object {
                 "paddingBottom": 8,
               },
-              "heading4": {
+              "heading4": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading4Text": {
+              "heading4Text": Object {
                 "paddingBottom": 8,
               },
-              "heading5": {
+              "heading5": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading5Text": {
+              "heading5Text": Object {
                 "paddingBottom": 8,
               },
-              "heading6": {
+              "heading6": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading6Text": {
+              "heading6Text": Object {
                 "paddingBottom": 8,
               },
-              "link": {
+              "link": Object {
                 "color": "#386fe5",
               },
-              "mention": {
+              "mention": Object {
                 "color": "#386fe5",
               },
-              "mention_highlight": {
+              "mention_highlight": Object {
                 "backgroundColor": "#ffd470",
                 "color": "#1b1d22",
               },
-              "strong": {
+              "strong": Object {
                 "fontWeight": "bold",
               },
-              "table_header_row": {
+              "table_header_row": Object {
                 "fontWeight": "700",
               },
             }
@@ -1910,15 +1910,15 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
   </View>
   <Text
     style={
-      [
-        {
+      Array [
+        Object {
           "backgroundColor": "transparent",
           "color": undefined,
           "flexDirection": "row",
           "fontSize": 12,
           "marginTop": 5,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -1928,7 +1928,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
-        {
+        Object {
           "creator": "Creator",
         }
       }
@@ -1944,7 +1944,7 @@ exports[`channel_info_header should match snapshot when public channel and hasGu
 exports[`channel_info_header should match snapshot with custom status enabled 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "borderBottomColor": undefined,
       "borderBottomWidth": 1,
@@ -1955,13 +1955,13 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
 >
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "alignItems": "center",
           "flexDirection": "row",
           "paddingVertical": 10,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -1977,7 +1977,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       size={24}
       testID="channel_info.header.channel_icon"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -2011,7 +2011,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
-        {
+        Object {
           "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
@@ -2026,11 +2026,11 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
   </View>
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "paddingHorizontal": 15,
         },
-        {
+        Object {
           "alignItems": "center",
           "flexDirection": "row",
           "paddingVertical": 10,
@@ -2044,12 +2044,12 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       size={20}
       testID="custom_status.emoji.calendar"
       textStyle={
-        [
-          {
+        Array [
+          Object {
             "color": "#3f4350",
             "marginRight": 8,
           },
-          {
+          Object {
             "bottom": 0,
           },
         ]
@@ -2057,7 +2057,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
     />
     <View
       style={
-        {
+        Object {
           "width": "90%",
         }
       }
@@ -2067,7 +2067,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
         numberOfLines={1}
         text="In a meeting"
         textStyle={
-          {
+          Object {
             "color": "#3f4350",
             "flex": 1,
             "fontSize": 15,
@@ -2075,7 +2075,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           }
         }
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -2108,7 +2108,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -2118,7 +2118,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -2127,7 +2127,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -2137,7 +2137,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
         />
         <Text
           style={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
@@ -2152,7 +2152,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -2162,7 +2162,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -2171,7 +2171,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           defaultMessage="Header"
           id="channel_info.header"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -2181,23 +2181,23 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
         />
         <Connect(Markdown)
           baseTextStyle={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
           }
           blockStyles={
-            {
-              "adjacentParagraph": {
+            Object {
+              "adjacentParagraph": Object {
                 "marginTop": 6,
               },
-              "horizontalRule": {
+              "horizontalRule": Object {
                 "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
-              "quoteBlockIcon": {
+              "quoteBlockIcon": Object {
                 "color": undefined,
               },
             }
@@ -2207,86 +2207,86 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
           onChannelLinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
-            {
-              "code": {
+            Object {
+              "code": Object {
                 "alignSelf": "center",
                 "backgroundColor": undefined,
                 "fontFamily": "Menlo",
               },
-              "codeBlock": {
+              "codeBlock": Object {
                 "fontFamily": "Menlo",
               },
-              "del": {
+              "del": Object {
                 "textDecorationLine": "line-through",
               },
-              "emph": {
+              "emph": Object {
                 "fontStyle": "italic",
               },
-              "error": {
+              "error": Object {
                 "color": "#d24b4e",
               },
-              "heading1": {
+              "heading1": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading1Text": {
+              "heading1Text": Object {
                 "paddingBottom": 8,
               },
-              "heading2": {
+              "heading2": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading2Text": {
+              "heading2Text": Object {
                 "paddingBottom": 8,
               },
-              "heading3": {
+              "heading3": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading3Text": {
+              "heading3Text": Object {
                 "paddingBottom": 8,
               },
-              "heading4": {
+              "heading4": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading4Text": {
+              "heading4Text": Object {
                 "paddingBottom": 8,
               },
-              "heading5": {
+              "heading5": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading5Text": {
+              "heading5Text": Object {
                 "paddingBottom": 8,
               },
-              "heading6": {
+              "heading6": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading6Text": {
+              "heading6Text": Object {
                 "paddingBottom": 8,
               },
-              "link": {
+              "link": Object {
                 "color": "#386fe5",
               },
-              "mention": {
+              "mention": Object {
                 "color": "#386fe5",
               },
-              "mention_highlight": {
+              "mention_highlight": Object {
                 "backgroundColor": "#ffd470",
                 "color": "#1b1d22",
               },
-              "strong": {
+              "strong": Object {
                 "fontWeight": "bold",
               },
-              "table_header_row": {
+              "table_header_row": Object {
                 "fontWeight": "700",
               },
             }
@@ -2298,15 +2298,15 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
   </View>
   <Text
     style={
-      [
-        {
+      Array [
+        Object {
           "backgroundColor": "transparent",
           "color": undefined,
           "flexDirection": "row",
           "fontSize": 12,
           "marginTop": 5,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -2316,7 +2316,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
-        {
+        Object {
           "creator": "Creator",
         }
       }
@@ -2332,7 +2332,7 @@ exports[`channel_info_header should match snapshot with custom status enabled 1`
 exports[`channel_info_header should match snapshot with custom status expiry 1`] = `
 <View
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "borderBottomColor": undefined,
       "borderBottomWidth": 1,
@@ -2343,13 +2343,13 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
 >
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "alignItems": "center",
           "flexDirection": "row",
           "paddingVertical": 10,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -2365,7 +2365,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
       size={24}
       testID="channel_info.header.channel_icon"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -2399,7 +2399,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
       ellipsizeMode="tail"
       numberOfLines={1}
       style={
-        {
+        Object {
           "color": "#3f4350",
           "flex": 1,
           "fontSize": 15,
@@ -2414,11 +2414,11 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
   </View>
   <View
     style={
-      [
-        {
+      Array [
+        Object {
           "paddingHorizontal": 15,
         },
-        {
+        Object {
           "alignItems": "center",
           "flexDirection": "row",
           "paddingVertical": 10,
@@ -2432,12 +2432,12 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
       size={20}
       testID="custom_status.emoji.calendar"
       textStyle={
-        [
-          {
+        Array [
+          Object {
             "color": "#3f4350",
             "marginRight": 8,
           },
-          {
+          Object {
             "bottom": 8,
           },
         ]
@@ -2445,7 +2445,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
     />
     <View
       style={
-        {
+        Object {
           "width": "90%",
         }
       }
@@ -2455,7 +2455,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
         numberOfLines={1}
         text="In a meeting"
         textStyle={
-          {
+          Object {
             "color": "#3f4350",
             "flex": 1,
             "fontSize": 15,
@@ -2463,7 +2463,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
           }
         }
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -2495,13 +2495,13 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
       <CustomStatusExpiry
         showPrefix={true}
         textStyles={
-          {
+          Object {
             "color": undefined,
             "fontSize": 13,
           }
         }
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -2535,7 +2535,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -2545,7 +2545,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -2554,7 +2554,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
           defaultMessage="Purpose"
           id="channel_info.purpose"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -2564,7 +2564,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
         />
         <Text
           style={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
@@ -2579,7 +2579,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
   </View>
   <View
     style={
-      {
+      Object {
         "marginTop": 15,
       }
     }
@@ -2589,7 +2589,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
     >
       <View
         style={
-          {
+          Object {
             "paddingHorizontal": 15,
           }
         }
@@ -2598,7 +2598,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
           defaultMessage="Header"
           id="channel_info.header"
           style={
-            {
+            Object {
               "backgroundColor": "transparent",
               "color": "#3f4350",
               "fontSize": 13,
@@ -2608,23 +2608,23 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
         />
         <Connect(Markdown)
           baseTextStyle={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 13,
               "lineHeight": 20,
             }
           }
           blockStyles={
-            {
-              "adjacentParagraph": {
+            Object {
+              "adjacentParagraph": Object {
                 "marginTop": 6,
               },
-              "horizontalRule": {
+              "horizontalRule": Object {
                 "backgroundColor": "#3f4350",
                 "height": 0.5,
                 "marginVertical": 10,
               },
-              "quoteBlockIcon": {
+              "quoteBlockIcon": Object {
                 "color": undefined,
               },
             }
@@ -2634,86 +2634,86 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
           onChannelLinkPress={[MockFunction]}
           testID="channel_info.header.header"
           textStyles={
-            {
-              "code": {
+            Object {
+              "code": Object {
                 "alignSelf": "center",
                 "backgroundColor": undefined,
                 "fontFamily": "Menlo",
               },
-              "codeBlock": {
+              "codeBlock": Object {
                 "fontFamily": "Menlo",
               },
-              "del": {
+              "del": Object {
                 "textDecorationLine": "line-through",
               },
-              "emph": {
+              "emph": Object {
                 "fontStyle": "italic",
               },
-              "error": {
+              "error": Object {
                 "color": "#d24b4e",
               },
-              "heading1": {
+              "heading1": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading1Text": {
+              "heading1Text": Object {
                 "paddingBottom": 8,
               },
-              "heading2": {
+              "heading2": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading2Text": {
+              "heading2Text": Object {
                 "paddingBottom": 8,
               },
-              "heading3": {
+              "heading3": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading3Text": {
+              "heading3Text": Object {
                 "paddingBottom": 8,
               },
-              "heading4": {
+              "heading4": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading4Text": {
+              "heading4Text": Object {
                 "paddingBottom": 8,
               },
-              "heading5": {
+              "heading5": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading5Text": {
+              "heading5Text": Object {
                 "paddingBottom": 8,
               },
-              "heading6": {
+              "heading6": Object {
                 "fontSize": 17,
                 "fontWeight": "700",
                 "lineHeight": 25,
               },
-              "heading6Text": {
+              "heading6Text": Object {
                 "paddingBottom": 8,
               },
-              "link": {
+              "link": Object {
                 "color": "#386fe5",
               },
-              "mention": {
+              "mention": Object {
                 "color": "#386fe5",
               },
-              "mention_highlight": {
+              "mention_highlight": Object {
                 "backgroundColor": "#ffd470",
                 "color": "#1b1d22",
               },
-              "strong": {
+              "strong": Object {
                 "fontWeight": "bold",
               },
-              "table_header_row": {
+              "table_header_row": Object {
                 "fontWeight": "700",
               },
             }
@@ -2725,15 +2725,15 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
   </View>
   <Text
     style={
-      [
-        {
+      Array [
+        Object {
           "backgroundColor": "transparent",
           "color": undefined,
           "flexDirection": "row",
           "fontSize": 12,
           "marginTop": 5,
         },
-        {
+        Object {
           "paddingHorizontal": 15,
         },
       ]
@@ -2743,7 +2743,7 @@ exports[`channel_info_header should match snapshot with custom status expiry 1`]
       defaultMessage="Created by {creator} on "
       id="mobile.routes.channelInfo.createdBy"
       values={
-        {
+        Object {
           "creator": "Creator",
         }
       }

@@ -7,12 +7,10 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {expect} from 'detox';
+import jestExpect from 'expect';
 
 import {Channel, Post, Setup} from '@support/server_api';
 import {ChannelScreen} from '@support/ui/screen';
-
-const {expect: jestExpect} = require('@jest/globals');
 
 describe('Messaging', () => {
     let team;

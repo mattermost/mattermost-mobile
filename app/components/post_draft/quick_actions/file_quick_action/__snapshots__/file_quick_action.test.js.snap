@@ -3,7 +3,7 @@
 exports[`FileQuickAction should match snapshot 1`] = `
 <View
   accessibilityState={
-    {
+    Object {
       "disabled": false,
     }
   }
@@ -18,7 +18,7 @@ exports[`FileQuickAction should match snapshot 1`] = `
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    {
+    Object {
       "alignItems": "center",
       "justifyContent": "center",
       "opacity": 1,

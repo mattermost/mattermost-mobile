@@ -25,6 +25,7 @@ jest.doMock('react-native', () => {
     const {
         Platform,
         StyleSheet,
+        ViewPropTypes,
         PermissionsAndroid,
         ImagePickerManager,
         requireNativeComponent,
@@ -71,9 +72,6 @@ jest.doMock('react-native', () => {
             },
         },
         KeyboardObserver: {},
-        JailMonkey: {
-            trustFall: jest.fn().mockReturnValue(true),
-        },
         RNCNetInfo: {
             getCurrentState: jest.fn().mockResolvedValue({isConnected: true}),
             addListener: jest.fn(),
@@ -113,6 +111,7 @@ jest.doMock('react-native', () => {
             Version: 12,
         },
         StyleSheet,
+        ViewPropTypes,
         PermissionsAndroid,
         ImagePickerManager,
         requireNativeComponent,

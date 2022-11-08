@@ -7,7 +7,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
 >
   <View
     style={
-      {
+      Object {
         "alignItems": "center",
         "flex": 1,
         "flexDirection": "row",
@@ -17,7 +17,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "flex": 1,
           "flexDirection": "column",
           "paddingHorizontal": 16,
@@ -26,7 +26,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
     >
       <View
         style={
-          {
+          Object {
             "alignItems": "center",
             "flexDirection": "row",
           }
@@ -34,7 +34,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
       >
         <View
           style={
-            {
+            Object {
               "alignItems": "center",
               "backgroundColor": "rgba(63,67,80,0.08)",
               "borderRadius": 4,
@@ -47,7 +47,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
         >
           <Text
             style={
-              {
+              Object {
                 "color": "#3f4350",
                 "fontSize": 10,
               }
@@ -58,7 +58,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
         </View>
         <Text
           style={
-            {
+            Object {
               "color": "#3f4350",
               "fontSize": 15,
             }
@@ -69,7 +69,7 @@ exports[`Search RecentItem should match snapshot and respond to events 1`] = `
       </View>
       <Text
         style={
-          {
+          Object {
             "color": "rgba(63,67,80,0.5)",
             "fontSize": 12,
             "marginTop": 5,

@@ -2,9 +2,9 @@
 
 exports[`NotificationSettings should match snapshot 1`] = `
 NotificationSettings {
-  "context": {
-    "intl": {
-      "defaultFormats": {},
+  "context": Object {
+    "intl": Object {
+      "defaultFormats": Object {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -13,8 +13,8 @@ NotificationSettings {
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": {},
-      "formatters": {
+      "formats": Object {},
+      "formatters": Object {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -22,7 +22,7 @@ NotificationSettings {
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": {},
+      "messages": Object {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
@@ -34,18 +34,18 @@ NotificationSettings {
   "goToNotificationSettingsMentions": [Function],
   "goToNotificationSettingsMobile": [Function],
   "handlePress": [Function],
-  "props": {
-    "actions": {
+  "props": Object {
+    "actions": Object {
       "updateMe": [MockFunction],
     },
     "componentId": "component-id",
-    "currentUser": {
+    "currentUser": Object {
       "id": "current_user_id",
     },
     "currentUserStatus": "status",
     "enableAutoResponder": false,
-    "intl": {
-      "defaultFormats": {},
+    "intl": Object {
+      "defaultFormats": Object {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -54,8 +54,8 @@ NotificationSettings {
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": {},
-      "formatters": {
+      "formats": Object {},
+      "formatters": Object {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -63,14 +63,14 @@ NotificationSettings {
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": {},
+      "messages": Object {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
       "timeZone": null,
     },
     "isCollapsedThreadsEnabled": false,
-    "theme": {
+    "theme": Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -97,9 +97,9 @@ NotificationSettings {
       "sidebarUnreadText": "#ffffff",
       "type": "Denim",
     },
-    "updateMeRequest": {},
+    "updateMeRequest": Object {},
   },
-  "refs": {},
+  "refs": Object {},
   "sanitizeNotificationProps": [Function],
   "saveAutoResponder": [Function],
   "saveNotificationProps": [Function],
@@ -107,11 +107,11 @@ NotificationSettings {
   "shouldSaveAutoResponder": [Function],
   "state": null,
   "updater": Updater {
-    "_callbacks": [],
+    "_callbacks": Array [],
     "_renderer": ReactShallowRenderer {
-      "_context": {
-        "intl": {
-          "defaultFormats": {},
+      "_context": Object {
+        "intl": Object {
+          "defaultFormats": Object {},
           "defaultLocale": "en",
           "formatDate": [Function],
           "formatHTMLMessage": [Function],
@@ -120,8 +120,8 @@ NotificationSettings {
           "formatPlural": [Function],
           "formatRelative": [Function],
           "formatTime": [Function],
-          "formats": {},
-          "formatters": {
+          "formats": Object {},
+          "formatters": Object {
             "getDateTimeFormat": [Function],
             "getMessageFormat": [Function],
             "getNumberFormat": [Function],
@@ -129,7 +129,7 @@ NotificationSettings {
             "getRelativeFormat": [Function],
           },
           "locale": "en",
-          "messages": {},
+          "messages": Object {},
           "now": [Function],
           "onError": [Function],
           "textComponent": "span",
@@ -137,7 +137,7 @@ NotificationSettings {
         },
       },
       "_didScheduleRenderPhaseUpdate": false,
-      "_dispatcher": {
+      "_dispatcher": Object {
         "readContext": [Function],
         "useCallback": [Function],
         "useContext": [Function],
@@ -155,21 +155,21 @@ NotificationSettings {
       },
       "_element": <NotificationSettings
         actions={
-          {
+          Object {
             "updateMe": [MockFunction],
           }
         }
         componentId="component-id"
         currentUser={
-          {
+          Object {
             "id": "current_user_id",
           }
         }
         currentUserStatus="status"
         enableAutoResponder={false}
         intl={
-          {
-            "defaultFormats": {},
+          Object {
+            "defaultFormats": Object {},
             "defaultLocale": "en",
             "formatDate": [Function],
             "formatHTMLMessage": [Function],
@@ -178,8 +178,8 @@ NotificationSettings {
             "formatPlural": [Function],
             "formatRelative": [Function],
             "formatTime": [Function],
-            "formats": {},
-            "formatters": {
+            "formats": Object {},
+            "formatters": Object {
               "getDateTimeFormat": [Function],
               "getMessageFormat": [Function],
               "getNumberFormat": [Function],
@@ -187,7 +187,7 @@ NotificationSettings {
               "getRelativeFormat": [Function],
             },
             "locale": "en",
-            "messages": {},
+            "messages": Object {},
             "now": [Function],
             "onError": [Function],
             "textComponent": "span",
@@ -196,7 +196,7 @@ NotificationSettings {
         }
         isCollapsedThreadsEnabled={false}
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -224,7 +224,7 @@ NotificationSettings {
             "type": "Denim",
           }
         }
-        updateMeRequest={{}}
+        updateMeRequest={Object {}}
       />,
       "_firstWorkInProgressHook": null,
       "_forcedUpdate": false,
@@ -233,15 +233,15 @@ NotificationSettings {
       "_newState": null,
       "_numberOfReRenders": 0,
       "_renderPhaseUpdates": null,
-      "_rendered": <ForwardRef
+      "_rendered": <RNCSafeAreaView
         edges={
-          [
+          Array [
             "left",
             "right",
           ]
         }
         style={
-          {
+          Object {
             "backgroundColor": "#ffffff",
             "flex": 1,
           }
@@ -252,7 +252,7 @@ NotificationSettings {
         <ScrollView
           alwaysBounceVertical={false}
           contentContainerStyle={
-            {
+            Object {
               "backgroundColor": "rgba(63,67,80,0.06)",
               "flex": 1,
               "paddingTop": 35,
@@ -261,7 +261,7 @@ NotificationSettings {
         >
           <View
             style={
-              {
+              Object {
                 "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "width": "100%",
@@ -279,7 +279,7 @@ NotificationSettings {
             showArrow={true}
             testID="notification_settings.mentions_replies.action"
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -319,7 +319,7 @@ NotificationSettings {
             showArrow={true}
             testID="notification_settings.mobile.action"
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -359,7 +359,7 @@ NotificationSettings {
             showArrow={true}
             testID="notification_settings.email.action"
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -390,7 +390,7 @@ NotificationSettings {
           />
           <View
             style={
-              {
+              Object {
                 "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "width": "100%",
@@ -398,7 +398,7 @@ NotificationSettings {
             }
           />
         </ScrollView>
-      </ForwardRef>,
+      </RNCSafeAreaView>,
       "_rendering": false,
       "_updater": [Circular],
       "_workInProgressHook": null,
@@ -409,9 +409,9 @@ NotificationSettings {
 
 exports[`NotificationSettings should match snapshot, when CRT is ON 1`] = `
 NotificationSettings {
-  "context": {
-    "intl": {
-      "defaultFormats": {},
+  "context": Object {
+    "intl": Object {
+      "defaultFormats": Object {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -420,8 +420,8 @@ NotificationSettings {
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": {},
-      "formatters": {
+      "formats": Object {},
+      "formatters": Object {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -429,7 +429,7 @@ NotificationSettings {
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": {},
+      "messages": Object {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
@@ -441,18 +441,18 @@ NotificationSettings {
   "goToNotificationSettingsMentions": [Function],
   "goToNotificationSettingsMobile": [Function],
   "handlePress": [Function],
-  "props": {
-    "actions": {
+  "props": Object {
+    "actions": Object {
       "updateMe": [MockFunction],
     },
     "componentId": "component-id",
-    "currentUser": {
+    "currentUser": Object {
       "id": "current_user_id",
     },
     "currentUserStatus": "status",
     "enableAutoResponder": false,
-    "intl": {
-      "defaultFormats": {},
+    "intl": Object {
+      "defaultFormats": Object {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -461,8 +461,8 @@ NotificationSettings {
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": {},
-      "formatters": {
+      "formats": Object {},
+      "formatters": Object {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -470,14 +470,14 @@ NotificationSettings {
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": {},
+      "messages": Object {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
       "timeZone": null,
     },
     "isCollapsedThreadsEnabled": true,
-    "theme": {
+    "theme": Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -504,9 +504,9 @@ NotificationSettings {
       "sidebarUnreadText": "#ffffff",
       "type": "Denim",
     },
-    "updateMeRequest": {},
+    "updateMeRequest": Object {},
   },
-  "refs": {},
+  "refs": Object {},
   "sanitizeNotificationProps": [Function],
   "saveAutoResponder": [Function],
   "saveNotificationProps": [Function],
@@ -514,11 +514,11 @@ NotificationSettings {
   "shouldSaveAutoResponder": [Function],
   "state": null,
   "updater": Updater {
-    "_callbacks": [],
+    "_callbacks": Array [],
     "_renderer": ReactShallowRenderer {
-      "_context": {
-        "intl": {
-          "defaultFormats": {},
+      "_context": Object {
+        "intl": Object {
+          "defaultFormats": Object {},
           "defaultLocale": "en",
           "formatDate": [Function],
           "formatHTMLMessage": [Function],
@@ -527,8 +527,8 @@ NotificationSettings {
           "formatPlural": [Function],
           "formatRelative": [Function],
           "formatTime": [Function],
-          "formats": {},
-          "formatters": {
+          "formats": Object {},
+          "formatters": Object {
             "getDateTimeFormat": [Function],
             "getMessageFormat": [Function],
             "getNumberFormat": [Function],
@@ -536,7 +536,7 @@ NotificationSettings {
             "getRelativeFormat": [Function],
           },
           "locale": "en",
-          "messages": {},
+          "messages": Object {},
           "now": [Function],
           "onError": [Function],
           "textComponent": "span",
@@ -544,7 +544,7 @@ NotificationSettings {
         },
       },
       "_didScheduleRenderPhaseUpdate": false,
-      "_dispatcher": {
+      "_dispatcher": Object {
         "readContext": [Function],
         "useCallback": [Function],
         "useContext": [Function],
@@ -562,21 +562,21 @@ NotificationSettings {
       },
       "_element": <NotificationSettings
         actions={
-          {
+          Object {
             "updateMe": [MockFunction],
           }
         }
         componentId="component-id"
         currentUser={
-          {
+          Object {
             "id": "current_user_id",
           }
         }
         currentUserStatus="status"
         enableAutoResponder={false}
         intl={
-          {
-            "defaultFormats": {},
+          Object {
+            "defaultFormats": Object {},
             "defaultLocale": "en",
             "formatDate": [Function],
             "formatHTMLMessage": [Function],
@@ -585,8 +585,8 @@ NotificationSettings {
             "formatPlural": [Function],
             "formatRelative": [Function],
             "formatTime": [Function],
-            "formats": {},
-            "formatters": {
+            "formats": Object {},
+            "formatters": Object {
               "getDateTimeFormat": [Function],
               "getMessageFormat": [Function],
               "getNumberFormat": [Function],
@@ -594,7 +594,7 @@ NotificationSettings {
               "getRelativeFormat": [Function],
             },
             "locale": "en",
-            "messages": {},
+            "messages": Object {},
             "now": [Function],
             "onError": [Function],
             "textComponent": "span",
@@ -603,7 +603,7 @@ NotificationSettings {
         }
         isCollapsedThreadsEnabled={true}
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -631,7 +631,7 @@ NotificationSettings {
             "type": "Denim",
           }
         }
-        updateMeRequest={{}}
+        updateMeRequest={Object {}}
       />,
       "_firstWorkInProgressHook": null,
       "_forcedUpdate": false,
@@ -640,15 +640,15 @@ NotificationSettings {
       "_newState": null,
       "_numberOfReRenders": 0,
       "_renderPhaseUpdates": null,
-      "_rendered": <ForwardRef
+      "_rendered": <RNCSafeAreaView
         edges={
-          [
+          Array [
             "left",
             "right",
           ]
         }
         style={
-          {
+          Object {
             "backgroundColor": "#ffffff",
             "flex": 1,
           }
@@ -659,7 +659,7 @@ NotificationSettings {
         <ScrollView
           alwaysBounceVertical={false}
           contentContainerStyle={
-            {
+            Object {
               "backgroundColor": "rgba(63,67,80,0.06)",
               "flex": 1,
               "paddingTop": 35,
@@ -668,7 +668,7 @@ NotificationSettings {
         >
           <View
             style={
-              {
+              Object {
                 "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "width": "100%",
@@ -686,7 +686,7 @@ NotificationSettings {
             showArrow={true}
             testID="notification_settings.mentions_replies.action"
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -726,7 +726,7 @@ NotificationSettings {
             showArrow={true}
             testID="notification_settings.mobile.action"
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -766,7 +766,7 @@ NotificationSettings {
             showArrow={true}
             testID="notification_settings.email.action"
             theme={
-              {
+              Object {
                 "awayIndicator": "#ffbc1f",
                 "buttonBg": "#1c58d9",
                 "buttonColor": "#ffffff",
@@ -797,7 +797,7 @@ NotificationSettings {
           />
           <View
             style={
-              {
+              Object {
                 "backgroundColor": "rgba(63,67,80,0.1)",
                 "height": 1,
                 "width": "100%",
@@ -805,7 +805,7 @@ NotificationSettings {
             }
           />
         </ScrollView>
-      </ForwardRef>,
+      </RNCSafeAreaView>,
       "_rendering": false,
       "_updater": [Circular],
       "_workInProgressHook": null,

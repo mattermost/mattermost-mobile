@@ -3,15 +3,15 @@
 exports[`SidebarSettings should match, full snapshot 1`] = `null`;
 
 exports[`SidebarSettings should match, full snapshot 2`] = `
-<ForwardRef
+<RNCSafeAreaView
   edges={
-    [
+    Array [
       "left",
       "right",
     ]
   }
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "flex": 1,
     }
@@ -20,7 +20,7 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "backgroundColor": "rgba(63,67,80,0.06)",
         "flex": 1,
         "paddingTop": 35,
@@ -30,7 +30,7 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
     <section
       disableHeader={true}
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -61,7 +61,7 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
     >
       <View
         style={
-          {
+          Object {
             "backgroundColor": "rgba(63,67,80,0.1)",
             "height": 1,
           }
@@ -84,7 +84,7 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
         }
         selected={false}
         theme={
-          {
+          Object {
             "awayIndicator": "#ffbc1f",
             "buttonBg": "#1c58d9",
             "buttonColor": "#ffffff",
@@ -115,7 +115,7 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
       />
       <View
         style={
-          {
+          Object {
             "backgroundColor": "rgba(63,67,80,0.1)",
             "height": 1,
           }
@@ -123,5 +123,5 @@ exports[`SidebarSettings should match, full snapshot 2`] = `
       />
     </section>
   </View>
-</ForwardRef>
+</RNCSafeAreaView>
 `;

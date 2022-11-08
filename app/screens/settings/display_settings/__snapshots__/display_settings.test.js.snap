@@ -1,15 +1,15 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`DisplaySettings should match snapshot 1`] = `
-<ForwardRef
+<RNCSafeAreaView
   edges={
-    [
+    Array [
       "left",
       "right",
     ]
   }
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "flex": 1,
     }
@@ -19,7 +19,7 @@ exports[`DisplaySettings should match snapshot 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "backgroundColor": "rgba(63,67,80,0.06)",
         "flex": 1,
         "paddingTop": 35,
@@ -28,7 +28,7 @@ exports[`DisplaySettings should match snapshot 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.1)",
           "height": 1,
         }
@@ -45,7 +45,7 @@ exports[`DisplaySettings should match snapshot 1`] = `
       showArrow={true}
       testID="display_settings.clock_display.action"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -76,26 +76,26 @@ exports[`DisplaySettings should match snapshot 1`] = `
     />
     <View
       style={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.1)",
           "height": 1,
         }
       }
     />
   </View>
-</ForwardRef>
+</RNCSafeAreaView>
 `;
 
 exports[`DisplaySettings should match snapshot on Tablet devices 1`] = `
-<ForwardRef
+<RNCSafeAreaView
   edges={
-    [
+    Array [
       "left",
       "right",
     ]
   }
   style={
-    {
+    Object {
       "backgroundColor": "#ffffff",
       "flex": 1,
     }
@@ -105,7 +105,7 @@ exports[`DisplaySettings should match snapshot on Tablet devices 1`] = `
   <Connect(StatusBar) />
   <View
     style={
-      {
+      Object {
         "backgroundColor": "rgba(63,67,80,0.06)",
         "flex": 1,
         "paddingTop": 35,
@@ -114,7 +114,7 @@ exports[`DisplaySettings should match snapshot on Tablet devices 1`] = `
   >
     <View
       style={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.1)",
           "height": 1,
         }
@@ -130,7 +130,7 @@ exports[`DisplaySettings should match snapshot on Tablet devices 1`] = `
       separator={true}
       showArrow={true}
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -170,7 +170,7 @@ exports[`DisplaySettings should match snapshot on Tablet devices 1`] = `
       showArrow={true}
       testID="display_settings.clock_display.action"
       theme={
-        {
+        Object {
           "awayIndicator": "#ffbc1f",
           "buttonBg": "#1c58d9",
           "buttonColor": "#ffffff",
@@ -201,12 +201,12 @@ exports[`DisplaySettings should match snapshot on Tablet devices 1`] = `
     />
     <View
       style={
-        {
+        Object {
           "backgroundColor": "rgba(63,67,80,0.1)",
           "height": 1,
         }
       }
     />
   </View>
-</ForwardRef>
+</RNCSafeAreaView>
 `;

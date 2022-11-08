@@ -24,9 +24,8 @@ export default class Pinned extends PureComponent<PinnedProps> {
     };
 
     goToPinnedPosts = preventDoubleTap(() => {
-        // @ts-expect-error context type definition
-        const {formatMessage} = this.context.intl;
         const {channelId} = this.props;
+        const {formatMessage} = this.context.intl;
         const id = t('channel_header.pinnedPosts');
         const defaultMessage = 'Pinned Messages';
         const screen = 'PinnedPosts';

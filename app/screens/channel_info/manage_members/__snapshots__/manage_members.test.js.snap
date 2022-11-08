@@ -4,7 +4,7 @@ exports[`ChannelInfo -> Manage Members should match snapshot for Manage Members 
 <React.Fragment>
   <Separator
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -42,7 +42,7 @@ exports[`ChannelInfo -> Manage Members should match snapshot for Manage Members 
     shouldRender={true}
     textId="channel_header.manageMembers"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -79,7 +79,7 @@ exports[`ChannelInfo -> Manage Members should match snapshot for View Members 1`
 <React.Fragment>
   <Separator
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -117,7 +117,7 @@ exports[`ChannelInfo -> Manage Members should match snapshot for View Members 1`
     shouldRender={true}
     textId="channel_header.viewMembers"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",
@@ -161,7 +161,7 @@ exports[`ChannelInfo -> Manage Members should match snapshot without separator 1
     shouldRender={true}
     textId="channel_header.manageMembers"
     theme={
-      {
+      Object {
         "awayIndicator": "#ffbc1f",
         "buttonBg": "#1c58d9",
         "buttonColor": "#ffffff",

@@ -3,22 +3,22 @@
 exports[`screens/custom_status_modal should match snapshot 1`] = `
 <CustomStatusModal
   actions={
-    {
+    Object {
       "removeRecentCustomStatus": [MockFunction],
       "setCustomStatus": [MockFunction],
       "unsetCustomStatus": [MockFunction],
     }
   }
   customStatus={
-    {
+    Object {
       "duration": "",
       "emoji": "calendar",
       "text": "In a meeting",
     }
   }
   intl={
-    {
-      "defaultFormats": {},
+    Object {
+      "defaultFormats": Object {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -27,8 +27,8 @@ exports[`screens/custom_status_modal should match snapshot 1`] = `
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": {},
-      "formatters": {
+      "formats": Object {},
+      "formatters": Object {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -36,7 +36,7 @@ exports[`screens/custom_status_modal should match snapshot 1`] = `
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": {},
+      "messages": Object {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
@@ -44,8 +44,8 @@ exports[`screens/custom_status_modal should match snapshot 1`] = `
     }
   }
   recentCustomStatuses={
-    [
-      {
+    Array [
+      Object {
         "duration": "",
         "emoji": "calendar",
         "text": "In a meeting",
@@ -53,7 +53,7 @@ exports[`screens/custom_status_modal should match snapshot 1`] = `
     ]
   }
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -87,7 +87,7 @@ exports[`screens/custom_status_modal should match snapshot 1`] = `
 exports[`screens/custom_status_modal should match snapshot when user has no custom status set 1`] = `
 <CustomStatusModal
   actions={
-    {
+    Object {
       "removeRecentCustomStatus": [MockFunction],
       "setCustomStatus": [MockFunction],
       "unsetCustomStatus": [MockFunction],
@@ -95,8 +95,8 @@ exports[`screens/custom_status_modal should match snapshot when user has no cust
   }
   customStatus={null}
   intl={
-    {
-      "defaultFormats": {},
+    Object {
+      "defaultFormats": Object {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -105,8 +105,8 @@ exports[`screens/custom_status_modal should match snapshot when user has no cust
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": {},
-      "formatters": {
+      "formats": Object {},
+      "formatters": Object {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -114,7 +114,7 @@ exports[`screens/custom_status_modal should match snapshot when user has no cust
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": {},
+      "messages": Object {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
@@ -122,8 +122,8 @@ exports[`screens/custom_status_modal should match snapshot when user has no cust
     }
   }
   recentCustomStatuses={
-    [
-      {
+    Array [
+      Object {
         "duration": "",
         "emoji": "calendar",
         "text": "In a meeting",
@@ -131,7 +131,7 @@ exports[`screens/custom_status_modal should match snapshot when user has no cust
     ]
   }
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",
@@ -165,22 +165,22 @@ exports[`screens/custom_status_modal should match snapshot when user has no cust
 exports[`screens/custom_status_modal should match snapshot when user has no recent custom status 1`] = `
 <CustomStatusModal
   actions={
-    {
+    Object {
       "removeRecentCustomStatus": [MockFunction],
       "setCustomStatus": [MockFunction],
       "unsetCustomStatus": [MockFunction],
     }
   }
   customStatus={
-    {
+    Object {
       "duration": "",
       "emoji": "calendar",
       "text": "In a meeting",
     }
   }
   intl={
-    {
-      "defaultFormats": {},
+    Object {
+      "defaultFormats": Object {},
       "defaultLocale": "en",
       "formatDate": [Function],
       "formatHTMLMessage": [Function],
@@ -189,8 +189,8 @@ exports[`screens/custom_status_modal should match snapshot when user has no rece
       "formatPlural": [Function],
       "formatRelative": [Function],
       "formatTime": [Function],
-      "formats": {},
-      "formatters": {
+      "formats": Object {},
+      "formatters": Object {
         "getDateTimeFormat": [Function],
         "getMessageFormat": [Function],
         "getNumberFormat": [Function],
@@ -198,16 +198,16 @@ exports[`screens/custom_status_modal should match snapshot when user has no rece
         "getRelativeFormat": [Function],
       },
       "locale": "en",
-      "messages": {},
+      "messages": Object {},
       "now": [Function],
       "onError": [Function],
       "textComponent": "span",
       "timeZone": null,
     }
   }
-  recentCustomStatuses={[]}
+  recentCustomStatuses={Array []}
   theme={
-    {
+    Object {
       "awayIndicator": "#ffbc1f",
       "buttonBg": "#1c58d9",
       "buttonColor": "#ffffff",

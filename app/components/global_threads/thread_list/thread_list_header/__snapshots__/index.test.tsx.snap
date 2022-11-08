@@ -3,7 +3,7 @@
 exports[`Global Thread List Header Should render threads with functional tabs & mark all as read button 1`] = `
 <View
   style={
-    [
+    Array [
       undefined,
       undefined,
     ]
@@ -16,7 +16,7 @@ exports[`Global Thread List Header Should render threads with functional tabs & 
     >
       <View
         style={
-          [
+          Array [
             undefined,
             undefined,
           ]
@@ -24,9 +24,9 @@ exports[`Global Thread List Header Should render threads with functional tabs & 
       >
         <Text
           style={
-            [
+            Array [
               undefined,
-              {},
+              Object {},
             ]
           }
         >
@@ -40,7 +40,7 @@ exports[`Global Thread List Header Should render threads with functional tabs & 
     >
       <View
         style={
-          [
+          Array [
             undefined,
             undefined,
           ]
@@ -49,7 +49,7 @@ exports[`Global Thread List Header Should render threads with functional tabs & 
         <View>
           <Text
             style={
-              [
+              Array [
                 undefined,
                 undefined,
               ]
@@ -73,7 +73,7 @@ exports[`Global Thread List Header Should render threads with functional tabs & 
       <Icon
         name="playlist-check"
         style={
-          [
+          Array [
             undefined,
           ]
         }
