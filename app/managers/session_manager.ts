@@ -7,7 +7,6 @@ import FastImage from 'react-native-fast-image';
 
 import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
 import {resetMomentLocale} from '@app/i18n';
-import {deleteFileCache, deleteFileCacheByDir} from '@app/utils/file';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
@@ -20,6 +19,7 @@ import {queryServerName} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
 import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {addNewServer} from '@utils/server';
 
 import type {LaunchType} from '@typings/launch';
