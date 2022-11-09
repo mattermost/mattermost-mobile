@@ -180,6 +180,7 @@ function IntegrationSelector(
                 } else {
                     multiselectSelectedItems[typedItem.id] = typedItem;
                 }
+
                 setMultiselectSelected(multiselectSelectedItems);
                 break;
             }
@@ -372,8 +373,36 @@ function IntegrationSelector(
         return (searchData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().startsWith(lowerCasedTerm));
     };
 
-    const handleMultiselectSubmit = () => {
-        // This will be finished once we have Apps multiselect
+    const getMultiselectData = (): Selection => {
+        let myItems;
+        let multiselectItems: Selection = [];
+
+        switch (dataSource) {
+            case ViewConstants.DATA_SOURCE_USERS:
+                myItems = multiselectSelected as Dictionary<UserProfile>;
+                multiselectItems = multiselectItems as UserProfile[];
+                // eslint-disable-next-line guard-for-in
+                for (const index in myItems) {
+                    multiselectItems.push(myItems[index]);
+                }
+                return multiselectItems;
+            case ViewConstants.DATA_SOURCE_CHANNELS:
+                myItems = multiselectSelected as Dictionary<Channel>;
+                multiselectItems = multiselectItems as Channel[];
+                // eslint-disable-next-line guard-for-in
+                for (const index in myItems) {
+                    multiselectItems.push(myItems[index]);
+                }
+                return multiselectItems;
+            default:
+                myItems = multiselectSelected as Dictionary<DialogOption>;
+                multiselectItems = multiselectItems as DialogOption[];
+                // eslint-disable-next-line guard-for-in
+                for (const index in myItems) {
+                    multiselectItems.push(myItems[index]);
+                }
+                return multiselectItems;
+        }
     };
 
     // Effects
@@ -417,14 +446,17 @@ function IntegrationSelector(
             rightButtons: [rightButton],
         });
 
-        Navigation.events().registerComponentListener({
+        const submitMultiselect = Navigation.events().registerComponentListener({
             navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
                 if (buttonId === SUBMIT_BUTTON_ID) {
-                    handleMultiselectSubmit();
+                    handleSelect(getMultiselectData());
+                    close();
                 }
             },
         }, componentId);
-    }, [rightButton, componentId]);
+
+        return () => submitMultiselect.remove();
+    }, [rightButton, componentId, multiselectSelected]);
 
     useEffect(() => {
         const multiselectItems: MultiselectSelectedMap = {};
