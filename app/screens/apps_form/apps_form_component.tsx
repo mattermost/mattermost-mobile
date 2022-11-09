@@ -366,8 +366,7 @@ function AppsFormComponent({
         }
     }, [form, values, performLookupCall, setErrors, intl]);
 
-    // for some reason pressing the button does not run the callback, so temporarily setting the close button to this callback
-    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, handleSubmit, [handleSubmit]);
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, handleSubmit, [handleSubmit]);
 
     return (
