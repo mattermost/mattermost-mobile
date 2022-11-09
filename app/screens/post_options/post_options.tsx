@@ -3,6 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
+import {ScrollView} from 'react-native';
 
 import {useServerUrl} from '@app/context/server';
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
@@ -72,7 +73,7 @@ const PostOptions = ({
 
     const renderContent = () => {
         return (
-            <>
+            <ScrollView>
                 {canAddReaction && <ReactionBar postId={post.id}/>}
                 {canReply && sourceScreen !== Screens.THREAD && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
@@ -122,7 +123,7 @@ const PostOptions = ({
                     post={post}
                     serverUrl={serverUrl}
                 />
-            </>
+            </ScrollView>
         );
     };
 
