@@ -112,6 +112,7 @@ function IntegrationSelector(
         ViewConstants.DATA_SOURCE_USERS,
         ViewConstants.DATA_SOURCE_DYNAMIC];
     const INITIAL_PAGE = 0;
+    const selectedScroll = React.createRef<ScrollView>();
 
     // HOOKS
     const [integrationData, setIntegrationData] = useState<DataType>(data || []);
@@ -122,16 +123,6 @@ function IntegrationSelector(
     const [currentPage, setCurrentPage] = useState<number>(INITIAL_PAGE);
     const [next, setNext] = useState<boolean>(VALID_DATASOURCES.includes(dataSource));
     const [customListData, setCustomListData] = useState<DataType | UserProfileSection[]>([]);
-
-    const selectedScroll = React.createRef<ScrollView>();
-    const multiselectItems: MultiselectSelectedMap = {};
-    if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
-        selected.forEach((opt) => {
-            multiselectItems[opt.value] = opt;
-        });
-
-        setMultiselectSelected(multiselectItems);
-    }
 
     // Callbacks
     const clearSearch = () => {
@@ -170,11 +161,13 @@ function IntegrationSelector(
                 const currentSelected = multiselectSelected as Dictionary<UserProfile>;
                 const typedItem = item as UserProfile;
                 const multiselectSelectedItems = {...currentSelected};
+
                 if (currentSelected[typedItem.id]) {
                     delete multiselectSelectedItems[typedItem.id];
                 } else {
                     multiselectSelectedItems[typedItem.id] = typedItem;
                 }
+
                 setMultiselectSelected(multiselectSelectedItems);
                 break;
             }
@@ -433,6 +426,18 @@ function IntegrationSelector(
         }, componentId);
     }, [rightButton, componentId]);
 
+    useEffect(() => {
+        const multiselectItems: MultiselectSelectedMap = {};
+
+        if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
+            selected.forEach((opt) => {
+                multiselectItems[opt.value] = opt;
+            });
+
+            setMultiselectSelected(multiselectItems);
+        }
+    }, [multiselectSelected]);
+
     // Renders
     const renderLoading = (): React.ReactElement<any, string> | null => {
         if (!loading) {
@@ -488,7 +493,7 @@ function IntegrationSelector(
     };
 
     const renderChannelItem = (itemProps: any) => {
-        const itemSelected = Boolean(multiselectSelected[itemProps.id]);
+        const itemSelected = Boolean(multiselectSelected[itemProps.item.id]);
         return (
             <ChannelListRow
                 key={itemProps.id}
@@ -503,7 +508,7 @@ function IntegrationSelector(
     };
 
     const renderOptionItem = (itemProps: any) => {
-        const itemSelected = Boolean(multiselectSelected[itemProps.id]);
+        const itemSelected = Boolean(multiselectSelected[itemProps.item.value]);
         return (
             <OptionListRow
                 key={itemProps.id}
@@ -516,7 +521,8 @@ function IntegrationSelector(
     };
 
     const renderUserItem = (itemProps: any): JSX.Element => {
-        const itemSelected = Boolean(multiselectSelected[itemProps.id]);
+        const itemSelected = Boolean(multiselectSelected[itemProps.item.id]);
+
         return (
             <UserListRow
                 key={itemProps.id}
@@ -538,7 +544,8 @@ function IntegrationSelector(
             optionComponents = (
                 <>
                     <SelectedOptions
-                        ref={selectedScroll}
+
+                        // ref={selectedScroll}
                         theme={theme}
                         selectedOptions={selectedItems}
                         dataSource={dataSource}

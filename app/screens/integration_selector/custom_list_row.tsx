@@ -64,15 +64,15 @@ const CustomListRow = ({
     onPress, children, enabled, selectable, selected, id, testID,
 }: Props) => {
     return (
-        <View
+        <TouchableOpacity
             style={style.container}
             testID={testID}
+            onPress={onPress}
         >
             {selectable &&
                 <View style={style.selectorContainer}>
-                    <TouchableOpacity
+                    <View
                         testID={id}
-                        onPress={onPress}
                         style={[style.selector, (selected && style.selectorFilled), (!enabled &&
  style.selectorDisabled)]}
                     >
@@ -83,18 +83,17 @@ const CustomListRow = ({
                                 color='#fff'
                             />
                         }
-                    </TouchableOpacity>
+                    </View>
                 </View>
             }
 
-            <TouchableOpacity
+            <View
                 testID={id}
-                onPress={onPress}
                 style={style.children}
             >
                 {children}
-            </TouchableOpacity>
-        </View>
+            </View>
+        </TouchableOpacity>
     );
 };
 
