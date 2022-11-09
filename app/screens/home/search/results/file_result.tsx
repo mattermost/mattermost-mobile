@@ -92,7 +92,6 @@ const FileResult = ({
                     galleryIdentifier={galleryIdentifier}
                     inViewPort={true}
                     index={index}
-                    isSingleImage={false}
                     nonVisibleImagesCount={0}
                     onOptionsPress={handleOptionsPress}
                     onPress={onPress}
