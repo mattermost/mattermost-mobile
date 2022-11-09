@@ -3,11 +3,12 @@
 
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {TouchableOpacity} from 'react-native';
+import {Alert, TouchableOpacity} from 'react-native';
 
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import SettingSeparator from '@screens/settings/settings_separator';
 import {deleteFileCache, getAllFilesInCachesDirectory, getFormattedFileSize} from '@utils/file';
@@ -50,8 +51,25 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const onPressDeleteData = preventDoubleTap(async () => {
         try {
             if (files.length > 0) {
-                await deleteFileCache(serverUrl);
-                await getAllCachedFiles();
+                const {formatMessage} = intl;
+
+                Alert.alert(
+                    formatMessage({id: t('advanced_settings.delete_data'), defaultMessage: 'Delete Documents & Data'}),
+                    formatMessage({id: t('mobile.advanced_settings.delete_message'), defaultMessage: '\nThis will reset all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
+                    [{
+                        text: formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
+                        style: 'cancel',
+                        onPress: () => true,
+                    }, {
+                        text: formatMessage({id: 'mobile.advanced_settings.delete', defaultMessage: 'Delete'}),
+                        style: 'destructive',
+                        onPress: async () => {
+                            await deleteFileCache(serverUrl);
+                            await getAllCachedFiles();
+                        },
+                    }],
+                    {cancelable: false},
+                );
             }
         } catch (e) {
             //do nothing
