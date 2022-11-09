@@ -281,7 +281,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
     });
 }
 
-export function resetToOnboarding(passProps: LaunchProps) {
+export function resetToOnboarding(passProps: LaunchProps, goToLogIn: boolean) {
     const theme = getDefaultThemeByAppearance();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
@@ -295,6 +295,7 @@ export function resetToOnboarding(passProps: LaunchProps) {
             passProps: {
                 ...passProps,
                 theme,
+                goToLogIn,
             },
             options: {
                 layout: {

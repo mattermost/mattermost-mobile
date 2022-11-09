@@ -7,7 +7,7 @@ import Animated, {Easing, useAnimatedRef, useAnimatedScrollHandler, useDerivedVa
 
 import {Screens} from '@app/constants';
 import Background from '@screens/background';
-import {goToScreen} from '@screens/navigation';
+import {goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import FooterButtons from './footer_buttons';
@@ -16,15 +16,22 @@ import SlideItem from './slide';
 import useSlidesData, {OnboardingItem} from './slides_data';
 
 import type {LaunchProps} from '@typings/launch';
+import { loginOptions } from '@app/utils/server';
+import { fetchConfigAndLicense } from '@actions/remote/systems';
+import { queryServerByIdentifier } from '@app/queries/app/servers';
 
 interface OnboardingProps extends LaunchProps {
     theme: Theme;
+    goToLogIn: boolean;
+    serverUrl: string;
 }
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const Onboarding = ({
     theme,
+    goToLogIn,
+    serverUrl,
 }: OnboardingProps) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
@@ -65,9 +72,60 @@ const Onboarding = ({
         }
     }, [currentIndex.value, slidesRef.current, moveToSlide]);
 
+    const initLogin = async () => {
+        const data = await fetchConfigAndLicense(serverUrl, true);
+        if (data.error) {
+            console.log('Error getting the config and license information');
+            return;
+        }
+
+        displayLogin(data.config!, data.license!);
+    };
+
+    const displayLogin = (config: ClientConfig, license: ClientLicense) => {
+        const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
+        const passProps = {
+            config,
+            extra,
+            hasLoginForm,
+            launchError,
+            launchType,
+            license,
+            serverDisplayName: displayName,
+            serverUrl,
+            ssoOptions,
+            theme,
+        };
+
+        const redirectSSO = !hasLoginForm && numberSSOs === 1;
+        const screen = redirectSSO ? Screens.SSO : Screens.LOGIN;
+        if (redirectSSO) {
+            // @ts-expect-error ssoType not in definition
+            passProps.ssoType = enabledSSOs[0];
+        }
+
+        goToScreen(screen, '', passProps, loginAnimationOptions());
+    };
+
     const signInHandler = useCallback(() => {
-        goToScreen(Screens.SERVER, '', {theme});
-    }, []);
+        if (goToLogIn) {
+            initLogin();
+        }
+        const topBar = {
+            visible: true,
+            drawBehind: true,
+            noBorder: true,
+            elevation: 0,
+            background: {
+                color: 'transparent',
+            },
+            backButton: {
+                color: theme.centerChannelColor,
+                title: '',
+            },
+        };
+        goToScreen(Screens.SERVER, '', {theme}, {topBar});
+    }, [goToLogIn]);
 
     const renderSlide = useCallback(({item, index}: ListRenderItemInfo<OnboardingItem>) => {
         return (
