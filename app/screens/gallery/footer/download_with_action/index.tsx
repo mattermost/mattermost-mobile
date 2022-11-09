@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CameraRoll from '@react-native-community/cameraroll';
+import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {NativeModules, Platform, StyleSheet, Text, View} from 'react-native';
@@ -29,6 +29,7 @@ import type {GalleryAction, GalleryItemType} from '@typings/screens/gallery';
 
 type Props = {
     action: GalleryAction;
+    galleryView?: boolean;
     item: GalleryItemType;
     setAction: (action: GalleryAction) => void;
     onDownloadSuccess?: (path: string) => void;
@@ -65,7 +66,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props) => {
+const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, galleryView = true}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
@@ -111,11 +112,14 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction}: Props)
         }
     }
 
-    const animatedStyle = useAnimatedStyle(() => ({
-        position: 'absolute',
-        bottom: GALLERY_FOOTER_HEIGHT + 8 + insets.bottom,
-        opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
-    }));
+    const animatedStyle = useAnimatedStyle(() => {
+        const marginBottom = galleryView ? GALLERY_FOOTER_HEIGHT + 8 : 0;
+        return {
+            position: 'absolute',
+            bottom: insets.bottom + marginBottom,
+            opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
+        };
+    });
 
     const cancel = async () => {
         try {

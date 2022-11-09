@@ -116,9 +116,8 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         top: 5,
     },
     hasCall: {
-        flex: 1,
         textAlign: 'right',
-        marginRight: 20,
+        paddingRight: 0,
     },
 }));
 
@@ -152,7 +151,7 @@ const ChannelListItem = ({
     }, [channel.id]);
 
     const textStyles = useMemo(() => [
-        isBolded ? textStyle.bold : textStyle.regular,
+        isBolded && !isMuted ? textStyle.bold : textStyle.regular,
         styles.text,
         isBolded && styles.highlight,
         isActive && isTablet && !isInfo ? styles.textActive : null,

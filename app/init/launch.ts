@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
-import {Alert, Linking, Platform} from 'react-native';
+import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
-import {Screens, DeepLink, Launch} from '@constants';
+import {Screens, DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
@@ -20,6 +20,8 @@ import {parseDeepLink} from '@utils/url';
 
 import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
 
+const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, PushNotification.NOTIFICATION_TYPE.SESSION];
+
 export const initialLaunch = async () => {
     const deepLinkUrl = await Linking.getInitialURL();
     if (deepLinkUrl) {
@@ -29,7 +31,7 @@ export const initialLaunch = async () => {
 
     const notification = await Notifications.getInitialNotification();
     let tapped = Platform.select({android: true, ios: false})!;
-    if (Platform.OS === 'ios') {
+    if (Platform.OS === 'ios' && notification) {
         // when a notification is received on iOS, getInitialNotification, will return the notification
         // as the app will initialized cause we are using background fetch,
         // that does not necessarily mean that the app was opened cause of the notification was tapped.
@@ -38,8 +40,8 @@ export const initialLaunch = async () => {
         const delivered = await Notifications.ios.getDeliveredNotifications();
         tapped = delivered.find((d) => (d as unknown as NotificationData).ack_id === notification?.payload.ack_id) == null;
     }
-    if (notification?.payload?.type === 'message' && tapped) {
-        launchAppFromNotification(convertToNotificationData(notification));
+    if (initialNotificationTypes.includes(notification?.payload?.type) && tapped) {
+        launchAppFromNotification(convertToNotificationData(notification!));
         return;
     }
 
@@ -67,6 +69,12 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
             break;
         case Launch.Notification: {
             serverUrl = props.serverUrl;
+            const extra = props.extra as NotificationWithData;
+            const sessionExpiredNotification = Boolean(props.serverUrl && extra.payload?.type === PushNotification.NOTIFICATION_TYPE.SESSION);
+            if (sessionExpiredNotification) {
+                DeviceEventEmitter.emit(Events.SESSION_EXPIRED, serverUrl);
+                return '';
+            }
             break;
         }
         default:
@@ -110,17 +118,15 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                             },
                         }],
                     );
-                    return;
+                    return '';
                 }
             }
 
-            launchToHome({...props, launchType, serverUrl});
-
-            return;
+            return launchToHome({...props, launchType, serverUrl});
         }
     }
 
-    launchToServer(props, resetNavigation);
+    return launchToServer(props, resetNavigation);
 };
 
 const launchToHome = async (props: LaunchProps) => {
@@ -156,25 +162,26 @@ const launchToHome = async (props: LaunchProps) => {
 
     if (nTeams) {
         logInfo('Launch app in Home screen');
-        resetToHome(props);
-    } else {
-        logInfo('Launch app in Select Teams screen');
-        resetToTeams();
+        return resetToHome(props);
     }
+
+    logInfo('Launch app in Select Teams screen');
+    return resetToTeams();
 };
 
 const launchToServer = (props: LaunchProps, resetNavigation: Boolean) => {
     if (resetNavigation) {
-        resetToSelectServer(props);
-        return;
+        return resetToSelectServer(props);
     }
 
+    // This is being called for Deeplinks, but needs to be revisited when
+    // the implementation of deep links is complete
     const title = '';
-    goToScreen(Screens.SERVER, title, {...props});
+    return goToScreen(Screens.SERVER, title, {...props});
 };
 
 export const relaunchApp = (props: LaunchProps, resetNavigation = false) => {
-    launchApp(props, resetNavigation);
+    return launchApp(props, resetNavigation);
 };
 
 export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => {

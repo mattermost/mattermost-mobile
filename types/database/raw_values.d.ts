@@ -52,6 +52,12 @@ type ReactionsPerPost = {
     reactions: Reaction[];
 }
 
+type SessionExpiration = {
+    id: string;
+    notificationId: string;
+    expiresAt: number;
+}
+
 type IdValue = {
     id: string;
     value: unknown;

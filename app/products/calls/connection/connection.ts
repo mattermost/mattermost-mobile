@@ -23,9 +23,15 @@ import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
 import type {CallsConnection} from '@calls/types/calls';
 
-const websocketConnectTimeout = 3000;
+const peerConnectTimeout = 5000;
 
-export async function newConnection(serverUrl: string, channelID: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
+export async function newConnection(
+    serverUrl: string,
+    channelID: string,
+    closeCb: () => void,
+    setScreenShareURL: (url: string) => void,
+    hasMicPermission: boolean,
+) {
     let peer: Peer | null = null;
     let stream: MediaStream;
     let voiceTrackAdded = false;
@@ -34,27 +40,36 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
     let onCallEnd: EmitterSubscription | null = null;
     const streams: MediaStream[] = [];
 
-    try {
-        stream = await mediaDevices.getUserMedia({
-            video: false,
-            audio: true,
-        }) as MediaStream;
-        voiceTrack = stream.getAudioTracks()[0];
-        voiceTrack.enabled = false;
-        streams.push(stream);
-    } catch (err) {
-        logError('Unable to get media device:', err);
-    }
+    const initializeVoiceTrack = async () => {
+        if (voiceTrack) {
+            return;
+        }
+
+        try {
+            stream = await mediaDevices.getUserMedia({
+                video: false,
+                audio: true,
+            }) as MediaStream;
+            voiceTrack = stream.getAudioTracks()[0];
+            voiceTrack.enabled = false;
+            streams.push(stream);
+        } catch (err) {
+            logError('Unable to get media device:', err);
+        }
+    };
 
     // getClient can throw an error, which will be handled by the caller.
     const client = NetworkManager.getClient(serverUrl);
-
     const credentials = await getServerCredentials(serverUrl);
 
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
 
     // Throws an error, to be caught by caller.
     await ws.initialize();
+
+    if (hasMicPermission) {
+        initializeVoiceTrack();
+    }
 
     const disconnect = () => {
         if (isClosed) {
@@ -182,6 +197,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
 
         InCallManager.start({media: 'audio'});
         InCallManager.stopProximitySensor();
+
         peer = new Peer(null, iceConfigs);
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {
@@ -231,41 +247,42 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
 
     ws.on('message', ({data}: { data: string }) => {
         const msg = JSON.parse(data);
-        if (msg.type === 'answer' || msg.type === 'offer') {
+        if (msg.type === 'answer' || msg.type === 'candidate' || msg.type === 'offer') {
             peer?.signal(data);
         }
     });
 
-    const waitForReady = () => {
-        const waitForReadyImpl = (callback: () => void, fail: () => void, timeout: number) => {
+    const waitForPeerConnection = () => {
+        const waitForReadyImpl = (callback: () => void, fail: (reason: string) => void, timeout: number) => {
             if (timeout <= 0) {
-                fail();
+                fail('timed out waiting for peer connection');
                 return;
             }
             setTimeout(() => {
-                if (ws.state() === WebSocket.OPEN) {
+                if (peer?.isConnected) {
                     callback();
                 } else {
-                    waitForReadyImpl(callback, fail, timeout - 10);
+                    waitForReadyImpl(callback, fail, timeout - 200);
                 }
-            }, 10);
+            }, 200);
         };
 
         const promise = new Promise<void>((resolve, reject) => {
-            waitForReadyImpl(resolve, reject, websocketConnectTimeout);
+            waitForReadyImpl(resolve, reject, peerConnectTimeout);
         });
 
         return promise;
     };
 
-    const connection = {
+    const connection: CallsConnection = {
         disconnect,
         mute,
         unmute,
-        waitForReady,
+        waitForPeerConnection,
         raiseHand,
         unraiseHand,
-    } as CallsConnection;
+        initializeVoiceTrack,
+    };
 
     return connection;
 }

@@ -11,10 +11,22 @@ import {MM_TABLES} from '@constants/database';
 const {SERVER: {
     GROUP,
     MY_CHANNEL,
+    TEAM,
     THREAD,
 }} = MM_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 4,
+        steps: [
+            addColumns({
+                table: TEAM,
+                columns: [
+                    {name: 'invite_id', type: 'string'},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 3,
         steps: [

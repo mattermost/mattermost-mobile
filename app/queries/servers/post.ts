@@ -9,6 +9,7 @@ import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 
 import {queryPreferencesByCategoryAndName} from './preference';
+import {observeUser} from './user';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -70,6 +71,10 @@ export const observePost = (database: Database, postId: string) => {
     return database.get<PostModel>(POST).query(Q.where('id', postId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
     );
+};
+
+export const observePostAuthor = (database: Database, post: PostModel) => {
+    return post.userId ? observeUser(database, post.userId) : of$(null);
 };
 
 export const observePostSaved = (database: Database, postId: string) => {

@@ -43,7 +43,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 3,
+            version: 4,
             tables: {
                 [CATEGORY]: {
                     name: CATEGORY,
@@ -463,6 +463,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         name: {name: 'name', type: 'string'},
                         type: {name: 'type', type: 'string'},
                         update_at: {name: 'update_at', type: 'number'},
+                        invite_id: {name: 'invite_id', type: 'string'},
                     },
                     columnArray: [
                         {name: 'allowed_domains', type: 'string'},
@@ -474,6 +475,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'name', type: 'string'},
                         {name: 'type', type: 'string'},
                         {name: 'update_at', type: 'number'},
+                        {name: 'invite_id', type: 'string'},
                     ],
                 },
                 [TEAM_CHANNEL_HISTORY]: {

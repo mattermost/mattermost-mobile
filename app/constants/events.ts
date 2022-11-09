@@ -19,6 +19,7 @@ export default keyMirror({
     PAUSE_KEYBOARD_TRACKING_VIEW: null,
     SERVER_LOGOUT: null,
     SERVER_VERSION_CHANGED: null,
+    SESSION_EXPIRED: null,
     TAB_BAR_VISIBLE: null,
     TEAM_LOAD_ERROR: null,
     TEAM_SWITCH: null,
@@ -30,5 +31,4 @@ export default keyMirror({
     SEND_TO_POST_DRAFT: null,
     CRT_TOGGLED: null,
     JOIN_CALL_BAR_VISIBLE: null,
-    CURRENT_CALL_BAR_VISIBLE: null,
 });

@@ -8,7 +8,7 @@ import {map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
-import {queryPostReplies} from '@queries/servers/post';
+import {observePostAuthor, queryPostReplies} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
@@ -28,12 +28,13 @@ const withHeaderProps = withObservables(
     ({post, database, differentThreadSequence}: WithDatabaseArgs & HeaderInputProps) => {
         const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
             observeWithColumns(['value']);
-        const author = post.author.observe();
+        const author = observePostAuthor(database, post);
         const enablePostUsernameOverride = observeConfigBooleanValue(database, 'EnablePostUsernameOverride');
         const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
         const isMilitaryTime = preferences.pipe(map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)));
         const teammateNameDisplay = observeTeammateNameDisplay(database);
         const commentCount = queryPostReplies(database, post.rootId || post.id).observeCount();
+        const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
         const rootPostAuthor = differentThreadSequence ? post.root.observe().pipe(switchMap((root) => {
             if (root.length) {
                 return root[0].author.observe();
@@ -46,6 +47,7 @@ const withHeaderProps = withObservables(
             author,
             commentCount,
             enablePostUsernameOverride,
+            isCustomStatusEnabled,
             isMilitaryTime,
             isTimezoneEnabled,
             rootPostAuthor,

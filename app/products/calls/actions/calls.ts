@@ -8,7 +8,6 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import {
     getCallsConfig,
     getCallsState,
-    myselfLeftCall,
     setCalls,
     setChannelEnabled,
     setConfig,
@@ -16,6 +15,8 @@ import {
     setScreenShareURL,
     setSpeakerPhone,
     setCallForChannel,
+    newCurrentCall,
+    myselfLeftCall,
 } from '@calls/state';
 import {General, Preferences} from '@constants';
 import Calls from '@constants/calls';
@@ -218,7 +219,7 @@ export const enableChannelCalls = async (serverUrl: string, channelId: string, e
     return {};
 };
 
-export const joinCall = async (serverUrl: string, channelId: string): Promise<{ error?: string | Error; data?: string }> => {
+export const joinCall = async (serverUrl: string, channelId: string, userId: string, hasMicPermission: boolean): Promise<{ error?: string | Error; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
     const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
@@ -231,16 +232,19 @@ export const joinCall = async (serverUrl: string, channelId: string): Promise<{ 
         connection = null;
     }
     setSpeakerphoneOn(false);
+    newCurrentCall(serverUrl, channelId, userId);
 
     try {
-        connection = await newConnection(serverUrl, channelId, () => null, setScreenShareURL);
+        connection = await newConnection(serverUrl, channelId, () => {
+            myselfLeftCall();
+        }, setScreenShareURL, hasMicPermission);
     } catch (error: unknown) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error: error as Error};
     }
 
     try {
-        await connection.waitForReady();
+        await connection.waitForPeerConnection();
         return {data: channelId};
     } catch (e) {
         connection.disconnect();
@@ -255,7 +259,6 @@ export const leaveCall = () => {
         connection = null;
     }
     setSpeakerphoneOn(false);
-    myselfLeftCall();
 };
 
 export const muteMyself = () => {
@@ -267,6 +270,12 @@ export const muteMyself = () => {
 export const unmuteMyself = () => {
     if (connection) {
         connection.unmute();
+    }
+};
+
+export const initializeVoiceTrack = () => {
+    if (connection) {
+        connection.initializeVoiceTrack();
     }
 };
 

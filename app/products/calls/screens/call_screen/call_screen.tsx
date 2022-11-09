@@ -28,9 +28,12 @@ import {
 } from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
+import PermissionErrorBar from '@calls/components/permission_error_bar';
+import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
+import {usePermissionsChecker} from '@calls/hooks';
 import RaisedHandIcon from '@calls/icons/raised_hand_icon';
 import UnraisedHandIcon from '@calls/icons/unraised_hand_icon';
-import {CallParticipant, CurrentCall, VoiceEventData} from '@calls/types/calls';
+import {CallParticipant, CurrentCall} from '@calls/types/calls';
 import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -38,18 +41,26 @@ import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {WebsocketEvents, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {bottomSheet, dismissBottomSheet, goToScreen, popTopScreen} from '@screens/navigation';
+import {
+    bottomSheet,
+    dismissAllModalsAndPopToScreen,
+    dismissBottomSheet,
+    goToScreen,
+    popTopScreen,
+} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
 export type Props = {
     componentId: string;
     currentCall: CurrentCall | null;
     participantsDict: Dictionary<CallParticipant>;
+    micPermissionsGranted: boolean;
     teammateNameDisplay: string;
+    fromThreadScreen?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -245,19 +256,32 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: 'white',
         margin: 3,
     },
+    unavailableText: {
+        color: changeOpacity(theme.sidebarText, 0.32),
+    },
 }));
 
-const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDisplay}: Props) => {
+const CallScreen = ({
+    componentId,
+    currentCall,
+    participantsDict,
+    micPermissionsGranted,
+    teammateNameDisplay,
+    fromThreadScreen,
+}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const {width, height} = useWindowDimensions();
-    const isLandscape = width > height;
+    usePermissionsChecker(micPermissionsGranted);
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
-    const myParticipant = currentCall?.participants[currentCall.myUserId];
+
     const style = getStyleSheet(theme);
+    const isLandscape = width > height;
     const showControls = !isLandscape || showControlsInLandscape;
-    const [speakers, setSpeakers] = useState<Dictionary<boolean>>({});
+    const myParticipant = currentCall?.participants[currentCall.myUserId];
+    const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
+    const chatThreadTitle = intl.formatMessage({id: 'mobile.calls_chat_thread', defaultMessage: 'Chat thread'});
 
     useEffect(() => {
         mergeNavigationOptions('Call', {
@@ -269,30 +293,6 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
             },
         });
     }, []);
-
-    useEffect(() => {
-        const handleVoiceOn = (data: VoiceEventData) => {
-            if (data.channelId === currentCall?.channelId) {
-                setSpeakers((prev) => ({...prev, [data.userId]: true}));
-            }
-        };
-        const handleVoiceOff = (data: VoiceEventData) => {
-            if (data.channelId === currentCall?.channelId && speakers.hasOwnProperty(data.userId)) {
-                setSpeakers((prev) => {
-                    const next = {...prev};
-                    delete next[data.userId];
-                    return next;
-                });
-            }
-        };
-
-        const onVoiceOn = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_ON, handleVoiceOn);
-        const onVoiceOff = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_OFF, handleVoiceOff);
-        return () => {
-            onVoiceOn.remove();
-            onVoiceOff.remove();
-        };
-    }, [speakers, currentCall?.channelId]);
 
     const leaveCallHandler = useCallback(() => {
         popTopScreen();
@@ -316,6 +316,10 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         }
     }, [myParticipant?.raisedHand]);
 
+    const toggleSpeakerPhone = useCallback(() => {
+        setSpeakerphoneOn(!currentCall?.speakerphoneOn);
+    }, [currentCall?.speakerphoneOn]);
+
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
     }, [showControlsInLandscape]);
@@ -329,17 +333,20 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
 
         const activeUrl = await DatabaseManager.getActiveServerUrl();
         if (activeUrl === currentCall.serverUrl) {
-            goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
+            await dismissAllModalsAndPopToScreen(Screens.THREAD, chatThreadTitle, {rootId: currentCall.threadId});
             return;
         }
 
         // TODO: this is a temporary solution until we have a proper cross-team thread view.
         //  https://mattermost.atlassian.net/browse/MM-45752
-        popTopScreen(componentId);
+        await popTopScreen(componentId);
+        if (fromThreadScreen) {
+            await popTopScreen(Screens.THREAD);
+        }
         await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
         await appEntry(currentCall.serverUrl, Date.now());
-        goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
-    }, [currentCall?.serverUrl, currentCall?.threadId]);
+        await goToScreen(Screens.THREAD, chatThreadTitle, {rootId: currentCall.threadId});
+    }, [currentCall?.serverUrl, currentCall?.threadId, fromThreadScreen, componentId, chatThreadTitle]);
 
     const showOtherActions = useCallback(() => {
         const renderContent = () => {
@@ -348,7 +355,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                     <SlideUpPanelItem
                         icon='message-text-outline'
                         onPress={switchToThread}
-                        text={intl.formatMessage({id: 'mobile.calls_chat_thread', defaultMessage: 'Chat thread'})}
+                        text={chatThreadTitle}
                     />
                 </View>
             );
@@ -412,8 +419,8 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         usersList = (
             <ScrollView
                 alwaysBounceVertical={false}
-                horizontal={currentCall?.screenOn !== ''}
-                contentContainerStyle={[isLandscape && currentCall?.screenOn && style.usersScrollLandscapeScreenOn]}
+                horizontal={currentCall.screenOn !== ''}
+                contentContainerStyle={[isLandscape && currentCall.screenOn && style.usersScrollLandscapeScreenOn]}
             >
                 <Pressable
                     testID='users-list'
@@ -423,12 +430,12 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                     {participants.map((user) => {
                         return (
                             <View
-                                style={[style.user, currentCall?.screenOn && style.userScreenOn]}
+                                style={[style.user, currentCall.screenOn && style.userScreenOn]}
                                 key={user.id}
                             >
                                 <CallAvatar
                                     userModel={user.userModel}
-                                    volume={speakers[user.id] ? 1 : 0}
+                                    volume={currentCall.voiceOn[user.id] ? 1 : 0}
                                     muted={user.muted}
                                     sharingScreen={user.id === currentCall.screenOn}
                                     raisedHand={Boolean(user.raisedHand)}
@@ -472,7 +479,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         <FormattedText
             id={'mobile.calls_unmute'}
             defaultMessage={'Unmute'}
-            style={style.buttonText}
+            style={[style.buttonText, !micPermissionsGranted && style.unavailableText]}
         />);
 
     return (
@@ -496,6 +503,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                 </View>
                 {usersList}
                 {screenShareView}
+                {micPermissionsError && <PermissionErrorBar/>}
                 <View
                     style={[style.buttons, isLandscape && style.buttonsLandscape, !showControls && style.buttonsLandscapeNoControls]}
                 >
@@ -504,10 +512,12 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                             testID='mute-unmute'
                             style={[style.mute, myParticipant.muted && style.muteMuted]}
                             onPress={muteUnmuteHandler}
+                            disabled={!micPermissionsGranted}
                         >
-                            <CompassIcon
+                            <UnavailableIconWrapper
                                 name={myParticipant.muted ? 'microphone-off' : 'microphone'}
                                 size={24}
+                                unavailable={!micPermissionsGranted}
                                 style={style.muteIcon}
                             />
                             {myParticipant.muted ? UnmuteText : MuteText}
@@ -532,12 +542,12 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                         <Pressable
                             testID={'toggle-speakerphone'}
                             style={style.button}
-                            onPress={() => setSpeakerphoneOn(!currentCall?.speakerphoneOn)}
+                            onPress={toggleSpeakerPhone}
                         >
                             <CompassIcon
                                 name={'volume-high'}
                                 size={24}
-                                style={[style.buttonIcon, style.speakerphoneIcon, currentCall?.speakerphoneOn && style.speakerphoneIconOn]}
+                                style={[style.buttonIcon, style.speakerphoneIcon, currentCall.speakerphoneOn && style.speakerphoneIconOn]}
                             />
                             <FormattedText
                                 id={'mobile.calls_speaker'}

@@ -55,6 +55,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
 
     try {
         EphemeralStore.startAddingToTeam(teamId);
+        const team = await client.getTeam(teamId);
         const member = await client.addToTeam(teamId, userId);
 
         if (!fetchOnly) {
@@ -68,6 +69,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                 }];
 
                 const models: Model[] = (await Promise.all([
+                    operator.handleTeam({teams: [team], prepareRecordsOnly: true}),
                     operator.handleMyTeam({myTeams, prepareRecordsOnly: true}),
                     operator.handleTeamMemberships({teamMemberships: [member], prepareRecordsOnly: true}),
                     ...await prepareMyChannelsForTeam(operator, teamId, channels || [], channelMembers || []),
@@ -247,6 +249,16 @@ export async function fetchTeamByName(serverUrl: string, teamName: string, fetch
         return {error};
     }
 }
+
+export const removeCurrentUserFromTeam = async (serverUrl: string, teamId: string, fetchOnly = false) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const userId = await getCurrentUserId(database);
+        return removeUserFromTeam(serverUrl, teamId, userId, fetchOnly);
+    } catch (error) {
+        return {error};
+    }
+};
 
 export const removeUserFromTeam = async (serverUrl: string, teamId: string, userId: string, fetchOnly = false) => {
     let client;

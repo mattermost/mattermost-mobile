@@ -3,15 +3,15 @@
 exports[`components/categories_list should render channels error 1`] = `
 <View
   animatedStyle={
-    Object {
-      "value": Object {
+    {
+      "value": {
         "maxWidth": "100%",
       },
     }
   }
   collapsable={false}
   style={
-    Object {
+    {
       "backgroundColor": "#1e325c",
       "flex": 1,
       "maxWidth": "100%",
@@ -23,22 +23,22 @@ exports[`components/categories_list should render channels error 1`] = `
 >
   <View
     animatedStyle={
-      Object {
-        "value": Object {
+      {
+        "value": {
           "marginLeft": 0,
         },
       }
     }
     collapsable={false}
     style={
-      Object {
+      {
         "marginLeft": 0,
       }
     }
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "flexDirection": "row",
           "justifyContent": "space-between",
@@ -47,7 +47,6 @@ exports[`components/categories_list should render channels error 1`] = `
     >
       <View
         accessible={true}
-        collapsable={false}
         focusable={false}
         onClick={[Function]}
         onResponderGrant={[Function]}
@@ -57,60 +56,34 @@ exports[`components/categories_list should render channels error 1`] = `
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
         style={
-          Object {
-            "opacity": 1,
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "justifyContent": "space-between",
           }
         }
       >
-        <View
+        <Text
           style={
-            Object {
-              "alignItems": "center",
-              "flexDirection": "row",
-              "justifyContent": "space-between",
+            {
+              "color": "#ffffff",
+              "fontFamily": "Metropolis-SemiBold",
+              "fontSize": 28,
+              "fontWeight": "600",
+              "lineHeight": 36,
             }
           }
+          testID="channel_list_header.team_display_name"
         >
-          <Text
-            style={
-              Object {
-                "color": "#ffffff",
-                "fontFamily": "Metropolis-SemiBold",
-                "fontSize": 28,
-                "fontWeight": "600",
-                "lineHeight": 36,
-              }
-            }
-            testID="channel_list_header.team_display_name"
-          >
-            Test Team!
-          </Text>
-          <View
-            style={
-              Object {
-                "marginLeft": 4,
-              }
-            }
-            testID="channel_list_header.chevron.button"
-          >
-            <Icon
-              name="chevron-down"
-              style={
-                Object {
-                  "color": "rgba(255,255,255,0.8)",
-                  "fontSize": 24,
-                }
-              }
-            />
-          </View>
-        </View>
+          Test Team!
+        </Text>
       </View>
       <View
         accessible={true}
         collapsable={false}
         focusable={true}
         hitSlop={
-          Object {
+          {
             "bottom": 30,
             "left": 20,
             "right": 20,
@@ -125,7 +98,7 @@ exports[`components/categories_list should render channels error 1`] = `
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
         style={
-          Object {
+          {
             "alignItems": "center",
             "backgroundColor": "rgba(255,255,255,0.08)",
             "borderRadius": 14,
@@ -140,7 +113,7 @@ exports[`components/categories_list should render channels error 1`] = `
         <Icon
           name="plus"
           style={
-            Object {
+            {
               "color": "rgba(255,255,255,0.8)",
               "fontSize": 18,
             }
@@ -150,7 +123,7 @@ exports[`components/categories_list should render channels error 1`] = `
     </View>
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "flexDirection": "row",
           "paddingRight": 60,
@@ -161,7 +134,7 @@ exports[`components/categories_list should render channels error 1`] = `
         ellipsizeMode="tail"
         numberOfLines={1}
         style={
-          Object {
+          {
             "color": "rgba(255,255,255,0.64)",
             "fontFamily": "OpenSans-SemiBold",
             "fontSize": 11,
@@ -173,11 +146,11 @@ exports[`components/categories_list should render channels error 1`] = `
       />
       <View
         animatedStyle={
-          Object {
-            "value": Object {
+          {
+            "value": {
               "opacity": 1,
-              "transform": Array [
-                Object {
+              "transform": [
+                {
                   "rotateZ": "0deg",
                 },
               ],
@@ -186,7 +159,7 @@ exports[`components/categories_list should render channels error 1`] = `
         }
         collapsable={false}
         style={
-          Object {
+          {
             "borderBottomColor": "rgba(255,255,255,0.16)",
             "borderLeftColor": "#ffffff",
             "borderRadius": 7,
@@ -196,8 +169,8 @@ exports[`components/categories_list should render channels error 1`] = `
             "height": 14,
             "marginLeft": 5,
             "opacity": 1,
-            "transform": Array [
-              Object {
+            "transform": [
+              {
                 "rotateZ": "0deg",
               },
             ],
@@ -209,7 +182,7 @@ exports[`components/categories_list should render channels error 1`] = `
   </View>
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "flex": 1,
         "justifyContent": "center",
@@ -219,7 +192,7 @@ exports[`components/categories_list should render channels error 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "backgroundColor": "rgba(255,255,255,0.08)",
           "borderRadius": 60,
@@ -232,7 +205,7 @@ exports[`components/categories_list should render channels error 1`] = `
       <Icon
         name="alert-circle-outline"
         style={
-          Object {
+          {
             "color": "rgba(255,255,255,0.48)",
             "fontSize": 72,
             "lineHeight": 72,
@@ -242,14 +215,14 @@ exports[`components/categories_list should render channels error 1`] = `
     </View>
     <Text
       style={
-        Array [
-          Object {
+        [
+          {
             "fontFamily": "Metropolis-SemiBold",
             "fontSize": 20,
             "fontWeight": "600",
             "lineHeight": 28,
           },
-          Object {
+          {
             "color": "#ffffff",
             "marginTop": 20,
             "textAlign": "center",
@@ -261,14 +234,14 @@ exports[`components/categories_list should render channels error 1`] = `
     </Text>
     <Text
       style={
-        Array [
-          Object {
+        [
+          {
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
           },
-          Object {
+          {
             "color": "#ffffff",
             "marginTop": 4,
             "textAlign": "center",
@@ -290,7 +263,7 @@ exports[`components/categories_list should render channels error 1`] = `
       onResponderTerminationRequest={[Function]}
       onStartShouldSetResponder={[Function]}
       style={
-        Object {
+        {
           "alignItems": "center",
           "backgroundColor": "#ffffff",
           "borderRadius": 4,
@@ -306,8 +279,8 @@ exports[`components/categories_list should render channels error 1`] = `
     >
       <Text
         style={
-          Array [
-            Object {
+          [
+            {
               "alignItems": "center",
               "fontFamily": "OpenSans-SemiBold",
               "fontWeight": "600",
@@ -315,12 +288,12 @@ exports[`components/categories_list should render channels error 1`] = `
               "padding": 1,
               "textAlignVertical": "center",
             },
-            Object {
+            {
               "fontSize": 16,
               "lineHeight": 18,
               "marginTop": 1,
             },
-            Object {
+            {
               "color": "#1c58d9",
             },
           ]
@@ -336,15 +309,15 @@ exports[`components/categories_list should render channels error 1`] = `
 exports[`components/categories_list should render team error 1`] = `
 <View
   animatedStyle={
-    Object {
-      "value": Object {
+    {
+      "value": {
         "maxWidth": "100%",
       },
     }
   }
   collapsable={false}
   style={
-    Object {
+    {
       "backgroundColor": "#1e325c",
       "flex": 1,
       "maxWidth": "100%",
@@ -356,22 +329,22 @@ exports[`components/categories_list should render team error 1`] = `
 >
   <View
     animatedStyle={
-      Object {
-        "value": Object {
+      {
+        "value": {
           "marginLeft": 0,
         },
       }
     }
     collapsable={false}
     style={
-      Object {
+      {
         "marginLeft": 0,
       }
     }
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "flexDirection": "row",
           "height": 40,
@@ -381,14 +354,14 @@ exports[`components/categories_list should render team error 1`] = `
     >
       <View
         style={
-          Array [
-            Object {
+          [
+            {
               "alignItems": "center",
               "flexDirection": "row",
               "height": 40,
               "justifyContent": "space-between",
             },
-            Object {
+            {
               "flex": 1,
             },
           ]
@@ -398,7 +371,7 @@ exports[`components/categories_list should render team error 1`] = `
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
-            Object {
+            {
               "color": "rgba(255,255,255,0.64)",
               "fontFamily": "OpenSans-SemiBold",
               "fontSize": 14,
@@ -421,7 +394,7 @@ exports[`components/categories_list should render team error 1`] = `
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
         style={
-          Object {
+          {
             "opacity": 1,
           }
         }
@@ -429,7 +402,7 @@ exports[`components/categories_list should render team error 1`] = `
       >
         <Text
           style={
-            Object {
+            {
               "color": "rgba(255,255,255,0.64)",
               "fontFamily": "OpenSans-SemiBold",
               "fontSize": 14,
@@ -446,15 +419,15 @@ exports[`components/categories_list should render team error 1`] = `
   </View>
   <View
     style={
-      Object {
+      {
         "flexDirection": "row",
       }
     }
   >
     <View
       animatedStyle={
-        Object {
-          "value": Object {
+        {
+          "value": {
             "marginRight": 8,
             "opacity": 1,
             "width": 40,
@@ -463,7 +436,7 @@ exports[`components/categories_list should render team error 1`] = `
       }
       collapsable={false}
       style={
-        Object {
+        {
           "marginRight": 8,
           "opacity": 1,
           "width": 40,
@@ -482,15 +455,15 @@ exports[`components/categories_list should render team error 1`] = `
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
         style={
-          Object {
+          {
             "opacity": 1,
           }
         }
       >
         <View
           style={
-            Array [
-              Object {
+            [
+              {
                 "alignItems": "center",
                 "backgroundColor": "rgba(255,255,255,0.12)",
                 "borderRadius": 8,
@@ -522,7 +495,7 @@ exports[`components/categories_list should render team error 1`] = `
       onResponderTerminationRequest={[Function]}
       onStartShouldSetResponder={[Function]}
       style={
-        Object {
+        {
           "backgroundColor": "rgba(255,255,255,0.12)",
           "borderRadius": 8,
           "flex": 1,
@@ -538,7 +511,7 @@ exports[`components/categories_list should render team error 1`] = `
       <Icon
         name="magnify"
         style={
-          Object {
+          {
             "color": "rgba(255,255,255,0.72)",
             "fontSize": 24,
             "width": 24,
@@ -547,7 +520,7 @@ exports[`components/categories_list should render team error 1`] = `
       />
       <Text
         style={
-          Object {
+          {
             "color": "rgba(255,255,255,0.72)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
@@ -564,7 +537,7 @@ exports[`components/categories_list should render team error 1`] = `
   </View>
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "flex": 1,
         "justifyContent": "center",
@@ -574,7 +547,7 @@ exports[`components/categories_list should render team error 1`] = `
   >
     <View
       style={
-        Object {
+        {
           "alignItems": "center",
           "backgroundColor": "rgba(255,255,255,0.08)",
           "borderRadius": 60,
@@ -587,7 +560,7 @@ exports[`components/categories_list should render team error 1`] = `
       <Icon
         name="alert-circle-outline"
         style={
-          Object {
+          {
             "color": "rgba(255,255,255,0.48)",
             "fontSize": 72,
             "lineHeight": 72,
@@ -597,14 +570,14 @@ exports[`components/categories_list should render team error 1`] = `
     </View>
     <Text
       style={
-        Array [
-          Object {
+        [
+          {
             "fontFamily": "Metropolis-SemiBold",
             "fontSize": 20,
             "fontWeight": "600",
             "lineHeight": 28,
           },
-          Object {
+          {
             "color": "#ffffff",
             "marginTop": 20,
             "textAlign": "center",
@@ -616,14 +589,14 @@ exports[`components/categories_list should render team error 1`] = `
     </Text>
     <Text
       style={
-        Array [
-          Object {
+        [
+          {
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
           },
-          Object {
+          {
             "color": "#ffffff",
             "marginTop": 4,
             "textAlign": "center",
@@ -645,7 +618,7 @@ exports[`components/categories_list should render team error 1`] = `
       onResponderTerminationRequest={[Function]}
       onStartShouldSetResponder={[Function]}
       style={
-        Object {
+        {
           "alignItems": "center",
           "backgroundColor": "#ffffff",
           "borderRadius": 4,
@@ -661,8 +634,8 @@ exports[`components/categories_list should render team error 1`] = `
     >
       <Text
         style={
-          Array [
-            Object {
+          [
+            {
               "alignItems": "center",
               "fontFamily": "OpenSans-SemiBold",
               "fontWeight": "600",
@@ -670,12 +643,12 @@ exports[`components/categories_list should render team error 1`] = `
               "padding": 1,
               "textAlignVertical": "center",
             },
-            Object {
+            {
               "fontSize": 16,
               "lineHeight": 18,
               "marginTop": 1,
             },
-            Object {
+            {
               "color": "#1c58d9",
             },
           ]
