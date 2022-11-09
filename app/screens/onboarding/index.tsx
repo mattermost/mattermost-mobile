@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView} from 'react-native';
-import Animated, {useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
+import React, {useCallback, useEffect, useRef} from 'react';
+import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, Animated as AnimatedRN} from 'react-native';
+import Animated, {Easing, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
 
 import {Screens} from '@app/constants';
 import Background from '@screens/background';
@@ -30,15 +30,31 @@ const Onboarding = ({
     const styles = getStyleSheet(theme);
     const slidesData = useSlidesData().slidesData;
     const lastSlideIndex = slidesData.length - 1;
-    const slidesRef = useAnimatedRef<Animated.ScrollView>();
+    const slidesRef = useAnimatedRef<ScrollView>();
 
-    // const currentIndex = useSharedValue(0);
     const scrollX = useSharedValue(0);
+    const scrollAnimation = useRef(new AnimatedRN.Value(0));
+
     const currentIndex = useDerivedValue(() => Math.round(scrollX.value / width));
 
-    const moveToSlide = useCallback((slideIndexToMove: number) => {
-        slidesRef.current?.scrollTo({x: (slideIndexToMove * width), animated: true});
-    }, [slidesRef.current]);
+    useEffect(() => {
+        scrollAnimation.current?.addListener((animation) => {
+            slidesRef.current?.scrollTo({
+                x: animation.value,
+                animated: false,
+            });
+        });
+        return () => scrollAnimation.current.removeAllListeners();
+    }, []);
+
+    const moveToSlide = (slideIndexToMove: number) => {
+        AnimatedRN.timing(scrollAnimation.current, {
+            toValue: (slideIndexToMove * width),
+            duration: Math.abs(currentIndex.value - slideIndexToMove) * 200,
+            useNativeDriver: true,
+            easing: Easing.linear,
+        }).start();
+    };
 
     const nextSlide = useCallback(() => {
         const nextSlideIndex = currentIndex.value + 1;
@@ -88,7 +104,7 @@ const Onboarding = ({
                     pagingEnabled={true}
                     bounces={false}
                     onScroll={scrollHandler}
-                    ref={slidesRef}
+                    ref={slidesRef as any}
                 >
                     {slidesData.map((item, index) => {
                         return renderSlide({item, index} as ListRenderItemInfo<OnboardingItem>);

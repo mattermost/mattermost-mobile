@@ -127,7 +127,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
-    return launchToOnboarding(props);
+    return launchToOnboarding(props, resetNavigation);
 };
 
 const launchToHome = async (props: LaunchProps) => {
@@ -181,7 +181,10 @@ const launchToServer = (props: LaunchProps, resetNavigation: Boolean) => {
     return goToScreen(Screens.SERVER, title, {...props});
 };
 
-const launchToOnboarding = (props: LaunchProps) => {
+const launchToOnboarding = (props: LaunchProps, resetNavigation = true) => {
+    if (resetNavigation) {
+        launchToServer(props, resetNavigation);
+    }
     return resetToOnboarding(props);
 };
 
