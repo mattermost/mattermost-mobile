@@ -645,5 +645,14 @@
     "mobile.login_options.openid": "Open ID",
     "mobile.login_options.office365": "Office 365",
     "mobile.login_options.none": "Henüz hesabınızda oturum açamazsınız. En az bir oturum açma seçeneği yapılandırılmış olmalıdır. Yardım için sistem yöneticinizle görüşün.",
-    "mobile.search.modifier.phrases": "Belirli ifadeler geçen iletiler"
+    "mobile.search.modifier.phrases": "Belirli ifadeler geçen iletiler",
+    "mobile.server_upgrade.description": "\nMattermost uygulamasını kullanmak için sunucunun güncellenmesi gerekiyor. Lütfen ayrıntılı bilgi almak için sistem yöneticiniz ile görüşün.\n",
+    "mobile.server_requires_client_certificate": "Sunucu kimlik doğrulaması için istemci sertifikasına gerek duyuyor.",
+    "mobile.server_ping_failed": "Sunucu ile bağlantı kurulamadı.",
+    "mobile.server_name.exists": "Bu adı başka bir sunucu için kullanıyorsunuz.",
+    "mobile.server_link.unreachable_user.error": "Sizi doğrudan iletiye yönlendiremiyoruz. Belirtilen kullanıcı bilinmiyor.",
+    "mobile.server_identifier.exists": "Bu sunucuya zaten bağlısınız.",
+    "mobile.search.team.select": "Aranacak bir takım seçin",
+    "mobile.search.show_more": "Daha çok ayrıntı",
+    "mobile.search.show_less": "Daha az ayrıntı"
 }
