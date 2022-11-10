@@ -3,25 +3,22 @@
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, Platform, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Keyboard, View} from 'react-native';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
-import Search from '@components/search';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
-import SelectedUsers from '@screens/members_modal/selected_users';
-import UserList from '@screens/members_modal/user_list';
+import MembersModal from '@screens/members_modal';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
-import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
 const START_BUTTON = 'start-conversation';
@@ -44,7 +41,6 @@ type Props = {
     currentUserId: string;
     restrictDirectMessage: boolean;
     teammateNameDisplay: string;
-    tutorialWatched: boolean;
 }
 
 const close = () => {
@@ -52,34 +48,10 @@ const close = () => {
     dismissModal();
 };
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme(() => {
     return {
         container: {
             flex: 1,
-        },
-        searchBar: {
-            marginLeft: 12,
-            marginRight: Platform.select({ios: 4, default: 12}),
-            marginVertical: 12,
-        },
-        loadingContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
-            height: 70,
-            justifyContent: 'center',
-        },
-        loadingText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-        },
-        noResultContainer: {
-            flexGrow: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        noResultText: {
-            fontSize: 26,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
         },
     };
 });
@@ -97,7 +69,6 @@ export default function CreateDirectMessage({
     currentUserId,
     restrictDirectMessage,
     teammateNameDisplay,
-    tutorialWatched,
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -340,47 +311,19 @@ export default function CreateDirectMessage({
     }
 
     return (
-        <SafeAreaView
-            style={style.container}
-            testID='create_direct_message.screen'
-        >
-            <View style={style.searchBar}>
-                <Search
-                    testID='create_direct_message.search_bar'
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    onChangeText={onSearch}
-                    onSubmitEditing={search}
-                    onCancel={clearSearch}
-                    autoCapitalize='none'
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    value={term}
-                />
-            </View>
-            {selectedCount > 0 &&
-            <SelectedUsers
-                selectedIds={selectedIds}
-                warnCount={General.MAX_USERS_IN_GM - 2}
-                maxCount={General.MAX_USERS_IN_GM}
-                onRemove={handleRemoveProfile}
-                teammateNameDisplay={teammateNameDisplay}
-            />
-            }
-            <UserList
-                currentUserId={currentUserId}
-                handleSelectProfile={handleSelectProfile}
-                loading={loading}
-                profiles={data}
-                selectedIds={selectedIds}
-                showNoResults={!loading && page.current !== -1}
-                teammateNameDisplay={teammateNameDisplay}
-                fetchMore={getProfiles}
-                term={term}
-                testID='create_direct_message.user_list'
-                tutorialWatched={tutorialWatched}
-            />
-        </SafeAreaView>
+        <MembersModal
+            data={data}
+            getProfiles={getProfiles}
+            loading={loading}
+            onSelectProfile={handleSelectProfile}
+            onRemoveProfile={handleRemoveProfile}
+            onCancel={clearSearch}
+            onSearch={onSearch}
+            search={search}
+            term={term}
+            page={page}
+            selectedIds={selectedIds}
+        />
     );
 }
 
