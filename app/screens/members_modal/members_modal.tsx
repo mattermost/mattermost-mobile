@@ -50,7 +50,7 @@ type Props = {
     data: UserProfile[];
     getProfiles: () => void;
     loading: boolean;
-    onCancel: () => void;
+    onClearSearch: () => void;
     onRemoveProfile: (id: string) => void;
     onSearch: (text: string) => void;
     onSelectProfile: (user: UserProfile) => void;
@@ -67,7 +67,7 @@ export default function MembersModal({
     data,
     getProfiles,
     loading,
-    onCancel,
+    onClearSearch,
     onRemoveProfile,
     onSearch,
     onSelectProfile,
@@ -89,7 +89,7 @@ export default function MembersModal({
     }, [onSelectProfile]);
 
     const handleOnCancel = useCallback(() => {
-        onCancel();
+        onClearSearch();
     }, [onSelectProfile]);
 
     const handleSelectProfile = useCallback((user: UserProfile) => {

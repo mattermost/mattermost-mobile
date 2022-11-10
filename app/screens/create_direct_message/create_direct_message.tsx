@@ -312,7 +312,7 @@ export default function CreateDirectMessage({
             loading={loading}
             onSelectProfile={handleSelectProfile}
             onRemoveProfile={handleRemoveProfile}
-            onCancel={clearSearch}
+            onClearSearch={clearSearch}
             onSearch={onSearch}
             search={search}
             term={term}
