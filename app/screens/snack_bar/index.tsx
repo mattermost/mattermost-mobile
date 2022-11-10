@@ -41,7 +41,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         gestureRoot: {
             flex: 1,
-            height: 80,
             width: '100%',
             position: 'absolute',
             bottom: 104,
