@@ -235,9 +235,9 @@ export default class SelectServer extends PureComponent {
         const {config, license} = this.props;
         const isLicensed = license.IsLicensed === 'true';
         const samlEnabled = isLicensed && config.EnableSaml === 'true' && license.SAML === 'true';
-        const googleEnabled = isLicensed && config.EnableSignUpWithGoogle === 'true';
-        const o365Enabled = isLicensed && config.EnableSignUpWithOffice365 === 'true' && license.Office365OAuth === 'true';
-        const openIdEnabled = isLicensed && config.EnableSignUpWithOpenId === 'true';
+        const googleEnabled = config.EnableSignUpWithGoogle === 'true';
+        const o365Enabled = config.EnableSignUpWithOffice365 === 'true';
+        const openIdEnabled = config.EnableSignUpWithOpenId === 'true';
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
         const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
         const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;

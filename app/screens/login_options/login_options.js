@@ -230,9 +230,9 @@ export default class LoginOptions extends PureComponent {
     };
 
     renderO365Option = () => {
-        const {config, license} = this.props;
+        const {config} = this.props;
         const forceHideFromLocal = LocalConfig.HideO365LoginExperimental;
-        const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
+        const o365Enabled = config.EnableSignUpWithOffice365 === 'true';
 
         if (!forceHideFromLocal && o365Enabled) {
             const additionalButtonStyle = {
@@ -262,8 +262,8 @@ export default class LoginOptions extends PureComponent {
     };
 
     renderOpenIdOption = () => {
-        const {config, license} = this.props;
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true';
+        const {config} = this.props;
+        const openIdEnabled = config.EnableSignUpWithOpenId === 'true';
 
         if (openIdEnabled) {
             const additionalButtonStyle = {
