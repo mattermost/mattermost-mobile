@@ -332,6 +332,7 @@ const SearchScreen = ({teamId}: Props) => {
                 style={styles.flex}
                 edges={EDGES}
                 onLayout={onLayout}
+                testID='search_messages.screen'
             >
                 <Animated.View style={animated}>
                     <Animated.View style={headerTopStyle}>
