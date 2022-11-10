@@ -45,6 +45,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         zIndex: 10,
         maxWidth: 315,
     },
+    readOnly: {
+        backgroundColor: changeOpacity(theme.centerChannelBg, 0.16),
+    },
     smallLabel: {
         fontSize: 10,
     },
@@ -191,6 +194,9 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
 
     const combinedTextInputStyle = useMemo(() => {
         const res: StyleProp<TextStyle> = [styles.textInput];
+        if (!editable) {
+            res.push(styles.readOnly);
+        }
         res.push({
             borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
             height: DEFAULT_INPUT_HEIGHT + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
@@ -209,7 +215,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         }
 
         return res;
-    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline]);
+    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
 
     const textAnimatedTextStyle = useAnimatedStyle(() => {
         const inputText = placeholder || value;

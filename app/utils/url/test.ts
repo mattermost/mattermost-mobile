@@ -4,6 +4,7 @@
 import {Linking} from 'react-native';
 
 import DeepLinkType from '@constants/deep_linking';
+import TestHelper from '@test/test_helper';
 import * as UrlUtils from '@utils/url';
 
 /* eslint-disable max-nested-callbacks */
@@ -279,7 +280,8 @@ describe('UrlUtils', () => {
             const onError = jest.fn();
             const onSuccess = jest.fn();
 
-            await UrlUtils.tryOpenURL(url, onError, onSuccess);
+            UrlUtils.tryOpenURL(url, onError, onSuccess);
+            await TestHelper.wait(200);
             expect(onError).toHaveBeenCalledTimes(1);
             expect(onSuccess).not.toHaveBeenCalled();
         });

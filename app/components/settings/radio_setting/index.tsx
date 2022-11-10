@@ -58,7 +58,7 @@ function RadioSetting({
                     isSelected={value === entryValue}
                     text={text}
                     value={entryValue}
-                    key={value}
+                    key={entryValue}
                 />,
             );
         }
