@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {
+    transformConfigRecord,
     transformCustomEmojiRecord,
     transformRoleRecord,
     transformSystemRecord,
@@ -111,7 +112,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
-            transformer: transformSystemRecord,
+            transformer: transformConfigRecord,
             createOrUpdateRawValues: configs,
             tableName: 'Config',
             prepareRecordsOnly: false,
