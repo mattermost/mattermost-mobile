@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {addFilesToDraft, removeDraft} from '@actions/local/draft';
+import {MAX_FILE_COUNT} from '@constants/files';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
@@ -18,7 +19,6 @@ type Props = {
     rootId?: string;
     files?: FileInfo[];
     maxFileSize: number;
-    maxFileCount: number;
     canUploadFiles: boolean;
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     updatePostInputTop: (top: number) => void;
@@ -42,7 +42,6 @@ export default function DraftHandler(props: Props) {
         rootId = '',
         files,
         maxFileSize,
-        maxFileCount,
         canUploadFiles,
         updateCursorPosition,
         updatePostInputTop,
@@ -86,9 +85,9 @@ export default function DraftHandler(props: Props) {
         }
 
         const currentFileCount = files?.length || 0;
-        const availableCount = maxFileCount - currentFileCount;
+        const availableCount = MAX_FILE_COUNT - currentFileCount;
         if (newFiles.length > availableCount) {
-            newUploadError(fileMaxWarning(intl, maxFileCount));
+            newUploadError(fileMaxWarning(intl));
             return;
         }
 
@@ -106,7 +105,7 @@ export default function DraftHandler(props: Props) {
         }
 
         newUploadError(null);
-    }, [intl, newUploadError, maxFileCount, maxFileSize, serverUrl, files?.length, channelId, rootId]);
+    }, [intl, newUploadError, maxFileSize, serverUrl, files?.length, channelId, rootId]);
 
     // This effect mainly handles keeping clean the uploadErrorHandlers, and
     // reinstantiate them on component mount and file retry.

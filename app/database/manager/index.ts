@@ -8,7 +8,6 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FileSystem from 'react-native-fs';
 
-import {storeConfig} from '@actions/local/systems';
 import {DatabaseType, MIGRATION_EVENTS, MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
@@ -194,9 +193,22 @@ class DatabaseManager {
             const oldConfigList = await querySystemValue(database, SYSTEM_IDENTIFIERS.CONFIG).fetch();
             if (oldConfigList.length) {
                 const oldConfigModel = oldConfigList[0];
-                const oldConfig = oldConfigModel.value;
-                operator.batchRecords([oldConfigModel.prepareDestroyPermanently()]);
-                storeConfig(serverUrl, oldConfig);
+                const oldConfig = oldConfigModel.value as ClientConfig;
+
+                const configs = [];
+                let k: keyof ClientConfig;
+                for (k in oldConfig) {
+                    // Check to silence eslint (guard-for-in)
+                    if (Object.prototype.hasOwnProperty.call(oldConfig, k)) {
+                        configs.push({
+                            id: k,
+                            value: oldConfig[k],
+                        });
+                    }
+                }
+                const models = await operator.handleConfigs({configs, configsToDelete: [], prepareRecordsOnly: true});
+
+                operator.batchRecords([...models, oldConfigModel.prepareDestroyPermanently()]);
             }
         }
     };

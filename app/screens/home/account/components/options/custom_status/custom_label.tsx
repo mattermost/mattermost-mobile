@@ -15,7 +15,6 @@ import CustomStatusText from './custom_status_text';
 
 type CustomLabelProps = {
     customStatus: UserCustomStatus;
-    isCustomStatusExpirySupported: boolean;
     isStatusSet: boolean;
     onClearCustomStatus: () => void;
     showRetryMessage: boolean;
@@ -44,7 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, onClearCustomStatus, showRetryMessage}: CustomLabelProps) => {
+const CustomLabel = ({customStatus, isStatusSet, onClearCustomStatus, showRetryMessage}: CustomLabelProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -56,7 +55,7 @@ const CustomLabel = ({customStatus, isCustomStatusExpirySupported, isStatusSet, 
                     customStatus={customStatus}
                     testID='account.custom_status.custom_status_text'
                 />
-                {Boolean(isStatusSet && isCustomStatusExpirySupported && customStatus?.duration) && (
+                {Boolean(isStatusSet && customStatus?.duration) && (
                     <CustomStatusExpiry
                         time={moment(customStatus?.expires_at)}
                         theme={theme}

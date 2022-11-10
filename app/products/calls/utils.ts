@@ -4,8 +4,6 @@
 import {Alert} from 'react-native';
 
 import {Post} from '@constants';
-import Calls from '@constants/calls';
-import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
 import type {CallParticipant, ServerCallsConfig} from '@calls/types/calls';
@@ -55,19 +53,6 @@ const sortByState = (presenterID?: string) => {
         return 0;
     };
 };
-
-export function isSupportedServerCalls(serverVersion?: string) {
-    if (serverVersion) {
-        return isMinimumServerVersion(
-            serverVersion,
-            Calls.RequiredServer.MAJOR_VERSION,
-            Calls.RequiredServer.MIN_VERSION,
-            Calls.RequiredServer.PATCH_VERSION,
-        );
-    }
-
-    return false;
-}
 
 export function isCallsCustomMessage(post: PostModel | Post): boolean {
     return Boolean(post.type && post.type?.startsWith(Post.POST_TYPES.CUSTOM_CALLS));

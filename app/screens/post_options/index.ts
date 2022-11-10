@@ -10,10 +10,9 @@ import {General, Permissions, Post, Screens} from '@constants';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
-import {observeConfigBooleanValue, observeConfigIntValue, observeConfigValue, observeLicense} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeConfigIntValue, observeLicense} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
-import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 import {isSystemAdmin} from '@utils/user';
@@ -74,8 +73,6 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = observeCurrentUser(database);
     const isLicensed = observeLicense(database).pipe(switchMap((lcs) => of$(lcs?.IsLicensed === 'true')));
-    const allowEditPost = observeConfigValue(database, 'AllowEditPost');
-    const serverVersion = observeConfigValue(database, 'Version');
     const postEditTimeLimit = observeConfigIntValue(database, 'PostEditTimeLimit', -1);
 
     const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => observePermissionForChannel(database, c, u, Permissions.CREATE_POST, false)));
@@ -95,9 +92,9 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         switchMap((reactions: ReactionModel[]) => of$(new Set(reactions.map((r) => r.emojiName)).size < MAX_ALLOWED_REACTIONS)),
     );
 
-    const canEditUntil = combineLatest([isLicensed, allowEditPost, postEditTimeLimit, serverVersion, channelIsArchived, channelIsReadOnly]).pipe(
-        switchMap(([ls, alw, limit, semVer, isArchived, isReadOnly]) => {
-            if (!isArchived && !isReadOnly && ls && ((alw === Permissions.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(semVer || '', 6)) || (limit !== -1))) {
+    const canEditUntil = combineLatest([isLicensed, postEditTimeLimit, channelIsArchived, channelIsReadOnly]).pipe(
+        switchMap(([ls, limit, isArchived, isReadOnly]) => {
+            if (!isArchived && !isReadOnly && ls && (limit !== -1)) {
                 return of$(post.createAt + (limit * (1000)));
             }
             return of$(-1);

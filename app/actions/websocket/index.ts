@@ -23,7 +23,6 @@ import {
     handleCallUserVoiceOff,
     handleCallUserVoiceOn,
 } from '@calls/connection/websocket_event_handlers';
-import {isSupportedServerCalls} from '@calls/utils';
 import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
@@ -88,10 +87,8 @@ export async function handleFirstConnect(serverUrl: string) {
     resetWebSocketLastDisconnected(operator);
     fetchStatusByIds(serverUrl, ['me']);
 
-    if (isSupportedServerCalls(config?.Version)) {
-        const currentUserId = await getCurrentUserId(database);
-        loadConfigAndCalls(serverUrl, currentUserId);
-    }
+    const currentUserId = await getCurrentUserId(database);
+    loadConfigAndCalls(serverUrl, currentUserId);
 }
 
 export function handleReconnect(serverUrl: string) {
@@ -182,10 +179,7 @@ async function doReconnect(serverUrl: string) {
     const config = await getConfig(database);
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
 
-    if (isSupportedServerCalls(config.Version)) {
-        loadConfigAndCalls(serverUrl, currentUserId);
-    }
-
+    loadConfigAndCalls(serverUrl, currentUserId);
     AppsManager.refreshAppBindings(serverUrl);
 }
 

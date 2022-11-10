@@ -9,8 +9,6 @@ import {injectIntl, IntlShape} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
 import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
@@ -20,11 +18,11 @@ import {Events, Screens} from '@constants';
 import {CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {withServerUrl} from '@context/server';
 import {withTheme} from '@context/theme';
-import {observeConfigValue, observeRecentCustomStatus} from '@queries/servers/system';
+import {observeRecentCustomStatus} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, goToScreen, showModal} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
-import {getCurrentMomentForTimezone, getRoundedTime, isCustomStatusExpirySupported} from '@utils/helpers';
+import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {preventDoubleTap} from '@utils/tap';
@@ -44,7 +42,6 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
 
 interface Props extends NavigationComponentProps {
-    customStatusExpirySupported: boolean;
     currentUser: UserModel;
     intl: IntlShape;
     isModal?: boolean;
@@ -178,7 +175,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     handleSetStatus = async () => {
-        const {customStatusExpirySupported, currentUser, serverUrl} = this.props;
+        const {currentUser, serverUrl} = this.props;
         const {emoji, text, duration} = this.state;
         const customStatus = this.getCustomStatus();
 
@@ -197,10 +194,9 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     duration: CustomStatusDurationEnum.DONT_CLEAR,
                 };
 
-                if (customStatusExpirySupported) {
-                    status.duration = duration;
-                    status.expires_at = expiresAt;
-                }
+                status.duration = duration;
+                status.expires_at = expiresAt;
+
                 const {error} = await updateCustomStatus(serverUrl, status);
                 if (error) {
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
@@ -323,7 +319,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     render() {
         const {duration, emoji, expires_at, text} = this.state;
-        const {customStatusExpirySupported, intl, recentCustomStatuses, theme} = this.props;
+        const {intl, recentCustomStatuses, theme} = this.props;
         const isStatusSet = Boolean(emoji || text);
         const style = getStyleSheet(theme);
 
@@ -365,7 +361,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                         text={text}
                                         theme={theme}
                                     />
-                                    {isStatusSet && customStatusExpirySupported && (
+                                    {isStatusSet && (
                                         <ClearAfter
                                             duration={duration}
                                             expiresAt={expires_at}
@@ -376,7 +372,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                 </View>
                                 {recentCustomStatuses.length > 0 && (
                                     <RecentCustomStatuses
-                                        isExpirySupported={customStatusExpirySupported}
                                         onHandleClear={this.handleRecentCustomStatusClear}
                                         onHandleSuggestionClick={this.handleRecentCustomStatusSuggestionClick}
                                         recentCustomStatuses={recentCustomStatuses}
@@ -386,7 +381,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                 }
                                 <CustomStatusSuggestions
                                     intl={intl}
-                                    isExpirySupported={customStatusExpirySupported}
                                     onHandleCustomStatusSuggestionClick={this.handleCustomStatusSuggestionClick}
                                     recentCustomStatuses={recentCustomStatuses}
                                     theme={theme}
@@ -406,9 +400,6 @@ const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
 const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         currentUser: observeCurrentUser(database),
-        customStatusExpirySupported: observeConfigValue(database, 'Version').pipe(
-            switchMap((v) => of$(isCustomStatusExpirySupported(v || ''))),
-        ),
         recentCustomStatuses: observeRecentCustomStatus(database),
     };
 });

@@ -7,6 +7,7 @@ import {Alert, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {MAX_FILE_COUNT} from '@constants/files';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {fileMaxWarning} from '@utils/file';
@@ -28,7 +29,6 @@ export default function ImageQuickAction({
     fileCount = 0,
     onUploadFiles,
     maxFilesReached,
-    maxFileCount,
     testID = '',
 }: QuickActionAttachmentProps) {
     const intl = useIntl();
@@ -41,7 +41,7 @@ export default function ImageQuickAction({
                     id: 'mobile.link.error.title',
                     defaultMessage: 'Error',
                 }),
-                fileMaxWarning(intl, maxFileCount),
+                fileMaxWarning(intl),
             );
             return;
         }
@@ -49,8 +49,8 @@ export default function ImageQuickAction({
         const picker = new PickerUtil(intl,
             onUploadFiles);
 
-        picker.attachFileFromPhotoGallery(maxFileCount - fileCount);
-    }, [onUploadFiles, fileCount, maxFileCount]);
+        picker.attachFileFromPhotoGallery(MAX_FILE_COUNT - fileCount);
+    }, [onUploadFiles, fileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

@@ -95,6 +95,30 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
         });
     });
 
+    it('=> HandleConfig: should write to the CONFIG table', async () => {
+        expect.assertions(1);
+
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+
+        const configs = [{id: 'config-1', value: 'config-1'}];
+        const configsToDelete = [{id: 'toDelete', value: 'toDelete'}];
+
+        await operator.handleConfigs({
+            configs,
+            configsToDelete,
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
+            fieldName: 'id',
+            transformer: transformSystemRecord,
+            createOrUpdateRawValues: configs,
+            tableName: 'Config',
+            prepareRecordsOnly: false,
+            deleteRawValues: configsToDelete,
+        });
+    });
+
     it('=> No table name: should not call execute if tableName is invalid', async () => {
         expect.assertions(3);
 

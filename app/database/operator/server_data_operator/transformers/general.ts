@@ -119,5 +119,5 @@ export const transformConfigRecord = ({action, database, value}: TransformerArgs
         tableName: CONFIG,
         value,
         fieldsMapper,
-    }) as Promise<SystemModel>;
+    }) as Promise<ConfigModel>;
 };

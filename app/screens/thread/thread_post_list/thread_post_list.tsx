@@ -12,7 +12,6 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {debounce} from '@helpers/api/general';
 import {useIsTablet} from '@hooks/device';
-import {isMinimumServerVersion} from '@utils/helpers';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
@@ -25,7 +24,6 @@ type Props = {
     rootPost: PostModel;
     teamId: string;
     thread?: ThreadModel;
-    version?: string;
 }
 
 const edges: Edge[] = ['bottom'];
@@ -38,7 +36,7 @@ const styles = StyleSheet.create({
 
 const ThreadPostList = ({
     channelLastViewedAt, isCRTEnabled,
-    nativeID, posts, rootPost, teamId, thread, version,
+    nativeID, posts, rootPost, teamId, thread,
 }: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
@@ -46,7 +44,7 @@ const ThreadPostList = ({
     const canLoadPosts = useRef(true);
     const fetchingPosts = useRef(false);
     const onEndReached = useCallback(debounce(async () => {
-        if (isMinimumServerVersion(version || '', 6, 7) && !fetchingPosts.current && canLoadPosts.current && posts.length) {
+        if (!fetchingPosts.current && canLoadPosts.current && posts.length) {
             fetchingPosts.current = true;
             const options: FetchPaginatedThreadOptions = {};
             const lastPost = posts[posts.length - 1];
@@ -58,7 +56,7 @@ const ThreadPostList = ({
             fetchingPosts.current = false;
             canLoadPosts.current = Boolean(result?.posts?.length);
         }
-    }, 500), [rootPost, posts, version]);
+    }, 500), [rootPost, posts]);
 
     const threadPosts = useMemo(() => {
         return [...posts, rootPost];

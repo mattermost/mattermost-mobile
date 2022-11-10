@@ -11,12 +11,11 @@ import type ConfigModelInterface from '@typings/database/models/servers/config';
 const {CONFIG} = MM_TABLES.SERVER;
 
 /**
- * The System model is another set of key-value pair combination but this one
- * will mostly hold configuration information about the client, the licences and some
- * custom data (e.g. recent emoji used)
+ * The Config model is another set of key-value pair combination but this one
+ * will hold the server configuration.
  */
 export default class ConfigModel extends Model implements ConfigModelInterface {
-    /** table (name) : System */
+    /** table (name) : Config */
     static table = CONFIG;
 
     /** value : The value for that config/information and whose key will be the id column */
