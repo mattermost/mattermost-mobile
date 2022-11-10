@@ -22,6 +22,7 @@ function mapStateToProps(state) {
         config,
         deepLinkURL: state.views.root.deepLinkURL,
         hasConfigAndLicense: Object.keys(config).length > 0 && Object.keys(license).length > 0,
+        serverVersion: state.entities.general.serverVersion,
         license,
     };
 }

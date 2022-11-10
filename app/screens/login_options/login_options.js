@@ -25,6 +25,7 @@ import globalEventHandler from '@init/global_event_handler';
 import {preventDoubleTap} from '@utils/tap';
 
 import {GlobalStyles} from 'app/styles';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 export default class LoginOptions extends PureComponent {
     static propTypes = {
@@ -192,7 +193,12 @@ export default class LoginOptions extends PureComponent {
 
     renderGoogleOption = () => {
         const {config} = this.props;
-
+        let oGoogleEnabled = false;
+        if(isMinimumServerVersion(this.props.isMinimumServerVersion, 7, 6)) {
+            oGoogleEnabled = config.EnableSignUpWithGoogle === 'true';
+        } else {
+            oGoogleEnabled = isLicensed && config.EnableSignUpWithGoogle === 'true';
+        }
         if (config.EnableSignUpWithGoogle === 'true') {
             const additionalButtonStyle = {
                 backgroundColor: '#c23321',
@@ -232,7 +238,12 @@ export default class LoginOptions extends PureComponent {
     renderO365Option = () => {
         const {config} = this.props;
         const forceHideFromLocal = LocalConfig.HideO365LoginExperimental;
-        const o365Enabled = config.EnableSignUpWithOffice365 === 'true';
+        let o365Enabled = false;
+        if(isMinimumServerVersion(this.props.isMinimumServerVersion, 7, 6)) {
+            o365Enabled = config.EnableSignUpWithOffice365 === 'true';
+        } else {
+            o365Enabled = config.EnableSignUpWithOffice365 === 'true' && license.IsLicensed === 'true' && license.Office365OAuth === 'true';
+        }
 
         if (!forceHideFromLocal && o365Enabled) {
             const additionalButtonStyle = {
@@ -263,7 +274,12 @@ export default class LoginOptions extends PureComponent {
 
     renderOpenIdOption = () => {
         const {config} = this.props;
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true';
+        let openIdEnabled = false;
+        if(isMinimumServerVersion(this.props.isMinimumServerVersion, 7, 6)) {
+            openIdEnabled = config.EnableSignUpWithOpenId === 'true';
+        } else {
+            openIdEnabled = config.EnableSignUpWithOpenId === 'true' && license.IsLicensed === 'true';
+        }
 
         if (openIdEnabled) {
             const additionalButtonStyle = {

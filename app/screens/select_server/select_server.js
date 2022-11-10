@@ -39,6 +39,7 @@ import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 import {isValidUrl, stripTrailingSlashes} from '@utils/url';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
@@ -235,9 +236,17 @@ export default class SelectServer extends PureComponent {
         const {config, license} = this.props;
         const isLicensed = license.IsLicensed === 'true';
         const samlEnabled = isLicensed && config.EnableSaml === 'true' && license.SAML === 'true';
-        const googleEnabled = config.EnableSignUpWithGoogle === 'true';
-        const o365Enabled = config.EnableSignUpWithOffice365 === 'true';
-        const openIdEnabled = config.EnableSignUpWithOpenId === 'true';
+        const isMinServerVersionForFreeOAuth = isMinimumServerVersion(this.props.serverVersion, 7, 6);
+        let googleEnabled = false, o365Enabled = false, openIdEnabled = false;
+        if(isMinServerVersionForFreeOAuth) {
+            googleEnabled = config.EnableSignUpWithGoogle === 'true';
+            o365Enabled = config.EnableSignUpWithOffice365 === 'true';
+            openIdEnabled = config.EnableSignUpWithOpenId === 'true';
+        } else {
+            googleEnabled = isLicensed && config.EnableSignUpWithGoogle === 'true';
+            o365Enabled = isLicensed && config.EnableSignUpWithOffice365 === 'true' && license.Office365OAuth === 'true';
+            openIdEnabled = isLicensed && config.EnableSignUpWithOpenId === 'true';
+        }
         const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
         const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
         const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;

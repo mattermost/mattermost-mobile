@@ -15,6 +15,7 @@ function mapStateToProps(state) {
         config,
         license,
         theme: getTheme(state),
+        serverVersion: state.entities.general.serverVersion
     };
 }
 
