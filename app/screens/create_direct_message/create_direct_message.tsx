@@ -3,12 +3,11 @@
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, View} from 'react-native';
+import {Keyboard} from 'react-native';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
-import Loading from '@components/loading';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -18,7 +17,6 @@ import {t} from '@i18n';
 import MembersModal from '@screens/members_modal';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
 const START_BUTTON = 'start-conversation';
@@ -48,14 +46,6 @@ const close = () => {
     dismissModal();
 };
 
-const getStyleFromTheme = makeStyleSheetFromTheme(() => {
-    return {
-        container: {
-            flex: 1,
-        },
-    };
-});
-
 function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
     if (action.type === 'add' && action.values?.length) {
         return [...state, ...action.values];
@@ -72,7 +62,6 @@ export default function CreateDirectMessage({
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const style = getStyleFromTheme(theme);
     const intl = useIntl();
     const {formatMessage} = intl;
 
@@ -297,14 +286,6 @@ export default function CreateDirectMessage({
         return profiles;
     }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
 
-    if (startingConversation) {
-        return (
-            <View style={style.container}>
-                <Loading color={theme.centerChannelColor}/>
-            </View>
-        );
-    }
-
     return (
         <MembersModal
             data={data}
@@ -318,6 +299,7 @@ export default function CreateDirectMessage({
             term={term}
             page={page}
             selectedIds={selectedIds}
+            startingConversation={startingConversation}
         />
     );
 }

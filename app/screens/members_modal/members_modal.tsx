@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import Loading from '@components/loading';
 import Search from '@components/search';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
@@ -57,6 +58,7 @@ type Props = {
     page: React.RefObject<any>;
     search: () => void;
     selectedIds: {[id: string]: UserProfile};
+    startingConversation: boolean;
     teammateNameDisplay: string;
     term: string;
     tutorialWatched: boolean;
@@ -74,6 +76,7 @@ export default function MembersModal({
     page,
     search,
     selectedIds,
+    startingConversation,
     teammateNameDisplay,
     term,
     tutorialWatched,
@@ -99,6 +102,14 @@ export default function MembersModal({
     const handleRemoveProfile = useCallback((id: string) => {
         onRemoveProfile(id);
     }, [onRemoveProfile]);
+
+    if (startingConversation) {
+        return (
+            <View style={style.container}>
+                <Loading color={theme.centerChannelColor}/>
+            </View>
+        );
+    }
 
     return (
         <SafeAreaView
