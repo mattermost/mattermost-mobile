@@ -27,7 +27,6 @@ import {preventDoubleTap} from '@utils/tap';
 
 import {GlobalStyles} from 'app/styles';
 
-
 export default class LoginOptions extends PureComponent {
     static propTypes = {
         config: PropTypes.object.isRequired,
