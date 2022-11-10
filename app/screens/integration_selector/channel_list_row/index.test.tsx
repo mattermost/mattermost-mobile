@@ -12,31 +12,31 @@ import ChannelListRow from '.';
 
 describe('components/integration_selector/channel_list_row', () => {
     let database: Database;
+    const channel: Channel = {
+        id: '1',
+        create_at: 1111,
+        update_at: 1111,
+        delete_at: 0,
+        team_id: 'my team',
+        type: 'O',
+        display_name: 'channel',
+        name: 'channel',
+        header: 'channel',
+        purpose: '',
+        last_post_at: 1,
+        total_msg_count: 1,
+        extra_update_at: 1,
+        creator_id: '1',
+        scheme_id: null,
+        group_constrained: null,
+        shared: true,
+    };
     beforeAll(async () => {
         const server = await TestHelper.setupServerDatabase();
         database = server.database;
     });
 
-    it('should render', () => {
-        const channel: Channel = {
-            id: '1',
-            create_at: 1111,
-            update_at: 1111,
-            delete_at: 1111,
-            team_id: 'my team',
-            type: 'O',
-            display_name: 'channel',
-            name: 'channel',
-            header: 'channel',
-            purpose: 'channel',
-            last_post_at: 1,
-            total_msg_count: 1,
-            extra_update_at: 1,
-            creator_id: '1',
-            scheme_id: null,
-            group_constrained: null,
-            shared: true,
-        };
+    it('should match snapshot with open channel icon', () => {
         const wrapper = renderWithEverything(
             <ChannelListRow
                 id='1234'
@@ -52,6 +52,102 @@ describe('components/integration_selector/channel_list_row', () => {
             {database},
         );
 
-        expect(wrapper.toJSON()).toBeTruthy();
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
+    it('should match snapshot with archived icon', () => {
+        const wrapper = renderWithEverything(
+            <ChannelListRow
+                id='1234'
+                isArchived={true}
+                theme={Preferences.THEMES.denim}
+                channel={channel}
+                testID='ChannelListRow'
+                enabled={true}
+                selectable={false}
+                selected={false}
+                children={[]}
+                onPress={() => {
+                    // noop
+                }}
+            />,
+            {database},
+        );
+
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
+    it('should match snapshot with delete_at filled in', () => {
+        channel.delete_at = 1111;
+        channel.shared = true;
+
+        const wrapper = renderWithEverything(
+            <ChannelListRow
+                id='1234'
+                isArchived={false}
+                theme={Preferences.THEMES.denim}
+                channel={channel}
+                testID='ChannelListRow'
+                enabled={true}
+                selectable={false}
+                selected={false}
+                children={[]}
+                onPress={() => {
+                    // noop
+                }}
+            />,
+            {database},
+        );
+
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
+    it('should match snapshot with shared filled in', () => {
+        channel.delete_at = 0;
+        channel.shared = true;
+
+        const wrapper = renderWithEverything(
+            <ChannelListRow
+                id='1234'
+                isArchived={false}
+                theme={Preferences.THEMES.denim}
+                channel={channel}
+                testID='ChannelListRow'
+                enabled={true}
+                selectable={false}
+                selected={false}
+                children={[]}
+                onPress={() => {
+                    // noop
+                }}
+            />,
+            {database},
+        );
+
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
+    it('should match snapshot with purpose filled in', () => {
+        channel.purpose = 'My purpose';
+
+        const wrapper = renderWithEverything(
+            <ChannelListRow
+                id='1234'
+                isArchived={true}
+                theme={Preferences.THEMES.denim}
+                channel={channel}
+                testID='ChannelListRow'
+                enabled={true}
+                selectable={false}
+                selected={false}
+                children={[]}
+                onPress={() => {
+                    // noop
+                }}
+            />,
+            {database},
+        );
+
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 });

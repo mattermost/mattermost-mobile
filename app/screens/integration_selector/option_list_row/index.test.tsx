@@ -17,7 +17,7 @@ describe('components/integration_selector/option_list_row', () => {
         database = server.database;
     });
 
-    it('should render', () => {
+    it('should match snapshot for option', () => {
         const myItem = {
             value: '1',
             text: 'my text',
@@ -30,11 +30,14 @@ describe('components/integration_selector/option_list_row', () => {
                 theme={Preferences.THEMES.denim}
                 item={myItem}
                 id='1'
-                onPress={null}
+                children={[]}
+                onPress={() => {
+                    // noop
+                }}
             />,
             {database},
         );
 
-        expect(wrapper.toJSON()).toBeTruthy();
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 });

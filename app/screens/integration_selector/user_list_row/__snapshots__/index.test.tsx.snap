@@ -1,0 +1,329 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/integration_selector/user_list_row match snapshot if user is my user 1`] = `
+<View
+  style={
+    {
+      "flex": 1,
+      "flexDirection": "row",
+      "overflow": "hidden",
+      "paddingHorizontal": 15,
+    }
+  }
+>
+  <View
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 65,
+        "opacity": 1,
+      }
+    }
+    testID="UserListRow"
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+      testID="1"
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "color": "#3f4350",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "borderRadius": 17.5,
+              "height": 34,
+              "width": 34,
+            }
+          }
+          testID="UserListRow.1.profile_picture"
+        >
+          <Icon
+            name="account-outline"
+            size={24}
+            style={
+              {
+                "color": "rgba(63,67,80,0.48)",
+              }
+            }
+          />
+        </View>
+      </View>
+      <View
+        style={
+          {
+            "flex": 1,
+            "flexDirection": "column",
+            "justifyContent": "center",
+            "marginLeft": 10,
+          }
+        }
+        testID="UserListRow.1"
+      >
+        <View>
+          <View
+            style={
+              {
+                "flexDirection": "row",
+              }
+            }
+          >
+            <Text
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={
+                {
+                  "color": "#3f4350",
+                  "fontSize": 15,
+                }
+              }
+              testID="UserListRow.display_username"
+            >
+              @johndoe - you
+            </Text>
+          </View>
+        </View>
+        <View>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              {
+                "color": "rgba(63,67,80,0.5)",
+                "fontSize": 15,
+              }
+            }
+          >
+            dummy
+          </Text>
+        </View>
+      </View>
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "justifyContent": "center",
+            },
+            {
+              "height": 18,
+              "width": 18,
+            },
+            undefined,
+            undefined,
+          ]
+        }
+      >
+        <Icon
+          name="circle-multiple-outline"
+          style={
+            [
+              {
+                "color": "rgba(255,255,255,0.4)",
+              },
+              {
+                "color": "#ffffff",
+              },
+              {
+                "color": "#3f4350",
+              },
+              {
+                "fontSize": 18,
+                "left": 0.5,
+              },
+            ]
+          }
+          testID="channel_icon.shared_open"
+        />
+      </View>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`components/integration_selector/user_list_row match snapshot if user is not shared 1`] = `
+<View
+  style={
+    {
+      "flex": 1,
+      "flexDirection": "row",
+      "overflow": "hidden",
+      "paddingHorizontal": 15,
+    }
+  }
+>
+  <View
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 65,
+        "opacity": 1,
+      }
+    }
+    testID="UserListRow"
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+      testID="1"
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "color": "#3f4350",
+            "flexDirection": "row",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "borderRadius": 17.5,
+              "height": 34,
+              "width": 34,
+            }
+          }
+          testID="UserListRow.1.profile_picture"
+        >
+          <Icon
+            name="account-outline"
+            size={24}
+            style={
+              {
+                "color": "rgba(63,67,80,0.48)",
+              }
+            }
+          />
+        </View>
+      </View>
+      <View
+        style={
+          {
+            "flex": 1,
+            "flexDirection": "column",
+            "justifyContent": "center",
+            "marginLeft": 10,
+          }
+        }
+        testID="UserListRow.1"
+      >
+        <View>
+          <View
+            style={
+              {
+                "flexDirection": "row",
+              }
+            }
+          >
+            <Text
+              ellipsizeMode="tail"
+              numberOfLines={1}
+              style={
+                {
+                  "color": "#3f4350",
+                  "fontSize": 15,
+                }
+              }
+              testID="UserListRow.display_username"
+            >
+              @johndoe
+            </Text>
+          </View>
+        </View>
+        <View>
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              {
+                "color": "rgba(63,67,80,0.5)",
+                "fontSize": 15,
+              }
+            }
+          >
+            dummy
+          </Text>
+        </View>
+      </View>
+      <View
+        style={
+          [
+            {
+              "alignItems": "center",
+              "justifyContent": "center",
+            },
+            {
+              "height": 18,
+              "width": 18,
+            },
+            undefined,
+            undefined,
+          ]
+        }
+      >
+        <Icon
+          name="circle-multiple-outline"
+          style={
+            [
+              {
+                "color": "rgba(255,255,255,0.4)",
+              },
+              {
+                "color": "#ffffff",
+              },
+              {
+                "color": "#3f4350",
+              },
+              {
+                "fontSize": 18,
+                "left": 0.5,
+              },
+            ]
+          }
+          testID="channel_icon.shared_open"
+        />
+      </View>
+    </View>
+  </View>
+</View>
+`;

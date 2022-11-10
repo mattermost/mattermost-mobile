@@ -18,7 +18,7 @@ describe('components/integration_selector/selected_options', () => {
         database = server.database;
     });
 
-    it('should render', () => {
+    it('should match snapshot for users', () => {
         const userProfile: UserProfile = {
             id: '1',
             create_at: 1111,
@@ -50,11 +50,70 @@ describe('components/integration_selector/selected_options', () => {
                 theme={Preferences.THEMES.denim}
                 selectedOptions={[userProfile]}
                 dataSource={ViewConstants.DATA_SOURCE_USERS}
-                onRemove={null}
+                onRemove={() => {
+                    // noop
+                }}
             />,
             {database},
         );
 
-        expect(wrapper.toJSON()).toBeTruthy();
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
+    it('should match snapshot for channels', () => {
+        const channel: Channel = {
+            id: '1',
+            create_at: 1111,
+            update_at: 1111,
+            delete_at: 0,
+            team_id: 'my team',
+            type: 'O',
+            display_name: 'channel',
+            name: 'channel',
+            header: 'channel',
+            purpose: '',
+            last_post_at: 1,
+            total_msg_count: 1,
+            extra_update_at: 1,
+            creator_id: '1',
+            scheme_id: null,
+            group_constrained: null,
+            shared: true,
+        };
+
+        const wrapper = renderWithEverything(
+            <SelectedOptions
+                theme={Preferences.THEMES.denim}
+                selectedOptions={[channel]}
+                dataSource={ViewConstants.DATA_SOURCE_CHANNELS}
+                onRemove={() => {
+                    // noop
+                }}
+            />,
+            {database},
+        );
+
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
+    it('should match snapshot for options', () => {
+        const myItem = {
+            value: '1',
+            text: 'my text',
+        };
+
+        const wrapper = renderWithEverything(
+            <SelectedOptions
+                theme={Preferences.THEMES.denim}
+                selectedOptions={[myItem]}
+                dataSource={ViewConstants.DATA_SOURCE_DYNAMIC}
+                onRemove={() => {
+                    // noop
+                }}
+            />,
+            {database},
+        );
+
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 });

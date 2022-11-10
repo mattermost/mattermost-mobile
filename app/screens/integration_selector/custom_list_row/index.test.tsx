@@ -17,19 +17,21 @@ describe('components/integration_selector/custom_list_row', () => {
         database = server.database;
     });
 
-    it('should render', () => {
+    it('should match snapshot', () => {
         const wrapper = renderWithEverything(
             <CustomListRow
                 id='1'
-                onPress={null}
+                onPress={() => {
+                    // noop
+                }}
                 enabled={true}
                 selectable={true}
                 selected={true}
-                theme={Preferences.THEMES.denim}
+                children={[]}
             />,
             {database},
         );
 
-        expect(wrapper.toJSON()).toBeTruthy();
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 });
