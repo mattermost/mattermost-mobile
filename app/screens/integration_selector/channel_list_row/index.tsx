@@ -10,7 +10,7 @@ import {
 import CompassIcon from '@components/compass_icon';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-import CustomListRow, {Props as CustomListRowProps} from './custom_list_row';
+import CustomListRow, {Props as CustomListRowProps} from '../custom_list_row';
 
 type ChannelListRowProps = {
     id: string;

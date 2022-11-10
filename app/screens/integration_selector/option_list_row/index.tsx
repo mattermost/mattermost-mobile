@@ -9,12 +9,12 @@ import {
 
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import CustomListRow, {Props as CustomListRowProps} from './custom_list_row';
+import CustomListRow, {Props as CustomListRowProps} from '../custom_list_row';
 
 type OptionListRowProps = {
     id: string;
     theme: object;
-    item: { text: string; value: string }; // TODO I don't think this goes here, but It seems broken in @master
+    item: { text: string; value: string };
     onPress: (item: DialogOption) => void;
 }
 

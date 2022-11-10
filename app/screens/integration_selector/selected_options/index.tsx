@@ -7,7 +7,7 @@ import {View, ScrollView} from 'react-native';
 import {View as ViewConstants} from '@constants';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import SelectedOption from './selected_option';
+import SelectedOption from '../selected_option';
 
 type Props = {
     ref?: React.Ref<ScrollView>;

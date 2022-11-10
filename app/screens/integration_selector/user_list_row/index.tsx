@@ -15,7 +15,7 @@ import {BotTag, GuestTag} from '@components/tag';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {isGuest, isShared} from '@utils/user';
 
-import CustomListRow, {Props as CustomListRowProps} from './custom_list_row';
+import CustomListRow, {Props as CustomListRowProps} from '../custom_list_row';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
