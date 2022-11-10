@@ -599,5 +599,22 @@
     "mobile.calls_leave_call": "Çağrıdan ayrıl",
     "mobile.calls_leave": "Ayrıl",
     "mobile.calls_lasted": "{duration} sürdü",
-    "mobile.android.photos_permission_denied_description": "Fotoğrafları sunucunuza yükleyin ya da aygtınıza kaydedin. Ayarlar bölümünden, fotoğraf kitaplığınıza {applicationName} için okuma ve yazma erişimi verin."
+    "mobile.android.photos_permission_denied_description": "Fotoğrafları sunucunuza yükleyin ya da aygtınıza kaydedin. Ayarlar bölümünden, fotoğraf kitaplığınıza {applicationName} için okuma ve yazma erişimi verin.",
+    "mobile.login_options.heading": "Hesabınızda oturum açın",
+    "mobile.login_options.google": "Google",
+    "mobile.login_options.gitlab": "GitLab",
+    "mobile.login_options.enter_credentials": "Oturum açma bilgilerinizi aşağıya yazın.",
+    "mobile.login_options.cant_heading": "Oturum açılamadı",
+    "mobile.leave_and_join_title": "Başka bir çağrıya geçmek istediğinize emin misiniz?",
+    "mobile.leave_and_join_message": "Zaten ~{leaveChannelName} kanalındaki bir çağrıdasınız. Bu çağrıdan ayrılıp ~{joinChannelName} kanalındaki çağrıya katılmak ister misiniz?",
+    "mobile.leave_and_join_confirmation": "Ayrıl ve katıl",
+    "mobile.join_channel.error": "{displayName} kanalına katılamadık.",
+    "mobile.ios.photos_permission_denied_description": "Fotoğrafları ve görüntüleri sunucunuza yükleyin ya da aygıtınıza kaydedin. Ayarlar bölümünden, fotoğraf ve görüntü kitaplığınıza {applicationName} için okuma ve yazma izni verin.",
+    "mobile.edit_post.error": "Bu ileti düzenirken bir sorun çıktı. Lütfen yeniden deneyin.",
+    "mobile.edit_post.delete_title": "İletiyi silmeyi onayla",
+    "mobile.edit_post.delete_question": "Bu iletiyi silmek istediğinize emin misiniz?",
+    "mobile.display_settings.timezone": "Saat dilimi",
+    "mobile.display_settings.clockDisplay": "Saat görünümü",
+    "mobile.direct_message.error": "{displayName} ile doğrudan ileti açılamadı.",
+    "mobile.custom_status.clear_after.title": "Özel durumun temizlenme süresi"
 }
