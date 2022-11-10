@@ -129,25 +129,20 @@ export default function CreateDirectMessage({
 
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
         const user = selectedIds[id];
-
         const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
 
         const result = await makeDirectChannel(serverUrl, id, displayName);
-
         if (result.error) {
             alertErrorWithFallback(intl, result.error, messages.dm, {displayName});
         }
-
         return !result.error;
     }, [selectedIds, intl.locale, teammateNameDisplay, serverUrl]);
 
     const createGroupChannel = useCallback(async (ids: string[]): Promise<boolean> => {
         const result = await makeGroupChannel(serverUrl, ids);
-
         if (result.error) {
             alertErrorWithFallback(intl, result.error, messages.gm);
         }
-
         return !result.error;
     }, [serverUrl]);
 
