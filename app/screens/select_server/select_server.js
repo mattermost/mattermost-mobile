@@ -35,11 +35,11 @@ import FormattedText from '@components/formatted_text';
 import {Sso} from '@constants';
 import fetchConfig from '@init/fetch';
 import globalEventHandler from '@init/global_event_handler';
+import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 import {t} from '@utils/i18n';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity} from '@utils/theme';
 import {isValidUrl, stripTrailingSlashes} from '@utils/url';
-import {isMinimumServerVersion} from '@mm-redux/utils/helpers';
 
 import mattermostBucket from 'app/mattermost_bucket';
 import {GlobalStyles} from 'app/styles';
@@ -58,6 +58,7 @@ export default class SelectServer extends PureComponent {
         allowOtherServers: PropTypes.bool,
         config: PropTypes.object,
         hasConfigAndLicense: PropTypes.bool.isRequired,
+        serverVersion: PropTypes.string.isRequired,
         license: PropTypes.object,
         serverUrl: PropTypes.string.isRequired,
         deepLinkURL: PropTypes.string,
@@ -237,8 +238,10 @@ export default class SelectServer extends PureComponent {
         const isLicensed = license.IsLicensed === 'true';
         const samlEnabled = isLicensed && config.EnableSaml === 'true' && license.SAML === 'true';
         const isMinServerVersionForFreeOAuth = isMinimumServerVersion(this.props.serverVersion, 7, 6);
-        let googleEnabled = false, o365Enabled = false, openIdEnabled = false;
-        if(isMinServerVersionForFreeOAuth) {
+        let googleEnabled = false;
+        let o365Enabled = false;
+        let openIdEnabled = false;
+        if (isMinServerVersionForFreeOAuth) {
             googleEnabled = config.EnableSignUpWithGoogle === 'true';
             o365Enabled = config.EnableSignUpWithOffice365 === 'true';
             openIdEnabled = config.EnableSignUpWithOpenId === 'true';
