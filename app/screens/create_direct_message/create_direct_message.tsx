@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard} from 'react-native';
 
@@ -17,7 +17,7 @@ import {t} from '@i18n';
 import MembersModal from '@screens/members_modal';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
-import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
+import {displayUsername} from '@utils/user';
 
 const START_BUTTON = 'start-conversation';
 const CLOSE_BUTTON = 'close-dms';
@@ -264,31 +264,8 @@ export default function CreateDirectMessage({
         updateNavigationButtons(canStart);
     }, [selectedCount > 0, startingConversation, updateNavigationButtons]);
 
-    const data = useMemo(() => {
-        if (term) {
-            const exactMatches: UserProfile[] = [];
-            const filterByTerm = (p: UserProfile) => {
-                if (selectedCount > 0 && p.id === currentUserId) {
-                    return false;
-                }
-
-                if (p.username === term || p.username.startsWith(term)) {
-                    exactMatches.push(p);
-                    return false;
-                }
-
-                return true;
-            };
-
-            const results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
-            return [...exactMatches, ...results];
-        }
-        return profiles;
-    }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
-
     return (
         <MembersModal
-            data={data}
             getProfiles={getProfiles}
             loading={loading}
             onSelectProfile={handleSelectProfile}
@@ -298,6 +275,8 @@ export default function CreateDirectMessage({
             search={search}
             term={term}
             page={page}
+            profiles={profiles}
+            searchResults={searchResults}
             selectedIds={selectedIds}
             startingConversation={startingConversation}
         />

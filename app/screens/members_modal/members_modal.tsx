@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -13,6 +13,7 @@ import {useTheme} from '@context/theme';
 import SelectedUsers from '@screens/members_modal/selected_users';
 import UserList from '@screens/members_modal/user_list';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {filterProfilesMatchingTerm} from '@utils/user';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -48,7 +49,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 type Props = {
     currentUserId: string;
-    data: UserProfile[];
     getProfiles: () => void;
     loading: boolean;
     onClearSearch: () => void;
@@ -62,11 +62,13 @@ type Props = {
     teammateNameDisplay: string;
     term: string;
     tutorialWatched: boolean;
+
+    profiles: UserProfile[];
+    searchResults: UserProfile[];
 }
 
 export default function MembersModal({
     currentUserId,
-    data,
     getProfiles,
     loading,
     onClearSearch,
@@ -80,12 +82,39 @@ export default function MembersModal({
     teammateNameDisplay,
     term,
     tutorialWatched,
+
+    profiles,
+    searchResults,
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
     const {formatMessage} = useIntl();
 
     const selectedCount = Object.keys(selectedIds).length;
+
+    const isSearch = Boolean(term);
+
+    const data = useMemo(() => {
+        if (term) {
+            const exactMatches: UserProfile[] = [];
+            const filterByTerm = (p: UserProfile) => {
+                if (selectedCount > 0 && p.id === currentUserId) {
+                    return false;
+                }
+
+                if (p.username === term || p.username.startsWith(term)) {
+                    exactMatches.push(p);
+                    return false;
+                }
+
+                return true;
+            };
+
+            const results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
+            return [...exactMatches, ...results];
+        }
+        return profiles;
+    }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
 
     const handleOnSubmitEditing = useCallback(() => {
         search();
