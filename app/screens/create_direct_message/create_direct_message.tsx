@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -17,16 +17,26 @@ import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
+import SelectedUsers from '@screens/members_modal/selected_users';
+import UserList from '@screens/members_modal/user_list';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
-import SelectedUsers from './selected_users';
-import UserList from './user_list';
-
 const START_BUTTON = 'start-conversation';
 const CLOSE_BUTTON = 'close-dms';
+
+const messages = defineMessages({
+    dm: {
+        id: 'mobile.open_dm.error',
+        defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
+    },
+    gm: {
+        id: t('mobile.open_gm.error'),
+        defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
+    },
+});
 
 type Props = {
     componentId: string;
@@ -154,17 +164,7 @@ export default function CreateDirectMessage({
         const result = await makeDirectChannel(serverUrl, id, displayName);
 
         if (result.error) {
-            alertErrorWithFallback(
-                intl,
-                result.error,
-                {
-                    id: 'mobile.open_dm.error',
-                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
-                },
-                {
-                    displayName,
-                },
-            );
+            alertErrorWithFallback(intl, result.error, messages.dm, {displayName});
         }
 
         return !result.error;
@@ -174,14 +174,7 @@ export default function CreateDirectMessage({
         const result = await makeGroupChannel(serverUrl, ids);
 
         if (result.error) {
-            alertErrorWithFallback(
-                intl,
-                result.error,
-                {
-                    id: t('mobile.open_gm.error'),
-                    defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
-                },
-            );
+            alertErrorWithFallback(intl, result.error, messages.gm);
         }
 
         return !result.error;
