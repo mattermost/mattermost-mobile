@@ -219,7 +219,7 @@ const UsersModal = ({
     }, [clearSearch, currentUserId, handleRemoveProfile, handleButtonTap, selectedIds, setSelectedIds]);
 
     const data = useMemo(() => {
-        if (term) {
+        if (isSearch) {
             const exactMatches: UserProfile[] = [];
             const filterByTerm = (p: UserProfile) => {
                 if (selectedCount > 0 && p.id === currentUserId) {
