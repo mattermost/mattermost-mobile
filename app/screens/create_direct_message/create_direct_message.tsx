@@ -31,6 +31,7 @@ const messages = defineMessages({
 type Props = {
     componentId: string;
     currentTeamId: string;
+    currentUserId: string;
     restrictDirectMessage: boolean;
     teammateNameDisplay: string;
 }
@@ -38,6 +39,7 @@ type Props = {
 export default function CreateDirectMessage({
     componentId,
     currentTeamId,
+    currentUserId,
     restrictDirectMessage,
     teammateNameDisplay,
 }: Props) {
@@ -93,6 +95,7 @@ export default function CreateDirectMessage({
         <MembersModal
             buttonText={messages.button}
             componentId={componentId}
+            currentUserId={currentUserId}
             getProfiles={getProfiles}
             maxSelectedUsers={General.MAX_USERS_IN_GM}
             page={page}
@@ -100,6 +103,7 @@ export default function CreateDirectMessage({
             selectedIds={selectedIds}
             setPage={setPage}
             setSelectedIds={setSelectedIds}
+            teammateNameDisplay={teammateNameDisplay}
             onButtonTap={onButtonTap}
         />
     );
