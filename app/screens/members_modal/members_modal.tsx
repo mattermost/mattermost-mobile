@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {MessageDescriptor, useIntl} from 'react-intl';
-import {Keyboard, Platform, View} from 'react-native';
+import {Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
@@ -16,39 +16,18 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SelectedUsers from '@screens/members_modal/selected_users';
 import UserList from '@screens/members_modal/user_list';
 import {dismissModal, setButtons} from '@screens/navigation';
-import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        searchBar: {
-            marginLeft: 12,
-            marginRight: Platform.select({ios: 4, default: 12}),
-            marginVertical: 12,
-        },
-        loadingContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
-            height: 70,
-            justifyContent: 'center',
-        },
-        loadingText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-        },
-        noResultContainer: {
-            flexGrow: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        noResultText: {
-            fontSize: 26,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
-    };
+const style = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    searchBar: {
+        marginLeft: 12,
+        marginRight: Platform.select({ios: 4, default: 12}),
+        marginVertical: 12,
+    },
 });
 
 const ACTION_BUTTON = 'action-button';
@@ -118,7 +97,6 @@ const MembersModal = ({
     tutorialWatched,
 }: Props) => {
     const theme = useTheme();
-    const style = getStyleFromTheme(theme);
     const {formatMessage, locale} = useIntl();
 
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
