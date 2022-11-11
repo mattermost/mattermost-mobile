@@ -167,18 +167,14 @@ const MembersModal = ({
         setStartingButtonAction(true);
 
         const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
-        let success;
-        if (idsToUse.length === 0) {
-            success = false;
-        } else {
-            success = await onButtonTap();
-        }
+        const success = idsToUse.length === 0 ? false : await onButtonTap();
 
         if (success) {
             close();
-        } else {
-            setStartingButtonAction(false);
+            return;
         }
+
+        setStartingButtonAction(false);
     }, [onButtonTap, selectedIds, startingButtonAction]);
 
     const handleGetProfiles = useCallback(debounce(() => {
@@ -207,9 +203,10 @@ const MembersModal = ({
             searchTimeoutId.current = setTimeout(() => {
                 handleSearchUsers(text);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
-        } else {
-            clearSearch();
+            return;
         }
+
+        clearSearch();
     }, [clearSearch, handleSearchUsers]);
 
     const handleRemoveProfile = useCallback((id: string) => {
@@ -232,22 +229,21 @@ const MembersModal = ({
             };
 
             handleButtonTap(selectedId);
-        } else {
-            const wasSelected = selectedIds[user.id];
-
-            if (!wasSelected && selectedCount >= maxSelectedUsers) {
-                return;
-            }
-
-            const newSelectedIds = Object.assign({}, selectedIds);
-            if (!wasSelected) {
-                newSelectedIds[user.id] = user;
-            }
-
-            setSelectedIds(newSelectedIds);
-
-            clearSearch();
+            return;
         }
+
+        const wasSelected = selectedIds[user.id];
+        if (!wasSelected && selectedCount >= maxSelectedUsers) {
+            return;
+        }
+
+        const newSelectedIds = Object.assign({}, selectedIds);
+        if (!wasSelected) {
+            newSelectedIds[user.id] = user;
+        }
+
+        setSelectedIds(newSelectedIds);
+        clearSearch();
     }, [clearSearch, currentUserId, handleRemoveProfile, handleButtonTap, selectedIds, setSelectedIds]);
 
     const data = useMemo(() => {
