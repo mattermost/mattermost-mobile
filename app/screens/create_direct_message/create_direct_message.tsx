@@ -69,7 +69,7 @@ export default function CreateDirectMessage({
         return fetchProfiles(serverUrl, page + 1, General.PROFILE_CHUNK_SIZE);
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
 
-    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
+    const onButtonTap = useCallback(async (selectedId?: {[id: string]: boolean}) => {
         const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
         if (idsToUse.length > 1) {
             return createGroupChannel(idsToUse);
@@ -94,7 +94,7 @@ export default function CreateDirectMessage({
             selectedIds={selectedIds}
             setPage={setPage}
             setSelectedIds={setSelectedIds}
-            startConversation={startConversation}
+            onButtonTap={onButtonTap}
         />
     );
 }

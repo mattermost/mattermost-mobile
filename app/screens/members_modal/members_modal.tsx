@@ -88,7 +88,7 @@ type Props = {
     selectedIds: {[id: string]: UserProfile};
     setPage: (page: number) => void;
     setSelectedIds: (ids: {[id: string]: UserProfile}) => void;
-    startConversation: (selectedId?: {[id: string]: boolean}) => Promise<boolean>;
+    onButtonTap: (selectedId?: {[id: string]: boolean}) => Promise<boolean>;
     teammateNameDisplay: string;
     tutorialWatched: boolean;
 }
@@ -109,7 +109,7 @@ const MembersModal = ({
     selectedIds,
     setPage,
     setSelectedIds,
-    startConversation,
+    onButtonTap,
     teammateNameDisplay,
     tutorialWatched,
 }: Props) => {
@@ -120,7 +120,7 @@ const MembersModal = ({
     const selectedCount = Object.keys(selectedIds).length;
 
     const [term, setTerm] = useState('');
-    const [startingConversation, setStartingConversation] = useState(false);
+    const [startingButtonAction, setStartingButtonAction] = useState(false);
     const isSearch = Boolean(term);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
@@ -141,7 +141,6 @@ const MembersModal = ({
         }
     }, [page, setPage]);
 
-    // the search profiles function used to update the user list
     const handleSearchUsers = useCallback(async (searchTerm: string) => {
         setLoading(true);
 
@@ -156,28 +155,27 @@ const MembersModal = ({
         setLoading(false);
     }, [searchUsers]);
 
-    // the action to take when clicking the start button
-    const handleStartConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
-        if (startingConversation) {
+    const handleButtonTap = useCallback(async (selectedId?: {[id: string]: boolean}) => {
+        if (startingButtonAction) {
             return;
         }
 
-        setStartingConversation(true);
+        setStartingButtonAction(true);
 
         const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
         let success;
         if (idsToUse.length === 0) {
             success = false;
         } else {
-            success = await startConversation();
+            success = await onButtonTap();
         }
 
         if (success) {
             close();
         } else {
-            setStartingConversation(false);
+            setStartingButtonAction(false);
         }
-    }, [startingConversation, selectedIds, startConversation]);
+    }, [startingButtonAction, selectedIds, onButtonTap]);
 
     const handleGetProfiles = useCallback(debounce(() => {
         if (next.current && !loading && !term && mounted.current) {
@@ -215,11 +213,11 @@ const MembersModal = ({
     }, []);
 
     useEffect(() => {
-        const canStart = selectedCount > 0 && !startingConversation;
+        const canStart = selectedCount > 0 && !startingButtonAction;
         updateNavigationButtons(canStart);
-    }, [selectedCount > 0, startingConversation, updateNavigationButtons]);
+    }, [selectedCount > 0, startingButtonAction, updateNavigationButtons]);
 
-    useNavButtonPressed(START_BUTTON, componentId, handleStartConversation, [handleStartConversation]);
+    useNavButtonPressed(START_BUTTON, componentId, handleButtonTap, [handleButtonTap]);
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
     const handleRemoveProfile = useCallback((id: string) => {
@@ -265,7 +263,7 @@ const MembersModal = ({
                 [currentUserId]: true,
             };
 
-            handleStartConversation(selectedId);
+            handleButtonTap(selectedId);
         } else {
             const wasSelected = selectedIds[user.id];
 
@@ -282,7 +280,7 @@ const MembersModal = ({
 
             clearSearch();
         }
-    }, [selectedIds, currentUserId, handleRemoveProfile, setSelectedIds, handleStartConversation, clearSearch]);
+    }, [selectedIds, currentUserId, handleRemoveProfile, setSelectedIds, handleButtonTap, clearSearch]);
 
     const data = useMemo(() => {
         if (term) {
@@ -306,7 +304,7 @@ const MembersModal = ({
         return profiles;
     }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
 
-    if (startingConversation) {
+    if (startingButtonAction) {
         return (
             <View style={style.container}>
                 <Loading color={theme.centerChannelColor}/>
