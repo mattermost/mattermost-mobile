@@ -6,10 +6,10 @@ import {defineMessages, useIntl} from 'react-intl';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remote/user';
+import UsersModal from '@components/users_modal';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
-import MembersModal from '@screens/members_modal';
 import {alertErrorWithFallback} from '@utils/draft';
 import {displayUsername} from '@utils/user';
 
@@ -92,7 +92,7 @@ export default function CreateDirectMessage({
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
 
     return (
-        <MembersModal
+        <UsersModal
             buttonText={messages.button}
             componentId={componentId}
             currentUserId={currentUserId}

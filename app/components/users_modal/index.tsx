@@ -5,10 +5,10 @@ import withObservables from '@nozbe/with-observables';
 
 import {observeProfileLongPresTutorial} from '@queries/app/global';
 
-import MembersModal from './members_modal';
+import UsersModal from './users_modal';
 
 const enhanced = withObservables([], () => ({
     tutorialWatched: observeProfileLongPresTutorial(),
 }));
 
-export default enhanced(MembersModal);
+export default enhanced(UsersModal);

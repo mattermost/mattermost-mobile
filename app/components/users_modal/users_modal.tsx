@@ -81,7 +81,7 @@ function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: Use
     return state;
 }
 
-const MembersModal = ({
+const UsersModal = ({
     buttonText,
     componentId,
     currentUserId,
@@ -329,4 +329,4 @@ const MembersModal = ({
     );
 };
 
-export default MembersModal;
+export default UsersModal;
