@@ -124,3 +124,18 @@ export const getRedirectLocation = async (serverUrl: string, link: string) => {
         return {error};
     }
 };
+
+export const isNPSEnabled = async (serverUrl: string) => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const manifests = await client.getPluginsManifests();
+        for (const v of manifests) {
+            if (v.id === 'com.mattermost.nps') {
+                return true;
+            }
+        }
+        return false;
+    } catch (error) {
+        return false;
+    }
+};

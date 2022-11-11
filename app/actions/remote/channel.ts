@@ -709,6 +709,29 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
     }
 }
 
+export async function goToNPSChannel(serverUrl: string) {
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const user = await client.getUserByUsername('feedbackbot');
+        const {data} = await createDirectChannel(serverUrl, user.id);
+        if (!data) {
+            return {error: new Error('channel not found')};
+        }
+        await switchToChannelById(serverUrl, data?.id, data?.team_id);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+
+    return {};
+}
+
 export async function createDirectChannel(serverUrl: string, userId: string, displayName = '') {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
