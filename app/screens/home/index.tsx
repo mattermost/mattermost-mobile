@@ -3,19 +3,14 @@
 
 import {createBottomTabNavigator, BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
-import * as Sentry from '@sentry/react-native';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
-import {ServersModel} from '@app/database/models/app';
-import {subscribeActiveServers} from '@app/database/subscription/servers';
-import {getUserContext, getBuildTags, getExtraContext} from '@app/utils/sentry';
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
 import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
@@ -99,32 +94,6 @@ export default function HomeScreen(props: HomeProps) {
             listener.remove();
         };
     }, [intl.locale]);
-
-    useEffect(() => {
-        const activeServerUrlObserver = async (servers: ServersModel[]) => {
-            const server = servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a));
-
-            if (server) {
-                const database = DatabaseManager.serverDatabases[server.url]?.database;
-                if (database) {
-                    const userContext = await getUserContext(database);
-                    Sentry.setContext('USER INFORMATION', userContext);
-
-                    const buildContext = await getBuildTags(database);
-                    Sentry.setContext('BUILD-TAGS INFORMATION', buildContext);
-
-                    const extraContext = await getExtraContext(database);
-                    Sentry.setContext('SERVER INFORMATION', extraContext);
-                }
-            }
-        };
-
-        const subscription = subscribeActiveServers(activeServerUrlObserver);
-
-        return () => {
-            subscription?.unsubscribe();
-        };
-    }, []);
 
     return (
         <NavigationContainer

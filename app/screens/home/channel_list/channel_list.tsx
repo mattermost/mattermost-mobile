@@ -3,6 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
+import * as Sentry from '@sentry/react-native';
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid} from 'react-native';
@@ -13,9 +14,13 @@ import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
+import {subscribeActiveServers} from '@database/subscription/servers';
 import {useIsTablet} from '@hooks/device';
 import {resetToTeams} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import ServersModel from '@typings/database/models/app/servers';
+import {getBuildTags, getExtraContext, getUserContext} from '@utils/sentry';
 
 import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
@@ -110,6 +115,32 @@ const ChannelListScreen = (props: ChannelProps) => {
         const back = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
         return () => back.remove();
     }, [handleBackPress]);
+
+    useEffect(() => {
+        const activeServerUrlObserver = async (servers: ServersModel[]) => {
+            const server = servers.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a));
+
+            if (server) {
+                const database = DatabaseManager.serverDatabases[server.url]?.database;
+                if (database) {
+                    const userContext = await getUserContext(database);
+                    Sentry.setContext('User-Information', userContext);
+
+                    const buildContext = await getBuildTags(database);
+                    Sentry.setContext('App-Build Information', buildContext);
+
+                    const extraContext = await getExtraContext(database);
+                    Sentry.setContext('Server-Information', extraContext);
+                }
+            }
+        };
+
+        const subscription = subscribeActiveServers(activeServerUrlObserver);
+
+        return () => {
+            subscription?.unsubscribe();
+        };
+    }, []);
 
     return (
         <FreezeScreen freeze={!isFocused}>
