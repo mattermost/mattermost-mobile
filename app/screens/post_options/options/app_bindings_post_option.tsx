@@ -1,22 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
+import {map} from 'rxjs/operators';
 
 import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/remote/apps';
 import {handleGotoLocation} from '@actions/remote/command';
 import OptionItem from '@app/components/option_item';
-import {AppBindingLocations, AppCallResponseTypes} from '@app/constants/apps';
-import AppsManager from '@app/managers/apps_manager';
-import {observeCurrentTeamId} from '@app/queries/servers/system';
+import {AppCallResponseTypes} from '@app/constants/apps';
+import {ChannelModel} from '@app/database/models/server';
 import {createCallContext} from '@app/utils/apps';
 import {preventDoubleTap} from '@app/utils/tap';
 import {Screens} from '@constants';
 import {dismissBottomSheet, showAppForm} from '@screens/navigation';
-import {WithDatabaseArgs} from '@typings/database/database';
 
 import type PostModel from '@typings/database/models/servers/post';
 
@@ -26,6 +24,7 @@ type Props = {
     serverUrl: string;
     teamId: string;
 }
+
 const AppBindingsPostOptions = ({serverUrl, post, teamId, bindings}: Props) => {
     const intl = useIntl();
 
@@ -97,19 +96,11 @@ const AppBindingsPostOptions = ({serverUrl, post, teamId, bindings}: Props) => {
 
 type OwnProps = {
     post: PostModel;
-    serverUrl: string;
+    bindings: AppBinding[];
 }
 
-const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => {
-    const {database} = ownProps;
-    const teamId = observeCurrentTeamId(database);
+const withTeamId = withObservables(['post'], ({post}: OwnProps) => ({
+    teamId: post.channel.observe().pipe(map((channel: ChannelModel) => channel.teamId)),
+}));
 
-    const bindings = AppsManager.observeBindings(ownProps.serverUrl, AppBindingLocations.POST_MENU_ITEM);
-
-    return {
-        teamId,
-        bindings,
-    };
-});
-
-export default React.memo(withDatabase(enhanced(AppBindingsPostOptions)));
+export default React.memo(withTeamId(AppBindingsPostOptions));
