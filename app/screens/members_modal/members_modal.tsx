@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, View} from 'react-native';
+import {Keyboard, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import Loading from '@components/loading';
 import Search from '@components/search';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SelectedUsers from '@screens/members_modal/selected_users';
 import UserList from '@screens/members_modal/user_list';
+import {dismissModal} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
@@ -47,44 +49,62 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+const START_BUTTON = 'start-conversation';
+const CLOSE_BUTTON = 'close-dms';
+
+const close = () => {
+    Keyboard.dismiss();
+    dismissModal();
+};
+
+type searchFuncError = {
+    data?: undefined;
+    error: unknown;
+}
+
+type searchFuncSuccess = {
+    data: UserProfile[];
+    error?: undefined;
+}
+
 type Props = {
+    componentId: string;
     currentUserId: string;
     getProfiles: () => void;
     loading: boolean;
-    onClearSearch: () => void;
-    onRemoveProfile: (id: string) => void;
-    onSearch: (text: string) => void;
-    onSelectProfile: (user: UserProfile) => void;
     page: React.RefObject<any>;
-    search: () => void;
+    profiles: UserProfile[];
+    searchUsersFunc: (searchTerm: string) => Promise<searchFuncError | searchFuncSuccess>;
     selectedIds: {[id: string]: UserProfile};
+    setLoading: (v: boolean) => void;
+    setSelectedIds: (ids: {[id: string]: UserProfile}) => void;
+    setStartingConversation: (v: boolean) => void;
+    setTerm: (term: string) => void;
+    startConversationFunc: (selectedId?: {[id: string]: boolean}) => Promise<boolean>;
     startingConversation: boolean;
     teammateNameDisplay: string;
     term: string;
     tutorialWatched: boolean;
-
-    profiles: UserProfile[];
-    searchResults: UserProfile[];
 }
 
 export default function MembersModal({
+    componentId,
     currentUserId,
     getProfiles,
     loading,
-    onClearSearch,
-    onRemoveProfile,
-    onSearch,
-    onSelectProfile,
     page,
-    search,
+    profiles,
+    searchUsersFunc,
     selectedIds,
+    setLoading,
+    setSelectedIds,
+    setStartingConversation,
+    setTerm,
+    startConversationFunc,
     startingConversation,
     teammateNameDisplay,
     term,
     tutorialWatched,
-
-    profiles,
-    searchResults,
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -93,6 +113,111 @@ export default function MembersModal({
     const selectedCount = Object.keys(selectedIds).length;
 
     const isSearch = Boolean(term);
+    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
+    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+
+    // the search profiles function used to update the user list
+    const searchUsers = useCallback(async (searchTerm: string) => {
+        setLoading(true);
+
+        const results = await searchUsersFunc(searchTerm);
+
+        let data: UserProfile[] = [];
+        if (results.data) {
+            data = results.data;
+        }
+
+        setSearchResults(data);
+        setLoading(false);
+    }, [searchUsersFunc]);
+
+    // the action to take when clicking the start button
+    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
+        if (startingConversation) {
+            return;
+        }
+
+        setStartingConversation(true);
+
+        const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
+        let success;
+        if (idsToUse.length === 0) {
+            success = false;
+        } else {
+            success = await startConversationFunc();
+        }
+
+        if (success) {
+            close();
+        } else {
+            setStartingConversation(false);
+        }
+    }, [startingConversation, selectedIds, startConversationFunc]);
+
+    useNavButtonPressed(START_BUTTON, componentId, startConversation, [startConversation]);
+    useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
+
+    const handleRemoveProfile = useCallback((id: string) => {
+        const newSelectedIds = Object.assign({}, selectedIds);
+
+        Reflect.deleteProperty(newSelectedIds, id);
+
+        setSelectedIds(newSelectedIds);
+    }, [selectedIds]);
+
+    const search = useCallback(() => {
+        searchUsers(term);
+    }, [searchUsers, term]);
+
+    const clearSearch = useCallback(() => {
+        setTerm('');
+        setSearchResults([]);
+    }, []);
+
+    const onSearch = useCallback((text: string) => {
+        if (text) {
+            setTerm(text);
+            if (searchTimeoutId.current) {
+                clearTimeout(searchTimeoutId.current);
+            }
+
+            searchTimeoutId.current = setTimeout(() => {
+                searchUsers(text);
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
+        } else {
+            clearSearch();
+        }
+    }, [searchUsers, clearSearch]);
+
+    const handleSelectProfile = useCallback((user: UserProfile) => {
+        if (selectedIds[user.id]) {
+            handleRemoveProfile(user.id);
+            return;
+        }
+
+        if (user.id === currentUserId) {
+            const selectedId = {
+                [currentUserId]: true,
+            };
+
+            startConversation(selectedId);
+        } else {
+            const wasSelected = selectedIds[user.id];
+
+            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+                return;
+            }
+
+            const newSelectedIds = Object.assign({}, selectedIds);
+            if (!wasSelected) {
+                newSelectedIds[user.id] = user;
+            }
+
+            setSelectedIds(newSelectedIds);
+
+            clearSearch();
+        }
+    }, [selectedIds, currentUserId, handleRemoveProfile, startConversation, clearSearch]);
 
     const data = useMemo(() => {
         if (term) {
@@ -118,19 +243,11 @@ export default function MembersModal({
 
     const handleOnSubmitEditing = useCallback(() => {
         search();
-    }, [onSelectProfile]);
+    }, [search]);
 
     const handleOnCancel = useCallback(() => {
-        onClearSearch();
-    }, [onSelectProfile]);
-
-    const handleSelectProfile = useCallback((user: UserProfile) => {
-        onSelectProfile(user);
-    }, [onSelectProfile]);
-
-    const handleRemoveProfile = useCallback((id: string) => {
-        onRemoveProfile(id);
-    }, [onRemoveProfile]);
+        clearSearch();
+    }, [clearSearch]);
 
     if (startingConversation) {
         return (
@@ -184,4 +301,3 @@ export default function MembersModal({
         </SafeAreaView>
     );
 }
-

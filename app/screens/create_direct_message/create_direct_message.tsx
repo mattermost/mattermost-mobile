@@ -3,7 +3,6 @@
 
 import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard} from 'react-native';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remote/user';
@@ -12,10 +11,9 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import MembersModal from '@screens/members_modal';
-import {dismissModal, setButtons} from '@screens/navigation';
+import {setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {displayUsername} from '@utils/user';
 
@@ -36,15 +34,9 @@ const messages = defineMessages({
 type Props = {
     componentId: string;
     currentTeamId: string;
-    currentUserId: string;
     restrictDirectMessage: boolean;
     teammateNameDisplay: string;
 }
-
-const close = () => {
-    Keyboard.dismiss();
-    dismissModal();
-};
 
 function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
     if (action.type === 'add' && action.values?.length) {
@@ -56,7 +48,6 @@ function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: Use
 export default function CreateDirectMessage({
     componentId,
     currentTeamId,
-    currentUserId,
     restrictDirectMessage,
     teammateNameDisplay,
 }: Props) {
@@ -65,13 +56,11 @@ export default function CreateDirectMessage({
     const intl = useIntl();
     const {formatMessage} = intl;
 
-    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const next = useRef(true);
     const page = useRef(-1);
     const mounted = useRef(false);
 
     const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
-    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
@@ -92,11 +81,6 @@ export default function CreateDirectMessage({
         }
     };
 
-    const clearSearch = useCallback(() => {
-        setTerm('');
-        setSearchResults([]);
-    }, []);
-
     const getProfiles = useCallback(debounce(() => {
         if (next.current && !loading && !term && mounted.current) {
             setLoading(true);
@@ -107,14 +91,6 @@ export default function CreateDirectMessage({
             }
         }
     }, 100), [loading, isSearch, restrictDirectMessage, serverUrl, currentTeamId]);
-
-    const handleRemoveProfile = useCallback((id: string) => {
-        const newSelectedIds = Object.assign({}, selectedIds);
-
-        Reflect.deleteProperty(newSelectedIds, id);
-
-        setSelectedIds(newSelectedIds);
-    }, [selectedIds]);
 
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
         const user = selectedIds[id];
@@ -135,98 +111,27 @@ export default function CreateDirectMessage({
         return !result.error;
     }, [serverUrl]);
 
-    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
-        if (startingConversation) {
-            return;
-        }
-
-        setStartingConversation(true);
-
+    const startConversationFunc = useCallback(async (selectedId?: {[id: string]: boolean}) => {
         const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
-        let success;
-        if (idsToUse.length === 0) {
-            success = false;
-        } else if (idsToUse.length > 1) {
-            success = await createGroupChannel(idsToUse);
+        let func;
+        if (idsToUse.length > 1) {
+            func = createGroupChannel(idsToUse);
         } else {
-            success = await createDirectChannel(idsToUse[0]);
+            func = createDirectChannel(idsToUse[0]);
         }
+        return func;
+    }, [selectedIds, createGroupChannel, createDirectChannel]);
 
-        if (success) {
-            close();
-        } else {
-            setStartingConversation(false);
-        }
-    }, [startingConversation, selectedIds, createGroupChannel, createDirectChannel]);
-
-    const handleSelectProfile = useCallback((user: UserProfile) => {
-        if (selectedIds[user.id]) {
-            handleRemoveProfile(user.id);
-            return;
-        }
-
-        if (user.id === currentUserId) {
-            const selectedId = {
-                [currentUserId]: true,
-            };
-
-            startConversation(selectedId);
-        } else {
-            const wasSelected = selectedIds[user.id];
-
-            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
-                return;
-            }
-
-            const newSelectedIds = Object.assign({}, selectedIds);
-            if (!wasSelected) {
-                newSelectedIds[user.id] = user;
-            }
-
-            setSelectedIds(newSelectedIds);
-
-            clearSearch();
-        }
-    }, [selectedIds, currentUserId, handleRemoveProfile, startConversation, clearSearch]);
-
-    const searchUsers = useCallback(async (searchTerm: string) => {
+    const searchUsersFunc = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
-        setLoading(true);
-        let results;
-
+        let func;
         if (restrictDirectMessage) {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
+            func = searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
         } else {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
+            func = searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
         }
-
-        let data: UserProfile[] = [];
-        if (results.data) {
-            data = results.data;
-        }
-
-        setSearchResults(data);
-        setLoading(false);
+        return func;
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
-
-    const search = useCallback(() => {
-        searchUsers(term);
-    }, [searchUsers, term]);
-
-    const onSearch = useCallback((text: string) => {
-        if (text) {
-            setTerm(text);
-            if (searchTimeoutId.current) {
-                clearTimeout(searchTimeoutId.current);
-            }
-
-            searchTimeoutId.current = setTimeout(() => {
-                searchUsers(text);
-            }, General.SEARCH_TIMEOUT_MILLISECONDS);
-        } else {
-            clearSearch();
-        }
-    }, [searchUsers, clearSearch]);
 
     const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
@@ -247,9 +152,6 @@ export default function CreateDirectMessage({
         });
     }, [intl.locale, theme]);
 
-    useNavButtonPressed(START_BUTTON, componentId, startConversation, [startConversation]);
-    useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
-
     useEffect(() => {
         mounted.current = true;
         updateNavigationButtons(false);
@@ -266,19 +168,20 @@ export default function CreateDirectMessage({
 
     return (
         <MembersModal
+            componentId={componentId}
             getProfiles={getProfiles}
             loading={loading}
-            onSelectProfile={handleSelectProfile}
-            onRemoveProfile={handleRemoveProfile}
-            onClearSearch={clearSearch}
-            onSearch={onSearch}
-            search={search}
-            term={term}
             page={page}
             profiles={profiles}
-            searchResults={searchResults}
+            searchUsersFunc={searchUsersFunc}
             selectedIds={selectedIds}
+            setLoading={setLoading}
+            setSelectedIds={setSelectedIds}
+            setStartingConversation={setStartingConversation}
+            setTerm={setTerm}
+            startConversationFunc={startConversationFunc}
             startingConversation={startingConversation}
+            term={term}
         />
     );
 }
