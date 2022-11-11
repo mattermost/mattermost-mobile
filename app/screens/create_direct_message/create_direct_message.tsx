@@ -94,6 +94,7 @@ export default function CreateDirectMessage({
             buttonText={messages.button}
             componentId={componentId}
             getProfiles={getProfiles}
+            maxSelectedUsers={General.MAX_USERS_IN_GM}
             page={page}
             searchUsers={searchUsers}
             selectedIds={selectedIds}

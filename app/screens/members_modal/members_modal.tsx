@@ -84,6 +84,7 @@ type Props = {
     componentId: string;
     currentUserId: string;
     getProfiles: () => Promise<getProfilesSuccess | getProfilesError>;
+    maxSelectedUsers: number;
     page: number;
     searchUsers: (searchTerm: string) => Promise<searchError | searchSuccess>;
     selectedIds: {[id: string]: UserProfile};
@@ -106,6 +107,7 @@ const MembersModal = ({
     componentId,
     currentUserId,
     getProfiles,
+    maxSelectedUsers,
     page,
     searchUsers,
     selectedIds,
@@ -233,7 +235,7 @@ const MembersModal = ({
         } else {
             const wasSelected = selectedIds[user.id];
 
-            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+            if (!wasSelected && selectedCount >= maxSelectedUsers) {
                 return;
             }
 
@@ -336,8 +338,8 @@ const MembersModal = ({
             {selectedCount > 0 &&
             <SelectedUsers
                 selectedIds={selectedIds}
-                warnCount={General.MAX_USERS_IN_GM - 2}
-                maxCount={General.MAX_USERS_IN_GM}
+                warnCount={maxSelectedUsers - 2}
+                maxCount={maxSelectedUsers}
                 onRemove={handleRemoveProfile}
                 teammateNameDisplay={teammateNameDisplay}
             />
