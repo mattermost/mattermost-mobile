@@ -11,13 +11,12 @@ import {useTheme} from '@context/theme';
 import {TeamModel} from '@database/models/server';
 import {useIsTablet} from '@hooks/device';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
+import TeamPickerIcon from '@screens/home/search/team_picker_icon';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {TabTypes, TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import TeamPickerIcon from '../team_picker_icon/team_picker_icon';
 
 import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
 import SelectButton from './header_button';

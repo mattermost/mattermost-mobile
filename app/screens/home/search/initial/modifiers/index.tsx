@@ -9,7 +9,7 @@ import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-nati
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {TeamModel} from '@database/models/server';
-import TeamPickerIcon from '@screens/home/search/team_picker_icon/team_picker_icon';
+import TeamPickerIcon from '@screens/home/search/team_picker_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
