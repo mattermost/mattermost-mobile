@@ -177,14 +177,98 @@ const MembersModal = ({
         } else {
             setStartingButtonAction(false);
         }
-    }, [startingButtonAction, selectedIds, onButtonTap]);
+    }, [onButtonTap, selectedIds, startingButtonAction]);
 
     const handleGetProfiles = useCallback(debounce(() => {
         if (next.current && !loading && !term && mounted.current) {
             setLoading(true);
             getProfiles().then(loadedProfiles);
         }
-    }, 100), [loading, getProfiles, term]);
+    }, 100), [getProfiles, loading, term]);
+
+    const search = useCallback(() => {
+        handleSearchUsers(term);
+    }, [handleSearchUsers, term]);
+
+    const clearSearch = useCallback(() => {
+        setTerm('');
+        setSearchResults([]);
+    }, []);
+
+    const onSearch = useCallback((text: string) => {
+        if (text) {
+            setTerm(text);
+            if (searchTimeoutId.current) {
+                clearTimeout(searchTimeoutId.current);
+            }
+
+            searchTimeoutId.current = setTimeout(() => {
+                handleSearchUsers(text);
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
+        } else {
+            clearSearch();
+        }
+    }, [clearSearch, handleSearchUsers]);
+
+    const handleRemoveProfile = useCallback((id: string) => {
+        const newSelectedIds = Object.assign({}, selectedIds);
+
+        Reflect.deleteProperty(newSelectedIds, id);
+
+        setSelectedIds(newSelectedIds);
+    }, [selectedIds, setSelectedIds]);
+
+    const handleSelectProfile = useCallback((user: UserProfile) => {
+        if (selectedIds[user.id]) {
+            handleRemoveProfile(user.id);
+            return;
+        }
+
+        if (user.id === currentUserId) {
+            const selectedId = {
+                [currentUserId]: true,
+            };
+
+            handleButtonTap(selectedId);
+        } else {
+            const wasSelected = selectedIds[user.id];
+
+            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+                return;
+            }
+
+            const newSelectedIds = Object.assign({}, selectedIds);
+            if (!wasSelected) {
+                newSelectedIds[user.id] = user;
+            }
+
+            setSelectedIds(newSelectedIds);
+
+            clearSearch();
+        }
+    }, [clearSearch, currentUserId, handleRemoveProfile, handleButtonTap, selectedIds, setSelectedIds]);
+
+    const data = useMemo(() => {
+        if (term) {
+            const exactMatches: UserProfile[] = [];
+            const filterByTerm = (p: UserProfile) => {
+                if (selectedCount > 0 && p.id === currentUserId) {
+                    return false;
+                }
+
+                if (p.username === term || p.username.startsWith(term)) {
+                    exactMatches.push(p);
+                    return false;
+                }
+
+                return true;
+            };
+
+            const results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
+            return [...exactMatches, ...results];
+        }
+        return profiles;
+    }, [isSearch && selectedCount, isSearch && searchResults, profiles, term]);
 
     const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
@@ -221,90 +305,6 @@ const MembersModal = ({
 
     useNavButtonPressed(ACTION_BUTTON, componentId, handleButtonTap, [handleButtonTap]);
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
-
-    const handleRemoveProfile = useCallback((id: string) => {
-        const newSelectedIds = Object.assign({}, selectedIds);
-
-        Reflect.deleteProperty(newSelectedIds, id);
-
-        setSelectedIds(newSelectedIds);
-    }, [selectedIds, setSelectedIds]);
-
-    const search = useCallback(() => {
-        handleSearchUsers(term);
-    }, [handleSearchUsers, term]);
-
-    const clearSearch = useCallback(() => {
-        setTerm('');
-        setSearchResults([]);
-    }, []);
-
-    const onSearch = useCallback((text: string) => {
-        if (text) {
-            setTerm(text);
-            if (searchTimeoutId.current) {
-                clearTimeout(searchTimeoutId.current);
-            }
-
-            searchTimeoutId.current = setTimeout(() => {
-                handleSearchUsers(text);
-            }, General.SEARCH_TIMEOUT_MILLISECONDS);
-        } else {
-            clearSearch();
-        }
-    }, [handleSearchUsers, clearSearch]);
-
-    const handleSelectProfile = useCallback((user: UserProfile) => {
-        if (selectedIds[user.id]) {
-            handleRemoveProfile(user.id);
-            return;
-        }
-
-        if (user.id === currentUserId) {
-            const selectedId = {
-                [currentUserId]: true,
-            };
-
-            handleButtonTap(selectedId);
-        } else {
-            const wasSelected = selectedIds[user.id];
-
-            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
-                return;
-            }
-
-            const newSelectedIds = Object.assign({}, selectedIds);
-            if (!wasSelected) {
-                newSelectedIds[user.id] = user;
-            }
-
-            setSelectedIds(newSelectedIds);
-
-            clearSearch();
-        }
-    }, [selectedIds, currentUserId, handleRemoveProfile, setSelectedIds, handleButtonTap, clearSearch]);
-
-    const data = useMemo(() => {
-        if (term) {
-            const exactMatches: UserProfile[] = [];
-            const filterByTerm = (p: UserProfile) => {
-                if (selectedCount > 0 && p.id === currentUserId) {
-                    return false;
-                }
-
-                if (p.username === term || p.username.startsWith(term)) {
-                    exactMatches.push(p);
-                    return false;
-                }
-
-                return true;
-            };
-
-            const results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
-            return [...exactMatches, ...results];
-        }
-        return profiles;
-    }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
 
     if (startingButtonAction) {
         return (
