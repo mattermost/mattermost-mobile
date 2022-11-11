@@ -3,7 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React, {useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -224,7 +224,7 @@ function IntegrationSelector(
         }
     };
 
-    const getChannels = debounce(async () => {
+    const getChannels = useCallback(debounce(async () => {
         if (next && !loading && !term) {
             setCurrentPage(currentPage + 1);
             const {channels: channelData} = await fetchChannels(serverUrl, currentTeamId, currentPage);
@@ -233,9 +233,9 @@ function IntegrationSelector(
                 loadedChannels([...integrationData as Channel[], ...channelData]);
             }
         }
-    }, 100);
+    }, 100), [integrationData]);
 
-    const getProfiles = debounce(async () => {
+    const getProfiles = useCallback(debounce(async () => {
         if (next && !loading && !term) {
             setCurrentPage(currentPage + 1);
             const {users: userData} = await fetchProfiles(serverUrl, currentPage);
@@ -244,7 +244,7 @@ function IntegrationSelector(
                 loadedProfiles([...integrationData as UserProfile[], ...userData]);
             }
         }
-    }, 100);
+    }, 100), [integrationData]);
 
     const getDynamicOptionsLocally = () => {
         if (!loading && !term) {
@@ -366,7 +366,7 @@ function IntegrationSelector(
         return (searchData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().startsWith(lowerCasedTerm));
     };
 
-    const getMultiselectData = (): Selection => {
+    const getMultiselectData = useCallback((): Selection => {
         let myItems;
         let multiselectItems: Selection = [];
 
@@ -396,7 +396,7 @@ function IntegrationSelector(
                 }
                 return multiselectItems;
         }
-    };
+    }, [multiselectSelected]);
 
     // Effects
     useEffect(() => {
