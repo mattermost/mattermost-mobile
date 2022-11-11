@@ -15,7 +15,7 @@ import {displayUsername} from '@utils/user';
 
 const messages = defineMessages({
     dm: {
-        id: 'mobile.open_dm.error',
+        id: t('mobile.open_dm.error'),
         defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
     },
     gm: {
