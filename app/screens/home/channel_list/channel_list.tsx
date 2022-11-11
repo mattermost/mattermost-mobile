@@ -12,10 +12,12 @@ import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-cont
 import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {Navigation as NavigationConstants, Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {resetToTeams} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import {addSentryContext} from '@utils/sentry';
 
 import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
@@ -50,6 +52,7 @@ const ChannelListScreen = (props: ChannelProps) => {
     const isFocused = useIsFocused();
     const navigation = useNavigation();
     const insets = useSafeAreaInsets();
+    const serverUrl = useServerUrl();
     const params = route.params as {direction: string};
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
 
@@ -110,6 +113,10 @@ const ChannelListScreen = (props: ChannelProps) => {
         const back = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
         return () => back.remove();
     }, [handleBackPress]);
+
+    useEffect(() => {
+        addSentryContext(serverUrl);
+    }, [serverUrl]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
