@@ -9,12 +9,12 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
+import SelectedUsersPanel from '@components/selected_users_panel';
+import UserList from '@components/user_list';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import SelectedUsers from '@screens/members_modal/selected_users';
-import UserList from '@screens/members_modal/user_list';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
@@ -304,7 +304,7 @@ const MembersModal = ({
                 />
             </View>
             {selectedCount > 0 &&
-            <SelectedUsers
+            <SelectedUsersPanel
                 selectedIds={selectedIds}
                 warnCount={maxSelectedUsers - 2}
                 maxCount={maxSelectedUsers}

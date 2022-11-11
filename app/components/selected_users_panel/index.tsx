@@ -59,7 +59,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-export default function SelectedUsers({
+export default function SelectedUsersPanel({
     selectedIds,
     teammateNameDisplay,
     warnCount,
