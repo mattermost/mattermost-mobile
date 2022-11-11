@@ -7,9 +7,7 @@ import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import Config from '@assets/config.json';
-import {getCurrentChannel, getMyChannel} from '@queries/servers/channel';
-import {getConfig, getCurrentTeamId} from '@queries/servers/system';
-import {getMyTeamById} from '@queries/servers/team';
+import {getConfig} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 
 import {ClientError} from './client_error';
@@ -169,25 +167,6 @@ export const getExtraContext = async (database: Database) => {
             BuildHash: config.BuildHash,
             BuildHashEnterprise: config.BuildHashEnterprise,
             BuildNumber: config.BuildNumber,
-        };
-    }
-    const currentTeamId = await getCurrentTeamId(database);
-    const myTeam = await getMyTeamById(database, currentTeamId);
-    const teamRoles = myTeam?.roles;
-    context.currentTeam = {
-        TeamId: currentTeamId,
-        TeamRoles: teamRoles,
-    };
-
-    const channel = await getCurrentChannel(database);
-    let channelRoles;
-    if (channel) {
-        const myChannel = await getMyChannel(database, channel.id);
-        channelRoles = myChannel?.roles;
-        context.currentChannel = {
-            ChannelId: channel?.id,
-            ChannelRoles: channelRoles,
-            ChannelType: channel?.type,
         };
     }
 
