@@ -55,11 +55,10 @@ describe('components/integration_selector/user_list_row', () => {
                 enabled={true}
                 selectable={false}
                 selected={false}
-                children={[]}
                 onPress={() => {
                     // noop
                 }}
-            />,
+            ><></></UserListRow>,
             {database},
         );
 
@@ -80,11 +79,10 @@ describe('components/integration_selector/user_list_row', () => {
                 enabled={true}
                 selectable={false}
                 selected={false}
-                children={[]}
                 onPress={() => {
                     // noop
                 }}
-            />,
+            ><></></UserListRow>,
             {database},
         );
 
@@ -105,11 +103,10 @@ describe('components/integration_selector/user_list_row', () => {
                 enabled={true}
                 selectable={false}
                 selected={false}
-                children={[]}
                 onPress={() => {
                     // noop
                 }}
-            />,
+            ><></></UserListRow>,
             {database},
         );
 

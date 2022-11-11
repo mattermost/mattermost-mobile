@@ -30,11 +30,10 @@ describe('components/integration_selector/option_list_row', () => {
                 theme={Preferences.THEMES.denim}
                 item={myItem}
                 id='1'
-                children={[]}
                 onPress={() => {
                     // noop
                 }}
-            />,
+            ><></></OptionListRow>,
             {database},
         );
 

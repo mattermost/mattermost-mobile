@@ -46,11 +46,10 @@ describe('components/integration_selector/channel_list_row', () => {
                 selectable={false}
                 enabled={true}
                 testID='ChannelListRow'
-                children={[]}
                 onPress={() => {
                     // noop
                 }}
-            />,
+            ><></></ChannelListRow>,
             {database},
         );
 
@@ -69,11 +68,10 @@ describe('components/integration_selector/channel_list_row', () => {
                 selectable={false}
                 enabled={true}
                 testID='ChannelListRow'
-                children={[]}
                 onPress={() => {
                     // noop
                 }}
-            />,
+            ><></></ChannelListRow>,
             {database},
         );
 
@@ -93,11 +91,10 @@ describe('components/integration_selector/channel_list_row', () => {
                 enabled={true}
                 selectable={false}
                 selected={false}
-                children={[]}
                 onPress={() => {
                     // noop
                 }}
-            />,
+            ><></></ChannelListRow>,
             {database},
         );
 
@@ -117,11 +114,10 @@ describe('components/integration_selector/channel_list_row', () => {
                 enabled={true}
                 selectable={false}
                 selected={false}
-                children={[]}
                 onPress={() => {
                     // noop
                 }}
-            />,
+            ><></></ChannelListRow>,
             {database},
         );
 
@@ -140,11 +136,10 @@ describe('components/integration_selector/channel_list_row', () => {
                 enabled={true}
                 selectable={false}
                 selected={false}
-                children={[]}
                 onPress={() => {
                     // noop
                 }}
-            />,
+            ><></></ChannelListRow>,
             {database},
         );
 

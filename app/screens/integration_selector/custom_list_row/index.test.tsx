@@ -4,7 +4,6 @@
 import Database from '@nozbe/watermelondb/Database';
 import React from 'react';
 
-import {Preferences} from '@app/constants';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -27,8 +26,7 @@ describe('components/integration_selector/custom_list_row', () => {
                 enabled={true}
                 selectable={true}
                 selected={true}
-                children={[]}
-            />,
+            ><></></CustomListRow>,
             {database},
         );
 
