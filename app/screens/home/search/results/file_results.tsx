@@ -10,7 +10,6 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
 import {GalleryAction} from '@typings/screens/gallery';
-import {isImage, isVideo} from '@utils/file';
 import {
     getChannelNamesWithID,
     getFileInfosIndexes,
@@ -89,14 +88,12 @@ const FileResults = ({
     }, [insets, isTablet, numOptions, theme]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<FileInfo>) => {
-        const isSingleImage = orderedFileInfos.length === 1 && (isImage(orderedFileInfos[0]) || isVideo(orderedFileInfos[0]));
         return (
             <FileResult
                 canDownloadFiles={canDownloadFiles}
                 channelName={channelNames[item.channel_id!]}
                 fileInfo={item}
                 index={fileInfosIndexes[item.id!] || 0}
-                isSingleImage={isSingleImage}
                 numOptions={numOptions}
                 onOptionsPress={onOptionsPress}
                 onPress={onPreviewPress}

@@ -25,7 +25,7 @@ type FileProps = {
     galleryIdentifier: string;
     index: number;
     inViewPort: boolean;
-    isSingleImage: boolean;
+    isSingleImage?: boolean;
     nonVisibleImagesCount: number;
     onPress: (index: number) => void;
     publicLinkEnabled: boolean;

@@ -14,7 +14,7 @@ type Props = {
     enableEmoji?: boolean;
     enableHardBreak?: boolean;
     enableSoftBreak?: boolean;
-    textStyle: StyleProp<TextStyle>;
+    textStyle?: StyleProp<TextStyle>;
     value: string;
 };
 

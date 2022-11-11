@@ -15,7 +15,7 @@ import {
     getMyChannel, getChannelById, queryUsersOnChannel, queryUserChannelsByTypes,
 } from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
+import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig, getLicense} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
@@ -365,9 +365,10 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
             return {};
         }
 
-        const {config, license} = await getCommonSystemValues(database);
+        const license = await getLicense(database);
+        const config = await getConfig(database);
         const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
-        const displaySettings = getTeammateNameDisplaySetting(preferences, config, license);
+        const displaySettings = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         const models: Model[] = [];
         for await (const channel of channels) {
             let newDisplayName = '';

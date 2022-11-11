@@ -31,5 +31,4 @@ export default keyMirror({
     SEND_TO_POST_DRAFT: null,
     CRT_TOGGLED: null,
     JOIN_CALL_BAR_VISIBLE: null,
-    CURRENT_CALL_BAR_VISIBLE: null,
 });
