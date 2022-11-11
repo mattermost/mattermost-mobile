@@ -531,7 +531,6 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
             totalSize,
         };
     } catch (error) {
-        logError('Failed getAllFilesInCachesDirectory', error);
         return {error};
     }
 };

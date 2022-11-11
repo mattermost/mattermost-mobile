@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, TouchableOpacity} from 'react-native';
 
@@ -11,7 +11,11 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import SettingSeparator from '@screens/settings/settings_separator';
-import {deleteFileCache, getAllFilesInCachesDirectory, getFormattedFileSize} from '@utils/file';
+import {
+    deleteFileCache,
+    getAllFilesInCachesDirectory,
+    getFormattedFileSize,
+} from '@utils/file';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -33,20 +37,21 @@ const EMPTY_FILES: ReadDirItem[] = [];
 
 type AdvancedSettingsProps = {
     componentId: string;
-}
+};
 const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const [dataSize, setDataSize] = useState<number|undefined>(0);
+    const [dataSize, setDataSize] = useState<number | undefined>(0);
     const [files, setFiles] = useState<ReadDirItem[]>(EMPTY_FILES);
     const styles = getStyleSheet(theme);
 
-    const getAllCachedFiles = async () => {
-        const {totalSize, files: cachedFiles} = await getAllFilesInCachesDirectory(serverUrl);
+    const getAllCachedFiles = useCallback(async () => {
+        const {totalSize = 0, files: cachedFiles} =
+            await getAllFilesInCachesDirectory(serverUrl);
         setDataSize(totalSize);
         setFiles(cachedFiles || EMPTY_FILES);
-    };
+    }, [serverUrl]);
 
     const onPressDeleteData = preventDoubleTap(async () => {
         try {
@@ -54,20 +59,29 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                 const {formatMessage} = intl;
 
                 Alert.alert(
-                    formatMessage({id: t('advanced_settings.delete_data'), defaultMessage: 'Delete Documents & Data'}),
-                    formatMessage({id: t('mobile.advanced_settings.delete_message'), defaultMessage: '\nThis will reset all offline data and restart the app. You will be automatically logged back in once the app restarts.\n'}),
-                    [{
-                        text: formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
-                        style: 'cancel',
-                        onPress: () => true,
-                    }, {
-                        text: formatMessage({id: 'mobile.advanced_settings.delete', defaultMessage: 'Delete'}),
-                        style: 'destructive',
-                        onPress: async () => {
-                            await deleteFileCache(serverUrl);
-                            await getAllCachedFiles();
+                    formatMessage({
+                        id: t('advanced_settings.delete_data'),
+                        defaultMessage: 'Delete Documents & Data',
+                    }),
+                    formatMessage({
+                        id: t('mobile.advanced_settings.delete_message.confirmation'),
+                        defaultMessage: '\nThis will delete all offline data downloaded through the app. Please confirm to proceed.\n',
+                    }),
+                    [
+                        {
+                            text: formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
+                            style: 'cancel',
+                            onPress: () => true,
                         },
-                    }],
+                        {
+                            text: formatMessage({id: 'mobile.advanced_settings.delete', defaultMessage: 'Delete'}),
+                            style: 'destructive',
+                            onPress: async () => {
+                                await deleteFileCache(serverUrl);
+                                await getAllCachedFiles();
+                            },
+                        },
+                    ],
                     {cancelable: false},
                 );
             }
@@ -83,7 +97,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const close = () => popTopScreen(componentId);
     useAndroidHardwareBackHandler(componentId, close);
 
-    const hasData = Boolean(dataSize && (dataSize > 0));
+    const hasData = Boolean(dataSize && dataSize > 0);
 
     return (
         <SettingContainer testID='advanced_settings'>
@@ -97,7 +111,10 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                     destructive={true}
                     icon='trash-can-outline'
                     info={getFormattedFileSize(dataSize || 0)}
-                    label={intl.formatMessage({id: 'advanced_settings.delete_data', defaultMessage: 'Delete Documents & Data'})}
+                    label={intl.formatMessage({
+                        id: 'advanced_settings.delete_data',
+                        defaultMessage: 'Delete Documents & Data',
+                    })}
                     testID='advanced_settings.delete_data.option'
                     type='none'
                 />
