@@ -59,22 +59,22 @@ const close = () => {
     dismissModal();
 };
 
-type searchFuncError = {
+type searchError = {
     data?: undefined;
     error: unknown;
 }
 
-type searchFuncSuccess = {
+type searchSuccess = {
     data: UserProfile[];
     error?: undefined;
 }
 
-type getProfilesFuncError = {
+type getProfilesError = {
     users?: undefined;
     error: unknown;
 }
 
-type getProfilesFuncSuccess = {
+type getProfilesSuccess = {
     users: UserProfile[];
     error?: undefined;
 }
@@ -82,13 +82,13 @@ type getProfilesFuncSuccess = {
 type Props = {
     componentId: string;
     currentUserId: string;
-    getProfilesFunc: () => Promise<getProfilesFuncSuccess | getProfilesFuncError>;
+    getProfiles: () => Promise<getProfilesSuccess | getProfilesError>;
     page: number;
-    searchUsersFunc: (searchTerm: string) => Promise<searchFuncError | searchFuncSuccess>;
+    searchUsers: (searchTerm: string) => Promise<searchError | searchSuccess>;
     selectedIds: {[id: string]: UserProfile};
     setPage: (page: number) => void;
     setSelectedIds: (ids: {[id: string]: UserProfile}) => void;
-    startConversationFunc: (selectedId?: {[id: string]: boolean}) => Promise<boolean>;
+    startConversation: (selectedId?: {[id: string]: boolean}) => Promise<boolean>;
     teammateNameDisplay: string;
     tutorialWatched: boolean;
 }
@@ -103,13 +103,13 @@ function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: Use
 const MembersModal = ({
     componentId,
     currentUserId,
-    getProfilesFunc,
+    getProfiles,
     page,
-    searchUsersFunc,
+    searchUsers,
     selectedIds,
     setPage,
     setSelectedIds,
-    startConversationFunc,
+    startConversation,
     teammateNameDisplay,
     tutorialWatched,
 }: Props) => {
@@ -142,10 +142,10 @@ const MembersModal = ({
     }, [page, setPage]);
 
     // the search profiles function used to update the user list
-    const searchUsers = useCallback(async (searchTerm: string) => {
+    const handleSearchUsers = useCallback(async (searchTerm: string) => {
         setLoading(true);
 
-        const results = await searchUsersFunc(searchTerm);
+        const results = await searchUsers(searchTerm);
 
         let data: UserProfile[] = [];
         if (results.data) {
@@ -154,10 +154,10 @@ const MembersModal = ({
 
         setSearchResults(data);
         setLoading(false);
-    }, [searchUsersFunc]);
+    }, [searchUsers]);
 
     // the action to take when clicking the start button
-    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
+    const handleStartConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
         if (startingConversation) {
             return;
         }
@@ -169,7 +169,7 @@ const MembersModal = ({
         if (idsToUse.length === 0) {
             success = false;
         } else {
-            success = await startConversationFunc();
+            success = await startConversation();
         }
 
         if (success) {
@@ -177,14 +177,14 @@ const MembersModal = ({
         } else {
             setStartingConversation(false);
         }
-    }, [startingConversation, selectedIds, startConversationFunc]);
+    }, [startingConversation, selectedIds, startConversation]);
 
-    const getProfiles = useCallback(debounce(() => {
+    const handleGetProfiles = useCallback(debounce(() => {
         if (next.current && !loading && !term && mounted.current) {
             setLoading(true);
-            getProfilesFunc().then(loadedProfiles);
+            getProfiles().then(loadedProfiles);
         }
-    }, 100), [loading, getProfilesFunc, term]);
+    }, 100), [loading, getProfiles, term]);
 
     const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
@@ -208,7 +208,7 @@ const MembersModal = ({
     useEffect(() => {
         mounted.current = true;
         updateNavigationButtons(false);
-        getProfiles();
+        handleGetProfiles();
         return () => {
             mounted.current = false;
         };
@@ -219,7 +219,7 @@ const MembersModal = ({
         updateNavigationButtons(canStart);
     }, [selectedCount > 0, startingConversation, updateNavigationButtons]);
 
-    useNavButtonPressed(START_BUTTON, componentId, startConversation, [startConversation]);
+    useNavButtonPressed(START_BUTTON, componentId, handleStartConversation, [handleStartConversation]);
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
     const handleRemoveProfile = useCallback((id: string) => {
@@ -231,8 +231,8 @@ const MembersModal = ({
     }, [selectedIds, setSelectedIds]);
 
     const search = useCallback(() => {
-        searchUsers(term);
-    }, [searchUsers, term]);
+        handleSearchUsers(term);
+    }, [handleSearchUsers, term]);
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -247,12 +247,12 @@ const MembersModal = ({
             }
 
             searchTimeoutId.current = setTimeout(() => {
-                searchUsers(text);
+                handleSearchUsers(text);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
         } else {
             clearSearch();
         }
-    }, [searchUsers, clearSearch]);
+    }, [handleSearchUsers, clearSearch]);
 
     const handleSelectProfile = useCallback((user: UserProfile) => {
         if (selectedIds[user.id]) {
@@ -265,7 +265,7 @@ const MembersModal = ({
                 [currentUserId]: true,
             };
 
-            startConversation(selectedId);
+            handleStartConversation(selectedId);
         } else {
             const wasSelected = selectedIds[user.id];
 
@@ -282,7 +282,7 @@ const MembersModal = ({
 
             clearSearch();
         }
-    }, [selectedIds, currentUserId, handleRemoveProfile, setSelectedIds, startConversation, clearSearch]);
+    }, [selectedIds, currentUserId, handleRemoveProfile, setSelectedIds, handleStartConversation, clearSearch]);
 
     const data = useMemo(() => {
         if (term) {
@@ -344,7 +344,7 @@ const MembersModal = ({
             }
             <UserList
                 currentUserId={currentUserId}
-                fetchMore={getProfiles}
+                fetchMore={handleGetProfiles}
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 profiles={data}

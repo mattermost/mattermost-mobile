@@ -43,13 +43,6 @@ export default function CreateDirectMessage({
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const [page, setPage] = useState(-1);
 
-    const getProfilesFunc = useCallback(async () => {
-        if (restrictDirectMessage) {
-            return fetchProfilesInTeam(serverUrl, currentTeamId, page + 1, General.PROFILE_CHUNK_SIZE);
-        }
-        return fetchProfiles(serverUrl, page + 1, General.PROFILE_CHUNK_SIZE);
-    }, [restrictDirectMessage, serverUrl, currentTeamId]);
-
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
         const user = selectedIds[id];
         const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
@@ -69,7 +62,14 @@ export default function CreateDirectMessage({
         return !result.error;
     }, [serverUrl]);
 
-    const startConversationFunc = useCallback(async (selectedId?: {[id: string]: boolean}) => {
+    const getProfiles = useCallback(async () => {
+        if (restrictDirectMessage) {
+            return fetchProfilesInTeam(serverUrl, currentTeamId, page + 1, General.PROFILE_CHUNK_SIZE);
+        }
+        return fetchProfiles(serverUrl, page + 1, General.PROFILE_CHUNK_SIZE);
+    }, [restrictDirectMessage, serverUrl, currentTeamId]);
+
+    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
         const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
         if (idsToUse.length > 1) {
             return createGroupChannel(idsToUse);
@@ -77,7 +77,7 @@ export default function CreateDirectMessage({
         return createDirectChannel(idsToUse[0]);
     }, [selectedIds, createGroupChannel, createDirectChannel]);
 
-    const searchUsersFunc = useCallback(async (searchTerm: string) => {
+    const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
         if (restrictDirectMessage) {
             return searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
@@ -88,13 +88,13 @@ export default function CreateDirectMessage({
     return (
         <MembersModal
             componentId={componentId}
-            getProfilesFunc={getProfilesFunc}
+            getProfiles={getProfiles}
             page={page}
-            searchUsersFunc={searchUsersFunc}
+            searchUsers={searchUsers}
             selectedIds={selectedIds}
             setPage={setPage}
             setSelectedIds={setSelectedIds}
-            startConversationFunc={startConversationFunc}
+            startConversation={startConversation}
         />
     );
 }
