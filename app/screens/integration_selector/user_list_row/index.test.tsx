@@ -92,6 +92,8 @@ describe('components/integration_selector/user_list_row', () => {
     });
 
     it('match snapshot if user is my user', () => {
+        userProfile.remote_id = '';
+
         const wrapper = renderWithEverything(
             <UserListRow
                 id='1234'

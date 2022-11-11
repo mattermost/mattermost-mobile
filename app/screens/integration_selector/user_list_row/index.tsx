@@ -8,12 +8,10 @@ import {
     View,
 } from 'react-native';
 
-import {General} from '@app/constants';
-import ChannelIcon from '@components/channel_icon';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
-import {isGuest, isShared} from '@utils/user';
+import {isGuest} from '@utils/user';
 
 import CustomListRow, {Props as CustomListRowProps} from '../custom_list_row';
 
@@ -74,35 +72,16 @@ type Props = UserListRowProps & CustomListRowProps;
 const UserListRow = ({
     isMyUser, theme, user, teammateNameDisplay, testID, onPress, enabled, selectable, selected,
 }: Props) => {
+    const intl = useIntl();
+    const style = getStyleFromTheme(theme);
+    const {username} = user;
+    const userID = user.id;
+
     const onPressRow = (): void => {
         if (onPress) {
             onPress(user);
         }
     };
-
-    const renderIcon = (): JSX.Element | null => {
-        if (!isShared(user)) {
-            return null;
-        }
-
-        return (
-            <ChannelIcon
-                name={user.username}
-                type={General.DM_CHANNEL}
-                isActive={false}
-                isArchived={false}
-                isUnread={true}
-                isInfo={true}
-                size={18}
-                shared={true}
-            />
-        );
-    };
-
-    const intl = useIntl();
-    const {username} = user;
-    const userID = user.id;
-    const style = getStyleFromTheme(theme);
 
     let usernameDisplay = `@${username}`;
     if (isMyUser) {
@@ -116,7 +95,6 @@ const UserListRow = ({
     const itemTestID = `${testID}.${userID}`;
     const displayUsernameTestID = `${testID}.display_username`;
     const profilePictureTestID = `${itemTestID}.profile_picture`;
-    const userIcon = renderIcon() || (<></>);
 
     return (
         <View style={style.container}>
@@ -169,19 +147,7 @@ const UserListRow = ({
                             </Text>
                         </View>
                     }
-                    {user.delete_at > 0 &&
-                        <View>
-                            <Text
-                                style={style.deactivated}
-                            >
-                                {intl.formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}
-                            </Text>
-                        </View>
-                    }
                 </View>
-
-                {userIcon}
-
             </CustomListRow>
         </View>
     );

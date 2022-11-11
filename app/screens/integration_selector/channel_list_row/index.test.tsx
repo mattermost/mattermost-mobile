@@ -40,13 +40,15 @@ describe('components/integration_selector/channel_list_row', () => {
         const wrapper = renderWithEverything(
             <ChannelListRow
                 id='1234'
-                isArchived={false}
                 theme={Preferences.THEMES.denim}
                 channel={channel}
-                teammateNameDisplay='dummy'
+                selected={false}
+                selectable={false}
+                enabled={true}
                 testID='ChannelListRow'
-                onPress={(item: Channel) => {
-                    console.log(item);
+                children={[]}
+                onPress={() => {
+                    // noop
                 }}
             />,
             {database},
@@ -55,17 +57,18 @@ describe('components/integration_selector/channel_list_row', () => {
         expect(wrapper.toJSON()).toMatchSnapshot();
     });
 
-    it('should match snapshot with archived icon', () => {
+    it('should match snapshot with private channel icon', () => {
+        channel.type = 'P';
+
         const wrapper = renderWithEverything(
             <ChannelListRow
                 id='1234'
-                isArchived={true}
                 theme={Preferences.THEMES.denim}
                 channel={channel}
-                testID='ChannelListRow'
-                enabled={true}
-                selectable={false}
                 selected={false}
+                selectable={false}
+                enabled={true}
+                testID='ChannelListRow'
                 children={[]}
                 onPress={() => {
                     // noop
@@ -79,12 +82,11 @@ describe('components/integration_selector/channel_list_row', () => {
 
     it('should match snapshot with delete_at filled in', () => {
         channel.delete_at = 1111;
-        channel.shared = true;
+        channel.shared = false;
 
         const wrapper = renderWithEverything(
             <ChannelListRow
                 id='1234'
-                isArchived={false}
                 theme={Preferences.THEMES.denim}
                 channel={channel}
                 testID='ChannelListRow'
@@ -109,7 +111,6 @@ describe('components/integration_selector/channel_list_row', () => {
         const wrapper = renderWithEverything(
             <ChannelListRow
                 id='1234'
-                isArchived={false}
                 theme={Preferences.THEMES.denim}
                 channel={channel}
                 testID='ChannelListRow'
@@ -133,7 +134,6 @@ describe('components/integration_selector/channel_list_row', () => {
         const wrapper = renderWithEverything(
             <ChannelListRow
                 id='1234'
-                isArchived={true}
                 theme={Preferences.THEMES.denim}
                 channel={channel}
                 testID='ChannelListRow'

@@ -19,6 +19,29 @@ type Props = {
     onRemove: (opt: DialogOption | UserProfile | Channel) => void;
 }
 
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        container: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            height: 27,
+            borderRadius: 3,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            marginBottom: 4,
+            marginRight: 10,
+            paddingLeft: 10,
+        },
+        remove: {
+            paddingHorizontal: 10,
+        },
+        text: {
+            color: theme.centerChannelColor,
+            fontSize: 13,
+            maxWidth: '90%',
+        },
+    };
+});
+
 const SelectedOption = ({theme, option, onRemove, dataSource}: Props) => {
     const style = getStyleFromTheme(theme);
     const onPress = useCallback(
@@ -59,28 +82,5 @@ const SelectedOption = ({theme, option, onRemove, dataSource}: Props) => {
         </View>
     );
 };
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            alignItems: 'center',
-            flexDirection: 'row',
-            height: 27,
-            borderRadius: 3,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-            marginBottom: 4,
-            marginRight: 10,
-            paddingLeft: 10,
-        },
-        remove: {
-            paddingHorizontal: 10,
-        },
-        text: {
-            color: theme.centerChannelColor,
-            fontSize: 13,
-            maxWidth: '90%',
-        },
-    };
-});
 
 export default SelectedOption;

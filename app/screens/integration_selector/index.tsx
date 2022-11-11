@@ -6,7 +6,6 @@ import withObservables from '@nozbe/with-observables';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
-import {ScrollView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -44,7 +43,7 @@ type UserProfileSection = {
     data: UserProfile[];
 };
 
-type Props = {
+export type Props = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     options?: PostActionOption[];
     currentTeamId: string;
@@ -112,7 +111,6 @@ function IntegrationSelector(
         ViewConstants.DATA_SOURCE_USERS,
         ViewConstants.DATA_SOURCE_DYNAMIC];
     const INITIAL_PAGE = 0;
-    const selectedScroll = React.createRef<ScrollView>();
 
     // HOOKS
     const [integrationData, setIntegrationData] = useState<DataType>(data || []);
@@ -196,12 +194,6 @@ function IntegrationSelector(
                 setMultiselectSelected(multiselectSelectedItems);
             }
         }
-
-        setTimeout(() => {
-            if (selectedScroll.current) {
-                selectedScroll.current.scrollToEnd();
-            }
-        });
     };
 
     const handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
@@ -317,7 +309,7 @@ function IntegrationSelector(
         getDynamicOptions(searchTerm.toLowerCase()).then((results: DialogOption[]) => {
             const searchData = results || [];
 
-            if (term) {
+            if (searchTerm) {
                 setSearchResults(searchData);
             } else {
                 setIntegrationData(searchData);
@@ -326,33 +318,34 @@ function IntegrationSelector(
     };
 
     const onSearch = (text: string) => {
-        if (text) {
-            setTerm(text);
-            if (searchTimeoutId.current) {
-                clearTimeout(searchTimeoutId.current);
-            }
-
-            searchTimeoutId.current = setTimeout(() => {
-                if (!dataSource) {
-                    setSearchResults(filterSearchData('', integrationData, text));
-                    return;
-                }
-
-                setLoading(true);
-
-                if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-                    searchProfiles(text);
-                } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-                    searchChannels(text);
-                } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
-                    searchDynamicOptions(text);
-                }
-
-                setLoading(false);
-            }, General.SEARCH_TIMEOUT_MILLISECONDS);
-        } else {
+        if (!text) {
             clearSearch();
         }
+
+        setTerm(text);
+
+        if (searchTimeoutId.current) {
+            clearTimeout(searchTimeoutId.current);
+        }
+
+        searchTimeoutId.current = setTimeout(async () => {
+            if (!dataSource) {
+                setSearchResults(filterSearchData('', integrationData, text));
+                return;
+            }
+
+            setLoading(true);
+
+            if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+                await searchProfiles(text);
+            } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
+                await searchChannels(text);
+            } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
+                await searchDynamicOptions(text);
+            }
+
+            setLoading(false);
+        }, General.SEARCH_TIMEOUT_MILLISECONDS);
     };
 
     const filterSearchData = (source: string, searchData: DataType, searchTerm: string) => {
@@ -576,8 +569,6 @@ function IntegrationSelector(
             optionComponents = (
                 <>
                     <SelectedOptions
-
-                        // ref={selectedScroll}
                         theme={theme}
                         selectedOptions={selectedItems}
                         dataSource={dataSource}

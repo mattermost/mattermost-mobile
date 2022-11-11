@@ -14,7 +14,6 @@ import CustomListRow, {Props as CustomListRowProps} from '../custom_list_row';
 
 type ChannelListRowProps = {
     id: string;
-    isArchived: boolean;
     theme: object;
     channel: Channel;
     onPress: (item: Channel) => void;
@@ -56,9 +55,26 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 });
 
 const ChannelListRow = ({
-    onPress, id, theme, channel, testID, isArchived,
-    enabled, selectable, selected,
+    onPress, id, theme, channel, testID, enabled, selectable, selected,
 }: Props) => {
+    const style = getStyleFromTheme(theme);
+
+    const getIconForChannel = (selectedChannel: Channel): string => {
+        let icon = 'globe';
+
+        if (selectedChannel.type === 'P') {
+            icon = 'lock';
+        }
+
+        if (selectedChannel.delete_at) {
+            icon = 'archive-outline';
+        } else if (selectedChannel.shared) {
+            icon = 'circle-multiple-outline';
+        }
+
+        return icon;
+    };
+
     const onPressRow = (): void => {
         if (!onPress) {
             return;
@@ -67,11 +83,12 @@ const ChannelListRow = ({
         onPress(channel);
     };
 
-    const style = getStyleFromTheme(theme);
+    const renderPurpose = (channelPurpose: string): JSX.Element | null => {
+        if (!channelPurpose) {
+            return null;
+        }
 
-    let purpose = null;
-    if (channel.purpose) {
-        purpose = (
+        return (
             <Text
                 style={style.purpose}
                 ellipsizeMode='tail'
@@ -80,16 +97,11 @@ const ChannelListRow = ({
                 {channel.purpose}
             </Text>
         );
-    }
+    };
 
     const itemTestID = `${testID}.${id}`;
     const channelDisplayNameTestID = `${testID}.display_name`;
-    let icon = 'globe';
-    if (isArchived) {
-        icon = 'archive-outline';
-    } else if (channel?.shared) {
-        icon = 'circle-multiple-outline';
-    }
+    const channelIcon = getIconForChannel(channel);
 
     return (
         <View style={style.outerContainer}>
@@ -107,7 +119,7 @@ const ChannelListRow = ({
                 >
                     <View style={style.titleContainer}>
                         <CompassIcon
-                            name={icon}
+                            name={channelIcon}
                             style={style.icon}
                         />
                         <Text
@@ -117,7 +129,8 @@ const ChannelListRow = ({
                             {channel.display_name}
                         </Text>
                     </View>
-                    {purpose}
+
+                    {renderPurpose(channel.purpose)}
                 </View>
             </CustomListRow>
         </View>

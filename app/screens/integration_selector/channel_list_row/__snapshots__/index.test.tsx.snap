@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`components/integration_selector/channel_list_row should match snapshot with archived icon 1`] = `
+exports[`components/integration_selector/channel_list_row should match snapshot with delete_at filled in 1`] = `
 <View
   style={
     {
@@ -87,7 +87,7 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
 </View>
 `;
 
-exports[`components/integration_selector/channel_list_row should match snapshot with delete_at filled in 1`] = `
+exports[`components/integration_selector/channel_list_row should match snapshot with open channel icon 1`] = `
 <View
   style={
     {
@@ -174,7 +174,7 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
 </View>
 `;
 
-exports[`components/integration_selector/channel_list_row should match snapshot with open channel icon 1`] = `
+exports[`components/integration_selector/channel_list_row should match snapshot with private channel icon 1`] = `
 <View
   style={
     {
@@ -321,7 +321,7 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
           }
         >
           <Icon
-            name="archive-outline"
+            name="circle-multiple-outline"
             style={
               {
                 "color": "#3f4350",
