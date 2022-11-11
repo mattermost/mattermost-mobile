@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {MessageDescriptor, useIntl} from 'react-intl';
 import {Keyboard, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -51,7 +51,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const START_BUTTON = 'start-conversation';
+const ACTION_BUTTON = 'action-button';
 const CLOSE_BUTTON = 'close-dms';
 
 const close = () => {
@@ -80,6 +80,7 @@ type getProfilesSuccess = {
 }
 
 type Props = {
+    buttonText: MessageDescriptor;
     componentId: string;
     currentUserId: string;
     getProfiles: () => Promise<getProfilesSuccess | getProfilesError>;
@@ -101,6 +102,7 @@ function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: Use
 }
 
 const MembersModal = ({
+    buttonText,
     componentId,
     currentUserId,
     getProfiles,
@@ -190,15 +192,15 @@ const MembersModal = ({
             leftButtons: [{
                 id: CLOSE_BUTTON,
                 icon: closeIcon,
-                testID: 'close.create_direct_message.button',
+                testID: 'close.button',
             }],
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
-                id: START_BUTTON,
-                text: formatMessage({id: 'mobile.create_direct_message.start', defaultMessage: 'Start'}),
+                id: ACTION_BUTTON,
+                text: formatMessage(buttonText),
                 showAsAction: 'always',
                 enabled: startEnabled,
-                testID: 'create_direct_message.start.button',
+                testID: 'action.button',
             }],
         });
     }, [locale, theme]);
@@ -217,7 +219,7 @@ const MembersModal = ({
         updateNavigationButtons(canStart);
     }, [selectedCount > 0, startingButtonAction, updateNavigationButtons]);
 
-    useNavButtonPressed(START_BUTTON, componentId, handleButtonTap, [handleButtonTap]);
+    useNavButtonPressed(ACTION_BUTTON, componentId, handleButtonTap, [handleButtonTap]);
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
     const handleRemoveProfile = useCallback((id: string) => {

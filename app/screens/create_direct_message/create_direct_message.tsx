@@ -22,6 +22,10 @@ const messages = defineMessages({
         id: t('mobile.open_gm.error'),
         defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
     },
+    button: {
+        id: t('mobile.create_direct_message.start'),
+        defaultMessage: 'Start',
+    },
 });
 
 type Props = {
@@ -87,6 +91,7 @@ export default function CreateDirectMessage({
 
     return (
         <MembersModal
+            buttonText={messages.button}
             componentId={componentId}
             getProfiles={getProfiles}
             page={page}
