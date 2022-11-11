@@ -2,10 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
+import withObservables from '@nozbe/with-observables';
 import React from 'react';
-import {ScrollView} from 'react-native';
+import {ScrollView} from 'react-native-gesture-handler';
 
-import {useServerUrl} from '@app/context/server';
+import {AppBindingLocations} from '@app/constants/apps';
+import {useServerUrl, withServerUrl} from '@app/context/server';
+import AppsManager from '@app/managers/apps_manager';
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
@@ -40,12 +43,13 @@ type PostOptionsProps = {
     post: PostModel;
     thread?: ThreadModel;
     componentId: string;
+    bindings: AppBinding[];
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
     combinedPost, componentId, isSaved,
-    sourceScreen, post, thread,
+    sourceScreen, post, thread, bindings,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
     const serverUrl = useServerUrl();
@@ -72,8 +76,14 @@ const PostOptions = ({
     }, 0);
 
     const renderContent = () => {
+        const shouldScroll = bindings.length > 0;
+
         return (
-            <ScrollView>
+            <ScrollView
+                scrollEnabled={shouldScroll}
+                showsVerticalScrollIndicator={false}
+                showsHorizontalScrollIndicator={false}
+            >
                 {canAddReaction && <ReactionBar postId={post.id}/>}
                 {canReply && sourceScreen !== Screens.THREAD && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
@@ -122,6 +132,7 @@ const PostOptions = ({
                 <AppBindingsPostOptions
                     post={post}
                     serverUrl={serverUrl}
+                    bindings={bindings}
                 />
             </ScrollView>
         );
@@ -141,4 +152,12 @@ const PostOptions = ({
     );
 };
 
-export default PostOptions;
+type OwnProps = {
+    serverUrl: string;
+}
+
+const withBindings = withObservables([], (ownProps: OwnProps) => ({
+    bindings: AppsManager.observeBindings(ownProps.serverUrl, AppBindingLocations.POST_MENU_ITEM),
+}));
+
+export default React.memo(withServerUrl(withBindings(PostOptions)));
