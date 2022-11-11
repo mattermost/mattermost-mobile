@@ -145,7 +145,7 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
 
     const confReq = await fetchConfigAndLicense(serverUrl);
     const prefData = await fetchMyPreferences(serverUrl, fetchOnly);
-    const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config));
+    const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config?.CollapsedThreads, confReq.config?.FeatureFlagCollapsedThreads));
     if (prefData.preferences) {
         const crtToggled = await getHasCRTChanged(database, prefData.preferences);
         if (crtToggled) {
@@ -306,7 +306,7 @@ export async function entryInitialChannelId(database: Database, requestedChannel
 
 export async function restDeferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
-    config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
+    config: ClientConfig, license: ClientLicense | undefined, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string) {
     // defer sidebar DM & GM profiles
     let channelsToFetchProfiles: Set<Channel>|undefined;
@@ -325,7 +325,7 @@ export async function restDeferredAppEntryActions(
         fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
-    if (preferences && processIsCRTEnabled(preferences, config)) {
+    if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
         if (initialTeamId) {
             await fetchNewThreads(serverUrl, initialTeamId, false);
         }
@@ -348,7 +348,7 @@ export async function restDeferredAppEntryActions(
 
     setTimeout(async () => {
         if (channelsToFetchProfiles?.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
             fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
         }
     }, FETCH_MISSING_DM_TIMEOUT);
@@ -454,7 +454,7 @@ const restSyncAllChannelMembers = async (serverUrl: string) => {
         for (const myTeam of myTeams) {
             fetchMyChannelsForTeam(serverUrl, myTeam.id, false, 0, false, excludeDirect);
             excludeDirect = true;
-            if (preferences && processIsCRTEnabled(preferences, config)) {
+            if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
                 fetchNewThreads(serverUrl, myTeam.id, false);
             }
         }

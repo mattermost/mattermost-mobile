@@ -11,7 +11,6 @@ import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-cont
 import {getPosts} from '@actions/local/post';
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
-import useDidUpdate from '@app/hooks/did_update';
 import Autocomplete from '@components/autocomplete';
 import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
@@ -22,6 +21,7 @@ import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';

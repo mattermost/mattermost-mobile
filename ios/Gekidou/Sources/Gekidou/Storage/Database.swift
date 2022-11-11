@@ -60,6 +60,7 @@ public class Database: NSObject {
     internal var userTable = Table("User")
     internal var threadTable = Table("Thread")
     internal var threadParticipantTable = Table("ThreadParticipant")
+    internal var configTable = Table("Config")
     
     @objc public static let `default` = Database()
     
