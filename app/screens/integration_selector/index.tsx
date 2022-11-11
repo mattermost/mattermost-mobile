@@ -432,7 +432,10 @@ function IntegrationSelector(
 
     useEffect(() => {
         if (!isMultiselect) {
-            return;
+            // No need to clean
+            return () => {
+                //noop
+            };
         }
 
         setButtons(componentId, {
