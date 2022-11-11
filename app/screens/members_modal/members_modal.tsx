@@ -1,19 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import SelectedUsers from '@screens/members_modal/selected_users';
 import UserList from '@screens/members_modal/user_list';
-import {dismissModal} from '@screens/navigation';
+import {dismissModal, setButtons} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
@@ -67,54 +69,77 @@ type searchFuncSuccess = {
     error?: undefined;
 }
 
+type getProfilesFuncError = {
+    users?: undefined;
+    error: unknown;
+}
+
+type getProfilesFuncSuccess = {
+    users: UserProfile[];
+    error?: undefined;
+}
+
 type Props = {
     componentId: string;
     currentUserId: string;
-    getProfiles: () => void;
-    loading: boolean;
-    page: React.RefObject<any>;
-    profiles: UserProfile[];
+    getProfilesFunc: () => Promise<getProfilesFuncSuccess | getProfilesFuncError>;
+    page: number;
     searchUsersFunc: (searchTerm: string) => Promise<searchFuncError | searchFuncSuccess>;
     selectedIds: {[id: string]: UserProfile};
-    setLoading: (v: boolean) => void;
+    setPage: (page: number) => void;
     setSelectedIds: (ids: {[id: string]: UserProfile}) => void;
-    setStartingConversation: (v: boolean) => void;
-    setTerm: (term: string) => void;
     startConversationFunc: (selectedId?: {[id: string]: boolean}) => Promise<boolean>;
-    startingConversation: boolean;
     teammateNameDisplay: string;
-    term: string;
     tutorialWatched: boolean;
 }
 
-export default function MembersModal({
+function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
+    if (action.type === 'add' && action.values?.length) {
+        return [...state, ...action.values];
+    }
+    return state;
+}
+
+const MembersModal = ({
     componentId,
     currentUserId,
-    getProfiles,
-    loading,
+    getProfilesFunc,
     page,
-    profiles,
     searchUsersFunc,
     selectedIds,
-    setLoading,
+    setPage,
     setSelectedIds,
-    setStartingConversation,
-    setTerm,
     startConversationFunc,
-    startingConversation,
     teammateNameDisplay,
-    term,
     tutorialWatched,
-}: Props) {
+}: Props) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
-    const {formatMessage} = useIntl();
+    const {formatMessage, locale} = useIntl();
 
     const selectedCount = Object.keys(selectedIds).length;
 
+    const [term, setTerm] = useState('');
+    const [startingConversation, setStartingConversation] = useState(false);
     const isSearch = Boolean(term);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+    const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
+    const [loading, setLoading] = useState(false);
+    const mounted = useRef(false);
+    const next = useRef(true);
+
+    const loadedProfiles = useCallback(({users}: {users?: UserProfile[]}) => {
+        if (mounted.current) {
+            if (users && !users.length) {
+                next.current = false;
+            }
+
+            setPage(page + 1);
+            setLoading(false);
+            dispatchProfiles({type: 'add', values: users});
+        }
+    }, [page, setPage]);
 
     // the search profiles function used to update the user list
     const searchUsers = useCallback(async (searchTerm: string) => {
@@ -154,6 +179,46 @@ export default function MembersModal({
         }
     }, [startingConversation, selectedIds, startConversationFunc]);
 
+    const getProfiles = useCallback(debounce(() => {
+        if (next.current && !loading && !term && mounted.current) {
+            setLoading(true);
+            getProfilesFunc().then(loadedProfiles);
+        }
+    }, 100), [loading, getProfilesFunc, term]);
+
+    const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
+        const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
+        setButtons(componentId, {
+            leftButtons: [{
+                id: CLOSE_BUTTON,
+                icon: closeIcon,
+                testID: 'close.create_direct_message.button',
+            }],
+            rightButtons: [{
+                color: theme.sidebarHeaderTextColor,
+                id: START_BUTTON,
+                text: formatMessage({id: 'mobile.create_direct_message.start', defaultMessage: 'Start'}),
+                showAsAction: 'always',
+                enabled: startEnabled,
+                testID: 'create_direct_message.start.button',
+            }],
+        });
+    }, [locale, theme]);
+
+    useEffect(() => {
+        mounted.current = true;
+        updateNavigationButtons(false);
+        getProfiles();
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        const canStart = selectedCount > 0 && !startingConversation;
+        updateNavigationButtons(canStart);
+    }, [selectedCount > 0, startingConversation, updateNavigationButtons]);
+
     useNavButtonPressed(START_BUTTON, componentId, startConversation, [startConversation]);
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
@@ -163,7 +228,7 @@ export default function MembersModal({
         Reflect.deleteProperty(newSelectedIds, id);
 
         setSelectedIds(newSelectedIds);
-    }, [selectedIds]);
+    }, [selectedIds, setSelectedIds]);
 
     const search = useCallback(() => {
         searchUsers(term);
@@ -217,7 +282,7 @@ export default function MembersModal({
 
             clearSearch();
         }
-    }, [selectedIds, currentUserId, handleRemoveProfile, startConversation, clearSearch]);
+    }, [selectedIds, currentUserId, handleRemoveProfile, setSelectedIds, startConversation, clearSearch]);
 
     const data = useMemo(() => {
         if (term) {
@@ -241,14 +306,6 @@ export default function MembersModal({
         return profiles;
     }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
 
-    const handleOnSubmitEditing = useCallback(() => {
-        search();
-    }, [search]);
-
-    const handleOnCancel = useCallback(() => {
-        clearSearch();
-    }, [clearSearch]);
-
     if (startingConversation) {
         return (
             <View style={style.container}>
@@ -269,8 +326,8 @@ export default function MembersModal({
                     cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     onChangeText={onSearch}
-                    onSubmitEditing={handleOnSubmitEditing}
-                    onCancel={handleOnCancel}
+                    onSubmitEditing={search}
+                    onCancel={clearSearch}
                     autoCapitalize='none'
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
@@ -287,17 +344,19 @@ export default function MembersModal({
             }
             <UserList
                 currentUserId={currentUserId}
+                fetchMore={getProfiles}
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 profiles={data}
                 selectedIds={selectedIds}
-                showNoResults={!loading && page.current !== -1}
+                showNoResults={!loading && page !== -1}
                 teammateNameDisplay={teammateNameDisplay}
-                fetchMore={getProfiles}
                 term={term}
                 testID='members_modal.user_list'
                 tutorialWatched={tutorialWatched}
             />
         </SafeAreaView>
     );
-}
+};
+
+export default MembersModal;
