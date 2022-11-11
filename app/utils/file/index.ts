@@ -14,7 +14,6 @@ import {Asset} from 'react-native-image-picker';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
-import {MAX_FILE_COUNT} from '@constants/files';
 import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
@@ -444,12 +443,12 @@ export function fileSizeWarning(intl: IntlShape, maxFileSize: number) {
     });
 }
 
-export function fileMaxWarning(intl: IntlShape) {
+export function fileMaxWarning(intl: IntlShape, maxFileCount: number) {
     return intl.formatMessage({
         id: 'mobile.file_upload.max_warning',
         defaultMessage: 'Uploads limited to {count} files maximum.',
     }, {
-        count: MAX_FILE_COUNT,
+        count: maxFileCount,
     });
 }
 

@@ -27,6 +27,7 @@ export default function FileQuickAction({
     disabled,
     onUploadFiles,
     maxFilesReached,
+    maxFileCount,
     testID = '',
 }: QuickActionAttachmentProps) {
     const intl = useIntl();
@@ -39,7 +40,7 @@ export default function FileQuickAction({
                     id: 'mobile.link.error.title',
                     defaultMessage: 'Error',
                 }),
-                fileMaxWarning(intl),
+                fileMaxWarning(intl, maxFileCount),
             );
             return;
         }

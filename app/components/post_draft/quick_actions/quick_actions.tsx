@@ -4,8 +4,6 @@
 import React from 'react';
 import {Platform, StyleSheet, View} from 'react-native';
 
-import {MAX_FILE_COUNT} from '@constants/files';
-
 import CameraAction from './camera_quick_action';
 import FileAction from './file_quick_action';
 import ImageAction from './image_quick_action';
@@ -15,6 +13,7 @@ type Props = {
     testID?: string;
     canUploadFiles: boolean;
     fileCount: number;
+    maxFileCount: number;
 
     // Draft Handler
     value: string;
@@ -46,6 +45,7 @@ export default function QuickActions({
     canUploadFiles,
     value,
     fileCount,
+    maxFileCount,
     updateValue,
     addFiles,
     focus,
@@ -62,7 +62,8 @@ export default function QuickActions({
     const uploadProps = {
         disabled: !canUploadFiles,
         fileCount,
-        maxFilesReached: fileCount >= MAX_FILE_COUNT,
+        maxFileCount,
+        maxFilesReached: fileCount >= maxFileCount,
         onUploadFiles: addFiles,
     };
 

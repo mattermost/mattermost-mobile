@@ -18,7 +18,7 @@ import {Events, Screens} from '@constants';
 import {CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {withServerUrl} from '@context/server';
 import {withTheme} from '@context/theme';
-import {observeRecentCustomStatus} from '@queries/servers/system';
+import {observeIsCustomStatusExpirySupported, observeRecentCustomStatus} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, goToScreen, showModal} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
@@ -42,6 +42,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
 
 interface Props extends NavigationComponentProps {
+    customStatusExpirySupported: boolean;
     currentUser: UserModel;
     intl: IntlShape;
     isModal?: boolean;
@@ -175,7 +176,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
     };
 
     handleSetStatus = async () => {
-        const {currentUser, serverUrl} = this.props;
+        const {customStatusExpirySupported, currentUser, serverUrl} = this.props;
         const {emoji, text, duration} = this.state;
         const customStatus = this.getCustomStatus();
 
@@ -194,9 +195,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                     duration: CustomStatusDurationEnum.DONT_CLEAR,
                 };
 
-                status.duration = duration;
-                status.expires_at = expiresAt;
-
+                if (customStatusExpirySupported) {
+                    status.duration = duration;
+                    status.expires_at = expiresAt;
+                }
                 const {error} = await updateCustomStatus(serverUrl, status);
                 if (error) {
                     DeviceEventEmitter.emit(SET_CUSTOM_STATUS_FAILURE);
@@ -319,7 +321,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     render() {
         const {duration, emoji, expires_at, text} = this.state;
-        const {intl, recentCustomStatuses, theme} = this.props;
+        const {customStatusExpirySupported, intl, recentCustomStatuses, theme} = this.props;
         const isStatusSet = Boolean(emoji || text);
         const style = getStyleSheet(theme);
 
@@ -361,7 +363,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                         text={text}
                                         theme={theme}
                                     />
-                                    {isStatusSet && (
+                                    {isStatusSet && customStatusExpirySupported && (
                                         <ClearAfter
                                             duration={duration}
                                             expiresAt={expires_at}
@@ -401,6 +403,7 @@ const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         currentUser: observeCurrentUser(database),
         recentCustomStatuses: observeRecentCustomStatus(database),
+        customStatusExpirySupported: observeIsCustomStatusExpirySupported(database),
     };
 });
 

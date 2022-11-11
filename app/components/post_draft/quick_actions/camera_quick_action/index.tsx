@@ -31,6 +31,7 @@ export default function CameraQuickAction({
     disabled,
     onUploadFiles,
     maxFilesReached,
+    maxFileCount,
     testID,
 }: QuickActionAttachmentProps) {
     const intl = useIntl();
@@ -58,7 +59,7 @@ export default function CameraQuickAction({
                     id: 'mobile.link.error.title',
                     defaultMessage: 'Error',
                 }),
-                fileMaxWarning(intl),
+                fileMaxWarning(intl, maxFileCount),
             );
             return;
         }
@@ -70,7 +71,7 @@ export default function CameraQuickAction({
             theme,
             closeButtonId: 'camera-close-id',
         });
-    }, [intl, theme, renderContent, maxFilesReached]);
+    }, [intl, theme, renderContent, maxFilesReached, maxFileCount]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

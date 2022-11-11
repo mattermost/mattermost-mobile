@@ -5,7 +5,6 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {addFilesToDraft, removeDraft} from '@actions/local/draft';
-import {MAX_FILE_COUNT} from '@constants/files';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import {fileMaxWarning, fileSizeWarning, uploadDisabledWarning} from '@utils/file';
@@ -18,6 +17,7 @@ type Props = {
     cursorPosition: number;
     rootId?: string;
     files?: FileInfo[];
+    maxFileCount: number;
     maxFileSize: number;
     canUploadFiles: boolean;
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
@@ -41,6 +41,7 @@ export default function DraftHandler(props: Props) {
         cursorPosition,
         rootId = '',
         files,
+        maxFileCount,
         maxFileSize,
         canUploadFiles,
         updateCursorPosition,
@@ -85,9 +86,9 @@ export default function DraftHandler(props: Props) {
         }
 
         const currentFileCount = files?.length || 0;
-        const availableCount = MAX_FILE_COUNT - currentFileCount;
+        const availableCount = maxFileCount - currentFileCount;
         if (newFiles.length > availableCount) {
-            newUploadError(fileMaxWarning(intl));
+            newUploadError(fileMaxWarning(intl, maxFileCount));
             return;
         }
 

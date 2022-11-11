@@ -44,6 +44,5 @@ export const Files: Record<string, string[]> = {
 Files.DOCUMENT_TYPES = Files.WORD_TYPES.concat(Files.PDF_TYPES, Files.TEXT_TYPES);
 
 export const PROGRESS_TIME_TO_STORE = 60000; // 60 * 1000 (60s)
-export const MAX_FILE_COUNT = 10;
 
 export default Files;
