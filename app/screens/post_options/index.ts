@@ -57,7 +57,7 @@ const observeCanEditPost = (database: Database, isOwner: boolean, post: PostMode
 const withPost = withObservables([], ({post, database}: {post: Post | PostModel} & WithDatabaseArgs) => {
     let id: string | undefined;
     let combinedPost: Observable<Post | PostModel | undefined> = of$(undefined);
-    if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
+    if (post?.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
         const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
         id = systemPostIds?.pop();
         combinedPost = of$(post);
@@ -160,4 +160,3 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
 });
 
 export default withDatabase(withPost(enhanced(PostOptions)));
-
