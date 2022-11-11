@@ -52,7 +52,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             paddingHorizontal: 12,
             flexDirection: 'row',
         },
-        filter: {
+        iconsContainer: {
             alignItems: 'center',
             flexDirection: 'row',
             marginLeft: 'auto',
@@ -136,7 +136,7 @@ const Header = ({
                     onPress={handleFilesPress}
                     text={`${filesText} (${numberFiles})`}
                 />
-                <View style={styles.filter}>
+                <View style={styles.iconsContainer}>
                     {showFilterIcon &&
                     <View style={filterStyle}>
                         <CompassIcon
