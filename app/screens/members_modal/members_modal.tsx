@@ -121,17 +121,19 @@ const MembersModal = ({
     const style = getStyleFromTheme(theme);
     const {formatMessage, locale} = useIntl();
 
+    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
+    const mounted = useRef(false);
+    const next = useRef(true);
+
     const selectedCount = Object.keys(selectedIds).length;
 
     const [term, setTerm] = useState('');
     const [startingButtonAction, setStartingButtonAction] = useState(false);
-    const isSearch = Boolean(term);
-    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
     const [loading, setLoading] = useState(false);
-    const mounted = useRef(false);
-    const next = useRef(true);
+
+    const isSearch = Boolean(term);
 
     const loadedProfiles = useCallback(({users}: {users?: UserProfile[]}) => {
         if (mounted.current) {
@@ -219,10 +221,7 @@ const MembersModal = ({
         }
 
         if (user.id === currentUserId) {
-            const selectedId = {
-                [currentUserId]: true,
-            };
-
+            const selectedId = {[currentUserId]: true};
             handleButtonTap(selectedId);
             return;
         }
@@ -280,7 +279,7 @@ const MembersModal = ({
                 testID: 'action.button',
             }],
         });
-    }, [locale, theme]);
+    }, [buttonText, locale, theme]);
 
     useEffect(() => {
         mounted.current = true;
