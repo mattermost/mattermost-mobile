@@ -104,7 +104,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
             // redirect to the sign in
             //  return launchToOnboarding(props, goToLoginPage);
             // }
-
+            console.log('\n\n first launch to onboarding \n\n', serverUrl);
             return launchToOnboarding(props, resetNavigation, false, false, true, serverUrl);
 
             let launchType = props.launchType;
@@ -139,7 +139,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     // if (onboardingAlreadyShown) {
     //   // launchToServer(props, resetNavigation);
     // }
-
+    console.log('\n\n second launch to onboarding \n\n', serverUrl);
     return launchToOnboarding(props, resetNavigation);
 };
 
@@ -209,7 +209,7 @@ const launchToOnboarding = (
     }
 
     // if there is not an active session, pass the prop and redirect to the LOGIN page (keep in mind all the redirection login to check for SSO stuff)
-    return resetToOnboarding(props, goToLogIn);
+    return resetToOnboarding(props, true, serverUrl);
 };
 
 export const relaunchApp = (props: LaunchProps, resetNavigation = false) => {

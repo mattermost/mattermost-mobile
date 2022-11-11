@@ -5,7 +5,9 @@ import React, {useCallback, useEffect, useRef} from 'react';
 import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, Animated as AnimatedRN} from 'react-native';
 import Animated, {Easing, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
 
+import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {Screens} from '@app/constants';
+import {loginOptions} from '@app/utils/server';
 import Background from '@screens/background';
 import {goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -16,9 +18,6 @@ import SlideItem from './slide';
 import useSlidesData, {OnboardingItem} from './slides_data';
 
 import type {LaunchProps} from '@typings/launch';
-import { loginOptions } from '@app/utils/server';
-import { fetchConfigAndLicense } from '@actions/remote/systems';
-import { queryServerByIdentifier } from '@app/queries/app/servers';
 
 interface OnboardingProps extends LaunchProps {
     theme: Theme;
@@ -84,12 +83,10 @@ const Onboarding = ({
 
     const displayLogin = (config: ClientConfig, license: ClientLicense) => {
         const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
+        const displayName = 'displayName';
         const passProps = {
             config,
-            extra,
             hasLoginForm,
-            launchError,
-            launchType,
             license,
             serverDisplayName: displayName,
             serverUrl,
