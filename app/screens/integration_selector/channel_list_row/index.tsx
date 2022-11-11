@@ -63,7 +63,7 @@ const ChannelListRow = ({
         let icon = 'globe';
 
         if (selectedChannel.type === 'P') {
-            icon = 'lock';
+            icon = 'padlock';
         }
 
         if (selectedChannel.delete_at) {
