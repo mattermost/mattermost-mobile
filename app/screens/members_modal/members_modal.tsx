@@ -150,12 +150,7 @@ const MembersModal = ({
 
         const results = await searchUsers(searchTerm);
 
-        let data: UserProfile[] = [];
-        if (results.data) {
-            data = results.data;
-        }
-
-        setSearchResults(data);
+        setSearchResults(results?.data || []);
         setLoading(false);
     }, [searchUsers]);
 
