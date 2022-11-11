@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, TouchableOpacity} from 'react-native';
 
@@ -46,12 +46,11 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const [files, setFiles] = useState<ReadDirItem[]>(EMPTY_FILES);
     const styles = getStyleSheet(theme);
 
-    const getAllCachedFiles = useCallback(async () => {
-        const {totalSize = 0, files: cachedFiles} =
-            await getAllFilesInCachesDirectory(serverUrl);
+    const getAllCachedFiles = async () => {
+        const {totalSize = 0, files: cachedFiles} = await getAllFilesInCachesDirectory(serverUrl);
         setDataSize(totalSize);
         setFiles(cachedFiles || EMPTY_FILES);
-    }, [serverUrl]);
+    };
 
     const onPressDeleteData = preventDoubleTap(async () => {
         try {
@@ -69,9 +68,8 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                     }),
                     [
                         {
-                            text: formatMessage({id: 'channel_modal.cancel', defaultMessage: 'Cancel'}),
+                            text: formatMessage({id: 'mobile.advanced_settings.cancel', defaultMessage: 'Cancel'}),
                             style: 'cancel',
-                            onPress: () => true,
                         },
                         {
                             text: formatMessage({id: 'mobile.advanced_settings.delete', defaultMessage: 'Delete'}),
