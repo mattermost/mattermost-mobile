@@ -7,6 +7,7 @@ import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import Config from '@assets/config.json';
+import DatabaseManager from '@database/manager';
 import {getConfig} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 
@@ -134,7 +135,7 @@ function captureClientErrorAsBreadcrumb(error: ClientError, isFatal: boolean) {
     }
 }
 
-export const getUserContext = async (database: Database) => {
+const getUserContext = async (database: Database) => {
     const currentUser = {
         id: 'currentUserId',
         locale: 'en',
@@ -152,7 +153,7 @@ export const getUserContext = async (database: Database) => {
     };
 };
 
-export const getExtraContext = async (database: Database) => {
+const getExtraContext = async (database: Database) => {
     const context = {
         config: {},
         currentChannel: {},
@@ -173,7 +174,7 @@ export const getExtraContext = async (database: Database) => {
     return context;
 };
 
-export const getBuildTags = async (database: Database) => {
+const getBuildTags = async (database: Database) => {
     const tags = {
         serverBuildHash: '',
         serverBuildNumber: '',
@@ -188,3 +189,16 @@ export const getBuildTags = async (database: Database) => {
     return tags;
 };
 
+export const addSentryContext = async (serverUrl: string) => {
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (database) {
+        const userContext = await getUserContext(database);
+        Sentry.setContext('User-Information', userContext);
+
+        const buildContext = await getBuildTags(database);
+        Sentry.setContext('App-Build Information', buildContext);
+
+        const extraContext = await getExtraContext(database);
+        Sentry.setContext('Server-Information', extraContext);
+    }
+};
