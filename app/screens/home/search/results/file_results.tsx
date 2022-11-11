@@ -5,10 +5,10 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {useIsTablet} from '@app/hooks/device';
-import {useImageAttachments} from '@app/hooks/files';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
+import {useImageAttachments} from '@hooks/files';
 import {GalleryAction} from '@typings/screens/gallery';
 import {
     getChannelNamesWithID,

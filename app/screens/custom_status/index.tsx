@@ -9,8 +9,6 @@ import {injectIntl, IntlShape} from 'react-intl';
 import {BackHandler, DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
 import {EventSubscription, Navigation, NavigationButtonPressedEvent, NavigationComponent, NavigationComponentProps} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
@@ -20,11 +18,11 @@ import {Events, Screens} from '@constants';
 import {CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
 import {withServerUrl} from '@context/server';
 import {withTheme} from '@context/theme';
-import {observeConfig, observeRecentCustomStatus} from '@queries/servers/system';
+import {observeIsCustomStatusExpirySupported, observeRecentCustomStatus} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {dismissModal, goToScreen, showModal} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
-import {getCurrentMomentForTimezone, getRoundedTime, isCustomStatusExpirySupported} from '@utils/helpers';
+import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {preventDoubleTap} from '@utils/tap';
@@ -376,7 +374,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                 </View>
                                 {recentCustomStatuses.length > 0 && (
                                     <RecentCustomStatuses
-                                        isExpirySupported={customStatusExpirySupported}
                                         onHandleClear={this.handleRecentCustomStatusClear}
                                         onHandleSuggestionClick={this.handleRecentCustomStatusSuggestionClick}
                                         recentCustomStatuses={recentCustomStatuses}
@@ -386,7 +383,6 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                                 }
                                 <CustomStatusSuggestions
                                     intl={intl}
-                                    isExpirySupported={customStatusExpirySupported}
                                     onHandleCustomStatusSuggestionClick={this.handleCustomStatusSuggestionClick}
                                     recentCustomStatuses={recentCustomStatuses}
                                     theme={theme}
@@ -404,13 +400,10 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 const augmentCSM = injectIntl(withTheme(withServerUrl(CustomStatusModal)));
 
 const enhancedCSM = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = observeConfig(database);
     return {
         currentUser: observeCurrentUser(database),
-        customStatusExpirySupported: config.pipe(
-            switchMap((cfg) => of$(isCustomStatusExpirySupported(cfg?.Version || ''))),
-        ),
         recentCustomStatuses: observeRecentCustomStatus(database),
+        customStatusExpirySupported: observeIsCustomStatusExpirySupported(database),
     };
 });
 

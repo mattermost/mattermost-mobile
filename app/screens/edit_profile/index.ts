@@ -3,10 +3,10 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
+import {of as of$, combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeConfig} from '@queries/servers/system';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import EditProfile from './edit_profile';
@@ -14,35 +14,31 @@ import EditProfile from './edit_profile';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = observeConfig(database);
+    const ldapFirstNameAttributeSet = observeConfigBooleanValue(database, 'LdapFirstNameAttributeSet');
+    const ldapLastNameAttributeSet = observeConfigBooleanValue(database, 'LdapLastNameAttributeSet');
+    const ldapNicknameAttributeSet = observeConfigBooleanValue(database, 'LdapNicknameAttributeSet');
+    const ldapPositionAttributeSet = observeConfigBooleanValue(database, 'LdapPositionAttributeSet');
+
+    const samlFirstNameAttributeSet = observeConfigBooleanValue(database, 'SamlFirstNameAttributeSet');
+    const samlLastNameAttributeSet = observeConfigBooleanValue(database, 'SamlLastNameAttributeSet');
+    const samlNicknameAttributeSet = observeConfigBooleanValue(database, 'SamlNicknameAttributeSet');
+    const samlPositionAttributeSet = observeConfigBooleanValue(database, 'SamlPositionAttributeSet');
 
     return {
         currentUser: observeCurrentUser(database),
-        lockedFirstName: config.pipe(
-            switchMap(
-                (cfg) => of$(cfg?.LdapFirstNameAttributeSet === 'true' || cfg?.SamlFirstNameAttributeSet === 'true'),
-            ),
+        lockedFirstName: combineLatest([ldapFirstNameAttributeSet, samlFirstNameAttributeSet]).pipe(
+            switchMap(([ldap, saml]) => of$(ldap || saml)),
         ),
-        lockedLastName: config.pipe(
-            switchMap(
-                (cfg) => of$(cfg?.LdapLastNameAttributeSet === 'true' || cfg?.SamlLastNameAttributeSet === 'true'),
-            ),
+        lockedLastName: combineLatest([ldapLastNameAttributeSet, samlLastNameAttributeSet]).pipe(
+            switchMap(([ldap, saml]) => of$(ldap || saml)),
         ),
-        lockedNickname: config.pipe(
-            switchMap(
-                (cfg) => of$(cfg?.LdapNicknameAttributeSet === 'true' || cfg?.SamlNicknameAttributeSet === 'true'),
-            ),
+        lockedNickname: combineLatest([ldapNicknameAttributeSet, samlNicknameAttributeSet]).pipe(
+            switchMap(([ldap, saml]) => of$(ldap || saml)),
         ),
-        lockedPosition: config.pipe(
-            switchMap(
-                (cfg) => of$(cfg?.LdapPositionAttributeSet === 'true' || cfg?.SamlPositionAttributeSet === 'true'),
-            ),
+        lockedPosition: combineLatest([ldapPositionAttributeSet, samlPositionAttributeSet]).pipe(
+            switchMap(([ldap, saml]) => of$(ldap || saml)),
         ),
-        lockedPicture: config.pipe(
-            switchMap(
-                (cfg) => of$(cfg?.LdapPictureAttributeSet === 'true'),
-            ),
-        ),
+        lockedPicture: observeConfigBooleanValue(database, 'LdapPictureAttributeSet'),
     };
 });
 

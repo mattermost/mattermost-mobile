@@ -6,9 +6,9 @@ import {AppState, AppStateStatus, DeviceEventEmitter, Platform} from 'react-nati
 import FastImage from 'react-native-fast-image';
 
 import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
-import {resetMomentLocale} from '@app/i18n';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
+import {resetMomentLocale} from '@i18n';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
 import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
