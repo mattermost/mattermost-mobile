@@ -460,3 +460,10 @@ export const observeCanUploadFiles = (database: Database) => {
         ),
     );
 };
+
+export const observeLastServerVersionCheck = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_SERVER_VERSION_CHECK).observeWithColumns(['value']).pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: 0}))),
+        switchMap((model) => of$(parseInt(model.value, 10))),
+    );
+};
