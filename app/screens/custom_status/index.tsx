@@ -332,7 +332,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
                         action={intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'})}
                         onPress={this.handleSetStatus}
                         testID='custom_status'
-                        title={intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'})}
+                        title={intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a custom status'})}
                     />
                 }
                 <SafeAreaView

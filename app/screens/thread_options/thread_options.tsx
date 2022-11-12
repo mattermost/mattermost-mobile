@@ -4,6 +4,7 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
 import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import FormattedText from '@components/formatted_text';
@@ -55,7 +56,7 @@ const ThreadOptions = ({
 }: ThreadOptionsProps) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
-
+    const insets = useSafeAreaInsets();
     const style = getStyleSheet(theme);
 
     const close = () => {
@@ -123,7 +124,7 @@ const ThreadOptions = ({
             closeButtonId={THREAD_OPTIONS_BUTTON}
             componentId={Screens.THREAD_OPTIONS}
             initialSnapIndex={0}
-            snapPoints={[(((options.length + 2) * ITEM_HEIGHT) + 34), 10]}
+            snapPoints={[(((options.length + 2) * ITEM_HEIGHT) + insets.bottom), 10]}
             testID='thread_options'
         />
     );

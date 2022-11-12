@@ -100,6 +100,9 @@ const UserAvatarsStack = ({breakAt = 3, channelId, location, style: baseContaine
     const isTablet = useIsTablet();
 
     const showParticipantsList = useCallback(preventDoubleTap(() => {
+        const BOTTOM_SHEET_TITLE_HEIGHT = 118;
+        const USER_ROW_HEIGHT = 40;
+
         const renderContent = () => (
             <>
                 {!isTablet && (
@@ -122,7 +125,7 @@ const UserAvatarsStack = ({breakAt = 3, channelId, location, style: baseContaine
             closeButtonId: 'close-set-user-status',
             renderContent,
             initialSnapIndex: 1,
-            snapPoints: ['90%', '50%', 10],
+            snapPoints: ['90%', BOTTOM_SHEET_TITLE_HEIGHT + ((users.length) * USER_ROW_HEIGHT), 10],
             title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
             theme,
         });

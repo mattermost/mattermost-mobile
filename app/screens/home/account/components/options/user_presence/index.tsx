@@ -72,7 +72,7 @@ const UserStatus = ({currentUser}: Props) => {
                         <View style={styles.listHeader}>
                             <FormattedText
                                 id='mobile.user_presence.header'
-                                defaultMessage={'Set your status'}
+                                defaultMessage={'Status'}
                                 style={styles.listHeaderText}
                             />
                         </View>
@@ -130,7 +130,7 @@ const UserStatus = ({currentUser}: Props) => {
             closeButtonId: 'close-set-user-status',
             renderContent,
             snapPoints: [(snapPoint + insets.bottom), 10],
-            title: intl.formatMessage({id: 'account.user_status.title', defaultMessage: 'User Presence'}),
+            title: intl.formatMessage({id: 'mobile.user_presence.header', defaultMessage: 'Status'}),
             theme,
         });
     }), [theme, insets]);

@@ -28,6 +28,7 @@ type SlideUpPanelProps = {
 }
 
 export const PADDING_TOP_MOBILE = 20;
+export const PADDING_TOP_TABLET = 8;
 
 const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50], testID}: SlideUpPanelProps) => {
     const sheetRef = useRef<RNBottomSheet>(null);
@@ -101,7 +102,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
 
     const backdropStyle = useAnimatedStyle(() => ({
         opacity: withTiming(backdropOpacity.value, {duration: 250, easing: Easing.inOut(Easing.linear)}),
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
     }));
 
     const renderBackdrop = () => {
@@ -128,14 +129,13 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
             style={{
                 backgroundColor: theme.centerChannelBg,
                 borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-                borderWidth: 1,
+                borderWidth: isTablet ? 0 : 1,
                 opacity: 1,
                 paddingHorizontal: 20,
-                paddingTop: isTablet ? 8 : PADDING_TOP_MOBILE,
+                paddingTop: isTablet ? PADDING_TOP_TABLET : PADDING_TOP_MOBILE,
                 height: '100%',
                 width: isTablet ? '100%' : Math.min(dimensions.width, 450),
                 alignSelf: 'center',
-                borderRadius: 12,
             }}
             testID={`${testID}.screen`}
         >
@@ -158,8 +158,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
             <RNBottomSheet
                 ref={sheetRef}
                 snapPoints={snapPoints}
-
-                // borderRadius={12}
+                borderRadius={12}
                 initialSnap={snapPoints.length - 1}
                 renderContent={renderContainerContent}
                 onCloseEnd={handleCloseEnd}
