@@ -129,7 +129,7 @@ const UserStatus = ({currentUser}: Props) => {
         bottomSheet({
             closeButtonId: 'close-set-user-status',
             renderContent,
-            snapPoints: [(snapPoint + 34), 10],
+            snapPoints: [(snapPoint + insets.bottom), 10],
             title: intl.formatMessage({id: 'account.user_status.title', defaultMessage: 'User Presence'}),
             theme,
         });
