@@ -21,16 +21,14 @@ import type {LaunchProps} from '@typings/launch';
 
 interface OnboardingProps extends LaunchProps {
     theme: Theme;
-    goToLogIn: boolean;
-    serverUrl: string;
+    goToLoginServerUrl: string;
 }
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const Onboarding = ({
     theme,
-    goToLogIn,
-    serverUrl,
+    goToLoginServerUrl,
 }: OnboardingProps) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
@@ -72,7 +70,7 @@ const Onboarding = ({
     }, [currentIndex.value, slidesRef.current, moveToSlide]);
 
     const initLogin = async () => {
-        const data = await fetchConfigAndLicense(serverUrl, true);
+        const data = await fetchConfigAndLicense(goToLoginServerUrl, true);
         if (data.error) {
             console.log('Error getting the config and license information');
             return;
@@ -89,7 +87,7 @@ const Onboarding = ({
             hasLoginForm,
             license,
             serverDisplayName: displayName,
-            serverUrl,
+            serverUrl: goToLoginServerUrl,
             ssoOptions,
             theme,
         };
@@ -105,9 +103,6 @@ const Onboarding = ({
     };
 
     const signInHandler = useCallback(() => {
-        if (goToLogIn) {
-            initLogin();
-        }
         const topBar = {
             visible: true,
             drawBehind: true,
@@ -121,8 +116,13 @@ const Onboarding = ({
                 title: '',
             },
         };
+
+        if (goToLoginServerUrl) {
+            initLogin();
+            return;
+        }
         goToScreen(Screens.SERVER, '', {theme}, {topBar});
-    }, [goToLogIn]);
+    }, [goToLoginServerUrl]);
 
     const renderSlide = useCallback(({item, index}: ListRenderItemInfo<OnboardingItem>) => {
         return (

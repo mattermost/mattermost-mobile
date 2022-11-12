@@ -281,7 +281,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
     });
 }
 
-export function resetToOnboarding(passProps: LaunchProps, goToLogIn: boolean, serverUrl: string) {
+export function resetToOnboarding(passProps: LaunchProps, goToLoginServerUrl: string) {
     const theme = getDefaultThemeByAppearance();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
@@ -295,8 +295,7 @@ export function resetToOnboarding(passProps: LaunchProps, goToLogIn: boolean, se
             passProps: {
                 ...passProps,
                 theme,
-                goToLogIn,
-                serverUrl,
+                goToLoginServerUrl,
             },
             options: {
                 layout: {
@@ -410,6 +409,10 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
             },
         },
     };
+
+    if (name === Screens.SERVER) {
+        console.log('\n\n** screen pass props', passProps, componentId, name, '\n\n');
+    }
 
     return Navigation.push(componentId, {
         component: {

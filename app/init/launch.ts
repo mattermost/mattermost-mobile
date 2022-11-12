@@ -19,7 +19,6 @@ import {convertToNotificationData} from '@utils/notification';
 import {parseDeepLink} from '@utils/url';
 
 import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
-import { fetchConfigAndLicense } from '@actions/remote/systems';
 
 const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, PushNotification.NOTIFICATION_TYPE.SESSION];
 
@@ -59,7 +58,6 @@ const launchAppFromNotification = async (notification: NotificationWithData) => 
     launchApp(props);
 };
 
-// pablo - here I need to validate the logic for launching the onboarding screen
 const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     let serverUrl: string | undefined;
     switch (props?.launchType) {
@@ -102,10 +100,9 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
             // if (!onboardingAlreadyShown) {
             // here, check if there is not an active session and redirect to onboarding with a flag, so the sign in button will
             // redirect to the sign in
-            //  return launchToOnboarding(props, goToLoginPage);
+            //  return launchToOnboarding(props, goToLoginServerUrlPage);
             // }
-            console.log('\n\n first launch to onboarding \n\n', serverUrl);
-            return launchToOnboarding(props, resetNavigation, false, false, true, serverUrl);
+            return launchToOnboarding(props, resetNavigation, false, false, serverUrl);
 
             let launchType = props.launchType;
             if (!hasCurrentUser) {
@@ -139,7 +136,6 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     // if (onboardingAlreadyShown) {
     //   // launchToServer(props, resetNavigation);
     // }
-    console.log('\n\n second launch to onboarding \n\n', serverUrl);
     return launchToOnboarding(props, resetNavigation);
 };
 
@@ -199,8 +195,7 @@ const launchToOnboarding = (
     resetNavigation = true,
     notActiveSession = true,
     whiteLabeledApp = false,
-    goToLogIn = true,
-    serverUrl = '',
+    goToLoginServerUrl = '',
 ) => {
     // here, if there is an active session, redirect to home
     // if there is a whitelabeled app, redirect to either SERVER or LOGIN but don't show the onboarding
@@ -208,8 +203,8 @@ const launchToOnboarding = (
         launchToServer(props, resetNavigation);
     }
 
-    // if there is not an active session, pass the prop and redirect to the LOGIN page (keep in mind all the redirection login to check for SSO stuff)
-    return resetToOnboarding(props, true, serverUrl);
+    // goToLoginServerUrl will contain a value when there is a server already configured but not a active session
+    return resetToOnboarding(props, goToLoginServerUrl);
 };
 
 export const relaunchApp = (props: LaunchProps, resetNavigation = false) => {
