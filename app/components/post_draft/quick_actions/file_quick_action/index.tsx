@@ -63,7 +63,7 @@ export default function FileQuickAction({
         >
             <CompassIcon
                 color={color}
-                name='file-generic-outline'
+                name='paperclip'
                 size={ICON_SIZE}
             />
         </TouchableWithFeedback>

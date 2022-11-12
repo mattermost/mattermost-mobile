@@ -3,14 +3,18 @@
 
 // Check if calls is enabled. If it is, then run fn; if it isn't, show an alert and set
 // msgPostfix to ' (Not Available)'.
-import {useCallback, useState} from 'react';
+import {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert} from 'react-native';
+import {Alert, Platform} from 'react-native';
+import Permissions from 'react-native-permissions';
 
+import {initializeVoiceTrack} from '@calls/actions/calls';
+import {setMicPermissionsGranted} from '@calls/state';
 import {errorAlert} from '@calls/utils';
 import {Client} from '@client/rest';
 import ClientError from '@client/rest/error';
 import {useServerUrl} from '@context/server';
+import {useAppState} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
 
 export const useTryCallsFunction = (fn: () => void) => {
@@ -70,4 +74,28 @@ export const useTryCallsFunction = (fn: () => void) => {
     }, [client, fn, clientError, intl]);
 
     return [tryFn, msgPostfix] as [() => Promise<void>, string];
+};
+
+const micPermission = Platform.select({
+    ios: Permissions.PERMISSIONS.IOS.MICROPHONE,
+    default: Permissions.PERMISSIONS.ANDROID.RECORD_AUDIO,
+});
+
+export const usePermissionsChecker = (micPermissionsGranted: boolean) => {
+    const appState = useAppState();
+
+    useEffect(() => {
+        const asyncFn = async () => {
+            if (appState === 'active') {
+                const hasPermission = (await Permissions.check(micPermission)) === Permissions.RESULTS.GRANTED;
+                if (hasPermission) {
+                    initializeVoiceTrack();
+                    setMicPermissionsGranted(hasPermission);
+                }
+            }
+        };
+        if (!micPermissionsGranted) {
+            asyncFn();
+        }
+    }, [appState]);
 };
