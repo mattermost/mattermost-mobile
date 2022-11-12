@@ -12,7 +12,7 @@ import {getConfig} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 
 import {ClientError} from './client_error';
-import {logWarning} from './log';
+import {logError, logWarning} from './log';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
@@ -190,8 +190,12 @@ const getBuildTags = async (database: Database) => {
 };
 
 export const addSentryContext = async (serverUrl: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (database) {
+    if (!Config.SentryEnabled || !Sentry) {
+        return;
+    }
+
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const userContext = await getUserContext(database);
         Sentry.setContext('User-Information', userContext);
 
@@ -200,5 +204,7 @@ export const addSentryContext = async (serverUrl: string) => {
 
         const extraContext = await getExtraContext(database);
         Sentry.setContext('Server-Information', extraContext);
+    } catch (e) {
+        logError(`addSentryContext for serverUrl ${serverUrl}`, e);
     }
 };
