@@ -67,7 +67,7 @@ export default function CreateDirectMessage({
     const [term, setTerm] = useState('');
     const [loading, setLoading] = useState(false);
 
-    const pageRef = useRef<number>(-1);
+    const page = useRef<number>(-1);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
 
@@ -92,9 +92,9 @@ export default function CreateDirectMessage({
 
     const getProfiles = useCallback(async () => {
         if (restrictDirectMessage) {
-            return fetchProfilesInTeam(serverUrl, currentTeamId, pageRef.current + 1, General.PROFILE_CHUNK_SIZE);
+            return fetchProfilesInTeam(serverUrl, currentTeamId, page.current + 1, General.PROFILE_CHUNK_SIZE);
         }
-        return fetchProfiles(serverUrl, pageRef.current + 1, General.PROFILE_CHUNK_SIZE);
+        return fetchProfiles(serverUrl, page.current + 1, General.PROFILE_CHUNK_SIZE);
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
 
     const onButtonTap = useCallback(async (selectedId?: {[id: string]: boolean}) => {
@@ -201,7 +201,7 @@ export default function CreateDirectMessage({
                 />
             </View>
             <UsersModal
-                ref={pageRef}
+                page={page}
                 buttonText={messages.button}
                 componentId={componentId}
                 currentUserId={currentUserId}

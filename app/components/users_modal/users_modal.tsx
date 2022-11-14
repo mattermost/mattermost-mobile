@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {forwardRef, MutableRefObject, useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import React, {MutableRefObject, useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {MessageDescriptor, useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, View} from 'react-native';
 
@@ -54,6 +54,7 @@ type Props = {
     loading: boolean;
     maxSelectedUsers: number;
     onButtonTap: (selectedId?: {[id: string]: boolean}) => Promise<boolean>;
+    page: MutableRefObject<number>;
     searchResults: UserProfile[];
     selectedIds: {[id: string]: UserProfile};
     setLoading: (loading: boolean) => void;
@@ -69,7 +70,7 @@ function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: Use
     return state;
 }
 
-const UsersModal = forwardRef(({
+const UsersModal = ({
     buttonText,
     componentId,
     currentUserId,
@@ -79,13 +80,14 @@ const UsersModal = forwardRef(({
     loading,
     maxSelectedUsers,
     onButtonTap,
+    page,
     searchResults,
     selectedIds,
     setLoading,
     teammateNameDisplay,
     term,
     tutorialWatched,
-}: Props, pageRef: MutableRefObject<number>) => {
+}: Props) => {
     const theme = useTheme();
     const {formatMessage, locale} = useIntl();
     const mounted = useRef(false);
@@ -98,20 +100,13 @@ const UsersModal = forwardRef(({
 
     const isSearch = Boolean(term);
 
-    let hasUsers = false;
-    if (pageRef != null && typeof pageRef !== 'function') {
-        hasUsers = pageRef?.current !== -1;
-    }
-
     const loadedProfiles = useCallback(({users}: {users?: UserProfile[]}) => {
         if (mounted.current) {
             if (users && !users.length) {
                 next.current = false;
             }
 
-            if (pageRef != null && typeof pageRef !== 'function') {
-                pageRef.current += 1;
-            }
+            page.current += 1;
             setLoading(false);
             dispatchProfiles({type: 'add', values: users});
         }
@@ -226,7 +221,7 @@ const UsersModal = forwardRef(({
                 loading={loading}
                 profiles={data}
                 selectedIds={selectedIds}
-                showNoResults={!loading && hasUsers}
+                showNoResults={!loading && page?.current !== -1}
                 teammateNameDisplay={teammateNameDisplay}
                 term={term}
                 testID='members_modal.user_list'
@@ -234,7 +229,6 @@ const UsersModal = forwardRef(({
             />
         </>
     );
-});
+};
 
-UsersModal.displayName = 'UsersModal';
 export default UsersModal;
