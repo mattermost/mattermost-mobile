@@ -71,6 +71,13 @@ export default function CreateDirectMessage({
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
 
+    const getProfiles = useCallback(async () => {
+        if (restrictDirectMessage) {
+            return fetchProfilesInTeam(serverUrl, currentTeamId, page.current + 1, General.PROFILE_CHUNK_SIZE);
+        }
+        return fetchProfiles(serverUrl, page.current + 1, General.PROFILE_CHUNK_SIZE);
+    }, [restrictDirectMessage, serverUrl, currentTeamId]);
+
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
         const user = selectedIds[id];
         const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
@@ -89,13 +96,6 @@ export default function CreateDirectMessage({
         }
         return !result.error;
     }, [serverUrl]);
-
-    const getProfiles = useCallback(async () => {
-        if (restrictDirectMessage) {
-            return fetchProfilesInTeam(serverUrl, currentTeamId, page.current + 1, General.PROFILE_CHUNK_SIZE);
-        }
-        return fetchProfiles(serverUrl, page.current + 1, General.PROFILE_CHUNK_SIZE);
-    }, [restrictDirectMessage, serverUrl, currentTeamId]);
 
     const onButtonTap = useCallback(async (selectedId?: {[id: string]: boolean}) => {
         const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
