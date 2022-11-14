@@ -62,14 +62,34 @@ export default function CreateDirectMessage({
     const theme = useTheme();
     const intl = useIntl();
 
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
-    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
-    const [term, setTerm] = useState('');
-    const [loading, setLoading] = useState(false);
-
-    const page = useRef<number>(-1);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
+    const page = useRef(-1);
+
+    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+    const [loading, setLoading] = useState(false);
+    const [term, setTerm] = useState('');
+    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
+
+    const clearSearch = useCallback(() => {
+        setTerm('');
+        setSearchResults([]);
+    }, []);
+
+    const getProfiles = useCallback(async () => {
+        if (restrictDirectMessage) {
+            return fetchProfilesInTeam(serverUrl, currentTeamId, page.current + 1, General.PROFILE_CHUNK_SIZE);
+        }
+        return fetchProfiles(serverUrl, page.current + 1, General.PROFILE_CHUNK_SIZE);
+    }, [restrictDirectMessage, serverUrl, currentTeamId]);
+
+    const handleRemoveProfile = useCallback((id: string) => {
+        const newSelectedIds = Object.assign({}, selectedIds);
+
+        Reflect.deleteProperty(newSelectedIds, id);
+
+        setSelectedIds(newSelectedIds);
+    }, [selectedIds]);
 
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
         const user = selectedIds[id];
@@ -90,13 +110,6 @@ export default function CreateDirectMessage({
         return !result.error;
     }, [serverUrl]);
 
-    const getProfiles = useCallback(async () => {
-        if (restrictDirectMessage) {
-            return fetchProfilesInTeam(serverUrl, currentTeamId, page.current + 1, General.PROFILE_CHUNK_SIZE);
-        }
-        return fetchProfiles(serverUrl, page.current + 1, General.PROFILE_CHUNK_SIZE);
-    }, [restrictDirectMessage, serverUrl, currentTeamId]);
-
     const onButtonTap = useCallback(async (selectedId?: {[id: string]: boolean}) => {
         const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
         if (idsToUse.length > 1) {
@@ -105,31 +118,58 @@ export default function CreateDirectMessage({
         return createDirectChannel(idsToUse[0]);
     }, [selectedIds, createGroupChannel, createDirectChannel]);
 
+    const handleSelectProfile = useCallback((user: UserProfile) => {
+        if (selectedIds[user.id]) {
+            handleRemoveProfile(user.id);
+            return;
+        }
+
+        if (user.id === currentUserId) {
+            const selectedId = {
+                [currentUserId]: true,
+            };
+            onButtonTap(selectedId);
+        } else {
+            const wasSelected = selectedIds[user.id];
+
+            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+                return;
+            }
+
+            const newSelectedIds = Object.assign({}, selectedIds);
+            if (!wasSelected) {
+                newSelectedIds[user.id] = user;
+            }
+
+            setSelectedIds(newSelectedIds);
+
+            clearSearch();
+        }
+    }, [clearSearch, currentUserId, handleRemoveProfile, onButtonTap, selectedIds, setSelectedIds]);
+
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
+        setLoading(true);
+        let results;
+
         if (restrictDirectMessage) {
-            return searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
+        } else {
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
         }
-        return searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
+
+        let data: UserProfile[] = [];
+        if (results.data) {
+            data = results.data;
+        }
+
+        setSearchResults(data);
+        setLoading(false);
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
 
-    const handleSearchUsers = useCallback(async (searchTerm: string) => {
-        setLoading(true);
-
-        const results = await searchUsers(searchTerm);
-
-        setSearchResults(results?.data || []);
-        setLoading(false);
-    }, [searchUsers]);
-
     const search = useCallback(() => {
-        handleSearchUsers(term);
-    }, [handleSearchUsers, term]);
-
-    const clearSearch = useCallback(() => {
-        setTerm('');
-        setSearchResults([]);
-    }, []);
+        searchUsers(term);
+    }, [searchUsers, term]);
 
     const onSearch = useCallback((text: string) => {
         if (text) {
@@ -139,64 +179,29 @@ export default function CreateDirectMessage({
             }
 
             searchTimeoutId.current = setTimeout(() => {
-                handleSearchUsers(text);
+                searchUsers(text);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
-            return;
+        } else {
+            clearSearch();
         }
-
-        clearSearch();
-    }, [clearSearch, handleSearchUsers]);
-
-    const handleRemoveProfile = useCallback((id: string) => {
-        const newSelectedIds = Object.assign({}, selectedIds);
-
-        Reflect.deleteProperty(newSelectedIds, id);
-
-        setSelectedIds(newSelectedIds);
-    }, [selectedIds, setSelectedIds]);
-
-    const handleSelectProfile = useCallback((user: UserProfile) => {
-        if (selectedIds[user.id]) {
-            handleRemoveProfile(user.id);
-            return;
-        }
-
-        if (user.id === currentUserId) {
-            const selectedId = {[currentUserId]: true};
-            onButtonTap(selectedId);
-            return;
-        }
-
-        const wasSelected = selectedIds[user.id];
-        if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
-            return;
-        }
-
-        const newSelectedIds = Object.assign({}, selectedIds);
-        if (!wasSelected) {
-            newSelectedIds[user.id] = user;
-        }
-
-        setSelectedIds(newSelectedIds);
-        clearSearch();
-    }, [clearSearch, currentUserId, handleRemoveProfile, onButtonTap, selectedIds, setSelectedIds]);
+    }, [searchUsers, clearSearch]);
 
     return (
         <SafeAreaView
             style={style.container}
-            testID='members_modal.screen'
+            testID='create_direct_message.screen'
         >
             <View style={style.searchBar}>
                 <Search
-                    autoCapitalize='none'
+                    testID='create_direct_message.search_bar'
+                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    onCancel={clearSearch}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     onChangeText={onSearch}
                     onSubmitEditing={search}
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    testID='members_modal.search_bar'
+                    onCancel={clearSearch}
+                    autoCapitalize='none'
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
                 />
             </View>
