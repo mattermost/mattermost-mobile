@@ -62,10 +62,10 @@ export default function CreateDirectMessage({
     const theme = useTheme();
     const intl = useIntl();
 
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
-    const [term, setTerm] = useState('');
     const [loading, setLoading] = useState(false);
+    const [term, setTerm] = useState('');
+    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
 
     const page = useRef<number>(-1);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
@@ -89,7 +89,7 @@ export default function CreateDirectMessage({
         Reflect.deleteProperty(newSelectedIds, id);
 
         setSelectedIds(newSelectedIds);
-    }, [selectedIds, setSelectedIds]);
+    }, [selectedIds]);
 
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
         const user = selectedIds[id];
