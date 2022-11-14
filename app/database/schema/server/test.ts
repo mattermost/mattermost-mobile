@@ -13,6 +13,7 @@ const {
     CHANNEL,
     CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
+    CONFIG,
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
@@ -43,7 +44,8 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 4,
+            version: 5,
+            unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
                     name: CATEGORY,
@@ -143,6 +145,16 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
                         {name: 'scheme_admin', type: 'boolean'},
+                    ],
+                },
+                [CONFIG]: {
+                    name: CONFIG,
+                    unsafeSql: undefined,
+                    columns: {
+                        value: {name: 'value', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'value', type: 'string'},
                     ],
                 },
                 [CUSTOM_EMOJI]: {

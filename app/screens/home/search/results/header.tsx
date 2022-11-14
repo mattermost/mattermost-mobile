@@ -8,15 +8,15 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {TeamModel} from '@database/models/server';
 import {useIsTablet} from '@hooks/device';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
+import TeamPickerIcon from '@screens/home/search/team_picker_icon';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {TabTypes, TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import TeamPickerIcon from '../team_picker_icon';
 
 import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
 import SelectButton from './header_button';
@@ -30,6 +30,7 @@ type Props = {
     numberFiles: number;
     setTeamId: (id: string) => void;
     teamId: string;
+    teams: TeamModel[];
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -50,7 +51,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             paddingHorizontal: 12,
             flexDirection: 'row',
         },
-        filter: {
+        iconsContainer: {
             alignItems: 'center',
             flexDirection: 'row',
             marginLeft: 'auto',
@@ -67,6 +68,7 @@ const Header = ({
     numberFiles,
     selectedTab,
     selectedFilter,
+    teams,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
@@ -118,6 +120,8 @@ const Header = ({
         });
     }, [selectedFilter]);
 
+    const filterStyle = useMemo(() => ({marginRight: teams.length > 1 ? 0 : 10}), [teams.length > 1]);
+
     return (
         <View style={styles.container}>
             <View style={styles.buttonsContainer}>
@@ -131,11 +135,9 @@ const Header = ({
                     onPress={handleFilesPress}
                     text={`${filesText} (${numberFiles})`}
                 />
-                <View
-                    style={styles.filter}
-                >
+                <View style={styles.iconsContainer}>
                     {showFilterIcon &&
-                    <>
+                    <View style={filterStyle}>
                         <CompassIcon
                             name={'filter-variant'}
                             size={24}
@@ -148,14 +150,17 @@ const Header = ({
                             testID={'search.filters.badge'}
                             value={-1}
                         />
-                    </>
+                    </View>
                     }
+                    {teams.length > 1 &&
                     <TeamPickerIcon
                         size={32}
                         divider={true}
                         setTeamId={setTeamId}
                         teamId={teamId}
+                        teams={teams}
                     />
+                    }
                 </View>
             </View>
         </View>

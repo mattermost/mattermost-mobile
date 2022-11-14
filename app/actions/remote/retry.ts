@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {storeConfig} from '@actions/local/systems';
 import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -9,7 +10,7 @@ import NetworkManager from '@managers/network_manager';
 import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {prepareCommonSystemValues, getCommonSystemValues} from '@queries/servers/system';
+import {prepareCommonSystemValues, getConfig, getLicense} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
@@ -101,14 +102,15 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
 
         const models: Model[] = (await Promise.all([
             prepareMyPreferences(operator, prefData.preferences!),
+            storeConfig(serverUrl, clData.config, true),
             ...prepareMyTeams(operator, teamData.teams!, teamData.memberships!),
             ...await prepareMyChannelsForTeam(operator, initialTeam.id, chData!.channels!, chData!.memberships!),
             prepareCategories(operator, chData!.categories!),
             prepareCategoryChannels(operator, chData!.categories!),
+
             prepareCommonSystemValues(
                 operator,
                 {
-                    config: clData.config!,
                     license: clData.license!,
                     currentTeamId: initialTeam?.id,
                     currentChannelId: initialChannel?.id,
@@ -121,7 +123,7 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
         const directChannels = chData!.channels!.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], clData.config, clData.license);
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(prefData.preferences || [], clData.config?.LockTeammateNameDisplay, clData.config?.TeammateNameDisplay, clData.license);
             fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), user.locale, teammateDisplayNameSetting, user.id);
         }
 
@@ -163,7 +165,8 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
             user_id: p.userId,
             value: p.value,
         }));
-        const {config, license} = await getCommonSystemValues(database);
+        const license = await getLicense(database);
+        const config = await getConfig(database);
 
         // fetch channels / channel membership for initial team
         const chData = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
@@ -200,7 +203,7 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
         const directChannels = chData!.channels!.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
             fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), user.locale, teammateDisplayNameSetting, user.id);
         }
 

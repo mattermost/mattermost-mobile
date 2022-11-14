@@ -10,7 +10,6 @@ import CustomStatusSuggestion from '@screens/custom_status/components/custom_sta
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
-    isExpirySupported: boolean;
     onHandleClear: (status: UserCustomStatus) => void;
     onHandleSuggestionClick: (status: UserCustomStatus) => void;
     recentCustomStatuses: UserCustomStatus[];
@@ -38,7 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const RecentCustomStatuses = ({isExpirySupported, onHandleClear, onHandleSuggestionClick, recentCustomStatuses, theme}: Props) => {
+const RecentCustomStatuses = ({onHandleClear, onHandleSuggestionClick, recentCustomStatuses, theme}: Props) => {
     const style = getStyleSheet(theme);
 
     if (recentCustomStatuses.length === 0) {
@@ -66,7 +65,6 @@ const RecentCustomStatuses = ({isExpirySupported, onHandleClear, onHandleSuggest
                             separator={index !== recentCustomStatuses.length - 1}
                             duration={status.duration}
                             expires_at={status.expires_at}
-                            isExpirySupported={isExpirySupported}
                         />
                     ))}
                 </View>

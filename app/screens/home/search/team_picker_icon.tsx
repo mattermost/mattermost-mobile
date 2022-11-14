@@ -15,7 +15,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {getTeamsSnapHeight} from '@utils/team_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import SelectTeamSlideUp from './search_team_slideup';
+import SelectTeamSlideUp from './select_team_slideup';
 
 import type TeamModel from '@typings/database/models/servers/team';
 

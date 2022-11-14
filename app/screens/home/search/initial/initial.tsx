@@ -4,6 +4,8 @@
 import React from 'react';
 import Animated from 'react-native-reanimated';
 
+import {TeamModel} from '@database/models/server';
+
 import Modifiers from './modifiers';
 import RecentSearches from './recent_searches';
 
@@ -18,9 +20,10 @@ type Props = {
     setTeamId: (value: string) => void;
     teamId: string;
     teamName: string;
+    teams: TeamModel[];
 }
 
-const Initial = ({recentSearches, scrollEnabled, searchValue, setRecentValue, teamId, teamName, setTeamId, setSearchValue}: Props) => {
+const Initial = ({recentSearches, scrollEnabled, searchValue, setRecentValue, teamId, teamName, teams, setTeamId, setSearchValue}: Props) => {
     return (
         <>
             <Modifiers
@@ -28,6 +31,7 @@ const Initial = ({recentSearches, scrollEnabled, searchValue, setRecentValue, te
                 setSearchValue={setSearchValue}
                 setTeamId={setTeamId}
                 teamId={teamId}
+                teams={teams}
                 scrollEnabled={scrollEnabled}
             />
             {Boolean(recentSearches.length) &&

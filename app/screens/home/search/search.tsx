@@ -11,7 +11,6 @@ import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-cont
 import {getPosts} from '@actions/local/post';
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
 import {searchPosts, searchFiles} from '@actions/remote/search';
-import useDidUpdate from '@app/hooks/did_update';
 import Autocomplete from '@components/autocomplete';
 import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
@@ -21,7 +20,9 @@ import {SearchRef} from '@components/search';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {TeamModel} from '@database/models/server';
 import {useKeyboardHeight} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';
@@ -45,6 +46,7 @@ const AutocompletePaddingTop = 4;
 
 type Props = {
     teamId: string;
+    teams: TeamModel[];
 }
 
 const styles = StyleSheet.create({
@@ -71,7 +73,7 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
 
 const searchScreenIndex = 1;
 
-const SearchScreen = ({teamId}: Props) => {
+const SearchScreen = ({teamId, teams}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
@@ -229,6 +231,7 @@ const SearchScreen = ({teamId}: Props) => {
                 setSearchValue={handleModifierTextChange}
                 setTeamId={setSearchTeamId}
                 teamId={searchTeamId}
+                teams={teams}
             />
         );
     }, [handleRecentSearch, handleTextChange, loading,
@@ -347,6 +350,7 @@ const SearchScreen = ({teamId}: Props) => {
                                 selectedTab={selectedTab}
                                 numberFiles={fileInfos.length}
                                 selectedFilter={filter}
+                                teams={teams}
                             />
                         }
                     </Animated.View>

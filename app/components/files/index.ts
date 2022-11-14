@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$, from as from$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
-import {observeConfig, observeLicense} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeLicense} from '@queries/servers/system';
 import {fileExists} from '@utils/file';
 
 import Files from './files';
@@ -36,14 +36,8 @@ const filesLocalPathValidation = async (files: FileModel[], authorId: string) =>
 };
 
 const enhance = withObservables(['post'], ({database, post}: EnhanceProps) => {
-    const config = observeConfig(database);
-    const enableMobileFileDownload = config.pipe(
-        switchMap((cfg) => of$(cfg?.EnableMobileFileDownload !== 'false')),
-    );
-
-    const publicLinkEnabled = config.pipe(
-        switchMap((cfg) => of$(cfg?.EnablePublicLink !== 'false')),
-    );
+    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload');
+    const publicLinkEnabled = observeConfigBooleanValue(database, 'EnablePublicLink');
 
     const complianceDisabled = observeLicense(database).pipe(
         switchMap((lcs) => of$(lcs?.IsLicensed === 'false' || lcs?.Compliance === 'false')),
