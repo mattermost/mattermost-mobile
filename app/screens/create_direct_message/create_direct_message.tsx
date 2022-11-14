@@ -177,10 +177,9 @@ export default function CreateDirectMessage({
             searchTimeoutId.current = setTimeout(() => {
                 searchUsers(text);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
-            return;
+        } else {
+            clearSearch();
         }
-
-        clearSearch();
     }, [clearSearch, searchUsers]);
 
     return (
