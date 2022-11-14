@@ -66,14 +66,14 @@ export default function ChannelAddPeople({
     const [term, setTerm] = useState('');
     const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
 
-    const pageRef = useRef<number>(-1);
+    const page = useRef<number>(-1);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
 
     const groupConstrained = currentChannel.isGroupConstrained;
     const currentChannelId = currentChannel.id;
 
     const getProfiles = useCallback(async () => {
-        return fetchProfilesNotInChannel(serverUrl, currentTeamId, currentChannelId, groupConstrained, pageRef.current + 1, General.PROFILE_CHUNK_SIZE);
+        return fetchProfilesNotInChannel(serverUrl, currentTeamId, currentChannelId, groupConstrained, page.current + 1, General.PROFILE_CHUNK_SIZE);
     }, [serverUrl, currentTeamId]);
 
     const onButtonTap = useCallback(async (selectedId?: {[id: string]: boolean}) => {
@@ -181,7 +181,7 @@ export default function ChannelAddPeople({
                 />
             </View>
             <UsersModal
-                ref={pageRef}
+                page={page}
                 term={term}
                 handleSelectProfile={handleSelectProfile}
                 buttonText={messages.button}
