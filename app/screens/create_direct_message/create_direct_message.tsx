@@ -127,21 +127,20 @@ export default function CreateDirectMessage({
         if (user.id === currentUserId) {
             const selectedId = {[currentUserId]: true};
             onButtonTap(selectedId);
-            return;
-        }
+        } else {
+            const wasSelected = selectedIds[user.id];
+            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+                return;
+            }
 
-        const wasSelected = selectedIds[user.id];
-        if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
-            return;
-        }
+            const newSelectedIds = Object.assign({}, selectedIds);
+            if (!wasSelected) {
+                newSelectedIds[user.id] = user;
+            }
 
-        const newSelectedIds = Object.assign({}, selectedIds);
-        if (!wasSelected) {
-            newSelectedIds[user.id] = user;
+            setSelectedIds(newSelectedIds);
+            clearSearch();
         }
-
-        setSelectedIds(newSelectedIds);
-        clearSearch();
     }, [clearSearch, currentUserId, handleRemoveProfile, onButtonTap, selectedIds, setSelectedIds]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
