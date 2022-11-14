@@ -66,10 +66,10 @@ export default function CreateDirectMessage({
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [term, setTerm] = useState('');
     const [loading, setLoading] = useState(false);
-    const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
 
     const pageRef = useRef<number>(-1);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
+    const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
 
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
         const user = selectedIds[id];
