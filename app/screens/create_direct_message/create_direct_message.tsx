@@ -150,8 +150,9 @@ export default function CreateDirectMessage({
 
         if (restrictDirectMessage) {
             results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
+        } else {
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
         }
-        results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
 
         let data: UserProfile[] = [];
         if (results.data) {
