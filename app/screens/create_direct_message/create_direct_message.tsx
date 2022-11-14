@@ -71,6 +71,11 @@ export default function CreateDirectMessage({
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
 
+    const clearSearch = useCallback(() => {
+        setTerm('');
+        setSearchResults([]);
+    }, []);
+
     const getProfiles = useCallback(async () => {
         if (restrictDirectMessage) {
             return fetchProfilesInTeam(serverUrl, currentTeamId, page.current + 1, General.PROFILE_CHUNK_SIZE);
@@ -105,48 +110,6 @@ export default function CreateDirectMessage({
         return createDirectChannel(idsToUse[0]);
     }, [selectedIds, createGroupChannel, createDirectChannel]);
 
-    const searchUsers = useCallback(async (searchTerm: string) => {
-        const lowerCasedTerm = searchTerm.toLowerCase();
-        if (restrictDirectMessage) {
-            return searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
-        }
-        return searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
-    }, [restrictDirectMessage, serverUrl, currentTeamId]);
-
-    const handleSearchUsers = useCallback(async (searchTerm: string) => {
-        setLoading(true);
-
-        const results = await searchUsers(searchTerm);
-
-        setSearchResults(results?.data || []);
-        setLoading(false);
-    }, [searchUsers]);
-
-    const search = useCallback(() => {
-        handleSearchUsers(term);
-    }, [handleSearchUsers, term]);
-
-    const clearSearch = useCallback(() => {
-        setTerm('');
-        setSearchResults([]);
-    }, []);
-
-    const onSearch = useCallback((text: string) => {
-        if (text) {
-            setTerm(text);
-            if (searchTimeoutId.current) {
-                clearTimeout(searchTimeoutId.current);
-            }
-
-            searchTimeoutId.current = setTimeout(() => {
-                handleSearchUsers(text);
-            }, General.SEARCH_TIMEOUT_MILLISECONDS);
-            return;
-        }
-
-        clearSearch();
-    }, [clearSearch, handleSearchUsers]);
-
     const handleRemoveProfile = useCallback((id: string) => {
         const newSelectedIds = Object.assign({}, selectedIds);
 
@@ -180,6 +143,43 @@ export default function CreateDirectMessage({
         setSelectedIds(newSelectedIds);
         clearSearch();
     }, [clearSearch, currentUserId, handleRemoveProfile, onButtonTap, selectedIds, setSelectedIds]);
+
+    const searchUsers = useCallback(async (searchTerm: string) => {
+        const lowerCasedTerm = searchTerm.toLowerCase();
+        if (restrictDirectMessage) {
+            return searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
+        }
+        return searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
+    }, [restrictDirectMessage, serverUrl, currentTeamId]);
+
+    const handleSearchUsers = useCallback(async (searchTerm: string) => {
+        setLoading(true);
+
+        const results = await searchUsers(searchTerm);
+
+        setSearchResults(results?.data || []);
+        setLoading(false);
+    }, [searchUsers]);
+
+    const search = useCallback(() => {
+        handleSearchUsers(term);
+    }, [handleSearchUsers, term]);
+
+    const onSearch = useCallback((text: string) => {
+        if (text) {
+            setTerm(text);
+            if (searchTimeoutId.current) {
+                clearTimeout(searchTimeoutId.current);
+            }
+
+            searchTimeoutId.current = setTimeout(() => {
+                handleSearchUsers(text);
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
+            return;
+        }
+
+        clearSearch();
+    }, [clearSearch, handleSearchUsers]);
 
     return (
         <SafeAreaView
