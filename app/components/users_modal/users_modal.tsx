@@ -46,17 +46,17 @@ type getProfilesSuccess = {
 
 type Props = {
     buttonText: MessageDescriptor;
-    clearSearch: () => void;
     componentId: string;
     currentUserId: string;
     getProfiles: () => Promise<getProfilesSuccess | getProfilesError>;
+    handleRemoveProfile: (id: string) => void;
     loading: boolean;
     maxSelectedUsers: number;
     onButtonTap: (selectedId?: {[id: string]: boolean}) => Promise<boolean>;
+    handleSelectProfile: (user: UserProfile) => void;
     searchResults: UserProfile[];
     selectedIds: {[id: string]: UserProfile};
     setLoading: (loading: boolean) => void;
-    setSelectedIds: (ids: {[id: string]: UserProfile}) => void;
     teammateNameDisplay: string;
     term: string;
     tutorialWatched: boolean;
@@ -71,17 +71,17 @@ function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: Use
 
 const UsersModal = forwardRef(({
     buttonText,
-    clearSearch,
     componentId,
     currentUserId,
     getProfiles,
+    handleRemoveProfile,
     loading,
     maxSelectedUsers,
     onButtonTap,
+    handleSelectProfile,
     searchResults,
     selectedIds,
     setLoading,
-    setSelectedIds,
     teammateNameDisplay,
     term,
     tutorialWatched,
@@ -141,43 +141,6 @@ const UsersModal = forwardRef(({
             getProfiles().then(loadedProfiles);
         }
     }, 100), [getProfiles, loading, term]);
-
-    const handleRemoveProfile = useCallback((id: string) => {
-        const newSelectedIds = Object.assign({}, selectedIds);
-
-        Reflect.deleteProperty(newSelectedIds, id);
-
-        setSelectedIds(newSelectedIds);
-    }, [selectedIds, setSelectedIds]);
-
-    const handleSelectProfile = useCallback((user: UserProfile) => {
-        // console.log('selectedIds', selectedIds);
-        if (selectedIds[user.id]) {
-            handleRemoveProfile(user.id);
-            return;
-        }
-
-        if (user.id === currentUserId) {
-            const selectedId = {[currentUserId]: true};
-            handleButtonTap(selectedId);
-            return;
-        }
-
-        const wasSelected = selectedIds[user.id];
-        if (!wasSelected && selectedCount >= maxSelectedUsers) {
-            return;
-        }
-
-        const newSelectedIds = Object.assign({}, selectedIds);
-
-        // console.log('newSelectedIds', newSelectedIds);
-        if (!wasSelected) {
-            newSelectedIds[user.id] = user;
-        }
-
-        setSelectedIds(newSelectedIds);
-        clearSearch();
-    }, [clearSearch, currentUserId, handleRemoveProfile, handleButtonTap, selectedIds, setSelectedIds]);
 
     const data = useMemo(() => {
         if (isSearch) {

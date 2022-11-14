@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Platform, SafeAreaView, StyleSheet, View} from 'react-native';
 
@@ -66,6 +66,7 @@ export default function CreateDirectMessage({
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [term, setTerm] = useState('');
     const [loading, setLoading] = useState(false);
+    const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
 
     const pageRef = useRef<number>(-1);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
@@ -130,6 +131,41 @@ export default function CreateDirectMessage({
         setSearchResults([]);
     }, []);
 
+    const handleRemoveProfile = useCallback((id: string) => {
+        const newSelectedIds = Object.assign({}, selectedIds);
+
+        Reflect.deleteProperty(newSelectedIds, id);
+
+        setSelectedIds(newSelectedIds);
+    }, [selectedIds, setSelectedIds]);
+
+    const handleSelectProfile = useCallback((user: UserProfile) => {
+        if (selectedIds[user.id]) {
+            handleRemoveProfile(user.id);
+            return;
+        }
+
+        if (user.id === currentUserId) {
+            const selectedId = {[currentUserId]: true};
+            onButtonTap(selectedId);
+            return;
+        }
+
+        const wasSelected = selectedIds[user.id];
+        if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+            return;
+        }
+
+        const newSelectedIds = Object.assign({}, selectedIds);
+
+        if (!wasSelected) {
+            newSelectedIds[user.id] = user;
+        }
+
+        setSelectedIds(newSelectedIds);
+        clearSearch();
+    }, [clearSearch, currentUserId, handleRemoveProfile, onButtonTap, selectedIds, setSelectedIds]);
+
     const onSearch = useCallback((text: string) => {
         if (text) {
             setTerm(text);
@@ -167,18 +203,18 @@ export default function CreateDirectMessage({
             </View>
             <UsersModal
                 ref={pageRef}
-                term={term}
-                clearSearch={clearSearch}
                 buttonText={messages.button}
                 componentId={componentId}
                 currentUserId={currentUserId}
                 getProfiles={getProfiles}
+                handleRemoveProfile={handleRemoveProfile}
+                handleSelectProfile={handleSelectProfile}
                 loading={loading}
-                setLoading={setLoading}
                 maxSelectedUsers={General.MAX_USERS_IN_GM}
                 searchResults={searchResults}
                 selectedIds={selectedIds}
-                setSelectedIds={setSelectedIds}
+                setLoading={setLoading}
+                term={term}
                 teammateNameDisplay={teammateNameDisplay}
                 onButtonTap={onButtonTap}
             />
