@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Platform, SafeAreaView, StyleSheet, View} from 'react-native';
 
@@ -69,6 +69,7 @@ export default function CreateDirectMessage({
 
     const pageRef = useRef<number>(-1);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
+    const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
 
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
         const user = selectedIds[id];
@@ -146,6 +147,40 @@ export default function CreateDirectMessage({
         clearSearch();
     }, [clearSearch, handleSearchUsers]);
 
+    const handleRemoveProfile = useCallback((id: string) => {
+        const newSelectedIds = Object.assign({}, selectedIds);
+
+        Reflect.deleteProperty(newSelectedIds, id);
+
+        setSelectedIds(newSelectedIds);
+    }, [selectedIds, setSelectedIds]);
+
+    const handleSelectProfile = useCallback((user: UserProfile) => {
+        if (selectedIds[user.id]) {
+            handleRemoveProfile(user.id);
+            return;
+        }
+
+        if (user.id === currentUserId) {
+            const selectedId = {[currentUserId]: true};
+            onButtonTap(selectedId);
+            return;
+        }
+
+        const wasSelected = selectedIds[user.id];
+        if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+            return;
+        }
+
+        const newSelectedIds = Object.assign({}, selectedIds);
+        if (!wasSelected) {
+            newSelectedIds[user.id] = user;
+        }
+
+        setSelectedIds(newSelectedIds);
+        clearSearch();
+    }, [clearSearch, currentUserId, handleRemoveProfile, onButtonTap, selectedIds, setSelectedIds]);
+
     return (
         <SafeAreaView
             style={style.container}
@@ -153,34 +188,34 @@ export default function CreateDirectMessage({
         >
             <View style={style.searchBar}>
                 <Search
-                    testID='members_modal.search_bar'
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    autoCapitalize='none'
                     cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    onCancel={clearSearch}
                     onChangeText={onSearch}
                     onSubmitEditing={search}
-                    onCancel={clearSearch}
-                    autoCapitalize='none'
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                    testID='members_modal.search_bar'
                     value={term}
                 />
             </View>
             <UsersModal
                 ref={pageRef}
-                term={term}
-                clearSearch={clearSearch}
                 buttonText={messages.button}
                 componentId={componentId}
                 currentUserId={currentUserId}
                 getProfiles={getProfiles}
+                handleRemoveProfile={handleRemoveProfile}
+                handleSelectProfile={handleSelectProfile}
                 loading={loading}
-                setLoading={setLoading}
                 maxSelectedUsers={General.MAX_USERS_IN_GM}
+                onButtonTap={onButtonTap}
                 searchResults={searchResults}
                 selectedIds={selectedIds}
-                setSelectedIds={setSelectedIds}
+                setLoading={setLoading}
                 teammateNameDisplay={teammateNameDisplay}
-                onButtonTap={onButtonTap}
+                term={term}
             />
         </SafeAreaView>
     );
