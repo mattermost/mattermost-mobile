@@ -38,12 +38,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type CustomStatusProps = {
-    isCustomStatusExpirySupported: boolean;
     isTablet: boolean;
     currentUser: UserModel;
 }
 
-const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: CustomStatusProps) => {
+const CustomStatus = ({isTablet, currentUser}: CustomStatusProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
@@ -96,7 +95,6 @@ const CustomStatus = ({isCustomStatusExpirySupported, isTablet, currentUser}: Cu
                 />
                 <CustomLabel
                     customStatus={customStatus!}
-                    isCustomStatusExpirySupported={isCustomStatusExpirySupported}
                     isStatusSet={Boolean(isStatusSet)}
                     onClearCustomStatus={clearCustomStatus}
                     showRetryMessage={showRetryMessage}

@@ -8,7 +8,7 @@ import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
 import {observeArchiveChannelsByTerm, observeDirectChannelsByTerm, observeJoinedChannelsByTerm, observeNotDirectChannelsByTerm} from '@queries/servers/channel';
-import {observeConfig, observeCurrentTeamId} from '@queries/servers/system';
+import {observeConfigValue, observeCurrentTeamId} from '@queries/servers/system';
 import {queryJoinedTeams} from '@queries/servers/team';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 import {retrieveChannels} from '@screens/find_channels/utils';
@@ -50,8 +50,8 @@ const enhanced = withObservables(['term'], ({database, term}: EnhanceProps) => {
     const usersMatchStart = observeNotDirectChannelsByTerm(database, term, MAX_RESULTS, true);
     const usersMatch = observeNotDirectChannelsByTerm(database, term, MAX_RESULTS);
 
-    const restrictDirectMessage = observeConfig(database).pipe(
-        switchMap((cfg) => of$(cfg?.RestrictDirectMessage !== General.RESTRICT_DIRECT_MESSAGE_ANY)),
+    const restrictDirectMessage = observeConfigValue(database, 'RestrictDirectMessage').pipe(
+        switchMap((v) => of$(v !== General.RESTRICT_DIRECT_MESSAGE_ANY)),
     );
 
     const teammateDisplayNameSetting = observeTeammateNameDisplay(database);

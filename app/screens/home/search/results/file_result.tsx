@@ -25,7 +25,6 @@ type Props = {
     channelName: string | undefined;
     fileInfo: FileInfo;
     index: number;
-    isSingleImage: boolean;
     numOptions: number;
     onOptionsPress: (finfo: FileInfo) => void;
     onPress: (idx: number) => void;
@@ -41,7 +40,6 @@ const FileResult = ({
     channelName,
     fileInfo,
     index,
-    isSingleImage,
     numOptions,
     onOptionsPress,
     onPress,
@@ -94,7 +92,6 @@ const FileResult = ({
                     galleryIdentifier={galleryIdentifier}
                     inViewPort={true}
                     index={index}
-                    isSingleImage={isSingleImage}
                     nonVisibleImagesCount={0}
                     onOptionsPress={handleOptionsPress}
                     onPress={onPress}
