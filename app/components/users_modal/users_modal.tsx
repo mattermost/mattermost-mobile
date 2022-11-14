@@ -103,7 +103,7 @@ const UsersModal = ({
     const mounted = useRef(false);
     const next = useRef(true);
 
-    const selectedCount = Object.keys(selectedIds).length;
+    const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
 
     const [term, setTerm] = useState('');
     const [startingButtonAction, setStartingButtonAction] = useState(false);
@@ -193,6 +193,7 @@ const UsersModal = ({
     }, [selectedIds, setSelectedIds]);
 
     const handleSelectProfile = useCallback((user: UserProfile) => {
+        // console.log('selectedIds', selectedIds);
         if (selectedIds[user.id]) {
             handleRemoveProfile(user.id);
             return;
@@ -210,6 +211,8 @@ const UsersModal = ({
         }
 
         const newSelectedIds = Object.assign({}, selectedIds);
+
+        // console.log('newSelectedIds', newSelectedIds);
         if (!wasSelected) {
             newSelectedIds[user.id] = user;
         }
