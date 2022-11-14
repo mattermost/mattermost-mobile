@@ -189,15 +189,15 @@ export default function CreateDirectMessage({
         >
             <View style={style.searchBar}>
                 <Search
-                    autoCapitalize='none'
+                    testID='members_modal.search_bar'
+                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    onCancel={clearSearch}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     onChangeText={onSearch}
                     onSubmitEditing={search}
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    testID='members_modal.search_bar'
+                    onCancel={clearSearch}
+                    autoCapitalize='none'
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
                 />
             </View>
