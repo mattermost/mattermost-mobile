@@ -125,10 +125,13 @@ export default function CreateDirectMessage({
         }
 
         if (user.id === currentUserId) {
-            const selectedId = {[currentUserId]: true};
+            const selectedId = {
+                [currentUserId]: true,
+            };
             onButtonTap(selectedId);
         } else {
             const wasSelected = selectedIds[user.id];
+
             if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
                 return;
             }
@@ -139,6 +142,7 @@ export default function CreateDirectMessage({
             }
 
             setSelectedIds(newSelectedIds);
+
             clearSearch();
         }
     }, [clearSearch, currentUserId, handleRemoveProfile, onButtonTap, selectedIds, setSelectedIds]);
@@ -180,16 +184,16 @@ export default function CreateDirectMessage({
         } else {
             clearSearch();
         }
-    }, [clearSearch, searchUsers]);
+    }, [searchUsers, clearSearch]);
 
     return (
         <SafeAreaView
             style={style.container}
-            testID='members_modal.screen'
+            testID='create_direct_message.screen'
         >
             <View style={style.searchBar}>
                 <Search
-                    testID='members_modal.search_bar'
+                    testID='create_direct_message.search_bar'
                     placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
