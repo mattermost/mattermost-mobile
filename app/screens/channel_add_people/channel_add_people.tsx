@@ -69,10 +69,7 @@ export default function ChannelAddPeople({
     // search only users not in channel
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
-        if (restrictDirectMessage) {
-            return searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
-        }
-        return searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
+        return searchProfiles(serverUrl, lowerCasedTerm, {channel_id: currentChannelId, allow_inactive: true});
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
 
     return (
