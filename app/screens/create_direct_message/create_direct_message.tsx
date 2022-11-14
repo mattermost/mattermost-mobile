@@ -63,7 +63,7 @@ export default function CreateDirectMessage({
     const intl = useIntl();
 
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
-    const page = useRef<number>(-1);
+    const page = useRef(-1);
 
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
