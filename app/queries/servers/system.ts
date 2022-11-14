@@ -142,6 +142,39 @@ export const getConfig = async (serverDatabase: Database) => {
     }
 };
 
+export const getGlobalDataRetentionPolicy = async (database: Database) => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES);
+        return (data?.value || {}) as GlobalDataRetentionPolicy;
+    } catch {
+        return undefined;
+    }
+};
+
+export const getGranularDataRetentionPolicies = async (database: Database) => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.GRANULAR_DATA_RETENTION_POLICIES);
+        return (data?.value || {
+            team: [],
+            channel: [],
+        }) as {
+            team: TeamDataRetentionPolicy[];
+            channel: ChannelDataRetentionPolicy[];
+        };
+    } catch {
+        return undefined;
+    }
+};
+
+export const getIsDataRetentionEnabled = async (database: Database) => {
+    const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await getCommonSystemValues(database);
+
+    if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
+        return null;
+    }
+    return config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true';
+};
+
 export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.CONFIG).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: undefined}))),

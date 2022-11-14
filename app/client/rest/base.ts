@@ -182,7 +182,7 @@ export default class ClientBase {
     }
 
     getGranularDataRetentionRoute(userId: string) {
-        return `${this.getUserRoute(userId)}/data_retention/`;
+        return `${this.getUserRoute(userId)}/data_retention`;
     }
 
     getRolesRoute() {

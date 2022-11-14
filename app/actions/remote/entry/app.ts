@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {dataRetentionCleanup} from '@actions/local/systems';
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
-import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId, getIsDataRetentionEnabled} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
@@ -30,6 +31,11 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     }
 
     const {database} = operator;
+
+    const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
+    if (isDataRetentionEnabled) {
+        await dataRetentionCleanup(serverUrl);
+    }
 
     const tabletDevice = await isTablet();
     const currentTeamId = await getCurrentTeamId(database);

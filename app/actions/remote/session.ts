@@ -13,7 +13,7 @@ import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {queryServerName} from '@queries/app/servers';
-import {getCurrentUserId, getCommonSystemValues, getExpiredSession} from '@queries/servers/system';
+import {getCurrentUserId, getExpiredSession, getIsDataRetentionEnabled} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {logWarning, logError} from '@utils/log';
@@ -35,14 +35,10 @@ export const completeLogin = async (serverUrl: string) => {
     }
 
     const {database} = operator;
-    const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await getCommonSystemValues(database);
-
-    if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
-        return null;
-    }
 
     // Data retention
-    if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
+    const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
+    if (isDataRetentionEnabled) {
         fetchDataRetentionPolicy(serverUrl);
     }
 

@@ -76,8 +76,8 @@ export const fetchAllGranularDataRetentionPolicies = async (
     serverUrl: string,
     isChannel = false,
     page = 0,
-    policies: TeamDataRetentionPolicy[] | ChannelDataRetentionPolicy[] = [],
-): Promise<{data?: TeamDataRetentionPolicy[] | ChannelDataRetentionPolicy[]; error?: unknown}> => {
+    policies: Array<TeamDataRetentionPolicy | ChannelDataRetentionPolicy> = [],
+): Promise<{data?: Array<TeamDataRetentionPolicy | ChannelDataRetentionPolicy>; error?: unknown}> => {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);

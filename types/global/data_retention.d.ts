@@ -10,10 +10,10 @@ type GlobalDataRetentionPolicy = {
 
 type TeamDataRetentionPolicy = {
     post_duration: number;
-    team_id?: string;
+    team_id: string;
 }
 
 type ChannelDataRetentionPolicy = {
     post_duration: number;
-    channel_id?: string;
+    channel_id: string;
 }
