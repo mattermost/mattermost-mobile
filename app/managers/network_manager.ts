@@ -96,6 +96,7 @@ class NetworkManager {
 
     private buildConfig = async () => {
         const userAgent = UserAgent.getUserAgent();
+        const managedConfig = ManagedApp.enabled ? Emm.getManagedConfig<ManagedConfig>() : undefined;
         const headers: Record<string, string> = {
             ...this.DEFAULT_CONFIG.headers,
             [ClientConstants.HEADER_USER_AGENT]: userAgent,
@@ -103,19 +104,14 @@ class NetworkManager {
 
         const config = {
             ...this.DEFAULT_CONFIG,
+            sessionConfiguration: {
+                ...this.DEFAULT_CONFIG.sessionConfiguration,
+                timeoutIntervalForRequest: managedConfig?.timeout ? parseInt(managedConfig.timeout, 10) : this.DEFAULT_CONFIG.sessionConfiguration.timeoutIntervalForRequest,
+                timeoutIntervalForResource: managedConfig?.timeoutVPN ? parseInt(managedConfig.timeoutVPN, 10) : this.DEFAULT_CONFIG.sessionConfiguration.timeoutIntervalForResource,
+                waitsForConnectivity: managedConfig?.useVPN === 'true',
+            },
             headers,
         };
-
-        if (ManagedApp.enabled) {
-            const managedConfig = Emm.getManagedConfig<ManagedConfig>();
-            if (managedConfig?.useVPN === 'true') {
-                config.sessionConfiguration.waitsForConnectivity = true;
-            }
-
-            if (managedConfig?.timeoutVPN) {
-                config.sessionConfiguration.timeoutIntervalForResource = parseInt(managedConfig.timeoutVPN, 10);
-            }
-        }
 
         return config;
     };

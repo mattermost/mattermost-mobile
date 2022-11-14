@@ -3,9 +3,9 @@
 
 import {MM_TABLES, OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
-import ConfigModel from '@typings/database/models/servers/config';
 
 import type {TransformerArgs} from '@typings/database/database';
+import type ConfigModel from '@typings/database/models/servers/config';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -119,5 +119,5 @@ export const transformConfigRecord = ({action, database, value}: TransformerArgs
         tableName: CONFIG,
         value,
         fieldsMapper,
-    }) as Promise<SystemModel>;
+    }) as Promise<ConfigModel>;
 };

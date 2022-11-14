@@ -8,14 +8,13 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {Config, Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
-import ConfigModel from '@typings/database/models/servers/config';
+import {isMinimumServerVersion} from '@utils/helpers';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type ConfigModel from '@typings/database/models/servers/config';
 import type SystemModel from '@typings/database/models/servers/system';
 
 export type PrepareCommonSystemValuesArgs = {
-
-    //config?: ClientConfig;
     lastUnreadChannelId?: string;
     currentChannelId?: string;
     currentTeamId?: string;
@@ -126,8 +125,6 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
         currentTeamId,
         currentUserId,
         lastUnreadChannelId,
-
-        //config,
         license,
     };
 };
@@ -164,8 +161,18 @@ export const observeConfigValue = (database: Database, key: keyof ClientConfig) 
     return queryConfigValue(database, key).observeWithColumns(['value']).pipe(
         switchMap((result) => of$(result.length ? result[0].value : undefined)),
     );
+};
 
-    //return observable_manager.getConfigObservable(database, key);
+export const observeMaxFileCount = (database: Database) => {
+    return observeConfigValue(database, 'Version').pipe(
+        switchMap((v) => of$(isMinimumServerVersion(v || '', 6, 0) ? 10 : 5)),
+    );
+};
+
+export const observeIsCustomStatusExpirySupported = (database: Database) => {
+    return observeConfigValue(database, 'Version').pipe(
+        switchMap((v) => of$(isMinimumServerVersion(v || '', 5, 37))),
+    );
 };
 
 export const observeConfigBooleanValue = (database: Database, key: keyof ClientConfig) => {
@@ -313,13 +320,6 @@ export async function prepareCommonSystemValues(
     try {
         const {lastUnreadChannelId, currentChannelId, currentTeamId, currentUserId, license} = values;
         const systems: IdValue[] = [];
-
-        // if (config !== undefined) {
-        //     systems.push({
-        //         id: SYSTEM_IDENTIFIERS.CONFIG,
-        //         value: JSON.stringify(config),
-        //     });
-        // }
 
         if (license !== undefined) {
             systems.push({

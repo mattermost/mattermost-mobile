@@ -105,7 +105,6 @@ export const fetchThreads = async (
 
     try {
         const version = await getConfigValue(database, 'Version');
-
         const data = await client.getThreads('me', teamId, before, after, perPage, deleted, unread, since, false, version);
 
         const {threads} = data;

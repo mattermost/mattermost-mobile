@@ -18,7 +18,7 @@ import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji
 import type RoleModel from '@typings/database/models/servers/role';
 import type SystemModel from '@typings/database/models/servers/system';
 
-const {SERVER: {CUSTOM_EMOJI, ROLE, SYSTEM, CONFIG}} = MM_TABLES;
+const {SERVER: {CONFIG, CUSTOM_EMOJI, ROLE, SYSTEM}} = MM_TABLES;
 
 export default class ServerDataOperatorBase extends BaseDataOperator {
     handleRole = async ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {

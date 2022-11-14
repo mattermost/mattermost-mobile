@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withManagedConfig} from '@mattermost/react-native-emm';
+import {Provider as EMMProvider} from '@mattermost/react-native-emm';
 import React, {ComponentType} from 'react';
 import {IntlProvider} from 'react-intl';
 import {Platform, StyleProp, ViewStyle} from 'react-native';
@@ -46,6 +46,16 @@ const withSafeAreaInsets = (Screen: React.ComponentType) => {
             <SafeAreaProvider>
                 <Screen {...props}/>
             </SafeAreaProvider>
+        );
+    };
+};
+
+const withManagedConfig = (Screen: React.ComponentType) => {
+    return function EmmProvider(props: any) {
+        return (
+            <EMMProvider>
+                <Screen {...props}/>
+            </EMMProvider>
         );
     };
 };
@@ -223,13 +233,13 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig<ManagedConfig>(screen)), extraStyles));
+        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig(screen)), extraStyles));
     }
 });
 
 export function registerScreens() {
     const homeScreen = require('@screens/home').default;
     const serverScreen = require('@screens/server').default;
-    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig<ManagedConfig>(serverScreen)), undefined));
-    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig<ManagedConfig>(homeScreen))), undefined));
+    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig(serverScreen)), undefined));
+    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen))), undefined));
 }

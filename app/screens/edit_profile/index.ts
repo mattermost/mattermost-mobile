@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeConfigBooleanValue} from '@app/queries/servers/system';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import EditProfile from './edit_profile';

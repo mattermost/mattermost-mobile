@@ -4,12 +4,11 @@
 import type {Model} from '@nozbe/watermelondb';
 
 /**
- * The System model is another set of key-value pair combination but this one
- * will mostly hold configuration information about the client, the licences and some
- * custom data (e.g. recent emoji used)
+ * The Config model is another set of key-value pair combination but this one
+ * will hold the server configuration.
  */
 declare class ConfigModel extends Model {
-    /** table (name) : System */
+    /** table (name) : Config */
     static table: string;
 
     /** value : The value for that config/information and whose key will be the id column  */

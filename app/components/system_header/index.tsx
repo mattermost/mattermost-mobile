@@ -7,12 +7,12 @@ import React from 'react';
 import {View} from 'react-native';
 import {map} from 'rxjs/operators';
 
-import {observeConfigBooleanValue} from '@app/queries/servers/system';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';

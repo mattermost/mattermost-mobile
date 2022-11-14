@@ -6,20 +6,32 @@
 
 import {schemaMigrations, addColumns, createTable} from '@nozbe/watermelondb/Schema/migrations';
 
-import {tableSchemaSpec as configSpec} from '@app/database/schema/server/table_schemas/config';
 import {MM_TABLES} from '@constants/database';
+import {tableSchemaSpec as configSpec} from '@database/schema/server/table_schemas/config';
 
 const {SERVER: {
     GROUP,
     MY_CHANNEL,
+    TEAM,
     THREAD,
 }} = MM_TABLES;
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 4,
+        toVersion: 5,
         steps: [
             createTable(configSpec),
+        ],
+    },
+    {
+        toVersion: 4,
+        steps: [
+            addColumns({
+                table: TEAM,
+                columns: [
+                    {name: 'invite_id', type: 'string'},
+                ],
+            }),
         ],
     },
     {

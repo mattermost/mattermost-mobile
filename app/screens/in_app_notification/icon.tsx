@@ -6,9 +6,9 @@ import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage, {Source} from 'react-native-fast-image';
 
-import {observeConfigBooleanValue} from '@app/queries/servers/system';
 import CompassIcon from '@components/compass_icon';
 import NetworkManager from '@managers/network_manager';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 
 import type {Client} from '@client/rest';
