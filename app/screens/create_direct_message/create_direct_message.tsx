@@ -131,6 +131,22 @@ export default function CreateDirectMessage({
         setSearchResults([]);
     }, []);
 
+    const onSearch = useCallback((text: string) => {
+        if (text) {
+            setTerm(text);
+            if (searchTimeoutId.current) {
+                clearTimeout(searchTimeoutId.current);
+            }
+
+            searchTimeoutId.current = setTimeout(() => {
+                handleSearchUsers(text);
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
+            return;
+        }
+
+        clearSearch();
+    }, [clearSearch, handleSearchUsers]);
+
     const handleRemoveProfile = useCallback((id: string) => {
         const newSelectedIds = Object.assign({}, selectedIds);
 
@@ -157,7 +173,6 @@ export default function CreateDirectMessage({
         }
 
         const newSelectedIds = Object.assign({}, selectedIds);
-
         if (!wasSelected) {
             newSelectedIds[user.id] = user;
         }
@@ -166,22 +181,6 @@ export default function CreateDirectMessage({
         clearSearch();
     }, [clearSearch, currentUserId, handleRemoveProfile, onButtonTap, selectedIds, setSelectedIds]);
 
-    const onSearch = useCallback((text: string) => {
-        if (text) {
-            setTerm(text);
-            if (searchTimeoutId.current) {
-                clearTimeout(searchTimeoutId.current);
-            }
-
-            searchTimeoutId.current = setTimeout(() => {
-                handleSearchUsers(text);
-            }, General.SEARCH_TIMEOUT_MILLISECONDS);
-            return;
-        }
-
-        clearSearch();
-    }, [clearSearch, handleSearchUsers]);
-
     return (
         <SafeAreaView
             style={style.container}
@@ -189,15 +188,15 @@ export default function CreateDirectMessage({
         >
             <View style={style.searchBar}>
                 <Search
-                    testID='members_modal.search_bar'
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    autoCapitalize='none'
                     cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    onCancel={clearSearch}
                     onChangeText={onSearch}
                     onSubmitEditing={search}
-                    onCancel={clearSearch}
-                    autoCapitalize='none'
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                    testID='members_modal.search_bar'
                     value={term}
                 />
             </View>
@@ -211,12 +210,12 @@ export default function CreateDirectMessage({
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 maxSelectedUsers={General.MAX_USERS_IN_GM}
+                onButtonTap={onButtonTap}
                 searchResults={searchResults}
                 selectedIds={selectedIds}
                 setLoading={setLoading}
-                term={term}
                 teammateNameDisplay={teammateNameDisplay}
-                onButtonTap={onButtonTap}
+                term={term}
             />
         </SafeAreaView>
     );

@@ -50,10 +50,10 @@ type Props = {
     currentUserId: string;
     getProfiles: () => Promise<getProfilesSuccess | getProfilesError>;
     handleRemoveProfile: (id: string) => void;
+    handleSelectProfile: (user: UserProfile) => void;
     loading: boolean;
     maxSelectedUsers: number;
     onButtonTap: (selectedId?: {[id: string]: boolean}) => Promise<boolean>;
-    handleSelectProfile: (user: UserProfile) => void;
     searchResults: UserProfile[];
     selectedIds: {[id: string]: UserProfile};
     setLoading: (loading: boolean) => void;
@@ -75,10 +75,10 @@ const UsersModal = forwardRef(({
     currentUserId,
     getProfiles,
     handleRemoveProfile,
+    handleSelectProfile,
     loading,
     maxSelectedUsers,
     onButtonTap,
-    handleSelectProfile,
     searchResults,
     selectedIds,
     setLoading,
