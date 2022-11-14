@@ -83,6 +83,14 @@ export default function CreateDirectMessage({
         return fetchProfiles(serverUrl, page.current + 1, General.PROFILE_CHUNK_SIZE);
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
 
+    const handleRemoveProfile = useCallback((id: string) => {
+        const newSelectedIds = Object.assign({}, selectedIds);
+
+        Reflect.deleteProperty(newSelectedIds, id);
+
+        setSelectedIds(newSelectedIds);
+    }, [selectedIds, setSelectedIds]);
+
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
         const user = selectedIds[id];
         const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
@@ -109,14 +117,6 @@ export default function CreateDirectMessage({
         }
         return createDirectChannel(idsToUse[0]);
     }, [selectedIds, createGroupChannel, createDirectChannel]);
-
-    const handleRemoveProfile = useCallback((id: string) => {
-        const newSelectedIds = Object.assign({}, selectedIds);
-
-        Reflect.deleteProperty(newSelectedIds, id);
-
-        setSelectedIds(newSelectedIds);
-    }, [selectedIds, setSelectedIds]);
 
     const handleSelectProfile = useCallback((user: UserProfile) => {
         if (selectedIds[user.id]) {
