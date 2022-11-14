@@ -49,9 +49,7 @@ const OptionListRow = ({
     const style = getStyleFromTheme(theme);
 
     const onPressRow = (): void => {
-        if (onPress) {
-            onPress(item);
-        }
+        onPress(item);
     };
 
     return (

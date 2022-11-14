@@ -78,9 +78,7 @@ const UserListRow = ({
     const userID = user.id;
 
     const onPressRow = (): void => {
-        if (onPress) {
-            onPress(user);
-        }
+        onPress(user);
     };
 
     let usernameDisplay = `@${username}`;

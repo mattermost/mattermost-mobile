@@ -68,6 +68,17 @@ exports[`components/integration_selector/custom_list_row should match snapshot 1
       }
     }
     testID="1"
-  />
+  >
+    <View>
+      <View>
+        <Icon
+          name="globe"
+        />
+        <Text>
+          My channel
+        </Text>
+      </View>
+    </View>
+  </View>
 </View>
 `;

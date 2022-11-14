@@ -1,18 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useState} from 'react';
+import React from 'react';
 import {
-    Text, Platform, FlatList, RefreshControl, View, SectionList, LayoutChangeEvent,
-    NativeSyntheticEvent, NativeScrollEvent,
+    Text, Platform, FlatList, RefreshControl, View, SectionList,
 } from 'react-native';
 
-import Visibility from '@constants/list';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 export const FLATLIST = 'flat';
 export const SECTIONLIST = 'section';
 const INITIAL_BATCH_TO_RENDER = 15;
-const SCROLL_UP_MULTIPLIER = 6;
 
 type UserProfileSection = {
     id: string;
@@ -31,7 +28,7 @@ type Props = {
     refreshing?: boolean;
     onRefresh?: () => void;
     onLoadMore: () => void;
-    onRowPress?: (item: UserProfile | Channel | DialogOption) => void;
+    onRowPress: (item: UserProfile | Channel | DialogOption) => void;
     renderItem: (props: object) => JSX.Element;
     selectable?: boolean;
     theme?: object;
@@ -108,36 +105,7 @@ function CustomList({
 }: Props) {
     const style = getStyleFromTheme(theme);
 
-    // Constructor Props
-    let contentOffsetY = 0;
-
-    // Hooks
-    const [listHeight, setListHeight] = useState(0);
-
     // Callbacks
-    const handleLayout = (event: LayoutChangeEvent): void => {
-        const {height} = event.nativeEvent.layout;
-        setListHeight(height);
-    };
-
-    const handleScroll = (event: NativeSyntheticEvent<NativeScrollEvent>): void => {
-        const pageOffsetY = event.nativeEvent.contentOffset.y;
-
-        if (pageOffsetY > 0) {
-            const contentHeight = event.nativeEvent.contentSize.height;
-            const direction = (contentOffsetY < pageOffsetY) ? Visibility.VISIBILITY_SCROLL_UP : Visibility.VISIBILITY_SCROLL_DOWN;
-
-            contentOffsetY = pageOffsetY;
-
-            if (
-                direction === Visibility.VISIBILITY_SCROLL_UP &&
-                (contentHeight - pageOffsetY) < (listHeight * SCROLL_UP_MULTIPLIER)
-            ) {
-                onLoadMore();
-            }
-        }
-    };
-
     const keyExtractor = (item: any): string => {
         return item.id || item.key || item.value || item;
     };
@@ -164,7 +132,7 @@ function CustomList({
             selected: boolean;
             selectable?: boolean;
             enabled: boolean;
-            onPress?: (item: DialogOption) => void;
+            onPress: (item: DialogOption) => void;
         }
 
         const props: listItemProps = {
@@ -211,8 +179,7 @@ function CustomList({
                 ListEmptyComponent={renderEmptyList()}
                 ListFooterComponent={renderFooter}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
-                onLayout={handleLayout}
-                onScroll={handleScroll}
+                onEndReached={onLoadMore()}
                 removeClippedSubviews={true}
                 renderItem={renderListItem}
                 renderSectionHeader={renderSectionHeader}
@@ -247,8 +214,7 @@ function CustomList({
                 ListEmptyComponent={renderEmptyList()}
                 ListFooterComponent={renderFooter}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
-                onLayout={handleLayout}
-                onScroll={handleScroll}
+                onEndReached={onLoadMore()}
                 refreshControl={refreshControl}
                 removeClippedSubviews={true}
                 renderItem={renderListItem}

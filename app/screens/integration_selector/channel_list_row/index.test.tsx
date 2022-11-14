@@ -49,7 +49,9 @@ describe('components/integration_selector/channel_list_row', () => {
                 onPress={() => {
                     // noop
                 }}
-            ><></></ChannelListRow>,
+            >
+                <br/>
+            </ChannelListRow>,
             {database},
         );
 
@@ -71,7 +73,9 @@ describe('components/integration_selector/channel_list_row', () => {
                 onPress={() => {
                     // noop
                 }}
-            ><></></ChannelListRow>,
+            >
+                <br/>
+            </ChannelListRow>,
             {database},
         );
 
@@ -94,7 +98,9 @@ describe('components/integration_selector/channel_list_row', () => {
                 onPress={() => {
                     // noop
                 }}
-            ><></></ChannelListRow>,
+            >
+                <br/>
+            </ChannelListRow>,
             {database},
         );
 
@@ -117,7 +123,9 @@ describe('components/integration_selector/channel_list_row', () => {
                 onPress={() => {
                     // noop
                 }}
-            ><></></ChannelListRow>,
+            >
+                <br/>
+            </ChannelListRow>,
             {database},
         );
 
@@ -139,7 +147,9 @@ describe('components/integration_selector/channel_list_row', () => {
                 onPress={() => {
                     // noop
                 }}
-            ><></></ChannelListRow>,
+            >
+                <br/>
+            </ChannelListRow>,
             {database},
         );
 

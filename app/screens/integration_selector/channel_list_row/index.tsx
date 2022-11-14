@@ -76,10 +76,6 @@ const ChannelListRow = ({
     };
 
     const onPressRow = (): void => {
-        if (!onPress) {
-            return;
-        }
-
         onPress(channel);
     };
 

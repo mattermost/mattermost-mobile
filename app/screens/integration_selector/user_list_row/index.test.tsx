@@ -58,7 +58,9 @@ describe('components/integration_selector/user_list_row', () => {
                 onPress={() => {
                     // noop
                 }}
-            ><></></UserListRow>,
+            >
+                <br/>
+            </UserListRow>,
             {database},
         );
 
@@ -82,7 +84,9 @@ describe('components/integration_selector/user_list_row', () => {
                 onPress={() => {
                     // noop
                 }}
-            ><></></UserListRow>,
+            >
+                <br/>
+            </UserListRow>,
             {database},
         );
 
@@ -106,7 +110,9 @@ describe('components/integration_selector/user_list_row', () => {
                 onPress={() => {
                     // noop
                 }}
-            ><></></UserListRow>,
+            >
+                <br/>
+            </UserListRow>,
             {database},
         );
 

@@ -61,6 +61,7 @@ const SelectedOption = ({theme, option, onRemove, dataSource}: Props) => {
             text = (option as DialogOption).text;
             break;
     }
+
     return (
         <View style={style.container}>
             <Text

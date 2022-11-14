@@ -33,7 +33,9 @@ describe('components/integration_selector/option_list_row', () => {
                 onPress={() => {
                     // noop
                 }}
-            ><></></OptionListRow>,
+            >
+                <br/>
+            </OptionListRow>,
             {database},
         );
 

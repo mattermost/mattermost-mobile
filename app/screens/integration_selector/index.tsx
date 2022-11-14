@@ -6,13 +6,13 @@ import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels as searchChannelsRemote} from '@actions/remote/channel';
 import {fetchProfiles, searchProfiles as searchProfilesRemote} from '@actions/remote/user';
 import {useServerUrl} from '@app/context/server';
 import {debounce} from '@app/helpers/api/general';
+import useNavButtonPressed from '@app/hooks/navigation_button_pressed';
 import {observeCurrentTeamId} from '@app/queries/servers/system';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
@@ -41,6 +41,17 @@ type MultiselectSelectedMap = Dictionary<DialogOption> | Dictionary<Channel> | D
 type UserProfileSection = {
     id: string;
     data: UserProfile[];
+};
+
+const VALID_DATASOURCES = [
+    ViewConstants.DATA_SOURCE_CHANNELS,
+    ViewConstants.DATA_SOURCE_USERS,
+    ViewConstants.DATA_SOURCE_DYNAMIC];
+const INITIAL_PAGE = 0;
+const SUBMIT_BUTTON_ID = 'submit-integration-selector-multiselect';
+
+const close = () => {
+    popTopScreen();
 };
 
 export type Props = {
@@ -106,11 +117,6 @@ function IntegrationSelector(
         fontSize: 15,
     };
     const intl = useIntl();
-    const VALID_DATASOURCES = [
-        ViewConstants.DATA_SOURCE_CHANNELS,
-        ViewConstants.DATA_SOURCE_USERS,
-        ViewConstants.DATA_SOURCE_DYNAMIC];
-    const INITIAL_PAGE = 0;
 
     // HOOKS
     const [integrationData, setIntegrationData] = useState<DataType>(data || []);
@@ -123,17 +129,12 @@ function IntegrationSelector(
     const [customListData, setCustomListData] = useState<DataType | UserProfileSection[]>([]);
 
     // Callbacks
-    const clearSearch = () => {
+    const clearSearch = useCallback(() => {
         setTerm('');
         setSearchResults([]);
-    };
-
-    const close = () => {
-        popTopScreen();
-    };
+    }, []);
 
     // This is the button to submit multiselect options
-    const SUBMIT_BUTTON_ID = 'submit-integration-selector-multiselect';
     const rightButton = useMemo(() => {
         const base = buildNavigationButton(
             SUBMIT_BUTTON_ID,
@@ -147,7 +148,7 @@ function IntegrationSelector(
         return base;
     }, [theme.sidebarHeaderTextColor, intl]);
 
-    const handleSelectItem = (item: UserProfile | Channel | DialogOption) => {
+    const handleSelectItem = useCallback((item: UserProfile | Channel | DialogOption) => {
         if (!isMultiselect) {
             handleSelect(item);
             close();
@@ -194,7 +195,7 @@ function IntegrationSelector(
                 setMultiselectSelected(multiselectSelectedItems);
             }
         }
-    };
+    }, [integrationData, multiselectSelected, isMultiselect, dataSource, close, handleSelect]);
 
     const handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
         switch (dataSource) {
@@ -297,7 +298,7 @@ function IntegrationSelector(
         }
     };
 
-    const searchDynamicOptions = (searchTerm = '') => {
+    const searchDynamicOptions = useCallback((searchTerm = '') => {
         if (options) {
             setIntegrationData(options);
         }
@@ -315,9 +316,14 @@ function IntegrationSelector(
                 setIntegrationData(searchData);
             }
         });
+    }, [term, integrationData, searchResults]);
+
+    const onHandleMultiselectSubmit = () => {
+        handleSelectItem(getMultiselectData());
+        close();
     };
 
-    const onSearch = (text: string) => {
+    const onSearch = useCallback((text: string) => {
         if (!text) {
             clearSearch();
         }
@@ -346,7 +352,7 @@ function IntegrationSelector(
 
             setLoading(false);
         }, General.SEARCH_TIMEOUT_MILLISECONDS);
-    };
+    }, [dataSource, term, searchResults]);
 
     const filterSearchData = (source: string, searchData: DataType, searchTerm: string) => {
         if (!data) {
@@ -399,6 +405,8 @@ function IntegrationSelector(
     }, [multiselectSelected]);
 
     // Effects
+    useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit]);
+
     useEffect(() => {
         setLoading(true);
 
@@ -432,27 +440,13 @@ function IntegrationSelector(
 
     useEffect(() => {
         if (!isMultiselect) {
-            // No need to clean
-            return () => {
-                //noop
-            };
+            return;
         }
 
         setButtons(componentId, {
             rightButtons: [rightButton],
         });
-
-        const submitMultiselect = Navigation.events().registerComponentListener({
-            navigationButtonPressed: ({buttonId}: { buttonId: string }) => {
-                if (buttonId === SUBMIT_BUTTON_ID) {
-                    handleSelect(getMultiselectData());
-                    close();
-                }
-            },
-        }, componentId);
-
-        return () => submitMultiselect.remove();
-    }, [rightButton, componentId, multiselectSelected]);
+    }, [rightButton, componentId]);
 
     useEffect(() => {
         const multiselectItems: MultiselectSelectedMap = {};

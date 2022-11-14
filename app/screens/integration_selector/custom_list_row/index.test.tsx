@@ -3,7 +3,9 @@
 
 import Database from '@nozbe/watermelondb/Database';
 import React from 'react';
+import {Text, View} from 'react-native';
 
+import CompassIcon from '@app/components/compass_icon';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
@@ -26,7 +28,18 @@ describe('components/integration_selector/custom_list_row', () => {
                 enabled={true}
                 selectable={true}
                 selected={true}
-            ><></></CustomListRow>,
+            >
+                <View>
+                    <View>
+                        <CompassIcon
+                            name={'globe'}
+                        />
+                        <Text>
+                            {'My channel'}
+                        </Text>
+                    </View>
+                </View>
+            </CustomListRow>,
             {database},
         );
 

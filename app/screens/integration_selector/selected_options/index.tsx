@@ -36,9 +36,11 @@ const SelectedOptions = ({
     theme, selectedOptions, onRemove, dataSource,
 }: Props) => {
     const options: React.ReactNode[] = [];
+    const style = getStyleFromTheme(theme);
 
     for (const option of selectedOptions) {
         let key: string;
+
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
                 key = (option as UserProfile).id;
@@ -50,6 +52,7 @@ const SelectedOptions = ({
                 key = (option as DialogOption).value;
                 break;
         }
+
         options.push(
             <SelectedOption
                 key={key}
@@ -61,18 +64,12 @@ const SelectedOptions = ({
         );
     }
 
-    if (options.length === 0) {
-        return null;
-    }
-
-    const style = getStyleFromTheme(theme);
-
     return (
         <ScrollView
             style={style.container}
             contentContainerStyle={style.scrollViewContent}
         >
-            <View style={style.users} >
+            <View style={style.users}>
                 {options}
             </View>
         </ScrollView>
