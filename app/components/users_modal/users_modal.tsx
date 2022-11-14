@@ -1,22 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import React, {forwardRef, MutableRefObject, useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {MessageDescriptor, useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
-import Search from '@components/search';
 import SelectedUsersPanel from '@components/selected_users_panel';
 import UserList from '@components/user_list';
-import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, setButtons} from '@screens/navigation';
-import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
 const style = StyleSheet.create({
@@ -38,16 +34,6 @@ const close = () => {
     dismissModal();
 };
 
-type searchError = {
-    data?: undefined;
-    error: unknown;
-}
-
-type searchSuccess = {
-    data: UserProfile[];
-    error?: undefined;
-}
-
 type getProfilesError = {
     users?: undefined;
     error: unknown;
@@ -60,17 +46,19 @@ type getProfilesSuccess = {
 
 type Props = {
     buttonText: MessageDescriptor;
+    clearSearch: () => void;
     componentId: string;
     currentUserId: string;
     getProfiles: () => Promise<getProfilesSuccess | getProfilesError>;
+    loading: boolean;
     maxSelectedUsers: number;
-    page: number;
-    searchUsers: (searchTerm: string) => Promise<searchError | searchSuccess>;
-    selectedIds: {[id: string]: UserProfile};
-    setPage: (page: number) => void;
-    setSelectedIds: (ids: {[id: string]: UserProfile}) => void;
     onButtonTap: (selectedId?: {[id: string]: boolean}) => Promise<boolean>;
+    searchResults: UserProfile[];
+    selectedIds: {[id: string]: UserProfile};
+    setLoading: (loading: boolean) => void;
+    setSelectedIds: (ids: {[id: string]: UserProfile}) => void;
     teammateNameDisplay: string;
+    term: string;
     tutorialWatched: boolean;
 }
 
@@ -81,37 +69,39 @@ function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: Use
     return state;
 }
 
-const UsersModal = ({
+const UsersModal = forwardRef(({
     buttonText,
+    clearSearch,
     componentId,
     currentUserId,
     getProfiles,
+    loading,
     maxSelectedUsers,
-    page,
-    searchUsers,
-    selectedIds,
-    setPage,
-    setSelectedIds,
     onButtonTap,
+    searchResults,
+    selectedIds,
+    setLoading,
+    setSelectedIds,
     teammateNameDisplay,
+    term,
     tutorialWatched,
-}: Props) => {
+}: Props, pageRef: MutableRefObject<number>) => {
     const theme = useTheme();
     const {formatMessage, locale} = useIntl();
-
-    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const mounted = useRef(false);
     const next = useRef(true);
 
     const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
 
-    const [term, setTerm] = useState('');
     const [startingButtonAction, setStartingButtonAction] = useState(false);
-    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
-    const [loading, setLoading] = useState(false);
 
     const isSearch = Boolean(term);
+
+    let hasUsers = false;
+    if (pageRef != null && typeof pageRef !== 'function') {
+        hasUsers = pageRef?.current !== -1;
+    }
 
     const loadedProfiles = useCallback(({users}: {users?: UserProfile[]}) => {
         if (mounted.current) {
@@ -119,20 +109,13 @@ const UsersModal = ({
                 next.current = false;
             }
 
-            setPage(page + 1);
+            if (pageRef != null && typeof pageRef !== 'function') {
+                pageRef.current += 1;
+            }
             setLoading(false);
             dispatchProfiles({type: 'add', values: users});
         }
-    }, [page, setPage]);
-
-    const handleSearchUsers = useCallback(async (searchTerm: string) => {
-        setLoading(true);
-
-        const results = await searchUsers(searchTerm);
-
-        setSearchResults(results?.data || []);
-        setLoading(false);
-    }, [searchUsers]);
+    }, []);
 
     const handleButtonTap = useCallback(async (selectedId?: {[id: string]: boolean}) => {
         if (startingButtonAction) {
@@ -158,31 +141,6 @@ const UsersModal = ({
             getProfiles().then(loadedProfiles);
         }
     }, 100), [getProfiles, loading, term]);
-
-    const search = useCallback(() => {
-        handleSearchUsers(term);
-    }, [handleSearchUsers, term]);
-
-    const clearSearch = useCallback(() => {
-        setTerm('');
-        setSearchResults([]);
-    }, []);
-
-    const onSearch = useCallback((text: string) => {
-        if (text) {
-            setTerm(text);
-            if (searchTimeoutId.current) {
-                clearTimeout(searchTimeoutId.current);
-            }
-
-            searchTimeoutId.current = setTimeout(() => {
-                handleSearchUsers(text);
-            }, General.SEARCH_TIMEOUT_MILLISECONDS);
-            return;
-        }
-
-        clearSearch();
-    }, [clearSearch, handleSearchUsers]);
 
     const handleRemoveProfile = useCallback((id: string) => {
         const newSelectedIds = Object.assign({}, selectedIds);
@@ -288,24 +246,7 @@ const UsersModal = ({
     }
 
     return (
-        <SafeAreaView
-            style={style.container}
-            testID='members_modal.screen'
-        >
-            <View style={style.searchBar}>
-                <Search
-                    testID='members_modal.search_bar'
-                    placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    onChangeText={onSearch}
-                    onSubmitEditing={search}
-                    onCancel={clearSearch}
-                    autoCapitalize='none'
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    value={term}
-                />
-            </View>
+        <>
             {selectedCount > 0 &&
             <SelectedUsersPanel
                 selectedIds={selectedIds}
@@ -322,14 +263,15 @@ const UsersModal = ({
                 loading={loading}
                 profiles={data}
                 selectedIds={selectedIds}
-                showNoResults={!loading && page !== -1}
+                showNoResults={!loading && hasUsers}
                 teammateNameDisplay={teammateNameDisplay}
                 term={term}
                 testID='members_modal.user_list'
                 tutorialWatched={tutorialWatched}
             />
-        </SafeAreaView>
+        </>
     );
-};
+});
 
+UsersModal.displayName = 'UsersModal';
 export default UsersModal;
