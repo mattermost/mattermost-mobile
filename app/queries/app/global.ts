@@ -28,6 +28,19 @@ export const observeMultiServerTutorial = (appDatabase: Database) => {
     );
 };
 
+export const onboadingViewedValue = async (): Promise<boolean> => {
+    const appDatabase = DatabaseManager.appDatabase?.database;
+    if (!appDatabase) {
+        return false;
+    }
+    try {
+        const onboardingVal = await appDatabase.get<GlobalModel>(GLOBAL).find(GLOBAL_IDENTIFIERS.ONBOARDING);
+        return Boolean(onboardingVal?.value) || false;
+    } catch {
+        return false;
+    }
+};
+
 export const observeProfileLongPresTutorial = () => {
     const appDatabase = DatabaseManager.appDatabase?.database;
     if (!appDatabase) {

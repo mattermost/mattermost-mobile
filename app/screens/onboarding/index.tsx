@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useRef} from 'react';
 import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, Animated as AnimatedRN} from 'react-native';
 import Animated, {Easing, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
 
+import {storeOnboardingViewedValue} from '@actions/app/global';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {Screens} from '@app/constants';
 import {loginOptions} from '@app/utils/server';
@@ -116,6 +117,9 @@ const Onboarding = ({
                 title: '',
             },
         };
+
+        // mark the onboarding as already viewed
+        storeOnboardingViewedValue();
 
         if (goToLoginServerUrl) {
             initLogin();

@@ -9,6 +9,7 @@ import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/ent
 import {Screens, DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
+import {onboadingViewedValue} from '@queries/app/global';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
@@ -59,6 +60,7 @@ const launchAppFromNotification = async (notification: NotificationWithData) => 
 };
 
 const launchApp = async (props: LaunchProps, resetNavigation = true) => {
+    const onboadingViewed = await onboadingViewedValue();
     let serverUrl: string | undefined;
     switch (props?.launchType) {
         case Launch.DeepLink:
@@ -97,12 +99,9 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                 hasCurrentUser = Boolean(currentUserId);
             }
 
-            // if (!onboardingAlreadyShown) {
-            // here, check if there is not an active session and redirect to onboarding with a flag, so the sign in button will
-            // redirect to the sign in
-            //  return launchToOnboarding(props, goToLoginServerUrlPage);
-            // }
-            return launchToOnboarding(props, resetNavigation, false, false, serverUrl);
+            if (!onboadingViewed) {
+                return launchToOnboarding(props, resetNavigation, false, false, serverUrl);
+            }
 
             let launchType = props.launchType;
             if (!hasCurrentUser) {
@@ -133,9 +132,9 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
-    // if (onboardingAlreadyShown) {
-    //   // launchToServer(props, resetNavigation);
-    // }
+    if (onboadingViewed) {
+        return launchToServer(props, resetNavigation);
+    }
     return launchToOnboarding(props, resetNavigation);
 };
 

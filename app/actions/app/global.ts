@@ -28,6 +28,18 @@ export const storeMultiServerTutorial = async (prepareRecordsOnly = false) => {
     }
 };
 
+export const storeOnboardingViewedValue = async (prepareRecordsOnly = false) => {
+    try {
+        const {operator} = DatabaseManager.getAppDatabaseAndOperator();
+        return operator.handleGlobal({
+            globals: [{id: GLOBAL_IDENTIFIERS.ONBOARDING, value: 'true'}],
+            prepareRecordsOnly,
+        });
+    } catch (error) {
+        return {error};
+    }
+};
+
 export const storeProfileLongPressTutorial = async (prepareRecordsOnly = false) => {
     try {
         const {operator} = DatabaseManager.getAppDatabaseAndOperator();
