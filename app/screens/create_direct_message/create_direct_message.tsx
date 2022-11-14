@@ -145,24 +145,26 @@ export default function CreateDirectMessage({
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
+        setLoading(true);
+        let results;
+
         if (restrictDirectMessage) {
-            return searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
         }
-        return searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
+        results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
+
+        let data: UserProfile[] = [];
+        if (results.data) {
+            data = results.data;
+        }
+
+        setSearchResults(data);
+        setLoading(false);
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
 
-    const handleSearchUsers = useCallback(async (searchTerm: string) => {
-        setLoading(true);
-
-        const results = await searchUsers(searchTerm);
-
-        setSearchResults(results?.data || []);
-        setLoading(false);
-    }, [searchUsers]);
-
     const search = useCallback(() => {
-        handleSearchUsers(term);
-    }, [handleSearchUsers, term]);
+        searchUsers(term);
+    }, [searchUsers, term]);
 
     const onSearch = useCallback((text: string) => {
         if (text) {
@@ -172,13 +174,13 @@ export default function CreateDirectMessage({
             }
 
             searchTimeoutId.current = setTimeout(() => {
-                handleSearchUsers(text);
+                searchUsers(text);
             }, General.SEARCH_TIMEOUT_MILLISECONDS);
             return;
         }
 
         clearSearch();
-    }, [clearSearch, handleSearchUsers]);
+    }, [clearSearch, searchUsers]);
 
     return (
         <SafeAreaView
