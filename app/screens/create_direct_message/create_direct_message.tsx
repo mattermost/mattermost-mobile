@@ -62,13 +62,13 @@ export default function CreateDirectMessage({
     const theme = useTheme();
     const intl = useIntl();
 
+    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
+    const page = useRef<number>(-1);
+
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
-
-    const page = useRef<number>(-1);
-    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
 
     const clearSearch = useCallback(() => {
