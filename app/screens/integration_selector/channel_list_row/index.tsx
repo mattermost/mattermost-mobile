@@ -7,6 +7,7 @@ import {
     View,
 } from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
@@ -44,12 +45,12 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
         },
         displayName: {
-            fontSize: 16,
+            ...typography('Body', 200, 'Regular'),
             color: theme.centerChannelColor,
             marginLeft: 5,
         },
         icon: {
-            fontSize: 16,
+            ...typography('Body', 200, 'Regular'),
             color: theme.centerChannelColor,
         },
         container: {
@@ -64,8 +65,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         purpose: {
             marginTop: 7,
-            fontSize: 13,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 100, 'Regular'),
         },
     };
 });

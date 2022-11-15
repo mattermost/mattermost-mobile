@@ -5,6 +5,7 @@ import {
     Text, Platform, FlatList, RefreshControl, View, SectionList,
 } from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 export const FLATLIST = 'flat';
@@ -103,8 +104,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
         },
         noResultText: {
-            fontSize: 26,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 600, 'Regular'),
         },
     };
 });

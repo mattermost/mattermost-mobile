@@ -7,6 +7,7 @@ import {
     View,
 } from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import CustomListRow, {Props as CustomListRowProps} from '../custom_list_row';
@@ -36,8 +37,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         optionText: {
-            fontSize: 15,
             color: theme.centerChannelColor,
+            ...typography('Body', 200, 'Regular'),
         },
     };
 });

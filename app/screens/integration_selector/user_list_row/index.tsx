@@ -8,6 +8,7 @@ import {
     View,
 } from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -35,11 +36,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flex: 1,
         },
         displayName: {
-            fontSize: 15,
+            ...typography('Body', 100, 'SemiBold'),
             color: changeOpacity(theme.centerChannelColor, 0.5),
         },
         username: {
-            fontSize: 15,
+            ...typography('Body', 100, 'Regular'),
             color: theme.centerChannelColor,
         },
         indicatorContainer: {
@@ -47,8 +48,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         deactivated: {
             marginTop: 2,
-            fontSize: 12,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 100, 'Light'),
         },
         sharedUserIcon: {
             alignSelf: 'center',

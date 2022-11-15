@@ -8,6 +8,7 @@ import {
     View,
 } from 'react-native';
 
+import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import {View as ViewConstants} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -36,8 +37,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         text: {
             color: theme.centerChannelColor,
-            fontSize: 13,
             maxWidth: '90%',
+            ...typography('Body', 100, 'Regular'),
         },
     };
 });

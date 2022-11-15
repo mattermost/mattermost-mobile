@@ -10,6 +10,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels as searchChannelsRemote} from '@actions/remote/channel';
 import {fetchProfiles, searchProfiles as searchProfilesRemote} from '@actions/remote/user';
+import {typography} from '@app/utils/typography';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
 import {General, View as ViewConstants} from '@constants';
@@ -94,8 +95,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
         },
         noResultText: {
-            fontSize: 26,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 600, 'Regular'),
         },
         separator: {
             height: 1,
@@ -115,7 +116,7 @@ function IntegrationSelector(
     const searchBarInput = {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
         color: theme.centerChannelColor,
-        fontSize: 15,
+        ...typography('Body', 200, 'Regular'),
     };
     const intl = useIntl();
 
