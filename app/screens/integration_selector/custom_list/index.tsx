@@ -27,7 +27,6 @@ type ListItemProps = {
 
 type Props = {
     data: DataType;
-    extraData?: any;
     canRefresh?: boolean;
     listType?: string;
     loading?: boolean;
@@ -113,7 +112,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 function CustomList({
     data, shouldRenderSeparator, listType, loading, loadingComponent, noResults,
     onLoadMore, onRowPress, selectable, renderItem, theme,
-    canRefresh = true, extraData, testID, refreshing = false, onRefresh,
+    canRefresh = true, testID, refreshing = false, onRefresh,
 }: Props) {
     const style = getStyleFromTheme(theme);
 
@@ -170,7 +169,6 @@ function CustomList({
         return (
             <SectionList
                 contentContainerStyle={style.container}
-                extraData={loading}
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}
                 ItemSeparatorComponent={renderSeparator}
@@ -204,7 +202,6 @@ function CustomList({
             <FlatList
                 contentContainerStyle={style.container}
                 data={data}
-                extraData={extraData}
                 keyboardShouldPersistTaps='always'
                 keyExtractor={keyExtractor}
                 initialNumToRender={INITIAL_BATCH_TO_RENDER}

@@ -228,13 +228,18 @@ function IntegrationSelector(
 
     const getChannels = useCallback(debounce(async () => {
         if (next && !loading && !term) {
+            setLoading(true);
             setCurrentPage(currentPage + 1);
+
             const {channels: channelData} = await fetchChannels(serverUrl, currentTeamId, currentPage);
+
+            setLoading(false);
 
             if (channelData && channelData.length > 0) {
                 if (channelData && !channelData.length) {
                     setNext(false);
                 }
+
                 setIntegrationData(channelData);
             }
         }
@@ -242,28 +247,29 @@ function IntegrationSelector(
 
     const getProfiles = useCallback(debounce(async () => {
         if (next && !loading && !term) {
+            setLoading(true);
             setCurrentPage(currentPage + 1);
+
             const {users: profiles} = await fetchProfiles(serverUrl, currentPage);
+
+            setLoading(false);
 
             if (profiles && profiles.length > 0) {
                 if (profiles && !profiles.length) {
                     setNext(false);
                 }
+
                 setIntegrationData(profiles);
             }
         }
     }, 100), [integrationData, next, currentPage, loading, term]);
 
     const loadMore = async () => {
-        setLoading(true);
-
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
             await getProfiles();
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             await getChannels();
         }
-
-        setLoading(false);
 
         // dynamic options are not paged so are not reloaded on scroll
     };
@@ -395,8 +401,6 @@ function IntegrationSelector(
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit]);
 
     useEffect(() => {
-        setLoading(true);
-
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
             getProfiles();
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
@@ -404,8 +408,6 @@ function IntegrationSelector(
         } else if (!loading && !term) {
             searchDynamicOptions('');
         }
-
-        setLoading(false);
     }, []);
 
     useEffect(() => {
