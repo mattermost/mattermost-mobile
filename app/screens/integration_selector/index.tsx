@@ -10,6 +10,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels as searchChannelsRemote} from '@actions/remote/channel';
 import {fetchProfiles, searchProfiles as searchProfilesRemote} from '@actions/remote/user';
+import UserListRow from '@app/components/user_list_row';
 import {typography} from '@app/utils/typography';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
@@ -33,7 +34,6 @@ import ChannelListRow from './channel_list_row';
 import CustomList, {FLATLIST, SECTIONLIST} from './custom_list';
 import OptionListRow from './option_list_row';
 import SelectedOptions from './selected_options';
-import UserListRow from './user_list_row';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
