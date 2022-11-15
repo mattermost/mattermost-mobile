@@ -52,6 +52,9 @@ describe('components/integration_selector/custom_list', () => {
                 onLoadMore={() => {
                     // noop
                 }}
+                onRowPress={() => {
+                    // noop
+                }}
                 renderItem={(props: object): JSX.Element => {
                     return (<Text>{props.toString()}</Text>);
                 }}

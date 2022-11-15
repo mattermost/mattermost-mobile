@@ -148,7 +148,7 @@ function IntegrationSelector(
         return base;
     }, [theme.sidebarHeaderTextColor, intl]);
 
-    const handleSelectItem = useCallback((item: UserProfile | Channel | DialogOption) => {
+    const handleSelectItem = useCallback((item: Selection) => {
         if (!isMultiselect) {
             handleSelect(item);
             close();

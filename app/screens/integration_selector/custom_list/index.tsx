@@ -179,7 +179,7 @@ function CustomList({
                 ListEmptyComponent={renderEmptyList()}
                 ListFooterComponent={renderFooter}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
-                onEndReached={onLoadMore()}
+                onEndReached={onLoadMore() as any}
                 removeClippedSubviews={true}
                 renderItem={renderListItem}
                 renderSectionHeader={renderSectionHeader}
@@ -214,7 +214,7 @@ function CustomList({
                 ListEmptyComponent={renderEmptyList()}
                 ListFooterComponent={renderFooter}
                 maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
-                onEndReached={onLoadMore()}
+                onEndReached={onLoadMore() as any}
                 refreshControl={refreshControl}
                 removeClippedSubviews={true}
                 renderItem={renderListItem}
