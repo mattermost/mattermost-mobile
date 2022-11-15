@@ -56,6 +56,23 @@ const close = () => {
     popTopScreen();
 };
 
+const extractItemKey = (dataSource: string, item: Channel | UserProfile | DialogOption): string => {
+    switch (dataSource) {
+        case ViewConstants.DATA_SOURCE_USERS: {
+            const typedItem = item as UserProfile;
+            return typedItem.id;
+        }
+        case ViewConstants.DATA_SOURCE_CHANNELS: {
+            const typedItem = item as Channel;
+            return typedItem.id;
+        }
+        default: {
+            const typedItem = item as DialogOption;
+            return typedItem.value;
+        }
+    }
+};
+
 export type Props = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     options?: PostActionOption[];
@@ -200,31 +217,11 @@ function IntegrationSelector(
     }, [integrationData, multiselectSelected, isMultiselect, dataSource, handleSelect]);
 
     const handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
-        switch (dataSource) {
-            case ViewConstants.DATA_SOURCE_USERS: {
-                const currentSelected = multiselectSelected as Dictionary<UserProfile>;
-                const typedItem = item as UserProfile;
-                const multiselectSelectedItems = {...currentSelected};
-                delete multiselectSelectedItems[typedItem.id];
-                setMultiselectSelected(multiselectSelectedItems);
-                return;
-            }
-            case ViewConstants.DATA_SOURCE_CHANNELS: {
-                const currentSelected = multiselectSelected as Dictionary<Channel>;
-                const typedItem = item as Channel;
-                const multiselectSelectedItems = {...currentSelected};
-                delete multiselectSelectedItems[typedItem.id];
-                setMultiselectSelected(multiselectSelectedItems);
-                return;
-            }
-            default: {
-                const currentSelected = multiselectSelected as Dictionary<DialogOption>;
-                const typedItem = item as DialogOption;
-                const multiselectSelectedItems = {...currentSelected};
-                delete multiselectSelectedItems[typedItem.value];
-                setMultiselectSelected(multiselectSelectedItems);
-            }
-        }
+        const currentSelected: Dictionary<UserProfile> | Dictionary<DialogOption> | Dictionary<Channel> = multiselectSelected;
+        const itemKey = extractItemKey(dataSource, item);
+        const multiselectSelectedItems = {...currentSelected};
+        delete multiselectSelectedItems[itemKey];
+        setMultiselectSelected(multiselectSelectedItems);
     };
 
     const getChannels = useCallback(debounce(async () => {
@@ -461,7 +458,7 @@ function IntegrationSelector(
             case ViewConstants.DATA_SOURCE_USERS:
                 text = {
                     id: intl.formatMessage({id: 'mobile.integration_selector.loading_users'}),
-                    defaultMessage: 'Loading Channels...',
+                    defaultMessage: 'Loading Users...',
                 };
                 break;
             case ViewConstants.DATA_SOURCE_CHANNELS:
