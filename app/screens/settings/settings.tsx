@@ -120,6 +120,10 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         }
     });
 
+    const openEmailClient = preventDoubleTap(() => {
+        //
+    });
+
     return (
         <SettingContainer testID='settings'>
             <SettingItem
@@ -146,15 +150,23 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
             />
             {Platform.OS === 'android' && <View style={styles.helpGroup}/>}
             {showHelp &&
+                <SettingItem
+                    optionLabelTextStyle={{color: theme.linkColor}}
+                    onPress={openHelp}
+                    optionName='help'
+                    separator={false}
+                    testID='settings.help.option'
+                    type='default'
+                />
+            }
             <SettingItem
                 optionLabelTextStyle={{color: theme.linkColor}}
-                onPress={openHelp}
-                optionName='help'
+                onPress={openEmailClient}
+                optionName='report_problem'
                 separator={false}
-                testID='settings.help.option'
+                testID='settings.report.problem'
                 type='default'
             />
-            }
         </SettingContainer>
     );
 };
