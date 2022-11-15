@@ -73,7 +73,6 @@ const Onboarding = ({
     const initLogin = async () => {
         const data = await fetchConfigAndLicense(goToLoginServerUrl, true);
         if (data.error) {
-            console.log('Error getting the config and license information');
             return;
         }
 
