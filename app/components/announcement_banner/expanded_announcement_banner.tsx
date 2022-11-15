@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 import Button from 'react-native-button';
 import {ScrollView} from 'react-native-gesture-handler';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {dismissAnnouncement} from '@actions/local/systems';
 import FormattedText from '@components/formatted_text';
@@ -29,7 +30,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
-            marginBottom: 10,
         },
         scrollContainer: {
             flex: 1,
@@ -60,6 +60,7 @@ const ExpandedAnnouncementBanner = ({
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const intl = useIntl();
+    const insets = useSafeAreaInsets();
 
     const dismissBanner = useCallback(() => {
         dismissAnnouncement(serverUrl, bannerText);
@@ -79,8 +80,12 @@ const ExpandedAnnouncementBanner = ({
         };
     }, [theme]);
 
+    const containerStyle = useMemo(() => {
+        return [style.container, {marginBottom: insets.bottom + 10}];
+    }, [style, insets.bottom]);
+
     return (
-        <View style={style.container}>
+        <View style={containerStyle}>
             {!isTablet && (
                 <Text style={style.title}>
                     {intl.formatMessage({

@@ -50,12 +50,11 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
         overflow: 'hidden',
     },
     bannerText: {
-        flex: 0,
-        ...typography('Body', 100, 'SemiBold'),
-        marginLeft: 9,
-    },
-    flex: {
         flex: 1,
+        flexGrow: 1,
+        ...typography('Body', 100, 'SemiBold'),
+        marginRight: 5,
+        textAlign: 'center',
     },
 }));
 
@@ -132,7 +131,7 @@ const AnnouncementBanner = ({
 
     const bannerTextStyle = useMemo(() => [style.bannerText, {
         color: bannerTextColor,
-    }], [bannerTextColor]);
+    }], [style, bannerTextColor]);
 
     return (
         <Animated.View
@@ -147,22 +146,21 @@ const AnnouncementBanner = ({
                             onPress={handlePress}
                             style={style.wrapper}
                         >
-                            <View style={style.flex}/>
-                            <CompassIcon
-                                color={bannerTextColor}
-                                name='information-outline'
-                                size={18}
-                            />
                             <Text
+                                style={bannerTextStyle}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
-                                style={bannerTextStyle}
                             >
+                                <CompassIcon
+                                    color={bannerTextColor}
+                                    name='information-outline'
+                                    size={18}
+                                />
+                                {' '}
                                 <RemoveMarkdown
                                     value={bannerText}
                                 />
                             </Text>
-                            <View style={style.flex}/>
                         </TouchableOpacity>
                         {allowDismissal && (
                             <TouchableOpacity
