@@ -18,7 +18,7 @@ import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryServerName} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
-import {getThemeFromState} from '@screens/navigation';
+import {getThemeFromState, resetToOnboarding} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {addNewServer} from '@utils/server';
 
@@ -167,17 +167,15 @@ class SessionManager {
 
         if (activeServerUrl === serverUrl) {
             let displayName = '';
-            let launchType: LaunchType = Launch.AddServer;
+            const launchType: LaunchType = Launch.Normal;
             if (!Object.keys(DatabaseManager.serverDatabases).length) {
                 EphemeralStore.theme = undefined;
-                launchType = Launch.Normal;
-
                 if (activeServerDisplayName) {
                     displayName = activeServerDisplayName;
                 }
             }
 
-            relaunchApp({launchType, serverUrl, displayName}, true);
+            resetToOnboarding({launchType, serverUrl, displayName});
         }
     };
 

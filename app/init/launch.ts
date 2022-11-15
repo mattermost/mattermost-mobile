@@ -60,8 +60,15 @@ const launchAppFromNotification = async (notification: NotificationWithData) => 
     launchApp(props);
 };
 
+/**
+ *
+ * @param props set of properties used to determine how to launch the app depending on the containing values
+ * @param resetNavigation used when loading the add_server screen and remove all the navigation stack
+
+ * @returns a redirection to a screen, either onboarding, add_server, login or home depending on the scenario
+ */
 const launchApp = async (props: LaunchProps, resetNavigation = true) => {
-    const onboadingViewed = await onboadingViewedValue();
+    const onboardingViewed = LocalConfig.ShowOnboarding ? await onboadingViewedValue() : false;
     let serverUrl: string | undefined;
     switch (props?.launchType) {
         case Launch.DeepLink:
@@ -101,7 +108,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
             }
 
             // invert this logic for onboardingViewed
-            if (LocalConfig.ShowOnboarding && onboadingViewed) {
+            if ((LocalConfig.ShowOnboarding && onboardingViewed)) {
                 return resetToOnboarding({...props, goToLoginServerUrl: serverUrl});
             }
 
@@ -135,7 +142,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     }
 
     // invert this logic for onboardingViewed
-    if (LocalConfig.ShowOnboarding && !onboadingViewed) {
+    if (LocalConfig.ShowOnboarding && !onboardingViewed) {
         return launchToServer(props, resetNavigation);
     }
     return resetToOnboarding(props);

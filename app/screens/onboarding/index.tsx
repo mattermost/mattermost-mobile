@@ -11,7 +11,7 @@ import {Screens} from '@app/constants';
 import {loginOptions} from '@app/utils/server';
 import Background from '@screens/background';
 import {goToScreen, loginAnimationOptions} from '@screens/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import FooterButtons from './footer_buttons';
 import Paginator from './paginator';
@@ -107,14 +107,19 @@ const Onboarding = ({
         const topBar = {
             visible: true,
             drawBehind: true,
+            translucid: true,
             noBorder: true,
             elevation: 0,
             background: {
                 color: 'transparent',
             },
             backButton: {
-                color: theme.centerChannelColor,
-                title: '',
+                color: changeOpacity(theme.centerChannelColor, 0.56),
+            },
+            scrollEdgeAppearance: {
+                active: true,
+                noBorder: true,
+                translucid: true,
             },
         };
 
