@@ -6,6 +6,7 @@ import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
+import LocalConfig from '@assets/config.json';
 import {Screens, DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
@@ -99,8 +100,8 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                 hasCurrentUser = Boolean(currentUserId);
             }
 
-            // invert this logic
-            if (onboadingViewed) {
+            // invert this logic for onboardingViewed
+            if (LocalConfig.ShowOnboarding && onboadingViewed) {
                 return resetToOnboarding({...props, goToLoginServerUrl: serverUrl});
             }
 
@@ -133,8 +134,8 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
-    // invert this logic
-    if (!onboadingViewed) {
+    // invert this logic for onboardingViewed
+    if (LocalConfig.ShowOnboarding && !onboadingViewed) {
         return launchToServer(props, resetNavigation);
     }
     return resetToOnboarding(props);
