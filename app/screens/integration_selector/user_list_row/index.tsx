@@ -11,7 +11,7 @@ import {
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
-import {isGuest} from '@utils/user';
+import {displayUsername, isGuest} from '@utils/user';
 
 import CustomListRow, {Props as CustomListRowProps} from '../custom_list_row';
 
@@ -89,7 +89,8 @@ const UserListRow = ({
         }, {username});
     }
 
-    const showTeammateDisplay = teammateNameDisplay !== username;
+    const teammateDisplay = displayUsername(user, intl.locale, teammateNameDisplay);
+    const showTeammateDisplay = teammateDisplay !== username;
     const itemTestID = `${testID}.${userID}`;
     const displayUsernameTestID = `${testID}.display_username`;
     const profilePictureTestID = `${itemTestID}.profile_picture`;
@@ -141,7 +142,7 @@ const UserListRow = ({
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                             >
-                                {teammateNameDisplay}
+                                {teammateDisplay}
                             </Text>
                         </View>
                     }

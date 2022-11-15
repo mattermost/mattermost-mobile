@@ -106,20 +106,6 @@ exports[`components/integration_selector/user_list_row match snapshot if user is
             </Text>
           </View>
         </View>
-        <View>
-          <Text
-            ellipsizeMode="tail"
-            numberOfLines={1}
-            style={
-              {
-                "color": "rgba(63,67,80,0.5)",
-                "fontSize": 15,
-              }
-            }
-          >
-            dummy
-          </Text>
-        </View>
       </View>
     </View>
   </View>
@@ -231,20 +217,6 @@ exports[`components/integration_selector/user_list_row match snapshot if user is
               @johndoe
             </Text>
           </View>
-        </View>
-        <View>
-          <Text
-            ellipsizeMode="tail"
-            numberOfLines={1}
-            style={
-              {
-                "color": "rgba(63,67,80,0.5)",
-                "fontSize": 15,
-              }
-            }
-          >
-            dummy
-          </Text>
         </View>
       </View>
     </View>
