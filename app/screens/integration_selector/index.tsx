@@ -228,11 +228,9 @@ function IntegrationSelector(
             setLoading(false);
 
             if (channelData && channelData.length > 0) {
-                if (channelData && !channelData.length) {
-                    setNext(false);
-                }
-
                 setIntegrationData(channelData);
+            } else {
+                setNext(false);
             }
         }
     }, 100), [integrationData, next, currentPage, loading, term]);
@@ -247,11 +245,9 @@ function IntegrationSelector(
             setLoading(false);
 
             if (profiles && profiles.length > 0) {
-                if (profiles && !profiles.length) {
-                    setNext(false);
-                }
-
                 setIntegrationData(profiles);
+            } else {
+                setNext(false);
             }
         }
     }, 100), [integrationData, next, currentPage, loading, term]);
