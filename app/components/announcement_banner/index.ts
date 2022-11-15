@@ -32,6 +32,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         bannerText,
         bannerTextColor: observeConfigValue(database, 'BannerTextColor'),
         bannerDismissed,
+        allowDismissal: observeConfigBooleanValue(database, 'AllowBannerDismissal'),
     };
 });
 

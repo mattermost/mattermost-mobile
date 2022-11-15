@@ -21,7 +21,6 @@ export const EDIT_POST = 'EditPost';
 export const EDIT_PROFILE = 'EditProfile';
 export const EDIT_SERVER = 'EditServer';
 export const EMOJI_PICKER = 'EmojiPicker';
-export const EXPANDED_ANNOUNCEMENT_BANNER = 'ExpandedAnnouncementBanner';
 export const FIND_CHANNELS = 'FindChannels';
 export const FORGOT_PASSWORD = 'ForgotPassword';
 export const GALLERY = 'Gallery';
@@ -83,7 +82,6 @@ export default {
     EDIT_PROFILE,
     EDIT_SERVER,
     EMOJI_PICKER,
-    EXPANDED_ANNOUNCEMENT_BANNER,
     FIND_CHANNELS,
     FORGOT_PASSWORD,
     GALLERY,
