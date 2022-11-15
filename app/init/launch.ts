@@ -107,8 +107,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                 hasCurrentUser = Boolean(currentUserId);
             }
 
-            // invert this logic for onboardingViewed
-            if ((LocalConfig.ShowOnboarding && onboardingViewed)) {
+            if (LocalConfig.ShowOnboarding && !onboardingViewed) {
                 return resetToOnboarding({...props, goToLoginServerUrl: serverUrl});
             }
 
@@ -141,8 +140,7 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
-    // invert this logic for onboardingViewed
-    if (LocalConfig.ShowOnboarding && !onboardingViewed) {
+    if (!LocalConfig.ShowOnboarding || onboardingViewed) {
         return launchToServer(props, resetNavigation);
     }
     return resetToOnboarding(props);

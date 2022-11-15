@@ -409,10 +409,6 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
         },
     };
 
-    if (name === Screens.SERVER) {
-        console.log('\n\n** screen pass props', passProps, componentId, name, '\n\n');
-    }
-
     return Navigation.push(componentId, {
         component: {
             id: name,
