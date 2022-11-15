@@ -71,7 +71,6 @@ const ChannelActions = ({channelId, channelType, inModal = false, dismissChannel
             }
             {!isDM &&
                 <AddPeopleBox
-                    channelId={channelId}
                     inModal={inModal}
                     testID={`${testID}.add_people.action`}
                 />

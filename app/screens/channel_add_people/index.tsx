@@ -4,16 +4,22 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
+import {observeCurrentTeamId} from '@app/queries/servers/system';
+import {observeProfileLongPresTutorial} from '@queries/app/global';
 import {observeCurrentChannel} from '@queries/servers/channel';
+import {observeTeammateNameDisplay} from '@queries/servers/user';
 
-import AddPeopleBox from './add_people_box';
+import ChannelAddPeople from './channel_add_people';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         currentChannel: observeCurrentChannel(database),
+        currentTeamId: observeCurrentTeamId(database),
+        teammateNameDisplay: observeTeammateNameDisplay(database),
+        tutorialWatched: observeProfileLongPresTutorial(),
     };
 });
 
-export default withDatabase(enhanced(AddPeopleBox));
+export default withDatabase(enhanced(ChannelAddPeople));
