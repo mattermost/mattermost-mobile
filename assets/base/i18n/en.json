@@ -93,7 +93,7 @@
   "browse_channels.showSharedChannels": "Show: Shared Channels",
   "browse_channels.title": "Browse channels",
   "camera_type.photo.option": "Capture Photo",
-  "camera_type.title": "Choose an action",
+  "camera_type.title": "Camera options",
   "camera_type.video.option": "Record Video",
   "center_panel.archived.closeChannel": "Close Channel",
   "channel_header.directchannel.you": "{displayName} (you)",

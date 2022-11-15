@@ -65,9 +65,9 @@ export default function CameraQuickAction({
         }
 
         bottomSheet({
-            title: intl.formatMessage({id: 'camera_type.title', defaultMessage: 'Choose an action'}),
+            title: intl.formatMessage({id: 'mobile.camera_type.title', defaultMessage: 'Camera options'}),
             renderContent,
-            snapPoints: [200, 10],
+            snapPoints: [224, 10],
             theme,
             closeButtonId: 'camera-close-id',
         });

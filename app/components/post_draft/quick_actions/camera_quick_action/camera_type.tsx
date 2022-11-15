@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {CameraOptions} from 'react-native-image-picker';
 
-import CompassIcon from '@components/compass_icon';
+import {typography} from '@app/utils/typography';
 import FormattedText from '@components/formatted_text';
-import TouchableWithFeedback from '@components/touchable_with_feedback';
+import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
@@ -18,44 +19,20 @@ type Props = {
 }
 
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
-    center: {
-        alignItems: 'center',
-    },
-    container: {
-        alignItems: 'center',
-        backgroundColor: theme.centerChannelBg,
-        height: 200,
-        paddingVertical: 10,
-    },
-    flex: {
-        flex: 1,
-    },
-    options: {
-        alignItems: 'center',
-        flex: 1,
-        flexDirection: 'row',
-        justifyContent: 'space-evenly',
-        width: '100%',
-        marginBottom: 50,
-    },
-    optionContainer: {
-        alignItems: 'flex-start',
-    },
+
     title: {
         color: theme.centerChannelColor,
-        fontSize: 18,
-        fontWeight: 'bold',
+        ...typography('Heading', 600, 'SemiBold'),
+        marginBottom: 8,
     },
-    text: {
-        color: theme.centerChannelColor,
-        fontSize: 15,
-    },
+
 }));
 
 const CameraType = ({onPress}: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
     const style = getStyle(theme);
+    const intl = useIntl();
 
     const onPhoto = async () => {
         const options: CameraOptions = {
@@ -83,51 +60,23 @@ const CameraType = ({onPress}: Props) => {
         <View style={style.container}>
             {!isTablet &&
             <FormattedText
-                id='camera_type.title'
-                defaultMessage='Choose an action'
+                id='mobile.camera_type.title'
+                defaultMessage='Camera options'
                 style={style.title}
             />
             }
-            <View style={style.options}>
-                <View style={style.flex}>
-                    <TouchableWithFeedback
-                        onPress={onPhoto}
-                        testID='camera_type.photo'
-                    >
-                        <View style={style.center}>
-                            <CompassIcon
-                                color={theme.centerChannelColor}
-                                name='camera-outline'
-                                size={38}
-                            />
-                            <FormattedText
-                                id='camera_type.photo.option'
-                                defaultMessage='Capture Photo'
-                                style={style.text}
-                            />
-                        </View>
-                    </TouchableWithFeedback>
-                </View>
-                <View style={style.flex}>
-                    <TouchableWithFeedback
-                        onPress={onVideo}
-                        testID='camera_type.video'
-                    >
-                        <View style={style.center}>
-                            <CompassIcon
-                                color={theme.centerChannelColor}
-                                name='video-outline'
-                                size={38}
-                            />
-                            <FormattedText
-                                id='camera_type.video.option'
-                                defaultMessage='Record Video'
-                                style={style.text}
-                            />
-                        </View>
-                    </TouchableWithFeedback>
-                </View>
-            </View>
+            <SlideUpPanelItem
+                icon='camera-outline'
+                onPress={onPhoto}
+                testID='camera_type.photo'
+                text={intl.formatMessage({id: 'camera_type.photo.option', defaultMessage: 'Capture Photo'})}
+            />
+            <SlideUpPanelItem
+                icon='video-outline'
+                onPress={onVideo}
+                testID='camera_type.video'
+                text={intl.formatMessage({id: 'camera_type.video.option', defaultMessage: 'Record Video'})}
+            />
         </View>
     );
 };
