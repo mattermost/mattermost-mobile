@@ -22,6 +22,7 @@ type Props = {
     connecting: boolean;
     displayName?: string;
     displayNameError?: string;
+    disableServerUrl: boolean;
     handleConnect: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
     handleUrlTextChanged: (text: string) => void;
@@ -77,6 +78,7 @@ const ServerForm = ({
     connecting,
     displayName = '',
     displayNameError,
+    disableServerUrl,
     handleConnect,
     handleDisplayNameTextChanged,
     handleUrlTextChanged,
@@ -169,6 +171,7 @@ const ServerForm = ({
                     blurOnSubmit={false}
                     containerStyle={styles.enterServer}
                     enablesReturnKeyAutomatically={true}
+                    editable={!disableServerUrl}
                     error={urlError}
                     keyboardType='url'
                     label={formatMessage({

@@ -30,7 +30,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         distinctUntilChanged(),
     );
     const isInACall = currentCall.pipe(
-        switchMap((call) => of$(Boolean(call))),
+        switchMap((call) => of$(Boolean(call?.connected))),
         distinctUntilChanged(),
     );
     const isInCurrentChannelCall = combineLatest([channelId, ccChannelId]).pipe(

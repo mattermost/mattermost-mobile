@@ -12,7 +12,7 @@ import {observeMyChannel} from '@queries/servers/channel';
 import {isChannelAdmin} from '@utils/user';
 
 import {queryPreferencesByCategoryAndName} from './preference';
-import {observeConfig, observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense} from './system';
+import {observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense, observeConfigValue} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -67,13 +67,14 @@ export async function prepareUsers(operator: ServerDataOperator, users: UserProf
 }
 
 export const observeTeammateNameDisplay = (database: Database) => {
-    const config = observeConfig(database);
+    const lockTeammateNameDisplay = observeConfigValue(database, 'LockTeammateNameDisplay');
+    const teammateNameDisplay = observeConfigValue(database, 'TeammateNameDisplay');
     const license = observeLicense(database);
     const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
         observeWithColumns(['value']);
-    return combineLatest([config, license, preferences]).pipe(
+    return combineLatest([lockTeammateNameDisplay, teammateNameDisplay, license, preferences]).pipe(
         switchMap(
-            ([cfg, lcs, prefs]) => of$(getTeammateNameDisplaySetting(prefs, cfg, lcs)),
+            ([ltnd, tnd, lcs, prefs]) => of$(getTeammateNameDisplaySetting(prefs, ltnd, tnd, lcs)),
         ),
     );
 };
@@ -82,7 +83,7 @@ export async function getTeammateNameDisplay(database: Database) {
     const config = await getConfig(database);
     const license = await getLicense(database);
     const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).fetch();
-    return getTeammateNameDisplaySetting(preferences, config, license);
+    return getTeammateNameDisplaySetting(preferences, config?.LockTeammateNameDisplay, config?.TeammateNameDisplay, license);
 }
 
 export const queryUsersLike = (database: Database, likeUsername: string) => {

@@ -8,7 +8,7 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FileSystem from 'react-native-fs';
 
-import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
+import {DatabaseType, MIGRATION_EVENTS, MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
@@ -16,13 +16,14 @@ import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, Cha
     GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-    ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel,
+    ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel, ConfigModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
 import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
+import {querySystemValue} from '@queries/servers/system';
 import {deleteLegacyFileCache} from '@utils/file';
 import {emptyFunction} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
@@ -45,7 +46,7 @@ class DatabaseManager {
     constructor() {
         this.appModels = [InfoModel, GlobalModel, ServersModel];
         this.serverModels = [
-            CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, CustomEmojiModel, DraftModel, FileModel,
+            CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, ChannelMembershipModel, ConfigModel, CustomEmojiModel, DraftModel, FileModel,
             GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
@@ -109,7 +110,7 @@ class DatabaseManager {
 
             return this.appDatabase;
         } catch (e) {
-            // TODO : report to sentry? Show something on the UI ?
+            logError('Unable to create the App Database!!', e);
         }
 
         return undefined;
@@ -163,8 +164,6 @@ class DatabaseManager {
 
                 return serverDatabase;
             } catch (e) {
-                // TODO : report to sentry? Show something on the UI ?
-
                 logError('Error initializing database', e);
             }
         }
@@ -178,13 +177,38 @@ class DatabaseManager {
     * @returns {Promise<void>}
     */
     private initServerDatabase = async (serverUrl: string): Promise<void> => {
-        await this.createServerDatabase({
+        const serverDatabase = await this.createServerDatabase({
             config: {
                 dbName: serverUrl,
                 dbType: DatabaseType.SERVER,
                 serverUrl,
             },
         });
+
+        // Migration for config
+        if (serverDatabase) {
+            const {database, operator} = serverDatabase;
+            const oldConfigList = await querySystemValue(database, SYSTEM_IDENTIFIERS.CONFIG).fetch();
+            if (oldConfigList.length) {
+                const oldConfigModel = oldConfigList[0];
+                const oldConfig = oldConfigModel.value as ClientConfig;
+
+                const configs = [];
+                let k: keyof ClientConfig;
+                for (k in oldConfig) {
+                    // Check to silence eslint (guard-for-in)
+                    if (Object.prototype.hasOwnProperty.call(oldConfig, k)) {
+                        configs.push({
+                            id: k,
+                            value: oldConfig[k],
+                        });
+                    }
+                }
+                const models = await operator.handleConfigs({configs, configsToDelete: [], prepareRecordsOnly: true});
+
+                operator.batchRecords([...models, oldConfigModel.prepareDestroyPermanently()]);
+            }
+        }
     };
 
     /**
@@ -223,7 +247,7 @@ class DatabaseManager {
                 }
             }
         } catch (e) {
-            // TODO : report to sentry? Show something on the UI ?
+            logError('Error adding server to App database', e);
         }
     };
 

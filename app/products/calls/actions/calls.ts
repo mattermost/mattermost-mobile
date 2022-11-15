@@ -8,7 +8,6 @@ import {fetchUsersByIds} from '@actions/remote/user';
 import {
     getCallsConfig,
     getCallsState,
-    myselfLeftCall,
     setCalls,
     setChannelEnabled,
     setConfig,
@@ -16,6 +15,8 @@ import {
     setScreenShareURL,
     setSpeakerPhone,
     setCallForChannel,
+    newCurrentCall,
+    myselfLeftCall,
 } from '@calls/state';
 import {General, Preferences} from '@constants';
 import Calls from '@constants/calls';
@@ -24,7 +25,7 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {getCommonSystemValues} from '@queries/servers/system';
+import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
 import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
 
@@ -218,7 +219,7 @@ export const enableChannelCalls = async (serverUrl: string, channelId: string, e
     return {};
 };
 
-export const joinCall = async (serverUrl: string, channelId: string): Promise<{ error?: string | Error; data?: string }> => {
+export const joinCall = async (serverUrl: string, channelId: string, userId: string, hasMicPermission: boolean): Promise<{ error?: string | Error; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
     const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
@@ -231,9 +232,12 @@ export const joinCall = async (serverUrl: string, channelId: string): Promise<{ 
         connection = null;
     }
     setSpeakerphoneOn(false);
+    newCurrentCall(serverUrl, channelId, userId);
 
     try {
-        connection = await newConnection(serverUrl, channelId, () => null, setScreenShareURL);
+        connection = await newConnection(serverUrl, channelId, () => {
+            myselfLeftCall();
+        }, setScreenShareURL, hasMicPermission);
     } catch (error: unknown) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error: error as Error};
@@ -255,7 +259,6 @@ export const leaveCall = () => {
         connection = null;
     }
     setSpeakerphoneOn(false);
-    myselfLeftCall();
 };
 
 export const muteMyself = () => {
@@ -267,6 +270,12 @@ export const muteMyself = () => {
 export const unmuteMyself = () => {
     if (connection) {
         connection.unmute();
+    }
+};
+
+export const initializeVoiceTrack = () => {
+    if (connection) {
+        connection.initializeVoiceTrack();
     }
 };
 
@@ -337,9 +346,10 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
     if (channel.type === General.DM_CHANNEL) {
         const otherID = getUserIdFromChannelName(currentUserId, channel.name);
         const otherUser = await getUserById(database, otherID);
-        const {config, license} = await getCommonSystemValues(database);
+        const license = await getLicense(database);
+        const config = await getConfig(database);
         const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
-        const displaySetting = getTeammateNameDisplaySetting(preferences, config, license);
+        const displaySetting = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         msg = intl.formatMessage({
             id: 'mobile.calls_end_msg_dm',
             defaultMessage: 'Are you sure you want to end the call with {displayName}?',

@@ -73,6 +73,7 @@ const Server = ({
     const [urlError, setUrlError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
+    const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
 
     useEffect(() => {
         let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
@@ -111,7 +112,7 @@ const Server = ({
             // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
             handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
         }
-    }, []);
+    }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName]);
 
     useEffect(() => {
         if (url && displayName) {
@@ -251,7 +252,7 @@ const Server = ({
         };
 
         const serverUrl = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp);
-        const result = await doPing(serverUrl, true);
+        const result = await doPing(serverUrl, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined);
 
         if (canceled) {
             return;
@@ -345,6 +346,7 @@ const Server = ({
                         connecting={connecting}
                         displayName={displayName}
                         displayNameError={displayNameError}
+                        disableServerUrl={disableServerUrl}
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}

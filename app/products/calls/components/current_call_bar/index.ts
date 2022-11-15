@@ -5,7 +5,7 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {observeCurrentCall} from '@calls/state';
+import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
 import {idsAreEqual} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import {observeChannel} from '@queries/servers/channel';
@@ -45,12 +45,17 @@ const enhanced = withObservables([], () => {
     const teammateNameDisplay = database.pipe(
         switchMap((db) => (db ? observeTeammateNameDisplay(db) : of$(''))),
     );
+    const micPermissionsGranted = observeGlobalCallsState().pipe(
+        switchMap((gs) => of$(gs.micPermissionsGranted)),
+        distinctUntilChanged(),
+    );
 
     return {
         displayName,
         currentCall,
         userModelsDict,
         teammateNameDisplay,
+        micPermissionsGranted,
     };
 });
 
