@@ -64,7 +64,10 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             style={
               {
                 "color": "#3f4350",
+                "fontFamily": "OpenSans",
                 "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
               }
             }
           />
@@ -72,7 +75,10 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             style={
               {
                 "color": "#3f4350",
+                "fontFamily": "OpenSans",
                 "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
                 "marginLeft": 5,
               }
             }
@@ -151,7 +157,10 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             style={
               {
                 "color": "#3f4350",
+                "fontFamily": "OpenSans",
                 "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
               }
             }
           />
@@ -159,7 +168,10 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             style={
               {
                 "color": "#3f4350",
+                "fontFamily": "OpenSans",
                 "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
                 "marginLeft": 5,
               }
             }
@@ -238,7 +250,10 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             style={
               {
                 "color": "#3f4350",
+                "fontFamily": "OpenSans",
                 "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
               }
             }
           />
@@ -246,7 +261,10 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             style={
               {
                 "color": "#3f4350",
+                "fontFamily": "OpenSans",
                 "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
                 "marginLeft": 5,
               }
             }
@@ -325,7 +343,10 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             style={
               {
                 "color": "#3f4350",
+                "fontFamily": "OpenSans",
                 "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
               }
             }
           />
@@ -333,7 +354,10 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             style={
               {
                 "color": "#3f4350",
+                "fontFamily": "OpenSans",
                 "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
                 "marginLeft": 5,
               }
             }
@@ -348,7 +372,10 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
           style={
             {
               "color": "rgba(63,67,80,0.5)",
-              "fontSize": 13,
+              "fontFamily": "OpenSans",
+              "fontSize": 14,
+              "fontWeight": "400",
+              "lineHeight": 20,
               "marginTop": 7,
             }
           }
@@ -425,7 +452,10 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             style={
               {
                 "color": "#3f4350",
+                "fontFamily": "OpenSans",
                 "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
               }
             }
           />
@@ -433,7 +463,10 @@ exports[`components/integration_selector/channel_list_row should match snapshot 
             style={
               {
                 "color": "#3f4350",
+                "fontFamily": "OpenSans",
                 "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
                 "marginLeft": 5,
               }
             }

@@ -451,7 +451,7 @@ function IntegrationSelector(
     }, [multiselectSelected]);
 
     // Renders
-    const renderLoading = (): React.ReactElement<any, string> | null => {
+    const renderLoading = () => {
         if (!loading) {
             return null;
         }

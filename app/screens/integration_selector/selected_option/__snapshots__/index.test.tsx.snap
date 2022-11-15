@@ -20,7 +20,10 @@ exports[`components/integration_selector/selected_option should match snapshot f
     style={
       {
         "color": "#3f4350",
-        "fontSize": 13,
+        "fontFamily": "OpenSans",
+        "fontSize": 14,
+        "fontWeight": "400",
+        "lineHeight": 20,
         "maxWidth": "90%",
       }
     }
@@ -74,7 +77,10 @@ exports[`components/integration_selector/selected_option should match snapshot f
     style={
       {
         "color": "#3f4350",
-        "fontSize": 13,
+        "fontFamily": "OpenSans",
+        "fontSize": 14,
+        "fontWeight": "400",
+        "lineHeight": 20,
         "maxWidth": "90%",
       }
     }
@@ -128,7 +134,10 @@ exports[`components/integration_selector/selected_option should match snapshot f
     style={
       {
         "color": "#3f4350",
-        "fontSize": 13,
+        "fontFamily": "OpenSans",
+        "fontSize": 14,
+        "fontWeight": "400",
+        "lineHeight": 20,
         "maxWidth": "90%",
       }
     }
