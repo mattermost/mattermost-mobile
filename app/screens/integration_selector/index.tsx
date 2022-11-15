@@ -8,8 +8,8 @@ import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {fetchChannels, searchChannels as searchChannelsRemote} from '@actions/remote/channel';
-import {fetchProfiles, searchProfiles as searchProfilesRemote} from '@actions/remote/user';
+import {fetchChannels, searchChannels} from '@actions/remote/channel';
+import {fetchProfiles, searchProfiles} from '@actions/remote/user';
 import UserListRow from '@app/components/user_list_row';
 import {typography} from '@app/utils/typography';
 import FormattedText from '@components/formatted_text';
@@ -262,23 +262,6 @@ function IntegrationSelector(
         // dynamic options are not paged so are not reloaded on scroll
     };
 
-    const searchChannels = async (searchTerm: string) => {
-        const isSearch = true;
-        const {channels: receivedChannels} = await searchChannelsRemote(serverUrl, searchTerm, currentTeamId, isSearch);
-
-        if (receivedChannels) {
-            setSearchResults(receivedChannels);
-        }
-    };
-
-    const searchProfiles = async (searchTerm: string) => {
-        const {data: userData} = await searchProfilesRemote(serverUrl, searchTerm.toLowerCase(), {team_id: currentTeamId, allow_inactive: true});
-
-        if (userData) {
-            setSearchResults(userData);
-        }
-    };
-
     const searchDynamicOptions = useCallback((searchTerm = '') => {
         if (options) {
             setIntegrationData(options);
@@ -324,9 +307,21 @@ function IntegrationSelector(
             setLoading(true);
 
             if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-                await searchProfiles(text);
+                const {data: userData} = await searchProfiles(
+                    serverUrl, term.toLowerCase(),
+                    {team_id: currentTeamId, allow_inactive: true});
+
+                if (userData) {
+                    setSearchResults(userData);
+                }
             } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-                await searchChannels(text);
+                const isSearch = true;
+                const {channels: receivedChannels} = await searchChannels(
+                    serverUrl, term, currentTeamId, isSearch);
+
+                if (receivedChannels) {
+                    setSearchResults(receivedChannels);
+                }
             } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
                 await searchDynamicOptions(text);
             }
