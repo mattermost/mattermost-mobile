@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Platform, SafeAreaView, StyleSheet, View} from 'react-native';
 
@@ -69,7 +69,7 @@ export default function CreateDirectMessage({
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
-    const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
+    const selectedCount = Object.keys(selectedIds).length;
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -145,7 +145,7 @@ export default function CreateDirectMessage({
 
             clearSearch();
         }
-    }, [clearSearch, currentUserId, handleRemoveProfile, onButtonTap, selectedIds, setSelectedIds]);
+    }, [clearSearch, currentUserId, handleRemoveProfile, onButtonTap, selectedIds]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
