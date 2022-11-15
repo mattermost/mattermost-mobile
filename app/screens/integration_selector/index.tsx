@@ -398,7 +398,7 @@ function IntegrationSelector(
     }, [multiselectSelected, dataSource]);
 
     // Effects
-    useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit]);
+    useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit, multiselectSelected]);
 
     useEffect(() => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
@@ -549,6 +549,7 @@ function IntegrationSelector(
 
     const renderSelectedOptions = (): React.ReactElement<any, string> | null => {
         const selectedItems: any = Object.values(multiselectSelected);
+
         let optionComponents: React.ReactElement<any, string> | null = null;
 
         if (selectedItems.length > 0) {
