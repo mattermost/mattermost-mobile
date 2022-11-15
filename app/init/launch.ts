@@ -99,8 +99,9 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                 hasCurrentUser = Boolean(currentUserId);
             }
 
-            if (!onboadingViewed) {
-                return launchToOnboarding(props, resetNavigation, false, false, serverUrl);
+            // invert this logic
+            if (onboadingViewed) {
+                return resetToOnboarding({...props, goToLoginServerUrl: serverUrl});
             }
 
             let launchType = props.launchType;
@@ -132,10 +133,11 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
-    if (onboadingViewed) {
+    // invert this logic
+    if (!onboadingViewed) {
         return launchToServer(props, resetNavigation);
     }
-    return launchToOnboarding(props, resetNavigation);
+    return resetToOnboarding(props);
 };
 
 const launchToHome = async (props: LaunchProps) => {
@@ -187,23 +189,6 @@ const launchToServer = (props: LaunchProps, resetNavigation: Boolean) => {
     // the implementation of deep links is complete
     const title = '';
     return goToScreen(Screens.SERVER, title, {...props});
-};
-
-const launchToOnboarding = (
-    props: LaunchProps,
-    resetNavigation = true,
-    notActiveSession = true,
-    whiteLabeledApp = false,
-    goToLoginServerUrl = '',
-) => {
-    // here, if there is an active session, redirect to home
-    // if there is a whitelabeled app, redirect to either SERVER or LOGIN but don't show the onboarding
-    if (resetNavigation) {
-        launchToServer(props, resetNavigation);
-    }
-
-    // goToLoginServerUrl will contain a value when there is a server already configured but not a active session
-    return resetToOnboarding(props, goToLoginServerUrl);
 };
 
 export const relaunchApp = (props: LaunchProps, resetNavigation = false) => {
