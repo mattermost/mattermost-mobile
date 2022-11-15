@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {
     Text,
     View,
@@ -48,9 +48,9 @@ const OptionListRow = ({
     const {text} = item;
     const style = getStyleFromTheme(theme);
 
-    const onPressRow = (): void => {
+    const onPressRow = useCallback((): void => {
         onPress(item);
-    };
+    }, [onPress, item]);
 
     return (
         <View style={style.container}>

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {
     Text,
     View,
@@ -20,6 +20,22 @@ type ChannelListRowProps = {
 };
 
 type Props = ChannelListRowProps & CustomListRowProps;
+
+const getIconForChannel = (selectedChannel: Channel): string => {
+    let icon = 'globe';
+
+    if (selectedChannel.type === 'P') {
+        icon = 'padlock';
+    }
+
+    if (selectedChannel.delete_at) {
+        icon = 'archive-outline';
+    } else if (selectedChannel.shared) {
+        icon = 'circle-multiple-outline';
+    }
+
+    return icon;
+};
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -59,25 +75,9 @@ const ChannelListRow = ({
 }: Props) => {
     const style = getStyleFromTheme(theme);
 
-    const getIconForChannel = (selectedChannel: Channel): string => {
-        let icon = 'globe';
-
-        if (selectedChannel.type === 'P') {
-            icon = 'padlock';
-        }
-
-        if (selectedChannel.delete_at) {
-            icon = 'archive-outline';
-        } else if (selectedChannel.shared) {
-            icon = 'circle-multiple-outline';
-        }
-
-        return icon;
-    };
-
-    const onPressRow = (): void => {
+    const onPressRow = useCallback((): void => {
         onPress(channel);
-    };
+    }, [onPress, channel]);
 
     const renderPurpose = (channelPurpose: string): JSX.Element | null => {
         if (!channelPurpose) {

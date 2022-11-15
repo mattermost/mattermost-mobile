@@ -1,6 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
+import React, {useCallback} from 'react';
 import {
     Text, Platform, FlatList, RefreshControl, View, SectionList,
 } from 'react-native';
@@ -16,6 +16,14 @@ type UserProfileSection = {
     data: UserProfile[];
 };
 type DataType = DialogOption[] | Channel[] | UserProfile[] | UserProfileSection[];
+type ListItemProps = {
+    id: string;
+    item: DialogOption | Channel | UserProfile;
+    selected: boolean;
+    selectable?: boolean;
+    enabled: boolean;
+    onPress: (item: DialogOption) => void;
+}
 
 type Props = {
     data: DataType;
@@ -29,12 +37,16 @@ type Props = {
     onRefresh?: () => void;
     onLoadMore: () => void;
     onRowPress: (item: UserProfile | Channel | DialogOption) => void;
-    renderItem: (props: object) => JSX.Element;
+    renderItem: (props: ListItemProps) => JSX.Element;
     selectable?: boolean;
     theme?: object;
     shouldRenderSeparator?: boolean;
     testID?: string;
 }
+
+const keyExtractor = (item: any): string => {
+    return item.id || item.key || item.value || item;
+};
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -105,17 +117,12 @@ function CustomList({
 }: Props) {
     const style = getStyleFromTheme(theme);
 
-    // Callbacks
-    const keyExtractor = (item: any): string => {
-        return item.id || item.key || item.value || item;
-    };
-
     // Renders
     const renderEmptyList = () => {
         return noResults || null;
     };
 
-    const renderSeparator = () => {
+    const renderSeparator = useCallback(() => {
         if (!shouldRenderSeparator) {
             return null;
         }
@@ -123,19 +130,10 @@ function CustomList({
         return (
             <View style={style.separator}/>
         );
-    };
+    }, [shouldRenderSeparator]);
 
-    const renderListItem = ({item}: any) => {
-        type listItemProps = {
-            id: string;
-            item: DialogOption | Channel | UserProfile;
-            selected: boolean;
-            selectable?: boolean;
-            enabled: boolean;
-            onPress: (item: DialogOption) => void;
-        }
-
-        const props: listItemProps = {
+    const renderListItem = useCallback(({item}: any) => {
+        const props: ListItemProps = {
             id: item.key,
             item,
             selected: item.selected,
@@ -149,16 +147,16 @@ function CustomList({
         }
 
         return renderItem(props);
-    };
+    }, [onRowPress]);
 
-    const renderFooter = (): React.ReactElement<any, string> | null => {
+    const renderFooter = useCallback((): React.ReactElement<any, string> | null => {
         if (!loading || !loadingComponent) {
             return null;
         }
         return loadingComponent;
-    };
+    }, [loading, loadingComponent]);
 
-    const renderSectionHeader = ({section}: any) => {
+    const renderSectionHeader = useCallback(({section}: any) => {
         return (
             <View style={style.sectionWrapper}>
                 <View style={style.sectionContainer}>
@@ -166,7 +164,7 @@ function CustomList({
                 </View>
             </View>
         );
-    };
+    }, []);
 
     const renderSectionList = () => {
         return (

@@ -35,35 +35,35 @@ const getStyleFromTheme = makeStyleSheetFromTheme(() => {
 const SelectedOptions = ({
     theme, selectedOptions, onRemove, dataSource,
 }: Props) => {
-    const options: React.ReactNode[] = [];
     const style = getStyleFromTheme(theme);
-
-    for (const option of selectedOptions) {
+    const options: React.ReactNode[] = selectedOptions.map((optionItem) => {
         let key: string;
 
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
-                key = (option as UserProfile).id;
+                key = (optionItem as UserProfile).id;
                 break;
             case ViewConstants.DATA_SOURCE_CHANNELS:
-                key = (option as Channel).id;
+                key = (optionItem as Channel).id;
                 break;
             default:
-                key = (option as DialogOption).value;
+                key = (optionItem as DialogOption).value;
                 break;
         }
 
-        options.push(
+        return (
             <SelectedOption
                 key={key}
-                option={option}
+                option={optionItem}
                 theme={theme}
                 dataSource={dataSource}
                 onRemove={onRemove}
-            />,
-        );
-    }
+            />);
+    });
 
+    // eslint-disable-next-line no-warning-comments
+    // TODO Consider using a Virtualized List since the number of elements is potentially unbounded.
+    // https://mattermost.atlassian.net/browse/MM-48420
     return (
         <ScrollView
             style={style.container}

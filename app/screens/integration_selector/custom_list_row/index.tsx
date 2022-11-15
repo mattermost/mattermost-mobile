@@ -17,7 +17,7 @@ export type Props = {
     enabled: boolean;
     selectable: boolean;
     selected: boolean;
-    children: JSX.Element | JSX.Element[];
+    children: React.ReactNode;
     testID?: string;
 };
 

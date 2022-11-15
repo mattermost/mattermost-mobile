@@ -46,7 +46,7 @@ const SelectedOption = ({theme, option, onRemove, dataSource}: Props) => {
     const style = getStyleFromTheme(theme);
     const onPress = useCallback(
         () => onRemove(option),
-        [option],
+        [onRemove, option],
     );
 
     let text;

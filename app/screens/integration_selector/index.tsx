@@ -10,19 +10,18 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels as searchChannelsRemote} from '@actions/remote/channel';
 import {fetchProfiles, searchProfiles as searchProfilesRemote} from '@actions/remote/user';
-import {useServerUrl} from '@app/context/server';
-import {debounce} from '@app/helpers/api/general';
-import useNavButtonPressed from '@app/hooks/navigation_button_pressed';
-import {observeCurrentTeamId} from '@app/queries/servers/system';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
 import {General, View as ViewConstants} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {debounce} from '@helpers/api/general';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {observeCurrentTeamId} from '@queries/servers/system';
 import {
     buildNavigationButton,
     popTopScreen, setButtons,
 } from '@screens/navigation';
-import {WithDatabaseArgs} from '@typings/database/database';
 import {filterChannelsMatchingTerm} from '@utils/channel';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
@@ -34,6 +33,8 @@ import CustomList, {FLATLIST, SECTIONLIST} from './custom_list';
 import OptionListRow from './option_list_row';
 import SelectedOptions from './selected_options';
 import UserListRow from './user_list_row';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
@@ -168,7 +169,7 @@ function IntegrationSelector(
                 }
 
                 setMultiselectSelected(multiselectSelectedItems);
-                break;
+                return;
             }
             case ViewConstants.DATA_SOURCE_CHANNELS: {
                 const currentSelected = multiselectSelected as Dictionary<Channel>;
@@ -181,7 +182,7 @@ function IntegrationSelector(
                 }
 
                 setMultiselectSelected(multiselectSelectedItems);
-                break;
+                return;
             }
             default: {
                 const currentSelected = multiselectSelected as Dictionary<DialogOption>;
@@ -195,7 +196,7 @@ function IntegrationSelector(
                 setMultiselectSelected(multiselectSelectedItems);
             }
         }
-    }, [integrationData, multiselectSelected, isMultiselect, dataSource, close, handleSelect]);
+    }, [integrationData, multiselectSelected, isMultiselect, dataSource, handleSelect]);
 
     const handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
         switch (dataSource) {
@@ -231,49 +232,35 @@ function IntegrationSelector(
             const {channels: channelData} = await fetchChannels(serverUrl, currentTeamId, currentPage);
 
             if (channelData && channelData.length > 0) {
-                loadedChannels([...integrationData as Channel[], ...channelData]);
+                if (channelData && !channelData.length) {
+                    setNext(false);
+                }
+                setIntegrationData(channelData);
             }
         }
-    }, 100), [integrationData]);
+    }, 100), [integrationData, next, currentPage, loading, term]);
 
     const getProfiles = useCallback(debounce(async () => {
         if (next && !loading && !term) {
             setCurrentPage(currentPage + 1);
-            const {users: userData} = await fetchProfiles(serverUrl, currentPage);
+            const {users: profiles} = await fetchProfiles(serverUrl, currentPage);
 
-            if (userData && userData.length > 0) {
-                loadedProfiles([...integrationData as UserProfile[], ...userData]);
+            if (profiles && profiles.length > 0) {
+                if (profiles && !profiles.length) {
+                    setNext(false);
+                }
+                setIntegrationData(profiles);
             }
         }
-    }, 100), [integrationData]);
+    }, 100), [integrationData, next, currentPage, loading, term]);
 
-    const getDynamicOptionsLocally = () => {
-        if (!loading && !term) {
-            searchDynamicOptions('');
-        }
-    };
-
-    const loadedChannels = (channels: Channel[]) => {
-        if (channels && !channels.length) {
-            setNext(false);
-        }
-        setIntegrationData(channels);
-    };
-
-    const loadedProfiles = (profiles: UserProfile[]) => {
-        if (profiles && !profiles.length) {
-            setNext(false);
-        }
-        setIntegrationData(profiles);
-    };
-
-    const loadMore = () => {
+    const loadMore = async () => {
         setLoading(true);
 
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            getProfiles();
+            await getProfiles();
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-            getChannels();
+            await getChannels();
         }
 
         setLoading(false);
@@ -316,7 +303,7 @@ function IntegrationSelector(
                 setIntegrationData(searchData);
             }
         });
-    }, [term, integrationData, searchResults]);
+    }, [options, getDynamicOptions]);
 
     const onHandleMultiselectSubmit = () => {
         handleSelectItem(getMultiselectData());
@@ -352,7 +339,7 @@ function IntegrationSelector(
 
             setLoading(false);
         }, General.SEARCH_TIMEOUT_MILLISECONDS);
-    }, [dataSource, term, searchResults]);
+    }, [dataSource, term]);
 
     const filterSearchData = (source: string, searchData: DataType, searchTerm: string) => {
         if (!data) {
@@ -402,7 +389,7 @@ function IntegrationSelector(
                 }
                 return multiselectItems;
         }
-    }, [multiselectSelected]);
+    }, [multiselectSelected, dataSource]);
 
     // Effects
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit]);
@@ -414,8 +401,8 @@ function IntegrationSelector(
             getProfiles();
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             getChannels();
-        } else {
-            getDynamicOptionsLocally();
+        } else if (!loading && !term) {
+            searchDynamicOptions('');
         }
 
         setLoading(false);
@@ -446,7 +433,7 @@ function IntegrationSelector(
         setButtons(componentId, {
             rightButtons: [rightButton],
         });
-    }, [rightButton, componentId]);
+    }, [rightButton, componentId, isMultiselect]);
 
     useEffect(() => {
         const multiselectItems: MultiselectSelectedMap = {};
