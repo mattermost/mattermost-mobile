@@ -93,7 +93,7 @@ const UsersModal = ({
     const mounted = useRef(false);
     const next = useRef(true);
 
-    const selectedCount = useMemo(() => Object.keys(selectedIds).length, [selectedIds]);
+    const selectedCount = Object.keys(selectedIds).length;
 
     const [startingButtonAction, setStartingButtonAction] = useState(false);
     const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
