@@ -312,7 +312,7 @@ function IntegrationSelector(
     }, [options, getDynamicOptions]);
 
     const onHandleMultiselectSubmit = () => {
-        handleSelectItem(getMultiselectData());
+        handleSelect(getMultiselectData());
         close();
     };
 
