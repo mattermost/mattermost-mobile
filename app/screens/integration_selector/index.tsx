@@ -56,7 +56,7 @@ const close = () => {
     popTopScreen();
 };
 
-const extractItemKey = (dataSource: string, item: Channel | UserProfile | DialogOption): string => {
+const extractItemKey = (dataSource: string, item: Selection): string => {
     switch (dataSource) {
         case ViewConstants.DATA_SOURCE_USERS: {
             const typedItem = item as UserProfile;
@@ -174,42 +174,36 @@ function IntegrationSelector(
             return;
         }
 
+        const itemKey = extractItemKey(dataSource, item);
+        const currentSelected: Dictionary<UserProfile> | Dictionary<DialogOption> | Dictionary<Channel> = multiselectSelected;
+        const multiselectSelectedItems = {...currentSelected};
+
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS: {
-                const currentSelected = multiselectSelected as Dictionary<UserProfile>;
-                const typedItem = item as UserProfile;
-                const multiselectSelectedItems = {...currentSelected};
-
-                if (currentSelected[typedItem.id]) {
-                    delete multiselectSelectedItems[typedItem.id];
+                if (currentSelected[itemKey]) {
+                    delete multiselectSelectedItems[itemKey];
                 } else {
-                    multiselectSelectedItems[typedItem.id] = typedItem;
+                    multiselectSelectedItems[itemKey] = item as UserProfile;
                 }
 
                 setMultiselectSelected(multiselectSelectedItems);
                 return;
             }
             case ViewConstants.DATA_SOURCE_CHANNELS: {
-                const currentSelected = multiselectSelected as Dictionary<Channel>;
-                const typedItem = item as Channel;
-                const multiselectSelectedItems = {...currentSelected};
-                if (currentSelected[typedItem.id]) {
-                    delete multiselectSelectedItems[typedItem.id];
+                if (currentSelected[itemKey]) {
+                    delete multiselectSelectedItems[itemKey];
                 } else {
-                    multiselectSelectedItems[typedItem.id] = typedItem;
+                    multiselectSelectedItems[itemKey] = item as Channel;
                 }
 
                 setMultiselectSelected(multiselectSelectedItems);
                 return;
             }
             default: {
-                const currentSelected = multiselectSelected as Dictionary<DialogOption>;
-                const typedItem = item as DialogOption;
-                const multiselectSelectedItems = {...currentSelected};
-                if (currentSelected[typedItem.value]) {
-                    delete multiselectSelectedItems[typedItem.value];
+                if (currentSelected[itemKey]) {
+                    delete multiselectSelectedItems[itemKey];
                 } else {
-                    multiselectSelectedItems[typedItem.value] = typedItem;
+                    multiselectSelectedItems[itemKey] = item as DialogOption;
                 }
                 setMultiselectSelected(multiselectSelectedItems);
             }
