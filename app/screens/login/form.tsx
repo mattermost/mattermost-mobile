@@ -9,6 +9,7 @@ import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {login} from '@actions/remote/session';
+import CompassIcon from '@app/components/compass_icon';
 import ClientError from '@client/rest/error';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -19,9 +20,7 @@ import {t} from '@i18n';
 import {goToScreen, loginAnimationOptions, resetToHome, resetToTeams} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
-import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import {PasswordEyeIcon} from './password_eye_icon';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -377,7 +376,11 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 theme={theme}
                 value={password}
                 endAdornment={<TouchableOpacity onPress={togglePasswordVisiblity}>
-                    <PasswordEyeIcon isVisible={isPasswordVisible}/>
+                    <CompassIcon
+                        name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+                        size={18}
+                        color={changeOpacity(theme.centerChannelColor, 0.64)}
+                    />
                 </TouchableOpacity>}
             />
 
