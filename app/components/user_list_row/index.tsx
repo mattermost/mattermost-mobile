@@ -20,6 +20,7 @@ import TutorialLongPress from '@components/tutorial_highlight/long_press';
 import {Permissions} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {t} from '@i18n';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, isGuest} from '@utils/user';
@@ -169,23 +170,22 @@ export default function UserListRow({
 
     const manageModeIcon = useMemo(() => {
         const color = changeOpacity(theme.centerChannelColor, 0.64);
+
         if (showManageMode) {
+            let i18nId = t('mobile.manage_members.member');
+            let defaultMessage = 'Member';
+            if (user.roles.includes(Permissions.SYSTEM_ADMIN_ROLE || Permissions.CHANNEL_ADMIN_ROLE)) {
+                i18nId = t('mobile.manage_members.admin');
+                defaultMessage = 'Admin';
+            }
+
             return (
                 <View style={[style.selectorManage, color]}>
-                    {user.roles.includes(Permissions.SYSTEM_ADMIN_ROLE || Permissions.CHANNEL_ADMIN_ROLE) ? (
-                        <FormattedText
-                            id='mobile.manage_members.admin'
-                            style={style.manageText}
-                            defaultMessage={'Admin'}
-                        />
-                    ) : (
-                        <FormattedText
-                            id='mobile.manage_members.member'
-                            style={style.manageText}
-                            defaultMessage={'Member'}
-                        />
-                    )
-                    }
+                    <FormattedText
+                        id={i18nId}
+                        style={style.manageText}
+                        defaultMessage={defaultMessage}
+                    />
                     <CompassIcon
                         name={'chevron-down'}
                         size={28}
