@@ -31,6 +31,7 @@ export const INTERACTIVE_DIALOG = 'InteractiveDialog';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const LATEX = 'Latex';
 export const LOGIN = 'Login';
+export const MANAGE_CHANNEL_MEMBERS = 'ManageChannelMembers';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
 export const PERMALINK = 'Permalink';
@@ -92,6 +93,7 @@ export default {
     IN_APP_NOTIFICATION,
     LATEX,
     LOGIN,
+    MANAGE_CHANNEL_MEMBERS,
     MENTIONS,
     MFA,
     PERMALINK,
@@ -135,6 +137,7 @@ export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     EMOJI_PICKER,
     FIND_CHANNELS,
     GALLERY,
+    MANAGE_CHANNEL_MEMBERS,
     PERMALINK,
     REACTIONS,
 ]);

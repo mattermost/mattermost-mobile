@@ -2,32 +2,35 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
-import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remote/user';
+import {storeProfile} from '@actions/local/user';
+import {makeGroupChannel} from '@actions/remote/channel';
+import {fetchProfilesInChannel, searchProfiles} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import UserList from '@components/user_list';
-import {General} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {ChannelModel} from '@database/models/server';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
-import {dismissModal, setButtons} from '@screens/navigation';
+import {dismissModal, openAsBottomSheet, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
-import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
+import {filterProfilesMatchingTerm} from '@utils/user';
 
-const START_BUTTON = 'start-conversation';
+const MANAGE_BUTTON = 'manage-button';
 const CLOSE_BUTTON = 'close-dms';
 
 type Props = {
     componentId: string;
+    currentChannel: ChannelModel;
     currentTeamId: string;
     currentUserId: string;
     restrictDirectMessage: boolean;
@@ -72,6 +75,21 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     };
 });
 
+const messages = defineMessages({
+    add_people: {
+        id: t('mobile.add_people.error'),
+        defaultMessage: "We couldn't add those users to the channel. Please check your connection and try again.",
+    },
+    button_manage: {
+        id: t('mobile.manage_members.manage'),
+        defaultMessage: 'Manage',
+    },
+    button_done: {
+        id: t('mobile.manage_members.manage'),
+        defaultMessage: 'Done',
+    },
+});
+
 function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
     if (action.type === 'add' && action.values?.length) {
         return [...state, ...action.values];
@@ -80,6 +98,7 @@ function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: Use
 }
 
 export default function ManageChannelMembers({
+    currentChannel,
     componentId,
     currentTeamId,
     currentUserId,
@@ -98,6 +117,7 @@ export default function ManageChannelMembers({
     const page = useRef(-1);
     const mounted = useRef(false);
 
+    const [manageEnabled, setManageEnabled] = useState(false);
     const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
@@ -128,11 +148,7 @@ export default function ManageChannelMembers({
     const getProfiles = useCallback(debounce(() => {
         if (next.current && !loading && !term && mounted.current) {
             setLoading(true);
-            if (restrictDirectMessage) {
-                fetchProfilesInTeam(serverUrl, currentTeamId, page.current + 1, General.PROFILE_CHUNK_SIZE).then(loadedProfiles);
-            } else {
-                fetchProfiles(serverUrl, page.current + 1, General.PROFILE_CHUNK_SIZE).then(loadedProfiles);
-            }
+            fetchProfilesInChannel(serverUrl, currentChannel.id).then(loadedProfiles);
         }
     }, 100), [loading, isSearch, restrictDirectMessage, serverUrl, currentTeamId]);
 
@@ -143,30 +159,6 @@ export default function ManageChannelMembers({
 
         setSelectedIds(newSelectedIds);
     }, [selectedIds]);
-
-    const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
-        const user = selectedIds[id];
-
-        const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
-
-        const result = await makeDirectChannel(serverUrl, id, displayName);
-
-        if (result.error) {
-            alertErrorWithFallback(
-                intl,
-                result.error,
-                {
-                    id: 'mobile.open_dm.error',
-                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
-                },
-                {
-                    displayName,
-                },
-            );
-        }
-
-        return !result.error;
-    }, [selectedIds, intl.locale, teammateNameDisplay, serverUrl]);
 
     const createGroupChannel = useCallback(async (ids: string[]): Promise<boolean> => {
         const result = await makeGroupChannel(serverUrl, ids);
@@ -196,10 +188,8 @@ export default function ManageChannelMembers({
         let success;
         if (idsToUse.length === 0) {
             success = false;
-        } else if (idsToUse.length > 1) {
-            success = await createGroupChannel(idsToUse);
         } else {
-            success = await createDirectChannel(idsToUse[0]);
+            success = await createGroupChannel(idsToUse);
         }
 
         if (success) {
@@ -207,48 +197,33 @@ export default function ManageChannelMembers({
         } else {
             setStartingConversation(false);
         }
-    }, [startingConversation, selectedIds, createGroupChannel, createDirectChannel]);
+    }, [startingConversation, selectedIds, createGroupChannel]);
 
-    const handleSelectProfile = useCallback((user: UserProfile) => {
-        if (selectedIds[user.id]) {
-            handleRemoveProfile(user.id);
+    const handleSelectProfile = useCallback(async (profile: UserProfile) => {
+        if (!manageEnabled) {
             return;
         }
-
-        if (user.id === currentUserId) {
-            const selectedId = {
-                [currentUserId]: true,
+        const {user} = await storeProfile(serverUrl, profile);
+        if (user) {
+            const screen = Screens.USER_PROFILE;
+            const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+            const closeButtonId = 'close-user-profile';
+            const props = {
+                closeButtonId,
+                userId: user.id,
+                location: Screens.USER_PROFILE,
             };
 
-            startConversation(selectedId);
-        } else {
-            const wasSelected = selectedIds[user.id];
-
-            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
-                return;
-            }
-
-            const newSelectedIds = Object.assign({}, selectedIds);
-            if (!wasSelected) {
-                newSelectedIds[user.id] = user;
-            }
-
-            setSelectedIds(newSelectedIds);
-
-            clearSearch();
+            Keyboard.dismiss();
+            openAsBottomSheet({screen, title, theme, closeButtonId, props});
         }
-    }, [selectedIds, currentUserId, handleRemoveProfile, startConversation, clearSearch]);
+    }, [manageEnabled]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
         setLoading(true);
-        let results;
 
-        if (restrictDirectMessage) {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
-        } else {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
-        }
+        const results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, channel_id: currentChannel.id, allow_inactive: true});
 
         let data: UserProfile[] = [];
         if (results.data) {
@@ -278,41 +253,40 @@ export default function ManageChannelMembers({
         }
     }, [searchUsers, clearSearch]);
 
-    const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
+    const updateNavigationButtons = useCallback(async () => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         setButtons(componentId, {
             leftButtons: [{
                 id: CLOSE_BUTTON,
                 icon: closeIcon,
-                testID: 'close.create_direct_message.button',
+                testID: 'close.manage_members.button',
             }],
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
-                id: START_BUTTON,
-                text: formatMessage({id: 'mobile.create_direct_message.start', defaultMessage: 'Start'}),
+                id: MANAGE_BUTTON,
+                text: formatMessage(manageEnabled ? messages.button_done : messages.button_manage),
                 showAsAction: 'always',
-                enabled: startEnabled,
-                testID: 'create_direct_message.start.button',
+                enabled: true,
+                testID: 'manage_members.manage.button',
             }],
         });
-    }, [intl.locale, theme]);
+    }, [intl.locale, manageEnabled, theme]);
 
-    useNavButtonPressed(START_BUTTON, componentId, startConversation, [startConversation]);
+    const toggleManageEnabled = useCallback(() => {
+        setManageEnabled(!manageEnabled);
+    }, [manageEnabled]);
+
+    useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
     useEffect(() => {
         mounted.current = true;
-        updateNavigationButtons(false);
+        updateNavigationButtons();
         getProfiles();
         return () => {
             mounted.current = false;
         };
     }, []);
-
-    useEffect(() => {
-        const canStart = selectedCount > 0 && !startingConversation;
-        updateNavigationButtons(canStart);
-    }, [selectedCount > 0, startingConversation, updateNavigationButtons]);
 
     const data = useMemo(() => {
         if (term) {
@@ -336,22 +310,22 @@ export default function ManageChannelMembers({
         return profiles;
     }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
 
-    if (startingConversation) {
-        return (
-            <View style={style.container}>
-                <Loading color={theme.centerChannelColor}/>
-            </View>
-        );
-    }
+    // if (startingConversation) {
+    //     return (
+    //         <View style={style.container}>
+    //             <Loading color={theme.centerChannelColor}/>
+    //         </View>
+    //     );
+    // }
 
     return (
         <SafeAreaView
             style={style.container}
-            testID='create_direct_message.screen'
+            testID='manage_members.screen'
         >
             <View style={style.searchBar}>
                 <Search
-                    testID='create_direct_message.search_bar'
+                    testID='manage_members.search_bar'
                     placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
@@ -367,14 +341,16 @@ export default function ManageChannelMembers({
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
+                manageMode={true}
+                showManage={manageEnabled}
                 profiles={data}
-                selectedIds={selectedIds}
+                selectedIds={{}}
                 showNoResults={!loading && page.current !== -1}
                 teammateNameDisplay={teammateNameDisplay}
                 fetchMore={getProfiles}
                 term={term}
-                testID='create_direct_message.user_list'
-                tutorialWatched={tutorialWatched}
+                testID='manage_members.user_list'
+                tutorialWatched={true}
             />
         </SafeAreaView>
     );

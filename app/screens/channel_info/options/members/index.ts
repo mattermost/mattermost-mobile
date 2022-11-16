@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeChannelInfo} from '@queries/servers/channel';
+import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 
 import Members from './members';
 
@@ -18,11 +18,13 @@ type Props = WithDatabaseArgs & {
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
     const info = observeChannelInfo(database, channelId);
+    const channel = observeChannel(database, channelId);
     const count = info.pipe(
         switchMap((i) => of$(i?.memberCount || 0)),
     );
 
     return {
+        channel,
         count,
     };
 });

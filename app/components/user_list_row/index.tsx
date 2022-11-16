@@ -11,11 +11,13 @@ import {
 
 import {storeProfileLongPressTutorial} from '@actions/app/global';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import TutorialHighlight from '@components/tutorial_highlight';
 import TutorialLongPress from '@components/tutorial_highlight/long_press';
+import {Permissions} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -31,6 +33,8 @@ type Props = {
     testID: string;
     onPress?: (user: UserProfile) => void;
     onLongPress: (user: UserProfile) => void;
+    showManage: boolean;
+    manageMode: boolean;
     selectable: boolean;
     selected: boolean;
     tutorialWatched?: boolean;
@@ -82,6 +86,14 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             justifyContent: 'center',
         },
+        selectorManage: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
+        manageText: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+        },
         tutorial: {
             top: Platform.select({ios: -74, default: -94}),
         },
@@ -103,6 +115,8 @@ export default function UserListRow({
     testID,
     onPress,
     onLongPress,
+    manageMode = true,
+    showManage = true,
     tutorialWatched = false,
     selectable,
     selected,
@@ -153,9 +167,42 @@ export default function UserListRow({
         onLongPress?.(user);
     }, [onLongPress, user]);
 
+    const manageModeIcon = useMemo(() => {
+        const color = changeOpacity(theme.centerChannelColor, 0.64);
+        if (showManage) {
+            return (
+                <View style={[style.selectorManage, color]}>
+                    {user.roles.includes(Permissions.SYSTEM_ADMIN_ROLE || Permissions.CHANNEL_ADMIN_ROLE) ? (
+                        <FormattedText
+                            id='mobile.manage_members.admin'
+                            style={style.manageText}
+                            defaultMessage={'Admin'}
+                        />
+                    ) : (
+                        <FormattedText
+                            id='mobile.manage_members.Member'
+                            style={style.manageText}
+                            defaultMessage={'Member'}
+                        />
+                    )
+                    }
+                    <CompassIcon
+                        name={'chevron-down'}
+                        size={28}
+                        color={color}
+                    />
+                </View>
+            );
+        }
+        return null;
+    }, [theme, showManage]);
+
     const icon = useMemo(() => {
         const iconOpacity = DEFAULT_ICON_OPACITY * (selectable ? 1 : DISABLED_OPACITY);
         const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
+        if (manageMode) {
+            return manageModeIcon;
+        }
         return (
             <View style={style.selector}>
                 <CompassIcon
@@ -165,7 +212,7 @@ export default function UserListRow({
                 />
             </View>
         );
-    }, [selectable, selected, theme]);
+    }, [manageModeIcon, selectable, selected, theme]);
 
     let usernameDisplay = `@${username}`;
     if (isMyUser) {

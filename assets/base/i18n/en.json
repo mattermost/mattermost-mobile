@@ -468,6 +468,7 @@
   "mobile.login_options.select_option": "Select a login option below.",
   "mobile.login_options.separator_text": "or log in with",
   "mobile.login_options.sso_continue": "Continue with",
+  "mobile.manage_members.manage": "Manage",
   "mobile.managed.blocked_by": "Blocked by {vendor}",
   "mobile.managed.exit": "Exit",
   "mobile.managed.jailbreak": "Jailbroken devices are not trusted by {vendor}, please exit the app.",
