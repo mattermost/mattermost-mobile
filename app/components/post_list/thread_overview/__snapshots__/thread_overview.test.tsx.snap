@@ -3,8 +3,8 @@
 exports[`ThreadOverview should match snapshot when post is not saved and 0 replies 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "borderBottomWidth": 1,
         "borderColor": "rgba(63,67,80,0.1)",
         "borderTopWidth": 1,
@@ -13,7 +13,7 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
         "paddingHorizontal": 16,
         "paddingVertical": 10,
       },
-      Object {
+      {
         "borderBottomWidth": 0,
       },
       undefined,
@@ -23,14 +23,14 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
 >
   <View
     style={
-      Object {
+      {
         "flex": 1,
       }
     }
   >
     <Text
       style={
-        Object {
+        {
           "color": "rgba(63,67,80,0.64)",
           "fontFamily": "OpenSans",
           "fontSize": 16,
@@ -46,13 +46,15 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
   </View>
   <View
     style={
-      Object {
+      {
         "flexDirection": "row",
       }
     }
   >
     <RNGestureHandlerButton
       collapsable={false}
+      delayLongPress={600}
+      enabled={true}
       exclusive={true}
       handlerTag={1}
       handlerType="NativeViewGestureHandler"
@@ -68,14 +70,14 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
         accessible={true}
         collapsable={false}
         style={
-          Object {
+          {
             "marginLeft": 16,
             "opacity": 1,
           }
         }
       >
         <Icon
-          color="#386fe5"
+          color="#1C58D9"
           name="bookmark"
           size={24}
         />
@@ -83,6 +85,8 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
     </RNGestureHandlerButton>
     <RNGestureHandlerButton
       collapsable={false}
+      delayLongPress={600}
+      enabled={true}
       exclusive={true}
       handlerTag={2}
       handlerType="NativeViewGestureHandler"
@@ -98,7 +102,7 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
         accessible={true}
         collapsable={false}
         style={
-          Object {
+          {
             "marginLeft": 16,
             "opacity": 1,
           }
@@ -118,8 +122,8 @@ exports[`ThreadOverview should match snapshot when post is not saved and 0 repli
 exports[`ThreadOverview should match snapshot when post is saved and has replies 1`] = `
 <View
   style={
-    Array [
-      Object {
+    [
+      {
         "borderBottomWidth": 1,
         "borderColor": "rgba(63,67,80,0.1)",
         "borderTopWidth": 1,
@@ -135,14 +139,14 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
 >
   <View
     style={
-      Object {
+      {
         "flex": 1,
       }
     }
   >
     <Text
       style={
-        Object {
+        {
           "color": "rgba(63,67,80,0.64)",
           "fontFamily": "OpenSans",
           "fontSize": 16,
@@ -158,13 +162,15 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
   </View>
   <View
     style={
-      Object {
+      {
         "flexDirection": "row",
       }
     }
   >
     <RNGestureHandlerButton
       collapsable={false}
+      delayLongPress={600}
+      enabled={true}
       exclusive={true}
       handlerTag={3}
       handlerType="NativeViewGestureHandler"
@@ -180,7 +186,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
         accessible={true}
         collapsable={false}
         style={
-          Object {
+          {
             "marginLeft": 16,
             "opacity": 1,
           }
@@ -195,6 +201,8 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
     </RNGestureHandlerButton>
     <RNGestureHandlerButton
       collapsable={false}
+      delayLongPress={600}
+      enabled={true}
       exclusive={true}
       handlerTag={4}
       handlerType="NativeViewGestureHandler"
@@ -210,7 +218,7 @@ exports[`ThreadOverview should match snapshot when post is saved and has replies
         accessible={true}
         collapsable={false}
         style={
-          Object {
+          {
             "marginLeft": 16,
             "opacity": 1,
           }

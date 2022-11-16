@@ -37,6 +37,9 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     smallLabel: {
         fontSize: 10,
     },
+    readOnly: {
+        backgroundColor: changeOpacity(theme.centerChannelBg, 0.16),
+    },
     textInputContainer: {
         flexDirection: 'row',
         alignItems: 'center',

@@ -7,14 +7,14 @@ import {useIntl} from 'react-intl';
 import {
     FlatList,
     Platform,
+    StyleProp,
+    ViewStyle,
 } from 'react-native';
 
 import {fetchSuggestions} from '@actions/remote/command';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import analytics from '@managers/analytics';
 import IntegrationsManager from '@managers/integrations_manager';
-import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {AppCommandParser} from './app_command_parser/app_command_parser';
 import SlashSuggestionItem from './slash_suggestion_item';
@@ -26,17 +26,6 @@ const NON_MOBILE_COMMANDS = ['shortcuts', 'search', 'settings'];
 const COMMANDS_TO_HIDE_ON_MOBILE = new Set([...COMMANDS_TO_IMPLEMENT_LATER, ...NON_MOBILE_COMMANDS]);
 
 const commandFilter = (v: Command) => !COMMANDS_TO_HIDE_ON_MOBILE.has(v.trigger);
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        listView: {
-            flex: 1,
-            backgroundColor: theme.centerChannelBg,
-            paddingTop: 8,
-            borderRadius: 4,
-        },
-    };
-});
 
 const filterCommands = (matchTerm: string, commands: Command[]): AutocompleteSuggestion[] => {
     const data = commands.filter((command) => {
@@ -63,7 +52,6 @@ const keyExtractor = (item: Command & AutocompleteSuggestion): string => item.id
 
 type Props = {
     currentTeamId: string;
-    maxListHeight?: number;
     updateValue: (text: string) => void;
     onShowingChange: (c: boolean) => void;
     value: string;
@@ -71,6 +59,7 @@ type Props = {
     rootId?: string;
     channelId: string;
     isAppsEnabled: boolean;
+    listStyle: StyleProp<ViewStyle>;
 };
 
 const emptyCommandList: Command[] = [];
@@ -82,16 +71,14 @@ const SlashSuggestion = ({
     rootId,
     onShowingChange,
     isAppsEnabled,
-    maxListHeight,
     nestedScrollEnabled,
     updateValue,
     value = '',
+    listStyle,
 }: Props) => {
     const intl = useIntl();
-    const theme = useTheme();
-    const style = getStyleFromTheme(theme);
     const serverUrl = useServerUrl();
-    const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId, theme));
+    const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId));
     const mounted = useRef(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
 
@@ -99,8 +86,6 @@ const SlashSuggestion = ({
     const [commands, setCommands] = useState<Command[]>();
 
     const active = Boolean(dataSource.length);
-
-    const listStyle = useMemo(() => [style.listView, {maxHeight: maxListHeight}], [maxListHeight, style]);
 
     const updateSuggestions = useCallback((matches: AutocompleteSuggestion[]) => {
         setDataSource(matches);

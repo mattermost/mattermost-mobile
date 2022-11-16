@@ -5,7 +5,7 @@ import React, {useMemo} from 'react';
 import {ScaledSize, StyleSheet, useWindowDimensions, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
-import Loading from '@app/components/loading';
+import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
 import {TabTypes, TabType} from '@utils/search';
 
@@ -33,7 +33,6 @@ const getStyles = (dimensions: ScaledSize) => {
             flex: 1,
             width: dimensions.width,
         },
-
     });
 };
 
@@ -106,8 +105,8 @@ const Results = ({
                         canDownloadFiles={canDownloadFiles}
                         fileChannels={fileChannels}
                         fileInfos={fileInfos}
-                        publicLinkEnabled={publicLinkEnabled}
                         paddingTop={paddingTop}
+                        publicLinkEnabled={publicLinkEnabled}
                         searchValue={searchValue}
                     />
                 </View>

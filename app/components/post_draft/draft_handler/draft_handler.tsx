@@ -17,13 +17,14 @@ type Props = {
     cursorPosition: number;
     rootId?: string;
     files?: FileInfo[];
-    maxFileSize: number;
     maxFileCount: number;
+    maxFileSize: number;
     canUploadFiles: boolean;
-    updateCursorPosition: (cursorPosition: number) => void;
+    updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     updatePostInputTop: (top: number) => void;
-    updateValue: (value: string) => void;
+    updateValue: React.Dispatch<React.SetStateAction<string>>;
     value: string;
+    setIsFocused: (isFocused: boolean) => void;
 }
 
 const emptyFileList: FileInfo[] = [];
@@ -40,13 +41,14 @@ export default function DraftHandler(props: Props) {
         cursorPosition,
         rootId = '',
         files,
-        maxFileSize,
         maxFileCount,
+        maxFileSize,
         canUploadFiles,
         updateCursorPosition,
         updatePostInputTop,
         updateValue,
         value,
+        setIsFocused,
     } = props;
 
     const serverUrl = useServerUrl();
@@ -104,7 +106,7 @@ export default function DraftHandler(props: Props) {
         }
 
         newUploadError(null);
-    }, [intl, newUploadError, maxFileCount, maxFileSize, serverUrl, files?.length, channelId, rootId]);
+    }, [intl, newUploadError, maxFileSize, serverUrl, files?.length, channelId, rootId]);
 
     // This effect mainly handles keeping clean the uploadErrorHandlers, and
     // reinstantiate them on component mount and file retry.
@@ -144,6 +146,7 @@ export default function DraftHandler(props: Props) {
             updateCursorPosition={updateCursorPosition}
             updatePostInputTop={updatePostInputTop}
             updateValue={updateValue}
+            setIsFocused={setIsFocused}
         />
     );
 }

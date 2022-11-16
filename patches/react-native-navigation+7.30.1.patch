@@ -84,6 +84,35 @@ index a34598c..b035a76 100644
          if (navigationActivity != null) {
              navigationActivity.onCatalystInstanceDestroy();
          }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative68/java/com/reactnativenavigation/react/ReactGateway.java b/node_modules/react-native-navigation/lib/android/app/src/reactNative68/java/com/reactnativenavigation/react/ReactGateway.java
+index 035ec31..38109c1 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/reactNative68/java/com/reactnativenavigation/react/ReactGateway.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/reactNative68/java/com/reactnativenavigation/react/ReactGateway.java
+@@ -48,6 +48,12 @@ public class ReactGateway {
+         }
+     }
+ 
++    public void onWindowFocusChanged(boolean hasFocus) {
++        if (host.hasInstance()) {
++            host.getReactInstanceManager().onWindowFocusChange(hasFocus);
++        }
++    }
++
+ 	public void onActivityPaused(NavigationActivity activity) {
+ 		initializer.onActivityPaused(activity);
+ 		jsDevReloadHandler.onActivityPaused(activity);
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
+index 3ce9674..ae34704 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
++++ b/node_modules/react-native-navigation/lib/ios/RNNComponentViewController.m
+@@ -94,6 +94,7 @@
+                                                                }];
+                                   }];
+         self.reactView.backgroundColor = UIColor.clearColor;
++        self.reactView.frame = UIScreen.mainScreen.bounds;
+         self.reactView.translatesAutoresizingMaskIntoConstraints = NO;
+         [self.view addSubview:self.reactView];
+         [self updateReactViewConstraints];
 diff --git a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m b/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
 index 934e7e7..19169a3 100644
 --- a/node_modules/react-native-navigation/lib/ios/RNNOverlayWindow.m
@@ -106,3 +135,29 @@ index 934e7e7..19169a3 100644
          [hitTestResult isKindOfClass:[RCTModalHostView class]]) {
          return nil;
      }
+diff --git a/node_modules/react-native-navigation/lib/ios/RNNReactView.h b/node_modules/react-native-navigation/lib/ios/RNNReactView.h
+index f814815..bb39a10 100644
+--- a/node_modules/react-native-navigation/lib/ios/RNNReactView.h
++++ b/node_modules/react-native-navigation/lib/ios/RNNReactView.h
+@@ -4,6 +4,12 @@
+ #import <React/RCTRootView.h>
+ #endif
+ 
++#if RCT_NEW_ARCH_ENABLED
++
++// Fabric
++#import <React/RCTFabricSurfaceHostingProxyRootView.h>
++#endif
++
+ #import "RNNEventEmitter.h"
+ #import "UIView+Utils.h"
+ #import <React/RCTRootViewDelegate.h>
+@@ -30,7 +36,7 @@ typedef void (^RNNReactViewReadyCompletionBlock)(void);
+ 
+ @end
+ 
+-#ifdef RN_FABRIC_ENABLED
++#ifdef RCT_NEW_ARCH_ENABLED
+ @interface RNNReactView
+     : RCTFabricSurfaceHostingProxyRootView <RCTRootViewDelegate, RNNComponentProtocol>
+ #else

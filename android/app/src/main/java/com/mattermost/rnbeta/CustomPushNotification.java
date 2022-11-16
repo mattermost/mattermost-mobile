@@ -26,9 +26,6 @@ import com.wix.reactnativenotifications.core.JsIOHelper;
 import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
 
 public class CustomPushNotification extends PushNotification {
-    private static final String PUSH_TYPE_MESSAGE = "message";
-    private static final String PUSH_TYPE_CLEAR = "clear";
-    private static final String PUSH_TYPE_SESSION = "session";
     private final PushNotificationDataHelper dataHelper;
 
     public CustomPushNotification(Context context, Bundle bundle, AppLifecycleFacade appLifecycleFacade, AppLaunchHelper appLaunchHelper, JsIOHelper jsIoHelper) {
@@ -81,11 +78,11 @@ public class CustomPushNotification extends PushNotification {
         }
 
         switch (type) {
-            case PUSH_TYPE_MESSAGE:
-            case PUSH_TYPE_SESSION:
+            case CustomPushNotificationHelper.PUSH_TYPE_MESSAGE:
+            case CustomPushNotificationHelper.PUSH_TYPE_SESSION:
                 if (!mAppLifecycleFacade.isAppVisible()) {
-                    boolean createSummary = type.equals(PUSH_TYPE_MESSAGE);
-                    if (type.equals(PUSH_TYPE_MESSAGE)) {
+                    boolean createSummary = type.equals(CustomPushNotificationHelper.PUSH_TYPE_MESSAGE);
+                    if (type.equals(CustomPushNotificationHelper.PUSH_TYPE_MESSAGE)) {
                         if (channelId != null) {
                             Bundle notificationBundle = mNotificationProps.asBundle();
                             if (serverUrl != null && !isReactInit) {
@@ -107,7 +104,7 @@ public class CustomPushNotification extends PushNotification {
                     buildNotification(notificationId, createSummary);
                 }
                 break;
-            case PUSH_TYPE_CLEAR:
+            case CustomPushNotificationHelper.PUSH_TYPE_CLEAR:
                 NotificationHelper.clearChannelOrThreadNotifications(mContext, mNotificationProps.asBundle());
                 break;
         }

@@ -15,6 +15,7 @@ export const MM_TABLES = {
         CHANNEL: 'Channel',
         CHANNEL_INFO: 'ChannelInfo',
         CHANNEL_MEMBERSHIP: 'ChannelMembership',
+        CONFIG: 'Config',
         CUSTOM_EMOJI: 'CustomEmoji',
         DRAFT: 'Draft',
         FILE: 'File',
@@ -63,6 +64,7 @@ export const SYSTEM_IDENTIFIERS = {
     RECENT_CUSTOM_STATUS: 'recentCustomStatus',
     RECENT_MENTIONS: 'recentMentions',
     RECENT_REACTIONS: 'recentReactions',
+    SESSION_EXPIRATION: 'sessionExpiration',
     TEAM_HISTORY: 'teamHistory',
     WEBSOCKET: 'WebSocket',
 };

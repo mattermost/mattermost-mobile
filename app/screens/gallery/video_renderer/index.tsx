@@ -172,10 +172,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     }, [isPageActive.value, paused]);
 
     return (
-        <Animated.View
-            onTouchStart={handleTouchStart}
-            style={styles.video}
-        >
+        <>
             <AnimatedVideo
                 ref={videoRef}
                 source={source}
@@ -189,17 +186,18 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 onFullscreenPlayerWillPresent={onFullscreenPlayerWillPresent}
                 onReadyForDisplay={onReadyForDisplay}
                 onEnd={onEnd}
+                onTouchStart={handleTouchStart}
             />
             {Platform.OS === 'android' && paused && videoReady &&
-                <Animated.View style={styles.playContainer}>
-                    <CompassIcon
-                        color={changeOpacity('#fff', 0.8)}
-                        style={styles.play}
-                        name='play'
-                        onPress={onPlay}
-                        size={80}
-                    />
-                </Animated.View>
+            <Animated.View style={styles.playContainer}>
+                <CompassIcon
+                    color={changeOpacity('#fff', 0.8)}
+                    style={styles.play}
+                    name='play'
+                    onPress={onPlay}
+                    size={80}
+                />
+            </Animated.View>
             }
             {downloading &&
             <DownloadWithAction
@@ -209,7 +207,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                 item={item}
             />
             }
-        </Animated.View>
+        </>
     );
 };
 

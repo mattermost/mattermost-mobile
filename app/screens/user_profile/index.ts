@@ -40,12 +40,14 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
     const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
         observeWithColumns(['value']);
     const isMilitaryTime = preferences.pipe(map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)));
+    const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
 
     return {
         currentUserId,
         enablePostIconOverride,
         enablePostUsernameOverride,
         isChannelAdmin,
+        isCustomStatusEnabled,
         isDirectMessage,
         isMilitaryTime,
         isSystemAdmin: systemAdmin,

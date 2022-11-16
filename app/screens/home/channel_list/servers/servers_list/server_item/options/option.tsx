@@ -15,7 +15,7 @@ type Props = {
     icon: string;
     onPress: () => void;
     positionX: number;
-    progress: Animated.AnimatedInterpolation;
+    progress: Animated.AnimatedInterpolation<number>;
     style?: StyleProp<ViewStyle>;
     testID?: string;
     text: string;

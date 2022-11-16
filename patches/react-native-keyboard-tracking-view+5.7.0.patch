@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
-index 1333a10..9922be7 100644
+index 1333a10..b908006 100644
 --- a/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
 +++ b/node_modules/react-native-keyboard-tracking-view/lib/KeyboardTrackingViewManager.m
 @@ -23,7 +23,7 @@
@@ -19,7 +19,7 @@ index 1333a10..9922be7 100644
  @property (nonatomic, strong) UIScrollView *scrollViewToManage;
  @property (nonatomic) BOOL scrollIsInverted;
  @property (nonatomic) BOOL revealKeyboardInteractive;
-@@ -53,6 +54,14 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -53,6 +54,15 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
  @property (nonatomic) BOOL scrollToFocusedInput;
  @property (nonatomic) BOOL allowHitsOutsideBounds;
  
@@ -28,13 +28,14 @@ index 1333a10..9922be7 100644
 +@property (nonatomic) CGFloat initialOffsetY;
 +@property (nonatomic) NSInteger viewInitialOffsetY;
 +@property (nonatomic) BOOL initialOffsetIsSet;
++@property (nonatomic) BOOL paused;
 +@property (nonatomic, strong) UIView *accessoriesContainer;
 +@property (nonatomic) NSString* accessoriesContainerID;
 +
  @end
  
  @interface KeyboardTrackingView () <ObservingInputAccessoryViewDelegate, UIScrollViewDelegate>
-@@ -70,12 +79,18 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -70,17 +80,24 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
          [self addObserver:self forKeyPath:@"bounds" options:NSKeyValueObservingOptionInitial | NSKeyValueObservingOptionNew context:NULL];
          _inputViewsMap = [NSMapTable weakToWeakObjectsMapTable];
          _deferedInitializeAccessoryViewsCount = 0;
@@ -53,7 +54,13 @@ index 1333a10..9922be7 100644
          
          _bottomViewHeight = kBottomViewHeight;
          
-@@ -134,7 +149,7 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+         self.addBottomView = NO;
+         self.scrollToFocusedInput = NO;
++        self.paused = NO;
+         
+         [[NSNotificationCenter defaultCenter] addObserver:self selector:@selector(rctContentDidAppearNotification:) name:RCTContentDidAppearNotification object:nil];
+     }
+@@ -134,7 +151,7 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
      UIView* subview;
      for (UIView* view in webview.scrollView.subviews)
      {
@@ -62,7 +69,7 @@ index 1333a10..9922be7 100644
          {
              subview = view;
          }
-@@ -149,7 +164,7 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -149,7 +166,7 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
          if(!_newClass) return;
          
          Method method = class_getInstanceMethod([UIResponder class], @selector(inputAccessoryView));
@@ -71,7 +78,7 @@ index 1333a10..9922be7 100644
          
          objc_registerClassPair(_newClass);
      }
-@@ -167,33 +182,32 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -167,33 +184,32 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
  - (void)initializeAccessoryViewsAndHandleInsets
  {
      NSArray<UIView*>* allSubviews = [self getBreadthFirstSubviewsForView:[self getRootView]];
@@ -120,7 +127,7 @@ index 1333a10..9922be7 100644
          }
          
          if ([subview isKindOfClass:NSClassFromString(@"RCTTextField")])
-@@ -242,7 +256,7 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -242,7 +258,7 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
          }
      }
      
@@ -129,7 +136,7 @@ index 1333a10..9922be7 100644
      {
          if(scrollView.scrollView == _scrollViewToManage)
          {
-@@ -267,6 +281,36 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -267,6 +283,38 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
      [self addBottomViewIfNecessary];
  }
  
@@ -153,11 +160,13 @@ index 1333a10..9922be7 100644
 +        _observingInputAccessoryView.delegate = nil;
 +        self.scrollViewToManage = nil;
 +        self.accessoriesContainer = nil;
++        self.paused = YES;
 +    }
 +}
 +
 +-(void)resumeTracking:(NSString*) scrollViewNativeID {
 +    if ([self.scrollViewNativeID isEqualToString:scrollViewNativeID]) {
++        self.paused = NO;
 +        _observingInputAccessoryView.delegate = self;
 +        [self deferedInitializeAccessoryViewsAndHandleInsets];
 +    }
@@ -166,18 +175,33 @@ index 1333a10..9922be7 100644
  - (void)setupTextView:(UITextView*)textView
  {
      if (textView != nil)
-@@ -343,7 +387,7 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -338,12 +386,19 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+ 
+ - (void)observeValueForKeyPath:(NSString *)keyPath ofObject:(id)object change:(NSDictionary<NSKeyValueChangeKey,id> *)change context:(void *)context
+ {
++    if (self.paused) {
++        return;
++    }
+     _observingInputAccessoryView.height = self.bounds.size.height;
+ }
  
  - (void)observingInputAccessoryViewKeyboardWillDisappear:(ObservingInputAccessoryView *)observingInputAccessoryView
  {
 -    _bottomViewHeight = kBottomViewHeight;
++    if (self.paused) {
++        return;
++    }
++
 +    _bottomViewHeight = [self getBottomSafeArea];
      [self updateBottomViewFrame];
  }
  
-@@ -388,32 +432,42 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -386,34 +441,44 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+ 
+ - (void)_updateScrollViewInsets
  {
-     if(self.scrollViewToManage != nil)
+-    if(self.scrollViewToManage != nil)
++    if(self.scrollViewToManage != nil && !self.paused)
      {
 +        if (!_initialOffsetIsSet) {
 +            self.initialOffsetY = self.scrollViewToManage.contentOffset.y;
@@ -223,7 +247,7 @@ index 1333a10..9922be7 100644
              }
          }
          else if(self.scrollBehavior == KeyboardTrackingScrollBehaviorFixedOffset && !self.isDraggingScrollView)
-@@ -422,16 +476,21 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -422,16 +487,21 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
              self.scrollViewToManage.contentOffset = CGPointMake(originalOffset.x, originalOffset.y + insetsDiff);
          }
          
@@ -253,7 +277,7 @@ index 1333a10..9922be7 100644
      }
  }
  
-@@ -448,7 +507,6 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -448,7 +518,6 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
      if (self.addBottomView && _bottomView == nil)
      {
          _bottomView = [UIView new];
@@ -261,7 +285,7 @@ index 1333a10..9922be7 100644
          [self addSubview:_bottomView];
          [self updateBottomViewFrame];
      }
-@@ -467,6 +525,12 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -467,6 +536,12 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
      }
  }
  
@@ -274,9 +298,23 @@ index 1333a10..9922be7 100644
  #pragma mark - safe area
  
  -(void)safeAreaInsetsDidChange
-@@ -507,10 +571,10 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -495,7 +570,7 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+ - (void) rctContentDidAppearNotification:(NSNotification*)notification
+ {
+     dispatch_async(dispatch_get_main_queue(), ^{
+-        if(notification.object == [self getRootView] && _manageScrollView && _scrollViewToManage == nil)
++        if(notification.object == [self getRootView] && self->_manageScrollView && self->_scrollViewToManage == nil)
+         {
+             [self initializeAccessoryViewsAndHandleInsets];
+         }
+@@ -506,11 +581,15 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+ 
  -(void)updateTransformAndInsets
  {
++    if (self.paused) {
++        return;
++    }
++
      CGFloat bottomSafeArea = [self getBottomSafeArea];
 -    CGFloat accessoryTranslation = MIN(-bottomSafeArea, -_observingInputAccessoryView.keyboardHeight);
 +    CGFloat accessoryTranslation = MIN(-bottomSafeArea, -(_observingInputAccessoryView.keyboardHeight - _viewInitialOffsetY));
@@ -287,7 +325,7 @@ index 1333a10..9922be7 100644
      } else if (_observingInputAccessoryView.keyboardState != KeyboardStateWillHide) {
          _bottomViewHeight = 0;
      }
-@@ -582,6 +646,8 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -582,6 +661,8 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
  - (void)scrollViewWillBeginDragging:(UIScrollView *)scrollView
  {
      self.isDraggingScrollView = YES;
@@ -296,7 +334,7 @@ index 1333a10..9922be7 100644
  }
  
  - (void)scrollViewWillEndDragging:(UIScrollView *)scrollView withVelocity:(CGPoint)velocity targetContentOffset:(inout CGPoint *)targetContentOffset
-@@ -592,6 +658,15 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
+@@ -592,6 +673,15 @@ typedef NS_ENUM(NSUInteger, KeyboardTrackingScrollBehavior) {
  - (void)scrollViewDidEndDragging:(UIScrollView *)scrollView willDecelerate:(BOOL)decelerate
  {
      self.isDraggingScrollView = NO;
@@ -312,7 +350,7 @@ index 1333a10..9922be7 100644
  }
  
  - (CGFloat)getKeyboardHeight
-@@ -634,6 +709,13 @@ RCT_REMAP_VIEW_PROPERTY(requiresSameParentToManageScrollView, requiresSameParent
+@@ -634,6 +724,13 @@ RCT_REMAP_VIEW_PROPERTY(requiresSameParentToManageScrollView, requiresSameParent
  RCT_REMAP_VIEW_PROPERTY(addBottomView, addBottomView, BOOL)
  RCT_REMAP_VIEW_PROPERTY(scrollToFocusedInput, scrollToFocusedInput, BOOL)
  RCT_REMAP_VIEW_PROPERTY(allowHitsOutsideBounds, allowHitsOutsideBounds, BOOL)
@@ -326,7 +364,7 @@ index 1333a10..9922be7 100644
  
  + (BOOL)requiresMainQueueSetup
  {
-@@ -654,6 +736,48 @@ RCT_REMAP_VIEW_PROPERTY(allowHitsOutsideBounds, allowHitsOutsideBounds, BOOL)
+@@ -654,6 +751,48 @@ RCT_REMAP_VIEW_PROPERTY(allowHitsOutsideBounds, allowHitsOutsideBounds, BOOL)
      return [[KeyboardTrackingView alloc] init];
  }
  

@@ -27,7 +27,7 @@ export default {
         SHOW_FULLNAME: 'full_name',
     },
     SPECIAL_MENTIONS: new Set(['all', 'channel', 'here']),
-    MAX_USERS_IN_GM: 8,
+    MAX_USERS_IN_GM: 7,
     MIN_USERS_IN_GM: 3,
     MAX_GROUP_CHANNELS_FOR_PROFILES: 50,
     DEFAULT_AUTOLINKED_URL_SCHEMES: ['http', 'https', 'ftp', 'mailto', 'tel', 'mattermost'],

@@ -13,15 +13,15 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    Object {
+    {
       "opacity": 1,
     }
   }
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "alignItems": "center",
           "flexDirection": "row",
           "minHeight": 40,
@@ -29,7 +29,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         },
         false,
         undefined,
-        Object {
+        {
           "minHeight": 40,
         },
       ]
@@ -38,7 +38,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   >
     <View
       style={
-        Object {
+        {
           "flex": 1,
           "flexDirection": "row",
         }
@@ -46,12 +46,12 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
     >
       <View
         style={
-          Array [
-            Object {
+          [
+            {
               "alignItems": "center",
               "justifyContent": "center",
             },
-            Object {
+            {
               "height": 24,
               "width": 24,
             },
@@ -63,13 +63,13 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         <Icon
           name="globe"
           style={
-            Array [
-              Object {
+            [
+              {
                 "color": "rgba(255,255,255,0.4)",
               },
               undefined,
               undefined,
-              Object {
+              {
                 "fontSize": 24,
                 "left": 1,
               },
@@ -83,14 +83,14 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
-            Array [
-              Object {
+            [
+              {
                 "fontFamily": "OpenSans",
                 "fontSize": 16,
                 "fontWeight": "400",
                 "lineHeight": 24,
               },
-              Object {
+              {
                 "color": "rgba(255,255,255,0.72)",
                 "marginTop": -1,
                 "paddingLeft": 12,
@@ -126,15 +126,15 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    Object {
+    {
       "opacity": 1,
     }
   }
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "alignItems": "center",
           "flexDirection": "row",
           "minHeight": 40,
@@ -142,7 +142,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         },
         false,
         undefined,
-        Object {
+        {
           "minHeight": 40,
         },
       ]
@@ -151,7 +151,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   >
     <View
       style={
-        Object {
+        {
           "flex": 1,
           "flexDirection": "row",
         }
@@ -159,12 +159,12 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
     >
       <View
         style={
-          Array [
-            Object {
+          [
+            {
               "alignItems": "center",
               "justifyContent": "center",
             },
-            Object {
+            {
               "height": 24,
               "width": 24,
             },
@@ -176,13 +176,13 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         <Icon
           name="pencil-outline"
           style={
-            Array [
-              Object {
+            [
+              {
                 "color": "rgba(255,255,255,0.4)",
               },
               undefined,
               undefined,
-              Object {
+              {
                 "fontSize": 24,
                 "left": 2,
               },
@@ -196,14 +196,14 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
-            Array [
-              Object {
+            [
+              {
                 "fontFamily": "OpenSans",
                 "fontSize": 16,
                 "fontWeight": "400",
                 "lineHeight": 24,
               },
-              Object {
+              {
                 "color": "rgba(255,255,255,0.72)",
                 "marginTop": -1,
                 "paddingLeft": 12,
@@ -226,14 +226,14 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
       name="phone-in-talk"
       size={16}
       style={
-        Array [
-          Object {
+        [
+          {
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
           },
-          Object {
+          {
             "color": "rgba(255,255,255,0.72)",
             "marginTop": -1,
             "paddingLeft": 12,
@@ -244,9 +244,8 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
           null,
           false,
           false,
-          Object {
-            "flex": 1,
-            "marginRight": 20,
+          {
+            "paddingRight": 0,
             "textAlign": "right",
           },
         ]
@@ -269,15 +268,15 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    Object {
+    {
       "opacity": 1,
     }
   }
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "alignItems": "center",
           "flexDirection": "row",
           "minHeight": 40,
@@ -285,7 +284,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         },
         false,
         undefined,
-        Object {
+        {
           "minHeight": 40,
         },
       ]
@@ -294,7 +293,7 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
   >
     <View
       style={
-        Object {
+        {
           "flex": 1,
           "flexDirection": "row",
         }
@@ -302,12 +301,12 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
     >
       <View
         style={
-          Array [
-            Object {
+          [
+            {
               "alignItems": "center",
               "justifyContent": "center",
             },
-            Object {
+            {
               "height": 24,
               "width": 24,
             },
@@ -319,13 +318,13 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         <Icon
           name="pencil-outline"
           style={
-            Array [
-              Object {
+            [
+              {
                 "color": "rgba(255,255,255,0.4)",
               },
               undefined,
               undefined,
-              Object {
+              {
                 "fontSize": 24,
                 "left": 2,
               },
@@ -339,14 +338,14 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
           ellipsizeMode="tail"
           numberOfLines={1}
           style={
-            Array [
-              Object {
+            [
+              {
                 "fontFamily": "OpenSans",
                 "fontSize": 16,
                 "fontWeight": "400",
                 "lineHeight": 24,
               },
-              Object {
+              {
                 "color": "rgba(255,255,255,0.72)",
                 "marginTop": -1,
                 "paddingLeft": 12,

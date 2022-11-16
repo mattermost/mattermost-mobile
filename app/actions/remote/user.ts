@@ -15,9 +15,10 @@ import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
 import {queryGroupsByNames} from '@queries/servers/group';
-import {getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
-import {getCurrentUser, getUserById, prepareUsers, queryAllUsers, queryUsersById, queryUsersByIdsOrUsernames, queryUsersByUsername} from '@queries/servers/user';
+import {getConfig, getCurrentUserId} from '@queries/servers/system';
+import {getCurrentUser, prepareUsers, queryAllUsers, queryUsersById, queryUsersByIdsOrUsernames, queryUsersByUsername} from '@queries/servers/user';
 import {logError} from '@utils/log';
+import {getDeviceTimezone, isTimezoneEnabled} from '@utils/timezone';
 import {getUserTimezoneProps, removeUserFromList} from '@utils/user';
 
 import {fetchGroupsByNames} from './groups';
@@ -817,7 +818,7 @@ export const uploadUserProfileImage = async (serverUrl: string, localPath: strin
     return {error: undefined};
 };
 
-export const searchUsers = async (serverUrl: string, term: string, channelId?: string) => {
+export const searchUsers = async (serverUrl: string, term: string, teamId: string, channelId?: string) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -831,8 +832,7 @@ export const searchUsers = async (serverUrl: string, term: string, channelId?: s
     }
 
     try {
-        const currentTeamId = await getCurrentTeamId(database);
-        const users = await client.autocompleteUsers(term, currentTeamId, channelId);
+        const users = await client.autocompleteUsers(term, teamId, channelId);
         return {users};
     } catch (error) {
         return {error};
@@ -850,7 +850,7 @@ export const buildProfileImageUrl = (serverUrl: string, userId: string, timestam
     return client.getProfilePictureUrl(userId, timestamp);
 };
 
-export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, userId}: {deviceTimezone: string; userId: string}) => {
+export const autoUpdateTimezone = async (serverUrl: string) => {
     let database;
     try {
         const result = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -859,11 +859,15 @@ export const autoUpdateTimezone = async (serverUrl: string, {deviceTimezone, use
         return {error: `${serverUrl} database not found`};
     }
 
-    const currentUser = await getUserById(database, userId);
+    const config = await getConfig(database);
+    const currentUser = await getCurrentUser(database);
 
-    if (!currentUser) {
+    if (!currentUser || !config || !isTimezoneEnabled(config)) {
         return null;
     }
+
+    // Set timezone
+    const deviceTimezone = getDeviceTimezone();
 
     const currentTimezone = getUserTimezoneProps(currentUser);
     const newTimezoneExists = currentTimezone.automaticTimezone !== deviceTimezone;

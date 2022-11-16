@@ -35,10 +35,16 @@ function getAllTests(testSuites) {
     const suites = [];
     const tests = [];
     let skipped = 0;
+    let failures = 0;
+    let errors = 0;
+    let duration = 0;
     let firstTimestamp;
     let incrementalDuration = 0;
     testSuites.testsuite.forEach((testSuite) => {
         skipped += parseInt(testSuite.skipped[0], 10);
+        failures += parseInt(testSuite.failures[0], 10);
+        errors += parseInt(testSuite.errors[0], 10);
+        duration += parseFloat(testSuite.time[0] * 1000);
         if (!firstTimestamp) {
             firstTimestamp = testSuite.timestamp[0];
         }
@@ -83,16 +89,16 @@ function getAllTests(testSuites) {
     });
     const startDate = new Date(firstTimestamp);
     const start = startDate.toISOString();
-    startDate.setTime(startDate.getTime() + parseFloat(testSuites.time[0] * 1000));
+    startDate.setTime(startDate.getTime() + duration);
     const end = startDate.toISOString();
 
     return {
         suites,
         tests,
         skipped,
-        failures: parseInt(testSuites.failures[0], 10),
-        errors: parseInt(testSuites.errors[0], 10),
-        duration: parseFloat(testSuites.time[0] * 1000),
+        failures,
+        errors,
+        duration,
         start,
         end,
     };

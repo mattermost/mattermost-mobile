@@ -118,6 +118,10 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
             res.push({borderColor: theme.errorTextColor});
         }
 
+        if (!editable) {
+            res.push(styles.readOnly);
+        }
+
         return res;
     }, [styles, theme, shouldShowError, focused, focusedLabel, textInputContainerStyle, textInputContainerHeight]);
 
@@ -248,4 +252,3 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
 FloatingTextInput.displayName = 'FloatingTextInput';
 
 export default FloatingTextInput;
-
