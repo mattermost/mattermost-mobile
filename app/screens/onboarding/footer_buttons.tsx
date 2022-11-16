@@ -5,8 +5,8 @@ import React from 'react';
 import {Pressable, useWindowDimensions, View} from 'react-native';
 import Animated, {Extrapolate, interpolate, useAnimatedStyle} from 'react-native-reanimated';
 
-import CompassIcon from '@app/components/compass_icon';
-import FormattedText from '@app/components/formatted_text';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -28,9 +28,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginLeft: 5,
         marginTop: 2,
     },
+    nextButtonText: {
+        flexDirection: 'row',
+        position: 'absolute',
+    },
+    signInButtonText: {
+        flexDirection: 'row',
+    },
+    footerButtonsContainer: {
+        flexDirection: 'column',
+        height: 150,
+        marginTop: 15,
+        width: '100%',
+        marginHorizontal: 10,
+        alignItems: 'center',
+    },
 }));
 
 const AnimatedButton = Animated.createAnimatedComponent(Pressable);
+const BUTTON_SIZE = 80;
 
 const FooterButtons = ({
     theme,
@@ -41,7 +57,6 @@ const FooterButtons = ({
 }: Props) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
-    const BUTTON_SIZE = 80;
 
     // keep in mind penultimate and ultimate slides to run buttons text/opacity/size animations
     const penultimateSlide = lastSlideIndex - 1;
@@ -96,7 +111,7 @@ const FooterButtons = ({
     });
 
     const nextButtonText = (
-        <Animated.View style={[{flexDirection: 'row', position: 'absolute'}, opacityNextTextStyle]}>
+        <Animated.View style={[styles.nextButtonText, opacityNextTextStyle]}>
             <FormattedText
                 id='mobile.onboarding.next'
                 defaultMessage='Next'
@@ -110,7 +125,7 @@ const FooterButtons = ({
     );
 
     const signInButtonText = (
-        <Animated.View style={[{flexDirection: 'row'}, opacitySignInTextStyle]}>
+        <Animated.View style={[styles.signInButtonText, opacitySignInTextStyle]}>
             <FormattedText
                 id='mobile.onboarding.sign_in_to_get_started'
                 defaultMessage='Sign in to get started'
@@ -120,10 +135,10 @@ const FooterButtons = ({
     );
 
     return (
-        <View style={{flexDirection: 'column', height: 150, marginTop: 15, width: '100%', marginHorizontal: 10, alignItems: 'center'}}>
+        <View style={styles.footerButtonsContainer}>
             <AnimatedButton
                 testID='mobile.onboaring.next'
-                onPress={() => nextSlideHandler()}
+                onPress={nextSlideHandler}
                 style={[styles.button, buttonBackgroundStyle(theme, 'm', 'primary', 'default'), resizeStyle]}
             >
                 {nextButtonText}
@@ -131,7 +146,7 @@ const FooterButtons = ({
             </AnimatedButton>
             <AnimatedButton
                 testID='mobile.onboaring.sign_in'
-                onPress={() => signInHandler()}
+                onPress={signInHandler}
                 style={[styles.button, buttonBackgroundStyle(theme, 'm', 'link', 'default'), opacitySignInButton]}
             >
                 <FormattedText

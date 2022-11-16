@@ -5,10 +5,9 @@ import React, {useEffect, useState} from 'react';
 import {View, useWindowDimensions} from 'react-native';
 import Animated, {Extrapolate, interpolate, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import {OnboardingItem} from '@typings/screens/onboarding';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import {OnboardingItem} from './slides_data';
 
 type Props = {
     item: OnboardingItem;
@@ -24,6 +23,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 100,
         color: theme.centerChannelColor,
         textAlign: 'center',
+        fontFamily: 'Metropolis-SemiBold',
+        paddingHorizontal: 20,
     },
     fontTitle: {
         fontSize: 40,
@@ -36,10 +37,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         opacity: 0,
     },
     description: {
-        fontWeight: '400',
-        fontSize: 16,
         textAlign: 'center',
         paddingHorizontal: 20,
+        fontFamily: 'Open Sans',
         height: 80,
         color: changeOpacity(theme.centerChannelColor, 0.64),
         ...typography('Body', 200, 'Regular'),
@@ -57,15 +57,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const FIRST_SLIDE = 0;
+const FIRST_LOAD_ELEMENTS_POSITION = 400;
+
 const SlideItem = ({theme, item, scrollX, index}: Props) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
-    const FIRST_SLIDE = 0;
 
     /**
      * Code used to animate the first image load
      */
-    const FIRST_LOAD_ELEMENTS_POSITION = 400;
     const [firstLoad, setFirstLoad] = useState(true);
 
     const initialImagePosition = useSharedValue(FIRST_LOAD_ELEMENTS_POSITION);
@@ -182,7 +183,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
             >
                 {item.image}
             </Animated.View>
-            <View style={{flex: 0.3}}>
+            <View>
                 <Animated.Text
                     style={[
                         styles.title,
@@ -211,4 +212,4 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
     );
 };
 
-export default SlideItem;
+export default React.memo(SlideItem);

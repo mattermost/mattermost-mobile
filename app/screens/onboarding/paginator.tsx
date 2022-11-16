@@ -7,10 +7,8 @@ import Animated, {interpolate, useAnimatedStyle} from 'react-native-reanimated';
 
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import {OnboardingItem} from './slides_data';
-
 type Props = {
-    data: OnboardingItem[];
+    dataLength: number;
     theme: Theme;
     scrollX: Animated.SharedValue<number>;
     moveToSlide: (slideIndexToMove: number) => void;
@@ -46,20 +44,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: DOT_SIZE,
         opacity: 0.15,
     },
+    paginatorContainer: {
+        flexDirection: 'row',
+        height: 15,
+    },
 }));
 
 const Paginator = ({
     theme,
-    data,
+    dataLength,
     scrollX,
     moveToSlide,
 }: Props) => {
+    const styles = getStyleSheet(theme);
     return (
-        <View style={{flexDirection: 'row', height: 15}}>
-            {data.map((item: OnboardingItem, index: number) => {
+        <View style={styles.paginatorContainer}>
+            {[...Array(dataLength)].map((item: number, index: number) => {
                 return (
                     <Dot
-                        key={`${item.id}-${index.toString()}`}
+                        key={`key-${index.toString()}`}
                         theme={theme}
                         moveToSlide={moveToSlide}
                         index={index}
@@ -105,18 +108,10 @@ const Dot = ({index, scrollX, theme, moveToSlide}: DotProps) => {
     });
 
     return (
-        <TouchableOpacity
-            onPress={() => moveToSlide(index)}
-        >
-            <Animated.View
-                style={[styles.fixedDot]}
-            />
-            <Animated.View
-                style={[styles.outerDot, outerDotOpacity]}
-            />
-            <Animated.View
-                style={[styles.dot, dotOpacity]}
-            />
+        <TouchableOpacity onPress={() => moveToSlide(index)}>
+            <Animated.View style={styles.fixedDot}/>
+            <Animated.View style={[styles.outerDot, outerDotOpacity]}/>
+            <Animated.View style={[styles.dot, dotOpacity]}/>
         </TouchableOpacity>
     );
 };

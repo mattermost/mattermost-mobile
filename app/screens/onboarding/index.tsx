@@ -2,19 +2,19 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef} from 'react';
-import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, Animated as AnimatedRN} from 'react-native';
+import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, Animated as AnimatedRN, StyleSheet} from 'react-native';
 import Animated, {Easing, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@app/constants';
 import Background from '@screens/background';
 import {goToScreen, loginAnimationOptions} from '@screens/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {OnboardingItem} from '@typings/screens/onboarding';
 
 import FooterButtons from './footer_buttons';
 import Paginator from './paginator';
 import SlideItem from './slide';
-import useSlidesData, {OnboardingItem} from './slides_data';
+import useSlidesData from './slides_data';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -22,9 +22,7 @@ interface OnboardingProps extends LaunchProps {
     theme: Theme;
 }
 
-const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
-
-const getStyleSheet = makeStyleSheetFromTheme(() => ({
+const styles = StyleSheet.create({
     onBoardingContainer: {
         flex: 1,
         alignItems: 'center',
@@ -34,17 +32,15 @@ const getStyleSheet = makeStyleSheetFromTheme(() => ({
     scrollContainer: {
         flex: 1,
         alignItems: 'center',
-        height: '100%',
         justifyContent: 'center',
     },
-}));
+});
 
 const Onboarding = ({
     theme,
 }: OnboardingProps) => {
     const {width} = useWindowDimensions();
-    const styles = getStyleSheet(theme);
-    const slidesData = useSlidesData().slidesData;
+    const {slidesData} = useSlidesData();
     const lastSlideIndex = slidesData.length - 1;
     const slidesRef = useAnimatedRef<ScrollView>();
 
@@ -63,14 +59,14 @@ const Onboarding = ({
         return () => scrollAnimation.current.removeAllListeners();
     }, []);
 
-    const moveToSlide = (slideIndexToMove: number) => {
+    const moveToSlide = useCallback((slideIndexToMove: number) => {
         AnimatedRN.timing(scrollAnimation.current, {
             toValue: (slideIndexToMove * width),
             duration: Math.abs(currentIndex.value - slideIndexToMove) * 200,
             useNativeDriver: true,
             easing: Easing.linear,
         }).start();
-    };
+    }, [currentIndex.value]);
 
     const nextSlide = useCallback(() => {
         const nextSlideIndex = currentIndex.value + 1;
@@ -95,7 +91,7 @@ const Onboarding = ({
                 theme={theme}
                 scrollX={scrollX}
                 index={index}
-                key={item.id}
+                key={`key-${index.toString()}`}
             />
         );
     }, []);
@@ -112,12 +108,11 @@ const Onboarding = ({
             testID='onboarding.screen'
         >
             <Background theme={theme}/>
-            <AnimatedSafeArea
+            <SafeAreaView
                 key={'onboarding_content'}
-                style={[styles.scrollContainer]}
+                style={styles.scrollContainer}
             >
                 <Animated.ScrollView
-                    scrollEventThrottle={16}
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
                     pagingEnabled={true}
@@ -130,7 +125,7 @@ const Onboarding = ({
                     })}
                 </Animated.ScrollView>
                 <Paginator
-                    data={slidesData}
+                    dataLength={slidesData.length}
                     theme={theme}
                     scrollX={scrollX}
                     moveToSlide={moveToSlide}
@@ -142,7 +137,7 @@ const Onboarding = ({
                     scrollX={scrollX}
                     lastSlideIndex={lastSlideIndex}
                 />
-            </AnimatedSafeArea>
+            </SafeAreaView>
         </View>
     );
 };
