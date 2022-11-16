@@ -19,17 +19,16 @@ import {ChannelModel} from '@database/models/server';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
-import {dismissModal, setButtons} from '@screens/navigation';
+import {popTopScreen, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
 const ADD_BUTTON = 'add-button';
-const CLOSE_BUTTON = 'close-dms';
 
 const close = () => {
     Keyboard.dismiss();
-    dismissModal();
+    popTopScreen();
 };
 
 const style = StyleSheet.create({
@@ -250,7 +249,6 @@ export default function ChannelAddPeople({
     }, [intl.locale, theme]);
 
     useNavButtonPressed(ADD_BUTTON, componentId, startConversation, [startConversation]);
-    useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
     useEffect(() => {
         mounted.current = true;
