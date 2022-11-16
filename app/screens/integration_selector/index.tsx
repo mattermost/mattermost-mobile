@@ -143,9 +143,10 @@ function IntegrationSelector(
     const [term, setTerm] = useState<string>('');
     const [searchResults, setSearchResults] = useState<DataType>([]);
     const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
-    const [currentPage, setCurrentPage] = useState<number>(INITIAL_PAGE);
-    const [next, setNext] = useState<boolean>(VALID_DATASOURCES.includes(dataSource));
     const [customListData, setCustomListData] = useState<DataType | UserProfileSection[]>([]);
+
+    const page = useRef<number>(-1);
+    const next = useRef<boolean>(VALID_DATASOURCES.includes(dataSource));
 
     // Callbacks
     const clearSearch = useCallback(() => {
@@ -219,38 +220,38 @@ function IntegrationSelector(
     };
 
     const getChannels = useCallback(debounce(async () => {
-        if (next && !loading && !term) {
+        if (next.current && !loading && !term) {
             setLoading(true);
-            setCurrentPage(currentPage + 1);
+            page.current += 1;
 
-            const {channels: channelData} = await fetchChannels(serverUrl, currentTeamId, currentPage);
+            const {channels: channelData} = await fetchChannels(serverUrl, currentTeamId, page.current);
 
             setLoading(false);
 
             if (channelData && channelData.length > 0) {
                 setIntegrationData(channelData);
             } else {
-                setNext(false);
+                next.current = false;
             }
         }
-    }, 100), [integrationData, next, currentPage, loading, term]);
+    }, 100), [integrationData, loading, term]);
 
     const getProfiles = useCallback(debounce(async () => {
-        if (next && !loading && !term) {
+        if (next.current && !loading && !term) {
             setLoading(true);
-            setCurrentPage(currentPage + 1);
+            page.current += 1;
 
-            const {users: profiles} = await fetchProfiles(serverUrl, currentPage);
+            const {users: profiles} = await fetchProfiles(serverUrl, page.current);
 
             setLoading(false);
 
             if (profiles && profiles.length > 0) {
                 setIntegrationData(profiles);
             } else {
-                setNext(false);
+                next.current = false;
             }
         }
-    }, 100), [integrationData, next, currentPage, loading, term]);
+    }, 100), [integrationData, loading, term]);
 
     const loadMore = async () => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
@@ -471,7 +472,7 @@ function IntegrationSelector(
     };
 
     const renderNoResults = (): JSX.Element | null => {
-        if (loading || currentPage === INITIAL_PAGE) {
+        if (loading || page.current === INITIAL_PAGE) {
             return null;
         }
 
