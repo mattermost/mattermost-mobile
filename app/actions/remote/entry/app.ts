@@ -24,17 +24,17 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
         registerDeviceToken(serverUrl);
     }
 
-    // clear lastUnreadChannelId
-    const removeLastUnreadChannelId = await prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});
-    if (removeLastUnreadChannelId) {
-        operator.batchRecords(removeLastUnreadChannelId);
-    }
-
     const {database} = operator;
 
     const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
     if (isDataRetentionEnabled) {
         await dataRetentionCleanup(serverUrl);
+    }
+
+    // clear lastUnreadChannelId
+    const removeLastUnreadChannelId = await prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});
+    if (removeLastUnreadChannelId) {
+        operator.batchRecords(removeLastUnreadChannelId);
     }
 
     const tabletDevice = await isTablet();

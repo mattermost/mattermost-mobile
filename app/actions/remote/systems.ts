@@ -32,6 +32,7 @@ export const fetchDataRetentionPolicy = async (serverUrl: string) => {
         if (hasError) {
             return hasError;
         }
+
         const systems: IdValue[] = [{
             id: SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES,
             value: JSON.stringify(globalPolicy),

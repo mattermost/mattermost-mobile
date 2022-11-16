@@ -151,6 +151,15 @@ export const getConfigValue = async (database: Database, key: keyof ClientConfig
     return list.length ? list[0].value : undefined;
 };
 
+export const getLastGlobalDataRetentionRun = async (database: Database) => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_DATA_RETENTION_RUN);
+        return data?.value || 0;
+    } catch {
+        return undefined;
+    }
+};
+
 export const getGlobalDataRetentionPolicy = async (database: Database) => {
     try {
         const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES);
@@ -176,9 +185,10 @@ export const getGranularDataRetentionPolicies = async (database: Database) => {
 };
 
 export const getIsDataRetentionEnabled = async (database: Database) => {
-    const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await getCommonSystemValues(database);
+    const license = await getLicense(database);
+    const config = await getConfig(database);
 
-    if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
+    if (!Object.keys(config)?.length || !license || !Object.keys(license)?.length) {
         return null;
     }
     return config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true';
