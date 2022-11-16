@@ -4,7 +4,6 @@
 import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, View} from 'react-native';
-import Mailer from 'react-native-mail';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
@@ -18,7 +17,9 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
+import ReportProblem from './report_problem';
 import SettingItem from './setting_item';
+
 const CLOSE_BUTTON_ID = 'close-settings';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -120,45 +121,6 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
         }
     });
 
-    const openEmailClient = preventDoubleTap(() => {
-        Mailer.mail({
-            subject: 'need help',
-            recipients: ['support@example.com'],
-            ccRecipients: ['supportCC@example.com'],
-            bccRecipients: ['supportBCC@example.com'],
-            body: '<b>A Bold Body</b>',
-
-            // customChooserTitle: 'This is my new title', // Android only (defaults to "Send Mail")
-            // isHTML: true,
-
-            // attachments: [{
-
-            //     // Specify either `path` or `uri` to indicate where to find the file data.
-            //     // The API used to create or locate the file will usually indicate which it returns.
-            //     // An absolute path will look like: /cacheDir/photos/some image.jpg
-            //     // A URI starts with a protocol and looks like: content://appname/cacheDir/photos/some%20image.jpg
-            //     path: '', // The absolute path of the file from which to read data.
-            //     uri: '', // The uri of the file from which to read the data.
-            //     // Specify either `type` or `mimeType` to indicate the type of data.
-            //     type: '', // Mime Type: jpg, png, doc, ppt, html, pdf, csv
-            //     mimeType: '', // - use only if you want to use custom type
-            //     name: '', // Optional: Custom filename for attachment
-            // }],
-        }, () => {
-            // fixme: error : not_available => verify if the default email client has been configured or ask the user to do so and to try again later
-
-            // Alert.alert(
-            //     error,
-            //     event,
-            //     [
-            //         {text: 'Ok', onPress: () => console.log('OK: Email Error Response', {error, event})},
-            //         {text: 'Cancel', onPress: () => console.log('CANCEL: Email Error Response')},
-            //     ],
-            //     {cancelable: true},
-            // );
-        });
-    });
-
     return (
         <SettingContainer testID='settings'>
             <SettingItem
@@ -194,14 +156,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
                     type='default'
                 />
             }
-            <SettingItem
-                optionLabelTextStyle={{color: theme.linkColor}}
-                onPress={openEmailClient}
-                optionName='report_problem'
-                separator={false}
-                testID='settings.report.problem'
-                type='default'
-            />
+            <ReportProblem siteName={siteName}/>
         </SettingContainer>
     );
 };
