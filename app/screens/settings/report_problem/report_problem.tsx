@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
+
 import TurboLogger from '@mattermost/react-native-turbo-log';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import {Platform, Alert} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import Mailer from 'react-native-mail';
@@ -10,9 +11,6 @@ import {preventDoubleTap} from '@app/utils/tap';
 import {useTheme} from '@context/theme';
 
 import SettingItem from '../setting_item';
-
-const EMTPY_PATHS: string[] = [];
-const LOG_TAG = 'ReportProblem';
 
 type ReportProblemProps = {
     buildNumber: string;
@@ -25,29 +23,26 @@ type ReportProblemProps = {
 
 const ReportProblem = ({currentTeamId, currentUserId, supportEmail, version, buildNumber, siteName}: ReportProblemProps) => {
     const theme = useTheme();
-    const [logPaths, setLogPaths] = useState(EMTPY_PATHS);
-
-    // useEffect(() => {
-    //     // gets log path
-    //     TurboLogger.getLogPaths().then((path: string[]) => {
-    //         setLogPaths(path);
-    //     });
-    // }, []);
 
     const openEmailClient = preventDoubleTap(async () => {
         const appVersion = DeviceInfo.getVersion();
         const appBuild = DeviceInfo.getBuildNumber();
         const deviceId = DeviceInfo.getDeviceId();
-        const logName = `LOG_TAG_${currentTeamId}_${currentUserId}_${Date.now()}.txt`;
 
-        const logPath = await TurboLogger.getLogPaths();
-        console.log('>>>  log path ', logPath[0]);
+        const logPaths = await TurboLogger.getLogPaths();
+        console.log('>>>  log path ', logPaths[0]); // /data/user/0/com.mattermost.rnbeta/cache/logs/com.mattermost.rnbeta-latest.log
 
+        const attachments = logPaths.map((path) => {
+            return {
+                uri: path,
+                type: 'text',
+            };
+        });
         Mailer.mail({
             subject: `Problem with ${siteName} React Native app`,
 
             // recipients: [supportEmail],
-            recipients: ['avinash.lingaloo@mattermost.com'],
+            recipients: ['avinash.lingaloo@mattermost.com'], //fixme:
             body: [
                 'Please share a description of the problem:\n\n',
                 `Current User Id: ${currentUserId}`,
@@ -59,11 +54,7 @@ const ReportProblem = ({currentTeamId, currentUserId, supportEmail, version, bui
             ].join('\n'),
 
             //fixme: include attachments
-            attachments: [{
-                path: logPaths[0], // The absolute path of the file from which to read data.
-                mimeType: 'txt', // Mime Type: jpg, png, doc, ppt, html, pdf, csv
-                name: `${logName}`, // Optional: Custom filename for attachment
-            }],
+            attachments,
         }, (error, event) => {
             //fixme: error : not_available  || not_found => verify if the default email client has been configured or ask the user to do so and to try again later
 
