@@ -12,7 +12,7 @@ import SearchIllustration from '@components/no_results_with_term/search_illustra
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useBackNavigation from '@hooks/navigate_back';
-import {dismissModal} from '@screens/navigation';
+import {dismissOverlay} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -82,7 +82,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const close = (componentId: string) => {
-    dismissModal({componentId});
+    dismissOverlay(componentId);
 };
 
 const ShareFeedback = ({

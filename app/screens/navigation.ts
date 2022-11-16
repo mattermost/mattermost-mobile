@@ -599,7 +599,7 @@ export function setButtons(componentId: string, buttons: NavButtons = {leftButto
     mergeNavigationOptions(componentId, options);
 }
 
-export function showOverlay(name: string, passProps = {}, options = {}) {
+export function showOverlay(name: string, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return;
     }
@@ -695,18 +695,34 @@ export const showAppForm = async (form: AppForm) => {
 };
 
 export const showReviewModal = (hasAskedBefore: boolean) => {
-    showModalOverCurrentContext(
+    showOverlay(
         Screens.REVIEW_APP,
         {hasAskedBefore},
-        {layout: {backgroundColor: changeOpacity('#000000', 0.4)}},
+        {
+            layout: {
+                backgroundColor: changeOpacity('#000000', 0.4),
+                componentBackgroundColor: changeOpacity('#000000', 0.4),
+            },
+            overlay: {
+                interceptTouchOutside: true,
+            },
+        },
     );
 };
 
 export const showShareFeedbackModal = (hasAskedBefore: boolean) => {
-    showModalOverCurrentContext(
+    showOverlay(
         Screens.SHARE_FEEDBACK,
         {hasAskedBefore},
-        {layout: {backgroundColor: changeOpacity('#000000', 0.4)}},
+        {
+            layout: {
+                backgroundColor: changeOpacity('#000000', 0.4),
+                componentBackgroundColor: changeOpacity('#000000', 0.4),
+            },
+            overlay: {
+                interceptTouchOutside: true,
+            },
+        },
     );
 };
 
