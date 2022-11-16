@@ -698,31 +698,15 @@ export const showReviewModal = (hasAskedBefore: boolean) => {
     showOverlay(
         Screens.REVIEW_APP,
         {hasAskedBefore},
-        {
-            layout: {
-                backgroundColor: changeOpacity('#000000', 0.4),
-                componentBackgroundColor: changeOpacity('#000000', 0.4),
-            },
-            overlay: {
-                interceptTouchOutside: true,
-            },
-        },
+        {overlay: {interceptTouchOutside: true}},
     );
 };
 
-export const showShareFeedbackModal = (hasAskedBefore: boolean) => {
+export const showShareFeedbackModal = () => {
     showOverlay(
         Screens.SHARE_FEEDBACK,
-        {hasAskedBefore},
-        {
-            layout: {
-                backgroundColor: changeOpacity('#000000', 0.4),
-                componentBackgroundColor: changeOpacity('#000000', 0.4),
-            },
-            overlay: {
-                interceptTouchOutside: true,
-            },
-        },
+        {},
+        {overlay: {interceptTouchOutside: true}},
     );
 };
 

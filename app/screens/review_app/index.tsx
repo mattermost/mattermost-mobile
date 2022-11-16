@@ -4,7 +4,6 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableWithoutFeedback, View, Text, Alert, TouchableOpacity} from 'react-native';
 import InAppReview from 'react-native-in-app-review';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeDontAskForReview, storeLastAskForReview} from '@actions/app/global';
 import {isNPSEnabled} from '@actions/remote/general';
@@ -22,9 +21,14 @@ type Props = {
     hasAskedBefore: boolean;
     componentId: string;
 }
-const edges: Edge[] = ['left', 'right', 'top'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    root: {
+        flex: 1,
+        backgroundColor: changeOpacity('#000000', 0.40),
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     container: {
         flex: 1,
         maxWidth: 680,
@@ -125,9 +129,9 @@ const ReviewApp = ({
         closeModal();
 
         if (await isNPSEnabled(serverUrl)) {
-            showShareFeedbackModal(hasAskedBefore);
+            showShareFeedbackModal();
         }
-    }, [hasAskedBefore, closeModal]);
+    }, [closeModal]);
 
     const onPressDontAsk = useCallback(() => {
         storeDontAskForReview();
@@ -135,59 +139,60 @@ const ReviewApp = ({
     }, [closeModal, intl]);
 
     return (
-        <SafeAreaView
-            style={styles.container}
-            testID='rate_app.screen'
-            edges={edges}
-        >
-            <View style={styles.wrapper}>
-                <TouchableOpacity
-                    style={styles.close}
-                    onPress={closeModal}
-                >
-                    <CompassIcon
-                        name='close'
-                        size={24}
-                        color={changeOpacity(theme.centerChannelColor, 0.56)}
-                    />
-                </TouchableOpacity>
-                <View style={styles.content}>
-                    <SearchIllustration/>
-                    <Text style={styles.title}>
-                        {intl.formatMessage({id: 'rate.title', defaultMessage: 'Enjoying Mattermost?'})}
-                    </Text>
-                    <Text style={styles.subtitle}>
-                        {intl.formatMessage({id: 'rate.subtitle', defaultMessage: 'Let us know what you think.'})}
-                    </Text>
-                    <View style={styles.buttonsWrapper}>
-                        <Button
-                            theme={theme}
-                            size={'lg'}
-                            emphasis={'tertiary'}
-                            onPress={onPressNeedsWork}
-                            text={intl.formatMessage({id: 'rate.button.needs_work', defaultMessage: 'Needs work'})}
-                            backgroundStyle={styles.leftButton}
+        <View style={styles.root}>
+            <View
+                style={styles.container}
+                testID='rate_app.screen'
+            >
+                <View style={styles.wrapper}>
+                    <TouchableOpacity
+                        style={styles.close}
+                        onPress={closeModal}
+                    >
+                        <CompassIcon
+                            name='close'
+                            size={24}
+                            color={changeOpacity(theme.centerChannelColor, 0.56)}
                         />
-                        <Button
-                            theme={theme}
-                            size={'lg'}
-                            onPress={onPressYes}
-                            text={intl.formatMessage({id: 'rate.button.yes', defaultMessage: 'Love it!'})}
-                            backgroundStyle={styles.rightButton}
-                        />
+                    </TouchableOpacity>
+                    <View style={styles.content}>
+                        <SearchIllustration/>
+                        <Text style={styles.title}>
+                            {intl.formatMessage({id: 'rate.title', defaultMessage: 'Enjoying Mattermost?'})}
+                        </Text>
+                        <Text style={styles.subtitle}>
+                            {intl.formatMessage({id: 'rate.subtitle', defaultMessage: 'Let us know what you think.'})}
+                        </Text>
+                        <View style={styles.buttonsWrapper}>
+                            <Button
+                                theme={theme}
+                                size={'lg'}
+                                emphasis={'tertiary'}
+                                onPress={onPressNeedsWork}
+                                text={intl.formatMessage({id: 'rate.button.needs_work', defaultMessage: 'Needs work'})}
+                                backgroundStyle={styles.leftButton}
+                            />
+                            <Button
+                                theme={theme}
+                                size={'lg'}
+                                onPress={onPressYes}
+                                text={intl.formatMessage({id: 'rate.button.yes', defaultMessage: 'Love it!'})}
+                                backgroundStyle={styles.rightButton}
+                            />
+                        </View>
+                        {hasAskedBefore && (
+                            <TouchableWithoutFeedback
+                                onPress={onPressDontAsk}
+                            >
+                                <Text style={styles.dontAsk}>
+                                    {intl.formatMessage({id: 'rate.dont_ask_again', defaultMessage: 'Don\'t ask me again'})}
+                                </Text>
+                            </TouchableWithoutFeedback>
+                        )}
                     </View>
-                    {hasAskedBefore && (
-                        <TouchableWithoutFeedback
-                            onPress={onPressDontAsk}
-                        >
-                            <Text style={styles.dontAsk}>
-                                {intl.formatMessage({id: 'rate.dont_ask_again', defaultMessage: 'Don\'t ask me again'})}
-                            </Text>
-                        </TouchableWithoutFeedback>
-                    )}
                 </View>
             </View>
-        </SafeAreaView>
+        </View>
     );
 };
 

@@ -3,7 +3,6 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {goToNPSChannel} from '@actions/remote/channel';
 import Button from '@components/button';
@@ -17,12 +16,16 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    hasAskedBefore: boolean;
     componentId: string;
 }
-const edges: Edge[] = ['left', 'right', 'top'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    root: {
+        flex: 1,
+        backgroundColor: changeOpacity('#000000', 0.40),
+        justifyContent: 'center',
+        alignItems: 'center',
+    },
     container: {
         flex: 1,
         maxWidth: 680,
@@ -86,7 +89,6 @@ const close = (componentId: string) => {
 };
 
 const ShareFeedback = ({
-    hasAskedBefore,
     componentId,
 }: Props) => {
     const intl = useIntl();
@@ -107,53 +109,54 @@ const ShareFeedback = ({
 
     const onPressNo = useCallback(async () => {
         close(componentId);
-    }, [hasAskedBefore]);
+    }, []);
 
     return (
-        <SafeAreaView
-            style={styles.container}
-            testID='rate_app.screen'
-            edges={edges}
-        >
-            <View style={styles.wrapper}>
-                <TouchableOpacity
-                    style={styles.close}
-                    onPress={closeModal}
-                >
-                    <CompassIcon
-                        name='close'
-                        size={24}
-                        color={changeOpacity(theme.centerChannelColor, 0.56)}
-                    />
-                </TouchableOpacity>
-                <View style={styles.content}>
-                    <SearchIllustration/>
-                    <Text style={styles.title}>
-                        {intl.formatMessage({id: 'share_feedback.title', defaultMessage: 'Would you share your feedback?'})}
-                    </Text>
-                    <Text style={styles.subtitle}>
-                        {intl.formatMessage({id: 'share_feedback.subtitle', defaultMessage: 'We\'d love to hear how we can make your experience better.'})}
-                    </Text>
-                    <View style={styles.buttonsWrapper}>
-                        <Button
-                            theme={theme}
-                            size={'lg'}
-                            emphasis={'tertiary'}
-                            onPress={onPressNo}
-                            text={intl.formatMessage({id: 'share_feedback.button.no', defaultMessage: 'No, thanks'})}
-                            backgroundStyle={styles.leftButton}
+        <View style={styles.root}>
+            <View
+                style={styles.container}
+                testID='rate_app.screen'
+            >
+                <View style={styles.wrapper}>
+                    <TouchableOpacity
+                        style={styles.close}
+                        onPress={closeModal}
+                    >
+                        <CompassIcon
+                            name='close'
+                            size={24}
+                            color={changeOpacity(theme.centerChannelColor, 0.56)}
                         />
-                        <Button
-                            theme={theme}
-                            size={'lg'}
-                            onPress={onPressYes}
-                            text={intl.formatMessage({id: 'share_feedback.button.yes', defaultMessage: 'Yes'})}
-                            backgroundStyle={styles.rightButton}
-                        />
+                    </TouchableOpacity>
+                    <View style={styles.content}>
+                        <SearchIllustration/>
+                        <Text style={styles.title}>
+                            {intl.formatMessage({id: 'share_feedback.title', defaultMessage: 'Would you share your feedback?'})}
+                        </Text>
+                        <Text style={styles.subtitle}>
+                            {intl.formatMessage({id: 'share_feedback.subtitle', defaultMessage: 'We\'d love to hear how we can make your experience better.'})}
+                        </Text>
+                        <View style={styles.buttonsWrapper}>
+                            <Button
+                                theme={theme}
+                                size={'lg'}
+                                emphasis={'tertiary'}
+                                onPress={onPressNo}
+                                text={intl.formatMessage({id: 'share_feedback.button.no', defaultMessage: 'No, thanks'})}
+                                backgroundStyle={styles.leftButton}
+                            />
+                            <Button
+                                theme={theme}
+                                size={'lg'}
+                                onPress={onPressYes}
+                                text={intl.formatMessage({id: 'share_feedback.button.yes', defaultMessage: 'Yes'})}
+                                backgroundStyle={styles.rightButton}
+                            />
+                        </View>
                     </View>
                 </View>
             </View>
-        </SafeAreaView>
+        </View>
     );
 };
 
