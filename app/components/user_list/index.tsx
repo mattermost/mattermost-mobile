@@ -204,7 +204,7 @@ export default function UserList({
                 user={item}
             />
         );
-    }, [selectedIds, currentUserId, handleSelectProfile, teammateNameDisplay, tutorialWatched, showManageMode, data]);
+    }, [selectedIds, currentUserId, handleSelectProfile, manageMode, teammateNameDisplay, tutorialWatched, showManageMode, data]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {
