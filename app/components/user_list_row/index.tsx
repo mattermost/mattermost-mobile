@@ -33,7 +33,7 @@ type Props = {
     testID: string;
     onPress?: (user: UserProfile) => void;
     onLongPress: (user: UserProfile) => void;
-    showManage: boolean;
+    showManageMode: boolean;
     manageMode: boolean;
     selectable: boolean;
     selected: boolean;
@@ -115,8 +115,8 @@ export default function UserListRow({
     testID,
     onPress,
     onLongPress,
-    manageMode = true,
-    showManage = true,
+    manageMode = false,
+    showManageMode = false,
     tutorialWatched = false,
     selectable,
     selected,
@@ -169,7 +169,7 @@ export default function UserListRow({
 
     const manageModeIcon = useMemo(() => {
         const color = changeOpacity(theme.centerChannelColor, 0.64);
-        if (showManage) {
+        if (showManageMode) {
             return (
                 <View style={[style.selectorManage, color]}>
                     {user.roles.includes(Permissions.SYSTEM_ADMIN_ROLE || Permissions.CHANNEL_ADMIN_ROLE) ? (
@@ -180,7 +180,7 @@ export default function UserListRow({
                         />
                     ) : (
                         <FormattedText
-                            id='mobile.manage_members.Member'
+                            id='mobile.manage_members.member'
                             style={style.manageText}
                             defaultMessage={'Member'}
                         />
@@ -195,7 +195,7 @@ export default function UserListRow({
             );
         }
         return null;
-    }, [theme, showManage]);
+    }, [theme, showManageMode]);
 
     const icon = useMemo(() => {
         const iconOpacity = DEFAULT_ICON_OPACITY * (selectable ? 1 : DISABLED_OPACITY);

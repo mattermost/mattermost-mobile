@@ -123,8 +123,8 @@ type Props = {
     handleSelectProfile: (user: UserProfile) => void;
     fetchMore: () => void;
     loading: boolean;
-    manageMode: boolean;
-    showManage: boolean;
+    manageMode?: boolean;
+    showManageMode?: boolean;
     showNoResults: boolean;
     selectedIds: {[id: string]: UserProfile};
     testID?: string;
@@ -141,7 +141,7 @@ export default function UserList({
     fetchMore,
     loading,
     manageMode = false,
-    showManage = false,
+    showManageMode = false,
     showNoResults,
     term,
     testID,
@@ -197,14 +197,14 @@ export default function UserList({
                 onLongPress={openUserProfile}
                 selectable={manageMode || canAdd}
                 selected={selected}
-                showManage={showManage}
+                showManageMode={showManageMode}
                 testID='create_direct_message.user_list.user_item'
                 teammateNameDisplay={teammateNameDisplay}
                 tutorialWatched={tutorialWatched}
                 user={item}
             />
         );
-    }, [selectedIds, currentUserId, handleSelectProfile, teammateNameDisplay, tutorialWatched, showManage, data]);
+    }, [selectedIds, currentUserId, handleSelectProfile, teammateNameDisplay, tutorialWatched, showManageMode, data]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {
