@@ -118,9 +118,9 @@ function CustomList({
     const style = getStyleFromTheme(theme);
 
     // Renders
-    const renderEmptyList = () => {
+    const renderEmptyList = useCallback(() => {
         return noResults || null;
-    };
+    }, [noResults]);
 
     const renderSeparator = useCallback(() => {
         if (!shouldRenderSeparator) {
@@ -130,7 +130,7 @@ function CustomList({
         return (
             <View style={style.separator}/>
         );
-    }, [shouldRenderSeparator]);
+    }, [shouldRenderSeparator, style]);
 
     const renderListItem = useCallback(({item}: any) => {
         const props: ListItemProps = {
@@ -147,7 +147,7 @@ function CustomList({
         }
 
         return renderItem(props);
-    }, [onRowPress]);
+    }, [onRowPress, selectable, renderItem]);
 
     const renderFooter = useCallback((): React.ReactElement<any, string> | null => {
         if (!loading || !loadingComponent) {
@@ -164,7 +164,7 @@ function CustomList({
                 </View>
             </View>
         );
-    }, []);
+    }, [style]);
 
     const renderSectionList = () => {
         return (

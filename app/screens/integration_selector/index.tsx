@@ -253,7 +253,7 @@ function IntegrationSelector(
         }
     }, 100), [integrationData, loading, term]);
 
-    const loadMore = async () => {
+    const loadMore = useCallback(async () => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
             await getProfiles();
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
@@ -261,9 +261,9 @@ function IntegrationSelector(
         }
 
         // dynamic options are not paged so are not reloaded on scroll
-    };
+    }, [getProfiles, getChannels, dataSource]);
 
-    const searchDynamicOptions = useCallback((searchTerm = '') => {
+    const searchDynamicOptions = useCallback(async (searchTerm = '') => {
         if (options) {
             setIntegrationData(options);
         }
@@ -272,21 +272,20 @@ function IntegrationSelector(
             return;
         }
 
-        getDynamicOptions(searchTerm.toLowerCase()).then((results: DialogOption[]) => {
-            const searchData = results || [];
+        const results: DialogOption[] = await getDynamicOptions(searchTerm.toLowerCase());
+        const searchData = results || [];
 
-            if (searchTerm) {
-                setSearchResults(searchData);
-            } else {
-                setIntegrationData(searchData);
-            }
-        });
+        if (searchTerm) {
+            setSearchResults(searchData);
+        } else {
+            setIntegrationData(searchData);
+        }
     }, [options, getDynamicOptions]);
 
-    const onHandleMultiselectSubmit = () => {
+    const onHandleMultiselectSubmit = useCallback(() => {
         handleSelect(getMultiselectData());
         close();
-    };
+    }, [multiselectSelected, handleSelect]);
 
     const onSearch = useCallback((text: string) => {
         if (!text) {
@@ -382,7 +381,7 @@ function IntegrationSelector(
     }, [multiselectSelected, dataSource]);
 
     // Effects
-    useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit, multiselectSelected]);
+    useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit]);
 
     useEffect(() => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
@@ -434,7 +433,7 @@ function IntegrationSelector(
     }, [multiselectSelected]);
 
     // Renders
-    const renderLoading = () => {
+    const renderLoading = useCallback(() => {
         if (!loading) {
             return null;
         }
@@ -469,9 +468,9 @@ function IntegrationSelector(
                 />
             </View>
         );
-    };
+    }, [style, dataSource, loading, intl]);
 
-    const renderNoResults = (): JSX.Element | null => {
+    const renderNoResults = useCallback((): JSX.Element | null => {
         if (loading || page.current === INITIAL_PAGE) {
             return null;
         }
@@ -485,7 +484,7 @@ function IntegrationSelector(
                 />
             </View>
         );
-    };
+    }, [loading, style]);
 
     const renderChannelItem = (itemProps: any) => {
         const itemSelected = Boolean(multiselectSelected[itemProps.item.id]);
@@ -531,6 +530,17 @@ function IntegrationSelector(
         );
     };
 
+    const getRenderItem = useCallback((): (itemProps: any) => JSX.Element => {
+        switch (dataSource) {
+            case ViewConstants.DATA_SOURCE_USERS:
+                return renderUserItem;
+            case ViewConstants.DATA_SOURCE_CHANNELS:
+                return renderChannelItem;
+            default:
+                return renderOptionItem;
+        }
+    }, [dataSource, renderUserItem, renderChannelItem, renderOptionItem]);
+
     const renderSelectedOptions = (): React.ReactElement<any, string> | null => {
         const selectedItems: any = Object.values(multiselectSelected);
 
@@ -554,15 +564,6 @@ function IntegrationSelector(
     };
 
     const listType = dataSource === ViewConstants.DATA_SOURCE_USERS ? SECTIONLIST : FLATLIST;
-    let rowComponent;
-    if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-        rowComponent = renderUserItem;
-    } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
-        rowComponent = renderChannelItem;
-    } else {
-        rowComponent = renderOptionItem;
-    }
-
     const selectedOptionsComponent = renderSelectedOptions();
 
     return (
@@ -594,7 +595,7 @@ function IntegrationSelector(
                 noResults={renderNoResults}
                 onLoadMore={loadMore}
                 onRowPress={handleSelectItem}
-                renderItem={rowComponent}
+                renderItem={getRenderItem()}
                 theme={theme}
             />
         </SafeAreaView>
