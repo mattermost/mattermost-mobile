@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {logError} from '@app/utils/log';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
@@ -28,14 +29,15 @@ export const storeMultiServerTutorial = async (prepareRecordsOnly = false) => {
     }
 };
 
-export const storeOnboardingViewedValue = async (prepareRecordsOnly = false) => {
+export const storeOnboardingViewedValue = async (value = true) => {
     try {
         const {operator} = DatabaseManager.getAppDatabaseAndOperator();
         return operator.handleGlobal({
-            globals: [{id: GLOBAL_IDENTIFIERS.ONBOARDING, value: 'true'}],
-            prepareRecordsOnly,
+            globals: [{id: GLOBAL_IDENTIFIERS.ONBOARDING, value}],
+            prepareRecordsOnly: false,
         });
     } catch (error) {
+        logError('storeOnboardingViewedValue', error);
         return {error};
     }
 };

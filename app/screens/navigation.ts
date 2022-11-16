@@ -281,7 +281,7 @@ export function resetToSelectServer(passProps: LaunchProps) {
     });
 }
 
-export function resetToOnboarding(passProps: LaunchProps & {goToLoginServerUrl?: string}) {
+export function resetToOnboarding(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');

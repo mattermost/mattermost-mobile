@@ -6,12 +6,10 @@ import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView,
 import Animated, {Easing, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
-import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {Screens} from '@app/constants';
-import {loginOptions} from '@app/utils/server';
 import Background from '@screens/background';
 import {goToScreen, loginAnimationOptions} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import FooterButtons from './footer_buttons';
 import Paginator from './paginator';
@@ -22,14 +20,27 @@ import type {LaunchProps} from '@typings/launch';
 
 interface OnboardingProps extends LaunchProps {
     theme: Theme;
-    goToLoginServerUrl: string;
 }
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
+const getStyleSheet = makeStyleSheetFromTheme(() => ({
+    onBoardingContainer: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+        verticalAlign: 'top',
+    },
+    scrollContainer: {
+        flex: 1,
+        alignItems: 'center',
+        height: '100%',
+        justifyContent: 'center',
+    },
+}));
+
 const Onboarding = ({
     theme,
-    goToLoginServerUrl,
 }: OnboardingProps) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
@@ -70,67 +81,12 @@ const Onboarding = ({
         }
     }, [currentIndex.value, slidesRef.current, moveToSlide]);
 
-    const initLogin = async () => {
-        const data = await fetchConfigAndLicense(goToLoginServerUrl, true);
-        if (data.error) {
-            return;
-        }
-
-        displayLogin(data.config!, data.license!);
-    };
-
-    const displayLogin = (config: ClientConfig, license: ClientLicense) => {
-        const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
-        const displayName = 'displayName';
-        const passProps = {
-            config,
-            hasLoginForm,
-            license,
-            serverDisplayName: displayName,
-            serverUrl: goToLoginServerUrl,
-            ssoOptions,
-            theme,
-        };
-
-        const redirectSSO = !hasLoginForm && numberSSOs === 1;
-        const screen = redirectSSO ? Screens.SSO : Screens.LOGIN;
-        if (redirectSSO) {
-            // @ts-expect-error ssoType not in definition
-            passProps.ssoType = enabledSSOs[0];
-        }
-
-        goToScreen(screen, '', passProps, loginAnimationOptions());
-    };
-
     const signInHandler = useCallback(() => {
-        const topBar = {
-            visible: true,
-            drawBehind: true,
-            translucid: true,
-            noBorder: true,
-            elevation: 0,
-            background: {
-                color: 'transparent',
-            },
-            backButton: {
-                color: changeOpacity(theme.centerChannelColor, 0.56),
-            },
-            scrollEdgeAppearance: {
-                active: true,
-                noBorder: true,
-                translucid: true,
-            },
-        };
-
         // mark the onboarding as already viewed
         storeOnboardingViewedValue();
 
-        if (goToLoginServerUrl) {
-            initLogin();
-            return;
-        }
-        goToScreen(Screens.SERVER, '', {theme}, {topBar});
-    }, [goToLoginServerUrl]);
+        goToScreen(Screens.SERVER, '', {theme}, loginAnimationOptions());
+    }, []);
 
     const renderSlide = useCallback(({item, index}: ListRenderItemInfo<OnboardingItem>) => {
         return (
@@ -190,20 +146,5 @@ const Onboarding = ({
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme(() => ({
-    onBoardingContainer: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        verticalAlign: 'top',
-    },
-    scrollContainer: {
-        flex: 1,
-        alignItems: 'center',
-        height: '100%',
-        justifyContent: 'center',
-    },
-}));
 
 export default Onboarding;

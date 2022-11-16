@@ -10,7 +10,7 @@ import LocalConfig from '@assets/config.json';
 import {Screens, DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
-import {onboadingViewedValue} from '@queries/app/global';
+import {getOnboardingViewed} from '@queries/app/global';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
@@ -68,7 +68,6 @@ const launchAppFromNotification = async (notification: NotificationWithData) => 
  * @returns a redirection to a screen, either onboarding, add_server, login or home depending on the scenario
  */
 const launchApp = async (props: LaunchProps, resetNavigation = true) => {
-    const onboardingViewed = LocalConfig.ShowOnboarding ? await onboadingViewedValue() : false;
     let serverUrl: string | undefined;
     switch (props?.launchType) {
         case Launch.DeepLink:
@@ -107,10 +106,6 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
                 hasCurrentUser = Boolean(currentUserId);
             }
 
-            if (LocalConfig.ShowOnboarding && !onboardingViewed) {
-                return resetToOnboarding({...props, goToLoginServerUrl: serverUrl});
-            }
-
             let launchType = props.launchType;
             if (!hasCurrentUser) {
                 // migrating from v1
@@ -140,7 +135,9 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
-    if (!LocalConfig.ShowOnboarding || onboardingViewed) {
+    const onboardingViewed = LocalConfig.ShowOnboarding ? await getOnboardingViewed() : false;
+
+    if (onboardingViewed) {
         return launchToServer(props, resetNavigation);
     }
     return resetToOnboarding(props);

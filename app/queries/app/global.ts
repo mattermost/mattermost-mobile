@@ -28,14 +28,11 @@ export const observeMultiServerTutorial = (appDatabase: Database) => {
     );
 };
 
-export const onboadingViewedValue = async (): Promise<boolean> => {
-    const appDatabase = DatabaseManager.appDatabase?.database;
-    if (!appDatabase) {
-        return false;
-    }
+export const getOnboardingViewed = async (): Promise<boolean> => {
     try {
-        const onboardingVal = await appDatabase.get<GlobalModel>(GLOBAL).find(GLOBAL_IDENTIFIERS.ONBOARDING);
-        return Boolean(onboardingVal?.value) || false;
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        const onboardingVal = await database.get<GlobalModel>(GLOBAL).find(GLOBAL_IDENTIFIERS.ONBOARDING);
+        return onboardingVal?.value ?? false;
     } catch {
         return false;
     }

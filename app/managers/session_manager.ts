@@ -5,6 +5,7 @@ import CookieManager, {Cookie} from '@react-native-cookies/cookies';
 import {AppState, AppStateStatus, DeviceEventEmitter, Platform} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
+import {storeOnboardingViewedValue} from '@actions/app/global';
 import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -17,7 +18,7 @@ import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {queryServerName} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
-import {getThemeFromState, resetToOnboarding} from '@screens/navigation';
+import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {addNewServer} from '@utils/server';
@@ -167,15 +168,19 @@ class SessionManager {
 
         if (activeServerUrl === serverUrl) {
             let displayName = '';
-            const launchType: LaunchType = Launch.Normal;
+            let launchType: LaunchType = Launch.AddServer;
             if (!Object.keys(DatabaseManager.serverDatabases).length) {
                 EphemeralStore.theme = undefined;
+                launchType = Launch.Normal;
+
+                // set the onboardingViewed value to false so the launch will show the onboarding screen after all servers were removed
+                storeOnboardingViewedValue(false);
+
                 if (activeServerDisplayName) {
                     displayName = activeServerDisplayName;
                 }
             }
-
-            resetToOnboarding({launchType, serverUrl, displayName});
+            relaunchApp({launchType, serverUrl, displayName}, true);
         }
     };
 

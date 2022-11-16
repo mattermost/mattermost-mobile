@@ -5,10 +5,10 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
-import CallsSvg from './illustrations/calls_svg';
-import ChatSvg from './illustrations/chat_svg';
-import IntegrationsSvg from './illustrations/integrations_svg';
-import TeamCommunicationSvg from './illustrations/team_communication_svg';
+import CallsSvg from './illustrations/calls';
+import ChatSvg from './illustrations/chat';
+import IntegrationsSvg from './illustrations/integrations';
+import TeamCommunicationSvg from './illustrations/team_communication';
 
 export type OnboardingItem = {
     id: string;
