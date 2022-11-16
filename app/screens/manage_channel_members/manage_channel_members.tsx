@@ -19,13 +19,12 @@ import {ChannelModel, UserModel} from '@database/models/server';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
-import {dismissModal, openAsBottomSheet, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
+import {openAsBottomSheet, setButtons} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm, isChannelAdmin, isSystemAdmin} from '@utils/user';
 
 const MANAGE_BUTTON = 'manage-button';
-const CLOSE_BUTTON = 'close-dms';
 
 type Props = {
     componentId: string;
@@ -36,11 +35,6 @@ type Props = {
     teammateNameDisplay: string;
     tutorialWatched: boolean;
 }
-
-const close = () => {
-    Keyboard.dismiss();
-    dismissModal();
-};
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -257,7 +251,6 @@ export default function ManageChannelMembers({
     }, [searchUsers, clearSearch]);
 
     const updateNavigationButtons = useCallback(async (manage: boolean) => {
-        // const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         setButtons(componentId, {
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
@@ -276,7 +269,6 @@ export default function ManageChannelMembers({
     }, [manageEnabled, updateNavigationButtons]);
 
     useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
-    useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
     useEffect(() => {
         mounted.current = true;
