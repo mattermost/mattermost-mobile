@@ -12,8 +12,8 @@ exports[`FloatingTextInput test snapshot 1`] = `
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    Array [
-      Object {
+    [
+      {
         "width": "100%",
       },
       undefined,
@@ -23,8 +23,8 @@ exports[`FloatingTextInput test snapshot 1`] = `
 >
   <Text
     animatedStyle={
-      Object {
-        "value": Object {
+      {
+        "value": {
           "backgroundColor": "#ffffff",
           "color": "rgba(63,67,80,0.64)",
           "fontSize": 10,
@@ -37,7 +37,7 @@ exports[`FloatingTextInput test snapshot 1`] = `
     numberOfLines={1}
     onPress={[Function]}
     style={
-      Object {
+      {
         "backgroundColor": "#ffffff",
         "color": "rgba(63,67,80,0.64)",
         "fontFamily": "OpenSans",
@@ -57,7 +57,7 @@ exports[`FloatingTextInput test snapshot 1`] = `
   </Text>
   <View
     accessibilityState={
-      Object {
+      {
         "disabled": false,
       }
     }
@@ -74,8 +74,8 @@ exports[`FloatingTextInput test snapshot 1`] = `
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      Array [
-        Object {
+      [
+        {
           "alignItems": "center",
           "backgroundColor": "#ffffff",
           "borderColor": "rgba(63,67,80,0.16)",
@@ -86,10 +86,10 @@ exports[`FloatingTextInput test snapshot 1`] = `
           "paddingVertical": 12,
         },
         undefined,
-        Object {
+        {
           "height": 48,
         },
-        Object {
+        {
           "borderWidth": 2,
         },
       ]
@@ -106,8 +106,8 @@ exports[`FloatingTextInput test snapshot 1`] = `
       placeholderTextColor="rgba(63,67,80,0.64)"
       pointerEvents="auto"
       style={
-        Array [
-          Object {
+        [
+          {
             "color": "#3f4350",
             "flex": 1,
             "fontFamily": "OpenSans",
@@ -116,7 +116,7 @@ exports[`FloatingTextInput test snapshot 1`] = `
             "padding": 0,
           },
           undefined,
-          Object {
+          {
             "height": 24,
           },
         ]
