@@ -11,7 +11,7 @@ import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import DatabaseManager from '@database/manager';
 import {getMyChannel, getChannelById} from '@queries/servers/channel';
-import {getCommonSystemValues, getWebSocketLastDisconnected} from '@queries/servers/system';
+import {getCurrentTeamId, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {emitNotificationError} from '@utils/notification';
@@ -30,14 +30,14 @@ const fetchNotificationData = async (serverUrl: string, notification: Notificati
         }
 
         const {database} = operator;
-        const system = await getCommonSystemValues(database);
+        const currentTeamId = await getCurrentTeamId(database);
         let teamId = notification.payload?.team_id;
         let isDirectChannel = false;
 
         if (!teamId) {
             // If the notification payload does not have a teamId we assume is a DM/GM
             isDirectChannel = true;
-            teamId = system.currentTeamId;
+            teamId = currentTeamId;
         }
 
         // To make the switch faster we determine if we already have the team & channel
@@ -129,13 +129,13 @@ export const openNotification = async (serverUrl: string, notification: Notifica
         const isCRTEnabled = await getIsCRTEnabled(database);
         const isThreadNotification = isCRTEnabled && Boolean(rootId);
 
-        const system = await getCommonSystemValues(database);
+        const currentTeamId = await getCurrentTeamId(database);
         const currentServerUrl = await DatabaseManager.getActiveServerUrl();
         let teamId = notification.payload?.team_id;
 
         if (!teamId) {
             // If the notification payload does not have a teamId we assume is a DM/GM
-            teamId = system.currentTeamId;
+            teamId = currentTeamId;
         }
 
         if (currentServerUrl !== serverUrl) {

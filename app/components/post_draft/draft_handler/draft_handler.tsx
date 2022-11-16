@@ -18,8 +18,8 @@ type Props = {
     rootId?: string;
     canShowPostPriority?: boolean;
     files?: FileInfo[];
-    maxFileSize: number;
     maxFileCount: number;
+    maxFileSize: number;
     canUploadFiles: boolean;
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     updatePostInputTop: (top: number) => void;
@@ -43,8 +43,8 @@ export default function DraftHandler(props: Props) {
         rootId = '',
         canShowPostPriority,
         files,
-        maxFileSize,
         maxFileCount,
+        maxFileSize,
         canUploadFiles,
         updateCursorPosition,
         updatePostInputTop,
@@ -108,7 +108,7 @@ export default function DraftHandler(props: Props) {
         }
 
         newUploadError(null);
-    }, [intl, newUploadError, maxFileCount, maxFileSize, serverUrl, files?.length, channelId, rootId]);
+    }, [intl, newUploadError, maxFileSize, serverUrl, files?.length, channelId, rootId]);
 
     // This effect mainly handles keeping clean the uploadErrorHandlers, and
     // reinstantiate them on component mount and file retry.

@@ -128,10 +128,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             ) {
                 markAsViewed = true;
                 markAsRead = false;
-            } else if ((post.channel_id === currentChannelId)) { // TODO: THREADS && !viewingGlobalThreads) {
-                // Don't mark as read if we're in global threads screen
-                // the currentChannelId still refers to previously viewed channel
-
+            } else if ((post.channel_id === currentChannelId)) {
                 const isChannelScreenMounted = NavigationStore.getNavigationComponents().includes(Screens.CHANNEL);
 
                 const isTabletDevice = await isTablet();

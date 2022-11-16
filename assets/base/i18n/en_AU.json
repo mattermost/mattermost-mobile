@@ -239,8 +239,6 @@
     "mobile.message_length.message": "Your current message is too long. Current character count: {count}/{max}",
     "mobile.message_length.message_split_left": "Message exceeds the character limit",
     "mobile.message_length.title": "Message Length",
-    "mobile.microphone_permission_denied_description": "To participate in this call, open Settings and grant Mattermost access to your microphone.",
-    "mobile.microphone_permission_denied_title": "{applicationName} would like to access your microphone.",
     "mobile.oauth.failed_to_login": "Your login attempt failed. Please try again.",
     "mobile.oauth.failed_to_open_link": "The link failed to open. Please try again.",
     "mobile.oauth.something_wrong": "An error occurred",
@@ -572,12 +570,9 @@
     "mobile.search.show_more": "Show more",
     "mobile.search.show_less": "Show less",
     "mobile.search.modifier.phrases": "messages with phrases",
-    "mobile.search.modifier.on": "a specific date",
     "mobile.search.modifier.in": "a specific channel",
     "mobile.search.modifier.from": "a specific user",
     "mobile.search.modifier.exclude": "exclude search terms",
-    "mobile.search.modifier.before": "before a date",
-    "mobile.search.modifier.after": "after a date",
     "mobile.screen.your_profile": "Your Profile",
     "mobile.screen.settings": "Settings",
     "mobile.reset_status.alert_ok": "OK",
@@ -747,7 +742,6 @@
     "mobile.calls_lasted": "Lasted {duration}",
     "mobile.calls_join_call": "Join call",
     "mobile.calls_error_title": "Error",
-    "mobile.calls_error_permissions": "Unable to initiate a call. Please check your microphone permissions.",
     "mobile.calls_error_message": "Error: {error}",
     "mobile.calls_ended_at": "Ended at",
     "mobile.calls_end_permission_title": "Error",
@@ -843,5 +837,7 @@
     "channel_intro.createdOn": "Created on {date}",
     "channel_intro.createdBy": "Created by {user} on {date}",
     "channel_info.unarchive_title": "Unarchive {term}",
-    "channel_info.unarchive_failed": "An error occurred while unarchiving the channel {displayName}"
+    "channel_info.unarchive_failed": "An error occurred while unarchiving the channel {displayName}",
+    "mobile.login_options.office365": "Office 365",
+    "alert.push_proxy_unknown.description": "This server was unable to receive push notifications for an unknown reason and will be reattempted next time you connect."
 }

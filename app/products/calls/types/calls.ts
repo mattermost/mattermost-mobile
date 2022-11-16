@@ -4,6 +4,14 @@
 import type UserModel from '@typings/database/models/servers/user';
 import type {ConfigurationParamWithUrls, ConfigurationParamWithUrl} from 'react-native-webrtc';
 
+export type GlobalCallsState = {
+    micPermissionsGranted: boolean;
+}
+
+export const DefaultGlobalCallsState: GlobalCallsState = {
+    micPermissionsGranted: false,
+};
+
 export type CallsState = {
     serverUrl: string;
     myUserId: string;
@@ -11,12 +19,12 @@ export type CallsState = {
     enabled: Dictionary<boolean>;
 }
 
-export const DefaultCallsState = {
+export const DefaultCallsState: CallsState = {
     serverUrl: '',
     myUserId: '',
     calls: {} as Dictionary<Call>,
     enabled: {} as Dictionary<boolean>,
-} as CallsState;
+};
 
 export type Call = {
     participants: Dictionary<CallParticipant>;
@@ -27,25 +35,40 @@ export type Call = {
     ownerId: string;
 }
 
-export const DefaultCall = {
+export const DefaultCall: Call = {
     participants: {} as Dictionary<CallParticipant>,
     channelId: '',
     startTime: 0,
     screenOn: '',
     threadId: '',
+    ownerId: '',
 };
 
-export type CurrentCall = {
+export type CurrentCall = Call & {
+    connected: boolean;
     serverUrl: string;
     myUserId: string;
-    participants: Dictionary<CallParticipant>;
-    channelId: string;
-    startTime: number;
-    screenOn: string;
-    threadId: string;
     screenShareURL: string;
     speakerphoneOn: boolean;
+    voiceOn: Dictionary<boolean>;
+    micPermissionsErrorDismissed: boolean;
 }
+
+export const DefaultCurrentCall: CurrentCall = {
+    connected: false,
+    serverUrl: '',
+    myUserId: '',
+    participants: {},
+    channelId: '',
+    startTime: 0,
+    screenOn: '',
+    threadId: '',
+    ownerId: '',
+    screenShareURL: '',
+    speakerphoneOn: false,
+    voiceOn: {},
+    micPermissionsErrorDismissed: false,
+};
 
 export type CallParticipant = {
     id: string;
@@ -89,6 +112,7 @@ export type CallsConnection = {
     waitForPeerConnection: () => Promise<void>;
     raiseHand: () => void;
     unraiseHand: () => void;
+    initializeVoiceTrack: () => void;
 }
 
 export type ServerCallsConfig = {
@@ -106,7 +130,7 @@ export type CallsConfig = ServerCallsConfig & {
     last_retrieved_at: number;
 }
 
-export const DefaultCallsConfig = {
+export const DefaultCallsConfig: CallsConfig = {
     pluginEnabled: false,
     ICEServers: [], // deprecated
     ICEServersConfigs: [],
@@ -116,7 +140,7 @@ export const DefaultCallsConfig = {
     last_retrieved_at: 0,
     sku_short_name: '',
     MaxCallParticipants: 0,
-} as CallsConfig;
+};
 
 export type ICEServersConfigs = Array<ConfigurationParamWithUrls | ConfigurationParamWithUrl>;
 

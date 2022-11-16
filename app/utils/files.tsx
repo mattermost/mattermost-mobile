@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelModel} from '@app/database/models/server';
+import {ChannelModel} from '@database/models/server';
 import {fileToGalleryItem} from '@utils/gallery';
 
 export const getNumberFileMenuOptions = (canDownloadFiles: boolean, publicLinkEnabled: boolean) => {

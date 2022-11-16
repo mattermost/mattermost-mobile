@@ -5,6 +5,7 @@ import {MM_TABLES, OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 
 import type {TransformerArgs} from '@typings/database/database';
+import type ConfigModel from '@typings/database/models/servers/config';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SystemModel from '@typings/database/models/servers/system';
@@ -13,6 +14,7 @@ const {
     CUSTOM_EMOJI,
     ROLE,
     SYSTEM,
+    CONFIG,
 } = MM_TABLES.SERVER;
 
 /**
@@ -93,4 +95,29 @@ export const transformSystemRecord = ({action, database, value}: TransformerArgs
         value,
         fieldsMapper,
     }) as Promise<SystemModel>;
+};
+
+/**
+ * transformConfigRecord: Prepares a record of the SERVER database 'Config' table for update or create actions.
+ * @param {TransformerArgs} operator
+ * @param {Database} operator.database
+ * @param {RecordPair} operator.value
+ * @returns {Promise<ConfigModel>}
+ */
+export const transformConfigRecord = ({action, database, value}: TransformerArgs): Promise<ConfigModel> => {
+    const raw = value.raw as IdValue;
+
+    // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
+    const fieldsMapper = (config: ConfigModel) => {
+        config._raw.id = raw?.id;
+        config.value = raw?.value as string;
+    };
+
+    return prepareBaseRecord({
+        action,
+        database,
+        tableName: CONFIG,
+        value,
+        fieldsMapper,
+    }) as Promise<ConfigModel>;
 };

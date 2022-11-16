@@ -39,6 +39,7 @@ class ChannelListScreen {
     browseChannelsItem = PlusMenu.browseChannelsItem;
     createNewChannelItem = PlusMenu.createNewChannelItem;
     openDirectMessageItem = PlusMenu.openDirectMessageItem;
+    invitePeopleToTeamItem = PlusMenu.invitePeopleToTeamItem;
 
     getCategoryCollapsed = (categoryKey: string) => {
         return element(by.id(`${this.testID.categoryHeaderPrefix}${categoryKey}.collapsed.true`));
