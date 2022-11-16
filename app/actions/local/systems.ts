@@ -8,12 +8,14 @@ import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getServerCredentials} from '@init/credentials';
 import {queryAllChannelsForTeam} from '@queries/servers/channel';
-import {getConfig, getLicense, getGlobalDataRetentionPolicy, getGranularDataRetentionPolicies, getLastGlobalDataRetentionRun} from '@queries/servers/system';
+import {getConfig, getLicense, getGlobalDataRetentionPolicy, getGranularDataRetentionPolicies, getLastGlobalDataRetentionRun, getIsDataRetentionEnabled} from '@queries/servers/system';
 import {logError} from '@utils/log';
+
+import {deletePosts} from './post';
 
 import type PostModel from '@typings/database/models/servers/post';
 
-const {SERVER: {DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
+const {SERVER: {POST}} = MM_TABLES;
 
 export async function storeConfigAndLicense(serverUrl: string, config: ClientConfig, license: ClientLicense) {
     try {
@@ -95,6 +97,11 @@ export async function dataRetentionCleanup(serverUrl: string) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
+        const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
+        if (!isDataRetentionEnabled) {
+            return {error: undefined};
+        }
+
         const lastRunAt = await getLastGlobalDataRetentionRun(database);
         const lastCleanedToday = new Date(lastRunAt).toDateString() === new Date().toDateString();
 
@@ -126,11 +133,11 @@ export async function dataRetentionCleanup(serverUrl: string) {
         for (let i = 0; i < teamPolicies.length; i++) {
             const {team_id, post_duration} = teamPolicies[i];
             // eslint-disable-next-line no-await-in-loop
-            const channels = await queryAllChannelsForTeam(database, team_id).fetch();
-            if (channels.length) {
+            const channelIds = await queryAllChannelsForTeam(database, team_id).fetchIds();
+            if (channelIds.length) {
                 const cutoff = getDataRetentionPolicyCutoff(post_duration);
-                channels.forEach((channel) => {
-                    channelsCutoffs[channel.id] = cutoff;
+                channelIds.forEach((channelId) => {
+                    channelsCutoffs[channelId] = cutoff;
                 });
             }
         }
@@ -156,31 +163,17 @@ export async function dataRetentionCleanup(serverUrl: string) {
             conditions.push(`create_at < ${globalRetentionCutoff}`);
         }
 
-        const posts = await database.get<PostModel>(POST).query(
+        const postIds = await database.get<PostModel>(POST).query(
             Q.unsafeSqlQuery(`SELECT * FROM ${POST} where ${conditions.join(' OR ')}`),
         ).fetchIds();
 
-        if (posts.length) {
-            const postsFormatted = `'${posts.join("','")}'`;
-
-            await database.write(() => {
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
-                return database.adapter.unsafeExecute({
-                    sqls: [
-                        [`DELETE FROM ${POST} where id IN (${postsFormatted})`, []],
-                        [`DELETE FROM ${REACTION} where post_id IN (${postsFormatted})`, []],
-                        [`DELETE FROM ${FILE} where post_id IN (${postsFormatted})`, []],
-                        [`DELETE FROM ${DRAFT} where root_id IN (${postsFormatted})`, []],
-
-                        [`DELETE FROM ${POSTS_IN_THREAD} where root_id IN (${postsFormatted})`, []],
-
-                        [`DELETE FROM ${THREAD} where id IN (${postsFormatted})`, []],
-                        [`DELETE FROM ${THREAD_PARTICIPANT} where thread_id IN (${postsFormatted})`, []],
-                        [`DELETE FROM ${THREADS_IN_TEAM} where thread_id IN (${postsFormatted})`, []],
-                    ],
-                });
-            });
+        if (postIds.length) {
+            const batchSize = 1000;
+            for (let i = 0; i < postIds.length; i += batchSize) {
+                const batch = postIds.slice(i, batchSize);
+                // eslint-disable-next-line no-await-in-loop
+                await deletePosts(serverUrl, batch);
+            }
         }
 
         await updateLastDataRetentionRun(serverUrl);

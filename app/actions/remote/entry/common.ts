@@ -3,6 +3,7 @@
 
 import {Database, Model} from '@nozbe/watermelondb';
 
+import {dataRetentionCleanup} from '@actions/local/systems';
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
@@ -382,6 +383,7 @@ export const syncOtherServers = async (serverUrl: string) => {
                 registerDeviceToken(server.url);
                 syncAllChannelMembersAndThreads(server.url);
                 autoUpdateTimezone(server.url);
+                dataRetentionCleanup(server.url);
             }
         }
     }

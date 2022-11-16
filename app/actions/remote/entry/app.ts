@@ -5,7 +5,7 @@ import {dataRetentionCleanup} from '@actions/local/systems';
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
-import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId, getConfig, getLicense, getIsDataRetentionEnabled} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId, getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
@@ -26,10 +26,8 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
 
     const {database} = operator;
 
-    const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
-    if (isDataRetentionEnabled) {
-        await dataRetentionCleanup(serverUrl);
-    }
+    // Run data retention cleanup
+    await dataRetentionCleanup(serverUrl);
 
     // clear lastUnreadChannelId
     const removeLastUnreadChannelId = await prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});

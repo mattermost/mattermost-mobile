@@ -3,6 +3,7 @@
 
 import {fetchPostAuthors} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
+import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
@@ -17,6 +18,8 @@ import {updateLastPostAt, updateMyChannelLastFetchedAt} from './channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+
+const {SERVER: {DRAFT, FILE, POST, POSTS_IN_THREAD, REACTION, THREAD, THREAD_PARTICIPANT, THREADS_IN_TEAM}} = MM_TABLES;
 
 export const sendAddToChannelEphemeralPost = async (serverUrl: string, user: UserModel, addedUsernames: string[], messages: string[], channeId: string, postRootId = '') => {
     try {
@@ -243,4 +246,29 @@ export async function getPosts(serverUrl: string, ids: string[]) {
     } catch (error) {
         return [];
     }
+}
+
+export async function deletePosts(serverUrl: string, postIds: string[]) {
+    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+    const postsFormatted = `'${postIds.join("','")}'`;
+
+    await database.write(() => {
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        return database.adapter.unsafeExecute({
+            sqls: [
+                [`DELETE FROM ${POST} where id IN (${postsFormatted})`, []],
+                [`DELETE FROM ${REACTION} where post_id IN (${postsFormatted})`, []],
+                [`DELETE FROM ${FILE} where post_id IN (${postsFormatted})`, []],
+                [`DELETE FROM ${DRAFT} where root_id IN (${postsFormatted})`, []],
+
+                [`DELETE FROM ${POSTS_IN_THREAD} where root_id IN (${postsFormatted})`, []],
+
+                [`DELETE FROM ${THREAD} where id IN (${postsFormatted})`, []],
+                [`DELETE FROM ${THREAD_PARTICIPANT} where thread_id IN (${postsFormatted})`, []],
+                [`DELETE FROM ${THREADS_IN_TEAM} where thread_id IN (${postsFormatted})`, []],
+            ],
+        });
+    });
 }
