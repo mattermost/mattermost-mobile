@@ -17,7 +17,7 @@ import {ANNOUNCEMENT_BAR_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import ExpandedAnnouncementBanner from './expanded_announcement_banner';
@@ -49,12 +49,14 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         overflow: 'hidden',
     },
-    bannerText: {
+    bannerTextContainer: {
         flex: 1,
         flexGrow: 1,
-        ...typography('Body', 100, 'SemiBold'),
         marginRight: 5,
         textAlign: 'center',
+    },
+    bannerText: {
+        ...typography('Body', 100, 'SemiBold'),
     },
 }));
 
@@ -129,7 +131,7 @@ const AnnouncementBanner = ({
         height: height.value,
     }));
 
-    const bannerTextStyle = useMemo(() => [style.bannerText, {
+    const bannerTextContainerStyle = useMemo(() => [style.bannerTextContainer, {
         color: bannerTextColor,
     }], [style, bannerTextColor]);
 
@@ -147,7 +149,7 @@ const AnnouncementBanner = ({
                             style={style.wrapper}
                         >
                             <Text
-                                style={bannerTextStyle}
+                                style={bannerTextContainerStyle}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                             >
@@ -156,9 +158,10 @@ const AnnouncementBanner = ({
                                     name='information-outline'
                                     size={18}
                                 />
-                                {' '}
+                                {'  '}
                                 <RemoveMarkdown
                                     value={bannerText}
+                                    textStyle={style.bannerText}
                                 />
                             </Text>
                         </TouchableOpacity>
@@ -167,7 +170,7 @@ const AnnouncementBanner = ({
                                 onPress={handleDismiss}
                             >
                                 <CompassIcon
-                                    color={bannerTextColor}
+                                    color={changeOpacity(bannerTextColor, 0.56)}
                                     name='close'
                                     size={18}
                                 />
