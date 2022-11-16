@@ -12,7 +12,7 @@
     },
     "ios.release": {
       "type": "ios.app",
-      "binaryPath": "../ios/Build/Products/Debug-iphonesimulator/Mattermost.app",
+      "binaryPath": "../ios/Build/Products/Release-iphonesimulator/Mattermost.app",
       "build": "cd ../fastlane && NODE_ENV=production bundle exec fastlane ios simulator && cd ../detox"
     },
     "android.debug": {
