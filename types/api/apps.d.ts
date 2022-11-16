@@ -24,7 +24,7 @@ type AppsState = {
 
 type AppBinding = {
     app_id: string;
-    location?: string;
+    location: string;
     icon?: string;
 
     // Label is the (usually short) primary text to display at the location.

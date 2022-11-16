@@ -3,16 +3,13 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
+import React, {useCallback, useMemo} from 'react';
 
-import {handleBindingClick, postEphemeralCallResponseForChannel} from '@actions/remote/apps';
-import {handleGotoLocation} from '@actions/remote/command';
+import {postEphemeralCallResponseForChannel} from '@actions/remote/apps';
 import OptionItem from '@app/components/option_item';
-import {AppBindingLocations, AppCallResponseTypes} from '@app/constants/apps';
+import {AppBindingLocations} from '@app/constants/apps';
+import {useAppBinding} from '@app/hooks/apps';
 import {observeCurrentTeamId} from '@app/queries/servers/system';
-import {showAppForm} from '@app/screens/navigation';
-import {createCallContext} from '@app/utils/apps';
 import {preventDoubleTap} from '@app/utils/tap';
 import AppsManager from '@managers/apps_manager';
 import {WithDatabaseArgs} from '@typings/database/database';
@@ -26,70 +23,52 @@ type Props = {
 };
 
 const ChannelInfoAppBindings = ({channelId, teamId, dismissChannelInfo, serverUrl, bindings}: Props) => {
-    const intl = useIntl();
+    const onCallResponse = useCallback((callResp: AppCallResponse, message: string) => {
+        postEphemeralCallResponseForChannel(serverUrl, callResp, message, channelId);
+    }, [serverUrl, channelId]);
 
-    const tryOnPress = useCallback(async (binding: AppBinding) => {
+    const context = useMemo(() => ({
+        channel_id: channelId,
+        team_id: teamId,
+    }), [channelId, teamId]);
+
+    const config = useMemo(() => ({
+        onSuccess: onCallResponse,
+        onError: onCallResponse,
+    }), [onCallResponse]);
+
+    const handleBindingSubmit = useAppBinding(context, config);
+
+    const onPress = useCallback(preventDoubleTap(async (binding: AppBinding) => {
         dismissChannelInfo();
-
-        const context = createCallContext(
-            binding.app_id,
-            binding.location,
-            channelId,
-            teamId,
-        );
-
-        const res = await handleBindingClick(serverUrl, binding, context, intl);
-        if (res.error) {
-            const errorResponse = res.error;
-            const errorMessage = errorResponse.text || intl.formatMessage({
-                id: 'apps.error.unknown',
-                defaultMessage: 'Unknown error occurred.',
-            });
-            postEphemeralCallResponseForChannel(serverUrl, errorResponse, errorMessage, channelId);
-            return;
-        }
-
-        const callResp = res.data!;
-        switch (callResp.type) {
-            case AppCallResponseTypes.OK:
-                if (callResp.text) {
-                    postEphemeralCallResponseForChannel(serverUrl, callResp, callResp.text, channelId);
-                }
-                return;
-            case AppCallResponseTypes.NAVIGATE:
-                if (callResp.navigate_to_url) {
-                    handleGotoLocation(serverUrl, intl, callResp.navigate_to_url);
-                }
-                return;
-            case AppCallResponseTypes.FORM:
-                if (callResp.form) {
-                    showAppForm(callResp.form, context);
-                }
-                return;
-            default: {
-                const errorMessage = intl.formatMessage({
-                    id: 'apps.error.responses.unknown_type',
-                    defaultMessage: 'App response type not supported. Response type: {type}.',
-                }, {
-                    type: callResp.type,
-                });
-                postEphemeralCallResponseForChannel(serverUrl, callResp, errorMessage, channelId);
-            }
-        }
-    }, [channelId, teamId, dismissChannelInfo, serverUrl, bindings, intl]);
+        handleBindingSubmit(binding);
+    }), [handleBindingSubmit]);
 
     const options = bindings.map((binding) => (
-        <OptionItem
-            key={binding.location}
-            label={binding.label}
-            icon={binding.icon}
-            action={preventDoubleTap(() => tryOnPress(binding))}
-            type='default'
-            testID={`channel_info.options.app_binding.option.${binding.location}`}
+        <BindingOptionItem
+            key={binding.app_id + binding.location}
+            binding={binding}
+            onPress={onPress}
         />
     ));
 
     return <>{options}</>;
+};
+
+const BindingOptionItem = ({binding, onPress}: {binding: AppBinding; onPress: (binding: AppBinding) => void}) => {
+    const handlePress = useCallback(preventDoubleTap(() => {
+        onPress(binding);
+    }), [binding, onPress]);
+
+    return (
+        <OptionItem
+            label={binding.label}
+            icon={binding.icon}
+            action={handlePress}
+            type='default'
+            testID={`channel_info.options.app_binding.option.${binding.location}`}
+        />
+    );
 };
 
 type OwnProps = {

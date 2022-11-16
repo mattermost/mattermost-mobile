@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, ScrollView, Text, View} from 'react-native';
+import {Alert, Keyboard, ScrollView, Text, View} from 'react-native';
 import Button from 'react-native-button';
 import {ImageResource} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -128,7 +128,7 @@ function AppsFormComponent({
 
     useDidUpdate(() => {
         dispatchValues({elements: form.fields});
-    }, [form, dispatchValues]);
+    }, [form]);
 
     const submitButtons = useMemo(() => {
         return form.fields && form.fields.find((f) => f.name === form.submit_buttons);
@@ -148,7 +148,7 @@ function AppsFormComponent({
         base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
-    }, [theme.sidebarHeaderTextColor, Boolean(submitButtons), submitting, intl]);
+    }, [theme, Boolean(submitButtons), submitting, intl]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -195,7 +195,7 @@ function AppsFormComponent({
             }
         }
         return hasErrors;
-    }, [setError, setErrors, intl]);
+    }, [intl]);
 
     const onChange = useCallback((name: string, value: any) => {
         const field = form.fields?.find((f) => f.name === name);
@@ -296,6 +296,9 @@ function AppsFormComponent({
         const callResponse = res.data!;
         switch (callResponse.type) {
             case AppCallResponseTypes.OK:
+                if (callResponse.text) {
+                    Alert.alert('', callResponse.text);
+                }
                 close();
                 return;
             case AppCallResponseTypes.NAVIGATE:
@@ -314,7 +317,7 @@ function AppsFormComponent({
                 }));
                 setSubmitting(false);
         }
-    }, [form, values, submit, setErrors, submitting, setSubmitting, updateErrors, serverUrl, intl]);
+    }, [form, values, submit, submitting, updateErrors, serverUrl, intl]);
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const field = form.fields?.find((f) => f.name === name);
@@ -364,7 +367,7 @@ function AppsFormComponent({
                 return [];
             }
         }
-    }, [form, values, performLookupCall, setErrors, intl]);
+    }, [form, values, performLookupCall, intl]);
 
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, handleSubmit, [handleSubmit]);

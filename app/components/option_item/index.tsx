@@ -234,10 +234,10 @@ const OptionItem = ({
         >
             <View style={styles.row}>
                 <View style={styles.labelContainer}>
-                    {icon && (
+                    {Boolean(icon) && (
                         <View style={styles.iconContainer}>
                             <OptionIcon
-                                icon={icon}
+                                icon={icon!}
                                 destructive={destructive}
                             />
                         </View>

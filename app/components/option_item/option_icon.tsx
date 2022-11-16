@@ -35,7 +35,7 @@ const OptionIcon = ({icon, destructive}: OptionIconProps) => {
 
     const imageStyle = useMemo(() => (
         [styles.icon, destructive ? styles.destructive : null]
-    ), [styles.icon, styles.destructive, destructive]);
+    ), [styles, destructive]);
 
     const [failedToLoadImage, setFailedToLoadImage] = useState(false);
     const onErrorLoadingIcon = useCallback(() => {
