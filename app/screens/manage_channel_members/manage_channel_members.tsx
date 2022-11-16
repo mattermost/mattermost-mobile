@@ -85,7 +85,7 @@ const messages = defineMessages({
         defaultMessage: 'Manage',
     },
     button_done: {
-        id: t('mobile.manage_members.manage'),
+        id: t('mobile.manage_members.done'),
         defaultMessage: 'Done',
     },
 });
@@ -257,7 +257,7 @@ export default function ManageChannelMembers({
         }
     }, [searchUsers, clearSearch]);
 
-    const updateNavigationButtons = useCallback(async () => {
+    const updateNavigationButtons = useCallback(async (manage: boolean) => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         setButtons(componentId, {
             leftButtons: [{
@@ -268,24 +268,25 @@ export default function ManageChannelMembers({
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
                 id: MANAGE_BUTTON,
-                text: formatMessage(manageEnabled ? messages.button_done : messages.button_manage),
+                text: formatMessage(manage ? messages.button_done : messages.button_manage),
                 showAsAction: 'always',
                 enabled: true,
-                testID: 'manage_members.manage.button',
+                testID: 'manage_members.button',
             }],
         });
     }, [intl.locale, manageEnabled, theme]);
 
     const toggleManageEnabled = useCallback(() => {
+        updateNavigationButtons(!manageEnabled);
         setManageEnabled(!manageEnabled);
-    }, [manageEnabled]);
+    }, [manageEnabled, updateNavigationButtons]);
 
     useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
     useEffect(() => {
         mounted.current = true;
-        updateNavigationButtons();
+        updateNavigationButtons(false);
         getProfiles();
         return () => {
             mounted.current = false;
