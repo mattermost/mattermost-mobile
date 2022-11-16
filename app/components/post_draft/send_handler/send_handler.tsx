@@ -29,7 +29,7 @@ type Props = {
     testID?: string;
     channelId: string;
     rootId: string;
-    canShowPostPriority: string;
+    canShowPostPriority?: boolean;
     setIsFocused: (isFocused: boolean) => void;
 
     // From database

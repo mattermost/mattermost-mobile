@@ -15,7 +15,7 @@ type Props = {
     canUploadFiles: boolean;
     fileCount: number;
     isPostPriorityEnabled: boolean;
-    canShowPostPriority: string;
+    canShowPostPriority?: boolean;
     maxFileCount: number;
 
     // Draft Handler
