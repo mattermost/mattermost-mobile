@@ -231,7 +231,7 @@ index 0d70024..47b962e 100644
      PushNotificationProps asProps();
  }
 diff --git a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
-index eade08d..8be96dc 100644
+index eade08d..91d42ee 100644
 --- a/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
 +++ b/node_modules/react-native-notifications/lib/android/app/src/main/java/com/wix/reactnativenotifications/core/notification/PushNotification.java
 @@ -8,6 +8,10 @@ import android.content.Context;
@@ -250,7 +250,7 @@ index eade08d..8be96dc 100644
  import com.wix.reactnativenotifications.core.JsIOHelper;
  import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 +import com.wix.reactnativenotifications.core.helpers.ScheduleNotificationHelper;
-  
+ 
 +import static com.wix.reactnativenotifications.Defs.LOGTAG;
  import static com.wix.reactnativenotifications.Defs.NOTIFICATION_OPENED_EVENT_NAME;
  import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
@@ -512,7 +512,7 @@ index afd5c73..6036dda 100644
  }
  
 diff --git a/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m b/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
-index 5c8dd0b..7946108 100644
+index 5c8dd0b..1c7e575 100644
 --- a/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
 +++ b/node_modules/react-native-notifications/lib/ios/RNNotificationEventHandler.m
 @@ -6,11 +6,13 @@
@@ -529,11 +529,10 @@ index 5c8dd0b..7946108 100644
      return self;
  }
  
-@@ -30,7 +32,15 @@
- 
+@@ -31,6 +33,15 @@
  - (void)didReceiveNotificationResponse:(UNNotificationResponse *)response completionHandler:(void (^)(void))completionHandler {
      [_store setActionCompletionHandler:completionHandler withCompletionKey:response.notification.request.identifier];
--    [RNEventEmitter sendEvent:RNNotificationOpened body:[RNNotificationParser parseNotificationResponse:response]];
+     [RNEventEmitter sendEvent:RNNotificationOpened body:[RNNotificationParser parseNotificationResponse:response]];
 +    dispatch_async(dispatch_get_main_queue(), ^{
 +        NSDate* now = [[NSDate alloc] init];
 +        double interval = [now timeIntervalSinceDate:self->wakeTime];
@@ -546,7 +545,7 @@ index 5c8dd0b..7946108 100644
  }
  
  - (void)didReceiveBackgroundNotification:(NSDictionary *)userInfo withCompletionHandler:(void (^)(UIBackgroundFetchResult))completionHandler {
-@@ -38,7 +48,7 @@
+@@ -38,7 +49,7 @@
          NSString *uuid = [[NSUUID UUID] UUIDString];
          __block BOOL completionHandlerCalled = NO;
          dispatch_semaphore_t semaphore = dispatch_semaphore_create(0);

@@ -5,9 +5,9 @@ import React, {useMemo} from 'react';
 import {StyleProp, Text, TextStyle, useWindowDimensions, View, ViewStyle} from 'react-native';
 import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
-import {useIsTablet} from '@app/hooks/device';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

@@ -5,12 +5,10 @@ import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage, {Source} from 'react-native-fast-image';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import CompassIcon from '@components/compass_icon';
 import NetworkManager from '@managers/network_manager';
-import {observeConfig} from '@queries/servers/system';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 
 import type {Client} from '@client/rest';
@@ -89,14 +87,11 @@ const NotificationIcon = ({author, enablePostIconOverride, fromWebhook, override
 };
 
 const enhanced = withObservables([], ({database, senderId}: WithDatabaseArgs & {senderId: string}) => {
-    const config = observeConfig(database);
     const author = observeUser(database, senderId);
 
     return {
         author,
-        enablePostIconOverride: config.pipe(
-            switchMap((cfg) => of$(cfg?.EnablePostIconOverride === 'true')),
-        ),
+        enablePostIconOverride: observeConfigBooleanValue(database, 'EnablePostIconOverride'),
     };
 });
 
