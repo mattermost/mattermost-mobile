@@ -9,7 +9,7 @@ import {storeProfile} from '@actions/local/user';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import UserListRow from '@components/user_list_row';
-import {General, Permissions, Screens} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
@@ -19,6 +19,7 @@ import {
     makeStyleSheetFromTheme,
 } from '@utils/theme';
 import {typography} from '@utils/typography';
+import {isChannelAdmin, isSystemAdmin} from '@utils/user';
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
@@ -45,8 +46,7 @@ const sectionKeyExtractor = (profile: UserProfile) => {
 };
 
 const sectionRoleKeyExtractor = (profile: UserProfile) => {
-    if (profile.roles.includes(Permissions.CHANNEL_ADMIN_ROLE) ||
-        profile.roles.includes(Permissions.SYSTEM_ADMIN_ROLE)) {
+    if (isSystemAdmin(profile.roles) || isChannelAdmin(profile.roles)) {
         return SECTION_TITLE_ADMINS;
     }
     return SECTION_TITLE_MEMBERS;

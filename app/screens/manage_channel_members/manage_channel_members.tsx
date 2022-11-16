@@ -13,7 +13,7 @@ import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import UserList from '@components/user_list';
-import {General, Permissions, Screens} from '@constants';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {ChannelModel, UserModel} from '@database/models/server';
@@ -23,7 +23,7 @@ import {t} from '@i18n';
 import {dismissModal, openAsBottomSheet, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
-import {filterProfilesMatchingTerm} from '@utils/user';
+import {filterProfilesMatchingTerm, isChannelAdmin, isSystemAdmin} from '@utils/user';
 
 const MANAGE_BUTTON = 'manage-button';
 const CLOSE_BUTTON = 'close-dms';
@@ -113,7 +113,8 @@ export default function ManageChannelMembers({
     const {formatMessage} = intl;
 
     const currentUserId = currentUser.id;
-    const canManage = currentUser.roles.includes(Permissions.SYSTEM_ADMIN_ROLE || Permissions.CHANNEL_ADMIN_ROLE);
+
+    const canManage = isSystemAdmin(currentUser.roles) || isChannelAdmin(currentUser.roles);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const next = useRef(true);
     const page = useRef(-1);
@@ -345,7 +346,7 @@ export default function ManageChannelMembers({
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 manageMode={true}
-                showManage={canManage && manageEnabled}
+                showManageMode={canManage && manageEnabled}
                 profiles={data}
                 selectedIds={{}}
                 showNoResults={!loading && page.current !== -1}

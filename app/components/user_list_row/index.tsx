@@ -17,13 +17,12 @@ import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import TutorialHighlight from '@components/tutorial_highlight';
 import TutorialLongPress from '@components/tutorial_highlight/long_press';
-import {Permissions} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {displayUsername, isGuest} from '@utils/user';
+import {displayUsername, isChannelAdmin, isGuest, isSystemAdmin} from '@utils/user';
 
 type Props = {
     id: string;
@@ -174,7 +173,7 @@ export default function UserListRow({
         if (showManageMode) {
             let i18nId = t('mobile.manage_members.member');
             let defaultMessage = 'Member';
-            if (user.roles.includes(Permissions.SYSTEM_ADMIN_ROLE || Permissions.CHANNEL_ADMIN_ROLE)) {
+            if (isSystemAdmin(user.roles) || isChannelAdmin(user.roles)) {
                 i18nId = t('mobile.manage_members.admin');
                 defaultMessage = 'Admin';
             }
