@@ -4,9 +4,10 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
+import {observeProfileLongPresTutorial} from '@app/queries/app/global';
 import {observeChannel} from '@queries/servers/channel';
-import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
-import {observeTeammateNameDisplay} from '@queries/servers/user';
+import {observeCurrentTeamId} from '@queries/servers/system';
+import {observeCurrentUser, observeTeammateNameDisplay} from '@queries/servers/user';
 
 import ManageChannelMembers from './manage_channel_members';
 
@@ -19,9 +20,10 @@ type Props = WithDatabaseArgs & {
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
     return {
         currentChannel: observeChannel(database, channelId),
-        currentUserId: observeCurrentUserId(database),
+        currentUser: observeCurrentUser(database),
         currentTeamId: observeCurrentTeamId(database),
         teammateNameDisplay: observeTeammateNameDisplay(database),
+        tutorialWatched: observeProfileLongPresTutorial(),
     };
 });
 

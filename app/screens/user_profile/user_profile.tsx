@@ -37,6 +37,7 @@ type Props = {
     teamId: string;
     teammateDisplayName: string;
     user: UserModel;
+    isManageable?: boolean;
     userIconOverride?: string;
     usernameOverride?: string;
 }
@@ -49,7 +50,7 @@ const EXTRA_HEIGHT = 60;
 
 const UserProfile = ({
     channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
-    isChannelAdmin, isCustomStatusEnabled, isDirectMessage, isMilitaryTime, isSystemAdmin, isTeamAdmin,
+    isChannelAdmin, isCustomStatusEnabled, isDirectMessage, isManageable = false, isMilitaryTime, isSystemAdmin, isTeamAdmin,
     location, teamId, teammateDisplayName,
     user, userIconOverride, usernameOverride,
 }: Props) => {
@@ -57,11 +58,14 @@ const UserProfile = ({
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
     const channelContext = [Screens.CHANNEL, Screens.THREAD].includes(location);
-    const showOptions: OptionsType = channelContext && !user.isBot ? 'all' : 'message';
     const override = Boolean(userIconOverride || usernameOverride);
     const timezone = getUserTimezone(user);
     const customStatus = getUserCustomStatus(user);
     const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
+
+    let showOptions: OptionsType = channelContext && !user.isBot ? 'all' : 'message';
+    showOptions = isManageable ? 'manage' : showOptions;
+
     let localTime: string|undefined;
     if (timezone) {
         moment.locale(getLocaleFromLanguage(locale).toLowerCase());
@@ -125,7 +129,7 @@ const UserProfile = ({
                     userIconOverride={userIconOverride}
                     usernameOverride={usernameOverride}
                 />
-                {(!isDirectMessage || !channelContext) && !override &&
+                {(!isDirectMessage || !channelContext) && !override && !isManageable &&
                     <UserProfileOptions
                         location={location}
                         type={showOptions}
@@ -154,6 +158,14 @@ const UserProfile = ({
                     testID='user_profile.local_time'
                     title={formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'})}
                 />
+                }
+                {isManageable &&
+                    <UserProfileOptions
+                        location={location}
+                        type={showOptions}
+                        username={user.username}
+                        userId={user.id}
+                    />
                 }
             </>
         );

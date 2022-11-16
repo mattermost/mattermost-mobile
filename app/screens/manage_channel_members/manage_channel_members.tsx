@@ -13,10 +13,10 @@ import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import UserList from '@components/user_list';
-import {General, Screens} from '@constants';
+import {General, Permissions, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {ChannelModel} from '@database/models/server';
+import {ChannelModel, UserModel} from '@database/models/server';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
@@ -32,7 +32,7 @@ type Props = {
     componentId: string;
     currentChannel: ChannelModel;
     currentTeamId: string;
-    currentUserId: string;
+    currentUser: UserModel;
     restrictDirectMessage: boolean;
     teammateNameDisplay: string;
     tutorialWatched: boolean;
@@ -101,7 +101,7 @@ export default function ManageChannelMembers({
     currentChannel,
     componentId,
     currentTeamId,
-    currentUserId,
+    currentUser,
     restrictDirectMessage,
     teammateNameDisplay,
     tutorialWatched,
@@ -112,6 +112,8 @@ export default function ManageChannelMembers({
     const intl = useIntl();
     const {formatMessage} = intl;
 
+    const currentUserId = currentUser.id;
+    const canManage = currentUser.roles.includes(Permissions.SYSTEM_ADMIN_ROLE || Permissions.CHANNEL_ADMIN_ROLE);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const next = useRef(true);
     const page = useRef(-1);
@@ -209,6 +211,7 @@ export default function ManageChannelMembers({
             const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
             const closeButtonId = 'close-user-profile';
             const props = {
+                isManageable: true,
                 closeButtonId,
                 userId: user.id,
                 location: Screens.USER_PROFILE,
@@ -342,7 +345,7 @@ export default function ManageChannelMembers({
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 manageMode={true}
-                showManage={manageEnabled}
+                showManage={canManage && manageEnabled}
                 profiles={data}
                 selectedIds={{}}
                 showNoResults={!loading && page.current !== -1}
@@ -350,7 +353,7 @@ export default function ManageChannelMembers({
                 fetchMore={getProfiles}
                 term={term}
                 testID='manage_members.user_list'
-                tutorialWatched={true}
+                tutorialWatched={tutorialWatched}
             />
         </SafeAreaView>
     );
