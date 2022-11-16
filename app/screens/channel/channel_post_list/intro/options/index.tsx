@@ -44,6 +44,7 @@ const IntroOptions = ({channelId, header, favorite, people}: Props) => {
         <View style={styles.container}>
             {people &&
             <AddPeopleBox
+                channelId={channelId}
                 containerStyle={[styles.item, styles.margin]}
                 testID='channel_post_list.intro_options.add_people.action'
             />

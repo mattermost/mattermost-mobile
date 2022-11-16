@@ -13,17 +13,17 @@ import {dismissBottomSheet, goToScreen, showModal} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
-    currentChannel: ChannelModel;
+    channel: ChannelModel;
     containerStyle?: StyleProp<ViewStyle>;
     inModal?: boolean;
     testID?: string;
 }
 
-const AddPeopleBox = ({currentChannel, containerStyle, inModal, testID}: Props) => {
+const AddPeopleBox = ({channel, containerStyle, inModal, testID}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const channelId = currentChannel.id;
-    const displayName = currentChannel.displayName;
+    const channelId = channel.id;
+    const displayName = channel.displayName;
 
     const onAddPeople = useCallback(async () => {
         const title = intl.formatMessage({id: 'mobile.channel_add_people.title', defaultMessage: 'Add Members'});
