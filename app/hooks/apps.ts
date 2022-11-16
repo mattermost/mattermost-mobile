@@ -6,10 +6,10 @@ import {useIntl} from 'react-intl';
 
 import {handleBindingClick} from '@actions/remote/apps';
 import {handleGotoLocation} from '@actions/remote/command';
-import {AppCallResponseTypes} from '@app/constants/apps';
-import {useServerUrl} from '@app/context/server';
-import {showAppForm} from '@app/screens/navigation';
-import {createCallContext} from '@app/utils/apps';
+import {AppCallResponseTypes} from '@constants/apps';
+import {useServerUrl} from '@context/server';
+import {showAppForm} from '@screens/navigation';
+import {createCallContext} from '@utils/apps';
 
 export type UseAppBindingContext = {
     channel_id: string;

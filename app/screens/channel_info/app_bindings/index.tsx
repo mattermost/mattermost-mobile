@@ -6,13 +6,13 @@ import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useMemo} from 'react';
 
 import {postEphemeralCallResponseForChannel} from '@actions/remote/apps';
-import OptionItem from '@app/components/option_item';
-import {AppBindingLocations} from '@app/constants/apps';
-import {useAppBinding} from '@app/hooks/apps';
-import {observeCurrentTeamId} from '@app/queries/servers/system';
-import {preventDoubleTap} from '@app/utils/tap';
+import OptionItem from '@components/option_item';
+import {AppBindingLocations} from '@constants/apps';
+import {useAppBinding} from '@hooks/apps';
 import AppsManager from '@managers/apps_manager';
+import {observeCurrentTeamId} from '@queries/servers/system';
 import {WithDatabaseArgs} from '@typings/database/database';
+import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
     channelId: string;

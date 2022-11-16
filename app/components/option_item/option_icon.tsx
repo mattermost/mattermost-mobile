@@ -4,9 +4,9 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import FastImage from 'react-native-fast-image';
 
-import {useTheme} from '@app/context/theme';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
-import {isValidUrl} from '@app/utils/url';
+import {useTheme} from '@context/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {isValidUrl} from '@utils/url';
 
 import CompassIcon from '../compass_icon';
 

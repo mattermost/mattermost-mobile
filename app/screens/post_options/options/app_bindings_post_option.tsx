@@ -6,12 +6,12 @@ import React, {useCallback, useMemo} from 'react';
 import {map} from 'rxjs/operators';
 
 import {postEphemeralCallResponseForPost} from '@actions/remote/apps';
-import OptionItem from '@app/components/option_item';
-import {ChannelModel} from '@app/database/models/server';
-import {useAppBinding} from '@app/hooks/apps';
-import {preventDoubleTap} from '@app/utils/tap';
+import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
+import {ChannelModel} from '@database/models/server';
+import {useAppBinding} from '@hooks/apps';
 import {dismissBottomSheet} from '@screens/navigation';
+import {preventDoubleTap} from '@utils/tap';
 
 import type PostModel from '@typings/database/models/servers/post';
 

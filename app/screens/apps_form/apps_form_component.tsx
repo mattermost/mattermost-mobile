@@ -148,7 +148,7 @@ function AppsFormComponent({
         base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
-    }, [theme, Boolean(submitButtons), submitting, intl]);
+    }, [theme.sidebarHeaderTextColor, Boolean(submitButtons), submitting, intl]);
 
     useEffect(() => {
         setButtons(componentId, {
