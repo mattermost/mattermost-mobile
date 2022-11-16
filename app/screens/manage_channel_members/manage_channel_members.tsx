@@ -9,7 +9,6 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {storeProfile} from '@actions/local/user';
 import {makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfilesInChannel, searchProfiles} from '@actions/remote/user';
-import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import UserList from '@components/user_list';
@@ -258,13 +257,8 @@ export default function ManageChannelMembers({
     }, [searchUsers, clearSearch]);
 
     const updateNavigationButtons = useCallback(async (manage: boolean) => {
-        const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
+        // const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         setButtons(componentId, {
-            leftButtons: [{
-                id: CLOSE_BUTTON,
-                icon: closeIcon,
-                testID: 'close.manage_members.button',
-            }],
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
                 id: MANAGE_BUTTON,

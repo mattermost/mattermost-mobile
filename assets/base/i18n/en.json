@@ -468,6 +468,7 @@
   "mobile.login_options.select_option": "Select a login option below.",
   "mobile.login_options.separator_text": "or log in with",
   "mobile.login_options.sso_continue": "Continue with",
+  "mobile.manage_members.done": "Done",
   "mobile.manage_members.manage": "Manage",
   "mobile.manage_members.remove_member": "Remove member",
   "mobile.managed.blocked_by": "Blocked by {vendor}",
