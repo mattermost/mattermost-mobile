@@ -7,7 +7,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryAllMyChannelsForTeam} from '@queries/servers/channel';
-import {observeCurrentTeamId} from '@queries/servers/system';
+import {observeCurrentTeamId, observeLicense} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 
@@ -20,6 +20,9 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     teamsCount: queryMyTeams(database).observeCount(false),
     channelsCount: observeCurrentTeamId(database).pipe(
         switchMap((id) => (id ? queryAllMyChannelsForTeam(database, id).observeCount() : of$(0))),
+    ),
+    isLicensed: observeLicense(database).pipe(
+        switchMap((lcs) => (lcs ? of$(lcs.IsLicensed === 'true') : of$(false))),
     ),
 }));
 
