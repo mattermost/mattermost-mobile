@@ -4,7 +4,6 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
-import {ScrollView} from 'react-native-gesture-handler';
 
 import {AppBindingLocations} from '@app/constants/apps';
 import {useServerUrl, withServerUrl} from '@app/context/server';
@@ -83,58 +82,58 @@ const PostOptions = ({
     const renderContent = () => {
         return (
             <>
-            {canAddReaction && <ReactionBar postId={post.id}/>}
-            {canReply && sourceScreen !== Screens.THREAD && <ReplyOption post={post}/>}
-            {shouldRenderFollow &&
+                {canAddReaction && <ReactionBar postId={post.id}/>}
+                {canReply && sourceScreen !== Screens.THREAD && <ReplyOption post={post}/>}
+                {shouldRenderFollow &&
                 <FollowThreadOption thread={thread}/>
-            }
-            {canMarkAsUnread && !isSystemPost &&
+                }
+                {canMarkAsUnread && !isSystemPost &&
                 <MarkAsUnreadOption
                     post={post}
                     sourceScreen={sourceScreen}
                 />
-            }
-            {canCopyPermalink &&
+                }
+                {canCopyPermalink &&
                 <CopyPermalinkOption
                     post={post}
                     sourceScreen={sourceScreen}
                 />
-            }
-            {!isSystemPost &&
+                }
+                {!isSystemPost &&
                 <SaveOption
                     isSaved={isSaved}
                     postId={post.id}
                 />
-            }
-            {Boolean(canCopyText && post.message) &&
+                }
+                {Boolean(canCopyText && post.message) &&
                 <CopyTextOption
                     postMessage={post.message}
                     sourceScreen={sourceScreen}
                 />}
-            {canPin &&
+                {canPin &&
                 <PinChannelOption
                     isPostPinned={post.isPinned}
                     postId={post.id}
                 />
-            }
-            {canEdit &&
+                }
+                {canEdit &&
                 <EditOption
                     post={post}
                     canDelete={canDelete}
                 />
-            }
-            {canDelete &&
-            <DeletePostOption
-                combinedPost={combinedPost}
-                post={post}
-            />}
-            {showBindings &&
+                }
+                {canDelete &&
+                <DeletePostOption
+                    combinedPost={combinedPost}
+                    post={post}
+                />}
+                {showBindings &&
                 <AppBindingsPostOptions
                     post={post}
                     serverUrl={serverUrl}
                     bindings={bindings}
                 />
-            }
+                }
             </>
         );
     };
