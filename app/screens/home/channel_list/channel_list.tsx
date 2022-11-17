@@ -29,6 +29,7 @@ type ChannelProps = {
     isCRTEnabled: boolean;
     teamsCount: number;
     time?: number;
+    isLicensed: boolean;
 };
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -130,8 +131,9 @@ const ChannelListScreen = (props: ChannelProps) => {
                 edges={edges}
                 testID='channel_list.screen'
             >
-                <AnnouncementBanner/>
-
+                {props.isLicensed &&
+                    <AnnouncementBanner/>
+                }
                 <View style={styles.content}>
                     {canAddOtherServers && <Servers/>}
                     <Animated.View
