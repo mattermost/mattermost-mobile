@@ -86,7 +86,7 @@ export default function ChannelAddPeople({
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
-    const [startingConversation, setStartingConversation] = useState(false);
+    const [startingAddPeople, setStartingAddPeople] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const selectedCount = Object.keys(selectedIds).length;
     const groupConstrained = currentChannel.isGroupConstrained;
@@ -141,12 +141,12 @@ export default function ChannelAddPeople({
         setSearchResults([]);
     }, []);
 
-    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
-        if (startingConversation) {
+    const startAddPeople = useCallback(async (selectedId?: {[id: string]: boolean}) => {
+        if (startingAddPeople) {
             return;
         }
 
-        setStartingConversation(true);
+        setStartingAddPeople(true);
 
         const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
         let success;
@@ -159,9 +159,9 @@ export default function ChannelAddPeople({
         if (success) {
             close();
         } else {
-            setStartingConversation(false);
+            setStartingAddPeople(false);
         }
-    }, [startingConversation, selectedIds, addPeopleToChannel]);
+    }, [startingAddPeople, selectedIds, addPeopleToChannel]);
 
     const handleSelectProfile = useCallback((user: UserProfile) => {
         if (selectedIds[user.id]) {
@@ -174,7 +174,7 @@ export default function ChannelAddPeople({
 
         setSelectedIds(newSelectedIds);
         clearSearch();
-    }, [selectedIds, handleRemoveProfile, startConversation, clearSearch]);
+    }, [selectedIds, handleRemoveProfile, startAddPeople, clearSearch]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
@@ -226,7 +226,7 @@ export default function ChannelAddPeople({
         });
     }, [intl.locale, theme]);
 
-    useNavButtonPressed(ADD_BUTTON, componentId, startConversation, [startConversation]);
+    useNavButtonPressed(ADD_BUTTON, componentId, startAddPeople, [startAddPeople]);
 
     useEffect(() => {
         mounted.current = true;
@@ -238,9 +238,9 @@ export default function ChannelAddPeople({
     }, []);
 
     useEffect(() => {
-        const canStart = selectedCount > 0 && !startingConversation;
+        const canStart = selectedCount > 0 && !startingAddPeople;
         updateNavigationButtons(canStart);
-    }, [selectedCount > 0, startingConversation, updateNavigationButtons]);
+    }, [selectedCount > 0, startingAddPeople, updateNavigationButtons]);
 
     const data = useMemo(() => {
         if (isSearch) {
@@ -264,7 +264,7 @@ export default function ChannelAddPeople({
         return profiles;
     }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
 
-    if (startingConversation) {
+    if (startingAddPeople) {
         return (
             <View style={style.container}>
                 <Loading color={theme.centerChannelColor}/>
