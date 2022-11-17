@@ -5,13 +5,17 @@ import moment from 'moment';
 import mtz from 'moment-timezone';
 import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
+import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
+import LeaveChannelLabel from '@components/channel_actions/leave_channel_label';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import UserProfileCustomStatus from './custom_status';
@@ -20,6 +24,19 @@ import UserProfileOptions, {OptionsType} from './options';
 import UserProfileTitle from './title';
 
 import type UserModel from '@typings/database/models/servers/user';
+
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        divider: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
+            height: 1,
+            width: '100%',
+            alignSelf: 'center',
+            marginVertical: 8,
+            paddingHorizontal: 20,
+        },
+    };
+});
 
 type Props = {
     channelId?: string;
@@ -55,6 +72,8 @@ const UserProfile = ({
     user, userIconOverride, usernameOverride,
 }: Props) => {
     const {formatMessage, locale} = useIntl();
+    const theme = useTheme();
+    const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
     const channelContext = [Screens.CHANNEL, Screens.THREAD].includes(location);
@@ -63,8 +82,7 @@ const UserProfile = ({
     const customStatus = getUserCustomStatus(user);
     const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
 
-    let showOptions: OptionsType = channelContext && !user.isBot ? 'all' : 'message';
-    showOptions = isManageable ? 'manage' : showOptions;
+    const showOptions: OptionsType = channelContext && !user.isBot ? 'all' : 'message';
 
     let localTime: string|undefined;
     if (timezone) {
@@ -159,13 +177,16 @@ const UserProfile = ({
                     title={formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'})}
                 />
                 }
-                {isManageable &&
-                    <UserProfileOptions
-                        location={location}
-                        type={showOptions}
-                        username={user.username}
-                        userId={user.id}
-                    />
+                {isManageable && channelId &&
+                    <>
+                        <View style={styles.divider}/>
+                        <LeaveChannelLabel
+                            channelId={channelId}
+                            manageOption={'remove'}
+                            testID='channel.quick_actions.leave_channel.action'
+                            isOptionItem={true}
+                        />
+                    </>
                 }
             </>
         );

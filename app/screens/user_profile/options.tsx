@@ -3,22 +3,19 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, TouchableOpacity, View} from 'react-native';
+import {DeviceEventEmitter, StyleSheet, TouchableOpacity, View} from 'react-native';
 
 import {createDirectChannel, switchToChannelById} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import OptionBox, {OPTIONS_HEIGHT} from '@components/option_box';
-import OptionItem from '@components/option_item';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 
-export type OptionsType = 'all' | 'message' | 'manage';
+export type OptionsType = 'all' | 'message';
 
 type Props = {
     location: string;
@@ -27,55 +24,35 @@ type Props = {
     username: string;
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        container: {
-            flexDirection: 'row',
-            height: OPTIONS_HEIGHT,
-            marginBottom: 20,
-            width: '100%',
-        },
-        containerManage: {
-            borderColor: 'red',
-            borderWidth: 2,
-            flexDirection: 'row',
-            width: '100%',
-        },
-        divider: {
-            marginRight: 8,
-        },
-        dividerLine: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
-            height: 1,
-            width: '100%',
-            alignSelf: 'center',
-            marginVertical: 8,
-            paddingHorizontal: 20,
-        },
-        icon: {
-            fontSize: 24,
-            lineHeight: 22,
-        },
-        manageTextRemove: {
-            ...typography('Body', 200, 'Regular'),
-        },
-        singleButton: {
-            flexDirection: 'row',
-            width: '100%',
-        },
-        singleContainer: {
-            flexDirection: 'row',
-            marginBottom: 20,
-            width: '100%',
-        },
-    };
+const styles = StyleSheet.create({
+    container: {
+        flexDirection: 'row',
+        height: OPTIONS_HEIGHT,
+        marginBottom: 20,
+        width: '100%',
+    },
+    divider: {
+        marginRight: 8,
+    },
+    icon: {
+        fontSize: 24,
+        lineHeight: 22,
+    },
+    singleButton: {
+        flexDirection: 'row',
+        width: '100%',
+    },
+    singleContainer: {
+        flexDirection: 'row',
+        marginBottom: 20,
+        width: '100%',
+    },
 });
 
 const UserProfileOptions = ({location, type, userId, username}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const styles = getStyleSheet(theme);
 
     const buttonStyle = useMemo(() => {
         return buttonBackgroundStyle(theme, 'lg', 'tertiary', 'default');
@@ -111,24 +88,6 @@ const UserProfileOptions = ({location, type, userId, username}: Props) => {
                     text={intl.formatMessage({id: 'channel_info.mention', defaultMessage: 'Mention'})}
                 />
             </View>
-        );
-    } else if (type === 'manage') {
-        return (
-            <>
-                <View style={styles.dividerLine}/>
-                <OptionItem
-                    action={removeFromChannel}
-                    destructive={true}
-                    icon='trash-can-outline'
-                    label={intl.formatMessage({
-                        id: 'mobile.manage_members.remove_member',
-                        defaultMessage: 'Remove member',
-                    })}
-                    optionLabelTextStyle={styles.manageTextRemove}
-                    testID={'mobile.manage_members.remove_member'}
-                    type='default'
-                />
-            </>
         );
     }
 
