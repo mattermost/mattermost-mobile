@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -80,13 +80,6 @@ const messages = defineMessages({
     },
 });
 
-function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
-    if (action.type === 'add' && action.values?.length) {
-        return [...state, ...action.values];
-    }
-    return state;
-}
-
 export default function ManageChannelMembers({
     currentChannel,
     componentId,
@@ -111,7 +104,7 @@ export default function ManageChannelMembers({
     const mounted = useRef(false);
 
     const [manageEnabled, setManageEnabled] = useState(false);
-    const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
+    const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
@@ -126,7 +119,9 @@ export default function ManageChannelMembers({
 
             page.current += 1;
             setLoading(false);
-            dispatchProfiles({type: 'add', values: users});
+            if (users?.length) {
+                setProfiles((prev: UserProfile[]) => [...prev, ...users]);
+            }
         }
     };
 
