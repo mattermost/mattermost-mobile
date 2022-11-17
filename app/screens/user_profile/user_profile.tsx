@@ -77,12 +77,11 @@ const UserProfile = ({
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
     const channelContext = [Screens.CHANNEL, Screens.THREAD].includes(location);
+    const showOptions: OptionsType = channelContext && !user.isBot ? 'all' : 'message';
     const override = Boolean(userIconOverride || usernameOverride);
     const timezone = getUserTimezone(user);
     const customStatus = getUserCustomStatus(user);
     const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
-
-    const showOptions: OptionsType = channelContext && !user.isBot ? 'all' : 'message';
 
     let localTime: string|undefined;
     if (timezone) {
