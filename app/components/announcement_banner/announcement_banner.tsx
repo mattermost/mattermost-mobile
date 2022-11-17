@@ -123,7 +123,7 @@ const AnnouncementBanner = ({
 
     useEffect(() => {
         height.value = withTiming(visible ? ANNOUNCEMENT_BAR_HEIGHT : 0, {
-            duration: 500,
+            duration: 200,
         });
     }, [visible]);
 

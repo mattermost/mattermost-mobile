@@ -15,9 +15,9 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const lastDismissed = observeLastDismissedAnnouncement(database);
     const bannerText = observeConfigValue(database, 'BannerText');
-    const allowBannerDismissal = observeConfigBooleanValue(database, 'AllowBannerDismissal');
+    const allowDismissal = observeConfigBooleanValue(database, 'AllowBannerDismissal');
 
-    const bannerDismissed = combineLatest([lastDismissed, bannerText, allowBannerDismissal]).pipe(
+    const bannerDismissed = combineLatest([lastDismissed, bannerText, allowDismissal]).pipe(
         switchMap(([ld, bt, abd]) => of$(abd && (ld === bt))),
     );
 
@@ -32,7 +32,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         bannerText,
         bannerTextColor: observeConfigValue(database, 'BannerTextColor'),
         bannerDismissed,
-        allowDismissal: observeConfigBooleanValue(database, 'AllowBannerDismissal'),
+        allowDismissal,
     };
 });
 
