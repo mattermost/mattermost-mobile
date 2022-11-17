@@ -168,7 +168,7 @@ export default function UserListRow({
     }, [onLongPress, user]);
 
     const manageModeIcon = useMemo(() => {
-        if (!showManageMode) {
+        if (!showManageMode || isMyUser) {
             return null;
         }
 
