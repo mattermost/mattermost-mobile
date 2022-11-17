@@ -11,6 +11,7 @@ import {Screens} from '@constants';
 import {ChannelModel} from '@database/models/server';
 import {useAppBinding} from '@hooks/apps';
 import {dismissBottomSheet} from '@screens/navigation';
+import {isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -48,6 +49,10 @@ const AppBindingsPostOptions = ({serverUrl, post, teamId, bindings}: Props) => {
         const finish = await submitPromise;
         await finish();
     }, [handleBindingSubmit]);
+
+    if (isSystemMessage(post)) {
+        return null;
+    }
 
     const options = bindings.map((binding) => (
         <BindingOptionItem
