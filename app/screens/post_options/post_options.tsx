@@ -82,64 +82,60 @@ const PostOptions = ({
 
     const renderContent = () => {
         return (
-            <ScrollView
-                scrollEnabled={showBindings}
-                showsVerticalScrollIndicator={false}
-                showsHorizontalScrollIndicator={false}
-            >
-                {canAddReaction && <ReactionBar postId={post.id}/>}
-                {canReply && sourceScreen !== Screens.THREAD && <ReplyOption post={post}/>}
-                {shouldRenderFollow &&
-                    <FollowThreadOption thread={thread}/>
-                }
-                {canMarkAsUnread && !isSystemPost &&
-                    <MarkAsUnreadOption
-                        post={post}
-                        sourceScreen={sourceScreen}
-                    />
-                }
-                {canCopyPermalink &&
-                    <CopyPermalinkOption
-                        post={post}
-                        sourceScreen={sourceScreen}
-                    />
-                }
-                {!isSystemPost &&
-                    <SaveOption
-                        isSaved={isSaved}
-                        postId={post.id}
-                    />
-                }
-                {Boolean(canCopyText && post.message) &&
-                    <CopyTextOption
-                        postMessage={post.message}
-                        sourceScreen={sourceScreen}
-                    />}
-                {canPin &&
-                    <PinChannelOption
-                        isPostPinned={post.isPinned}
-                        postId={post.id}
-                    />
-                }
-                {canEdit &&
-                    <EditOption
-                        post={post}
-                        canDelete={canDelete}
-                    />
-                }
-                {canDelete &&
-                <DeletePostOption
-                    combinedPost={combinedPost}
+            <>
+            {canAddReaction && <ReactionBar postId={post.id}/>}
+            {canReply && sourceScreen !== Screens.THREAD && <ReplyOption post={post}/>}
+            {shouldRenderFollow &&
+                <FollowThreadOption thread={thread}/>
+            }
+            {canMarkAsUnread && !isSystemPost &&
+                <MarkAsUnreadOption
                     post={post}
+                    sourceScreen={sourceScreen}
+                />
+            }
+            {canCopyPermalink &&
+                <CopyPermalinkOption
+                    post={post}
+                    sourceScreen={sourceScreen}
+                />
+            }
+            {!isSystemPost &&
+                <SaveOption
+                    isSaved={isSaved}
+                    postId={post.id}
+                />
+            }
+            {Boolean(canCopyText && post.message) &&
+                <CopyTextOption
+                    postMessage={post.message}
+                    sourceScreen={sourceScreen}
                 />}
-                {showBindings &&
-                    <AppBindingsPostOptions
-                        post={post}
-                        serverUrl={serverUrl}
-                        bindings={bindings}
-                    />
-                }
-            </ScrollView>
+            {canPin &&
+                <PinChannelOption
+                    isPostPinned={post.isPinned}
+                    postId={post.id}
+                />
+            }
+            {canEdit &&
+                <EditOption
+                    post={post}
+                    canDelete={canDelete}
+                />
+            }
+            {canDelete &&
+            <DeletePostOption
+                combinedPost={combinedPost}
+                post={post}
+            />}
+            {showBindings &&
+                <AppBindingsPostOptions
+                    post={post}
+                    serverUrl={serverUrl}
+                    bindings={bindings}
+                />
+            }
+            </>
         );
     };
 
@@ -150,8 +146,8 @@ const PostOptions = ({
             renderContent={renderContent}
             closeButtonId={POST_OPTIONS_BUTTON}
             componentId={Screens.POST_OPTIONS}
-            initialSnapIndex={0}
-            snapPoints={[((snapPoints + additionalSnapPoints) * ITEM_HEIGHT), 10]}
+            initialSnapIndex={1}
+            snapPoints={['90%', ((snapPoints + additionalSnapPoints) * ITEM_HEIGHT), 10]}
             testID='post_options'
         />
     );
