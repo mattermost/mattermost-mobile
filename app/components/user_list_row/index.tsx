@@ -169,38 +169,34 @@ export default function UserListRow({
 
     const manageModeIcon = useMemo(() => {
         const color = changeOpacity(theme.centerChannelColor, 0.64);
-
-        if (showManageMode) {
-            let i18nId = t('mobile.manage_members.member');
-            let defaultMessage = 'Member';
-            if (isSystemAdmin(user.roles) || isChannelAdmin(user.roles)) {
-                i18nId = t('mobile.manage_members.admin');
-                defaultMessage = 'Admin';
-            }
-
-            return (
-                <View style={[style.selectorManage, color]}>
-                    <FormattedText
-                        id={i18nId}
-                        style={style.manageText}
-                        defaultMessage={defaultMessage}
-                    />
-                    <CompassIcon
-                        name={'chevron-down'}
-                        size={28}
-                        color={color}
-                    />
-                </View>
-            );
+        let i18nId = t('mobile.manage_members.member');
+        let defaultMessage = 'Member';
+        if (isSystemAdmin(user.roles) || isChannelAdmin(user.roles)) {
+            i18nId = t('mobile.manage_members.admin');
+            defaultMessage = 'Admin';
         }
-        return null;
-    }, [theme, showManageMode]);
+
+        return (
+            <View style={[style.selectorManage, color]}>
+                <FormattedText
+                    id={i18nId}
+                    style={style.manageText}
+                    defaultMessage={defaultMessage}
+                />
+                <CompassIcon
+                    name={'chevron-down'}
+                    size={28}
+                    color={color}
+                />
+            </View>
+        );
+    }, [theme]);
 
     const icon = useMemo(() => {
         const iconOpacity = DEFAULT_ICON_OPACITY * (selectable ? 1 : DISABLED_OPACITY);
         const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
         if (manageMode) {
-            return manageModeIcon;
+            return showManageMode && manageModeIcon;
         }
         return (
             <View style={style.selector}>
@@ -211,7 +207,7 @@ export default function UserListRow({
                 />
             </View>
         );
-    }, [manageModeIcon, selectable, selected, theme]);
+    }, [manageMode, manageModeIcon, selectable, selected, showManageMode, theme]);
 
     let usernameDisplay = `@${username}`;
     if (isMyUser) {
