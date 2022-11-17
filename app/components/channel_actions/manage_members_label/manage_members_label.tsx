@@ -26,14 +26,14 @@ const messages = defineMessages({
 
 type Props = {
     isOptionItem?: boolean;
-    canLeave: boolean;
+    canRemove: boolean;
     channelId: string;
     manageOption?: string;
     testID?: string;
     userId: string;
 }
 
-const ManageMembersLabel = ({canLeave, channelId, isOptionItem, manageOption, testID, userId}: Props) => {
+const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, testID, userId}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
@@ -83,7 +83,7 @@ const ManageMembersLabel = ({canLeave, channelId, isOptionItem, manageOption, te
         );
     };
 
-    const onLeave = () => {
+    const onAction = () => {
         switch (manageOption) {
             case General.MANAGE_MEMBERS_OPTIONS.REMOVE_USER:
                 removeFromChannel();
@@ -91,19 +91,19 @@ const ManageMembersLabel = ({canLeave, channelId, isOptionItem, manageOption, te
         }
     };
 
-    if (!canLeave) {
+    if (manageOption === General.MANAGE_MEMBERS_OPTIONS.REMOVE_USER && !canRemove) {
         return null;
     }
 
-    let leaveText;
+    let actionText;
     let icon;
     switch (manageOption) {
         case General.MANAGE_MEMBERS_OPTIONS.REMOVE_USER:
-            leaveText = intl.formatMessage(messages.remove_title);
+            actionText = intl.formatMessage(messages.remove_title);
             icon = 'trash-can-outline';
             break;
         default:
-            leaveText = intl.formatMessage(messages.remove_title);
+            actionText = intl.formatMessage(messages.remove_title);
             icon = 'trash-can-outline';
             break;
     }
@@ -111,11 +111,11 @@ const ManageMembersLabel = ({canLeave, channelId, isOptionItem, manageOption, te
     if (isOptionItem) {
         return (
             <OptionItem
-                action={onLeave}
+                action={onAction}
                 destructive={true}
                 icon={icon}
 
-                label={leaveText}
+                label={actionText}
                 testID={testID}
                 type='default'
             />
@@ -126,8 +126,8 @@ const ManageMembersLabel = ({canLeave, channelId, isOptionItem, manageOption, te
         <SlideUpPanelItem
             destructive={true}
             icon={icon}
-            onPress={onLeave}
-            text={leaveText}
+            onPress={onAction}
+            text={actionText}
             testID={testID}
         />
     );

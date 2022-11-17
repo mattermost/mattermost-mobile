@@ -23,7 +23,7 @@ const enhanced = withObservables(['channelId', 'userId'], ({channelId, userId, d
     const users = queryUsersById(database, [userId]).fetch();
 
     const channel = observeChannel(database, channelId);
-    const canLeave = channel.pipe(
+    const canRemove = channel.pipe(
         combineLatestWith(users),
         switchMap(([ch, u]) => {
             const isDefaultChannel = ch?.name === General.DEFAULT_CHANNEL;
@@ -32,7 +32,7 @@ const enhanced = withObservables(['channelId', 'userId'], ({channelId, userId, d
     );
 
     return {
-        canLeave,
+        canRemove,
     };
 });
 
