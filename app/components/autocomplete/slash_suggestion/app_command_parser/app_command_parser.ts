@@ -978,12 +978,15 @@ export class AppCommandParser {
                         const userID = (f.value as AppSelectOption).value;
                         let user: UserModel | UserProfile | undefined = await getUserById(this.database, userID);
                         if (!user) {
-                            const res = await fetchUsersByIds(this.serverUrl, [userID]);
+                            const res = await fetchUsersByIds(this.serverUrl, [userID], true);
                             if ('error' in res) {
                             // Silently fail on default value
                                 break;
                             }
                             user = res.users[0] || res.existingUsers[0];
+                            if (!user) {
+                                break;
+                            }
                         }
                         parsed.values[f.name] = user.username;
                         break;
@@ -998,6 +1001,9 @@ export class AppCommandParser {
                                 break;
                             }
                             channel = res.channel;
+                            if (!channel) {
+                                break;
+                            }
                         }
                         parsed.values[f.name] = channel.name;
                         break;
@@ -1176,14 +1182,21 @@ export class AppCommandParser {
 
         const errors: {[key: string]: string} = {};
         await Promise.all(parsed.resolvedForm.fields.map(async (f) => {
-            if (!values[f.name]) {
+            const value = values[f.name];
+            if (!value) {
                 return;
             }
             switch (f.type) {
                 case AppFieldTypes.DYNAMIC_SELECT:
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(value)) {
+                            commandValues = value as string[];
+                        } else {
+                            commandValues = [value] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         for (const value of commandValues) {
                             if (options.find((o) => o.value === value)) {
                                 errors[f.name] = this.intl.formatMessage({
@@ -1199,7 +1212,7 @@ export class AppCommandParser {
                         break;
                     }
 
-                    values[f.name] = {label: values[f.name], value: values[f.name]};
+                    values[f.name] = {label: value, value: value};
                     break;
                 case AppFieldTypes.STATIC_SELECT: {
                     const getOption = (value: string) => {
@@ -1217,9 +1230,15 @@ export class AppCommandParser {
                         values[f.name] = undefined;
                     };
 
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(value)) {
+                            commandValues = value as string[];
+                        } else {
+                            commandValues = [value] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         for (const value of commandValues) {
                             const option = getOption(value);
                             if (!option) {
@@ -1241,9 +1260,9 @@ export class AppCommandParser {
                         break;
                     }
 
-                    const option = getOption(values[f.name]);
+                    const option = getOption(value);
                     if (!option) {
-                        setOptionError(values[f.name]);
+                        setOptionError(value);
                         return;
                     }
                     values[f.name] = option;
@@ -1684,7 +1703,13 @@ export class AppCommandParser {
             prefix = '';
         }
 
-        const applicable = parsed.resolvedForm.fields.filter((field) => field.label && field.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()) && !parsed.values[field.name]);
+        const applicable = parsed.resolvedForm.fields.filter((field) => (
+            field.label &&
+            field.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()) &&
+            !parsed.values[field.name] &&
+            !field.readonly &&
+            field.type !== AppFieldTypes.MARKDOWN
+        ));
         if (applicable) {
             return applicable.map((f) => {
                 return {
