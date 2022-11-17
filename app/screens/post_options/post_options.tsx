@@ -67,7 +67,7 @@ const PostOptions = ({
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
 
-    const snapPoints = [
+    let snapPoints = [
         canAddReaction, canCopyPermalink, canCopyText,
         canDelete, canEdit, shouldRenderFollow,
         canMarkAsUnread, canPin, canReply, !isSystemPost,
@@ -75,9 +75,12 @@ const PostOptions = ({
         return v ? acc + 1 : acc;
     }, 0);
 
-    const renderContent = () => {
-        const showBindings = bindings.length > 0 && !isSystemPost;
+    const showBindings = bindings.length > 0 && !isSystemPost;
+    if (showBindings) {
+        snapPoints += Math.min(bindings.length, 4);
+    }
 
+    const renderContent = () => {
         return (
             <ScrollView
                 scrollEnabled={showBindings}
