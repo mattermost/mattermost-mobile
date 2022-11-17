@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {defineMessages, useIntl} from 'react-intl';
+import {useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {leaveChannel} from '@actions/remote/channel';
@@ -12,30 +12,18 @@ import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
-import {t} from '@i18n';
 import {dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
-
-const messages = defineMessages({
-    remove_title: {id: t('mobile.manage_members.remove_member'), defaultMessage: 'Remove Member'},
-    remove_message: {
-        id: t('mobile.manage_members.message.'),
-        defaultMessage: 'Are you sure you want to remove the selected member from the channel?',
-    },
-    remove_cancel: {id: t('mobile.manage_members.cancel'), defaultMessage: 'Cancel'},
-    remove_confirm: {id: t('mobile.manage_members.remove'), defaultMessage: 'Remove'},
-});
 
 type Props = {
     isOptionItem?: boolean;
     canLeave: boolean;
     channelId: string;
     displayName?: string;
-    manageOption?: string;
     type?: string;
     testID?: string;
 }
 
-const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, manageOption, type, testID}: Props) => {
+const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
@@ -46,24 +34,6 @@ const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, manag
             await dismissAllModals();
             popToRoot();
         }
-    };
-
-    const removeFromChannel = () => {
-        Alert.alert(
-            intl.formatMessage(messages.remove_title),
-            intl.formatMessage(messages.remove_message),
-            [{
-                text: intl.formatMessage(messages.remove_cancel),
-                style: 'cancel',
-            }, {
-                text: intl.formatMessage(messages.remove_confirm),
-                style: 'destructive',
-                onPress: async () => {
-                // setDirectChannelVisible(serverUrl, channelId, false);
-                    await dismissBottomSheet();
-                },
-            }], {cancelable: false},
-        );
     };
 
     const closeDirectMessage = () => {
@@ -151,15 +121,6 @@ const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, manag
     };
 
     const onLeave = () => {
-        if (manageOption) {
-            switch (manageOption) {
-                case 'remove':
-                    removeFromChannel();
-                    break;
-            }
-            return;
-        }
-
         switch (type) {
             case General.OPEN_CHANNEL:
                 leavePublicChannel();
@@ -182,32 +143,19 @@ const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, manag
 
     let leaveText;
     let icon;
-    if (manageOption) {
-        switch (manageOption) {
-            case 'remove':
-                leaveText = intl.formatMessage({id: 'mobile.manage_members.remove_member', defaultMessage: 'Remove member'});
-                icon = 'trash-can-outline';
-                break;
-            default:
-                leaveText = intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave channel'});
-                icon = 'exit-to-app';
-                break;
-        }
-    } else {
-        switch (type) {
-            case General.DM_CHANNEL:
-                leaveText = intl.formatMessage({id: 'channel_info.close_dm', defaultMessage: 'Close direct message'});
-                icon = 'close';
-                break;
-            case General.GM_CHANNEL:
-                leaveText = intl.formatMessage({id: 'channel_info.close_gm', defaultMessage: 'Close group message'});
-                icon = 'close';
-                break;
-            default:
-                leaveText = intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave channel'});
-                icon = 'exit-to-app';
-                break;
-        }
+    switch (type) {
+        case General.DM_CHANNEL:
+            leaveText = intl.formatMessage({id: 'channel_info.close_dm', defaultMessage: 'Close direct message'});
+            icon = 'close';
+            break;
+        case General.GM_CHANNEL:
+            leaveText = intl.formatMessage({id: 'channel_info.close_gm', defaultMessage: 'Close group message'});
+            icon = 'close';
+            break;
+        default:
+            leaveText = intl.formatMessage({id: 'channel_info.leave_channel', defaultMessage: 'Leave channel'});
+            icon = 'exit-to-app';
+            break;
     }
 
     if (isOptionItem) {
@@ -235,4 +183,4 @@ const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, manag
     );
 };
 
-export default LeaveChanelLabel;
+export default LeaveChannelLabel;
