@@ -77,11 +77,11 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
 
     useEffect(() => {
         if (index === FIRST_SLIDE) {
-            initialImagePosition.value = withTiming(0, {duration: 500});
-            initialTitlePosition.value = withTiming(0, {duration: 700});
-            initialDescriptionPosition.value = withTiming(0, {duration: 900});
+            initialImagePosition.value = withTiming(0, {duration: 600});
+            initialTitlePosition.value = withTiming(0, {duration: 800});
+            initialDescriptionPosition.value = withTiming(0, {duration: 1000});
 
-            initialElementsOpacity.value = withTiming(1, {duration: 900});
+            initialElementsOpacity.value = withTiming(1, {duration: 1000});
             setFirstLoad(false);
         }
     }, []);

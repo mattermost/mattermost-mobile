@@ -100,6 +100,7 @@ const Onboarding = ({
                 style={styles.scrollContainer}
             >
                 <Animated.ScrollView
+                    scrollEventThrottle={16}
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
                     pagingEnabled={true}
