@@ -85,7 +85,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         },
         postPriorityLabel: {
             marginLeft: 12,
-            marginTop: 3,
+            marginTop: Platform.select({
+                ios: 3,
+                android: 10,
+            }),
         },
     };
 });
