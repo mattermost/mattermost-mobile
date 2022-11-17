@@ -9,8 +9,8 @@ import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
-import LeaveChannelLabel from '@components/channel_actions/leave_channel_label';
-import {Screens} from '@constants';
+import ManageMembersLabel from '@components/channel_actions/manage_members_label';
+import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getLocaleFromLanguage} from '@i18n';
@@ -178,10 +178,11 @@ const UserProfile = ({
                 {isManageable && channelId &&
                     <>
                         <View style={styles.divider}/>
-                        <LeaveChannelLabel
+                        <ManageMembersLabel
                             channelId={channelId}
-                            manageOption={'remove'}
-                            testID='channel.quick_actions.leave_channel.action'
+                            manageOption={General.MANAGE_MEMBERS_OPTIONS.REMOVE_USER}
+                            userId={user.id}
+                            testID='channel.remove_member'
                             isOptionItem={true}
                         />
                     </>

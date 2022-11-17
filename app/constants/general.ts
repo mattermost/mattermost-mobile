@@ -21,6 +21,9 @@ export default {
     OPEN_CHANNEL: 'O' as const,
     PRIVATE_CHANNEL: 'P' as const,
     GM_CHANNEL: 'G' as const,
+    MANAGE_MEMBERS_OPTIONS: {
+        REMOVE_USER: 'remove',
+    },
     TEAMMATE_NAME_DISPLAY: {
         SHOW_USERNAME: 'username',
         SHOW_NICKNAME_FULLNAME: 'nickname_full_name',
