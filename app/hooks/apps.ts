@@ -65,7 +65,7 @@ export const useAppBinding = (context: UseAppBindingContext, config: UseAppBindi
                         if (config.onNavigate) {
                             config.onNavigate(callResp);
                         } else {
-                            return handleGotoLocation(serverUrl, intl, callResp.navigate_to_url);
+                            await handleGotoLocation(serverUrl, intl, callResp.navigate_to_url);
                         }
                     }
                     return;
@@ -74,7 +74,7 @@ export const useAppBinding = (context: UseAppBindingContext, config: UseAppBindi
                         if (config.onForm) {
                             config.onForm(callResp.form);
                         } else {
-                            return showAppForm(callResp.form, callContext);
+                            await showAppForm(callResp.form, callContext);
                         }
                     }
                     return;
