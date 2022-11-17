@@ -168,6 +168,10 @@ export default function UserListRow({
     }, [onLongPress, user]);
 
     const manageModeIcon = useMemo(() => {
+        if (!showManageMode) {
+            return null;
+        }
+
         const color = changeOpacity(theme.centerChannelColor, 0.64);
         let i18nId = t('mobile.manage_members.member');
         let defaultMessage = 'Member';
@@ -190,14 +194,11 @@ export default function UserListRow({
                 />
             </View>
         );
-    }, [theme]);
+    }, [showManageMode, theme]);
 
     const icon = useMemo(() => {
         const iconOpacity = DEFAULT_ICON_OPACITY * (selectable ? 1 : DISABLED_OPACITY);
         const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
-        if (manageMode) {
-            return showManageMode && manageModeIcon;
-        }
         return (
             <View style={style.selector}>
                 <CompassIcon
@@ -207,7 +208,7 @@ export default function UserListRow({
                 />
             </View>
         );
-    }, [manageMode, manageModeIcon, selectable, selected, showManageMode, theme]);
+    }, [selectable, selected, showManageMode, theme]);
 
     let usernameDisplay = `@${username}`;
     if (isMyUser) {
@@ -285,7 +286,7 @@ export default function UserListRow({
                         </View>
                         }
                     </View>
-                    {icon}
+                    {manageMode ? manageModeIcon : icon}
                 </View>
             </TouchableWithFeedback>
             {showTutorial &&
