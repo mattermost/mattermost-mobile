@@ -22,7 +22,7 @@ import {Device, Events, Navigation, PushNotification, Screens} from '@constants'
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
-import {queryServerName} from '@queries/app/servers';
+import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import {dismissOverlay, showOverlay} from '@screens/navigation';
@@ -93,7 +93,7 @@ class PushNotifications {
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (database) {
             const isTabletDevice = await isTablet();
-            const displayName = await queryServerName(DatabaseManager.appDatabase!.database, serverUrl);
+            const displayName = await getServerDisplayName(serverUrl);
             const channelId = await getCurrentChannelId(database);
             const isCRTEnabled = await getIsCRTEnabled(database);
             let serverName;

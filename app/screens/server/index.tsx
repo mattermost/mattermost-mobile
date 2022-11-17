@@ -16,10 +16,9 @@ import LocalConfig from '@assets/config.json';
 import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
 import {Screens, Launch} from '@constants';
-import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import NetworkManager from '@managers/network_manager';
-import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/servers';
+import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {getErrorMessage} from '@utils/client_error';
@@ -220,7 +219,7 @@ const Server = ({
             setUrlError(undefined);
         }
 
-        const server = await queryServerByDisplayName(DatabaseManager.appDatabase!.database, displayName);
+        const server = await getServerByDisplayName(displayName);
         if (server && server.lastActiveAt > 0) {
             setButtonDisabled(true);
             setDisplayNameError(formatMessage({
@@ -293,7 +292,7 @@ const Server = ({
             return;
         }
 
-        const server = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
+        const server = await getServerByIdentifier(data.config!.DiagnosticId);
         setConnecting(false);
 
         if (server && server.lastActiveAt > 0) {
