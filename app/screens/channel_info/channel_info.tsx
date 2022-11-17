@@ -61,7 +61,7 @@ const ChannelInfo = ({
     const callsAvailable = isCallsEnabledInChannel && !isCallsFeatureRestricted;
 
     const onPressed = useCallback(() => {
-        dismissModal({componentId});
+        return dismissModal({componentId});
     }, [componentId]);
 
     useNavButtonPressed(closeButtonId, componentId, onPressed, []);

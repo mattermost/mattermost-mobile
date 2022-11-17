@@ -42,8 +42,11 @@ const AppBindingsPostOptions = ({serverUrl, post, teamId, bindings}: Props) => {
     const handleBindingSubmit = useAppBinding(context, config);
 
     const onPress = useCallback(async (binding: AppBinding) => {
+        const submitPromise = handleBindingSubmit(binding);
         await dismissBottomSheet(Screens.POST_OPTIONS);
-        handleBindingSubmit(binding);
+
+        const finish = await submitPromise;
+        await finish();
     }, [handleBindingSubmit]);
 
     const options = bindings.map((binding) => (

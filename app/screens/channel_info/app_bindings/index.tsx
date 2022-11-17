@@ -19,7 +19,7 @@ type Props = {
     teamId: string;
     serverUrl: string;
     bindings: AppBinding[];
-    dismissChannelInfo: () => void;
+    dismissChannelInfo: () => Promise<void>;
 };
 
 const ChannelInfoAppBindings = ({channelId, teamId, dismissChannelInfo, serverUrl, bindings}: Props) => {
@@ -40,8 +40,11 @@ const ChannelInfoAppBindings = ({channelId, teamId, dismissChannelInfo, serverUr
     const handleBindingSubmit = useAppBinding(context, config);
 
     const onPress = useCallback(preventDoubleTap(async (binding: AppBinding) => {
-        dismissChannelInfo();
-        handleBindingSubmit(binding);
+        const submitPromise = handleBindingSubmit(binding);
+        await dismissChannelInfo();
+
+        const finish = await submitPromise;
+        await finish();
     }), [handleBindingSubmit]);
 
     const options = bindings.map((binding) => (

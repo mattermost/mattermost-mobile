@@ -40,52 +40,55 @@ export const useAppBinding = (context: UseAppBindingContext, config: UseAppBindi
         );
 
         const res = await handleBindingClick(serverUrl, binding, callContext, intl);
-        if (res.error) {
-            const errorResponse = res.error;
-            const errorMessage = errorResponse.text || intl.formatMessage({
-                id: 'apps.error.unknown',
-                defaultMessage: 'Unknown error occurred.',
-            });
 
-            config.onError(errorResponse, errorMessage);
-            return;
-        }
-
-        const callResp = res.data!;
-        switch (callResp.type) {
-            case AppCallResponseTypes.OK:
-                if (callResp.text) {
-                    config.onSuccess(callResp, callResp.text);
-                }
-                return;
-            case AppCallResponseTypes.NAVIGATE:
-                if (callResp.navigate_to_url) {
-                    if (config.onNavigate) {
-                        config.onNavigate(callResp);
-                    } else {
-                        handleGotoLocation(serverUrl, intl, callResp.navigate_to_url);
-                    }
-                }
-                return;
-            case AppCallResponseTypes.FORM:
-                if (callResp.form) {
-                    if (config.onForm) {
-                        config.onForm(callResp.form);
-                    } else {
-                        showAppForm(callResp.form, callContext);
-                    }
-                }
-                return;
-            default: {
-                const errorMessage = intl.formatMessage({
-                    id: 'apps.error.responses.unknown_type',
-                    defaultMessage: 'App response type not supported. Response type: {type}.',
-                }, {
-                    type: callResp.type,
+        return async () => {
+            if (res.error) {
+                const errorResponse = res.error;
+                const errorMessage = errorResponse.text || intl.formatMessage({
+                    id: 'apps.error.unknown',
+                    defaultMessage: 'Unknown error occurred.',
                 });
 
-                config.onError(callResp, errorMessage);
+                config.onError(errorResponse, errorMessage);
+                return;
             }
-        }
+
+            const callResp = res.data!;
+            switch (callResp.type) {
+                case AppCallResponseTypes.OK:
+                    if (callResp.text) {
+                        config.onSuccess(callResp, callResp.text);
+                    }
+                    return;
+                case AppCallResponseTypes.NAVIGATE:
+                    if (callResp.navigate_to_url) {
+                        if (config.onNavigate) {
+                            config.onNavigate(callResp);
+                        } else {
+                            return handleGotoLocation(serverUrl, intl, callResp.navigate_to_url);
+                        }
+                    }
+                    return;
+                case AppCallResponseTypes.FORM:
+                    if (callResp.form) {
+                        if (config.onForm) {
+                            config.onForm(callResp.form);
+                        } else {
+                            return showAppForm(callResp.form, callContext);
+                        }
+                    }
+                    return;
+                default: {
+                    const errorMessage = intl.formatMessage({
+                        id: 'apps.error.responses.unknown_type',
+                        defaultMessage: 'App response type not supported. Response type: {type}.',
+                    }, {
+                        type: callResp.type,
+                    });
+
+                    config.onError(callResp, errorMessage);
+                }
+            }
+        };
     }, [context, config, serverUrl, intl]);
 };
