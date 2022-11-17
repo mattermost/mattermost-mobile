@@ -694,7 +694,7 @@ export const showAppForm = async (form: AppForm) => {
     showModal(Screens.APPS_FORM, form.title || '', passProps);
 };
 
-export const showReviewModal = (hasAskedBefore: boolean) => {
+export const showReviewOverlay = (hasAskedBefore: boolean) => {
     showOverlay(
         Screens.REVIEW_APP,
         {hasAskedBefore},
@@ -702,7 +702,7 @@ export const showReviewModal = (hasAskedBefore: boolean) => {
     );
 };
 
-export const showShareFeedbackModal = () => {
+export const showShareFeedbackOverlay = () => {
     showOverlay(
         Screens.SHARE_FEEDBACK,
         {},

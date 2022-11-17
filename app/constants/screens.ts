@@ -157,6 +157,8 @@ export const OVERLAY_SCREENS = new Set<string>([
     IN_APP_NOTIFICATION,
     GALLERY,
     SNACK_BAR,
+    REVIEW_APP,
+    SHARE_FEEDBACK,
 ]);
 
 export const NOT_READY = [

@@ -21,63 +21,48 @@ export const getDeviceToken = async (appDatabase: Database): Promise<string> => 
     }
 };
 
-export const queryGlobalValue = (appDatabase: Database, key: string) => {
-    return appDatabase.get<GlobalModel>(GLOBAL).query(Q.where('id', key), Q.take(1));
+export const queryGlobalValue = (key: string) => {
+    const {database} = DatabaseManager.getAppDatabaseAndOperator();
+    return database.get<GlobalModel>(GLOBAL).query(Q.where('id', key), Q.take(1));
 };
 
-export const observeMultiServerTutorial = (appDatabase: Database) => {
-    return queryGlobalValue(appDatabase, GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL).observe().pipe(
+export const observeMultiServerTutorial = () => {
+    return queryGlobalValue(GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(false))),
         switchMap((v) => of$(Boolean(v))),
     );
 };
 
 export const observeProfileLongPresTutorial = () => {
-    const appDatabase = DatabaseManager.appDatabase?.database;
-    if (!appDatabase) {
-        return of$(false);
-    }
-    return queryGlobalValue(appDatabase, GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL).observe().pipe(
+    return queryGlobalValue(GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(false))),
         switchMap((v) => of$(Boolean(v))),
     );
 };
 
 export const getLastAskedForReview = async () => {
-    const appDatabase = DatabaseManager.appDatabase?.database;
-    if (!appDatabase) {
-        return 0;
-    }
-    const value = await queryGlobalValue(appDatabase, GLOBAL_IDENTIFIERS.LAST_ASK_FOR_REVIEW).fetch();
-    if (!value[0]?.value) {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LAST_ASK_FOR_REVIEW).fetch();
+    if (!records[0]?.value) {
         return 0;
     }
 
-    return value[0].value;
+    return records[0].value;
 };
 
 export const getDontAskForReview = async () => {
-    const appDatabase = DatabaseManager.appDatabase?.database;
-    if (!appDatabase) {
-        return false;
-    }
-    const value = await queryGlobalValue(appDatabase, GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW).fetch();
-    if (!value[0]?.value) {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW).fetch();
+    if (!records[0]?.value) {
         return false;
     }
 
-    return value[0].value === 'true';
+    return records[0].value === 'true';
 };
 
 export const getFirstLaunch = async () => {
-    const appDatabase = DatabaseManager.appDatabase?.database;
-    if (!appDatabase) {
-        return 0;
-    }
-    const value = await queryGlobalValue(appDatabase, GLOBAL_IDENTIFIERS.FIRST_LAUNCH).fetch();
-    if (!value[0]?.value) {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.FIRST_LAUNCH).fetch();
+    if (!records[0]?.value) {
         return 0;
     }
 
-    return value[0].value;
+    return records[0].value;
 };

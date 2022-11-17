@@ -3,10 +3,9 @@
 
 import React, {useMemo} from 'react';
 import {StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
+import RNButton from 'react-native-button';
 
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-
-import TouchableWithFeedback from '../touchable_with_feedback';
 
 type Props = {
     theme: Theme;
@@ -16,6 +15,7 @@ type Props = {
     emphasis?: ButtonEmphasis;
     buttonType?: ButtonType;
     buttonState?: ButtonState;
+    testID?: string;
     onPress: () => void;
     text: string;
 }
@@ -30,6 +30,7 @@ const Button = ({
     buttonState,
     onPress,
     text,
+    testID,
 }: Props) => {
     const bgStyle = useMemo(() => [
         buttonBackgroundStyle(theme, size, emphasis, buttonType, buttonState),
@@ -42,10 +43,10 @@ const Button = ({
     ], [theme, textStyle, size, emphasis, buttonType]);
 
     return (
-        <TouchableWithFeedback
-            style={bgStyle}
+        <RNButton
+            containerStyle={bgStyle}
             onPress={onPress}
-            type={'opacity'}
+            testID={testID}
         >
             <Text
                 style={txtStyle}
@@ -53,7 +54,7 @@ const Button = ({
             >
                 {text}
             </Text>
-        </TouchableWithFeedback>
+        </RNButton>
     );
 };
 

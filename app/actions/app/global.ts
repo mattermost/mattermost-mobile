@@ -4,7 +4,7 @@
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 
-export const storeGlobal = async (value: unknown, id: string, prepareRecordsOnly = false) => {
+export const storeGlobal = async (id: string, value: unknown, prepareRecordsOnly = false) => {
     try {
         const {operator} = DatabaseManager.getAppDatabaseAndOperator();
         return operator.handleGlobal({
@@ -17,25 +17,25 @@ export const storeGlobal = async (value: unknown, id: string, prepareRecordsOnly
 };
 
 export const storeDeviceToken = async (token: string, prepareRecordsOnly = false) => {
-    return storeGlobal(token, GLOBAL_IDENTIFIERS.DEVICE_TOKEN, prepareRecordsOnly);
+    return storeGlobal(GLOBAL_IDENTIFIERS.DEVICE_TOKEN, token, prepareRecordsOnly);
 };
 
 export const storeMultiServerTutorial = async (prepareRecordsOnly = false) => {
-    return storeGlobal('true', GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL, prepareRecordsOnly);
+    return storeGlobal(GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL, 'true', prepareRecordsOnly);
 };
 
 export const storeProfileLongPressTutorial = async (prepareRecordsOnly = false) => {
-    return storeGlobal('true', GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL, prepareRecordsOnly);
+    return storeGlobal(GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL, 'true', prepareRecordsOnly);
 };
 
 export const storeDontAskForReview = async (prepareRecordsOnly = false) => {
-    return storeGlobal('true', GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW, prepareRecordsOnly);
+    return storeGlobal(GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW, 'true', prepareRecordsOnly);
 };
 
 export const storeLastAskForReview = async (prepareRecordsOnly = false) => {
-    return storeGlobal(Date.now(), GLOBAL_IDENTIFIERS.LAST_ASK_FOR_REVIEW, prepareRecordsOnly);
+    return storeGlobal(GLOBAL_IDENTIFIERS.LAST_ASK_FOR_REVIEW, Date.now(), prepareRecordsOnly);
 };
 
 export const storeFirstLaunch = async (prepareRecordsOnly = false) => {
-    return storeGlobal(Date.now(), GLOBAL_IDENTIFIERS.FIRST_LAUNCH, prepareRecordsOnly);
+    return storeGlobal(GLOBAL_IDENTIFIERS.FIRST_LAUNCH, Date.now(), prepareRecordsOnly);
 };

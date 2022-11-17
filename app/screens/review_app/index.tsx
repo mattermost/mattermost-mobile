@@ -13,7 +13,7 @@ import SearchIllustration from '@components/no_results_with_term/search_illustra
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useBackNavigation from '@hooks/navigate_back';
-import {dismissOverlay, showShareFeedbackModal} from '@screens/navigation';
+import {dismissOverlay, showShareFeedbackOverlay} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -92,10 +92,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const close = (componentId: string) => {
-    dismissOverlay(componentId);
-};
-
 const ReviewApp = ({
     hasAskedBefore,
     componentId,
@@ -105,14 +101,15 @@ const ReviewApp = ({
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
-    const closeModal = useCallback(() => {
-        close(componentId);
+    const close = useCallback(async () => {
         storeLastAskForReview();
+        return dismissOverlay(componentId);
     }, [componentId]);
 
-    useBackNavigation(closeModal);
+    useBackNavigation(close);
 
     const onPressYes = useCallback(async () => {
+        await close();
         try {
             // eslint-disable-next-line new-cap
             await InAppReview.RequestInAppReview();
@@ -122,21 +119,20 @@ const ReviewApp = ({
                 intl.formatMessage({id: 'rate.error.text', defaultMessage: 'There has been an error while opening the review modal.'}),
             );
         }
-        closeModal();
-    }, [closeModal, intl]);
+    }, [close, intl]);
 
     const onPressNeedsWork = useCallback(async () => {
-        closeModal();
+        await close();
 
         if (await isNPSEnabled(serverUrl)) {
-            showShareFeedbackModal();
+            showShareFeedbackOverlay();
         }
-    }, [closeModal]);
+    }, [close]);
 
     const onPressDontAsk = useCallback(() => {
         storeDontAskForReview();
-        closeModal();
-    }, [closeModal, intl]);
+        close();
+    }, [close, intl]);
 
     return (
         <View style={styles.root}>
@@ -147,7 +143,7 @@ const ReviewApp = ({
                 <View style={styles.wrapper}>
                     <TouchableOpacity
                         style={styles.close}
-                        onPress={closeModal}
+                        onPress={close}
                     >
                         <CompassIcon
                             name='close'

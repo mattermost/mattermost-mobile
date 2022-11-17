@@ -84,10 +84,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const close = (componentId: string) => {
-    dismissOverlay(componentId);
-};
-
 const ShareFeedback = ({
     componentId,
 }: Props) => {
@@ -96,20 +92,20 @@ const ShareFeedback = ({
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
-    const closeModal = useCallback(() => {
-        close(componentId);
+    const close = useCallback(async () => {
+        return dismissOverlay(componentId);
     }, [componentId]);
 
-    useBackNavigation(closeModal);
+    useBackNavigation(close);
 
     const onPressYes = useCallback(async () => {
-        close(componentId);
+        await close();
         goToNPSChannel(serverUrl);
-    }, [componentId, intl, serverUrl]);
+    }, [close, intl, serverUrl]);
 
-    const onPressNo = useCallback(async () => {
-        close(componentId);
-    }, []);
+    const onPressNo = useCallback(() => {
+        close();
+    }, [close]);
 
     return (
         <View style={styles.root}>
@@ -120,7 +116,7 @@ const ShareFeedback = ({
                 <View style={styles.wrapper}>
                     <TouchableOpacity
                         style={styles.close}
-                        onPress={closeModal}
+                        onPress={close}
                     >
                         <CompassIcon
                             name='close'

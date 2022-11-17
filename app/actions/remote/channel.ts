@@ -718,12 +718,12 @@ export async function goToNPSChannel(serverUrl: string) {
     }
 
     try {
-        const user = await client.getUserByUsername('feedbackbot');
-        const {data} = await createDirectChannel(serverUrl, user.id);
-        if (!data) {
-            return {error: new Error('channel not found')};
+        const user = await client.getUserByUsername(General.NPS_PLUGIN_BOT_USERNAME);
+        const {data, error} = await createDirectChannel(serverUrl, user.id);
+        if (error || !data) {
+            throw error || new Error('channel not found');
         }
-        await switchToChannelById(serverUrl, data?.id, data?.team_id);
+        await switchToChannelById(serverUrl, data.id, data.team_id);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
