@@ -49,10 +49,6 @@ You can leave the Beta testing program at any time:
 
 App data is wiped from the device when a user logs out of the app. If the user is logged in when the account is deactivated, then within one minute the system logs the user out, and as a result all app data is wiped from the device.
 
-### Will there be second generation apps available for tablets?
-
-Ipads are currently supported, but we plan to add support for tablets in the future, but the timeline depends on how many people have a need for it. If you're looking for a tablet version, please help us out by [upvoting the feature request](https://mattermost.uservoice.com/forums/306457/suggestions/20082079)!
-
 ### I need the code for the v1 version
 
 You can still access it! We have moved the code from master to the [v1 branch](https://github.com/mattermost/mattermost-mobile/tree/v1). Be aware that we will not be providing any more v1 versions or updates in the public stores.
