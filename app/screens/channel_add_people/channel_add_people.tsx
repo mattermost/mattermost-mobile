@@ -9,6 +9,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 // import SelectedUsers from '@components/selected_users_panel';
 import {addMembersToChannel} from '@actions/remote/channel';
 import {fetchProfilesNotInChannel, searchProfiles} from '@actions/remote/user';
+import useDidUpdate from '@app/hooks/did_update';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import UserList from '@components/user_list';
@@ -237,7 +238,7 @@ export default function ChannelAddPeople({
         };
     }, []);
 
-    useEffect(() => {
+    useDidUpdate(() => {
         const canStart = selectedCount > 0 && !startingAddPeople;
         updateNavigationButtons(canStart);
     }, [selectedCount > 0, startingAddPeople, updateNavigationButtons]);
