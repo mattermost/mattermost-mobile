@@ -87,8 +87,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
         },
         selectorManage: {
-            flexDirection: 'row',
             alignItems: 'center',
+            flexDirection: 'row',
             justifyContent: 'center',
         },
         manageText: {

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {leaveChannel} from '@actions/remote/channel';
@@ -12,7 +12,18 @@ import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
+import {t} from '@i18n';
 import {dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
+
+const messages = defineMessages({
+    remove_title: {id: t('mobile.manage_members.remove_member'), defaultMessage: 'Remove Member'},
+    remove_message: {
+        id: t('mobile.manage_members.message.'),
+        defaultMessage: 'Are you sure you want to remove the selected member from the channel?',
+    },
+    remove_cancel: {id: t('mobile.manage_members.cancel'), defaultMessage: 'Cancel'},
+    remove_confirm: {id: t('mobile.manage_members.remove'), defaultMessage: 'Remove'},
+});
 
 type Props = {
     isOptionItem?: boolean;
@@ -39,22 +50,18 @@ const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, manag
 
     const removeFromChannel = () => {
         Alert.alert(
-            intl.formatMessage({id: 'mobile.manage_members.remove_member', defaultMessage: 'Remove Member'}),
-            intl.formatMessage({
-                id: 'mobile.manage_members.message.',
-                defaultMessage: 'Are you sure you want to remove the selected member from the channel?',
-            }),
+            intl.formatMessage(messages.remove_title),
+            intl.formatMessage(messages.remove_message),
             [{
-                text: intl.formatMessage({id: 'mobile.manage_members.cancel', defaultMessage: 'Cancel'}),
+                text: intl.formatMessage(messages.remove_cancel),
                 style: 'cancel',
             }, {
-                text: intl.formatMessage({id: 'mobile.manage_members.remove', defaultMessage: 'Remove'}),
+                text: intl.formatMessage(messages.remove_confirm),
                 style: 'destructive',
-
-                // onPress: () => {
-                //     setDirectChannelVisible(serverUrl, channelId, false);
-                //     close();
-                // },
+                onPress: async () => {
+                // setDirectChannelVisible(serverUrl, channelId, false);
+                    await dismissBottomSheet();
+                },
             }], {cancelable: false},
         );
     };
