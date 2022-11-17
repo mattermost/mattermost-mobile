@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
+// import SelectedUsers from '@components/selected_users_panel';
 import {addMembersToChannel} from '@actions/remote/channel';
 import {fetchProfilesNotInChannel, searchProfiles} from '@actions/remote/user';
 import Loading from '@components/loading';
 import Search from '@components/search';
-import SelectedUsers from '@components/selected_users_panel';
 import UserList from '@components/user_list';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -53,13 +53,6 @@ const messages = defineMessages({
     },
 });
 
-function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
-    if (action.type === 'add' && action.values?.length) {
-        return [...state, ...action.values];
-    }
-    return state;
-}
-
 type Props = {
     componentId: string;
     currentChannel: ChannelModel;
@@ -89,7 +82,7 @@ export default function ChannelAddPeople({
     const page = useRef(-1);
     const mounted = useRef(false);
 
-    const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
+    const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
@@ -101,7 +94,7 @@ export default function ChannelAddPeople({
 
     const isSearch = Boolean(term);
 
-    const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
+    const loadedProfiles = ({users}: {users: UserProfile[]}) => {
         if (mounted.current) {
             if (users && !users.length) {
                 next.current = false;
@@ -109,7 +102,7 @@ export default function ChannelAddPeople({
 
             page.current += 1;
             setLoading(false);
-            dispatchProfiles({type: 'add', values: users});
+            setProfiles((prev: UserProfile[]) => [...prev, ...users]);
         }
     };
 
@@ -176,27 +169,12 @@ export default function ChannelAddPeople({
             return;
         }
 
-        if (user.id === currentUserId) {
-            const selectedId = {
-                [currentUserId]: true,
-            };
+        const newSelectedIds = Object.assign({}, selectedIds);
+        newSelectedIds[user.id] = user;
 
-            startConversation(selectedId);
-        } else {
-            const wasSelected = selectedIds[user.id];
-            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
-                return;
-            }
-
-            const newSelectedIds = Object.assign({}, selectedIds);
-            if (!wasSelected) {
-                newSelectedIds[user.id] = user;
-            }
-
-            setSelectedIds(newSelectedIds);
-            clearSearch();
-        }
-    }, [selectedIds, currentUserId, handleRemoveProfile, startConversation, clearSearch]);
+        setSelectedIds(newSelectedIds);
+        clearSearch();
+    }, [selectedIds, handleRemoveProfile, startConversation, clearSearch]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
@@ -265,7 +243,7 @@ export default function ChannelAddPeople({
     }, [selectedCount > 0, startingConversation, updateNavigationButtons]);
 
     const data = useMemo(() => {
-        if (term) {
+        if (isSearch) {
             const exactMatches: UserProfile[] = [];
             const filterByTerm = (p: UserProfile) => {
                 if (selectedCount > 0 && p.id === currentUserId) {
@@ -313,15 +291,20 @@ export default function ChannelAddPeople({
                     value={term}
                 />
             </View>
-            {selectedCount > 0 &&
-            <SelectedUsers
-                selectedIds={selectedIds}
-                warnCount={General.MAX_USERS_IN_GM - 2}
-                maxCount={General.MAX_USERS_IN_GM}
-                onRemove={handleRemoveProfile}
-                teammateNameDisplay={teammateNameDisplay}
-            />
-            }
+            {/*
+                https://mattermost.atlassian.net/browse/MM-48489
+                V1 does not have the selected users modal.
+                Add this back in after build the scrollable selectable users panel
+            */}
+            {/* {selectedCount > 0 &&
+                 <SelectedUsers
+                     selectedIds={selectedIds}
+                     warnCount={General.MAX_ADD_USERS - 2}
+                     maxCount={General.MAX_ADD_USERS}
+                     onRemove={handleRemoveProfile}
+                     teammateNameDisplay={teammateNameDisplay}
+                 />
+             } */}
             <UserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
