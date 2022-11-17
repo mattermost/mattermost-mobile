@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, ScrollView, Text, View} from 'react-native';
+import {Keyboard, ScrollView, Text, View} from 'react-native';
 import Button from 'react-native-button';
 import {ImageResource} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -304,9 +304,6 @@ function AppsFormComponent({
         const callResponse = res.data!;
         switch (callResponse.type) {
             case AppCallResponseTypes.OK:
-                if (callResponse.text) {
-                    Alert.alert('', callResponse.text);
-                }
                 close();
                 return;
             case AppCallResponseTypes.NAVIGATE:
