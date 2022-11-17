@@ -1,5 +1,5 @@
-# Note: development on this repository has primarily moved to the `gekidou` branch
-This `master` branch is mostly in maintenance mode while we're working to getting our "v2" (code named "gekidou") to the GA stage. To contribute check out the [gekidou](https://github.com/mattermost/mattermost-mobile/tree/gekidou) branch in this repository.
+# Note: development on this repository has primarily moved to the `main` branch
+This `master`(now `v1`) branch is mostly in maintenance mode while we're working to getting our "v2" (code named "gekidou") to the GA stage. To contribute check out the [main](https://github.com/mattermost/mattermost-mobile/tree/main) branch in this repository.
 
 # Mattermost Mobile App
 [![Mattermost](https://user-images.githubusercontent.com/7205829/136108314-75cd2e1f-4147-4cfa-a16c-9b3b0313ea25.png)](https://mattermost.com)
