@@ -9,7 +9,7 @@ import {storeDontAskForReview, storeLastAskForReview} from '@actions/app/global'
 import {isNPSEnabled} from '@actions/remote/general';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
-import SearchIllustration from '@components/no_results_with_term/search_illustration';
+import ReviewAppIllustration from '@components/illustrations/review_app';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useBackNavigation from '@hooks/navigate_back';
@@ -152,7 +152,7 @@ const ReviewApp = ({
                         />
                     </TouchableOpacity>
                     <View style={styles.content}>
-                        <SearchIllustration/>
+                        <ReviewAppIllustration theme={theme}/>
                         <Text style={styles.title}>
                             {intl.formatMessage({id: 'rate.title', defaultMessage: 'Enjoying Mattermost?'})}
                         </Text>
