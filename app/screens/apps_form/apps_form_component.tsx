@@ -49,6 +49,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             color: (theme.errorTextColor || '#DA4A4A'),
         },
         button: buttonBackgroundStyle(theme, 'lg', 'primary', 'default'),
+        buttonContainer: {
+            paddingTop: 20,
+            paddingLeft: 50,
+            paddingRight: 50,
+        },
         buttonText: buttonTextStyle(theme, 'lg', 'primary', 'default'),
     };
 });
@@ -170,6 +175,8 @@ function AppsFormComponent({
             hasErrors = true;
             hasHeaderError = true;
             setError(formError);
+        } else {
+            setError('');
         }
 
         if (fieldErrors && Object.keys(fieldErrors).length > 0) {
@@ -264,10 +271,8 @@ function AppsFormComponent({
             }
         });
 
-        setError('');
-        setErrors(hasErrors ? fieldErrors : emptyErrorsState);
-
         if (hasErrors) {
+            setErrors(fieldErrors);
             return;
         }
 
@@ -292,6 +297,9 @@ function AppsFormComponent({
             setSubmitting(false);
             return;
         }
+
+        setError('');
+        setErrors(emptyErrorsState);
 
         const callResponse = res.data!;
         switch (callResponse.type) {
@@ -416,13 +424,17 @@ function AppsFormComponent({
                     style={{marginHorizontal: 5}}
                 >
                     {submitButtons?.options?.map((o) => (
-                        <Button
+                        <View
                             key={o.value}
-                            onPress={() => handleSubmit(o.value)}
-                            containerStyle={style.button}
+                            style={style.buttonContainer}
                         >
-                            <Text style={style.buttonText}>{o.label}</Text>
-                        </Button>
+                            <Button
+                                onPress={() => handleSubmit(o.value)}
+                                containerStyle={style.button}
+                            >
+                                <Text style={style.buttonText}>{o.label}</Text>
+                            </Button>
+                        </View>
                     ))}
                 </View>
             </ScrollView>
