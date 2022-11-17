@@ -76,11 +76,11 @@ const PostOptions = ({
     }, 0);
 
     const renderContent = () => {
-        const shouldScroll = bindings.length > 0;
+        const showBindings = bindings.length > 0 && !isSystemPost;
 
         return (
             <ScrollView
-                scrollEnabled={shouldScroll}
+                scrollEnabled={showBindings}
                 showsVerticalScrollIndicator={false}
                 showsHorizontalScrollIndicator={false}
             >
@@ -129,11 +129,13 @@ const PostOptions = ({
                     combinedPost={combinedPost}
                     post={post}
                 />}
-                <AppBindingsPostOptions
-                    post={post}
-                    serverUrl={serverUrl}
-                    bindings={bindings}
-                />
+                {showBindings &&
+                    <AppBindingsPostOptions
+                        post={post}
+                        serverUrl={serverUrl}
+                        bindings={bindings}
+                    />
+                }
             </ScrollView>
         );
     };
