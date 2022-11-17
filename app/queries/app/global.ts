@@ -22,27 +22,39 @@ export const getDeviceToken = async (appDatabase: Database): Promise<string> => 
 };
 
 export const queryGlobalValue = (key: string) => {
-    const {database} = DatabaseManager.getAppDatabaseAndOperator();
-    return database.get<GlobalModel>(GLOBAL).query(Q.where('id', key), Q.take(1));
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        return database.get<GlobalModel>(GLOBAL).query(Q.where('id', key), Q.take(1));
+    } catch {
+        return undefined;
+    }
 };
 
 export const observeMultiServerTutorial = () => {
-    return queryGlobalValue(GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL).observe().pipe(
+    const query = queryGlobalValue(GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL);
+    if (!query) {
+        return of$(false);
+    }
+    return query.observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(false))),
         switchMap((v) => of$(Boolean(v))),
     );
 };
 
 export const observeProfileLongPresTutorial = () => {
-    return queryGlobalValue(GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL).observe().pipe(
+    const query = queryGlobalValue(GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL);
+    if (!query) {
+        return of$(false);
+    }
+    return query.observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(false))),
         switchMap((v) => of$(Boolean(v))),
     );
 };
 
 export const getLastAskedForReview = async () => {
-    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LAST_ASK_FOR_REVIEW).fetch();
-    if (!records[0]?.value) {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LAST_ASK_FOR_REVIEW)?.fetch();
+    if (!records?.[0]?.value) {
         return 0;
     }
 
@@ -50,8 +62,8 @@ export const getLastAskedForReview = async () => {
 };
 
 export const getDontAskForReview = async () => {
-    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW).fetch();
-    if (!records[0]?.value) {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW)?.fetch();
+    if (!records?.[0]?.value) {
         return false;
     }
 
@@ -59,8 +71,8 @@ export const getDontAskForReview = async () => {
 };
 
 export const getFirstLaunch = async () => {
-    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.FIRST_LAUNCH).fetch();
-    if (!records[0]?.value) {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.FIRST_LAUNCH)?.fetch();
+    if (!records?.[0]?.value) {
         return 0;
     }
 
