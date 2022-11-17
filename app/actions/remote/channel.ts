@@ -15,7 +15,7 @@ import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
-import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId, deleteChannelMembership} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getConfig, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams} from '@queries/servers/team';
@@ -44,6 +44,32 @@ export type MyChannelsRequest = {
     channels?: Channel[];
     memberships?: ChannelMembership[];
     error?: unknown;
+}
+
+export async function removeMembersFromChannel(serverUrl: string, channelId: string, userIds: string[]) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+
+    let client: Client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const promises = userIds.map((id) => client.removeFromChannel(id, channelId));
+        await Promise.all(promises);
+
+        const modelPromises = userIds.map((id) => deleteChannelMembership(operator, id, channelId));
+        await Promise.all(modelPromises);
+        return {error: undefined};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
 }
 
 export async function addMembersToChannel(serverUrl: string, channelId: string, userIds: string[], postRootId = '', fetchOnly = false) {

@@ -7,9 +7,7 @@ import {Keyboard, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {storeProfile} from '@actions/local/user';
-import {makeGroupChannel} from '@actions/remote/channel';
 import {fetchProfilesInChannel, searchProfiles} from '@actions/remote/user';
-import Loading from '@components/loading';
 import Search from '@components/search';
 import UserList from '@components/user_list';
 import {General, Screens} from '@constants';
@@ -19,7 +17,6 @@ import {ChannelModel, UserModel} from '@database/models/server';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
-import {alertErrorWithFallback} from '@utils/draft';
 import {openAsBottomSheet, setButtons} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm, isChannelAdmin, isSystemAdmin} from '@utils/user';
@@ -118,9 +115,6 @@ export default function ManageChannelMembers({
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
-    const [startingConversation, setStartingConversation] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
-    const selectedCount = Object.keys(selectedIds).length;
 
     const isSearch = Boolean(term);
 
@@ -148,53 +142,6 @@ export default function ManageChannelMembers({
         }
     }, 100), [loading, isSearch, restrictDirectMessage, serverUrl, currentTeamId]);
 
-    const handleRemoveProfile = useCallback((id: string) => {
-        const newSelectedIds = Object.assign({}, selectedIds);
-
-        Reflect.deleteProperty(newSelectedIds, id);
-
-        setSelectedIds(newSelectedIds);
-    }, [selectedIds]);
-
-    const createGroupChannel = useCallback(async (ids: string[]): Promise<boolean> => {
-        const result = await makeGroupChannel(serverUrl, ids);
-
-        if (result.error) {
-            alertErrorWithFallback(
-                intl,
-                result.error,
-                {
-                    id: t('mobile.open_gm.error'),
-                    defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
-                },
-            );
-        }
-
-        return !result.error;
-    }, [serverUrl]);
-
-    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
-        if (startingConversation) {
-            return;
-        }
-
-        setStartingConversation(true);
-
-        const idsToUse = selectedId ? Object.keys(selectedId) : Object.keys(selectedIds);
-        let success;
-        if (idsToUse.length === 0) {
-            success = false;
-        } else {
-            success = await createGroupChannel(idsToUse);
-        }
-
-        if (success) {
-            close();
-        } else {
-            setStartingConversation(false);
-        }
-    }, [startingConversation, selectedIds, createGroupChannel]);
-
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
         if (!manageEnabled) {
             return;
@@ -206,6 +153,7 @@ export default function ManageChannelMembers({
             const closeButtonId = 'close-user-profile';
             const props = {
                 isManageable: true,
+                channelId: currentChannel.id,
                 closeButtonId,
                 userId: user.id,
                 location: Screens.USER_PROFILE,
@@ -283,7 +231,7 @@ export default function ManageChannelMembers({
         if (term) {
             const exactMatches: UserProfile[] = [];
             const filterByTerm = (p: UserProfile) => {
-                if (selectedCount > 0 && p.id === currentUserId) {
+                if (p.id === currentUserId) {
                     return false;
                 }
 
@@ -299,15 +247,7 @@ export default function ManageChannelMembers({
             return [...exactMatches, ...results];
         }
         return profiles;
-    }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
-
-    // if (startingConversation) {
-    //     return (
-    //         <View style={style.container}>
-    //             <Loading color={theme.centerChannelColor}/>
-    //         </View>
-    //     );
-    // }
+    }, [term, isSearch && searchResults, profiles]);
 
     return (
         <SafeAreaView

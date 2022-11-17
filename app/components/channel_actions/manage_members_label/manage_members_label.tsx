@@ -10,9 +10,8 @@ import OptionItem from '@components/option_item';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
-import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
-import {dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 
 const messages = defineMessages({
     remove_title: {id: t('mobile.manage_members.remove_member'), defaultMessage: 'Remove Member'},
@@ -36,15 +35,16 @@ type Props = {
 const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, testID, userId}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const isTablet = useIsTablet();
 
-    const close = async () => {
-        await dismissBottomSheet();
-        if (!isTablet) {
-            await dismissAllModals();
-            popToRoot();
-        }
-    };
+    // const isTablet = useIsTablet();
+
+    // const close = async () => {
+    //     await dismissBottomSheet();
+    //     if (!isTablet) {
+    //         await dismissAllModals();
+    //         popToRoot();
+    //     }
+    // };
 
     // removeCurrentUserFromChannel (gekidou)
     // removeChannelMember (master)
@@ -76,7 +76,7 @@ const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, t
                 text: intl.formatMessage(messages.remove_confirm),
                 style: 'destructive',
                 onPress: async () => {
-                    removeMembersFromChannel(serverUrl, channelId, false);
+                    await removeMembersFromChannel(serverUrl, channelId, [userId]);
                     await dismissBottomSheet();
                 },
             }], {cancelable: false},
