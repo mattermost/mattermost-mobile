@@ -17,20 +17,26 @@ type Props = {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    image: {
+        justifyContent: 'center',
+        maxHeight: 180,
+    },
     title: {
-        fontWeight: '600',
-        marginBottom: 5,
         height: 100,
         color: theme.centerChannelColor,
         textAlign: 'center',
-        fontFamily: 'Metropolis-SemiBold',
         paddingHorizontal: 20,
     },
     fontTitle: {
-        fontSize: 40,
+        marginTop: 32,
+        ...typography('Heading', 1000, 'SemiBold'),
     },
     fontFirstTitle: {
-        fontSize: 66,
+        ...typography('Heading', 1200, 'SemiBold'),
+        paddingTop: 40,
+    },
+    widthLastSlide: {
+        paddingHorizontal: 50,
     },
     firstSlideInitialPosition: {
         left: 200,
@@ -39,16 +45,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     description: {
         textAlign: 'center',
         paddingHorizontal: 20,
-        fontFamily: 'Open Sans',
         height: 80,
         color: changeOpacity(theme.centerChannelColor, 0.64),
         ...typography('Body', 200, 'Regular'),
-    },
-    image: {
-        justifyContent: 'center',
-        height: 60,
-        maxHeight: 180,
-        width: 60,
     },
     itemContainer: {
         flex: 1,
@@ -58,6 +57,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const FIRST_SLIDE = 0;
+const LAST_SLIDE = 3;
 const FIRST_LOAD_ELEMENTS_POSITION = 400;
 
 const SlideItem = ({theme, item, scrollX, index}: Props) => {
@@ -77,11 +77,11 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
 
     useEffect(() => {
         if (index === FIRST_SLIDE) {
-            initialImagePosition.value = withTiming(0, {duration: 1000});
-            initialTitlePosition.value = withTiming(0, {duration: 1250});
-            initialDescriptionPosition.value = withTiming(0, {duration: 1500});
+            initialImagePosition.value = withTiming(0, {duration: 500});
+            initialTitlePosition.value = withTiming(0, {duration: 700});
+            initialDescriptionPosition.value = withTiming(0, {duration: 900});
 
-            initialElementsOpacity.value = withTiming(1, {duration: 1500});
+            initialElementsOpacity.value = withTiming(1, {duration: 900});
             setFirstLoad(false);
         }
     }, []);
@@ -175,6 +175,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
         <View style={[styles.itemContainer, {width}]}>
             <Animated.View
                 style={[
+                    styles.image,
                     translateImage,
                     opacity,
                     translateFirstImageOnLoad,
@@ -188,6 +189,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
                     style={[
                         styles.title,
                         (index === FIRST_SLIDE ? styles.fontFirstTitle : styles.fontTitle),
+                        (index === LAST_SLIDE ? styles.widthLastSlide : undefined),
                         translateTitle,
                         opacity,
                         translateFirstTitleOnLoad,
@@ -202,6 +204,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
                         translateDescription,
                         opacity,
                         (index === FIRST_SLIDE && firstLoad ? styles.firstSlideInitialPosition : undefined),
+                        (index === LAST_SLIDE ? styles.widthLastSlide : undefined),
                         translateFirstDescriptionOnLoad,
                     ]}
                 >

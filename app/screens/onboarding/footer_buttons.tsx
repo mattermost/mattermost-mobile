@@ -37,16 +37,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     footerButtonsContainer: {
         flexDirection: 'column',
-        height: 150,
-        marginTop: 15,
+        height: 120,
+        marginTop: 25,
+        marginBottom: 15,
         width: '100%',
-        marginHorizontal: 10,
         alignItems: 'center',
     },
 }));
 
 const AnimatedButton = Animated.createAnimatedComponent(Pressable);
-const BUTTON_SIZE = 80;
+const BUTTON_SIZE = 100;
 
 const FooterButtons = ({
     theme,
@@ -115,7 +115,7 @@ const FooterButtons = ({
             <FormattedText
                 id='mobile.onboarding.next'
                 defaultMessage='Next'
-                style={buttonTextStyle(theme, 'm', 'primary', 'default')}
+                style={buttonTextStyle(theme, 'lg', 'primary', 'default')}
             />
             <CompassIcon
                 name='arrow-forward-ios'
@@ -129,7 +129,7 @@ const FooterButtons = ({
             <FormattedText
                 id='mobile.onboarding.sign_in_to_get_started'
                 defaultMessage='Sign in to get started'
-                style={buttonTextStyle(theme, 's', 'primary', 'default')}
+                style={buttonTextStyle(theme, 'lg', 'primary', 'default')}
             />
         </Animated.View>
     );
@@ -139,7 +139,7 @@ const FooterButtons = ({
             <AnimatedButton
                 testID='mobile.onboaring.next'
                 onPress={nextSlideHandler}
-                style={[styles.button, buttonBackgroundStyle(theme, 'm', 'primary', 'default'), resizeStyle]}
+                style={[styles.button, buttonBackgroundStyle(theme, 'lg', 'primary', 'default'), resizeStyle]}
             >
                 {nextButtonText}
                 {signInButtonText}
@@ -147,12 +147,12 @@ const FooterButtons = ({
             <AnimatedButton
                 testID='mobile.onboaring.sign_in'
                 onPress={signInHandler}
-                style={[styles.button, buttonBackgroundStyle(theme, 'm', 'link', 'default'), opacitySignInButton]}
+                style={[styles.button, buttonBackgroundStyle(theme, 'lg', 'link', 'default'), opacitySignInButton]}
             >
                 <FormattedText
                     id='mobile.onboarding.sign_in'
                     defaultMessage='Sign in'
-                    style={buttonTextStyle(theme, 's', 'primary', 'inverted')}
+                    style={buttonTextStyle(theme, 'lg', 'primary', 'inverted')}
                 />
             </AnimatedButton>
         </View>

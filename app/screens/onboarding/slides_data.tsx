@@ -15,9 +15,10 @@ import TeamCommunicationSvg from './illustrations/team_communication';
 const styles = StyleSheet.create({
     image: {
         justifyContent: 'center',
-        height: 60,
-        maxHeight: 180,
-        width: 60,
+        height: 200,
+    },
+    lastSlideImage: {
+        height: 250,
     },
 });
 
@@ -26,7 +27,7 @@ const useSalidesData = () => {
     const callsSvg = (<CallsSvg styles={styles.image}/>);
     const chatSvg = (<ChatSvg styles={styles.image}/>);
     const teamCommunicationSvg = (<TeamCommunicationSvg styles={styles.image}/>);
-    const integrationsSvg = (<IntegrationsSvg styles={styles.image}/>);
+    const integrationsSvg = (<IntegrationsSvg styles={[styles.image, styles.lastSlideImage]}/>);
 
     const slidesData: OnboardingItem[] = [
         {
@@ -46,7 +47,7 @@ const useSalidesData = () => {
         },
         {
             title: intl.formatMessage({id: 'onboarding.integrations', defaultMessage: 'Integrate with tools you love'}),
-            description: intl.formatMessage({id: 'onboarding.integrations_description', defaultMessage: 'Go beyond chat with tightly-integratedproduct solutions matched to common development processes.'}),
+            description: intl.formatMessage({id: 'onboarding.integrations_description', defaultMessage: 'Go beyond chat with tightly-integrated product solutions matched to common development processes.'}),
             image: integrationsSvg,
         },
     ];

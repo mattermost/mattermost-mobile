@@ -47,6 +47,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     paginatorContainer: {
         flexDirection: 'row',
         height: 15,
+        justifyContent: 'space-between',
+        width: 120,
     },
 }));
 
@@ -59,7 +61,7 @@ const Paginator = ({
     const styles = getStyleSheet(theme);
     return (
         <View style={styles.paginatorContainer}>
-            {[...Array(dataLength)].map((item: number, index: number) => {
+            {[...Array(dataLength)].map((_, index: number) => {
                 return (
                     <Dot
                         key={`key-${index.toString()}`}
@@ -82,7 +84,12 @@ type DotProps = {
 };
 
 // this has to be extracted as a component since the useAnimatedStyle hook cant be used inside a loop
-const Dot = ({index, scrollX, theme, moveToSlide}: DotProps) => {
+const Dot = ({
+    index,
+    scrollX,
+    theme,
+    moveToSlide,
+}: DotProps) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
     const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
@@ -108,7 +115,10 @@ const Dot = ({index, scrollX, theme, moveToSlide}: DotProps) => {
     });
 
     return (
-        <TouchableOpacity onPress={() => moveToSlide(index)}>
+        <TouchableOpacity
+            onPress={() => moveToSlide(index)}
+            hitSlop={{top: 8, left: 8, right: 8, bottom: 8}}
+        >
             <Animated.View style={styles.fixedDot}/>
             <Animated.View style={[styles.outerDot, outerDotOpacity]}/>
             <Animated.View style={[styles.dot, dotOpacity]}/>

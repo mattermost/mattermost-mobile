@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef} from 'react';
-import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, Animated as AnimatedRN, StyleSheet} from 'react-native';
-import Animated, {Easing, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
+import React, {useCallback} from 'react';
+import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, StyleSheet} from 'react-native';
+import Animated, {useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@app/constants';
@@ -45,27 +45,14 @@ const Onboarding = ({
     const slidesRef = useAnimatedRef<ScrollView>();
 
     const scrollX = useSharedValue(0);
-    const scrollAnimation = useRef(new AnimatedRN.Value(0));
 
     const currentIndex = useDerivedValue(() => Math.round(scrollX.value / width));
 
-    useEffect(() => {
-        scrollAnimation.current?.addListener((animation) => {
-            slidesRef.current?.scrollTo({
-                x: animation.value,
-                animated: false,
-            });
-        });
-        return () => scrollAnimation.current.removeAllListeners();
-    }, []);
-
     const moveToSlide = useCallback((slideIndexToMove: number) => {
-        AnimatedRN.timing(scrollAnimation.current, {
-            toValue: (slideIndexToMove * width),
-            duration: Math.abs(currentIndex.value - slideIndexToMove) * 200,
-            useNativeDriver: true,
-            easing: Easing.linear,
-        }).start();
+        slidesRef.current?.scrollTo({
+            x: (slideIndexToMove * width),
+            animated: true,
+        });
     }, [currentIndex.value]);
 
     const nextSlide = useCallback(() => {
