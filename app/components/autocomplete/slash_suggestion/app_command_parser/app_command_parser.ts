@@ -1182,18 +1182,18 @@ export class AppCommandParser {
 
         const errors: {[key: string]: string} = {};
         await Promise.all(parsed.resolvedForm.fields.map(async (f) => {
-            const value = values[f.name];
-            if (!value) {
+            const fieldValue = values[f.name];
+            if (!fieldValue) {
                 return;
             }
             switch (f.type) {
                 case AppFieldTypes.DYNAMIC_SELECT:
                     if (f.multiselect) {
                         let commandValues: string[] = [];
-                        if (Array.isArray(value)) {
-                            commandValues = value as string[];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
                         } else {
-                            commandValues = [value] as string[];
+                            commandValues = [fieldValue] as string[];
                         }
 
                         const options: AppSelectOption[] = [];
@@ -1212,7 +1212,7 @@ export class AppCommandParser {
                         break;
                     }
 
-                    values[f.name] = {label: value, value: value};
+                    values[f.name] = {label: fieldValue, value: fieldValue};
                     break;
                 case AppFieldTypes.STATIC_SELECT: {
                     const getOption = (value: string) => {
@@ -1232,10 +1232,10 @@ export class AppCommandParser {
 
                     if (f.multiselect) {
                         let commandValues: string[] = [];
-                        if (Array.isArray(value)) {
-                            commandValues = value as string[];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
                         } else {
-                            commandValues = [value] as string[];
+                            commandValues = [fieldValue] as string[];
                         }
 
                         const options: AppSelectOption[] = [];
@@ -1260,9 +1260,9 @@ export class AppCommandParser {
                         break;
                     }
 
-                    const option = getOption(value);
+                    const option = getOption(fieldValue);
                     if (!option) {
-                        setOptionError(value);
+                        setOptionError(fieldValue);
                         return;
                     }
                     values[f.name] = option;
@@ -1291,9 +1291,15 @@ export class AppCommandParser {
                         });
                     };
 
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
+                        } else {
+                            commandValues = [fieldValue] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         /* eslint-disable no-await-in-loop */
                         for (const value of commandValues) {
                             let userName = value;
@@ -1357,9 +1363,15 @@ export class AppCommandParser {
                         });
                     };
 
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
+                        } else {
+                            commandValues = [fieldValue] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         /* eslint-disable no-await-in-loop */
                         for (const value of commandValues) {
                             let channelName = value;
