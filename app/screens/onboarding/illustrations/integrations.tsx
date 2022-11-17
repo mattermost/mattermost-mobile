@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import * as React from 'react';
 import {StyleProp, ViewStyle} from 'react-native';
 import Svg, {
     Rect,
@@ -15,11 +15,12 @@ import Svg, {
     Stop,
 } from 'react-native-svg';
 
-type SvgProps = {
+type Props = {
+    theme: Theme;
     styles: StyleProp<ViewStyle>;
 };
 
-const IntegrationsSvg = ({styles}: SvgProps) => {
+const IntegrationsSvg = ({theme, styles}: Props) => {
     return (
         <Svg
             width={246}
@@ -52,20 +53,20 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
             />
             <Path
                 d='M156.819 51.92H78.181v135.774h78.638V51.92z'
-                fill='#fff'
+                fill={theme.centerChannelBg}
             />
             <Circle
                 cx={87.6638}
                 cy={78.5625}
                 r={5.31027}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Circle
                 cx={87.6638}
                 cy={110.424}
                 r={5.31027}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Ellipse
@@ -73,7 +74,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 cy={142.286}
                 rx={5.31027}
                 ry={5.31027}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -82,7 +83,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={36.1098}
                 height={2.12411}
                 rx={1.06205}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -91,7 +92,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={36.1098}
                 height={2.12411}
                 rx={1.06206}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -100,7 +101,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={36.1098}
                 height={2.12411}
                 rx={1.06205}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -109,7 +110,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={50.9786}
                 height={2.12411}
                 rx={1.06205}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -118,7 +119,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={50.9786}
                 height={2.12411}
                 rx={1.06205}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -127,7 +128,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={50.9786}
                 height={2.12411}
                 rx={1.06205}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -136,7 +137,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={25.4893}
                 height={2.12411}
                 rx={1.06205}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -145,7 +146,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={25.4893}
                 height={2.12411}
                 rx={1.06206}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -154,7 +155,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={25.4893}
                 height={2.12411}
                 rx={1.06205}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -163,7 +164,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={55.2268}
                 height={2.12411}
                 rx={1.06205}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -172,7 +173,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={55.2268}
                 height={2.12411}
                 rx={1.06205}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Rect
@@ -181,11 +182,11 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={55.2268}
                 height={2.12411}
                 rx={1.06205}
-                fill='#3F4350'
+                fill={theme.centerChannelColor}
                 fillOpacity={0.24}
             />
             <Path
-                fill='#1E325C'
+                fill={theme.sidebarBg}
                 d='M78.1808 51.9202H156.8191V66.6649H78.1808z'
             />
             <Rect
@@ -195,7 +196,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={25.8032}
                 height={1.84308}
                 rx={0.921542}
-                fill='#fff'
+                fill={theme.sidebarText}
             />
             <Rect
                 opacity={0.4}
@@ -204,7 +205,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={6.14362}
                 height={6.14362}
                 rx={2}
-                fill='#fff'
+                fill={theme.sidebarText}
             />
             <Rect
                 opacity={0.4}
@@ -213,20 +214,11 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                 width={6.14362}
                 height={6.14362}
                 rx={2}
-                fill='#fff'
+                fill={theme.sidebarText}
             />
             <Mask
                 id='a'
-
-                // @ts-expect-error style not intrinsic
-                style={{
-                    maskType: 'alpha',
-                }}
                 maskUnits='userSpaceOnUse'
-                x={71}
-                y={29}
-                width={93}
-                height={181}
             >
                 <Rect
                     x={71}
@@ -234,7 +226,7 @@ const IntegrationsSvg = ({styles}: SvgProps) => {
                     width={93}
                     height={181}
                     rx={16}
-                    fill='#D9D9D9'
+                    fill='#fff'
                 />
             </Mask>
             <G

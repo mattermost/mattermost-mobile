@@ -5,6 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
+import {useTheme} from '@context/theme';
 import {OnboardingItem} from '@typings/screens/onboarding';
 
 import CallsSvg from './illustrations/calls';
@@ -24,10 +25,31 @@ const styles = StyleSheet.create({
 
 const useSalidesData = () => {
     const intl = useIntl();
-    const callsSvg = (<CallsSvg styles={styles.image}/>);
-    const chatSvg = (<ChatSvg styles={styles.image}/>);
-    const teamCommunicationSvg = (<TeamCommunicationSvg styles={styles.image}/>);
-    const integrationsSvg = (<IntegrationsSvg styles={[styles.image, styles.lastSlideImage]}/>);
+    const theme = useTheme();
+    const callsSvg = (
+        <CallsSvg
+            styles={styles.image}
+            theme={theme}
+        />
+    );
+    const chatSvg = (
+        <ChatSvg
+            styles={styles.image}
+            theme={theme}
+        />
+    );
+    const teamCommunicationSvg = (
+        <TeamCommunicationSvg
+            styles={styles.image}
+            theme={theme}
+        />
+    );
+    const integrationsSvg = (
+        <IntegrationsSvg
+            styles={[styles.image, styles.lastSlideImage]}
+            theme={theme}
+        />
+    );
 
     const slidesData: OnboardingItem[] = [
         {
