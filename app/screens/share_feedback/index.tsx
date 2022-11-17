@@ -7,7 +7,7 @@ import {View, Text, TouchableOpacity} from 'react-native';
 import {goToNPSChannel} from '@actions/remote/channel';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
-import SearchIllustration from '@components/no_results_with_term/search_illustration';
+import ShareFeedbackIllustration from '@components/illustrations/share_feedback';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useBackNavigation from '@hooks/navigate_back';
@@ -22,7 +22,7 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     root: {
         flex: 1,
-        backgroundColor: changeOpacity('#000000', 0.40),
+        backgroundColor: changeOpacity('#000000', 0.50),
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -60,11 +60,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 44,
         width: 40,
         paddingLeft: 16,
+        paddingTop: 16,
     },
     title: {
         ...typography('Heading', 600, 'SemiBold'),
         color: theme.centerChannelColor,
-        marginTop: 24,
+        marginTop: 0,
         marginBottom: 8,
         textAlign: 'center',
     },
@@ -125,7 +126,7 @@ const ShareFeedback = ({
                         />
                     </TouchableOpacity>
                     <View style={styles.content}>
-                        <SearchIllustration/>
+                        <ShareFeedbackIllustration theme={theme} />
                         <Text style={styles.title}>
                             {intl.formatMessage({id: 'share_feedback.title', defaultMessage: 'Would you share your feedback?'})}
                         </Text>

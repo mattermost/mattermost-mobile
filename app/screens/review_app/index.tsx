@@ -25,7 +25,7 @@ type Props = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     root: {
         flex: 1,
-        backgroundColor: changeOpacity('#000000', 0.40),
+        backgroundColor: changeOpacity('#000000', 0.50),
         justifyContent: 'center',
         alignItems: 'center',
     },
@@ -63,11 +63,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 44,
         width: 40,
         paddingLeft: 16,
+        paddingTop: 16,
     },
     title: {
         ...typography('Heading', 600, 'SemiBold'),
         color: theme.centerChannelColor,
-        marginTop: 24,
+        marginTop: 0,
         marginBottom: 8,
         textAlign: 'center',
     },
