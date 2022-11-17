@@ -82,7 +82,6 @@ const UserProfile = ({
     const timezone = getUserTimezone(user);
     const customStatus = getUserCustomStatus(user);
     const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
-
     let localTime: string|undefined;
     if (timezone) {
         moment.locale(getLocaleFromLanguage(locale).toLowerCase());
