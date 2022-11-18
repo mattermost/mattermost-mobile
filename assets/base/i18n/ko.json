@@ -376,5 +376,14 @@
     "user.settings.general.lastName": "성",
     "user.settings.general.nickname": "별명",
     "user.settings.general.position": "직책",
-    "user.settings.general.username": "사용자 이름"
+    "user.settings.general.username": "사용자 이름",
+    "alert.push_proxy_unknown.title": "이 서버에서 알림 수신이 불가능합니다",
+    "alert.push_proxy_error.title": "이 서버에서의 알림을 수신할 수 없음",
+    "alert.push_proxy_error.description": "이 서버의 설정때문에, 모바일앱에서 알림을 수신할 수 없습니다. 자세한 정보를 위해 시스템 관리자에게 문의하세요.",
+    "alert.channel_deleted.title": "보관처리된 채널",
+    "alert.channel_deleted.description": "{displayName} 채널이 보관처리됨.",
+    "advanced_settings.delete_data": "문서 혹은 데이터 삭제",
+    "account.settings": "설정",
+    "account.logout_from": "{serverName}에서 로그아웃",
+    "account.logout": "로그아웃"
 }
