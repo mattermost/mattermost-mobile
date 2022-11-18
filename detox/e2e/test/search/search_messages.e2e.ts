@@ -72,7 +72,6 @@ describe('Search - Search Messages', () => {
         await expect(SearchMessagesScreen.largeHeaderTitle).toHaveText('Search');
         await expect(SearchMessagesScreen.searchInput).toBeVisible();
         await expect(SearchMessagesScreen.searchModifierHeader).toHaveText('Search options');
-        await expect(SearchMessagesScreen.getTeamPickerIcon(testTeam.id)).toBeVisible();
         await expect(SearchMessagesScreen.searchModifierFrom).toBeVisible();
         await expect(SearchMessagesScreen.searchModifierIn).toBeVisible();
         await expect(SearchMessagesScreen.searchModifierExclude).toBeVisible();
