@@ -5,7 +5,7 @@ import React from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
-import {removeMembersFromChannel} from '@actions/remote/channel';
+import {removeMemberFromChannel} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {General} from '@constants';
@@ -76,7 +76,7 @@ const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, t
                 text: intl.formatMessage(messages.remove_confirm),
                 style: 'destructive',
                 onPress: async () => {
-                    await removeMembersFromChannel(serverUrl, channelId, [userId]);
+                    await removeMemberFromChannel(serverUrl, channelId, userId);
                     await dismissBottomSheet();
                 },
             }], {cancelable: false},

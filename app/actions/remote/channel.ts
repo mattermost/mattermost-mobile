@@ -46,15 +46,14 @@ export type MyChannelsRequest = {
     error?: unknown;
 }
 
-export async function removeMembersFromChannel(serverUrl: string, channelId: string, userIds: string[]) {
+export async function removeMemberFromChannel(serverUrl: string, channelId: string, userId: string) {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
-        const promises = userIds.map((id) => client.removeFromChannel(id, channelId));
-        await Promise.all(promises);
 
-        const modelPromises = userIds.map((id) => deleteChannelMembership(operator, id, channelId));
-        await Promise.all(modelPromises);
+        await client.removeFromChannel(userId, channelId);
+        await deleteChannelMembership(operator, userId, channelId);
+
         fetchChannelStats(serverUrl, channelId, false);
         return {error: undefined};
     } catch (error) {
