@@ -26,7 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: theme.buttonColor,
         fontSize: 12,
         marginLeft: 5,
-        marginTop: 2,
+        marginTop: 4.5,
     },
     nextButtonText: {
         flexDirection: 'row',

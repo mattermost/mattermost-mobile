@@ -148,7 +148,7 @@ Appearance.addChangeListener(() => {
     const theme = getThemeFromState();
     const screens = NavigationStore.getAllNavigationComponents();
 
-    if (screens.includes(Screens.SERVER)) {
+    if (screens.includes(Screens.SERVER) || screens.includes(Screens.ONBOARDING)) {
         for (const screen of screens) {
             if (appearanceControlledScreens.has(screen)) {
                 Navigation.updateProps(screen, {theme});
