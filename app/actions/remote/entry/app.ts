@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {setLastServerVersionCheck} from '@actions/local/systems';
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
@@ -21,6 +22,9 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
 
     if (!since) {
         registerDeviceToken(serverUrl);
+        if (Object.keys(DatabaseManager.serverDatabases).length === 1) {
+            await setLastServerVersionCheck(serverUrl, true);
+        }
     }
 
     // clear lastUnreadChannelId
