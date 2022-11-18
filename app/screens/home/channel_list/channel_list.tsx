@@ -16,7 +16,7 @@ import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {resetToTeams} from '@screens/navigation';
+import {resetToTeams, openToS} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {addSentryContext} from '@utils/sentry';
 
@@ -30,6 +30,7 @@ type ChannelProps = {
     teamsCount: number;
     time?: number;
     isLicensed: boolean;
+    showToS: boolean;
 };
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -122,6 +123,12 @@ const ChannelListScreen = (props: ChannelProps) => {
     useEffect(() => {
         addSentryContext(serverUrl);
     }, [serverUrl]);
+
+    useEffect(() => {
+        if (props.showToS && !NavigationStore.isToSOpen()) {
+            openToS();
+        }
+    }, [props.showToS]);
 
     return (
         <FreezeScreen freeze={!isFocused}>

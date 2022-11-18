@@ -5,22 +5,6 @@ import {StyleProp, StyleSheet, TextStyle, ViewStyle} from 'react-native';
 
 import {blendColors, changeOpacity} from '@utils/theme';
 
-type ButtonSize = 'xs' | 's' | 'm' | 'lg'
-type ButtonEmphasis = 'primary' | 'secondary' | 'tertiary' | 'link'
-type ButtonType = 'default' | 'destructive' | 'inverted' | 'disabled'
-type ButtonState = 'default' | 'hover' | 'active' | 'focus'
-
-type ButtonSizes = {
-    [key in ButtonSize]: ViewStyle
-}
-type BackgroundStyles = {
-    [key in ButtonEmphasis]: {
-        [ke in ButtonType]: {
-            [k in ButtonState]: ViewStyle
-        }
-    }
-}
-
 /**
  * Returns the appropriate Style object for <View style={} />
  *

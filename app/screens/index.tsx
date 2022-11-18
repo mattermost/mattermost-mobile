@@ -210,6 +210,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.TABLE:
             screen = withServerDatabase(require('@screens/table').default);
             break;
+        case Screens.TERMS_OF_SERVICE:
+            screen = withServerDatabase(require('@screens/terms_of_service').default);
+            break;
         case Screens.THREAD:
             screen = withServerDatabase(require('@screens/thread').default);
             break;

@@ -182,6 +182,11 @@ function isScreenRegistered(screen: string) {
     return true;
 }
 
+export function openToS() {
+    NavigationStore.setToSOpen(true);
+    return showOverlay(Screens.TERMS_OF_SERVICE, {}, {overlay: {interceptTouchOutside: true}});
+}
+
 export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
@@ -599,7 +604,7 @@ export function setButtons(componentId: string, buttons: NavButtons = {leftButto
     mergeNavigationOptions(componentId, options);
 }
 
-export function showOverlay(name: string, passProps = {}, options = {}) {
+export function showOverlay(name: string, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return;
     }
