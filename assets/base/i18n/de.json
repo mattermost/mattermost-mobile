@@ -839,7 +839,7 @@
     "invite_people_to_team.title": "Werde Mitglied des {team} Teams",
     "invite_people_to_team.message": "Hier ist ein Link, um mit uns auf Mattermost zusammenzuarbeiten und zu kommunizieren.",
     "unsupported_server.title": "Nicht unterstützte Serverversion",
-    "unsupported_server.message": "Auf dem Server, {serverDisplayName}, läuft eine nicht unterstützte Serverversion. Es kann zu Kompatibilitätsproblemen kommen, die zu Abstürzen oder schwerwiegenden Fehlern führen, welche die Kernfunktionen der App beeinträchtigen. Bitte wende dich an deinen Systemadministrator, um Ihren Mattermost-Server zu aktualisieren.",
+    "unsupported_server.message": "Auf deinem Server, {serverDisplayName}, läuft eine nicht unterstützte Serverversion. Es kann zu Kompatibilitätsproblemen kommen, die zu Abstürzen oder schwerwiegenden Fehlern führen, welche die Kernfunktionen der App beeinträchtigen. Bitte wende dich an deinen Systemadministrator, um deinen Mattermost-Server zu aktualisieren.",
     "server_upgrade.learn_more": "Mehr erfahren",
     "server_upgrade.dismiss": "Verwerfen",
     "server_upgrade.alert_description": "Auf dem Server, {serverDisplayName}, läuft eine nicht unterstützte Serverversion. Die Benutzer sind Kompatibilitätsproblemen ausgesetzt, die zu Abstürzen oder schwerwiegenden Fehlern führen, welche die Kernfunktionen der Anwendung beeinträchtigen. Ein Upgrade auf die Serverversion {supportedServerVersion} oder höher ist erforderlich."
