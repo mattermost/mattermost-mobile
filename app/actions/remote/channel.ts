@@ -55,6 +55,7 @@ export async function removeMembersFromChannel(serverUrl: string, channelId: str
 
         const modelPromises = userIds.map((id) => deleteChannelMembership(operator, id, channelId));
         await Promise.all(modelPromises);
+        fetchChannelStats(serverUrl, channelId, false);
         return {error: undefined};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
