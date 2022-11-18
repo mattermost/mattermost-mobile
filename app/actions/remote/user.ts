@@ -539,19 +539,9 @@ export const fetchProfilesNotInChannel = async (
     perPage: number = General.PROFILE_CHUNK_SIZE,
     fetchOnly = false,
 ) => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
         const users = await client.getProfilesNotInChannel(teamId, channelId, groupConstrained, page, perPage);
 
         if (!fetchOnly) {
