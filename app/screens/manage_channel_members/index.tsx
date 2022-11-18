@@ -5,7 +5,6 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
 import {observeProfileLongPresTutorial} from '@app/queries/app/global';
-import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {observeCurrentUser, observeTeammateNameDisplay} from '@queries/servers/user';
 
@@ -13,13 +12,8 @@ import ManageChannelMembers from './manage_channel_members';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type Props = WithDatabaseArgs & {
-    channelId: string;
-}
-
-const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
-        currentChannel: observeChannel(database, channelId),
         currentUser: observeCurrentUser(database),
         currentTeamId: observeCurrentTeamId(database),
         teammateNameDisplay: observeTeammateNameDisplay(database),

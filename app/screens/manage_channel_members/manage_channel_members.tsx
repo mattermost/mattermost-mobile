@@ -13,7 +13,7 @@ import UserList from '@components/user_list';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {ChannelModel, UserModel} from '@database/models/server';
+import {UserModel} from '@database/models/server';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
@@ -24,8 +24,8 @@ import {filterProfilesMatchingTerm, isChannelAdmin, isSystemAdmin} from '@utils/
 const MANAGE_BUTTON = 'manage-button';
 
 type Props = {
+    channelId: string;
     componentId: string;
-    currentChannel: ChannelModel;
     currentTeamId: string;
     currentUser: UserModel;
     restrictDirectMessage: boolean;
@@ -81,7 +81,7 @@ const messages = defineMessages({
 });
 
 export default function ManageChannelMembers({
-    currentChannel,
+    channelId,
     componentId,
     currentTeamId,
     currentUser,
@@ -133,7 +133,7 @@ export default function ManageChannelMembers({
     const getProfiles = useCallback(debounce(() => {
         if (next.current && !loading && !term && mounted.current) {
             setLoading(true);
-            fetchProfilesInChannel(serverUrl, currentChannel.id).then(loadedProfiles);
+            fetchProfilesInChannel(serverUrl, channelId).then(loadedProfiles);
         }
     }, 100), [loading, isSearch, restrictDirectMessage, serverUrl, currentTeamId]);
 
@@ -147,7 +147,7 @@ export default function ManageChannelMembers({
             const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
             const closeButtonId = 'close-user-profile';
             const props = {
-                channelId: currentChannel.id,
+                channelId,
                 closeButtonId,
                 location: Screens.USER_PROFILE,
                 manageMode: true,
@@ -163,7 +163,7 @@ export default function ManageChannelMembers({
         const lowerCasedTerm = searchTerm.toLowerCase();
         setLoading(true);
 
-        const results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, channel_id: currentChannel.id, allow_inactive: true});
+        const results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, channel_id: channelId, allow_inactive: true});
 
         let data: UserProfile[] = [];
         if (results.data) {
