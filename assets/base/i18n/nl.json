@@ -839,5 +839,9 @@
     "notification_settings.mobile.away": "Afwezig of offline",
     "notification_settings.mentions.sensitiveUsername": "Jouw niet-hoofdlettergevoelige gebruikersnaam",
     "notification_settings.mentions.sensitiveName": "Jouw hoofdlettergevoelige voornaam",
-    "notification_settings.mentions.keywordsLabel": "Trefwoorden zijn niet hoofdlettergevoelig. Scheid trefwoorden met komma's."
+    "notification_settings.mentions.keywordsLabel": "Trefwoorden zijn niet hoofdlettergevoelig. Scheid trefwoorden met komma's.",
+    "plus_menu.invite_people_to_team.title": "Mensen uitnodigen voor het team",
+    "mobile.calls_mic_error": "Om deel te nemen, open Instellingen om Mattermost toegang te geven tot jouw microfoon.",
+    "invite_people_to_team.title": "Word lid van het {team} team",
+    "invite_people_to_team.message": "Hier is een link om met ons samen te werken en te communiceren op Mattermost."
 }
