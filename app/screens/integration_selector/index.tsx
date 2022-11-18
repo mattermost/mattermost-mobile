@@ -395,6 +395,7 @@ function IntegrationSelector(
 
     useEffect(() => {
         let listData: (DataType | UserProfileSection[]) = integrationData;
+
         if (term) {
             listData = searchResults;
         }
@@ -541,7 +542,7 @@ function IntegrationSelector(
         }
     }, [dataSource, renderUserItem, renderChannelItem, renderOptionItem]);
 
-    const renderSelectedOptions = (): React.ReactElement<any, string> | null => {
+    const renderSelectedOptions = useCallback((): React.ReactElement<any, string> | null => {
         const selectedItems: any = Object.values(multiselectSelected);
 
         let optionComponents: React.ReactElement<any, string> | null = null;
@@ -561,7 +562,7 @@ function IntegrationSelector(
         }
 
         return optionComponents;
-    };
+    }, [multiselectSelected, style, theme]);
 
     const listType = dataSource === ViewConstants.DATA_SOURCE_USERS ? SECTIONLIST : FLATLIST;
     const selectedOptionsComponent = renderSelectedOptions();
