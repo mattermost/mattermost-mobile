@@ -24,9 +24,9 @@ const messages = defineMessages({
 });
 
 type Props = {
-    isOptionItem?: boolean;
     canRemove: boolean;
     channelId: string;
+    isOptionItem?: boolean;
     manageOption?: string;
     testID?: string;
     userId: string;
@@ -114,7 +114,6 @@ const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, t
                 action={onAction}
                 destructive={true}
                 icon={icon}
-
                 label={actionText}
                 testID={testID}
                 type='default'
