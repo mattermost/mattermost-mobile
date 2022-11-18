@@ -93,6 +93,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         manageText: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 100, 'Regular'),
         },
         tutorial: {
             top: Platform.select({ios: -74, default: -94}),
@@ -160,8 +161,11 @@ export default function UserListRow({
     }, [highlight, tutorialWatched]);
 
     const handlePress = useCallback(() => {
+        if (isMyUser && manageMode) {
+            return;
+        }
         onPress?.(user);
-    }, [onPress, user]);
+    }, [onPress, isMyUser, manageMode, user]);
 
     const handleLongPress = useCallback(() => {
         onLongPress?.(user);
@@ -189,7 +193,7 @@ export default function UserListRow({
                 />
                 <CompassIcon
                     name={'chevron-down'}
-                    size={28}
+                    size={18}
                     color={color}
                 />
             </View>
@@ -208,7 +212,7 @@ export default function UserListRow({
                 />
             </View>
         );
-    }, [selectable, selected, showManageMode, theme]);
+    }, [selectable, selected, theme]);
 
     let usernameDisplay = `@${username}`;
     if (isMyUser) {

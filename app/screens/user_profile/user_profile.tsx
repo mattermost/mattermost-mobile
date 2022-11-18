@@ -28,12 +28,12 @@ import type UserModel from '@typings/database/models/servers/user';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         divider: {
+            alignSelf: 'center',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
             height: 1,
-            width: '100%',
-            alignSelf: 'center',
             marginVertical: 8,
             paddingHorizontal: 20,
+            width: '100%',
         },
     };
 });
