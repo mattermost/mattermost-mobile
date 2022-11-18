@@ -4,9 +4,9 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {observeCurrentTeamId} from '@app/queries/servers/system';
 import {observeProfileLongPresTutorial} from '@queries/app/global';
 import {observeCurrentChannel} from '@queries/servers/channel';
+import {observeCurrentTeamId} from '@queries/servers/system';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
 import ChannelAddPeople from './channel_add_people';
