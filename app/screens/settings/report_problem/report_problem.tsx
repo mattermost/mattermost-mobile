@@ -34,46 +34,35 @@ const ReportProblem = ({currentTeamId, currentUserId, supportEmail, version, bui
         const logPaths = await TurboLogger.getLogPaths();
 
         // /data/user/0/com.mattermost.rnbeta/cache/logs/com.mattermost.rnbeta-latest.log
-
-        // copy all the logs into the downloads folder
-        const docLogDir = `${FileSystem.DocumentDirectoryPath}/mattermost-logs`; // perhaps run mkdir to create the directory
+        const paths: string[] = [];
         const fileNames: string[] = [];
-
-        // creates the directory if it doesn't exist
+        const logDir = `${FileSystem.TemporaryDirectoryPath}/mattermost-logs/`;
         try {
-            await FileSystem.mkdir(docLogDir, {NSURLIsExcludedFromBackupKey: true});
-        } catch (e) {
-            logError(`An error occurred while creating folder at ${docLogDir}`, e);
-        }
-        try {
-            const copyPromises = logPaths.map(async (logPath) => {
+            const mvPromises = logPaths.map(async (logPath) => {
                 const pathParts = logPath.split('/');
                 const logFileName = pathParts[pathParts.length - 1];
                 fileNames.push(logFileName);
-                const p = await FileSystem.copyFile(logPath, docLogDir);
-                console.log('>>>  p', {p});
-                return p;
+
+                await FileSystem.moveFile(logPath, `${logDir}`);
+                paths.push(`${logDir}/${logFileName}`);
             });
-            const copiedFiles = await Promise.all(copyPromises);
+            const copiedFiles = await Promise.all(mvPromises);
         } catch (e) {
-            logError(`An error occurred while copying logs to ${docLogDir}`, e);
+            logError(`An error occurred while copying logs to ${logDir}`, e);
         }
 
-        const attachments = [];
+        const attachments: any = [];
         try {
-            const fileStatsPromises = fileNames.map(async (fileName) => {
-                const stat = await FileSystem.stat(`${docLogDir}`); // todo: check if size < 20MB
-                console.log('>>>  stat', {stat});
+            const fileStatsPromises = paths.map(async (wp) => {
                 return attachments.push({
-                    uri: `${docLogDir}/${fileName}`,
-                    type: 'text/plain',
-                    name: fileName,
+                    uri: `content://${wp}`,
+                    mimeType: 'text/plain',
                 });
             });
 
             const stats = await Promise.all(fileStatsPromises);
         } catch (e) {
-            logError(`An error occurred while reading logs from ${docLogDir} folder`, e);
+            logError(`An error occurred while reading logs from ${logDir} folder`, e);
         }
 
         Mailer.mail({
@@ -90,8 +79,6 @@ const ReportProblem = ({currentTeamId, currentUserId, supportEmail, version, bui
                 `App Platform: ${Platform.OS}`,
                 `Device Model: ${deviceId}`, // added this one
             ].join('\n'),
-
-            //fixme: include attachments
             attachments,
         }, (error, event) => {
             //fixme: error : not_available  || not_found => verify if the default email client has been configured or ask the user to do so and to try again later
