@@ -88,3 +88,12 @@ export async function setLastServerVersionCheck(serverUrl: string, reset = false
         logError('setLastServerVersionCheck', error);
     }
 }
+
+export async function dismissAnnouncement(serverUrl: string, announcementText: string) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LAST_DISMISSED_BANNER, value: announcementText}], prepareRecordsOnly: false});
+    } catch (error) {
+        logError('An error occurred while dismissing an announcement', error);
+    }
+}

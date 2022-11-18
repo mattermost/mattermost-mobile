@@ -58,6 +58,7 @@ export const SYSTEM_IDENTIFIERS = {
     CURRENT_USER_ID: 'currentUserId',
     DATA_RETENTION_POLICIES: 'dataRetentionPolicies',
     EXPANDED_LINKS: 'expandedLinks',
+    LAST_DISMISSED_BANNER: 'lastDismissedBanner',
     LAST_SERVER_VERSION_CHECK: 'LastServerVersionCheck',
     LICENSE: 'license',
     ONLY_UNREADS: 'onlyUnreads',

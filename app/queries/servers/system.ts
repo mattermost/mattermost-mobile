@@ -447,6 +447,12 @@ export const getExpiredSession = async (database: Database) => {
     }
 };
 
+export const observeLastDismissedAnnouncement = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_DISMISSED_BANNER).observeWithColumns(['value']).pipe(
+        switchMap((list) => of$(list[0]?.value)),
+    );
+};
+
 export const observeCanUploadFiles = (database: Database) => {
     const enableFileAttachments = observeConfigBooleanValue(database, 'EnableFileAttachments');
     const enableMobileFileUpload = observeConfigBooleanValue(database, 'EnableMobileFileUpload');

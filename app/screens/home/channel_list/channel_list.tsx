@@ -5,10 +5,11 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import {useIsFocused, useNavigation, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid} from 'react-native';
+import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import AnnouncementBanner from '@components/announcement_banner';
 import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {Navigation as NavigationConstants, Screens} from '@constants';
@@ -28,6 +29,7 @@ type ChannelProps = {
     isCRTEnabled: boolean;
     teamsCount: number;
     time?: number;
+    isLicensed: boolean;
 };
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -36,6 +38,9 @@ const styles = StyleSheet.create({
     content: {
         flex: 1,
         flexDirection: 'row',
+    },
+    flex: {
+        flex: 1,
     },
 });
 
@@ -120,31 +125,36 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     return (
         <FreezeScreen freeze={!isFocused}>
-            {<Animated.View style={top}/>}
+            <Animated.View style={top}/>
             <SafeAreaView
-                style={styles.content}
+                style={styles.flex}
                 edges={edges}
                 testID='channel_list.screen'
             >
-                {canAddOtherServers && <Servers/>}
-                <Animated.View
-                    style={[styles.content, animated]}
-                >
-                    <TeamSidebar
-                        iconPad={canAddOtherServers}
-                        teamsCount={props.teamsCount}
-                    />
-                    <CategoriesList
-                        iconPad={canAddOtherServers && props.teamsCount <= 1}
-                        isCRTEnabled={props.isCRTEnabled}
-                        isTablet={isTablet}
-                        teamsCount={props.teamsCount}
-                        channelsCount={props.channelsCount}
-                    />
-                    {isTablet &&
-                        <AdditionalTabletView/>
-                    }
-                </Animated.View>
+                {props.isLicensed &&
+                    <AnnouncementBanner/>
+                }
+                <View style={styles.content}>
+                    {canAddOtherServers && <Servers/>}
+                    <Animated.View
+                        style={[styles.content, animated]}
+                    >
+                        <TeamSidebar
+                            iconPad={canAddOtherServers}
+                            teamsCount={props.teamsCount}
+                        />
+                        <CategoriesList
+                            iconPad={canAddOtherServers && props.teamsCount <= 1}
+                            isCRTEnabled={props.isCRTEnabled}
+                            isTablet={isTablet}
+                            teamsCount={props.teamsCount}
+                            channelsCount={props.channelsCount}
+                        />
+                        {isTablet &&
+                            <AdditionalTabletView/>
+                        }
+                    </Animated.View>
+                </View>
             </SafeAreaView>
         </FreezeScreen>
     );
