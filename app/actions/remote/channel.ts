@@ -47,19 +47,9 @@ export type MyChannelsRequest = {
 }
 
 export async function removeMembersFromChannel(serverUrl: string, channelId: string, userIds: string[]) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
         const promises = userIds.map((id) => client.removeFromChannel(id, channelId));
         await Promise.all(promises);
 
