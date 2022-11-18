@@ -51,10 +51,10 @@ type Props = {
     isSystemAdmin: boolean;
     isTeamAdmin: boolean;
     location: string;
+    manageMode?: boolean;
     teamId: string;
     teammateDisplayName: string;
     user: UserModel;
-    isManageable?: boolean;
     userIconOverride?: string;
     usernameOverride?: string;
 }
@@ -67,8 +67,8 @@ const EXTRA_HEIGHT = 60;
 
 const UserProfile = ({
     channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
-    isChannelAdmin, isCustomStatusEnabled, isDirectMessage, isManageable = false, isMilitaryTime, isSystemAdmin, isTeamAdmin,
-    location, teamId, teammateDisplayName,
+    isChannelAdmin, isCustomStatusEnabled, isDirectMessage, isMilitaryTime, isSystemAdmin, isTeamAdmin,
+    location, manageMode = false, teamId, teammateDisplayName,
     user, userIconOverride, usernameOverride,
 }: Props) => {
     const {formatMessage, locale} = useIntl();
@@ -145,7 +145,7 @@ const UserProfile = ({
                     userIconOverride={userIconOverride}
                     usernameOverride={usernameOverride}
                 />
-                {(!isDirectMessage || !channelContext) && !override && !isManageable &&
+                {(!isDirectMessage || !channelContext) && !override && !manageMode &&
                     <UserProfileOptions
                         location={location}
                         type={showOptions}
@@ -175,15 +175,15 @@ const UserProfile = ({
                     title={formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'})}
                 />
                 }
-                {isManageable && channelId &&
+                {manageMode && channelId &&
                     <>
                         <View style={styles.divider}/>
                         <ManageMembersLabel
                             channelId={channelId}
-                            manageOption={General.MANAGE_MEMBERS_OPTIONS.REMOVE_USER}
-                            userId={user.id}
-                            testID='channel.remove_member'
                             isOptionItem={true}
+                            manageOption={General.MANAGE_MEMBERS_OPTIONS.REMOVE_USER}
+                            testID='channel.remove_member'
+                            userId={user.id}
                         />
                     </>
                 }

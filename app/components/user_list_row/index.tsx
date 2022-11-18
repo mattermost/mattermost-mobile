@@ -25,19 +25,19 @@ import {typography} from '@utils/typography';
 import {displayUsername, isChannelAdmin, isGuest, isSystemAdmin} from '@utils/user';
 
 type Props = {
+    highlight?: boolean;
     id: string;
     isMyUser: boolean;
-    highlight?: boolean;
-    user: UserProfile;
-    teammateNameDisplay: string;
-    testID: string;
-    onPress?: (user: UserProfile) => void;
-    onLongPress: (user: UserProfile) => void;
-    showManageMode: boolean;
     manageMode: boolean;
+    onLongPress: (user: UserProfile) => void;
+    onPress?: (user: UserProfile) => void;
     selectable: boolean;
     selected: boolean;
+    showManageMode: boolean;
+    teammateNameDisplay: string;
+    testID: string;
     tutorialWatched?: boolean;
+    user: UserProfile;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -111,16 +111,16 @@ export default function UserListRow({
     id,
     isMyUser,
     highlight,
-    user,
-    teammateNameDisplay,
-    testID,
     onPress,
     onLongPress,
     manageMode = false,
-    showManageMode = false,
-    tutorialWatched = false,
     selectable,
     selected,
+    showManageMode = false,
+    teammateNameDisplay,
+    testID,
+    tutorialWatched = false,
+    user,
 }: Props) {
     const theme = useTheme();
     const intl = useIntl();

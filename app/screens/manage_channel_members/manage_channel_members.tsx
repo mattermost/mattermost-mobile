@@ -147,9 +147,9 @@ export default function ManageChannelMembers({
             const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
             const closeButtonId = 'close-user-profile';
             const props = {
-                isManageable: true,
                 channelId: currentChannel.id,
                 closeButtonId,
+                manageMode: true,
                 userId: user.id,
                 location: Screens.USER_PROFILE,
             };
