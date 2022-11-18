@@ -149,9 +149,9 @@ export default function ManageChannelMembers({
             const props = {
                 channelId: currentChannel.id,
                 closeButtonId,
+                location: Screens.USER_PROFILE,
                 manageMode: true,
                 userId: user.id,
-                location: Screens.USER_PROFILE,
             };
 
             Keyboard.dismiss();
@@ -197,11 +197,11 @@ export default function ManageChannelMembers({
         setButtons(componentId, {
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
-                id: MANAGE_BUTTON,
-                text: formatMessage(manage ? messages.button_done : messages.button_manage),
-                showAsAction: 'always',
                 enabled: true,
+                id: MANAGE_BUTTON,
+                showAsAction: 'always',
                 testID: 'manage_members.button',
+                text: formatMessage(manage ? messages.button_done : messages.button_manage),
             }],
         });
     }, [intl.locale, manageEnabled, theme]);
@@ -251,29 +251,29 @@ export default function ManageChannelMembers({
         >
             <View style={style.searchBar}>
                 <Search
-                    testID='manage_members.search_bar'
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    autoCapitalize='none'
                     cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    onCancel={clearSearch}
                     onChangeText={onSearch}
                     onSubmitEditing={search}
-                    onCancel={clearSearch}
-                    autoCapitalize='none'
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                    testID='manage_members.search_bar'
                     value={term}
                 />
             </View>
             <UserList
                 currentUserId={currentUserId}
+                fetchMore={getProfiles}
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 manageMode={true}
-                showManageMode={canManage && manageEnabled}
                 profiles={data}
                 selectedIds={{}}
+                showManageMode={canManage && manageEnabled}
                 showNoResults={!loading && page.current !== -1}
                 teammateNameDisplay={teammateNameDisplay}
-                fetchMore={getProfiles}
                 term={term}
                 testID='manage_members.user_list'
                 tutorialWatched={tutorialWatched}
