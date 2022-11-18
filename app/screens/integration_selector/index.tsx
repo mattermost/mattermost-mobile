@@ -73,6 +73,24 @@ const extractItemKey = (dataSource: string, item: Selection): string => {
     }
 };
 
+const filterSearchData = (source: string, searchData: DataType, searchTerm: string) => {
+    if (!searchData) {
+        return [];
+    }
+
+    const lowerCasedTerm = searchTerm.toLowerCase();
+
+    if (source === ViewConstants.DATA_SOURCE_USERS) {
+        return filterProfilesMatchingTerm(searchData as UserProfile[], lowerCasedTerm);
+    } else if (source === ViewConstants.DATA_SOURCE_CHANNELS) {
+        return filterChannelsMatchingTerm(searchData as Channel[], lowerCasedTerm);
+    } else if (source === ViewConstants.DATA_SOURCE_DYNAMIC) {
+        return searchData;
+    }
+
+    return (searchData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().startsWith(lowerCasedTerm));
+};
+
 export type Props = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     options?: PostActionOption[];
@@ -115,6 +133,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.5),
             ...typography('Body', 600, 'Regular'),
         },
+        searchBarInput: {
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            color: theme.centerChannelColor,
+            ...typography('Body', 200, 'Regular'),
+        },
         separator: {
             height: 1,
             flex: 0,
@@ -130,11 +153,6 @@ function IntegrationSelector(
     const theme = useTheme();
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const style = getStyleSheet(theme);
-    const searchBarInput = {
-        backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-        color: theme.centerChannelColor,
-        ...typography('Body', 200, 'Regular'),
-    };
     const intl = useIntl();
 
     // HOOKS
@@ -229,12 +247,12 @@ function IntegrationSelector(
             setLoading(false);
 
             if (channelData && channelData.length > 0) {
-                setIntegrationData(channelData);
+                setIntegrationData([...integrationData as Channel[], ...channelData]);
             } else {
                 next.current = false;
             }
         }
-    }, 100), [integrationData, loading, term]);
+    }, 100), [loading, term]);
 
     const getProfiles = useCallback(debounce(async () => {
         if (next.current && !loading && !term) {
@@ -246,12 +264,12 @@ function IntegrationSelector(
             setLoading(false);
 
             if (profiles && profiles.length > 0) {
-                setIntegrationData(profiles);
+                setIntegrationData([...integrationData as UserProfile[], ...profiles]);
             } else {
                 next.current = false;
             }
         }
-    }, 100), [integrationData, loading, term]);
+    }, 100), [loading, term]);
 
     const loadMore = useCallback(async () => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
@@ -264,7 +282,7 @@ function IntegrationSelector(
     }, [getProfiles, getChannels, dataSource]);
 
     const searchDynamicOptions = useCallback(async (searchTerm = '') => {
-        if (options) {
+        if (options && options !== integrationData && !searchTerm) {
             setIntegrationData(options);
         }
 
@@ -280,10 +298,10 @@ function IntegrationSelector(
         } else {
             setIntegrationData(searchData);
         }
-    }, [options, getDynamicOptions]);
+    }, [options, getDynamicOptions, integrationData]);
 
     const onHandleMultiselectSubmit = useCallback(() => {
-        handleSelect(getMultiselectData());
+        handleSelect(getMultiselectData(multiselectSelected));
         close();
     }, [multiselectSelected, handleSelect]);
 
@@ -308,7 +326,7 @@ function IntegrationSelector(
 
             if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
                 const {data: userData} = await searchProfiles(
-                    serverUrl, term.toLowerCase(),
+                    serverUrl, text.toLowerCase(),
                     {team_id: currentTeamId, allow_inactive: true});
 
                 if (userData) {
@@ -317,7 +335,7 @@ function IntegrationSelector(
             } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
                 const isSearch = true;
                 const {channels: receivedChannels} = await searchChannels(
-                    serverUrl, term, currentTeamId, isSearch);
+                    serverUrl, text, currentTeamId, isSearch);
 
                 if (receivedChannels) {
                     setSearchResults(receivedChannels);
@@ -328,33 +346,15 @@ function IntegrationSelector(
 
             setLoading(false);
         }, General.SEARCH_TIMEOUT_MILLISECONDS);
-    }, [dataSource, term]);
+    }, [dataSource]);
 
-    const filterSearchData = (source: string, searchData: DataType, searchTerm: string) => {
-        if (!data) {
-            return [];
-        }
-
-        const lowerCasedTerm = searchTerm.toLowerCase();
-
-        if (source === ViewConstants.DATA_SOURCE_USERS) {
-            return filterProfilesMatchingTerm(searchData as UserProfile[], lowerCasedTerm);
-        } else if (source === ViewConstants.DATA_SOURCE_CHANNELS) {
-            return filterChannelsMatchingTerm(searchData as Channel[], lowerCasedTerm);
-        } else if (source === ViewConstants.DATA_SOURCE_DYNAMIC) {
-            return searchData;
-        }
-
-        return (searchData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().startsWith(lowerCasedTerm));
-    };
-
-    const getMultiselectData = useCallback((): Selection => {
+    const getMultiselectData = useCallback((multiselectSelectedElems: MultiselectSelectedMap): Selection => {
         let myItems;
         let multiselectItems: Selection = [];
 
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
-                myItems = multiselectSelected as Dictionary<UserProfile>;
+                myItems = multiselectSelectedElems as Dictionary<UserProfile>;
                 multiselectItems = multiselectItems as UserProfile[];
                 // eslint-disable-next-line guard-for-in
                 for (const index in myItems) {
@@ -362,7 +362,7 @@ function IntegrationSelector(
                 }
                 return multiselectItems;
             case ViewConstants.DATA_SOURCE_CHANNELS:
-                myItems = multiselectSelected as Dictionary<Channel>;
+                myItems = multiselectSelectedElems as Dictionary<Channel>;
                 multiselectItems = multiselectItems as Channel[];
                 // eslint-disable-next-line guard-for-in
                 for (const index in myItems) {
@@ -370,7 +370,7 @@ function IntegrationSelector(
                 }
                 return multiselectItems;
             default:
-                myItems = multiselectSelected as Dictionary<DialogOption>;
+                myItems = multiselectSelectedElems as Dictionary<DialogOption>;
                 multiselectItems = multiselectItems as DialogOption[];
                 // eslint-disable-next-line guard-for-in
                 for (const index in myItems) {
@@ -575,7 +575,7 @@ function IntegrationSelector(
                 <SearchBar
                     testID='selector.search_bar'
                     placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    inputStyle={searchBarInput}
+                    inputStyle={style.searchBarInput}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     onChangeText={onSearch}
                     autoCapitalize='none'
