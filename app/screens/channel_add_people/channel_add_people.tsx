@@ -139,6 +139,7 @@ export default function ChannelAddPeople({
     }, [serverUrl]);
 
     const clearSearch = useCallback(() => {
+        setLoading(false);
         setTerm('');
         setSearchResults([]);
     }, []);
@@ -202,6 +203,7 @@ export default function ChannelAddPeople({
     }, [searchUsers, term]);
 
     const onSearch = useCallback((text: string) => {
+        setLoading(true);
         if (text) {
             setTerm(text);
             if (searchTimeoutId.current) {
