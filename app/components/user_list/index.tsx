@@ -205,17 +205,13 @@ export default function UserList({
     }, [loading, theme]);
 
     const renderNoResults = useCallback(() => {
-        if (!showNoResults || !term) {
-            return (
-                <View style={noResultsStyle}>
-                    <NoResultsWithButton/>
-                </View>
-            );
+        if (!showNoResults) {
+            return null;
         }
 
         return (
             <View style={noResultsStyle}>
-                <NoResultsWithTerm term={term}/>
+                {term ? <NoResultsWithTerm term={term}/> : <NoResultsWithButton/>}
             </View>
         );
     }, [showNoResults && style, term, noResultsStyle]);

@@ -127,8 +127,8 @@ export default function CreateDirectMessage({
     }, []);
 
     const getProfiles = useCallback(debounce(() => {
+        setLoading(true);
         if (next.current && !loading && !term && mounted.current) {
-            setLoading(true);
             if (restrictDirectMessage) {
                 fetchProfilesInTeam(serverUrl, currentTeamId, page.current + 1, General.PROFILE_CHUNK_SIZE).then(loadedProfiles);
             } else {
@@ -265,6 +265,7 @@ export default function CreateDirectMessage({
     }, [searchUsers, term]);
 
     const onSearch = useCallback((text: string) => {
+        setLoading(true);
         if (text) {
             setTerm(text);
             if (searchTimeoutId.current) {
