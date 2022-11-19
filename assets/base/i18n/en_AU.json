@@ -833,5 +833,13 @@
     "channel_info.unarchive_title": "Unarchive {term}",
     "channel_info.unarchive_failed": "An error occurred while unarchiving the channel {displayName}",
     "mobile.login_options.office365": "Office 365",
-    "alert.push_proxy_unknown.description": "This server was unable to receive push notifications for an unknown reason and will be reattempted next time you connect."
+    "alert.push_proxy_unknown.description": "This server was unable to receive push notifications for an unknown reason and will be reattempted next time you connect.",
+    "unsupported_server.title": "Unsupported server version",
+    "unsupported_server.message": "Your server, {serverDisplayName}, is running an unsupported server version. You may experience compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Please contact your System Administrator to upgrade your Mattermost server.",
+    "server_upgrade.learn_more": "Learn More",
+    "server_upgrade.dismiss": "Dismiss",
+    "server_upgrade.alert_description": "Your server, {serverDisplayName}, is running an unsupported server version. Users will be exposed to compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Upgrading to server version {supportedServerVersion} or later is required.",
+    "plus_menu.invite_people_to_team.title": "Invite people to the team",
+    "mobile.calls_mic_error": "To participate, open Settings to grant Mattermost access to your microphone.",
+    "invite_people_to_team.title": "Join the {team} team"
 }
