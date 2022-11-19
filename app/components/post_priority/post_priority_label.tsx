@@ -15,7 +15,6 @@ const style = StyleSheet.create({
         flexDirection: 'row',
         borderRadius: 4,
         alignItems: 'center',
-        height: 16,
         paddingHorizontal: 4,
     },
     urgent: {
