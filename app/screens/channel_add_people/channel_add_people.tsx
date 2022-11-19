@@ -94,6 +94,7 @@ export default function ChannelAddPeople({
     const currentChannelId = currentChannel.id;
 
     const isSearch = Boolean(term);
+    const hasProfiles = useMemo(() => Boolean(profiles.length), [profiles]);
 
     const loadedProfiles = ({users}: {users: UserProfile[]}) => {
         if (mounted.current) {
@@ -215,17 +216,19 @@ export default function ChannelAddPeople({
     }, [searchUsers, clearSearch]);
 
     const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
-        setButtons(componentId, {
-            rightButtons: [{
-                color: theme.sidebarHeaderTextColor,
-                id: ADD_BUTTON,
-                text: formatMessage({id: 'mobile.channel_add_people.button', defaultMessage: 'Add'}),
-                showAsAction: 'always',
-                enabled: startEnabled,
-                testID: 'add_members.start.button',
-            }],
-        });
-    }, [intl.locale, theme]);
+        if (hasProfiles) {
+            setButtons(componentId, {
+                rightButtons: [{
+                    color: theme.sidebarHeaderTextColor,
+                    id: ADD_BUTTON,
+                    text: formatMessage({id: 'mobile.channel_add_people.button', defaultMessage: 'Add'}),
+                    showAsAction: 'always',
+                    enabled: startEnabled,
+                    testID: 'add_members.start.button',
+                }],
+            });
+        }
+    }, [intl.locale, hasProfiles, theme]);
 
     useNavButtonPressed(ADD_BUTTON, componentId, startAddPeople, [startAddPeople]);
 
@@ -278,20 +281,22 @@ export default function ChannelAddPeople({
             style={style.container}
             testID='add_members.screen'
         >
-            <View style={style.searchBar}>
-                <Search
-                    testID='add_members.search_bar'
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    onChangeText={onSearch}
-                    onSubmitEditing={search}
-                    onCancel={clearSearch}
-                    autoCapitalize='none'
-                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    value={term}
-                />
-            </View>
+            {hasProfiles &&
+                <View style={style.searchBar}>
+                    <Search
+                        testID='add_members.search_bar'
+                        placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        onChangeText={onSearch}
+                        onSubmitEditing={search}
+                        onCancel={clearSearch}
+                        autoCapitalize='none'
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        value={term}
+                    />
+                </View>
+            }
             {/*
                 https://mattermost.atlassian.net/browse/MM-48489
                 V1 does not have the selected users modal.

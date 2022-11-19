@@ -7,6 +7,7 @@ import {FlatList, Keyboard, ListRenderItemInfo, Platform, SectionList, SectionLi
 
 import {storeProfile} from '@actions/local/user';
 import Loading from '@components/loading';
+import NoResultsWithButton from '@components/no_results_with_button';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import UserListRow from '@components/user_list_row';
 import {General, Screens} from '@constants';
@@ -137,7 +138,7 @@ export default function UserList({
     const serverUrl = useServerUrl();
     const style = getStyleFromTheme(theme);
     const keyboardHeight = useKeyboardHeight();
-    const noResutsStyle = useMemo(() => [
+    const noResultsStyle = useMemo(() => [
         style.noResultContainer,
         {paddingBottom: keyboardHeight},
     ], [style, keyboardHeight]);
@@ -205,15 +206,19 @@ export default function UserList({
 
     const renderNoResults = useCallback(() => {
         if (!showNoResults || !term) {
-            return null;
+            return (
+                <View style={noResultsStyle}>
+                    <NoResultsWithButton/>
+                </View>
+            );
         }
 
         return (
-            <View style={noResutsStyle}>
+            <View style={noResultsStyle}>
                 <NoResultsWithTerm term={term}/>
             </View>
         );
-    }, [showNoResults && style, term, noResutsStyle]);
+    }, [showNoResults && style, term, noResultsStyle]);
 
     const renderSectionHeader = useCallback(({section}: {section: SectionListData<UserProfile>}) => {
         return (
