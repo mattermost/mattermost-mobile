@@ -40,7 +40,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         title: {
             color: theme.centerChannelColor,
-            textAlign: 'center',
             ...typography('Heading', 400, 'SemiBold'),
         },
         subText: {
