@@ -184,6 +184,7 @@ export default function ChannelAddPeople({
 
         const results = await searchProfiles(serverUrl, lowerCasedTerm, {
             team_id: currentTeamId,
+            not_in_channel_id: currentChannel.id,
             allow_inactive: true,
         });
 
