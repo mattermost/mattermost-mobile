@@ -7,6 +7,7 @@ import {storeConfigAndLicense} from '@actions/local/systems';
 import {MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
+import {fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {MyTeamsRequest} from '@actions/remote/team';
 import {fetchNewThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, updateAllUsersSince} from '@actions/remote/user';
@@ -18,7 +19,7 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import {queryAllChannels, queryAllChannelsForTeam} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig} from '@queries/servers/system';
+import {getConfig, getIsDataRetentionEnabled} from '@queries/servers/system';
 import {filterAndTransformRoles, getMemberChannelsFromGQLQuery, getMemberTeamsFromGQLQuery, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientSidebarCategory, gqlToClientTeamMembership, gqlToClientUser} from '@utils/graphql';
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
@@ -199,6 +200,13 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
         }
     }
 
+    // Fetch data retention policies
+    let dataRetentionPolicies = {};
+    const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
+    if (isDataRetentionEnabled) {
+        dataRetentionPolicies = await fetchDataRetentionPolicy(serverUrl);
+    }
+
     let initialTeamId = currentTeamId;
     if (!teamData.teams.length) {
         initialTeamId = '';
@@ -229,7 +237,7 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
     const removeTeamIds = await getRemoveTeamIds(database, teamData);
     const removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
 
-    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}, true);
+    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, dataRetentionPolicies, meData}, true);
     if (roles.length) {
         modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
     }

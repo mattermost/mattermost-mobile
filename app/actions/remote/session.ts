@@ -13,7 +13,7 @@ import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {queryServerName} from '@queries/app/servers';
-import {getCurrentUserId, getExpiredSession, getConfig, getLicense, getIsDataRetentionEnabled} from '@queries/servers/system';
+import {getCurrentUserId, getExpiredSession, getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {logWarning, logError} from '@utils/log';
@@ -21,7 +21,6 @@ import {scheduleExpiredNotification} from '@utils/notification';
 import {getCSRFFromCookie} from '@utils/security';
 
 import {loginEntry} from './entry';
-import {fetchDataRetentionPolicy} from './systems';
 
 import type ClientError from '@client/rest/error';
 import type {LoginArgs} from '@typings/database/database';
@@ -40,12 +39,6 @@ export const completeLogin = async (serverUrl: string) => {
 
     if (!Object.keys(config)?.length || !license || !Object.keys(license)?.length) {
         return null;
-    }
-
-    // Data retention
-    const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
-    if (isDataRetentionEnabled) {
-        fetchDataRetentionPolicy(serverUrl);
     }
 
     await DatabaseManager.setActiveServerDatabase(serverUrl);

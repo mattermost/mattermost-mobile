@@ -8,12 +8,13 @@ import ServerDataOperator from '@database/operator/server_data_operator';
 import {prepareCategories, prepareCategoryChannels} from './categories';
 import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
 import {prepareMyPreferences} from './preference';
-import {resetWebSocketLastDisconnected} from './system';
+import {prepareDataRetentionPolicies, resetWebSocketLastDisconnected} from './system';
 import {prepareDeleteTeam, prepareMyTeams} from './team';
 import {prepareUsers} from './user';
 
 import type {MyChannelsRequest} from '@actions/remote/channel';
 import type {MyPreferencesRequest} from '@actions/remote/preference';
+import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
 import type {MyTeamsRequest} from '@actions/remote/team';
 import type {MyUserRequest} from '@actions/remote/user';
 import type {Model} from '@nozbe/watermelondb';
@@ -29,6 +30,7 @@ type PrepareModelsArgs = {
     chData?: MyChannelsRequest;
     prefData?: MyPreferencesRequest;
     meData?: MyUserRequest;
+    dataRetentionPolicies?: DataRetentionPoliciesRequest;
     isCRTEnabled?: boolean;
 }
 
@@ -42,7 +44,7 @@ const {
     MY_CHANNEL,
 } = MM_TABLES.SERVER;
 
-export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData, isCRTEnabled}: PrepareModelsArgs, isGraphQL = false): Promise<Array<Promise<Model[]>>> {
+export async function prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData, dataRetentionPolicies, isCRTEnabled}: PrepareModelsArgs, isGraphQL = false): Promise<Array<Promise<Model[]>>> {
     const modelPromises: Array<Promise<Model[]>> = [];
 
     if (removeTeams?.length) {
@@ -76,6 +78,10 @@ export async function prepareModels({operator, initialTeamId, removeTeams, remov
 
     if (prefData?.preferences?.length) {
         modelPromises.push(prepareMyPreferences(operator, prefData.preferences, true));
+    }
+
+    if (dataRetentionPolicies) {
+        modelPromises.push(prepareDataRetentionPolicies(operator, dataRetentionPolicies));
     }
 
     if (meData?.user) {

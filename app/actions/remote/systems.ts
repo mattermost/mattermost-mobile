@@ -3,11 +3,9 @@
 
 import {storeConfigAndLicense} from '@actions/local/systems';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getCurrentUserId} from '@queries/servers/system';
-import {logError} from '@utils/log';
 
 import type ClientError from '@client/rest/error';
 
@@ -17,7 +15,14 @@ export type ConfigAndLicenseRequest = {
     error?: unknown;
 }
 
-export const fetchDataRetentionPolicy = async (serverUrl: string) => {
+export type DataRetentionPoliciesRequest = {
+    globalPolicy?: GlobalDataRetentionPolicy;
+    teamPolicies?: TeamDataRetentionPolicy[];
+    channelPolicies?: ChannelDataRetentionPolicy[];
+    error?: unknown;
+}
+
+export const fetchDataRetentionPolicy = async (serverUrl: string): Promise<DataRetentionPoliciesRequest> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -33,23 +38,11 @@ export const fetchDataRetentionPolicy = async (serverUrl: string) => {
             return hasError;
         }
 
-        const systems: IdValue[] = [{
-            id: SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES,
-            value: JSON.stringify(globalPolicy),
-        }, {
-            id: SYSTEM_IDENTIFIERS.GRANULAR_DATA_RETENTION_POLICIES,
-            value: JSON.stringify({
-                team: teamPolicies,
-                channel: channelPolicies,
-            }),
-        }];
-
-        await operator.handleSystem({systems, prepareRecordsOnly: false}).
-            catch((error) => {
-                logError('An error occurred while saving data retention policies', error);
-            });
-
-        return {globalPolicy, teamPolicies, channelPolicies};
+        return {
+            globalPolicy,
+            teamPolicies: teamPolicies as TeamDataRetentionPolicy[],
+            channelPolicies: channelPolicies as ChannelDataRetentionPolicy[],
+        };
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
@@ -94,8 +87,12 @@ export const fetchAllGranularDataRetentionPolicies = async (
     const {database} = operator;
 
     const currentUserId = await getCurrentUserId(database);
-    const api = isChannel ? 'getChannelDataRetentionPolicies' : 'getTeamDataRetentionPolicies';
-    const data = await client[api](currentUserId, page);
+    let data;
+    if (isChannel) {
+        data = await client.getChannelDataRetentionPolicies(currentUserId, page);
+    } else {
+        data = await client.getTeamDataRetentionPolicies(currentUserId, page);
+    }
     policies.push(...data.policies);
     if (policies.length < data.total_count) {
         await fetchAllGranularDataRetentionPolicies(serverUrl, isChannel, page + 1, policies);
