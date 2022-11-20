@@ -48,31 +48,36 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
     if (!config) {
         return [];
     }
-    const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-    const currentConfig = await getConfig(database);
-    const configsToUpdate: IdValue[] = [];
-    const configsToDelete: IdValue[] = [];
 
-    let k: keyof ClientConfig;
-    for (k in config) {
-        if (currentConfig?.[k] !== config[k]) {
-            configsToUpdate.push({
-                id: k,
-                value: config[k],
-            });
-        }
-    }
-    for (k in currentConfig) {
-        if (config[k] === undefined) {
-            configsToDelete.push({
-                id: k,
-                value: currentConfig[k],
-            });
-        }
-    }
+    try {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const currentConfig = await getConfig(database);
+        const configsToUpdate: IdValue[] = [];
+        const configsToDelete: IdValue[] = [];
 
-    if (configsToDelete.length || configsToUpdate.length) {
-        return operator.handleConfigs({configs: configsToUpdate, configsToDelete, prepareRecordsOnly});
+        let k: keyof ClientConfig;
+        for (k in config) {
+            if (currentConfig?.[k] !== config[k]) {
+                configsToUpdate.push({
+                    id: k,
+                    value: config[k],
+                });
+            }
+        }
+        for (k in currentConfig) {
+            if (config[k] === undefined) {
+                configsToDelete.push({
+                    id: k,
+                    value: currentConfig[k],
+                });
+            }
+        }
+
+        if (configsToDelete.length || configsToUpdate.length) {
+            return operator.handleConfigs({configs: configsToUpdate, configsToDelete, prepareRecordsOnly});
+        }
+    } catch (error) {
+        logError('storeConfig', error);
     }
     return [];
 }
@@ -190,4 +195,28 @@ function getDataRetentionPolicyCutoff(postDuration: number) {
     const periodDate = new Date();
     periodDate.setDate(periodDate.getDate() - postDuration);
     return periodDate.getTime();
+}
+
+export async function setLastServerVersionCheck(serverUrl: string, reset = false) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({
+            systems: [{
+                id: SYSTEM_IDENTIFIERS.LAST_SERVER_VERSION_CHECK,
+                value: reset ? 0 : Date.now(),
+            }],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setLastServerVersionCheck', error);
+    }
+}
+
+export async function dismissAnnouncement(serverUrl: string, announcementText: string) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.LAST_DISMISSED_BANNER, value: announcementText}], prepareRecordsOnly: false});
+    } catch (error) {
+        logError('An error occurred while dismissing an announcement', error);
+    }
 }

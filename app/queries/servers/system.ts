@@ -514,6 +514,12 @@ export const getExpiredSession = async (database: Database) => {
     }
 };
 
+export const observeLastDismissedAnnouncement = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_DISMISSED_BANNER).observeWithColumns(['value']).pipe(
+        switchMap((list) => of$(list[0]?.value)),
+    );
+};
+
 export const observeCanUploadFiles = (database: Database) => {
     const enableFileAttachments = observeConfigBooleanValue(database, 'EnableFileAttachments');
     const enableMobileFileUpload = observeConfigBooleanValue(database, 'EnableMobileFileUpload');
@@ -525,5 +531,12 @@ export const observeCanUploadFiles = (database: Database) => {
                 (l?.IsLicensed !== 'true' && l?.Compliance !== 'true' && emfu),
         ),
         ),
+    );
+};
+
+export const observeLastServerVersionCheck = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_SERVER_VERSION_CHECK).observeWithColumns(['value']).pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: 0}))),
+        switchMap((model) => of$(parseInt(model.value, 10))),
     );
 };

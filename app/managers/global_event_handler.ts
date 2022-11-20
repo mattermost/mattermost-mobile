@@ -8,6 +8,7 @@ import semver from 'semver';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import LocalConfig from '@assets/config.json';
 import {Events, Sso} from '@constants';
+import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
@@ -81,7 +82,7 @@ class GlobalEventHandler {
         const translations = getTranslations(locale);
 
         if (version) {
-            if (semver.valid(version) && semver.lt(version, LocalConfig.MinServerVersion)) {
+            if (semver.valid(version) && semver.lt(version, MIN_REQUIRED_VERSION)) {
                 Alert.alert(
                     translations[t('mobile.server_upgrade.title')],
                     translations[t('mobile.server_upgrade.description')],
