@@ -837,5 +837,10 @@
     "plus_menu.invite_people_to_team.title": "Mensen uitnodigen voor het team",
     "mobile.calls_mic_error": "Om deel te nemen, open Instellingen om Mattermost toegang te geven tot jouw microfoon.",
     "invite_people_to_team.title": "Word lid van het {team} team",
-    "invite_people_to_team.message": "Hier is een link om met ons samen te werken en te communiceren op Mattermost."
+    "invite_people_to_team.message": "Hier is een link om met ons samen te werken en te communiceren op Mattermost.",
+    "unsupported_server.title": "Niet-ondersteunde serverversie",
+    "server_upgrade.alert_description": "Jouw server, {serverDisplayName}, draait een niet-ondersteunde serverversie. Gebruikers zullen worden blootgesteld aan compatibiliteitsproblemen die crashes of ernstige bugs veroorzaken die de kernfunctionaliteit van de app aantasten. Upgraden naar serverversie {supportedServerVersion} of later is vereist.",
+    "unsupported_server.message": "Jouw server, {serverDisplayName}, draait een niet-ondersteunde serverversie. Je kan compatibiliteitsproblemen ervaren die crashes of ernstige bugs veroorzaken die de kernfunctionaliteit van de app aantasten. Neem contact op met jouw systeembeheerder om jouw Mattermost server te upgraden.",
+    "server_upgrade.learn_more": "Meer informatie",
+    "server_upgrade.dismiss": "Afwijzen"
 }
