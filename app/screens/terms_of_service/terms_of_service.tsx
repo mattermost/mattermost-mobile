@@ -9,6 +9,7 @@ import {
     Text,
     View,
 } from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {logout} from '@actions/remote/session';
 import {fetchTermsOfService, updateTermsOfServiceStatus} from '@actions/remote/terms_of_service';
@@ -68,7 +69,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...typography('Heading', 600, 'SemiBold'),
             borderBottomWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-            marginBottom: 24,
+            marginBottom: 12,
         },
         errorTitle: {
             color: theme.centerChannelColor,
@@ -96,6 +97,7 @@ const TermsOfService = ({
     const styles = getStyleSheet(theme);
     const intl = useIntl();
     const serverUrl = useServerUrl();
+    const insets = useSafeAreaInsets();
 
     const [loading, setLoading] = useState(true);
     const [getTermsError, setGetTermError] = useState(false);
@@ -104,6 +106,7 @@ const TermsOfService = ({
 
     const getTerms = useCallback(async () => {
         setLoading(true);
+        setGetTermError(false);
 
         const {terms} = await fetchTermsOfService(serverUrl);
         if (terms) {
@@ -269,9 +272,18 @@ const TermsOfService = ({
         );
     }
 
+    const containerStyle = useMemo(() => {
+        return [{
+            paddingBottom: insets.bottom,
+            paddingLeft: insets.left,
+            paddingRight: insets.right,
+            paddingTop: insets.top,
+        }, styles.container];
+    }, [styles, insets]);
+
     return (
         <View style={styles.root}>
-            <View style={styles.container}>
+            <View style={containerStyle}>
                 <View style={styles.wrapper}>
                     <Text style={styles.title}>{intl.formatMessage({id: 'terms_of_service.title', defaultMessage: 'Terms of Service'})}</Text>
                     {content}
