@@ -20,8 +20,8 @@ export const tryRunAppReview = async (launchType: string, coldStart?: boolean) =
         return;
     }
 
-    const hasReviewed = await getDontAskForReview();
-    if (hasReviewed) {
+    const dontAsk = await getDontAskForReview();
+    if (dontAsk) {
         return;
     }
 

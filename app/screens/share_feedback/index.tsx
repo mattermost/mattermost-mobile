@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity} from 'react-native';
+import Animated, {runOnJS, SlideInDown, SlideOutDown} from 'react-native-reanimated';
 
 import {goToNPSChannel} from '@actions/remote/channel';
+import {giveFeedbackAction} from '@actions/remote/nps';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import ShareFeedbackIllustration from '@components/illustrations/share_feedback';
@@ -93,20 +95,39 @@ const ShareFeedback = ({
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
-    const close = useCallback(async () => {
-        return dismissOverlay(componentId);
-    }, [componentId]);
+    const [show, setShow] = useState(true);
 
-    useBackNavigation(close);
+    const executeAfterDone = useRef<() => void>(() => dismissOverlay(componentId));
+
+    const close = useCallback((afterDone: () => void) => {
+        executeAfterDone.current = afterDone;
+        setShow(false);
+    }, []);
 
     const onPressYes = useCallback(async () => {
-        await close();
-        goToNPSChannel(serverUrl);
+        close(async () => {
+            await dismissOverlay(componentId);
+            await goToNPSChannel(serverUrl);
+            giveFeedbackAction(serverUrl);
+        });
     }, [close, intl, serverUrl]);
 
     const onPressNo = useCallback(() => {
-        close();
-    }, [close]);
+        close(() => dismissOverlay(componentId));
+    }, [close, componentId]);
+
+    useBackNavigation(onPressNo);
+
+    const doAfterAnimation = useCallback(() => {
+        executeAfterDone.current();
+    }, []);
+
+    const slideOut = useMemo(() => SlideOutDown.withCallback((finished: boolean) => {
+        'worklet';
+        if (finished) {
+            runOnJS(doAfterAnimation)();
+        }
+    }), []);
 
     return (
         <View style={styles.root}>
@@ -114,44 +135,50 @@ const ShareFeedback = ({
                 style={styles.container}
                 testID='rate_app.screen'
             >
-                <View style={styles.wrapper}>
-                    <TouchableOpacity
-                        style={styles.close}
-                        onPress={close}
+                {show &&
+                    <Animated.View
+                        style={styles.wrapper}
+                        entering={SlideInDown}
+                        exiting={slideOut}
                     >
-                        <CompassIcon
-                            name='close'
-                            size={24}
-                            color={changeOpacity(theme.centerChannelColor, 0.56)}
-                        />
-                    </TouchableOpacity>
-                    <View style={styles.content}>
-                        <ShareFeedbackIllustration theme={theme} />
-                        <Text style={styles.title}>
-                            {intl.formatMessage({id: 'share_feedback.title', defaultMessage: 'Would you share your feedback?'})}
-                        </Text>
-                        <Text style={styles.subtitle}>
-                            {intl.formatMessage({id: 'share_feedback.subtitle', defaultMessage: 'We\'d love to hear how we can make your experience better.'})}
-                        </Text>
-                        <View style={styles.buttonsWrapper}>
-                            <Button
-                                theme={theme}
-                                size={'lg'}
-                                emphasis={'tertiary'}
-                                onPress={onPressNo}
-                                text={intl.formatMessage({id: 'share_feedback.button.no', defaultMessage: 'No, thanks'})}
-                                backgroundStyle={styles.leftButton}
+                        <TouchableOpacity
+                            style={styles.close}
+                            onPress={onPressNo}
+                        >
+                            <CompassIcon
+                                name='close'
+                                size={24}
+                                color={changeOpacity(theme.centerChannelColor, 0.56)}
                             />
-                            <Button
-                                theme={theme}
-                                size={'lg'}
-                                onPress={onPressYes}
-                                text={intl.formatMessage({id: 'share_feedback.button.yes', defaultMessage: 'Yes'})}
-                                backgroundStyle={styles.rightButton}
-                            />
+                        </TouchableOpacity>
+                        <View style={styles.content}>
+                            <ShareFeedbackIllustration theme={theme}/>
+                            <Text style={styles.title}>
+                                {intl.formatMessage({id: 'share_feedback.title', defaultMessage: 'Would you share your feedback?'})}
+                            </Text>
+                            <Text style={styles.subtitle}>
+                                {intl.formatMessage({id: 'share_feedback.subtitle', defaultMessage: 'We\'d love to hear how we can make your experience better.'})}
+                            </Text>
+                            <View style={styles.buttonsWrapper}>
+                                <Button
+                                    theme={theme}
+                                    size={'lg'}
+                                    emphasis={'tertiary'}
+                                    onPress={onPressNo}
+                                    text={intl.formatMessage({id: 'share_feedback.button.no', defaultMessage: 'No, thanks'})}
+                                    backgroundStyle={styles.leftButton}
+                                />
+                                <Button
+                                    theme={theme}
+                                    size={'lg'}
+                                    onPress={onPressYes}
+                                    text={intl.formatMessage({id: 'share_feedback.button.yes', defaultMessage: 'Yes'})}
+                                    backgroundStyle={styles.rightButton}
+                                />
+                            </View>
                         </View>
-                    </View>
-                </View>
+                    </Animated.View>
+                }
             </View>
         </View>
     );

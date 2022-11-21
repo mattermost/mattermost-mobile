@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {TouchableWithoutFeedback, View, Text, Alert, TouchableOpacity} from 'react-native';
 import InAppReview from 'react-native-in-app-review';
+import Animated, {runOnJS, SlideInDown, SlideOutDown} from 'react-native-reanimated';
 
 import {storeDontAskForReview, storeLastAskForReview} from '@actions/app/global';
-import {isNPSEnabled} from '@actions/remote/general';
+import {isNPSEnabled} from '@actions/remote/nps';
 import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import ReviewAppIllustration from '@components/illustrations/review_app';
@@ -102,38 +103,65 @@ const ReviewApp = ({
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
-    const close = useCallback(async () => {
-        storeLastAskForReview();
-        return dismissOverlay(componentId);
-    }, [componentId]);
+    const [show, setShow] = useState(true);
 
-    useBackNavigation(close);
+    const executeAfterDone = useRef<() => void>(() => dismissOverlay(componentId));
+
+    const close = useCallback((afterDone: () => void) => {
+        executeAfterDone.current = afterDone;
+        storeLastAskForReview();
+        setShow(false);
+    }, []);
 
     const onPressYes = useCallback(async () => {
-        await close();
-        try {
-            // eslint-disable-next-line new-cap
-            await InAppReview.RequestInAppReview();
-        } catch (error) {
-            Alert.alert(
-                intl.formatMessage({id: 'rate.error.title', defaultMessage: 'Error'}),
-                intl.formatMessage({id: 'rate.error.text', defaultMessage: 'There has been an error while opening the review modal.'}),
-            );
-        }
-    }, [close, intl]);
+        close(async () => {
+            await dismissOverlay(componentId);
+            try {
+                // eslint-disable-next-line new-cap
+                await InAppReview.RequestInAppReview();
+            } catch (error) {
+                Alert.alert(
+                    intl.formatMessage({id: 'rate.error.title', defaultMessage: 'Error'}),
+                    intl.formatMessage({id: 'rate.error.text', defaultMessage: 'There has been an error while opening the review modal.'}),
+                );
+            }
+        });
+    }, [close, intl, componentId]);
 
     const onPressNeedsWork = useCallback(async () => {
-        await close();
-
-        if (await isNPSEnabled(serverUrl)) {
-            showShareFeedbackOverlay();
-        }
-    }, [close]);
+        close(async () => {
+            await dismissOverlay(componentId);
+            if (await isNPSEnabled(serverUrl)) {
+                showShareFeedbackOverlay();
+            }
+        });
+    }, [close, componentId, serverUrl]);
 
     const onPressDontAsk = useCallback(() => {
         storeDontAskForReview();
-        close();
-    }, [close, intl]);
+        close(async () => {
+            await dismissOverlay(componentId);
+        });
+    }, [close, intl, componentId]);
+
+    const onPressClose = useCallback(() => {
+        close(async () => {
+            await dismissOverlay(componentId);
+        });
+    }, [close, componentId]);
+
+    useBackNavigation(onPressClose);
+
+    const doAfterAnimation = useCallback(() => {
+        executeAfterDone.current();
+    }, []);
+
+    const slideOut = useMemo(() => SlideOutDown.withCallback((finished: boolean) => {
+        'worklet';
+        if (finished) {
+            runOnJS(doAfterAnimation)();
+        }
+    }), []);
 
     return (
         <View style={styles.root}>
@@ -141,53 +169,59 @@ const ReviewApp = ({
                 style={styles.container}
                 testID='rate_app.screen'
             >
-                <View style={styles.wrapper}>
-                    <TouchableOpacity
-                        style={styles.close}
-                        onPress={close}
+                {show &&
+                    <Animated.View
+                        style={styles.wrapper}
+                        entering={SlideInDown}
+                        exiting={slideOut}
                     >
-                        <CompassIcon
-                            name='close'
-                            size={24}
-                            color={changeOpacity(theme.centerChannelColor, 0.56)}
-                        />
-                    </TouchableOpacity>
-                    <View style={styles.content}>
-                        <ReviewAppIllustration theme={theme}/>
-                        <Text style={styles.title}>
-                            {intl.formatMessage({id: 'rate.title', defaultMessage: 'Enjoying Mattermost?'})}
-                        </Text>
-                        <Text style={styles.subtitle}>
-                            {intl.formatMessage({id: 'rate.subtitle', defaultMessage: 'Let us know what you think.'})}
-                        </Text>
-                        <View style={styles.buttonsWrapper}>
-                            <Button
-                                theme={theme}
-                                size={'lg'}
-                                emphasis={'tertiary'}
-                                onPress={onPressNeedsWork}
-                                text={intl.formatMessage({id: 'rate.button.needs_work', defaultMessage: 'Needs work'})}
-                                backgroundStyle={styles.leftButton}
+                        <TouchableOpacity
+                            style={styles.close}
+                            onPress={onPressClose}
+                        >
+                            <CompassIcon
+                                name='close'
+                                size={24}
+                                color={changeOpacity(theme.centerChannelColor, 0.56)}
                             />
-                            <Button
-                                theme={theme}
-                                size={'lg'}
-                                onPress={onPressYes}
-                                text={intl.formatMessage({id: 'rate.button.yes', defaultMessage: 'Love it!'})}
-                                backgroundStyle={styles.rightButton}
-                            />
+                        </TouchableOpacity>
+                        <View style={styles.content}>
+                            <ReviewAppIllustration theme={theme}/>
+                            <Text style={styles.title}>
+                                {intl.formatMessage({id: 'rate.title', defaultMessage: 'Enjoying Mattermost?'})}
+                            </Text>
+                            <Text style={styles.subtitle}>
+                                {intl.formatMessage({id: 'rate.subtitle', defaultMessage: 'Let us know what you think.'})}
+                            </Text>
+                            <View style={styles.buttonsWrapper}>
+                                <Button
+                                    theme={theme}
+                                    size={'lg'}
+                                    emphasis={'tertiary'}
+                                    onPress={onPressNeedsWork}
+                                    text={intl.formatMessage({id: 'rate.button.needs_work', defaultMessage: 'Needs work'})}
+                                    backgroundStyle={styles.leftButton}
+                                />
+                                <Button
+                                    theme={theme}
+                                    size={'lg'}
+                                    onPress={onPressYes}
+                                    text={intl.formatMessage({id: 'rate.button.yes', defaultMessage: 'Love it!'})}
+                                    backgroundStyle={styles.rightButton}
+                                />
+                            </View>
+                            {hasAskedBefore && (
+                                <TouchableWithoutFeedback
+                                    onPress={onPressDontAsk}
+                                >
+                                    <Text style={styles.dontAsk}>
+                                        {intl.formatMessage({id: 'rate.dont_ask_again', defaultMessage: 'Don\'t ask me again'})}
+                                    </Text>
+                                </TouchableWithoutFeedback>
+                            )}
                         </View>
-                        {hasAskedBefore && (
-                            <TouchableWithoutFeedback
-                                onPress={onPressDontAsk}
-                            >
-                                <Text style={styles.dontAsk}>
-                                    {intl.formatMessage({id: 'rate.dont_ask_again', defaultMessage: 'Don\'t ask me again'})}
-                                </Text>
-                            </TouchableWithoutFeedback>
-                        )}
-                    </View>
-                </View>
+                    </Animated.View>
+                }
             </View>
         </View>
     );
