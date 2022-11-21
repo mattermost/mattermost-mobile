@@ -837,5 +837,10 @@
     "settings.about.database": "System bazy danych:",
     "settings.about.copyright": "Copyright 2015-{currentYear} Mattermost, Inc. Wszelkie prawa zastrzeżone",
     "settings.about.build": "{version} (Build {number})",
-    "settings.about": "O {appTitle}"
+    "settings.about": "O {appTitle}",
+    "unsupported_server.title": "Niewspierana wersja serwera",
+    "unsupported_server.message": "Twój serwer, {serverDisplayName}, działa na nieobsługiwanej wersji serwera. Mogą wystąpić problemy ze zgodnością, które powodują awarie lub poważne błędy przerywające podstawową funkcjonalność aplikacji. Skontaktuj się z Administratorem Systemu, aby zaktualizować swój serwer Mattermost.",
+    "server_upgrade.learn_more": "Dowiedz się Więcej",
+    "server_upgrade.dismiss": "Odrzuć",
+    "server_upgrade.alert_description": "Twój serwer, {serverDisplayName}, działa na nieobsługiwanej wersji serwera. Użytkownicy będą narażeni na problemy z kompatybilnością, które powodują awarie lub poważne błędy przerywające podstawową funkcjonalność aplikacji. Wymagana jest aktualizacja do wersji serwera {supportedServerVersion} lub nowszej."
 }
