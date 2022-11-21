@@ -3,11 +3,16 @@
 import InAppReview from 'react-native-in-app-review';
 
 import {storeFirstLaunch} from '@actions/app/global';
+import LocalConfig from '@assets/config.json';
 import {General, Launch} from '@constants';
 import {getDontAskForReview, getFirstLaunch, getLastAskedForReview} from '@queries/app/global';
 import {showReviewOverlay} from '@screens/navigation';
 
 export const tryRunAppReview = async (launchType: string, coldStart?: boolean) => {
+    if (!LocalConfig.ShowReview) {
+        return;
+    }
+
     if (!coldStart) {
         return;
     }
