@@ -45,24 +45,24 @@ const makeFloatingTextInput = ({endAdornment = null,
         testID,
         onPressHandler,
         ref,
-        renderedElement: render(<FloatingTextInput
-            startAdornment={startAdornment}
-            endAdornment={endAdornment}
-            editable={editable}
-            placeholder={placeholder}
-            onChange={onChangeHandler}
-            label={label}
-            labelTextStyle={labelTextStyle}
-            theme={theme}
-            value={value}
-            error={error}
-            errorIcon={errorIcon}
-            testID={testID}
-            isKeyboardInput={isKeyboardInput}
-            onPress={onPressHandler}
-            ref={ref}
-        // eslint-disable-next-line react/jsx-closing-bracket-location
-        />),
+        renderedElement: render(
+            <FloatingTextInput
+                startAdornment={startAdornment}
+                endAdornment={endAdornment}
+                editable={editable}
+                placeholder={placeholder}
+                onChange={onChangeHandler}
+                label={label}
+                labelTextStyle={labelTextStyle}
+                theme={theme}
+                value={value}
+                error={error}
+                errorIcon={errorIcon}
+                testID={testID}
+                isKeyboardInput={isKeyboardInput}
+                onPress={onPressHandler}
+                ref={ref}
+            />),
     };
 };
 

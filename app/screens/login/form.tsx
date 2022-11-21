@@ -362,7 +362,10 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 enablesReturnKeyAutomatically={true}
                 error={error}
                 keyboardType='default'
-                label={intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
+                label={intl.formatMessage({
+                    id: 'login.password',
+                    defaultMessage: 'Password',
+                })}
                 onBlur={onBlur}
                 onChangeText={onPasswordChange}
                 onFocus={onFocus}
@@ -374,19 +377,32 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 testID='login_form.password.input'
                 theme={theme}
                 value={password}
-                endAdornment={<TouchableOpacity onPress={togglePasswordVisiblity}>
-                    <CompassIcon
-                        name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
-                        size={18}
-                        color={changeOpacity(theme.centerChannelColor, 0.64)}
-                    />
-                </TouchableOpacity>}
+                endAdornment={
+                    <TouchableOpacity
+                        onPress={togglePasswordVisiblity}
+                        hitSlop={{top: 8, right: 8, bottom: 8, left: 8}}
+                    >
+                        <CompassIcon
+                            name={
+                                isPasswordVisible ? 'eye-off-outline' : 'eye-outline'
+                            }
+                            size={18}
+                            color={changeOpacity(
+                                theme.centerChannelColor,
+                                0.64,
+                            )}
+                        />
+                    </TouchableOpacity>
+                }
             />
 
             {(emailEnabled || usernameEnabled) && (
                 <Button
                     onPress={onPressForgotPassword}
-                    containerStyle={[styles.forgotPasswordBtn, error ? styles.forgotPasswordError : undefined]}
+                    containerStyle={[
+                        styles.forgotPasswordBtn,
+                        error ? styles.forgotPasswordError : undefined,
+                    ]}
                     testID='login_form.forgot_password.button'
                 >
                     <FormattedText

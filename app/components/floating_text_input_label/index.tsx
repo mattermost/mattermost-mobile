@@ -81,23 +81,27 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const textInputContainerHeight = useMemo(() => getInputContainerHeight(multiline, textInputContainerStyle), [multiline, textInputContainerStyle]);
     const textInputHeight = useMemo(() => textInputContainerHeight - (INPUT_CONTAINER_VERTICAL_SPACING * 2), [textInputContainerHeight]);
 
-    const onTextInputBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
-        // eslint-disable-next-line max-nested-callbacks
-        () => {
-            setIsFocusLabel(Boolean(value));
-            setIsFocused(false);
-        },
-        onBlur,
-    ), [onBlur]);
+    const internalOnBlur = () => {
+        setIsFocusLabel(Boolean(value));
+        setIsFocused(false);
+    };
 
-    const onTextInputFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
-        // eslint-disable-next-line max-nested-callbacks
-        () => {
-            setIsFocusLabel(true);
-            setIsFocused(true);
-        },
-        onFocus,
-    ), [onFocus]);
+    const internalOnFocus = () => {
+        setIsFocusLabel(true);
+        setIsFocused(true);
+    };
+
+    const onTextInputBlur = useCallback(
+        (e: NativeSyntheticEvent<TextInputFocusEventData>) =>
+            onExecution(e, internalOnBlur, onBlur),
+        [onBlur],
+    );
+
+    const onTextInputFocus = useCallback(
+        (e: NativeSyntheticEvent<TextInputFocusEventData>) =>
+            onExecution(e, internalOnFocus, onFocus),
+        [onFocus],
+    );
 
     const onAnimatedTextPress = useCallback(() => {
         return focused ? null : inputRef?.current?.focus();
@@ -162,14 +166,11 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         isFocused: () => inputRef.current?.isFocused() || false,
     }), [inputRef, focusInput]);
 
-    useEffect(
-        () => {
-            if (!focusedLabel && value) {
-                debouncedOnFocusTextInput(true);
-            }
-        },
-        [value],
-    );
+    useEffect(() => {
+        if (!focusedLabel && value) {
+            debouncedOnFocusTextInput(true);
+        }
+    }, [value]);
 
     return (
         <TouchableWithoutFeedback
