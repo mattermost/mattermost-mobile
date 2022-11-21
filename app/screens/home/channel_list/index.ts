@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {queryAllMyChannelsForTeam} from '@queries/servers/channel';
 import {observeConfigBooleanValue, observeConfigIntValue, observeConfigValue, observeCurrentTeamId, observeLicense} from '@queries/servers/system';
@@ -44,6 +44,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             const timeElapsed = Date.now() - (user?.termsOfServiceCreateAt || 0);
             return of$(timeElapsed > (period * 24 * 60 * 60 * 1000));
         }),
+        distinctUntilChanged(),
     );
 
     return {
