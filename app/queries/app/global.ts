@@ -63,11 +63,7 @@ export const getLastAskedForReview = async () => {
 
 export const getDontAskForReview = async () => {
     const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW)?.fetch();
-    if (!records?.[0]?.value) {
-        return false;
-    }
-
-    return records[0].value === 'true';
+    return Boolean(records?.[0]?.value);
 };
 
 export const getFirstLaunch = async () => {
