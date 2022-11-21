@@ -75,6 +75,7 @@ export const areAllServersSupported = async () => {
         if (s.lastActiveAt) {
             try {
                 const {database: serverDatabase} = DatabaseManager.getServerDatabaseAndOperator(s.url);
+                // eslint-disable-next-line no-await-in-loop
                 const version = await getConfigValue(serverDatabase, 'Version');
 
                 const {MAJOR_VERSION, MIN_VERSION, PATCH_VERSION} = SupportedServer;
