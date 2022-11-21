@@ -211,6 +211,7 @@ const OptionItem = ({
                 onPress={onRemove}
                 style={[styles.iconContainer]}
                 type='opacity'
+                testID={`${testID}.remove.button`}
             >
                 <CompassIcon
                     name={'close'}

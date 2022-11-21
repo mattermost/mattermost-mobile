@@ -25,6 +25,7 @@ import {
     PostOptionsScreen,
     RecentMentionsScreen,
     SavedMessagesScreen,
+    SearchMessagesScreen,
     ServerScreen,
 } from '@support/ui/screen';
 import {getRandomId} from '@support/utils';
@@ -114,5 +115,27 @@ describe('Smoke Test - Search', () => {
         await PinnedMessagesScreen.back();
         await ChannelInfoScreen.close();
         await ChannelScreen.back();
+    });
+
+    it('MM-T4911_4 - should be able to search for a message and display on search results screen', async () => {
+        // # Open a channel screen, post a message, go back to channel list screen, open search messages screen, type in a search term that will yield results, and tap on search key
+        const searchTerm = getRandomId();
+        const message = `Message ${searchTerm}`;
+        await ChannelScreen.open(channelsCategory, testChannel.name);
+        await ChannelScreen.postMessage(message);
+        await ChannelScreen.back();
+        await SearchMessagesScreen.open();
+        await SearchMessagesScreen.searchInput.typeText(searchTerm);
+        await SearchMessagesScreen.searchInput.tapReturnKey();
+
+        // * Verify search results contain searched message
+        const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
+        const {postListPostItem} = SearchMessagesScreen.getPostListPostItem(post.id, message);
+        await expect(postListPostItem).toBeVisible();
+
+        // # Clear search input, remove recent search item, and go back to channel list screen
+        await SearchMessagesScreen.searchClearButton.tap();
+        await SearchMessagesScreen.getRecentSearchItemRemoveButton(searchTerm).tap();
+        await ChannelListScreen.open();
     });
 });
