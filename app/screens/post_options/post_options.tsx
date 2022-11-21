@@ -65,6 +65,7 @@ const PostOptions = ({
     const canCopyText = canCopyPermalink && post.message;
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
+    const shouldShowBindings = bindings.length > 0 && !isSystemPost;
 
     let snapPoints = [
         canAddReaction, canCopyPermalink, canCopyText,
@@ -73,11 +74,6 @@ const PostOptions = ({
     ].reduce((acc, v) => {
         return v ? acc + 1 : acc;
     }, 0);
-
-    const showBindings = bindings.length > 0 && !isSystemPost;
-    if (showBindings) {
-        snapPoints += Math.min(bindings.length, 4);
-    }
 
     const renderContent = () => {
         return (
@@ -127,7 +123,7 @@ const PostOptions = ({
                     combinedPost={combinedPost}
                     post={post}
                 />}
-                {showBindings &&
+                {shouldShowBindings &&
                 <AppBindingsPostOptions
                     post={post}
                     serverUrl={serverUrl}
@@ -139,6 +135,12 @@ const PostOptions = ({
     };
 
     const additionalSnapPoints = 2;
+    const lowerSnapPoints = snapPoints + additionalSnapPoints;
+
+    let upperSnapPoints = lowerSnapPoints;
+    if (shouldShowBindings) {
+        upperSnapPoints += bindings.length;
+    }
 
     return (
         <BottomSheet
@@ -146,7 +148,7 @@ const PostOptions = ({
             closeButtonId={POST_OPTIONS_BUTTON}
             componentId={Screens.POST_OPTIONS}
             initialSnapIndex={1}
-            snapPoints={['90%', ((snapPoints + additionalSnapPoints) * ITEM_HEIGHT), 10]}
+            snapPoints={[upperSnapPoints * ITEM_HEIGHT, lowerSnapPoints * ITEM_HEIGHT, 10]}
             testID='post_options'
         />
     );
