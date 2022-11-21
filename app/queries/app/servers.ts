@@ -3,7 +3,11 @@
 
 import {Database, Q} from '@nozbe/watermelondb';
 
+import {SupportedServer} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import DatabaseManager from '@database/manager';
+import {getConfigValue} from '@queries/servers/system';
+import {isMinimumServerVersion} from '@utils/helpers';
 
 import type ServerModel from '@typings/database/models/app/servers';
 
@@ -55,4 +59,34 @@ export const queryServerName = async (appDatabase: Database, serverUrl: string) 
     } catch {
         return serverUrl;
     }
+};
+
+export const areAllServersSupported = async () => {
+    let appDatabase;
+    try {
+        const databaseAndOperator = DatabaseManager.getAppDatabaseAndOperator();
+        appDatabase = databaseAndOperator.database;
+    } catch {
+        return false;
+    }
+
+    const servers = await queryAllServers(appDatabase);
+    for (const s of servers) {
+        if (s.lastActiveAt) {
+            try {
+                const {database: serverDatabase} = DatabaseManager.getServerDatabaseAndOperator(s.url);
+                const version = await getConfigValue(serverDatabase, 'Version');
+
+                const {MAJOR_VERSION, MIN_VERSION, PATCH_VERSION} = SupportedServer;
+                const isSupportedServer = isMinimumServerVersion(version || '', MAJOR_VERSION, MIN_VERSION, PATCH_VERSION);
+                if (!isSupportedServer) {
+                    return false;
+                }
+            } catch {
+                continue;
+            }
+        }
+    }
+
+    return true;
 };

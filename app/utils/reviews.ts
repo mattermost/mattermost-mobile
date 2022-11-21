@@ -6,6 +6,7 @@ import {storeFirstLaunch} from '@actions/app/global';
 import LocalConfig from '@assets/config.json';
 import {General, Launch} from '@constants';
 import {getDontAskForReview, getFirstLaunch, getLastAskedForReview} from '@queries/app/global';
+import {areAllServersSupported} from '@queries/app/servers';
 import {showReviewOverlay} from '@screens/navigation';
 
 export const tryRunAppReview = async (launchType: string, coldStart?: boolean) => {
@@ -22,6 +23,11 @@ export const tryRunAppReview = async (launchType: string, coldStart?: boolean) =
     }
 
     if (!InAppReview.isAvailable()) {
+        return;
+    }
+
+    const supported = await areAllServersSupported();
+    if (!supported) {
         return;
     }
 
