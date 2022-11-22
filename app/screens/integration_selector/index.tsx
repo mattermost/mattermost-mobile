@@ -10,10 +10,9 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
 import {fetchProfiles, searchProfiles} from '@actions/remote/user';
-import UserListRow from '@app/components/user_list_row';
-import {typography} from '@app/utils/typography';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
+import UserListRow from '@components/user_list_row';
 import {General, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -26,6 +25,7 @@ import {
 } from '@screens/navigation';
 import {filterChannelsMatchingTerm} from '@utils/channel';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
 import {createProfilesSections} from '../create_direct_message/user_list';
@@ -147,7 +147,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 function IntegrationSelector(
-    {dataSource, data, isMultiselect, selected, handleSelect,
+    {dataSource, data, isMultiselect = false, selected, handleSelect,
         currentTeamId, componentId, getDynamicOptions, options, teammateNameDisplay}: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -229,13 +229,13 @@ function IntegrationSelector(
         }
     }, [integrationData, multiselectSelected, isMultiselect, dataSource, handleSelect]);
 
-    const handleRemoveOption = (item: UserProfile | Channel | DialogOption) => {
+    const handleRemoveOption = useCallback((item: UserProfile | Channel | DialogOption) => {
         const currentSelected: Dictionary<UserProfile> | Dictionary<DialogOption> | Dictionary<Channel> = multiselectSelected;
         const itemKey = extractItemKey(dataSource, item);
         const multiselectSelectedItems = {...currentSelected};
         delete multiselectSelectedItems[itemKey];
         setMultiselectSelected(multiselectSelectedItems);
-    };
+    }, [dataSource, multiselectSelected]);
 
     const getChannels = useCallback(debounce(async () => {
         if (next.current && !loading && !term) {
@@ -252,7 +252,7 @@ function IntegrationSelector(
                 next.current = false;
             }
         }
-    }, 100), [loading, term]);
+    }, 100), [loading, term, serverUrl, currentTeamId, integrationData]);
 
     const getProfiles = useCallback(debounce(async () => {
         if (next.current && !loading && !term) {
@@ -269,7 +269,7 @@ function IntegrationSelector(
                 next.current = false;
             }
         }
-    }, 100), [loading, term]);
+    }, 100), [loading, term, integrationData]);
 
     const loadMore = useCallback(async () => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
@@ -308,6 +308,7 @@ function IntegrationSelector(
     const onSearch = useCallback((text: string) => {
         if (!text) {
             clearSearch();
+            return;
         }
 
         setTerm(text);
@@ -346,7 +347,7 @@ function IntegrationSelector(
 
             setLoading(false);
         }, General.SEARCH_TIMEOUT_MILLISECONDS);
-    }, [dataSource]);
+    }, [dataSource, integrationData, currentTeamId]);
 
     const getMultiselectData = useCallback((multiselectSelectedElems: MultiselectSelectedMap): Selection => {
         let myItems;
@@ -388,7 +389,7 @@ function IntegrationSelector(
             getProfiles();
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             getChannels();
-        } else if (!loading && !term) {
+        } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
             searchDynamicOptions('');
         }
     }, []);
@@ -404,7 +405,7 @@ function IntegrationSelector(
             listData = createProfilesSections(listData as UserProfile[]);
         }
 
-        if (!dataSource || dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
+        if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
             listData = (integrationData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().includes(term));
         }
 
@@ -423,6 +424,10 @@ function IntegrationSelector(
 
     useEffect(() => {
         const multiselectItems: MultiselectSelectedMap = {};
+
+        if (multiselectSelected) {
+            return;
+        }
 
         if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
             selected.forEach((opt) => {
@@ -502,20 +507,20 @@ function IntegrationSelector(
         );
     };
 
-    const renderOptionItem = (itemProps: any) => {
+    const renderOptionItem = useCallback((itemProps: any) => {
         const itemSelected = Boolean(multiselectSelected[itemProps.item.value]);
         return (
             <OptionListRow
                 key={itemProps.id}
                 {...itemProps}
                 theme={theme}
-                selectable={isMultiselect || false}
+                selectable={isMultiselect}
                 selected={itemSelected}
             />
         );
-    };
+    }, [multiselectSelected, theme, isMultiselect]);
 
-    const renderUserItem = (itemProps: any): JSX.Element => {
+    const renderUserItem = useCallback((itemProps: any): JSX.Element => {
         const itemSelected = Boolean(multiselectSelected[itemProps.item.id]);
 
         return (
@@ -523,15 +528,15 @@ function IntegrationSelector(
                 key={itemProps.id}
                 {...itemProps}
                 theme={theme}
-                selectable={isMultiselect || false}
+                selectable={isMultiselect}
                 user={itemProps.item}
                 teammateNameDisplay={teammateNameDisplay}
                 selected={itemSelected}
             />
         );
-    };
+    }, [multiselectSelected, theme, isMultiselect, teammateNameDisplay]);
 
-    const getRenderItem = useCallback((): (itemProps: any) => JSX.Element => {
+    const getRenderItem = (): (itemProps: any) => JSX.Element => {
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
                 return renderUserItem;
@@ -540,28 +545,26 @@ function IntegrationSelector(
             default:
                 return renderOptionItem;
         }
-    }, [dataSource, renderUserItem, renderChannelItem, renderOptionItem]);
+    };
 
     const renderSelectedOptions = useCallback((): React.ReactElement<any, string> | null => {
         const selectedItems: any = Object.values(multiselectSelected);
 
-        let optionComponents: React.ReactElement<any, string> | null = null;
-
-        if (selectedItems.length > 0) {
-            optionComponents = (
-                <>
-                    <SelectedOptions
-                        theme={theme}
-                        selectedOptions={selectedItems}
-                        dataSource={dataSource}
-                        onRemove={handleRemoveOption}
-                    />
-                    <View style={style.separator}/>
-                </>
-            );
+        if (!selectedItems.length) {
+            return null;
         }
 
-        return optionComponents;
+        return (
+            <>
+                <SelectedOptions
+                    theme={theme}
+                    selectedOptions={selectedItems}
+                    dataSource={dataSource}
+                    onRemove={handleRemoveOption}
+                />
+                <View style={style.separator}/>
+            </>
+        );
     }, [multiselectSelected, style, theme]);
 
     const listType = dataSource === ViewConstants.DATA_SOURCE_USERS ? SECTIONLIST : FLATLIST;
