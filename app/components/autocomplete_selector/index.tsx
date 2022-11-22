@@ -118,16 +118,17 @@ async function getItemName(serverUrl: string, selected: string | Option, teammat
     return (selected as DialogOption)?.text || (selected as AppSelectOption)?.label || '';
 }
 
-function getTextAndValueFromSelectedItem(item: DialogOption | Channel | UserProfile, teammateNameDisplay: string, locale: string, dataSource?: string) {
+function getTextAndValueFromSelectedItem(item: Selection, teammateNameDisplay: string, locale: string, dataSource?: string) {
     if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
         const user = item as UserProfile;
         return {text: displayUsername(user, locale, teammateNameDisplay), value: user.id};
     } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
         const channel = item as Channel;
         return {text: channel.display_name, value: channel.id};
+    } else if ('label' in item) {
+        return {text: item.label, value: item.value};
     }
-    const option = item as DialogOption;
-    return option;
+    return item as DialogOption;
 }
 
 function AutoCompleteSelector({
