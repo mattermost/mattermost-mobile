@@ -24,7 +24,8 @@ import {displayUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
+type Selection = DialogOption | AppSelectOption | Channel | UserProfile | DialogOption[] | AppSelectOption[] | Channel[] | UserProfile[];
+type Option = DialogOption | AppSelectOption;
 
 type AutoCompleteSelectorProps = {
     dataSource?: string;
@@ -89,7 +90,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-async function getItemName(serverUrl: string, selected: string, teammateNameDisplay: string, intl: IntlShape, dataSource?: string, options?: PostActionOption[]) {
+async function getItemName(serverUrl: string, selected: string | Option, teammateNameDisplay: string, intl: IntlShape, dataSource?: string, options?: Option[]) {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
 
     switch (dataSource) {
@@ -97,19 +98,24 @@ async function getItemName(serverUrl: string, selected: string, teammateNameDisp
             if (!database) {
                 return intl.formatMessage({id: 'channel_loader.someone', defaultMessage: 'Someone'});
             }
-            const user = await getUserById(database, selected);
+            const user = await getUserById(database, selected as string);
             return displayUsername(user, intl.locale, teammateNameDisplay, true);
         }
         case ViewConstants.DATA_SOURCE_CHANNELS: {
             if (!database) {
                 return intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
             }
-            const channel = await getChannelById(database, selected);
+            const channel = await getChannelById(database, selected as string);
             return channel?.displayName || intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
         }
-        default:
-            return options?.find((o) => o.value === selected)?.text || selected;
     }
+
+    if (typeof selected === 'string') {
+        const option = options?.find((o) => o.value === selected);
+        return (option as DialogOption)?.text || (option as AppSelectOption)?.label || selected;
+    }
+
+    return (selected as DialogOption)?.text || (selected as AppSelectOption)?.label || '';
 }
 
 function getTextAndValueFromSelectedItem(item: DialogOption | Channel | UserProfile, teammateNameDisplay: string, locale: string, dataSource?: string) {
