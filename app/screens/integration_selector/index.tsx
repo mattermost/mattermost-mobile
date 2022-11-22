@@ -88,7 +88,7 @@ const filterSearchData = (source: string, searchData: DataType, searchTerm: stri
         return searchData;
     }
 
-    return (searchData as DialogOption[]).filter((option) => option.text && option.text.toLowerCase().startsWith(lowerCasedTerm));
+    return (searchData as DialogOption[]).filter((option) => option.text && option.text.includes(lowerCasedTerm));
 };
 
 export type Props = {
@@ -389,7 +389,8 @@ function IntegrationSelector(
             getProfiles();
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             getChannels();
-        } else if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
+        } else {
+            // Static and dynamic option search
             searchDynamicOptions('');
         }
     }, []);
