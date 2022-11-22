@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {KeyboardTypeOptions} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
@@ -60,6 +60,27 @@ function DialogElement({
         onChange(name, newValue);
     }, [onChange, type, subtype]);
 
+    const handleSelect = useCallback((newValue: DialogOption | undefined) => {
+        if (!newValue) {
+            onChange(name, '');
+            return;
+        }
+
+        onChange(name, newValue.value);
+    }, [onChange]);
+
+    const selectedValue = useMemo(() => {
+        if (type !== 'select') {
+            return undefined;
+        }
+
+        if (!value || typeof value !== 'string') {
+            return undefined;
+        }
+
+        return {value};
+    }, [value]);
+
     switch (type) {
         case 'text':
         case 'textarea':
@@ -87,12 +108,12 @@ function DialogElement({
                     dataSource={dataSource}
                     options={options}
                     optional={optional}
-                    onSelected={handleChange}
+                    onSelected={handleSelect}
                     helpText={helpText}
                     errorText={errorText}
                     placeholder={placeholder}
                     showRequiredAsterisk={true}
-                    selected={value as string | string[]}
+                    selected={selectedValue}
                     roundedBorders={false}
                     testID={testID}
                 />

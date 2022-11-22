@@ -99,9 +99,9 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
     return {...state, [action.name]: action.value};
 }
 
-function initValues(elements?: AppField[]) {
+function initValues(fields?: AppField[]) {
     const values: AppFormValues = {};
-    elements?.forEach((e) => {
+    fields?.forEach((e) => {
         if (e.type === 'bool') {
             values[e.name] = (e.value === true || String(e.value).toLowerCase() === 'true');
         } else if (e.value) {
@@ -204,7 +204,7 @@ function AppsFormComponent({
         return hasErrors;
     }, [intl]);
 
-    const onChange = useCallback((name: string, value: any) => {
+    const onChange = useCallback((name: string, value: AppFormValue) => {
         const field = form.fields?.find((f) => f.name === name);
         if (!field) {
             return;

@@ -24,8 +24,11 @@ import {displayUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type Selection = DialogOption | AppSelectOption | Channel | UserProfile | DialogOption[] | AppSelectOption[] | Channel[] | UserProfile[];
-type Option = DialogOption | AppSelectOption;
+type DialogOptionTextOptional = Omit<DialogOption, 'text'> & {text?: string};
+type SelectedDialogOptionsTextOptional = DialogOptionTextOptional | DialogOptionTextOptional[] | undefined;
+
+type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
+type SelectedValue = DialogOption | DialogOption[] | undefined;
 
 type AutoCompleteSelectorProps = {
     dataSource?: string;
@@ -34,12 +37,12 @@ type AutoCompleteSelectorProps = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     helpText?: string;
     label?: string;
-    onSelected?: (value: string | string[]) => void;
+    onSelected?: (value: SelectedValue) => void;
     optional?: boolean;
     options?: PostActionOption[];
     placeholder?: string;
     roundedBorders?: boolean;
-    selected?: string | string[];
+    selected?: SelectedDialogOptionsTextOptional;
     showRequiredAsterisk?: boolean;
     teammateNameDisplay: string;
     isMultiselect?: boolean;
@@ -90,7 +93,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-async function getItemName(serverUrl: string, selected: string | Option, teammateNameDisplay: string, intl: IntlShape, dataSource?: string, options?: Option[]) {
+async function getItemName(serverUrl: string, selected: DialogOptionTextOptional, teammateNameDisplay: string, intl: IntlShape, dataSource?: string, options?: DialogOption[]): Promise<string> {
+    if (!selected) {
+        return '';
+    }
+
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
 
     switch (dataSource) {
@@ -98,24 +105,26 @@ async function getItemName(serverUrl: string, selected: string | Option, teammat
             if (!database) {
                 return intl.formatMessage({id: 'channel_loader.someone', defaultMessage: 'Someone'});
             }
-            const user = await getUserById(database, selected as string);
+
+            const user = await getUserById(database, selected.value);
             return displayUsername(user, intl.locale, teammateNameDisplay, true);
         }
         case ViewConstants.DATA_SOURCE_CHANNELS: {
             if (!database) {
                 return intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
             }
-            const channel = await getChannelById(database, selected as string);
+
+            const channel = await getChannelById(database, selected.value);
             return channel?.displayName || intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
         }
     }
 
-    if (typeof selected === 'string') {
-        const option = options?.find((o) => o.value === selected);
-        return (option as DialogOption)?.text || (option as AppSelectOption)?.label || selected;
+    if (selected.text) {
+        return selected.text;
     }
 
-    return (selected as DialogOption)?.text || (selected as AppSelectOption)?.label || '';
+    const option = options?.find((opt) => opt.value === selected.value);
+    return option?.text || '';
 }
 
 function getTextAndValueFromSelectedItem(item: Selection, teammateNameDisplay: string, locale: string, dataSource?: string) {
@@ -125,8 +134,6 @@ function getTextAndValueFromSelectedItem(item: Selection, teammateNameDisplay: s
     } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
         const channel = item as Channel;
         return {text: channel.display_name, value: channel.id};
-    } else if ('label' in item) {
-        return {text: item.label, value: item.value};
     }
     return item as DialogOption;
 }
@@ -147,31 +154,25 @@ function AutoCompleteSelector({
         goToScreen(screen, title, {dataSource, handleSelect, options, getDynamicOptions, selected, isMultiselect});
     }), [dataSource, options, getDynamicOptions]);
 
-    const handleSelect = useCallback((item?: Selection) => {
-        if (!item) {
+    const handleSelect = useCallback((newSelection?: Selection) => {
+        if (!newSelection) {
             return;
         }
 
-        if (!Array.isArray(item)) {
-            const {text: selectedText, value: selectedValue} = getTextAndValueFromSelectedItem(item, teammateNameDisplay, intl.locale, dataSource);
-            setItemText(selectedText);
+        if (!Array.isArray(newSelection)) {
+            const selectedOption = getTextAndValueFromSelectedItem(newSelection, teammateNameDisplay, intl.locale, dataSource);
+            setItemText(selectedOption.text);
 
             if (onSelected) {
-                onSelected(selectedValue);
+                onSelected(selectedOption);
             }
             return;
         }
 
-        const allSelectedTexts = [];
-        const allSelectedValues = [];
-        for (const i of item) {
-            const {text: selectedText, value: selectedValue} = getTextAndValueFromSelectedItem(i, teammateNameDisplay, intl.locale, dataSource);
-            allSelectedTexts.push(selectedText);
-            allSelectedValues.push(selectedValue);
-        }
-        setItemText(allSelectedTexts.join(', '));
+        const selectedOptions = newSelection.map((option) => getTextAndValueFromSelectedItem(option, teammateNameDisplay, intl.locale, dataSource));
+        setItemText(selectedOptions.map((option) => option.text).join(', '));
         if (onSelected) {
-            onSelected(allSelectedValues);
+            onSelected(selectedOptions);
         }
     }, [teammateNameDisplay, intl, dataSource]);
 

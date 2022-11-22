@@ -148,7 +148,7 @@ type AppForm = {
     depends_on?: string[];
 };
 
-type AppFormValue = string | boolean | number | AppSelectOption | AppSelectOption[];
+type AppFormValue = string | boolean | number | AppSelectOption | AppSelectOption[] | null;
 type AppFormValues = {[name: string]: AppFormValue};
 
 type AppSelectOption = {
