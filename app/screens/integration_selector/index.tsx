@@ -385,6 +385,15 @@ function IntegrationSelector(
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit]);
 
     useEffect(() => {
+        return () => {
+            if (searchTimeoutId.current) {
+                clearTimeout(searchTimeoutId.current);
+                searchTimeoutId.current = null;
+            }
+        };
+    }, []);
+
+    useEffect(() => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
             getProfiles();
         } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
@@ -493,7 +502,7 @@ function IntegrationSelector(
         );
     }, [loading, style]);
 
-    const renderChannelItem = (itemProps: any) => {
+    const renderChannelItem = useCallback((itemProps: any) => {
         const itemSelected = Boolean(multiselectSelected[itemProps.item.id]);
         return (
             <ChannelListRow
@@ -506,7 +515,7 @@ function IntegrationSelector(
                 selected={itemSelected}
             />
         );
-    };
+    }, [multiselectSelected, theme, isMultiselect]);
 
     const renderOptionItem = useCallback((itemProps: any) => {
         const itemSelected = Boolean(multiselectSelected[itemProps.item.value]);
