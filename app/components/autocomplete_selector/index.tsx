@@ -24,11 +24,11 @@ import {displayUsername} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type DialogOptionTextOptional = Omit<DialogOption, 'text'> & {text?: string};
-type SelectedDialogOptionsTextOptional = DialogOptionTextOptional | DialogOptionTextOptional[] | undefined;
-
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
-type SelectedValue = DialogOption | DialogOption[] | undefined;
+
+type SelectedValue = string | string[] | undefined;
+
+type SelectedDialogOption = DialogOption | DialogOption[] | undefined;
 
 type AutoCompleteSelectorProps = {
     dataSource?: string;
@@ -37,12 +37,12 @@ type AutoCompleteSelectorProps = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     helpText?: string;
     label?: string;
-    onSelected?: (value: SelectedValue) => void;
+    onSelected?: (value: SelectedDialogOption) => void;
     optional?: boolean;
-    options?: PostActionOption[];
+    options?: DialogOption[];
     placeholder?: string;
     roundedBorders?: boolean;
-    selected?: SelectedDialogOptionsTextOptional;
+    selected?: SelectedValue;
     showRequiredAsterisk?: boolean;
     teammateNameDisplay: string;
     isMultiselect?: boolean;
@@ -93,7 +93,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-async function getItemName(serverUrl: string, selected: DialogOptionTextOptional, teammateNameDisplay: string, intl: IntlShape, dataSource?: string, options?: DialogOption[]): Promise<string> {
+async function getItemName(serverUrl: string, selected: string, teammateNameDisplay: string, intl: IntlShape, dataSource?: string, options?: DialogOption[]): Promise<string> {
     if (!selected) {
         return '';
     }
@@ -106,7 +106,7 @@ async function getItemName(serverUrl: string, selected: DialogOptionTextOptional
                 return intl.formatMessage({id: 'channel_loader.someone', defaultMessage: 'Someone'});
             }
 
-            const user = await getUserById(database, selected.value);
+            const user = await getUserById(database, selected);
             return displayUsername(user, intl.locale, teammateNameDisplay, true);
         }
         case ViewConstants.DATA_SOURCE_CHANNELS: {
@@ -114,16 +114,12 @@ async function getItemName(serverUrl: string, selected: DialogOptionTextOptional
                 return intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
             }
 
-            const channel = await getChannelById(database, selected.value);
+            const channel = await getChannelById(database, selected);
             return channel?.displayName || intl.formatMessage({id: 'autocomplete_selector.unknown_channel', defaultMessage: 'Unknown channel'});
         }
     }
 
-    if (selected.text) {
-        return selected.text;
-    }
-
-    const option = options?.find((opt) => opt.value === selected.value);
+    const option = options?.find((opt) => opt.value === selected);
     return option?.text || '';
 }
 

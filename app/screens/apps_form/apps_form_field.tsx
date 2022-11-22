@@ -105,15 +105,28 @@ function AppsFormField({
     }, [performLookup, field]);
 
     const options = useMemo(() => {
-        if (field.type !== AppFieldTypes.STATIC_SELECT) {
-            return undefined;
+        if (field.type === AppFieldTypes.STATIC_SELECT) {
+            return field.options?.map(appSelectOptionToDialogOption);
         }
 
-        return field.options?.map(appSelectOptionToDialogOption);
-    }, [field]);
+        if (field.type === AppFieldTypes.DYNAMIC_SELECT) {
+            if (!value) {
+                return undefined;
+            }
+
+            if (Array.isArray(value)) {
+                return value.map(appSelectOptionToDialogOption);
+            }
+
+            const selectedOption = value as AppSelectOption;
+            return [appSelectOptionToDialogOption(selectedOption)];
+        }
+
+        return undefined;
+    }, [field, value]);
 
     const selectedValue = useMemo(() => {
-        if (!SelectableAppFieldTypes.includes(field.type)) {
+        if (!value || !SelectableAppFieldTypes.includes(field.type)) {
             return undefined;
         }
 
@@ -122,10 +135,10 @@ function AppsFormField({
         }
 
         if (Array.isArray(value)) {
-            return value.map(appSelectOptionToDialogOption);
+            return value.map((v) => v.value);
         }
 
-        return appSelectOptionToDialogOption(value as AppSelectOption);
+        return value as string;
     }, [field, value]);
 
     switch (field.type) {
