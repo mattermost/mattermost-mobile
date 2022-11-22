@@ -67,7 +67,7 @@ const PostOptions = ({
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
     const shouldShowBindings = bindings.length > 0 && !isSystemPost;
 
-    let snapPoints = [
+    const snapPoints = [
         canAddReaction, canCopyPermalink, canCopyText,
         canDelete, canEdit, shouldRenderFollow,
         canMarkAsUnread, canPin, canReply, !isSystemPost,
