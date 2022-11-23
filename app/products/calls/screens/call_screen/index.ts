@@ -6,7 +6,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import CallScreen from '@calls/screens/call_screen/call_screen';
-import {observeCurrentCall} from '@calls/state';
+import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
 import {CallParticipant} from '@calls/types/calls';
 import DatabaseManager from '@database/manager';
 import {observeTeammateNameDisplay, queryUsersById} from '@queries/servers/user';
@@ -34,6 +34,10 @@ const enhanced = withObservables([], () => {
             }, {} as Dictionary<CallParticipant>))),
         )),
     );
+    const micPermissionsGranted = observeGlobalCallsState().pipe(
+        switchMap((gs) => of$(gs.micPermissionsGranted)),
+        distinctUntilChanged(),
+    );
     const teammateNameDisplay = database.pipe(
         switchMap((db) => (db ? observeTeammateNameDisplay(db) : of$(''))),
         distinctUntilChanged(),
@@ -42,6 +46,7 @@ const enhanced = withObservables([], () => {
     return {
         currentCall,
         participantsDict,
+        micPermissionsGranted,
         teammateNameDisplay,
     };
 });

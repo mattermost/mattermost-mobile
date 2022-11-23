@@ -4,17 +4,16 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {queryJoinedTeams} from '@queries/servers/team';
+import {observeIsCustomStatusExpirySupported} from '@queries/servers/system';
 
-import TeamPickerIcon from './team_picker_icon';
+import CustomLabel from './custom_label';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const teams = queryJoinedTeams(database).observe();
     return {
-        teams,
+        isCustomStatusExpirySupported: observeIsCustomStatusExpirySupported(database),
     };
 });
 
-export default withDatabase(enhanced(TeamPickerIcon));
+export default withDatabase(enhanced(CustomLabel));

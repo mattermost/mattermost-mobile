@@ -111,10 +111,6 @@ export function getUtcOffsetForTimeZone(timezone: string) {
     return moment.tz(timezone).utcOffset();
 }
 
-export function isCustomStatusExpirySupported(version: string) {
-    return isMinimumServerVersion(version, 5, 37);
-}
-
 export function toTitleCase(str: string) {
     function doTitleCase(txt: string) {
         return txt.charAt(0).toUpperCase() + txt.substr(1).toLowerCase();

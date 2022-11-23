@@ -52,7 +52,7 @@ export async function deferredAppEntryGraphQLActions(
         }
     }, FETCH_UNREADS_TIMEOUT);
 
-    if (preferences && processIsCRTEnabled(preferences, config)) {
+    if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
         if (initialTeamId) {
             await fetchNewThreads(serverUrl, initialTeamId, false);
         }
@@ -256,7 +256,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
 
 export async function deferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
-    config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
+    config: ClientConfig, license: ClientLicense | undefined, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string) {
     let result;
     if (config?.FeatureFlagGraphQL === 'true') {

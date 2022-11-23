@@ -20,7 +20,6 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type AccountScreenProps = {
     currentUser: UserModel;
-    customStatusExpirySupported: boolean;
     enableCustomUserStatuses: boolean;
     showFullName: boolean;
 };
@@ -57,7 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpirySupported, showFullName}: AccountScreenProps) => {
+const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: AccountScreenProps) => {
     const theme = useTheme();
     const [start, setStart] = useState(false);
     const route = useRoute();
@@ -119,7 +118,6 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, customStatusExpir
                     />
                     <AccountOptions
                         enableCustomUserStatuses={enableCustomUserStatuses}
-                        isCustomStatusExpirySupported={customStatusExpirySupported}
                         isTablet={isTablet}
                         user={currentUser}
                         theme={theme}

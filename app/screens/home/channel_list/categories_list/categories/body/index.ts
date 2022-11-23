@@ -7,9 +7,9 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {map, switchMap, combineLatestWith} from 'rxjs/operators';
 
-import {MyChannelModel} from '@app/database/models/server';
 import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
+import {MyChannelModel} from '@database/models/server';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {observeChannelsByCategoryChannelSortOrder, observeChannelsByLastPostAtInCategory} from '@queries/servers/categories';
 import {observeNotifyPropsByChannels, queryChannelsByNames, queryEmptyDirectAndGroupChannels} from '@queries/servers/channel';
