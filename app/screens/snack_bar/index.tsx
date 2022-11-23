@@ -29,7 +29,7 @@ import {typography} from '@utils/typography';
 
 const SNACK_BAR_WIDTH = 96;
 const SNACK_BAR_HEIGHT = 56;
-const SNACK_BAR_BOTTOM_RATIO = 0.13;
+const SNACK_BAR_BOTTOM_RATIO = 0.04;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -102,13 +102,20 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
         let tabletStyle: Partial<ViewStyle>;
 
         switch (true) {
-            case sourceScreen === Screens.THREAD :
+            case sourceScreen === Screens.THREAD:
                 tabletStyle = {
                     marginLeft: 0,
                     width: `${SNACK_BAR_WIDTH}%`,
                 };
                 break;
-            case [Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_MESSAGES, Screens.CHANNEL_INFO].includes(sourceScreen):
+            case sourceScreen === Screens.CHANNEL_INFO:
+                tabletStyle = {
+                    marginBottom: 40,
+                    marginLeft: 0,
+                    width: (SNACK_BAR_WIDTH / 100) * diffWidth,
+                };
+                break;
+            case [Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_MESSAGES].includes(sourceScreen):
                 tabletStyle = {
                     marginBottom: 0,
                     marginLeft: 0,
