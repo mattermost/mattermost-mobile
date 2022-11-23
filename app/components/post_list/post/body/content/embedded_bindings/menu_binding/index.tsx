@@ -7,9 +7,9 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {map} from 'rxjs/operators';
 
 import {postEphemeralCallResponseForPost} from '@actions/remote/apps';
-import {useAppBinding} from '@app/hooks/apps';
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {useServerUrl} from '@context/server';
+import {useAppBinding} from '@hooks/apps';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {logDebug} from '@utils/log';
 
@@ -46,7 +46,7 @@ const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
 
     const handleBindingSubmit = useAppBinding(context, config);
 
-    const onSelect = useCallback(async (picked?: DialogOption | DialogOption[]) => {
+    const onSelect = useCallback(async (picked: SelectedDialogOption) => {
         if (!picked || Array.isArray(picked)) {
             return;
         }

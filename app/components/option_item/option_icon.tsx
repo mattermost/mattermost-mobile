@@ -4,11 +4,10 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import FastImage from 'react-native-fast-image';
 
+import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {isValidUrl} from '@utils/url';
-
-import CompassIcon from '../compass_icon';
 
 type OptionIconProps = {
     destructive?: boolean;

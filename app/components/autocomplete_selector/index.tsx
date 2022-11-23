@@ -26,10 +26,6 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
 
-type SelectedValue = string | string[] | undefined;
-
-type SelectedDialogOption = DialogOption | DialogOption[] | undefined;
-
 type AutoCompleteSelectorProps = {
     dataSource?: string;
     disabled?: boolean;
@@ -42,7 +38,7 @@ type AutoCompleteSelectorProps = {
     options?: DialogOption[];
     placeholder?: string;
     roundedBorders?: boolean;
-    selected?: SelectedValue;
+    selected?: SelectedDialogValue;
     showRequiredAsterisk?: boolean;
     teammateNameDisplay: string;
     isMultiselect?: boolean;
