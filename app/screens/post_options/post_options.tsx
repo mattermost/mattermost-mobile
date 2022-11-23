@@ -133,9 +133,10 @@ const PostOptions = ({
         );
     };
 
-    const additionalSnapPoints = 2;
 
     const finalSnapPoints = useMemo(() => {
+        const additionalSnapPoints = 2;
+
         const lowerSnapPoints = snapPoints + additionalSnapPoints;
         if (!shouldShowBindings) {
             return [lowerSnapPoints * ITEM_HEIGHT, 10];
@@ -143,7 +144,7 @@ const PostOptions = ({
 
         const upperSnapPoints = lowerSnapPoints + bindings.length;
         return [upperSnapPoints * ITEM_HEIGHT, lowerSnapPoints * ITEM_HEIGHT, 10];
-    }, [snapPoints, bindings.length]);
+    }, [snapPoints, shouldShowBindings, bindings.length]);
 
     return (
         <BottomSheet
