@@ -12,6 +12,7 @@ import {fetchChannels, searchChannels} from '@actions/remote/channel';
 import {fetchProfiles, searchProfiles} from '@actions/remote/user';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
+import {createProfilesSections} from '@components/user_list';
 import UserListRow from '@components/user_list_row';
 import {General, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -27,8 +28,6 @@ import {filterChannelsMatchingTerm} from '@utils/channel';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {filterProfilesMatchingTerm} from '@utils/user';
-
-import {createProfilesSections} from '../create_direct_message/user_list';
 
 import ChannelListRow from './channel_list_row';
 import CustomList, {FLATLIST, SECTIONLIST} from './custom_list';
