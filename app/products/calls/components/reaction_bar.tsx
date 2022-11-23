@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Pressable, StyleProp, TextStyle, View, ViewStyle} from 'react-native';
+import {Pressable, StyleSheet, View} from 'react-native';
 
 import {raiseHand, unraiseHand} from '@calls/actions';
 import {sendReaction} from '@calls/actions/calls';
@@ -10,7 +10,7 @@ import EmojiButton from '@calls/components/emoji_button';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 
-const styles: Dictionary<StyleProp<ViewStyle | TextStyle>> = {
+const styles = StyleSheet.create({
     container: {
         display: 'flex',
         flexDirection: 'row',
@@ -45,7 +45,7 @@ const styles: Dictionary<StyleProp<ViewStyle | TextStyle>> = {
     buttonText: {
         marginLeft: 8,
     },
-};
+});
 
 interface Props {
     raisedHand: number;
@@ -83,7 +83,7 @@ const ReactionBar = ({raisedHand}: Props) => {
                 <CompassIcon
                     name={raisedHand ? 'hand-right-outline-off' : 'hand-right-outline'}
                     size={24}
-                    style={[styles.handIcon, raisedHand ? styles.pressed : styles.unPressed]}
+                    style={[raisedHand ? styles.pressed : styles.unPressed]}
                 />
                 {raisedHand ? LowerHandText : RaiseHandText}
             </Pressable>
