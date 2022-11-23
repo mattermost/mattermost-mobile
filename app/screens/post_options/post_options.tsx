@@ -133,7 +133,6 @@ const PostOptions = ({
         );
     };
 
-
     const finalSnapPoints = useMemo(() => {
         const additionalSnapPoints = 2;
 
