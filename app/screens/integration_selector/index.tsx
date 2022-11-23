@@ -99,7 +99,7 @@ export type Props = {
     dataSource: string;
     handleSelect: (opt: Selection) => void;
     isMultiselect?: boolean;
-    selected?: DialogOption[];
+    selected?: string | string[];
     theme: Theme;
     teammateNameDisplay: string;
     componentId: string;
@@ -435,18 +435,17 @@ function IntegrationSelector(
     useEffect(() => {
         const multiselectItems: MultiselectSelectedMap = {};
 
-        if (multiselectSelected) {
-            return;
-        }
-
-        if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
-            selected.forEach((opt) => {
-                multiselectItems[opt.value] = opt;
+        if (isMultiselect && Array.isArray(selected) && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
+            selected.forEach((value) => {
+                const option = options?.find((opt) => opt.value === value);
+                if (option) {
+                    multiselectItems[value] = option;
+                }
             });
 
             setMultiselectSelected(multiselectItems);
         }
-    }, [multiselectSelected]);
+    }, []);
 
     // Renders
     const renderLoading = useCallback(() => {
