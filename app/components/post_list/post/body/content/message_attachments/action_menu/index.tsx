@@ -25,7 +25,7 @@ const ActionMenu = ({dataSource, defaultOption, disabled, id, name, options, pos
     }
     const [selected, setSelected] = useState(isSelected?.value);
 
-    const handleSelect = useCallback(async (selectedItem: DialogOption | DialogOption[] | undefined) => {
+    const handleSelect = useCallback(async (selectedItem: SelectedDialogOption) => {
         if (!selectedItem || Array.isArray(selectedItem)) {
             return;
         }

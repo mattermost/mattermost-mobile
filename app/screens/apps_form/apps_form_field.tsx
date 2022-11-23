@@ -83,7 +83,7 @@ function AppsFormField({
         onChange(name, newValue);
     }, [name]);
 
-    const handleSelect = useCallback((newValue: DialogOption | DialogOption[] | undefined) => {
+    const handleSelect = useCallback((newValue: SelectedDialogOption) => {
         if (!newValue) {
             const emptyValue = field.multiselect ? [] : null;
             onChange(name, emptyValue);

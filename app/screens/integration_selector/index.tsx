@@ -98,7 +98,7 @@ export type Props = {
     dataSource: string;
     handleSelect: (opt: Selection) => void;
     isMultiselect?: boolean;
-    selected?: string | string[];
+    selected: SelectedDialogValue;
     theme: Theme;
     teammateNameDisplay: string;
     componentId: string;
