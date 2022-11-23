@@ -6,6 +6,7 @@ import React, {useCallback, useRef} from 'react';
 import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -20,6 +21,11 @@ type Props = {
     channelId: string;
     rootId?: string;
     currentUserId: string;
+    canShowPostPriority?: boolean;
+
+    // Post Props
+    postProps: Post['props'];
+    updatePostProps: (postProps: Post['props']) => void;
 
     // Cursor Position Handler
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
@@ -77,6 +83,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
         },
+        postPriorityLabel: {
+            marginLeft: 12,
+            marginTop: Platform.select({
+                ios: 3,
+                android: 10,
+            }),
+        },
     };
 });
 
@@ -84,6 +97,7 @@ export default function DraftInput({
     testID,
     channelId,
     currentUserId,
+    canShowPostPriority,
     files,
     maxMessageLength,
     rootId = '',
@@ -96,6 +110,8 @@ export default function DraftInput({
     updateCursorPosition,
     cursorPosition,
     updatePostInputTop,
+    postProps,
+    updatePostProps,
     setIsFocused,
 }: Props) {
     const theme = useTheme();
@@ -139,6 +155,11 @@ export default function DraftInput({
                     overScrollMode={'never'}
                     disableScrollViewPanResponder={true}
                 >
+                    {Boolean(postProps.priority) && (
+                        <View style={style.postPriorityLabel}>
+                            <PostPriorityLabel label={postProps.priority}/>
+                        </View>
+                    )}
                     <PostInput
                         testID={postInputTestID}
                         channelId={channelId}
@@ -167,6 +188,9 @@ export default function DraftInput({
                             addFiles={addFiles}
                             updateValue={updateValue}
                             value={value}
+                            postProps={postProps}
+                            updatePostProps={updatePostProps}
+                            canShowPostPriority={canShowPostPriority}
                             focus={focus}
                         />
                         <SendAction
