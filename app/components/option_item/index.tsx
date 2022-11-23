@@ -126,7 +126,6 @@ const OptionItem = ({
     description,
     destructive,
     icon,
-    iconColor,
     info,
     inline = false,
     label,

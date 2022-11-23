@@ -9,7 +9,6 @@ import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
-import {useServerUrl, withServerUrl} from '@context/server';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import AppsManager from '@managers/apps_manager';
 import BottomSheet from '@screens/bottom_sheet';
@@ -43,15 +42,15 @@ type PostOptionsProps = {
     thread?: ThreadModel;
     componentId: string;
     bindings: AppBinding[];
+    serverUrl: string;
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
     combinedPost, componentId, isSaved,
-    sourceScreen, post, thread, bindings,
+    sourceScreen, post, thread, bindings, serverUrl,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
-    const serverUrl = useServerUrl();
 
     const close = () => {
         dismissModal({componentId});
@@ -137,10 +136,10 @@ const PostOptions = ({
     const additionalSnapPoints = 2;
 
     const finalSnapPoints = useMemo(() => {
-    const lowerSnapPoints = snapPoints + additionalSnapPoints;
+        const lowerSnapPoints = snapPoints + additionalSnapPoints;
         if (!shouldShowBindings) {
             return [lowerSnapPoints * ITEM_HEIGHT, 10];
-    }
+        }
 
         const upperSnapPoints = lowerSnapPoints + bindings.length;
         return [upperSnapPoints * ITEM_HEIGHT, lowerSnapPoints * ITEM_HEIGHT, 10];
@@ -166,4 +165,4 @@ const withBindings = withObservables([], (ownProps: OwnProps) => ({
     bindings: AppsManager.observeBindings(ownProps.serverUrl, AppBindingLocations.POST_MENU_ITEM),
 }));
 
-export default React.memo(withServerUrl(withBindings(PostOptions)));
+export default React.memo(withBindings(PostOptions));
