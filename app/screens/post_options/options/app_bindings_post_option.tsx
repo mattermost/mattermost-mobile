@@ -1,16 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useMemo} from 'react';
-import {map} from 'rxjs/operators';
+import {of as of$} from 'rxjs';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {postEphemeralCallResponseForPost} from '@actions/remote/apps';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
-import {ChannelModel} from '@database/models/server';
 import {useAppBinding} from '@hooks/apps';
+import {observeChannel} from '@queries/servers/channel';
+import {observeCurrentTeamId} from '@queries/servers/system';
 import {dismissBottomSheet} from '@screens/navigation';
+import {WithDatabaseArgs} from '@typings/database/database';
 import {isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -86,8 +90,11 @@ type OwnProps = {
     bindings: AppBinding[];
 }
 
-const withTeamId = withObservables(['post'], ({post}: OwnProps) => ({
-    teamId: post.channel.observe().pipe(map((channel: ChannelModel) => channel.teamId)),
+const withTeamId = withObservables(['post'], ({database, post}: WithDatabaseArgs & OwnProps) => ({
+    teamId: post.channelId ? observeChannel(database, post.channelId).pipe(
+        switchMap((c) => (c?.teamId ? of$(c.teamId) : observeCurrentTeamId(database))),
+        distinctUntilChanged(),
+    ) : of$(''),
 }));
 
-export default React.memo(withTeamId(AppBindingsPostOptions));
+export default React.memo(withDatabase(withTeamId(AppBindingsPostOptions)));
