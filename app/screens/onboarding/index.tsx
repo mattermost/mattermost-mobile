@@ -81,7 +81,7 @@ const Onboarding = ({
                 key={`key-${index.toString()}`}
             />
         );
-    }, []);
+    }, [theme]);
 
     const scrollHandler = useAnimatedScrollHandler({
         onScroll: (event) => {
