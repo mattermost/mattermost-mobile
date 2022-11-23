@@ -172,7 +172,7 @@ function AppsFormField({
                     options={options}
                     optional={!field.is_required}
                     onSelected={handleSelect}
-                    getDynamicOptions={getDynamicOptions}
+                    getDynamicOptions={field.type === AppFieldTypes.DYNAMIC_SELECT ? getDynamicOptions : undefined}
                     helpText={field.description}
                     errorText={errorText}
                     placeholder={placeholder}
