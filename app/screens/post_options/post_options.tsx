@@ -145,12 +145,14 @@ const PostOptions = ({
         return [upperSnapPoints * ITEM_HEIGHT, lowerSnapPoints * ITEM_HEIGHT, 10];
     }, [snapPoints, shouldShowBindings, bindings.length]);
 
+    const initialSnapIndex = shouldShowBindings ? 1 : 0;
+
     return (
         <BottomSheet
             renderContent={renderContent}
             closeButtonId={POST_OPTIONS_BUTTON}
             componentId={Screens.POST_OPTIONS}
-            initialSnapIndex={1}
+            initialSnapIndex={initialSnapIndex}
             snapPoints={finalSnapPoints}
             testID='post_options'
         />
