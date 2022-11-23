@@ -842,5 +842,10 @@
     "unsupported_server.message": "Auf deinem Server, {serverDisplayName}, läuft eine nicht unterstützte Serverversion. Es kann zu Kompatibilitätsproblemen kommen, die zu Abstürzen oder schwerwiegenden Fehlern führen, welche die Kernfunktionen der App beeinträchtigen. Bitte wende dich an deinen Systemadministrator, um deinen Mattermost-Server zu aktualisieren.",
     "server_upgrade.learn_more": "Mehr erfahren",
     "server_upgrade.dismiss": "Verwerfen",
-    "server_upgrade.alert_description": "Auf dem Server, {serverDisplayName}, läuft eine nicht unterstützte Serverversion. Die Benutzer sind Kompatibilitätsproblemen ausgesetzt, die zu Abstürzen oder schwerwiegenden Fehlern führen, welche die Kernfunktionen der Anwendung beeinträchtigen. Ein Upgrade auf die Serverversion {supportedServerVersion} oder höher ist erforderlich."
+    "server_upgrade.alert_description": "Auf dem Server, {serverDisplayName}, läuft eine nicht unterstützte Serverversion. Die Benutzer sind Kompatibilitätsproblemen ausgesetzt, die zu Abstürzen oder schwerwiegenden Fehlern führen, welche die Kernfunktionen der Anwendung beeinträchtigen. Ein Upgrade auf die Serverversion {supportedServerVersion} oder höher ist erforderlich.",
+    "post_priority.picker.title": "Nachrichten Priorität",
+    "post_priority.picker.label.urgent": "Dringend",
+    "post_priority.picker.label.standard": "Standard",
+    "post_priority.picker.label.important": "Wichtig",
+    "post_priority.picker.beta": "BETA"
 }
