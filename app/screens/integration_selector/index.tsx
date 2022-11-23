@@ -38,7 +38,7 @@ import SelectedOptions from './selected_options';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
-type Selection = DialogOption | Channel | UserProfile | DialogOption[] | Channel[] | UserProfile[];
+type Selection = DialogOption | Channel | UserProfile | DataType;
 type MultiselectSelectedMap = Dictionary<DialogOption> | Dictionary<Channel> | Dictionary<UserProfile>;
 type UserProfileSection = {
     id: string;
@@ -49,7 +49,6 @@ const VALID_DATASOURCES = [
     ViewConstants.DATA_SOURCE_CHANNELS,
     ViewConstants.DATA_SOURCE_USERS,
     ViewConstants.DATA_SOURCE_DYNAMIC];
-const INITIAL_PAGE = 0;
 const SUBMIT_BUTTON_ID = 'submit-integration-selector-multiselect';
 
 const close = () => {
@@ -487,7 +486,7 @@ function IntegrationSelector(
     }, [style, dataSource, loading, intl]);
 
     const renderNoResults = useCallback((): JSX.Element | null => {
-        if (loading || page.current === INITIAL_PAGE) {
+        if (loading || page.current === -1) {
             return null;
         }
 
