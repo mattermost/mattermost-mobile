@@ -3,15 +3,15 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import withObservables from '@nozbe/with-observables';
-import React from 'react';
+import React, {useMemo} from 'react';
 
-import {AppBindingLocations} from '@app/constants/apps';
-import {useServerUrl, withServerUrl} from '@app/context/server';
-import AppsManager from '@app/managers/apps_manager';
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {AppBindingLocations} from '@constants/apps';
+import {useServerUrl, withServerUrl} from '@context/server';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import AppsManager from '@managers/apps_manager';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
 import {isSystemMessage} from '@utils/post';
@@ -135,12 +135,16 @@ const PostOptions = ({
     };
 
     const additionalSnapPoints = 2;
-    const lowerSnapPoints = snapPoints + additionalSnapPoints;
 
-    let upperSnapPoints = lowerSnapPoints;
-    if (shouldShowBindings) {
-        upperSnapPoints += bindings.length;
+    const finalSnapPoints = useMemo(() => {
+    const lowerSnapPoints = snapPoints + additionalSnapPoints;
+        if (!shouldShowBindings) {
+            return [lowerSnapPoints * ITEM_HEIGHT, 10];
     }
+
+        const upperSnapPoints = lowerSnapPoints + bindings.length;
+        return [upperSnapPoints * ITEM_HEIGHT, lowerSnapPoints * ITEM_HEIGHT, 10];
+    }, [snapPoints, bindings.length]);
 
     return (
         <BottomSheet
@@ -148,7 +152,7 @@ const PostOptions = ({
             closeButtonId={POST_OPTIONS_BUTTON}
             componentId={Screens.POST_OPTIONS}
             initialSnapIndex={1}
-            snapPoints={[upperSnapPoints * ITEM_HEIGHT, lowerSnapPoints * ITEM_HEIGHT, 10]}
+            snapPoints={finalSnapPoints}
             testID='post_options'
         />
     );
