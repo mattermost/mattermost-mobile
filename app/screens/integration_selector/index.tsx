@@ -435,12 +435,12 @@ function IntegrationSelector(
         const multiselectItems: MultiselectSelectedMap = {};
 
         if (isMultiselect && Array.isArray(selected) && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
-            selected.forEach((value) => {
+            for (const value of selected) {
                 const option = options?.find((opt) => opt.value === value);
                 if (option) {
                     multiselectItems[value] = option;
                 }
-            });
+            }
 
             setMultiselectSelected(multiselectItems);
         }
