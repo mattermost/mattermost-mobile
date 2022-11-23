@@ -456,19 +456,19 @@ function IntegrationSelector(
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
                 text = {
-                    id: intl.formatMessage({id: 'mobile.integration_selector.loading_users'}),
+                    id: 'mobile.integration_selector.loading_users',
                     defaultMessage: 'Loading Users...',
                 };
                 break;
             case ViewConstants.DATA_SOURCE_CHANNELS:
                 text = {
-                    id: intl.formatMessage({id: 'mobile.integration_selector.loading_channels'}),
+                    id: 'mobile.integration_selector.loading_channels',
                     defaultMessage: 'Loading Channels...',
                 };
                 break;
             default:
                 text = {
-                    id: intl.formatMessage({id: 'mobile.integration_selector.loading_options'}),
+                    id: 'mobile.integration_selector.loading_options',
                     defaultMessage: 'Loading Options...',
                 };
                 break;
