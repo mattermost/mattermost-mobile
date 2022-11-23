@@ -842,5 +842,13 @@
     "server_upgrade.alert_description": "Tu servidor {serverDisplayName}, está ejecutando una versión de servidor no soportada. Los usuarios experimentarán problemas de compatibilidad que causan fallos o errores graves que rompen la funcionalidad de la app. Actualizar a la versión de servidor {supportedServerVersion} o superior es requerido.",
     "invite_people_to_team.title": "Únete al equipo {team}",
     "invite_people_to_team.message": "Aquí hay un enlace para colaborar y comunicarte con nosotros en Mattermost.",
-    "plus_menu.invite_people_to_team.title": "Invitar gente a unirse al equipo"
+    "plus_menu.invite_people_to_team.title": "Invitar gente a unirse al equipo",
+    "post_priority.picker.title": "Prioridad de mensaje",
+    "post_priority.picker.label.urgent": "Urgente",
+    "post_priority.picker.label.standard": "Estándar",
+    "post_priority.picker.label.important": "Importante",
+    "post_priority.picker.beta": "BETA",
+    "mobile.integration_selector.loading_options": "Cargando opciones...",
+    "mobile.integration_selector.loading_channels": "Cargando canales...",
+    "mobile.integration_selector.loading_users": "Cargando usuarios..."
 }
