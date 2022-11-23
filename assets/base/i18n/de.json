@@ -847,5 +847,8 @@
     "post_priority.picker.label.urgent": "Dringend",
     "post_priority.picker.label.standard": "Standard",
     "post_priority.picker.label.important": "Wichtig",
-    "post_priority.picker.beta": "BETA"
+    "post_priority.picker.beta": "BETA",
+    "mobile.integration_selector.loading_options": "Lade Optionen...",
+    "mobile.integration_selector.loading_channels": "Lade Kanäle...",
+    "mobile.integration_selector.loading_users": "Lade Benutzer..."
 }
