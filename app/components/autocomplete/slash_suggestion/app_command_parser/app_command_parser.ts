@@ -978,7 +978,7 @@ export class AppCommandParser {
                         const userID = (f.value as AppSelectOption).value;
                         let user: UserModel | UserProfile | undefined = await getUserById(this.database, userID);
                         if (!user) {
-                            const res = await fetchUsersByIds(this.serverUrl, [userID], true);
+                            const res = await fetchUsersByIds(this.serverUrl, [userID]);
                             if ('error' in res) {
                             // Silently fail on default value
                                 break;
