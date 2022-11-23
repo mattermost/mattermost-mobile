@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, View, ViewStyle} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import EmojiPill from '@calls/components/emoji_pill';
 import {ReactionStreamEmoji} from '@calls/types/calls';
 
-const styles: Dictionary<StyleProp<ViewStyle>> = {
+const styles = StyleSheet.create({
     container: {
         position: 'relative',
         width: '100%',
@@ -29,7 +29,7 @@ const styles: Dictionary<StyleProp<ViewStyle>> = {
         bottom: 0,
         width: '100%',
     },
-};
+});
 
 interface Props {
     reactionStream: ReactionStreamEmoji[];
