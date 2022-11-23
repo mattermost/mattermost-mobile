@@ -124,6 +124,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.INTERACTIVE_DIALOG:
             screen = withServerDatabase(require('@screens/interactive_dialog').default);
             break;
+        case Screens.INTEGRATION_SELECTOR:
+            screen = withServerDatabase(require('@screens/integration_selector').default);
+            break;
         case Screens.IN_APP_NOTIFICATION: {
             const notificationScreen = require('@screens/in_app_notification').default;
             Navigation.registerComponent(Screens.IN_APP_NOTIFICATION, () =>
