@@ -10,6 +10,7 @@ import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {CHANNEL_INFO} from '@constants/screens';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {useServerUrl} from '@context/server';
+import {dismissBottomSheet} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 
 type Props = {
@@ -25,6 +26,7 @@ const CopyChannelLinkOption = ({channelName, teamName, showAsLabel, testID}: Pro
 
     const onCopyLink = useCallback(async () => {
         Clipboard.setString(`${serverUrl}/${teamName}/channels/${channelName}`);
+        await dismissBottomSheet();
         showSnackBar({barType: SNACK_BAR_TYPE.LINK_COPIED, sourceScreen: CHANNEL_INFO});
     }, [channelName, teamName, serverUrl]);
 
