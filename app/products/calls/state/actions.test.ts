@@ -19,7 +19,8 @@ import {
     useCallsState,
     useChannelsWithCalls,
     useCurrentCall,
-    useGlobalCallsState, userReacted,
+    useGlobalCallsState,
+    userReacted,
 } from '@calls/state';
 import {
     setCalls,

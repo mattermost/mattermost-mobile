@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
 import {Options} from 'react-native-navigation';
@@ -99,6 +99,7 @@ const CurrentCallBar = ({
     const intl = useIntl();
     const {formatMessage} = intl;
     usePermissionsChecker(micPermissionsGranted);
+    const [recordingAlertExists, setRecordingAlertExists] = useState(false);
 
     const goToCallScreen = useCallback(async () => {
         const options: Options = {
