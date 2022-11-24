@@ -7,7 +7,7 @@ import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
 import {Options} from 'react-native-navigation';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
-import {recordingAlert} from '@calls/alerts';
+import {recordingAlert, recordingWillBePostedAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
@@ -146,11 +146,16 @@ const CurrentCallBar = ({
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
 
     // The user should receive an alert if all of the following conditions apply:
-    // - Recording has started.
-    // - Recording has not ended.
-    // - The alert has not been dismissed already.
-    if (currentCall?.recState?.start_at && !currentCall?.recState?.end_at && !currentCall?.recAcknowledged) {
-        recordingAlert(intl);
+    // - Recording has started and recording has not ended.
+    const isHost = Boolean(currentCall?.hostId === myParticipant?.id);
+    if (currentCall?.recState?.start_at && !currentCall?.recState?.end_at) {
+        recordingAlert(isHost, intl);
+    }
+
+    // The user should receive a recording finished alert if all of the following conditions apply:
+    // - Is the host, recording has started, and recording has ended
+    if (isHost && currentCall?.recState?.start_at && currentCall.recState.end_at) {
+        recordingWillBePostedAlert(intl);
     }
 
     return (

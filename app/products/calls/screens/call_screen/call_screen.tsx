@@ -20,7 +20,8 @@ import {RTCView} from 'react-native-webrtc';
 
 import {appEntry} from '@actions/remote/entry';
 import {leaveCall, muteMyself, setSpeakerphoneOn, unmuteMyself} from '@calls/actions';
-import {recordingAlert} from '@calls/alerts';
+import {startCallRecording, stopCallRecording} from '@calls/actions/calls';
+import {recordingAlert, recordingWillBePostedAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
@@ -241,6 +242,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     unavailableText: {
         color: changeOpacity(theme.sidebarText, 0.32),
     },
+    denimDND: {
+        color: '#D24B4E',
+    },
 }));
 
 const CallScreen = ({
@@ -264,7 +268,11 @@ const CallScreen = ({
     const showControls = !isLandscape || showControlsInLandscape;
     const myParticipant = currentCall?.participants[currentCall.myUserId];
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
-    const chatThreadTitle = intl.formatMessage({id: 'mobile.calls_chat_thread', defaultMessage: 'Chat thread'});
+
+    const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
+    const recordOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Record'});
+    const stopRecordingOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Stop Recording'});
+    const openChannelOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Open Channel'});
 
     useEffect(() => {
         mergeNavigationOptions('Call', {
@@ -302,6 +310,26 @@ const CallScreen = ({
         setShowControlsInLandscape(!showControlsInLandscape);
     }, [showControlsInLandscape]);
 
+    const startRecording = useCallback(async () => {
+        Keyboard.dismiss();
+        await dismissBottomSheet();
+        if (!currentCall) {
+            return;
+        }
+
+        await startCallRecording(currentCall.serverUrl, currentCall.channelId);
+    }, [currentCall?.channelId, currentCall?.serverUrl]);
+
+    const stopRecording = useCallback(async () => {
+        Keyboard.dismiss();
+        await dismissBottomSheet();
+        if (!currentCall) {
+            return;
+        }
+
+        await stopCallRecording(currentCall.serverUrl, currentCall.channelId);
+    }, [currentCall?.channelId, currentCall?.serverUrl]);
+
     const switchToThread = useCallback(async () => {
         Keyboard.dismiss();
         await dismissBottomSheet();
@@ -311,7 +339,7 @@ const CallScreen = ({
 
         const activeUrl = await DatabaseManager.getActiveServerUrl();
         if (activeUrl === currentCall.serverUrl) {
-            await dismissAllModalsAndPopToScreen(Screens.THREAD, chatThreadTitle, {rootId: currentCall.threadId});
+            await dismissAllModalsAndPopToScreen(Screens.THREAD, callThreadOptionTitle, {rootId: currentCall.threadId});
             return;
         }
 
@@ -323,30 +351,68 @@ const CallScreen = ({
         }
         await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
         await appEntry(currentCall.serverUrl, Date.now());
-        await goToScreen(Screens.THREAD, chatThreadTitle, {rootId: currentCall.threadId});
-    }, [currentCall?.serverUrl, currentCall?.threadId, fromThreadScreen, componentId, chatThreadTitle]);
+        await goToScreen(Screens.THREAD, callThreadOptionTitle, {rootId: currentCall.threadId});
+    }, [currentCall?.serverUrl, currentCall?.threadId, fromThreadScreen, componentId, callThreadOptionTitle]);
 
-    const showOtherActions = useCallback(() => {
+    // The user should receive a recording alert if all of the following conditions apply:
+    // - Recording has started, recording has not ended
+    const isHost = Boolean(currentCall?.hostId === myParticipant?.id);
+    const recording = Boolean(currentCall?.recState?.start_at && !currentCall.recState.end_at);
+    if (recording) {
+        recordingAlert(isHost, intl);
+    }
+
+    // The user should receive a recording finished alert if all of the following conditions apply:
+    // - Is the host, recording has started, and recording has ended
+    if (isHost && currentCall?.recState?.start_at && currentCall.recState.end_at) {
+        recordingWillBePostedAlert(intl);
+    }
+
+    // The user should see the loading only if:
+    // - Recording has been initialized, recording has not been started, and recording has not ended
+    const waitingForRecording = Boolean(currentCall?.recState?.init_at && !currentCall.recState.start_at && !currentCall.recState.end_at && isHost);
+
+    const showOtherActions = useCallback(async () => {
         const renderContent = () => {
             return (
                 <View style={style.bottomSheet}>
+                    {
+                        isHost && !(waitingForRecording || recording) &&
+                        <SlideUpPanelItem
+                            icon={'record-circle-outline'}
+                            onPress={startRecording}
+                            text={recordOptionTitle}
+                        />
+                    }
+                    {
+                        isHost && (waitingForRecording || recording) &&
+                        <SlideUpPanelItem
+                            icon={'record-square-outline'}
+                            imageStyles={style.denimDND}
+                            onPress={stopRecording}
+                            text={stopRecordingOptionTitle}
+                            textStyles={style.denimDND}
+                        />
+                    }
                     <SlideUpPanelItem
                         icon='message-text-outline'
                         onPress={switchToThread}
-                        text={chatThreadTitle}
+                        text={callThreadOptionTitle}
                     />
                 </View>
             );
         };
 
-        bottomSheet({
+        const items = isHost ? 3 : 2;
+        await bottomSheet({
             closeButtonId: 'close-other-actions',
             renderContent,
-            snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
+            snapPoints: [bottomSheetSnapPoint(items, ITEM_HEIGHT, insets.bottom), 10],
             title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
             theme,
         });
-    }, [insets, intl, theme]);
+    }, [insets, intl, theme, isHost, waitingForRecording, recording, startRecording, recordOptionTitle,
+        stopRecording, stopRecordingOptionTitle, style, switchToThread, callThreadOptionTitle, openChannelOptionTitle]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
@@ -367,15 +433,6 @@ const CallScreen = ({
             Navigation.pop(componentId).catch(() => null);
         }
         return null;
-    }
-
-    // The user should receive an alert if all of the following conditions apply:
-    // - Recording has started.
-    // - Recording has not ended.
-    // - The alert has not been dismissed already.
-    const recording = Boolean(currentCall.recState?.start_at && !currentCall.recState?.end_at);
-    if (recording && !currentCall.recAcknowledged) {
-        recordingAlert(intl);
     }
 
     let screenShareView = null;
@@ -464,6 +521,7 @@ const CallScreen = ({
                 <View
                     style={[style.header, isLandscape && style.headerLandscape, !showControls && style.headerLandscapeNoControls]}
                 >
+                    {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
                     {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
                     <CallDuration
                         style={style.time}
