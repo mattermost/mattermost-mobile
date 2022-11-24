@@ -58,6 +58,7 @@ export const SHARE_FEEDBACK = 'ShareFeedback';
 export const SNACK_BAR = 'SnackBar';
 export const SSO = 'SSO';
 export const TABLE = 'Table';
+export const TERMS_OF_SERVICE = 'TermsOfService';
 export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
@@ -121,6 +122,7 @@ export default {
     SNACK_BAR,
     SSO,
     TABLE,
+    TERMS_OF_SERVICE,
     THREAD,
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
@@ -154,11 +156,12 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
 ]);
 
 export const OVERLAY_SCREENS = new Set<string>([
-    IN_APP_NOTIFICATION,
     GALLERY,
-    SNACK_BAR,
+    IN_APP_NOTIFICATION,
     REVIEW_APP,
     SHARE_FEEDBACK,
+    SNACK_BAR,
+    TERMS_OF_SERVICE,
 ]);
 
 export const NOT_READY = [

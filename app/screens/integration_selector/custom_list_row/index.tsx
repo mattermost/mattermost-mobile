@@ -9,7 +9,7 @@ import {
     View,
 } from 'react-native';
 
-import CompassIcon from '@app/components/compass_icon';
+import CompassIcon from '@components/compass_icon';
 
 export type Props = {
     id: string;
