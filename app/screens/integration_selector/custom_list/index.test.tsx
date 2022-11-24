@@ -5,7 +5,7 @@ import Database from '@nozbe/watermelondb/Database';
 import React from 'react';
 import {Text} from 'react-native';
 
-import {Preferences} from '@app/constants';
+import {Preferences} from '@constants';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
