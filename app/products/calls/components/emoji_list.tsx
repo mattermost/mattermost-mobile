@@ -31,6 +31,12 @@ const styles = StyleSheet.create({
     },
 });
 
+const gradient = {
+    start: {x: 0.75, y: 0},
+    end: {x: 1, y: 0},
+    colors: ['#00000000', '#000000'],
+};
+
 interface Props {
     reactionStream: ReactionStreamEmoji[];
 }
@@ -48,9 +54,9 @@ const EmojiList = ({reactionStream}: Props) => {
                 ))}
             </View>
             <LinearGradient
-                start={{x: 0.75, y: 0}}
-                end={{x: 1, y: 0}}
-                colors={['#00000000', '#000000']}
+                start={gradient.start}
+                end={gradient.end}
+                colors={gradient.colors}
                 style={styles.gradient}
             />
         </View>

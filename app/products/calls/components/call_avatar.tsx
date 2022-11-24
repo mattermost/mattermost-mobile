@@ -4,9 +4,9 @@
 import React, {useMemo} from 'react';
 import {View, StyleSheet, Text, Platform} from 'react-native';
 
-import Emoji from '@app/components/emoji';
 import {CallReactionEmoji} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
+import Emoji from '@components/emoji';
 import ProfilePicture from '@components/profile_picture';
 
 import type UserModel from '@typings/database/models/servers/user';

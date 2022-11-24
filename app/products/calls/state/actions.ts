@@ -22,7 +22,7 @@ import {
     DefaultCall,
     DefaultCurrentCall, ReactionStreamEmoji,
 } from '@calls/types/calls';
-import {REACTION_TIMEOUT} from '@constants/calls';
+import {REACTION_LIMIT, REACTION_TIMEOUT} from '@constants/calls';
 
 export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
@@ -446,6 +446,9 @@ export const userReacted = (serverUrl: string, channelId: string, reaction: Call
             latestTimestamp: reaction.timestamp,
         };
         newReactionStream.splice(0, 0, newReaction);
+    }
+    if (newReactionStream.length > REACTION_LIMIT) {
+        newReactionStream.pop();
     }
 
     // Update the participant.
