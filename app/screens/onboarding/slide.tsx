@@ -14,6 +14,7 @@ type Props = {
     theme: Theme;
     scrollX: Animated.SharedValue<number>;
     index: number;
+    lastSlideIndex: number;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -57,10 +58,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const FIRST_SLIDE = 0;
-const LAST_SLIDE = 3;
-const FIRST_LOAD_ELEMENTS_POSITION = 400;
 
-const SlideItem = ({theme, item, scrollX, index}: Props) => {
+const SlideItem = ({theme, item, scrollX, index, lastSlideIndex}: Props) => {
     const {width} = useWindowDimensions();
     const styles = getStyleSheet(theme);
 
@@ -69,9 +68,9 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
      */
     const [firstLoad, setFirstLoad] = useState(true);
 
-    const initialImagePosition = useSharedValue(FIRST_LOAD_ELEMENTS_POSITION);
-    const initialTitlePosition = useSharedValue(FIRST_LOAD_ELEMENTS_POSITION);
-    const initialDescriptionPosition = useSharedValue(FIRST_LOAD_ELEMENTS_POSITION);
+    const initialImagePosition = useSharedValue(width);
+    const initialTitlePosition = useSharedValue(width);
+    const initialDescriptionPosition = useSharedValue(width);
 
     const initialElementsOpacity = useSharedValue(0);
 
@@ -189,7 +188,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
                     style={[
                         styles.title,
                         (index === FIRST_SLIDE ? styles.fontFirstTitle : styles.fontTitle),
-                        (index === LAST_SLIDE ? styles.widthLastSlide : undefined),
+                        (index === lastSlideIndex ? styles.widthLastSlide : undefined),
                         translateTitle,
                         opacity,
                         translateFirstTitleOnLoad,
@@ -204,7 +203,7 @@ const SlideItem = ({theme, item, scrollX, index}: Props) => {
                         translateDescription,
                         opacity,
                         (index === FIRST_SLIDE && firstLoad ? styles.firstSlideInitialPosition : undefined),
-                        (index === LAST_SLIDE ? styles.widthLastSlide : undefined),
+                        (index === lastSlideIndex ? styles.widthLastSlide : undefined),
                         translateFirstDescriptionOnLoad,
                     ]}
                 >

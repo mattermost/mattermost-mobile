@@ -1,9 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, StyleSheet} from 'react-native';
-import Animated, {useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue} from 'react-native-reanimated';
+import React, {useCallback, useEffect} from 'react';
+import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, StyleSheet, Platform} from 'react-native';
+import {Navigation} from 'react-native-navigation';
+import Animated, {useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@app/constants';
@@ -36,15 +37,21 @@ const styles = StyleSheet.create({
     },
 });
 
+const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
+
 const Onboarding = ({
     theme,
 }: OnboardingProps) => {
     const {width} = useWindowDimensions();
     const {slidesData} = useSlidesData();
-    const lastSlideIndex = slidesData.length - 1;
+    const LAST_SLIDE_INDEX = slidesData.length - 1;
+    const dimensions = useWindowDimensions();
     const slidesRef = useAnimatedRef<ScrollView>();
 
     const scrollX = useSharedValue(0);
+
+    // used to smothly animate the whole onboarding screen during the appear event scenario (from server screen back to onboarding screen)
+    const translateX = useSharedValue(dimensions.width);
 
     const currentIndex = useDerivedValue(() => Math.round(scrollX.value / width));
 
@@ -57,9 +64,9 @@ const Onboarding = ({
 
     const nextSlide = useCallback(() => {
         const nextSlideIndex = currentIndex.value + 1;
-        if (slidesRef.current && currentIndex.value < lastSlideIndex) {
+        if (slidesRef.current && currentIndex.value < LAST_SLIDE_INDEX) {
             moveToSlide(nextSlideIndex);
-        } else if (slidesRef.current && currentIndex.value === lastSlideIndex) {
+        } else if (slidesRef.current && currentIndex.value === LAST_SLIDE_INDEX) {
             signInHandler();
         }
     }, [currentIndex.value, slidesRef.current, moveToSlide]);
@@ -68,7 +75,7 @@ const Onboarding = ({
         // mark the onboarding as already viewed
         storeOnboardingViewedValue();
 
-        goToScreen(Screens.SERVER, '', {theme}, loginAnimationOptions());
+        goToScreen(Screens.SERVER, '', {animated: true, theme}, loginAnimationOptions());
     }, []);
 
     const renderSlide = useCallback(({item, index}: ListRenderItemInfo<OnboardingItem>) => {
@@ -79,6 +86,7 @@ const Onboarding = ({
                 scrollX={scrollX}
                 index={index}
                 key={`key-${index.toString()}`}
+                lastSlideIndex={LAST_SLIDE_INDEX}
             />
         );
     }, [theme]);
@@ -89,15 +97,36 @@ const Onboarding = ({
         },
     });
 
+    useEffect(() => {
+        const listener = {
+            componentDidAppear: () => {
+                translateX.value = 0;
+            },
+            componentDidDisappear: () => {
+                translateX.value = -dimensions.width;
+            },
+        };
+        const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.ONBOARDING);
+
+        return () => unsubscribe.remove();
+    }, [dimensions]);
+
+    const transform = useAnimatedStyle(() => {
+        const duration = Platform.OS === 'android' ? 250 : 350;
+        return {
+            transform: [{translateX: withTiming(translateX.value, {duration})}],
+        };
+    }, []);
+
     return (
         <View
             style={styles.onBoardingContainer}
             testID='onboarding.screen'
         >
             <Background theme={theme}/>
-            <SafeAreaView
+            <AnimatedSafeArea
+                style={[styles.scrollContainer, transform]}
                 key={'onboarding_content'}
-                style={styles.scrollContainer}
             >
                 <Animated.ScrollView
                     scrollEventThrottle={16}
@@ -123,9 +152,9 @@ const Onboarding = ({
                     nextSlideHandler={nextSlide}
                     signInHandler={signInHandler}
                     scrollX={scrollX}
-                    lastSlideIndex={lastSlideIndex}
+                    lastSlideIndex={LAST_SLIDE_INDEX}
                 />
-            </SafeAreaView>
+            </AnimatedSafeArea>
         </View>
     );
 };
