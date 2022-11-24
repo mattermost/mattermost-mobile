@@ -1,34 +1,30 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
-    View,
-    Text,
+    DeviceEventEmitter,
+    Keyboard,
     Platform,
     Pressable,
     SafeAreaView,
     ScrollView,
+    Text,
     useWindowDimensions,
-    DeviceEventEmitter, Keyboard,
+    View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
 import {appEntry} from '@actions/remote/entry';
-import {
-    leaveCall,
-    muteMyself,
-    raiseHand,
-    setSpeakerphoneOn,
-    unmuteMyself,
-    unraiseHand,
-} from '@calls/actions';
+import {leaveCall, muteMyself, raiseHand, setSpeakerphoneOn, unmuteMyself, unraiseHand} from '@calls/actions';
+import {recordingAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
 import EmojiList from '@calls/components/emoji_list';
+import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
@@ -39,7 +35,7 @@ import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {WebsocketEvents, Screens} from '@constants';
+import {Screens, WebsocketEvents} from '@constants';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {
@@ -86,6 +82,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     header: {
         flexDirection: 'row',
+        alignItems: 'center',
         width: '100%',
         paddingTop: 10,
         paddingLeft: 14,
@@ -122,7 +119,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: '100%',
         height: '100%',
         alignContent: 'center',
-        alignItems: 'center',
+        alignItems: 'flex-start',
     },
     usersScrollLandscapeScreenOn: {
         position: 'absolute',
@@ -392,6 +389,18 @@ const CallScreen = ({
         return null;
     }
 
+    // The user should receive an alert if all of the following conditions apply:
+    // - Recording has started.
+    // - Recording has not ended.
+    // - The alert has not been dismissed already.
+    const recording = Boolean(currentCall.recState?.start_at && !currentCall.recState?.end_at);
+    if (recording && !currentCall.recAcknowledged) {
+        const topComponentId = NavigationStore.getNavigationTopComponentId();
+        if (topComponentId !== Screens.CALL) {
+            recordingAlert(intl);
+        }
+    }
+
     let screenShareView = null;
     if (currentCall.screenShareURL && currentCall.screenOn) {
         screenShareView = (
@@ -450,6 +459,7 @@ const CallScreen = ({
                                         ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
                                     }
                                 </Text>
+                                {user.id === currentCall.hostId && <CallsBadge type={CallsBadgeType.Host}/>}
                             </View>
                         );
                     })}
@@ -490,6 +500,7 @@ const CallScreen = ({
                 <View
                     style={[style.header, isLandscape && style.headerLandscape, !showControls && style.headerLandscapeNoControls]}
                 >
+                    {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
                     <CallDuration
                         style={style.time}
                         value={currentCall.startTime}

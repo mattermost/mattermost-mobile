@@ -162,6 +162,8 @@ const createCallAndAddToIds = (channelId: string, call: ServerCallState, ids: Se
         screenOn: call.screen_sharing_id,
         threadId: call.thread_id,
         ownerId: call.owner_id,
+        hostId: call.host_id,
+        recState: call.recording,
     } as Call;
 };
 

@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
 import {Options} from 'react-native-navigation';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
+import {recordingAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
@@ -95,8 +96,10 @@ const CurrentCallBar = ({
 }: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const {formatMessage} = useIntl();
+    const intl = useIntl();
+    const {formatMessage} = intl;
     usePermissionsChecker(micPermissionsGranted);
+    const [recordingAlertExists, setRecordingAlertExists] = useState(false);
 
     const goToCallScreen = useCallback(async () => {
         const options: Options = {
@@ -142,6 +145,17 @@ const CurrentCallBar = ({
     };
 
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
+
+    // The user should receive an alert if all of the following conditions apply:
+    // - Recording has started.
+    // - Recording has not ended.
+    // - The alert has not been dismissed already.
+    if (currentCall?.recState?.start_at && !currentCall?.recState?.end_at && !currentCall?.recAcknowledged) {
+        if (!recordingAlertExists) {
+            recordingAlert(intl);
+            setRecordingAlertExists(true);
+        }
+    }
 
     return (
         <>

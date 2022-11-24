@@ -3,8 +3,8 @@
 
 import {Alert} from 'react-native';
 
-import {hasMicrophonePermission, joinCall, unmuteMyself} from '@calls/actions';
-import {setMicPermissionsGranted} from '@calls/state';
+import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
+import {setMicPermissionsGranted, setRecAcknowledged} from '@calls/state';
 import {errorAlert} from '@calls/utils';
 import DatabaseManager from '@database/manager';
 import {getCurrentUser} from '@queries/servers/user';
@@ -124,4 +124,38 @@ const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolea
         // Waiting for a second before unmuting is a decent workaround that should work in most cases.
         setTimeout(() => unmuteMyself(), 1000);
     }
+};
+
+export const recordingAlert = (intl: IntlShape) => {
+    const {formatMessage} = intl;
+
+    const participantMessage = formatMessage({
+        id: 'mobile.calls_participant_rec',
+        defaultMessage: 'The host has started recording this meeting. By staying in the meeting you give consent to being recorded.',
+    });
+
+    Alert.alert(
+        formatMessage({
+            id: 'mobile.calls_participant_rec_title',
+            defaultMessage: 'Recording is in progress',
+        }),
+        participantMessage,
+        [
+            {
+                text: formatMessage({
+                    id: 'mobile.calls_leave',
+                    defaultMessage: 'Leave',
+                }),
+                onPress: () => leaveCall(),
+                style: 'cancel',
+            },
+            {
+                text: formatMessage({
+                    id: 'mobile.calls_okay',
+                    defaultMessage: 'Okay',
+                }),
+                onPress: () => setRecAcknowledged(),
+            },
+        ],
+    );
 };
