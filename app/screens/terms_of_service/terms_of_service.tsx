@@ -142,17 +142,18 @@ const TermsOfService = ({
         );
     }, [intl, closeTermsAndLogout]);
 
-    const alertReject = useCallback(() => {
+    const alertDecline = useCallback(() => {
         Alert.alert(
-            siteName,
             intl.formatMessage({
-                id: 'terms_of_service.terms_rejected',
-                defaultMessage: 'You must agree to the terms of service before accessing {siteName}. Please contact your System Administrator for more details.',
-            }, {
-                siteName,
+                id: 'terms_of_service.terms_declined.title',
+                defaultMessage: 'You must accept the terms of service',
+            }),
+            intl.formatMessage({
+                id: 'terms_of_service.terms_declined.text',
+                defaultMessage: 'You must accept the terms of service to access this server. Please contact your system administrator for more details. You will now be logged out. Log in again to accept the terms of service.',
             }),
             [{
-                text: intl.formatMessage({id: 'terms_of_service.terms_rejected.ok', defaultMessage: 'OK'}),
+                text: intl.formatMessage({id: 'terms_of_service.terms_declined.ok', defaultMessage: 'OK'}),
                 onPress: closeTermsAndLogout,
             }],
         );
@@ -166,15 +167,15 @@ const TermsOfService = ({
         } else {
             alertError(acceptTerms);
         }
-    }, [alertError, alertReject, termsId, serverUrl, componentId]);
+    }, [alertError, alertDecline, termsId, serverUrl, componentId]);
 
-    const rejectTerms = useCallback(async () => {
+    const declineTerms = useCallback(async () => {
         setLoading(true);
         const {resp} = await updateTermsOfServiceStatus(serverUrl, termsId, false);
         if (resp?.status === 'OK') {
-            alertReject();
+            alertDecline();
         } else {
-            alertError(rejectTerms);
+            alertError(declineTerms);
         }
     }, [serverUrl, termsId, closeTermsAndLogout]);
 
@@ -182,9 +183,9 @@ const TermsOfService = ({
         if (getTermsError) {
             closeTermsAndLogout();
         } else {
-            rejectTerms();
+            declineTerms();
         }
-    }, [rejectTerms, closeTermsAndLogout, getTermsError]);
+    }, [declineTerms, closeTermsAndLogout, getTermsError]);
 
     useEffect(() => {
         getTerms();
@@ -255,7 +256,7 @@ const TermsOfService = ({
                 <Button
                     onPress={acceptTerms}
                     theme={theme}
-                    text={intl.formatMessage({id: 'terms_of_service.agreeButton', defaultMessage: 'I Agree'})}
+                    text={intl.formatMessage({id: 'terms_of_service.acceptButton', defaultMessage: 'Accept'})}
                     size={'lg'}
                     backgroundStyle={styles.firstButton}
                 />
@@ -263,7 +264,7 @@ const TermsOfService = ({
                 <Button
                     onPress={onPressClose}
                     theme={theme}
-                    text={intl.formatMessage({id: 'terms_of_service.reject', defaultMessage: 'Reject'})}
+                    text={intl.formatMessage({id: 'terms_of_service.decline', defaultMessage: 'Decline'})}
                     size={'lg'}
                     emphasis={'link'}
                 />
