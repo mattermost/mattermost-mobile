@@ -36,17 +36,22 @@ export const PostTypes: Record<string, string> = {
     CUSTOM_CALLS: 'custom_calls',
 };
 
-export const PostPriorityTypes: Record<string, string> = {
-    URGENT: 'urgent',
-    IMPORTANT: 'important',
+export const PostPriorityColors = {
+    URGENT: '#D24B4E',
+    IMPORTANT: '#5D89EA',
 };
+
+export enum PostPriorityType {
+    STANDARD = '',
+    URGENT = 'urgent',
+    IMPORTANT = 'important',
+}
 
 export const POST_TIME_TO_FAIL = toMilliseconds({seconds: 10});
 
 export default {
     POST_COLLAPSE_TIMEOUT: toMilliseconds({minutes: 5}),
     POST_TYPES: PostTypes,
-    POST_PRIORITY_TYPES: PostPriorityTypes,
     USER_ACTIVITY_POST_TYPES: [
         PostTypes.ADD_TO_CHANNEL,
         PostTypes.JOIN_CHANNEL,

@@ -28,6 +28,8 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 const SNACK_BAR_WIDTH = 96;
+const SNACK_BAR_HEIGHT = 56;
+const SNACK_BAR_BOTTOM_RATIO = 0.04;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -40,10 +42,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         gestureRoot: {
             flex: 1,
-            height: 80,
             width: '100%',
             position: 'absolute',
-            bottom: 104,
+            height: SNACK_BAR_HEIGHT,
         },
         toast: {
             width: '100%',
@@ -81,7 +82,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
     const intl = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
-    const {width: windowWidth} = useWindowDimensions();
+    const {width: windowWidth, height: windowHeight} = useWindowDimensions();
     const offset = useSharedValue(0);
     const isPanned = useSharedValue(false);
     const baseTimer = useRef<NodeJS.Timeout>();
@@ -90,28 +91,31 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
 
     const config = SNACK_BAR_CONFIG[barType];
     const styles = getStyleSheet(theme);
+    const gestureRootStyle = useMemo(() => {
+        return {
+            bottom: SNACK_BAR_BOTTOM_RATIO * windowHeight,
+        };
+    }, [windowHeight]);
 
     const snackBarStyle = useMemo(() => {
         const diffWidth = windowWidth - TABLET_SIDEBAR_WIDTH;
-
         let tabletStyle: Partial<ViewStyle>;
 
         switch (true) {
-            case sourceScreen === Screens.THREAD :
+            case sourceScreen === Screens.THREAD:
                 tabletStyle = {
                     marginLeft: 0,
                     width: `${SNACK_BAR_WIDTH}%`,
-                    marginBottom: 30,
                 };
                 break;
-            case sourceScreen === Screens.SAVED_MESSAGES :
+            case sourceScreen === Screens.CHANNEL_INFO:
                 tabletStyle = {
-                    marginBottom: 20,
-                    marginLeft: TABLET_SIDEBAR_WIDTH,
+                    marginBottom: 40,
+                    marginLeft: 0,
                     width: (SNACK_BAR_WIDTH / 100) * diffWidth,
                 };
                 break;
-            case [Screens.PERMALINK, Screens.MENTIONS].includes(sourceScreen):
+            case [Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_MESSAGES].includes(sourceScreen):
                 tabletStyle = {
                     marginBottom: 0,
                     marginLeft: 0,
@@ -226,7 +230,9 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
     }, []);
 
     return (
-        <GestureHandlerRootView style={styles.gestureRoot}>
+        <GestureHandlerRootView
+            style={[styles.gestureRoot, gestureRootStyle]}
+        >
             <GestureDetector gesture={gesture}>
                 <Animated.View
                     style={animatedMotion}
