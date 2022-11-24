@@ -40,7 +40,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     );
 
     const createdBy = channel.pipe(
-        switchMap((ch) => (ch?.creatorId ? ch.creator.observe() : of$(undefined))),
+        switchMap((ch) => (ch?.creatorId ? observeUser(database, ch.creatorId) : of$(undefined))),
         combineLatestWith(currentUser, teammateNameDisplay),
         switchMap(([creator, me, disaplySetting]) => of$(displayUsername(creator, me?.locale, disaplySetting, false))),
     );

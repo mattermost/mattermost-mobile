@@ -124,6 +124,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.INTERACTIVE_DIALOG:
             screen = withServerDatabase(require('@screens/interactive_dialog').default);
             break;
+        case Screens.INTEGRATION_SELECTOR:
+            screen = withServerDatabase(require('@screens/integration_selector').default);
+            break;
         case Screens.IN_APP_NOTIFICATION: {
             const notificationScreen = require('@screens/in_app_notification').default;
             Navigation.registerComponent(Screens.IN_APP_NOTIFICATION, () =>
@@ -157,6 +160,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.REACTIONS:
             screen = withServerDatabase(require('@screens/reactions').default);
+            break;
+        case Screens.REVIEW_APP:
+            screen = withServerDatabase(require('@screens/review_app').default);
             break;
         case Screens.SETTINGS:
             screen = withServerDatabase(require('@screens/settings').default);
@@ -193,6 +199,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.SETTINGS_NOTIFICATION_PUSH:
             screen = withServerDatabase(require('@screens/settings/notification_push').default);
+            break;
+        case Screens.SHARE_FEEDBACK:
+            screen = withServerDatabase(require('@screens/share_feedback').default);
             break;
         case Screens.SNACK_BAR: {
             const snackBarScreen = withServerDatabase(require('@screens/snack_bar').default);

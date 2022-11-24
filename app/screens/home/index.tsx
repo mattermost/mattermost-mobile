@@ -9,12 +9,14 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
+import ServerVersion from '@components/server_version';
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
+import {tryRunAppReview} from '@utils/reviews';
 
 import Account from './account';
 import ChannelList from './channel_list';
@@ -38,6 +40,14 @@ type HomeProps = LaunchProps & {
 };
 
 const Tab = createBottomTabNavigator();
+
+// This is needed since the Database Provider is recreating this component
+// when the database is changed (couldn't find exactly why), re-triggering
+// the effect. This makes sure the rate logic is only handle on the first
+// run. Most of the normal users won't see this issue, but on edge times
+// (near the time you will see the rate dialog) will show when switching
+// servers.
+let hasRendered = false;
 
 export default function HomeScreen(props: HomeProps) {
     const theme = useTheme();
@@ -95,56 +105,68 @@ export default function HomeScreen(props: HomeProps) {
         };
     }, [intl.locale]);
 
+    // Init the rate app. Only run the effect on the first render
+    useEffect(() => {
+        if (hasRendered) {
+            return;
+        }
+        hasRendered = true;
+        tryRunAppReview(props.launchType, props.coldStart);
+    }, []);
+
     return (
-        <NavigationContainer
-            theme={{
-                dark: false,
-                colors: {
-                    primary: theme.centerChannelColor,
-                    background: 'transparent',
-                    card: theme.centerChannelBg,
-                    text: theme.centerChannelColor,
-                    border: 'white',
-                    notification: theme.mentionHighlightBg,
-                },
-            }}
-        >
-            <Tab.Navigator
-                screenOptions={{headerShown: false, lazy: true, unmountOnBlur: false}}
-                backBehavior='none'
-                tabBar={(tabProps: BottomTabBarProps) => (
-                    <TabBar
-                        {...tabProps}
-                        theme={theme}
-                    />)}
+        <>
+            <NavigationContainer
+                theme={{
+                    dark: false,
+                    colors: {
+                        primary: theme.centerChannelColor,
+                        background: 'transparent',
+                        card: theme.centerChannelBg,
+                        text: theme.centerChannelColor,
+                        border: 'white',
+                        notification: theme.mentionHighlightBg,
+                    },
+                }}
             >
-                <Tab.Screen
-                    name={Screens.HOME}
-                    options={{title: 'Channel', unmountOnBlur: false, tabBarTestID: 'tab_bar.home.tab', freezeOnBlur: true}}
+                <Tab.Navigator
+                    screenOptions={{headerShown: false, lazy: true, unmountOnBlur: false}}
+                    backBehavior='none'
+                    tabBar={(tabProps: BottomTabBarProps) => (
+                        <TabBar
+                            {...tabProps}
+                            theme={theme}
+                        />)}
                 >
-                    {() => <ChannelList {...props}/>}
-                </Tab.Screen>
-                <Tab.Screen
-                    name={Screens.SEARCH}
-                    component={Search}
-                    options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.search.tab', freezeOnBlur: true}}
-                />
-                <Tab.Screen
-                    name={Screens.MENTIONS}
-                    component={RecentMentions}
-                    options={{tabBarTestID: 'tab_bar.mentions.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
-                />
-                <Tab.Screen
-                    name={Screens.SAVED_MESSAGES}
-                    component={SavedMessages}
-                    options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.saved_messages.tab', freezeOnBlur: true}}
-                />
-                <Tab.Screen
-                    name={Screens.ACCOUNT}
-                    component={Account}
-                    options={{tabBarTestID: 'tab_bar.account.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
-                />
-            </Tab.Navigator>
-        </NavigationContainer>
+                    <Tab.Screen
+                        name={Screens.HOME}
+                        options={{title: 'Channel', unmountOnBlur: false, tabBarTestID: 'tab_bar.home.tab', freezeOnBlur: true}}
+                    >
+                        {() => <ChannelList {...props}/>}
+                    </Tab.Screen>
+                    <Tab.Screen
+                        name={Screens.SEARCH}
+                        component={Search}
+                        options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.search.tab', freezeOnBlur: true}}
+                    />
+                    <Tab.Screen
+                        name={Screens.MENTIONS}
+                        component={RecentMentions}
+                        options={{tabBarTestID: 'tab_bar.mentions.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
+                    />
+                    <Tab.Screen
+                        name={Screens.SAVED_MESSAGES}
+                        component={SavedMessages}
+                        options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.saved_messages.tab', freezeOnBlur: true}}
+                    />
+                    <Tab.Screen
+                        name={Screens.ACCOUNT}
+                        component={Account}
+                        options={{tabBarTestID: 'tab_bar.account.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
+                    />
+                </Tab.Navigator>
+            </NavigationContainer>
+            <ServerVersion/>
+        </>
     );
 }

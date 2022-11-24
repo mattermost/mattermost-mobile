@@ -37,6 +37,7 @@ export const PERMALINK = 'Permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
 export const REACTIONS = 'Reactions';
+export const REVIEW_APP = 'ReviewApp';
 export const SAVED_MESSAGES = 'SavedMessages';
 export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
@@ -53,6 +54,7 @@ export const SETTINGS_NOTIFICATION_AUTO_RESPONDER = 'SettingsNotificationAutoRes
 export const SETTINGS_NOTIFICATION_EMAIL = 'SettingsNotificationEmail';
 export const SETTINGS_NOTIFICATION_MENTION = 'SettingsNotificationMention';
 export const SETTINGS_NOTIFICATION_PUSH = 'SettingsNotificationPush';
+export const SHARE_FEEDBACK = 'ShareFeedback';
 export const SNACK_BAR = 'SnackBar';
 export const SSO = 'SSO';
 export const TABLE = 'Table';
@@ -99,6 +101,7 @@ export default {
     PINNED_MESSAGES,
     POST_OPTIONS,
     REACTIONS,
+    REVIEW_APP,
     SAVED_MESSAGES,
     SEARCH,
     SELECT_TEAM,
@@ -115,6 +118,7 @@ export default {
     SETTINGS_NOTIFICATION_EMAIL,
     SETTINGS_NOTIFICATION_MENTION,
     SETTINGS_NOTIFICATION_PUSH,
+    SHARE_FEEDBACK,
     SNACK_BAR,
     SSO,
     TABLE,
@@ -152,8 +156,10 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
 ]);
 
 export const OVERLAY_SCREENS = new Set<string>([
-    IN_APP_NOTIFICATION,
     GALLERY,
+    IN_APP_NOTIFICATION,
+    REVIEW_APP,
+    SHARE_FEEDBACK,
     SNACK_BAR,
     TERMS_OF_SERVICE,
 ]);
@@ -162,6 +168,4 @@ export const NOT_READY = [
     CHANNEL_ADD_PEOPLE,
     CHANNEL_MENTION,
     CREATE_TEAM,
-    INTEGRATION_SELECTOR,
-    INTERACTIVE_DIALOG,
 ];

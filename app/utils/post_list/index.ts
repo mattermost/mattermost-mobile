@@ -4,6 +4,7 @@
 import moment from 'moment-timezone';
 
 import {Post} from '@constants';
+import {toMilliseconds} from '@utils/datetime';
 import {isFromWebhook} from '@utils/post';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -205,11 +206,11 @@ export function selectOrderedPosts(
         // Push on a date header if the last post was on a different day than the current one
         const postDate = new Date(post.createAt);
         if (timezoneEnabled) {
-            const currentOffset = postDate.getTimezoneOffset() * 60 * 1000;
+            const currentOffset = toMilliseconds({minutes: postDate.getTimezoneOffset()});
             if (currentTimezone) {
                 const zone = moment.tz.zone(currentTimezone);
                 if (zone) {
-                    const timezoneOffset = zone.utcOffset(post.createAt) * 60 * 1000;
+                    const timezoneOffset = toMilliseconds({minutes: zone.utcOffset(post.createAt)});
                     postDate.setTime(post.createAt + (currentOffset - timezoneOffset));
                 }
             }

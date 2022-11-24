@@ -1,0 +1,74 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/integration_selector/option_list_row should match snapshot for option 1`] = `
+<View
+  style={
+    {
+      "alignItems": "center",
+      "backgroundColor": "#ffffff",
+      "flexDirection": "row",
+      "height": 65,
+      "paddingHorizontal": 15,
+    }
+  }
+>
+  <View
+    accessible={true}
+    collapsable={false}
+    focusable={true}
+    onClick={[Function]}
+    onResponderGrant={[Function]}
+    onResponderMove={[Function]}
+    onResponderRelease={[Function]}
+    onResponderTerminate={[Function]}
+    onResponderTerminationRequest={[Function]}
+    onStartShouldSetResponder={[Function]}
+    style={
+      {
+        "alignItems": "center",
+        "flex": 1,
+        "flexDirection": "row",
+        "height": 65,
+        "opacity": 1,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flex": 1,
+          "flexDirection": "row",
+        }
+      }
+      testID="1"
+    >
+      <View
+        style={
+          {
+            "flex": 1,
+            "flexDirection": "column",
+            "justifyContent": "center",
+            "marginLeft": 10,
+          }
+        }
+      >
+        <View>
+          <Text
+            style={
+              {
+                "color": "#3f4350",
+                "fontFamily": "OpenSans",
+                "fontSize": 16,
+                "fontWeight": "400",
+                "lineHeight": 24,
+              }
+            }
+          >
+            my text
+          </Text>
+        </View>
+      </View>
+    </View>
+  </View>
+</View>
+`;

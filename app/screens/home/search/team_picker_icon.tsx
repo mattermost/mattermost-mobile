@@ -88,7 +88,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
                 <TouchableWithFeedback
                     onPress={handleTeamChange}
                     type='opacity'
-                    testID={selectedTeam.id}
+                    testID='team_picker.button'
                 >
                     <View style={[styles.teamContainer, divider && styles.border]}>
                         <View style={[styles.teamIcon, {width: size, height: size}]}>
@@ -99,7 +99,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
                                 textColor={theme.centerChannelColor}
                                 backgroundColor={changeOpacity(theme.centerChannelColor, 0.16)}
                                 selected={false}
-                                testID={`${selectedTeam}.team_icon`}
+                                testID={`team_picker.${selectedTeam.id}.team_icon`}
                                 smallText={true}
                             />
                         </View>

@@ -12,13 +12,13 @@ describe('Unsupported Server Alert', () => {
 
     it('should show the alert for sysadmin', () => {
         const alert = jest.spyOn(Alert, 'alert');
-        unsupportedServer(true, intl);
+        unsupportedServer('Default Server', true, intl);
         expect(alert?.mock?.calls?.[0]?.[2]?.length).toBe(2);
     });
 
     it('should show the alert for team admin / user', () => {
         const alert = jest.spyOn(Alert, 'alert');
-        unsupportedServer(false, intl);
+        unsupportedServer('Default Server', false, intl);
         expect(alert?.mock?.calls?.[0]?.[2]?.length).toBe(1);
     });
 });

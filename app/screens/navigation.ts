@@ -77,7 +77,7 @@ export const loginAnimationOptions = () => {
     };
 };
 
-export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) => {
+export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string): Options => {
     if (closeButtonId) {
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
         const closeButtonTestId = `${closeButtonId.replace('close-', 'close.').replace(/-/g, '_')}.button`;
@@ -437,7 +437,7 @@ export async function dismissAllModalsAndPopToScreen(screenId: string, title: st
     }
 }
 
-export function showModal(name: string, title: string, passProps = {}, options = {}) {
+export function showModal(name: string, title: string, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return;
     }
@@ -490,7 +490,7 @@ export function showModal(name: string, title: string, passProps = {}, options =
     });
 }
 
-export function showModalOverCurrentContext(name: string, passProps = {}, options = {}) {
+export function showModalOverCurrentContext(name: string, passProps = {}, options: Options = {}) {
     const title = '';
     let animations;
     switch (Platform.OS) {
@@ -697,6 +697,22 @@ export async function openAsBottomSheet({closeButtonId, screen, theme, title, pr
 export const showAppForm = async (form: AppForm) => {
     const passProps = {form};
     showModal(Screens.APPS_FORM, form.title || '', passProps);
+};
+
+export const showReviewOverlay = (hasAskedBefore: boolean) => {
+    showOverlay(
+        Screens.REVIEW_APP,
+        {hasAskedBefore},
+        {overlay: {interceptTouchOutside: true}},
+    );
+};
+
+export const showShareFeedbackOverlay = () => {
+    showOverlay(
+        Screens.SHARE_FEEDBACK,
+        {},
+        {overlay: {interceptTouchOutside: true}},
+    );
 };
 
 export async function findChannels(title: string, theme: Theme) {
