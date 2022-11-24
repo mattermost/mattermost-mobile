@@ -64,6 +64,7 @@
     "react-native-haptic-feedback": "1.14.0",
     "react-native-hw-keyboard-event": "0.0.4",
     "react-native-image-picker": "4.10.0",
+    "react-native-in-app-review": "4.2.1",
     "react-native-incall-manager": "github:cpoile/react-native-incall-manager",
     "react-native-keyboard-aware-scroll-view": "0.9.5",
     "react-native-keyboard-tracking-view": "5.7.0",

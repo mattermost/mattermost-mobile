@@ -25,7 +25,7 @@ const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, Pu
 export const initialLaunch = async () => {
     const deepLinkUrl = await Linking.getInitialURL();
     if (deepLinkUrl) {
-        launchAppFromDeepLink(deepLinkUrl);
+        launchAppFromDeepLink(deepLinkUrl, true);
         return;
     }
 
@@ -41,20 +41,20 @@ export const initialLaunch = async () => {
         tapped = delivered.find((d) => (d as unknown as NotificationData).ack_id === notification?.payload.ack_id) == null;
     }
     if (initialNotificationTypes.includes(notification?.payload?.type) && tapped) {
-        launchAppFromNotification(convertToNotificationData(notification!));
+        launchAppFromNotification(convertToNotificationData(notification!), true);
         return;
     }
 
-    launchApp({launchType: Launch.Normal});
+    launchApp({launchType: Launch.Normal, coldStart: true});
 };
 
-const launchAppFromDeepLink = (deepLinkUrl: string) => {
-    const props = getLaunchPropsFromDeepLink(deepLinkUrl);
+const launchAppFromDeepLink = (deepLinkUrl: string, coldStart = false) => {
+    const props = getLaunchPropsFromDeepLink(deepLinkUrl, coldStart);
     launchApp(props);
 };
 
-const launchAppFromNotification = async (notification: NotificationWithData) => {
-    const props = await getLaunchPropsFromNotification(notification);
+const launchAppFromNotification = async (notification: NotificationWithData, coldStart = false) => {
+    const props = await getLaunchPropsFromNotification(notification, coldStart);
     launchApp(props);
 };
 
@@ -184,10 +184,11 @@ export const relaunchApp = (props: LaunchProps, resetNavigation = false) => {
     return launchApp(props, resetNavigation);
 };
 
-export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => {
+export const getLaunchPropsFromDeepLink = (deepLinkUrl: string, coldStart = false): LaunchProps => {
     const parsed = parseDeepLink(deepLinkUrl);
     const launchProps: LaunchProps = {
         launchType: Launch.DeepLink,
+        coldStart,
     };
 
     switch (parsed.type) {
@@ -219,9 +220,10 @@ export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => 
     return launchProps;
 };
 
-export const getLaunchPropsFromNotification = async (notification: NotificationWithData): Promise<LaunchProps> => {
+export const getLaunchPropsFromNotification = async (notification: NotificationWithData, coldStart = false): Promise<LaunchProps> => {
     const launchProps: LaunchProps = {
         launchType: Launch.Notification,
+        coldStart,
     };
 
     const {payload} = notification;

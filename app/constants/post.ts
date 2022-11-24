@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {toMilliseconds} from '@utils/datetime';
+
 export const PostTypes: Record<string, string> = {
     CHANNEL_DELETED: 'system_channel_deleted',
     CHANNEL_UNARCHIVED: 'system_channel_restored',
@@ -45,10 +47,10 @@ export enum PostPriorityType {
     IMPORTANT = 'important',
 }
 
-export const POST_TIME_TO_FAIL = 10000;
+export const POST_TIME_TO_FAIL = toMilliseconds({seconds: 10});
 
 export default {
-    POST_COLLAPSE_TIMEOUT: 1000 * 60 * 5,
+    POST_COLLAPSE_TIMEOUT: toMilliseconds({minutes: 5}),
     POST_TYPES: PostTypes,
     USER_ACTIVITY_POST_TYPES: [
         PostTypes.ADD_TO_CHANNEL,

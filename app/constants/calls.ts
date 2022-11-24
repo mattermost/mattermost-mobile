@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-const RefreshConfigMillis = 20 * 60 * 1000; // Refresh config after 20 minutes
+import {toMilliseconds} from '@utils/datetime';
+
+const RefreshConfigMillis = toMilliseconds({minutes: 20});
 
 const RequiredServer = {
     FULL_VERSION: '6.3.0',

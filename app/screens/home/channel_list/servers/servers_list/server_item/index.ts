@@ -16,7 +16,7 @@ import type ServersModel from '@typings/database/models/app/servers';
 const enhance = withObservables(['highlight'], ({highlight, server}: {highlight: boolean; server: ServersModel}) => {
     let tutorialWatched = of$(false);
     if (highlight) {
-        tutorialWatched = observeMultiServerTutorial(server.database);
+        tutorialWatched = observeMultiServerTutorial();
     }
 
     const serverDatabase = DatabaseManager.serverDatabases[server.url]?.database;

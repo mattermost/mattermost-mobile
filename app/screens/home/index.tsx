@@ -16,6 +16,7 @@ import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
+import {tryRunAppReview} from '@utils/reviews';
 
 import Account from './account';
 import ChannelList from './channel_list';
@@ -39,6 +40,14 @@ type HomeProps = LaunchProps & {
 };
 
 const Tab = createBottomTabNavigator();
+
+// This is needed since the Database Provider is recreating this component
+// when the database is changed (couldn't find exactly why), re-triggering
+// the effect. This makes sure the rate logic is only handle on the first
+// run. Most of the normal users won't see this issue, but on edge times
+// (near the time you will see the rate dialog) will show when switching
+// servers.
+let hasRendered = false;
 
 export default function HomeScreen(props: HomeProps) {
     const theme = useTheme();
@@ -95,6 +104,15 @@ export default function HomeScreen(props: HomeProps) {
             listener.remove();
         };
     }, [intl.locale]);
+
+    // Init the rate app. Only run the effect on the first render
+    useEffect(() => {
+        if (hasRendered) {
+            return;
+        }
+        hasRendered = true;
+        tryRunAppReview(props.launchType, props.coldStart);
+    }, []);
 
     return (
         <>
