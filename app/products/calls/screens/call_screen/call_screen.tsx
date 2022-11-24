@@ -23,8 +23,8 @@ import {leaveCall, muteMyself, raiseHand, setSpeakerphoneOn, unmuteMyself, unrai
 import {recordingAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
-import EmojiList from '@calls/components/emoji_list';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
+import EmojiList from '@calls/components/emoji_list';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
@@ -395,10 +395,7 @@ const CallScreen = ({
     // - The alert has not been dismissed already.
     const recording = Boolean(currentCall.recState?.start_at && !currentCall.recState?.end_at);
     if (recording && !currentCall.recAcknowledged) {
-        const topComponentId = NavigationStore.getNavigationTopComponentId();
-        if (topComponentId !== Screens.CALL) {
-            recordingAlert(intl);
-        }
+        recordingAlert(intl);
     }
 
     let screenShareView = null;

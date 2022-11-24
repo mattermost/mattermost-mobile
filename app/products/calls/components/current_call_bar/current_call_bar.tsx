@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
 import {Options} from 'react-native-navigation';
@@ -99,7 +99,6 @@ const CurrentCallBar = ({
     const intl = useIntl();
     const {formatMessage} = intl;
     usePermissionsChecker(micPermissionsGranted);
-    const [recordingAlertExists, setRecordingAlertExists] = useState(false);
 
     const goToCallScreen = useCallback(async () => {
         const options: Options = {
@@ -151,10 +150,7 @@ const CurrentCallBar = ({
     // - Recording has not ended.
     // - The alert has not been dismissed already.
     if (currentCall?.recState?.start_at && !currentCall?.recState?.end_at && !currentCall?.recAcknowledged) {
-        if (!recordingAlertExists) {
-            recordingAlert(intl);
-            setRecordingAlertExists(true);
-        }
+        recordingAlert(intl);
     }
 
     return (
