@@ -59,7 +59,7 @@ const useSalidesData = () => {
             image: chatSvg,
         },
         {
-            title: intl.formatMessage({id: 'onboarding.realtime_collaboration', defaultMessage: 'Collaborate in real-time'}),
+            title: intl.formatMessage({id: 'onboarding.realtime_collaboration', defaultMessage: 'Collaborate in real‑time'}),
             description: intl.formatMessage({id: 'onboarding.realtime_collaboration_description', defaultMessage: 'Persistent channels, direct messaging, and file sharing works seamlessly so you can stay connected, wherever you are.'}),
             image: teamCommunicationSvg,
         },
