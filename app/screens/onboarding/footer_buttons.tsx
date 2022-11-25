@@ -7,10 +7,9 @@ import Animated, {Extrapolate, interpolate, useAnimatedStyle} from 'react-native
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {ONBOARDING_CONTENT_MAX_WIDTH} from '@screens/onboarding/slide';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {makeStyleSheetFromTheme} from '@utils/theme';
-
-import {ONBOARDING_CONTENT_MAX_WIDTH} from '@screens/onboarding/slide';
 
 type Props = {
     theme: Theme;
@@ -50,7 +49,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const AnimatedButton = Animated.createAnimatedComponent(Pressable);
 const BUTTON_SIZE = 100;
 
-
 const FooterButtons = ({
     theme,
     nextSlideHandler,
@@ -59,7 +57,7 @@ const FooterButtons = ({
     scrollX,
 }: Props) => {
     const {width} = useWindowDimensions();
-    const buttonWidth = Math.min(width * .8, ONBOARDING_CONTENT_MAX_WIDTH);
+    const buttonWidth = Math.min(width * 0.8, ONBOARDING_CONTENT_MAX_WIDTH);
     const styles = getStyleSheet(theme);
 
     // keep in mind penultimate and ultimate slides to run buttons text/opacity/size animations
