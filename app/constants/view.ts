@@ -27,6 +27,8 @@ export const CALL_ERROR_BAR_HEIGHT = 62;
 
 export const QUICK_OPTIONS_HEIGHT = 270;
 
+export const ANNOUNCEMENT_BAR_HEIGHT = 40;
+
 export default {
     BOTTOM_TAB_HEIGHT,
     BOTTOM_TAB_ICON_SIZE,

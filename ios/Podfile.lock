@@ -345,6 +345,8 @@ PODS:
     - React
   - react-native-image-picker (4.10.0):
     - React-Core
+  - react-native-in-app-review (4.2.1):
+    - React-Core
   - react-native-netinfo (9.3.6):
     - React-Core
   - react-native-network-client (1.0.0):
@@ -606,6 +608,7 @@ DEPENDENCIES:
   - "react-native-emm (from `../node_modules/@mattermost/react-native-emm`)"
   - react-native-hw-keyboard-event (from `../node_modules/react-native-hw-keyboard-event`)
   - react-native-image-picker (from `../node_modules/react-native-image-picker`)
+  - react-native-in-app-review (from `../node_modules/react-native-in-app-review`)
   - "react-native-netinfo (from `../node_modules/@react-native-community/netinfo`)"
   - "react-native-network-client (from `../node_modules/@mattermost/react-native-network-client`)"
   - react-native-notifications (from `../node_modules/react-native-notifications`)
@@ -753,6 +756,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-hw-keyboard-event"
   react-native-image-picker:
     :path: "../node_modules/react-native-image-picker"
+  react-native-in-app-review:
+    :path: "../node_modules/react-native-in-app-review"
   react-native-netinfo:
     :path: "../node_modules/@react-native-community/netinfo"
   react-native-network-client:
@@ -907,6 +912,7 @@ SPEC CHECKSUMS:
   react-native-emm: c5b7dcffde34ce345fd0c16d66b587e611a3d31f
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
   react-native-image-picker: 4bc9ed38c8be255b515d8c88babbaf74973f91a8
+  react-native-in-app-review: a073f67c5f3392af6ea7fb383217cdb1aa2aa726
   react-native-netinfo: f80db8cac2151405633324cb645c60af098ee461
   react-native-network-client: 2b1370725abbbc1a7bfb1845d44bd3d4e73041b2
   react-native-notifications: 83b4fd4a127a6c918fc846cae90da60f84819e44

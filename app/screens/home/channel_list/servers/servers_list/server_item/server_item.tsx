@@ -18,15 +18,14 @@ import ServerIcon from '@components/server_icon';
 import TutorialHighlight from '@components/tutorial_highlight';
 import TutorialSwipeLeft from '@components/tutorial_highlight/swipe_left';
 import {Events} from '@constants';
-import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
+import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
 import {queryServerByIdentifier} from '@queries/app/servers';
 import {dismissBottomSheet} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
-import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
+import {canReceiveNotifications} from '@utils/push_proxy';
 import {alertServerAlreadyConnected, alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -252,19 +251,7 @@ const ServerItem = ({
             return;
         }
 
-        switch (result.canReceiveNotifications) {
-            case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
-                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_NOT_AVAILABLE);
-                alertPushProxyError(intl);
-                break;
-            case PUSH_PROXY_RESPONSE_UNKNOWN:
-                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_UNKNOWN);
-                alertPushProxyUnknown(intl);
-                break;
-            default:
-                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_VERIFIED);
-        }
-
+        canReceiveNotifications(server.url, result.canReceiveNotifications as string, intl);
         loginToServer(theme, server.url, displayName, data.config!, data.license!);
     }, [server, theme, intl]);
 

@@ -86,7 +86,7 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
     }
     let resp: ServerChannelState[] = [];
     try {
-        resp = await client.getCalls();
+        resp = await client.getCalls() || [];
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};

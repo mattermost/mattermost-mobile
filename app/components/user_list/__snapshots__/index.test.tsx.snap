@@ -1,0 +1,817 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/channel_list_row should show no results 1`] = `
+<RCTScrollView
+  ListEmptyComponent={[Function]}
+  ListFooterComponent={[Function]}
+  contentContainerStyle={
+    {
+      "flexGrow": 1,
+    }
+  }
+  data={
+    [
+      {
+        "data": [
+          {
+            "auth_service": "",
+            "create_at": 1111,
+            "delete_at": 0,
+            "email": "john@doe.com",
+            "first_name": "",
+            "id": "1",
+            "last_name": "",
+            "locale": "",
+            "nickname": "",
+            "notify_props": {
+              "channel": "true",
+              "comments": "never",
+              "desktop": "mention",
+              "desktop_sound": "true",
+              "email": "true",
+              "first_name": "true",
+              "mention_keys": "",
+              "push": "mention",
+              "push_status": "away",
+            },
+            "position": "",
+            "roles": "",
+            "update_at": 1111,
+            "username": "johndoe",
+          },
+        ],
+        "id": "J",
+      },
+    ]
+  }
+  extraData={false}
+  getItem={[Function]}
+  getItemCount={[Function]}
+  initialNumToRender={15}
+  keyExtractor={[Function]}
+  keyboardDismissMode="on-drag"
+  keyboardShouldPersistTaps="always"
+  maxToRenderPerBatch={16}
+  onContentSizeChange={[Function]}
+  onEndReached={[Function]}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  removeClippedSubviews={true}
+  renderItem={[Function]}
+  scrollEventThrottle={60}
+  stickyHeaderIndices={[]}
+  style={
+    {
+      "backgroundColor": "#ffffff",
+      "flex": 1,
+    }
+  }
+  testID="UserListRow.section_list"
+>
+  <View>
+    <View
+      onLayout={[Function]}
+      style={null}
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#ffffff",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "backgroundColor": "rgba(63,67,80,0.08)",
+              "height": 24,
+              "justifyContent": "center",
+              "paddingLeft": 16,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#3f4350",
+                "fontFamily": "OpenSans-SemiBold",
+                "fontSize": 12,
+                "fontWeight": "600",
+                "lineHeight": 16,
+              }
+            }
+          >
+            J
+          </Text>
+        </View>
+      </View>
+    </View>
+    <View
+      onLayout={[Function]}
+      style={null}
+    >
+      <View
+        onMoveShouldSetResponder={[Function]}
+        onMoveShouldSetResponderCapture={[Function]}
+        onResponderEnd={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderReject={[Function]}
+        onResponderRelease={[Function]}
+        onResponderStart={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        onStartShouldSetResponderCapture={[Function]}
+      >
+        <View
+          accessible={true}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+        >
+          <View
+            style={
+              {
+                "flex": 1,
+                "flexDirection": "row",
+                "height": 58,
+                "overflow": "hidden",
+                "paddingHorizontal": 20,
+              }
+            }
+            testID="create_direct_message.user_list.user_item.1"
+          >
+            <View
+              style={
+                [
+                  {
+                    "alignItems": "center",
+                    "color": "#3f4350",
+                    "flexDirection": "row",
+                  },
+                  {
+                    "opacity": 1,
+                  },
+                ]
+              }
+            >
+              <View
+                style={
+                  {
+                    "borderRadius": 21.5,
+                    "height": 42,
+                    "width": 42,
+                  }
+                }
+                testID="create_direct_message.user_list.user_item.1.profile_picture"
+              >
+                <Icon
+                  name="account-outline"
+                  size={24}
+                  style={
+                    {
+                      "color": "rgba(63,67,80,0.48)",
+                    }
+                  }
+                />
+              </View>
+            </View>
+            <View
+              style={
+                [
+                  {
+                    "flex": 1,
+                    "flexDirection": "column",
+                    "justifyContent": "center",
+                    "paddingHorizontal": 10,
+                  },
+                  {
+                    "opacity": 1,
+                  },
+                ]
+              }
+            >
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                  }
+                }
+              >
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={
+                    {
+                      "color": "#3f4350",
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "height": 24,
+                      "lineHeight": 24,
+                      "maxWidth": "80%",
+                    }
+                  }
+                  testID="create_direct_message.user_list.user_item.1.display_name"
+                >
+                  johndoe
+                </Text>
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                }
+              }
+            >
+              <Icon
+                color="rgba(63,67,80,0.1024)"
+                name="circle-outline"
+                size={28}
+              />
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+    <View
+      onLayout={[Function]}
+      style={null}
+    />
+    <View
+      onLayout={[Function]}
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+          }
+        }
+      >
+        <ActivityIndicator
+          color="#1c58d9"
+          size="large"
+        />
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`components/channel_list_row should show results and tutorial 1`] = `
+<RCTScrollView
+  ListEmptyComponent={[Function]}
+  ListFooterComponent={[Function]}
+  contentContainerStyle={
+    {
+      "flexGrow": 1,
+    }
+  }
+  data={
+    [
+      {
+        "data": [
+          {
+            "auth_service": "",
+            "create_at": 1111,
+            "delete_at": 0,
+            "email": "john@doe.com",
+            "first_name": "",
+            "id": "1",
+            "last_name": "",
+            "locale": "",
+            "nickname": "",
+            "notify_props": {
+              "channel": "true",
+              "comments": "never",
+              "desktop": "mention",
+              "desktop_sound": "true",
+              "email": "true",
+              "first_name": "true",
+              "mention_keys": "",
+              "push": "mention",
+              "push_status": "away",
+            },
+            "position": "",
+            "roles": "",
+            "update_at": 1111,
+            "username": "johndoe",
+          },
+        ],
+        "id": "J",
+      },
+    ]
+  }
+  extraData={false}
+  getItem={[Function]}
+  getItemCount={[Function]}
+  initialNumToRender={15}
+  keyExtractor={[Function]}
+  keyboardDismissMode="on-drag"
+  keyboardShouldPersistTaps="always"
+  maxToRenderPerBatch={16}
+  onContentSizeChange={[Function]}
+  onEndReached={[Function]}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  removeClippedSubviews={true}
+  renderItem={[Function]}
+  scrollEventThrottle={60}
+  stickyHeaderIndices={[]}
+  style={
+    {
+      "backgroundColor": "#ffffff",
+      "flex": 1,
+    }
+  }
+  testID="UserListRow.section_list"
+>
+  <View>
+    <View
+      onLayout={[Function]}
+      style={null}
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#ffffff",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "backgroundColor": "rgba(63,67,80,0.08)",
+              "height": 24,
+              "justifyContent": "center",
+              "paddingLeft": 16,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#3f4350",
+                "fontFamily": "OpenSans-SemiBold",
+                "fontSize": 12,
+                "fontWeight": "600",
+                "lineHeight": 16,
+              }
+            }
+          >
+            J
+          </Text>
+        </View>
+      </View>
+    </View>
+    <View
+      onLayout={[Function]}
+      style={null}
+    >
+      <View
+        onMoveShouldSetResponder={[Function]}
+        onMoveShouldSetResponderCapture={[Function]}
+        onResponderEnd={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderReject={[Function]}
+        onResponderRelease={[Function]}
+        onResponderStart={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        onStartShouldSetResponderCapture={[Function]}
+      >
+        <View
+          accessible={true}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+        >
+          <View
+            style={
+              {
+                "flex": 1,
+                "flexDirection": "row",
+                "height": 58,
+                "overflow": "hidden",
+                "paddingHorizontal": 20,
+              }
+            }
+            testID="create_direct_message.user_list.user_item.1"
+          >
+            <View
+              style={
+                [
+                  {
+                    "alignItems": "center",
+                    "color": "#3f4350",
+                    "flexDirection": "row",
+                  },
+                  {
+                    "opacity": 1,
+                  },
+                ]
+              }
+            >
+              <View
+                style={
+                  {
+                    "borderRadius": 21.5,
+                    "height": 42,
+                    "width": 42,
+                  }
+                }
+                testID="create_direct_message.user_list.user_item.1.profile_picture"
+              >
+                <Icon
+                  name="account-outline"
+                  size={24}
+                  style={
+                    {
+                      "color": "rgba(63,67,80,0.48)",
+                    }
+                  }
+                />
+              </View>
+            </View>
+            <View
+              style={
+                [
+                  {
+                    "flex": 1,
+                    "flexDirection": "column",
+                    "justifyContent": "center",
+                    "paddingHorizontal": 10,
+                  },
+                  {
+                    "opacity": 1,
+                  },
+                ]
+              }
+            >
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                  }
+                }
+              >
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={
+                    {
+                      "color": "#3f4350",
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "height": 24,
+                      "lineHeight": 24,
+                      "maxWidth": "80%",
+                    }
+                  }
+                  testID="create_direct_message.user_list.user_item.1.display_name"
+                >
+                  johndoe
+                </Text>
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                }
+              }
+            >
+              <Icon
+                color="rgba(63,67,80,0.1024)"
+                name="circle-outline"
+                size={28}
+              />
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+    <View
+      onLayout={[Function]}
+      style={null}
+    />
+    <View
+      onLayout={[Function]}
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+          }
+        }
+      >
+        <ActivityIndicator
+          color="#1c58d9"
+          size="large"
+        />
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`components/channel_list_row should show results no tutorial 1`] = `
+<RCTScrollView
+  ListEmptyComponent={[Function]}
+  ListFooterComponent={[Function]}
+  contentContainerStyle={
+    {
+      "flexGrow": 1,
+    }
+  }
+  data={
+    [
+      {
+        "data": [
+          {
+            "auth_service": "",
+            "create_at": 1111,
+            "delete_at": 0,
+            "email": "john@doe.com",
+            "first_name": "",
+            "id": "1",
+            "last_name": "",
+            "locale": "",
+            "nickname": "",
+            "notify_props": {
+              "channel": "true",
+              "comments": "never",
+              "desktop": "mention",
+              "desktop_sound": "true",
+              "email": "true",
+              "first_name": "true",
+              "mention_keys": "",
+              "push": "mention",
+              "push_status": "away",
+            },
+            "position": "",
+            "roles": "",
+            "update_at": 1111,
+            "username": "johndoe",
+          },
+        ],
+        "id": "J",
+      },
+    ]
+  }
+  extraData={false}
+  getItem={[Function]}
+  getItemCount={[Function]}
+  initialNumToRender={15}
+  keyExtractor={[Function]}
+  keyboardDismissMode="on-drag"
+  keyboardShouldPersistTaps="always"
+  maxToRenderPerBatch={16}
+  onContentSizeChange={[Function]}
+  onEndReached={[Function]}
+  onLayout={[Function]}
+  onMomentumScrollBegin={[Function]}
+  onMomentumScrollEnd={[Function]}
+  onScroll={[Function]}
+  onScrollBeginDrag={[Function]}
+  onScrollEndDrag={[Function]}
+  removeClippedSubviews={true}
+  renderItem={[Function]}
+  scrollEventThrottle={60}
+  stickyHeaderIndices={[]}
+  style={
+    {
+      "backgroundColor": "#ffffff",
+      "flex": 1,
+    }
+  }
+  testID="UserListRow.section_list"
+>
+  <View>
+    <View
+      onLayout={[Function]}
+      style={null}
+    >
+      <View
+        style={
+          {
+            "backgroundColor": "#ffffff",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "backgroundColor": "rgba(63,67,80,0.08)",
+              "height": 24,
+              "justifyContent": "center",
+              "paddingLeft": 16,
+            }
+          }
+        >
+          <Text
+            style={
+              {
+                "color": "#3f4350",
+                "fontFamily": "OpenSans-SemiBold",
+                "fontSize": 12,
+                "fontWeight": "600",
+                "lineHeight": 16,
+              }
+            }
+          >
+            J
+          </Text>
+        </View>
+      </View>
+    </View>
+    <View
+      onLayout={[Function]}
+      style={null}
+    >
+      <View
+        onMoveShouldSetResponder={[Function]}
+        onMoveShouldSetResponderCapture={[Function]}
+        onResponderEnd={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderReject={[Function]}
+        onResponderRelease={[Function]}
+        onResponderStart={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        onStartShouldSetResponderCapture={[Function]}
+      >
+        <View
+          accessible={true}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+        >
+          <View
+            style={
+              {
+                "flex": 1,
+                "flexDirection": "row",
+                "height": 58,
+                "overflow": "hidden",
+                "paddingHorizontal": 20,
+              }
+            }
+            testID="create_direct_message.user_list.user_item.1"
+          >
+            <View
+              style={
+                [
+                  {
+                    "alignItems": "center",
+                    "color": "#3f4350",
+                    "flexDirection": "row",
+                  },
+                  {
+                    "opacity": 1,
+                  },
+                ]
+              }
+            >
+              <View
+                style={
+                  {
+                    "borderRadius": 21.5,
+                    "height": 42,
+                    "width": 42,
+                  }
+                }
+                testID="create_direct_message.user_list.user_item.1.profile_picture"
+              >
+                <Icon
+                  name="account-outline"
+                  size={24}
+                  style={
+                    {
+                      "color": "rgba(63,67,80,0.48)",
+                    }
+                  }
+                />
+              </View>
+            </View>
+            <View
+              style={
+                [
+                  {
+                    "flex": 1,
+                    "flexDirection": "column",
+                    "justifyContent": "center",
+                    "paddingHorizontal": 10,
+                  },
+                  {
+                    "opacity": 1,
+                  },
+                ]
+              }
+            >
+              <View
+                style={
+                  {
+                    "flexDirection": "row",
+                  }
+                }
+              >
+                <Text
+                  ellipsizeMode="tail"
+                  numberOfLines={1}
+                  style={
+                    {
+                      "color": "#3f4350",
+                      "fontFamily": "OpenSans",
+                      "fontSize": 16,
+                      "fontWeight": "400",
+                      "height": 24,
+                      "lineHeight": 24,
+                      "maxWidth": "80%",
+                    }
+                  }
+                  testID="create_direct_message.user_list.user_item.1.display_name"
+                >
+                  johndoe
+                </Text>
+              </View>
+            </View>
+            <View
+              style={
+                {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                }
+              }
+            >
+              <Icon
+                color="rgba(63,67,80,0.1024)"
+                name="circle-outline"
+                size={28}
+              />
+            </View>
+          </View>
+        </View>
+      </View>
+    </View>
+    <View
+      onLayout={[Function]}
+      style={null}
+    />
+    <View
+      onLayout={[Function]}
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "flex": 1,
+            "justifyContent": "center",
+          }
+        }
+      >
+        <ActivityIndicator
+          color="#1c58d9"
+          size="large"
+        />
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;
