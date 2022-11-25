@@ -14,4 +14,7 @@ const RequiredServer = {
 
 const PluginId = 'com.mattermost.calls';
 
-export default {RequiredServer, RefreshConfigMillis, PluginId};
+export const REACTION_TIMEOUT = 10000;
+export const REACTION_LIMIT = 20;
+
+export default {RequiredServer, RefreshConfigMillis, PluginId, REACTION_TIMEOUT};
