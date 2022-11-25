@@ -98,8 +98,8 @@ export const transformThreadsTeamSyncRecord = ({action, database, value}: Transf
     const record = value.record as ThreadsTeamSyncModel;
 
     const fieldsMapper = (threadsTeamSync: ThreadsTeamSyncModel) => {
-        threadsTeamSync.id = raw.id;
-        threadsTeamSync.earliest = raw.earliest || record?.earliest || 0;
+        threadsTeamSync._raw.id = raw.id;
+        threadsTeamSync.earliest = raw.earliest || record?.earliest || Date.now();
         threadsTeamSync.latest = raw.latest || record?.latest || 0;
     };
 

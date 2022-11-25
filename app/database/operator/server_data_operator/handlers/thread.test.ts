@@ -108,7 +108,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
         });
     });
 
-    it.only('=> HandleThreadInTeam: should write to the the ThreadsInTeam table', async () => {
+    it('=> HandleThreadInTeam: should write to the the ThreadsInTeam table', async () => {
         expect.assertions(1);
 
         const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
@@ -164,6 +164,8 @@ describe('*** Operator: Thread Handlers tests ***', () => {
 
         expect(spyOnPrepareRecords).toHaveBeenCalledWith({
             createRaws: [{
+                raw: {team_id: 'team_id_1', thread_id: 'thread-1'},
+            }, {
                 raw: {team_id: 'team_id_1', thread_id: 'thread-2'},
             }, {
                 raw: {team_id: 'team_id_2', thread_id: 'thread-2'},
@@ -199,6 +201,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
             }, {
                 raw: {id: 'team_id_2', earliest: 100, latest: 300},
             }],
+            updateRaws: [],
             transformer: transformThreadsTeamSyncRecord,
             tableName: 'ThreadsTeamSync',
         });
