@@ -35,7 +35,7 @@ import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Screens, WebsocketEvents} from '@constants';
+import {Preferences, Screens, WebsocketEvents} from '@constants';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {
@@ -227,7 +227,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         overflow: 'hidden',
     },
     hangUpIcon: {
-        backgroundColor: '#D24B4E',
+        backgroundColor: Preferences.THEMES.denim.dndIndicator,
     },
     screenShareImage: {
         flex: 7,
@@ -243,7 +243,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.sidebarText, 0.32),
     },
     denimDND: {
-        color: '#D24B4E',
+        color: Preferences.THEMES.denim.dndIndicator,
     },
 }));
 
