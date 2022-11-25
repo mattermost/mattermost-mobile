@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect} from 'react';
 import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, StyleSheet, Platform, NativeSyntheticEvent, NativeScrollEvent} from 'react-native';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedRef, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';
 import {Screens} from '@app/constants';
