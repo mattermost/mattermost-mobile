@@ -17,16 +17,19 @@ type Props = {
     lastSlideIndex: number;
 };
 
+export const ONBOARDING_CONTENT_MAX_WIDTH = 520;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     image: {
         justifyContent: 'center',
         maxHeight: 180,
     },
     title: {
-        height: 100,
         color: theme.centerChannelColor,
         textAlign: 'center',
         paddingHorizontal: 20,
+        maxWidth: ONBOARDING_CONTENT_MAX_WIDTH,
+        marginBottom: 12,
     },
     fontTitle: {
         marginTop: 32,
@@ -34,7 +37,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     fontFirstTitle: {
         ...typography('Heading', 1200, 'SemiBold'),
-        paddingTop: 40,
+        paddingTop: 48,
+        letterSpacing: -1,
     },
     widthLastSlide: {
         paddingHorizontal: 50,
@@ -46,9 +50,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     description: {
         textAlign: 'center',
         paddingHorizontal: 20,
-        height: 80,
         color: changeOpacity(theme.centerChannelColor, 0.64),
         ...typography('Body', 200, 'Regular'),
+        maxWidth: ONBOARDING_CONTENT_MAX_WIDTH,
     },
     itemContainer: {
         flex: 1,

@@ -20,6 +20,7 @@ const styles = StyleSheet.create({
     },
     lastSlideImage: {
         height: 250,
+        left: 8,
     },
 });
 
