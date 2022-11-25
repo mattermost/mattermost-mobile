@@ -90,14 +90,17 @@ const ReactionBar = ({raisedHand}: Props) => {
                 {raisedHand ? LowerHandText : RaiseHandText}
             </Pressable>
             {
-                predefinedReactions.map(([name, unified]) => (
-                    <EmojiButton
-                        key={name}
-                        emojiName={name}
-                        style={styles.button}
-                        onPress={() => sendReaction({name, unified})}
-                    />
-                ))
+                predefinedReactions.map(([name, unified]) => {
+                    const send = () => sendReaction({name, unified});
+                    return (
+                        <EmojiButton
+                            key={name}
+                            emojiName={name}
+                            style={styles.button}
+                            onPress={send}
+                        />
+                    );
+                })
             }
         </View>
     );
