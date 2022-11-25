@@ -271,7 +271,7 @@ const CallScreen = ({
 
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
     const recordOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Record'});
-    const stopRecordingOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Stop Recording'});
+    const stopRecordingOptionTitle = intl.formatMessage({id: 'mobile.calls_stop_recording', defaultMessage: 'Stop Recording'});
     const openChannelOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Open Channel'});
 
     useEffect(() => {

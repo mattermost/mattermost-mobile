@@ -84,6 +84,7 @@ export const leaveAndJoinWithAlert = (
                         id: 'mobile.post.cancel',
                         defaultMessage: 'Cancel',
                     }),
+                    style: 'destructive',
                 },
                 {
                     text: formatMessage({
@@ -179,13 +180,14 @@ export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
                     Navigation.pop(Screens.CALL).catch(() => null);
                 }
             },
-            style: 'cancel',
+            style: 'destructive',
         },
         {
             text: formatMessage({
                 id: 'mobile.calls_okay',
                 defaultMessage: 'Okay',
             }),
+            style: 'default',
         },
     ];
     const hostButton = [{
