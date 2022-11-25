@@ -34,6 +34,7 @@ import {
     ThreadSchema,
     ThreadInTeamSchema,
     ThreadParticipantSchema,
+    ThreadsTeamSyncSchema,
     UserSchema,
 } from './table_schemas';
 
@@ -70,6 +71,7 @@ export const serverSchema: AppSchema = appSchema({
         ThreadSchema,
         ThreadInTeamSchema,
         ThreadParticipantSchema,
+        ThreadsTeamSyncSchema,
         UserSchema,
     ],
 });

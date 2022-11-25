@@ -115,7 +115,7 @@ export const fetchThreads = async (
                 thread.is_following = true;
             });
 
-            await processReceivedThreads(serverUrl, threads, teamId, !unread, false);
+            await processReceivedThreads(serverUrl, threads, teamId, !unread);
         }
 
         return {data};
@@ -136,7 +136,7 @@ export const fetchThread = async (serverUrl: string, teamId: string, threadId: s
     try {
         const thread = await client.getThread('me', teamId, threadId, extended);
 
-        await processReceivedThreads(serverUrl, [thread], teamId, false, false);
+        await processReceivedThreads(serverUrl, [thread], teamId, false);
 
         return {data: thread};
     } catch (error) {
@@ -396,14 +396,11 @@ export async function fetchNewThreads(
         data: [],
     };
 
-    let loadedInGlobalThreads = true;
-
     // if we have no threads in the DB fetch all unread ones
     if (options.since === 0) {
         // options to fetch all unread threads
         options.deleted = false;
         options.unread = true;
-        loadedInGlobalThreads = false;
     }
 
     response = await fetchBatchThreads(serverUrl, teamId, options);
@@ -418,7 +415,7 @@ export async function fetchNewThreads(
         return {error: false, models: []};
     }
 
-    const {error, models} = await processReceivedThreads(serverUrl, data, teamId, loadedInGlobalThreads, true);
+    const {error, models} = await processReceivedThreads(serverUrl, data, teamId, true);
 
     if (!error && !prepareRecordsOnly && models?.length) {
         try {
@@ -482,8 +479,7 @@ export async function fetchRefreshThreads(
         return {error: false, models: []};
     }
 
-    const loadedInGlobalThreads = !unread;
-    const {error, models} = await processReceivedThreads(serverUrl, data, teamId, loadedInGlobalThreads, true);
+    const {error, models} = await processReceivedThreads(serverUrl, data, teamId, true);
 
     if (!error && !prepareRecordsOnly && models?.length) {
         try {

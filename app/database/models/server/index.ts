@@ -31,4 +31,5 @@ export {default as TeamSearchHistoryModel} from './team_search_history';
 export {default as ThreadModel} from './thread';
 export {default as ThreadInTeamModel} from './thread_in_team';
 export {default as ThreadParticipantModel} from './thread_participant';
+export {default as ThreadsTeamSyncModel} from './threads_team_sync';
 export {default as UserModel} from './user';

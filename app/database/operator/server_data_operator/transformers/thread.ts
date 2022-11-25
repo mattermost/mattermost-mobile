@@ -8,11 +8,13 @@ import type {TransformerArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
+import type ThreadsTeamSyncModel from '@typings/database/models/servers/threads_team_sync';
 
 const {
     THREAD,
     THREAD_PARTICIPANT,
     THREADS_IN_TEAM,
+    THREADS_TEAM_SYNC,
 } = MM_TABLES.SERVER;
 
 /**
@@ -76,14 +78,10 @@ export const transformThreadParticipantRecord = ({action, database, value}: Tran
 
 export const transformThreadInTeamRecord = ({action, database, value}: TransformerArgs): Promise<ThreadInTeamModel> => {
     const raw = value.raw as ThreadInTeam;
-    const record = value.record as ThreadInTeamModel;
 
     const fieldsMapper = (threadInTeam: ThreadInTeamModel) => {
         threadInTeam.threadId = raw.thread_id;
         threadInTeam.teamId = raw.team_id;
-
-        // if it's already loaded don't change it
-        threadInTeam.loadedInGlobalThreads = record?.loadedInGlobalThreads || raw.loaded_in_global_threads;
     };
 
     return prepareBaseRecord({
@@ -93,4 +91,23 @@ export const transformThreadInTeamRecord = ({action, database, value}: Transform
         value,
         fieldsMapper,
     }) as Promise<ThreadInTeamModel>;
+};
+
+export const transformThreadsTeamSyncRecord = ({action, database, value}: TransformerArgs): Promise<ThreadsTeamSyncModel> => {
+    const raw = value.raw as ThreadsTeamSync;
+    const record = value.record as ThreadsTeamSyncModel;
+
+    const fieldsMapper = (threadsTeamSync: ThreadsTeamSyncModel) => {
+        threadsTeamSync.id = raw.id;
+        threadsTeamSync.earliest = raw.earliest || record?.earliest || 0;
+        threadsTeamSync.latest = raw.latest || record?.latest || 0;
+    };
+
+    return prepareBaseRecord({
+        action,
+        database,
+        tableName: THREADS_TEAM_SYNC,
+        value,
+        fieldsMapper,
+    }) as Promise<ThreadsTeamSyncModel>;
 };

@@ -5,12 +5,12 @@ import {tableSchema} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
-const {THREADS_IN_TEAM} = MM_TABLES.SERVER;
+const {THREADS_TEAM_SYNC} = MM_TABLES.SERVER;
 
 export default tableSchema({
-    name: THREADS_IN_TEAM,
+    name: THREADS_TEAM_SYNC,
     columns: [
-        {name: 'team_id', type: 'string', isIndexed: true},
-        {name: 'thread_id', type: 'string', isIndexed: true},
+        {name: 'earliest', type: 'number'},
+        {name: 'latest', type: 'number'},
     ],
 });

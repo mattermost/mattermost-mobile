@@ -12,6 +12,7 @@ import ReactionHander, {ReactionHandlerMix} from '@database/operator/server_data
 import TeamHandler, {TeamHandlerMix} from '@database/operator/server_data_operator/handlers/team';
 import ThreadHandler, {ThreadHandlerMix} from '@database/operator/server_data_operator/handlers/thread';
 import ThreadInTeamHandler, {ThreadInTeamHandlerMix} from '@database/operator/server_data_operator/handlers/thread_in_team';
+import ThreadsTeamSyncHandler, {ThreadsTeamSyncHandlerMix} from '@database/operator/server_data_operator/handlers/threads_team_sync';
 import UserHandler, {UserHandlerMix} from '@database/operator/server_data_operator/handlers/user';
 import mix from '@utils/mix';
 
@@ -29,6 +30,7 @@ interface ServerDataOperator extends
     TeamHandlerMix,
     ThreadHandlerMix,
     ThreadInTeamHandlerMix,
+    ThreadsTeamSyncHandlerMix,
     UserHandlerMix
 {}
 
@@ -43,6 +45,7 @@ class ServerDataOperator extends mix(ServerDataOperatorBase).with(
     TeamHandler,
     ThreadHandler,
     ThreadInTeamHandler,
+    ThreadsTeamSyncHandler,
     UserHandler,
 ) {
     // eslint-disable-next-line no-useless-constructor

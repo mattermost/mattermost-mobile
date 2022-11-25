@@ -204,7 +204,7 @@ export async function createThreadFromNewPost(serverUrl: string, post: Post, pre
 }
 
 // On receiving threads, Along with the "threads" & "thread participants", extract and save "posts" & "users"
-export async function processReceivedThreads(serverUrl: string, threads: Thread[], teamId: string, loadedInGlobalThreads = false, prepareRecordsOnly = false) {
+export async function processReceivedThreads(serverUrl: string, threads: Thread[], teamId: string, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentUserId = await getCurrentUserId(database);
@@ -236,7 +236,6 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
             threads: threadsToHandle,
             teamId,
             prepareRecordsOnly: true,
-            loadedInGlobalThreads,
         });
 
         const models = [...postModels, ...threadModels];

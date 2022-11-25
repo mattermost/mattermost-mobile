@@ -152,17 +152,8 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
         query.push(Q.sortBy('last_reply_at', Q.desc));
     }
 
-    let joinCondition: Q.Condition = Q.where('team_id', teamId);
-
-    if (!onlyUnreads) {
-        joinCondition = Q.and(
-            Q.where('team_id', teamId),
-            Q.where('loaded_in_global_threads', true),
-        );
-    }
-
     query.push(
-        Q.on(THREADS_IN_TEAM, joinCondition),
+        Q.on(THREADS_IN_TEAM, Q.where('team_id', teamId)),
     );
 
     if (limit) {
