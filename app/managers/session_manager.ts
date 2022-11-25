@@ -16,7 +16,7 @@ import PushNotifications from '@init/push_notifications';
 import * as analytics from '@managers/analytics';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {queryServerName} from '@queries/app/servers';
+import {queryAllServers, queryServerName} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
 import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -173,13 +173,19 @@ class SessionManager {
                 EphemeralStore.theme = undefined;
                 launchType = Launch.Normal;
 
-                // set the onboardingViewed value to false so the launch will show the onboarding screen after all servers were removed
-                storeOnboardingViewedValue(false);
-
                 if (activeServerDisplayName) {
                     displayName = activeServerDisplayName;
                 }
             }
+
+            // set the onboardingViewed value to false so the launch will show the onboarding screen after all servers were removed
+            if (DatabaseManager.appDatabase) {
+                const servers = await queryAllServers(DatabaseManager.appDatabase.database);
+                if (!servers.length) {
+                    storeOnboardingViewedValue(false);
+                }
+            }
+
             relaunchApp({launchType, serverUrl, displayName}, true);
         }
     };
