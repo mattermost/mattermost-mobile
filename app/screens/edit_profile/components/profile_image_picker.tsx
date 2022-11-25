@@ -6,9 +6,10 @@ import {useIntl} from 'react-intl';
 import {TouchableOpacity} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import FormattedText from '@app/components/formatted_text';
+import {typography} from '@app/utils/typography';
 import {Client} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
-import {typography} from '@app/utils/typography';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -21,7 +22,6 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
-import FormattedText from '@app/components/formatted_text';
 
 const hitSlop = {top: 100, bottom: 20, right: 20, left: 100};
 const ACTION_HEIGHT = 50;
@@ -45,7 +45,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Heading', 600, 'SemiBold'),
             color: theme.centerChannelColor,
             marginBottom: 8,
-        }
+        },
     };
 });
 
@@ -92,7 +92,7 @@ const ProfileImagePicker = ({
             return (
                 <>
                     {!isTablet &&
-                        <FormattedText 
+                        <FormattedText
                             id='user.edit_profile.profile_photo.change_photo'
                             defaultMessage='Change profile photo'
                             style={styles.title}
