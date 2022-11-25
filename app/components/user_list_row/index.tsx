@@ -19,6 +19,7 @@ import TutorialLongPress from '@components/tutorial_highlight/long_press';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername, isGuest} from '@utils/user';
 
 type Props = {
@@ -31,9 +32,9 @@ type Props = {
     onPress?: (user: UserProfile) => void;
     onLongPress: (user: UserProfile) => void;
     selectable: boolean;
+    disabled?: boolean;
     selected: boolean;
     tutorialWatched?: boolean;
-    enabled: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -41,7 +42,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         container: {
             flex: 1,
             flexDirection: 'row',
-            paddingHorizontal: 15,
+            paddingHorizontal: 20,
+            height: 58,
             overflow: 'hidden',
         },
         profileContainer: {
@@ -55,14 +57,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'column',
             flex: 1,
         },
-        displayName: {
-            fontSize: 15,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
         username: {
-            fontSize: 15,
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 75, 'Regular'),
+        },
+        displayName: {
+            height: 24,
             color: theme.centerChannelColor,
             maxWidth: '80%',
+            ...typography('Body', 200, 'Regular'),
         },
         indicatorContainer: {
             flexDirection: 'row',
@@ -70,33 +73,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         deactivated: {
             marginTop: 2,
             fontSize: 12,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
         },
         sharedUserIcon: {
             alignSelf: 'center',
             opacity: 0.75,
         },
         selector: {
-            height: 28,
-            width: 28,
-            borderRadius: 14,
-            borderWidth: 3,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.32),
             alignItems: 'center',
             justifyContent: 'center',
-        },
-        selectorContainer: {
-            height: 50,
-            paddingRight: 10,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        selectorDisabled: {
-            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
-        },
-        selectorFilled: {
-            backgroundColor: theme.sidebarBg,
-            borderWidth: 0,
         },
         tutorial: {
             top: Platform.select({ios: -74, default: -94}),
@@ -106,6 +91,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+const DISABLED_OPACITY = 0.32;
+const DEFAULT_ICON_OPACITY = 0.32;
 
 export default function UserListRow({
     id,
@@ -118,8 +106,8 @@ export default function UserListRow({
     onLongPress,
     tutorialWatched = false,
     selectable,
+    disabled,
     selected,
-    enabled,
 }: Props) {
     const theme = useTheme();
     const intl = useIntl();
@@ -167,25 +155,23 @@ export default function UserListRow({
         onLongPress?.(user);
     }, [onLongPress, user]);
 
-    const iconStyle = useMemo(() => {
-        return [style.selector, (selected && style.selectorFilled), (!enabled && style.selectorDisabled)];
-    }, [style, selected, enabled]);
+    const icon = useMemo(() => {
+        if (!selectable) {
+            return null;
+        }
 
-    const Icon = () => {
+        const iconOpacity = DEFAULT_ICON_OPACITY * (disabled ? 1 : DISABLED_OPACITY);
+        const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
         return (
-            <View style={style.selectorContainer}>
-                <View style={iconStyle}>
-                    {selected &&
-                        <CompassIcon
-                            name='check'
-                            size={24}
-                            color={theme.sidebarText}
-                        />
-                    }
-                </View>
+            <View style={style.selector}>
+                <CompassIcon
+                    name={selected ? 'check-circle' : 'circle-outline'}
+                    size={28}
+                    color={color}
+                />
             </View>
         );
-    };
+    }, [selectable, disabled, selected, theme]);
 
     let usernameDisplay = `@${username}`;
     if (isMyUser) {
@@ -199,6 +185,7 @@ export default function UserListRow({
     const showTeammateDisplay = teammateDisplay !== username;
 
     const userItemTestID = `${testID}.${id}`;
+    const opacity = selectable || selected || !disabled ? 1 : DISABLED_OPACITY;
 
     return (
         <>
@@ -212,23 +199,23 @@ export default function UserListRow({
                     style={style.container}
                     testID={userItemTestID}
                 >
-                    <View style={style.profileContainer}>
+                    <View style={[style.profileContainer, {opacity}]}>
                         <ProfilePicture
                             author={user}
-                            size={32}
+                            size={40}
                             iconSize={24}
                             testID={`${userItemTestID}.profile_picture`}
                         />
                     </View>
-                    <View style={style.textContainer}>
+                    <View style={[style.textContainer, {opacity}]}>
                         <View style={style.indicatorContainer}>
                             <Text
-                                style={style.username}
+                                style={style.displayName}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                                 testID={`${userItemTestID}.display_name`}
                             >
-                                {usernameDisplay}
+                                {teammateDisplay}
                             </Text>
                             <BotTag
                                 show={Boolean(user.is_bot)}
@@ -242,12 +229,12 @@ export default function UserListRow({
                         {showTeammateDisplay &&
                         <View>
                             <Text
-                                style={style.displayName}
+                                style={style.username}
                                 ellipsizeMode='tail'
                                 numberOfLines={1}
                                 testID={`${userItemTestID}.team_display_name`}
                             >
-                                {teammateDisplay}
+                                {usernameDisplay}
                             </Text>
                         </View>
                         }
@@ -262,9 +249,7 @@ export default function UserListRow({
                         </View>
                         }
                     </View>
-                    {selectable &&
-                    <Icon/>
-                    }
+                    {icon}
                 </View>
             </TouchableWithFeedback>
             {showTutorial &&

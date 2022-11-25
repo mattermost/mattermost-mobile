@@ -10,7 +10,7 @@ export async function inTextMentionSuggestions(serverUrl: string, pretext: strin
     const incompleteLessLastWord = separatedWords.slice(0, -1).join(' ');
     const lastWord = separatedWords[separatedWords.length - 1];
     if (lastWord.startsWith('@')) {
-        const res = await searchUsers(serverUrl, lastWord.substring(1), channelID);
+        const res = await searchUsers(serverUrl, lastWord.substring(1), teamID, channelID);
         const users = await getUserSuggestions(res.users);
         users.forEach((u) => {
             let complete = incompleteLessLastWord ? incompleteLessLastWord + ' ' + u.Complete : u.Complete;
@@ -23,7 +23,7 @@ export async function inTextMentionSuggestions(serverUrl: string, pretext: strin
     }
 
     if (lastWord.startsWith('~') && !lastWord.startsWith('~~')) {
-        const res = await searchChannels(serverUrl, lastWord.substring(1));
+        const res = await searchChannels(serverUrl, lastWord.substring(1), teamID);
         const channels = await getChannelSuggestions(res.channels);
         channels.forEach((c) => {
             let complete = incompleteLessLastWord ? incompleteLessLastWord + ' ' + c.Complete : c.Complete;

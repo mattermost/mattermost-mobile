@@ -6,9 +6,10 @@ import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
+import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
 import {getPostById} from '@queries/servers/post';
-import {getCommonSystemValues, getCurrentTeamId} from '@queries/servers/system';
+import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled, getNewestThreadInTeam, getThreadById} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 
@@ -56,6 +57,20 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
 
     await switchToThread(serverUrl, rootId, isFromNotification);
 
+    if (await AppsManager.isAppsEnabled(serverUrl)) {
+        // Getting the post again in case we didn't had it at the beginning
+        const post = await getPostById(database, rootId);
+        const currentChannelId = await getCurrentChannelId(database);
+
+        if (post) {
+            if (currentChannelId === post?.channelId) {
+                AppsManager.copyMainBindingsToThread(serverUrl, currentChannelId);
+            } else {
+                AppsManager.fetchBindings(serverUrl, post.channelId, true);
+            }
+        }
+    }
+
     return {};
 };
 
@@ -89,9 +104,8 @@ export const fetchThreads = async (
     }
 
     try {
-        const {config} = await getCommonSystemValues(database);
-
-        const data = await client.getThreads('me', teamId, before, after, perPage, deleted, unread, since, false, config.Version);
+        const version = await getConfigValue(database, 'Version');
+        const data = await client.getThreads('me', teamId, before, after, perPage, deleted, unread, since, false, version);
 
         const {threads} = data;
 
@@ -308,7 +322,7 @@ async function fetchBatchThreads(
         return {error: 'currentUser not found'};
     }
 
-    const {config} = await getCommonSystemValues(operator.database);
+    const version = await getConfigValue(operator.database, 'Version');
     const data: Thread[] = [];
 
     const fetchThreadsFunc = async (opts: FetchThreadsOptions) => {
@@ -316,7 +330,7 @@ async function fetchBatchThreads(
         const {before, after, perPage = General.CRT_CHUNK_SIZE, deleted, unread, since} = opts;
 
         page += 1;
-        const {threads} = await client.getThreads(currentUser.id, teamId, before, after, perPage, deleted, unread, since, false, config.Version);
+        const {threads} = await client.getThreads(currentUser.id, teamId, before, after, perPage, deleted, unread, since, false, version);
         if (threads.length) {
             // Mark all fetched threads as following
             for (const thread of threads) {

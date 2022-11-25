@@ -6,7 +6,7 @@ import {BehaviorSubject} from 'rxjs';
 
 import {CallsConfig, DefaultCallsConfig} from '@calls/types/calls';
 
-const callsConfigSubjects = {} as Dictionary<BehaviorSubject<CallsConfig>>;
+const callsConfigSubjects: Dictionary<BehaviorSubject<CallsConfig>> = {};
 
 const getCallsConfigSubject = (serverUrl: string) => {
     if (!callsConfigSubjects[serverUrl]) {

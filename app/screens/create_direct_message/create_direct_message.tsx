@@ -11,6 +11,7 @@ import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remot
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
+import UserList from '@components/user_list';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -23,7 +24,6 @@ import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} 
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
 import SelectedUsers from './selected_users';
-import UserList from './user_list';
 
 const START_BUTTON = 'start-conversation';
 const CLOSE_BUTTON = 'close-dms';
@@ -226,7 +226,7 @@ export default function CreateDirectMessage({
         } else {
             const wasSelected = selectedIds[user.id];
 
-            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM - 1) {
+            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
                 return;
             }
 
@@ -368,8 +368,8 @@ export default function CreateDirectMessage({
             {selectedCount > 0 &&
             <SelectedUsers
                 selectedIds={selectedIds}
-                warnCount={5}
-                maxCount={7}
+                warnCount={General.MAX_USERS_IN_GM - 2}
+                maxCount={General.MAX_USERS_IN_GM}
                 onRemove={handleRemoveProfile}
                 teammateNameDisplay={teammateNameDisplay}
             />

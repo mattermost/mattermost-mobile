@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 export interface ClientTosMix {
-    updateMyTermsOfServiceStatus: (termsOfServiceId: string, accepted: boolean) => Promise<any>;
-    getTermsOfService: () => Promise<any>;
+    updateMyTermsOfServiceStatus: (termsOfServiceId: string, accepted: boolean) => Promise<{status: string}>;
+    getTermsOfService: () => Promise<TermsOfService>;
 }
 
 const ClientTos = (superclass: any) => class extends superclass {

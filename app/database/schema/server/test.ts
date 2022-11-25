@@ -13,6 +13,7 @@ const {
     CHANNEL,
     CHANNEL_INFO,
     CHANNEL_MEMBERSHIP,
+    CONFIG,
     CUSTOM_EMOJI,
     DRAFT,
     FILE,
@@ -43,7 +44,8 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 3,
+            version: 6,
+            unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
                     name: CATEGORY,
@@ -143,6 +145,16 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'user_id', type: 'string', isIndexed: true},
                         {name: 'scheme_admin', type: 'boolean'},
+                    ],
+                },
+                [CONFIG]: {
+                    name: CONFIG,
+                    unsafeSql: undefined,
+                    columns: {
+                        value: {name: 'value', type: 'string'},
+                    },
+                    columnArray: [
+                        {name: 'value', type: 'string'},
                     ],
                 },
                 [CUSTOM_EMOJI]: {
@@ -463,6 +475,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         name: {name: 'name', type: 'string'},
                         type: {name: 'type', type: 'string'},
                         update_at: {name: 'update_at', type: 'number'},
+                        invite_id: {name: 'invite_id', type: 'string'},
                     },
                     columnArray: [
                         {name: 'allowed_domains', type: 'string'},
@@ -474,6 +487,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'name', type: 'string'},
                         {name: 'type', type: 'string'},
                         {name: 'update_at', type: 'number'},
+                        {name: 'invite_id', type: 'string'},
                     ],
                 },
                 [TEAM_CHANNEL_HISTORY]: {
@@ -589,6 +603,9 @@ describe('*** Test schema for SERVER database ***', () => {
                         timezone: {name: 'timezone', type: 'string'},
                         update_at: {name: 'update_at', type: 'number'},
                         username: {name: 'username', type: 'string'},
+                        terms_of_service_create_at: {name: 'terms_of_service_create_at', type: 'number'},
+                        terms_of_service_id: {name: 'terms_of_service_id', type: 'string'},
+
                     },
                     columnArray: [
                         {name: 'auth_service', type: 'string'},
@@ -610,6 +627,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'timezone', type: 'string'},
                         {name: 'update_at', type: 'number'},
                         {name: 'username', type: 'string'},
+                        {name: 'terms_of_service_id', type: 'string'},
+                        {name: 'terms_of_service_create_at', type: 'number'},
                     ],
                 },
             },

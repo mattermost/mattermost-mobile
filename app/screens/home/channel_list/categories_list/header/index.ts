@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {observePermissionForTeam} from '@queries/servers/role';
-import {observePushVerificationStatus} from '@queries/servers/system';
+import {observeConfigBooleanValue, observePushVerificationStatus} from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeCurrentUser} from '@queries/servers/user';
 
@@ -20,6 +20,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const team = observeCurrentTeam(database);
 
     const currentUser = observeCurrentUser(database);
+
+    const enableOpenServer = observeConfigBooleanValue(database, 'EnableOpenServer');
 
     const canJoinChannels = combineLatest([currentUser, team]).pipe(
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.JOIN_PUBLIC_CHANNELS, true)),
@@ -37,11 +39,21 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap(([open, priv]) => of$(open || priv)),
     );
 
+    const canAddUserToTeam = combineLatest([currentUser, team]).pipe(
+        switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.ADD_USER_TO_TEAM, false)),
+    );
+
     return {
         canCreateChannels,
         canJoinChannels,
+        canInvitePeople: combineLatest([enableOpenServer, canAddUserToTeam]).pipe(
+            switchMap(([openServer, addUser]) => of$(openServer && addUser)),
+        ),
         displayName: team.pipe(
             switchMap((t) => of$(t?.displayName)),
+        ),
+        inviteId: team.pipe(
+            switchMap((t) => of$(t?.inviteId)),
         ),
         pushProxyStatus: observePushVerificationStatus(database),
     };

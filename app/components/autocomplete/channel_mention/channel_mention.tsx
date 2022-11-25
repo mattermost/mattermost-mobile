@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {debounce} from 'lodash';
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 
 import {searchChannels} from '@actions/remote/channel';
@@ -11,11 +11,8 @@ import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
 import {General} from '@constants';
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
-import DatabaseManager from '@database/manager';
 import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
-import {queryAllChannelsForTeam} from '@queries/servers/channel';
-import {getCurrentTeamId} from '@queries/servers/system';
 import {hasTrailingSpaces} from '@utils/helpers';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -24,32 +21,6 @@ import type MyChannelModel from '@typings/database/models/servers/my_channel';
 const keyExtractor = (item: Channel) => {
     return item.id;
 };
-
-const getMatchTermForChannelMention = (() => {
-    let lastMatchTerm: string | null = null;
-    let lastValue: string;
-    let lastIsSearch: boolean;
-    return (value: string, isSearch: boolean) => {
-        if (value !== lastValue || isSearch !== lastIsSearch) {
-            const regex = isSearch ? CHANNEL_MENTION_SEARCH_REGEX : CHANNEL_MENTION_REGEX;
-            const match = value.match(regex);
-            lastValue = value;
-            lastIsSearch = isSearch;
-            if (match) {
-                if (isSearch) {
-                    lastMatchTerm = match[1].toLowerCase();
-                } else if (match.index && match.index > 0 && value[match.index - 1] === '~') {
-                    lastMatchTerm = null;
-                } else {
-                    lastMatchTerm = match[2].toLowerCase();
-                }
-            } else {
-                lastMatchTerm = null;
-            }
-        }
-        return lastMatchTerm;
-    };
-})();
 
 const reduceChannelsForSearch = (channels: Array<Channel | ChannelModel>, members: MyChannelModel[]) => {
     const memberIds = new Set(members.map((m) => m.id));
@@ -83,7 +54,7 @@ const reduceChannelsForAutocomplete = (channels: Array<Channel | ChannelModel>, 
     }, [[], []]);
 };
 
-const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChannelModel[], isSearch = false) => {
+const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChannelModel[], loading: boolean, isSearch = false) => {
     const newSections = [];
     if (isSearch) {
         const [publicChannels, privateChannels, directAndGroupMessages] = reduceChannelsForSearch(channels, myMembers);
@@ -128,7 +99,7 @@ const makeSections = (channels: Array<Channel | ChannelModel>, myMembers: MyChan
             });
         }
 
-        if (otherChannels.length) {
+        if (otherChannels.length || (!myChannels.length && loading)) {
             newSections.push({
                 id: t('suggestion.mention.morechannels'),
                 defaultMessage: 'Other Channels',
@@ -164,17 +135,10 @@ type Props = {
     value: string;
     nestedScrollEnabled: boolean;
     listStyle: StyleProp<ViewStyle>;
+    matchTerm: string;
+    localChannels: ChannelModel[];
+    teamId: string;
 }
-
-const getAllChannels = async (serverUrl: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return [];
-    }
-
-    const teamId = await getCurrentTeamId(database);
-    return queryAllChannelsForTeam(database, teamId).fetch();
-};
 
 const emptySections: Array<SectionListData<Channel>> = [];
 const emptyChannels: Array<Channel | ChannelModel> = [];
@@ -188,47 +152,45 @@ const ChannelMention = ({
     value,
     nestedScrollEnabled,
     listStyle,
+    matchTerm,
+    localChannels,
+    teamId,
 }: Props) => {
     const serverUrl = useServerUrl();
 
     const [sections, setSections] = useState<Array<SectionListData<(Channel | ChannelModel)>>>(emptySections);
-    const [channels, setChannels] = useState<Array<ChannelModel | Channel>>(emptyChannels);
+    const [remoteChannels, setRemoteChannels] = useState<Array<ChannelModel | Channel>>(emptyChannels);
     const [loading, setLoading] = useState(false);
     const [noResultsTerm, setNoResultsTerm] = useState<string|null>(null);
     const [localCursorPosition, setLocalCursorPosition] = useState(cursorPosition); // To avoid errors due to delay between value changes and cursor position changes.
-    const [useLocal, setUseLocal] = useState(true);
-    const [localChannels, setlocalChannels] = useState<ChannelModel[]>();
-    const [filteredLocalChannels, setFilteredLocalChannels] = useState(emptyChannels);
 
-    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string) => {
-        setLoading(true);
-        const {channels: receivedChannels, error} = await searchChannels(sUrl, term, isSearch);
-        setUseLocal(Boolean(error));
+    const latestSearchAt = useRef(0);
 
-        if (error) {
-            let fallbackChannels = localChannels;
-            if (!fallbackChannels) {
-                fallbackChannels = await getAllChannels(sUrl);
-                setlocalChannels(fallbackChannels);
-            }
-            const filteredChannels = filterResults(fallbackChannels, term);
-            setFilteredLocalChannels(filteredChannels.length ? filteredChannels : emptyChannels);
-        } else if (receivedChannels) {
-            let channelsToStore: Array<Channel | ChannelModel> = receivedChannels;
-            if (hasTrailingSpaces(term)) {
-                channelsToStore = filterResults(receivedChannels, term);
-            }
-            setChannels(channelsToStore.length ? channelsToStore : emptyChannels);
+    const runSearch = useMemo(() => debounce(async (sUrl: string, term: string, tId: string) => {
+        const searchAt = Date.now();
+        latestSearchAt.current = searchAt;
+
+        const {channels: receivedChannels} = await searchChannels(sUrl, term, tId, isSearch);
+
+        if (latestSearchAt.current > searchAt) {
+            return;
         }
+        let channelsToStore: Array<Channel | ChannelModel> = receivedChannels || [];
+        if (hasTrailingSpaces(term)) {
+            channelsToStore = filterResults(receivedChannels || [], term);
+        }
+        setRemoteChannels(channelsToStore.length ? channelsToStore : emptyChannels);
+
         setLoading(false);
     }, 200), []);
 
-    const matchTerm = getMatchTermForChannelMention(value.substring(0, localCursorPosition), isSearch);
     const resetState = () => {
-        setFilteredLocalChannels(emptyChannels);
-        setChannels(emptyChannels);
+        latestSearchAt.current = Date.now();
+        setRemoteChannels(emptyChannels);
         setSections(emptySections);
+        setNoResultsTerm(null);
         runSearch.cancel();
+        setLoading(false);
     };
 
     const completeMention = useCallback((mention: string) => {
@@ -264,8 +226,11 @@ const ChannelMention = ({
         }
 
         onShowingChange(false);
+        setLoading(false);
         setNoResultsTerm(mention);
         setSections(emptySections);
+        setRemoteChannels(emptyChannels);
+        latestSearchAt.current = Date.now();
     }, [value, localCursorPosition, isSearch]);
 
     const renderItem = useCallback(({item}: SectionListRenderItemInfo<Channel | ChannelModel>) => {
@@ -306,21 +271,41 @@ const ChannelMention = ({
         }
 
         setNoResultsTerm(null);
-        runSearch(serverUrl, matchTerm);
-    }, [matchTerm]);
+        setLoading(true);
+        runSearch(serverUrl, matchTerm, teamId);
+    }, [matchTerm, teamId]);
+
+    const channels = useMemo(() => {
+        const ids = new Set(localChannels.map((c) => c.id));
+        return [...localChannels, ...remoteChannels.filter((c) => !ids.has(c.id))].sort((a, b) => {
+            const aDisplay = 'display_name' in a ? a.display_name : a.displayName;
+            const bDisplay = 'display_name' in b ? b.display_name : b.displayName;
+            const displayResult = aDisplay.localeCompare(bDisplay);
+            if (displayResult === 0) {
+                return a.name.localeCompare(b.name);
+            }
+            return displayResult;
+        });
+    }, [localChannels, remoteChannels]);
 
     useDidUpdate(() => {
-        const newSections = makeSections(useLocal ? filteredLocalChannels : channels, myMembers, isSearch);
+        if (noResultsTerm && !loading) {
+            return;
+        }
+        const newSections = makeSections(channels, myMembers, loading, isSearch);
         const nSections = newSections.length;
 
         if (!loading && !nSections && noResultsTerm == null) {
             setNoResultsTerm(matchTerm);
         }
+        if (nSections) {
+            setNoResultsTerm(null);
+        }
         setSections(newSections.length ? newSections : emptySections);
         onShowingChange(Boolean(nSections));
     }, [channels, myMembers, loading]);
 
-    if (sections.length === 0 || noResultsTerm != null) {
+    if (!loading && (sections.length === 0 || noResultsTerm != null)) {
         // If we are not in an active state or the mention has been completed return null so nothing is rendered
         // other components are not blocked.
         return null;

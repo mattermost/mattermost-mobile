@@ -194,6 +194,11 @@ export type HandleSystemArgs = PrepareOnly & {
     systems?: IdValue[];
 }
 
+export type HandleConfigArgs = PrepareOnly & {
+  configs: IdValue[];
+  configsToDelete: IdValue[];
+}
+
 export type HandleMyChannelArgs = PrepareOnly & {
   channels?: Channel[];
   myChannels?: ChannelMembership[];

@@ -31,23 +31,25 @@ class ServerService: ObservableObject {
   
   private func updateServerSettings(_ server: ServerModel?) -> ServerModel? {
     if var s = server {
-      if let config = Gekidou.Database.default.getConfig(s.url) {
+      let fileSize = Gekidou.Database.default.getConfig(s.url, "MaxFileSize")
+      let postSize = Gekidou.Database.default.getConfig(s.url, "MaxPostSize")
+      let mobileFileUpload = Gekidou.Database.default.getConfig(s.url, "EnableMobileFileUpload")
+
         let hasChannels = Gekidou.Database.default.serverHasChannels(s.url)
         
         var maxFileSize: Int64? = nil
-        if let fileSize = config["MaxFileSize"] as? String {
-          maxFileSize = Int64(fileSize)
+        if let value = fileSize {
+          maxFileSize = Int64(value)
         }
         
         var maxPostSize: Int64? = nil
-        if let length = config["MaxPostSize"] as? String {
-          maxPostSize = Int64(length)
+        if let value = postSize {
+          maxPostSize = Int64(value)
         }
         
-        let uploadsEnabled = config["EnableMobileFileUpload"] as? String == "true"
+        let uploadsEnabled = mobileFileUpload == "true"
         s.updateSettings(hasChannels, maxPostSize, maxFileSize, uploadsEnabled)
         return s
-      }
     }
     return nil
   }

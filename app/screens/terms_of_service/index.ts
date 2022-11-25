@@ -4,17 +4,16 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {queryJoinedTeams} from '@queries/servers/team';
+import {observeConfigValue} from '@queries/servers/system';
 
-import TeamPickerIcon from './team_picker_icon';
+import TermsOfService from './terms_of_service';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const teams = queryJoinedTeams(database).observe();
     return {
-        teams,
+        siteName: observeConfigValue(database, 'SiteName'),
     };
 });
 
-export default withDatabase(enhanced(TeamPickerIcon));
+export default withDatabase(enhanced(TermsOfService));

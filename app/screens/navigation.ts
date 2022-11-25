@@ -77,7 +77,7 @@ export const loginAnimationOptions = () => {
     };
 };
 
-export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) => {
+export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string): Options => {
     if (closeButtonId) {
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
         const closeButtonTestId = `${closeButtonId.replace('close-', 'close.').replace(/-/g, '_')}.button`;
@@ -180,6 +180,11 @@ function isScreenRegistered(screen: string) {
     }
 
     return true;
+}
+
+export function openToS() {
+    NavigationStore.setToSOpen(true);
+    return showOverlay(Screens.TERMS_OF_SERVICE, {}, {overlay: {interceptTouchOutside: true}});
 }
 
 export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
@@ -403,7 +408,7 @@ export async function dismissAllModalsAndPopToRoot() {
  * (if the screen is not in the stack, it will push a new one)
  * @param screenId Screen to pop or display
  * @param title Title to be shown in the top bar
- * @param passProps Props to pass to the screen (Only if the screen does not exist in the stack)
+ * @param passProps Props to pass to the screen
  * @param options Navigation options
  */
 export async function dismissAllModalsAndPopToScreen(screenId: string, title: string, passProps = {}, options = {}) {
@@ -421,6 +426,9 @@ export async function dismissAllModalsAndPopToScreen(screenId: string, title: st
         }
         try {
             await Navigation.popTo(screenId, mergeOptions);
+            if (Object.keys(passProps).length > 0) {
+                await Navigation.updateProps(screenId, passProps);
+            }
         } catch {
             // catch in case there is nothing to pop
         }
@@ -429,7 +437,7 @@ export async function dismissAllModalsAndPopToScreen(screenId: string, title: st
     }
 }
 
-export function showModal(name: string, title: string, passProps = {}, options = {}) {
+export function showModal(name: string, title: string, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return;
     }
@@ -482,7 +490,7 @@ export function showModal(name: string, title: string, passProps = {}, options =
     });
 }
 
-export function showModalOverCurrentContext(name: string, passProps = {}, options = {}) {
+export function showModalOverCurrentContext(name: string, passProps = {}, options: Options = {}) {
     const title = '';
     let animations;
     switch (Platform.OS) {
@@ -596,7 +604,7 @@ export function setButtons(componentId: string, buttons: NavButtons = {leftButto
     mergeNavigationOptions(componentId, options);
 }
 
-export function showOverlay(name: string, passProps = {}, options = {}) {
+export function showOverlay(name: string, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return;
     }
@@ -686,9 +694,25 @@ export async function openAsBottomSheet({closeButtonId, screen, theme, title, pr
     }
 }
 
-export const showAppForm = async (form: AppForm, call: AppCallRequest) => {
-    const passProps = {form, call};
+export const showAppForm = async (form: AppForm) => {
+    const passProps = {form};
     showModal(Screens.APPS_FORM, form.title || '', passProps);
+};
+
+export const showReviewOverlay = (hasAskedBefore: boolean) => {
+    showOverlay(
+        Screens.REVIEW_APP,
+        {hasAskedBefore},
+        {overlay: {interceptTouchOutside: true}},
+    );
+};
+
+export const showShareFeedbackOverlay = () => {
+    showOverlay(
+        Screens.SHARE_FEEDBACK,
+        {},
+        {overlay: {interceptTouchOutside: true}},
+    );
 };
 
 export async function findChannels(title: string, theme: Theme) {

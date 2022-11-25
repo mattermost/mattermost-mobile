@@ -34,13 +34,12 @@ const enhanced = withObservables([], ({serverUrl, channelId, database}: EnhanceP
         switchMap((calls) => of$(Boolean(calls[channelId]))),
         distinctUntilChanged(),
     );
-    const currentCall = observeCurrentCall();
-    const ccDatabase = currentCall.pipe(
+    const ccDatabase = observeCurrentCall().pipe(
         switchMap((call) => of$(call?.serverUrl || '')),
         distinctUntilChanged(),
         switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
     );
-    const ccChannelId = currentCall.pipe(
+    const ccChannelId = observeCurrentCall().pipe(
         switchMap((call) => of$(call?.channelId)),
         distinctUntilChanged(),
     );
@@ -58,7 +57,6 @@ const enhanced = withObservables([], ({serverUrl, channelId, database}: EnhanceP
         isACallInCurrentChannel,
         confirmToJoin,
         alreadyInCall,
-        currentCall,
         currentCallChannelName,
         limitRestrictedInfo: observeIsCallLimitRestricted(serverUrl, channelId),
     };

@@ -42,7 +42,7 @@ export type SearchProps = TextInputProps & {
     showLoading?: boolean;
 };
 
-type SearchRef = {
+export type SearchRef = {
     blur: () => void;
     cancel: () => void;
     clear: () => void;
@@ -151,7 +151,6 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
         focus: () => {
             searchRef.current?.focus();
         },
-
     }), [searchRef]);
 
     return (
