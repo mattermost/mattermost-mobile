@@ -135,12 +135,14 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
-    const onboardingViewed = LocalConfig.ShowOnboarding ? await getOnboardingViewed() : false;
+    const onboardingViewed = LocalConfig.ShowOnboarding && await getOnboardingViewed();
 
-    if (onboardingViewed) {
-        return launchToServer(props, resetNavigation);
+    // if the config value is set and the onboarding has not been seeing yet, show the onboarding
+    if (LocalConfig.ShowOnboarding && !onboardingViewed) {
+        return resetToOnboarding(props);
     }
-    return resetToOnboarding(props);
+
+    return launchToServer(props, resetNavigation);
 };
 
 const launchToHome = async (props: LaunchProps) => {

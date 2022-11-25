@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect} from 'react';
-import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, StyleSheet, Platform} from 'react-native';
+import {View, ListRenderItemInfo, useWindowDimensions, SafeAreaView, ScrollView, StyleSheet, Platform, NativeSyntheticEvent, NativeScrollEvent} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedRef, useAnimatedScrollHandler, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -60,7 +60,7 @@ const Onboarding = ({
             x: (slideIndexToMove * width),
             animated: true,
         });
-    }, [currentIndex.value]);
+    }, []);
 
     const nextSlide = useCallback(() => {
         const nextSlideIndex = currentIndex.value + 1;
@@ -91,11 +91,9 @@ const Onboarding = ({
         );
     }, [theme]);
 
-    const scrollHandler = useAnimatedScrollHandler({
-        onScroll: (event) => {
-            scrollX.value = event.contentOffset.x;
-        },
-    });
+    const scrollHandler = (event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        scrollX.value = event.nativeEvent.contentOffset.x;
+    };
 
     useEffect(() => {
         const listener = {
@@ -128,7 +126,7 @@ const Onboarding = ({
                 style={[styles.scrollContainer, transform]}
                 key={'onboarding_content'}
             >
-                <Animated.ScrollView
+                <ScrollView
                     scrollEventThrottle={16}
                     horizontal={true}
                     showsHorizontalScrollIndicator={false}
@@ -140,7 +138,7 @@ const Onboarding = ({
                     {slidesData.map((item, index) => {
                         return renderSlide({item, index} as ListRenderItemInfo<OnboardingItem>);
                     })}
-                </Animated.ScrollView>
+                </ScrollView>
                 <Paginator
                     dataLength={slidesData.length}
                     theme={theme}
