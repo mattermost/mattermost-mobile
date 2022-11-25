@@ -35,6 +35,7 @@ import type {
     ApiResp,
     Call,
     CallParticipant,
+    CallReactionEmoji,
     CallsConnection,
     ServerCallState,
     ServerChannelState,
@@ -288,6 +289,12 @@ export const raiseHand = () => {
 export const unraiseHand = () => {
     if (connection) {
         connection.unraiseHand();
+    }
+};
+
+export const sendReaction = (emoji: CallReactionEmoji) => {
+    if (connection) {
+        connection.sendReaction(emoji);
     }
 };
 
