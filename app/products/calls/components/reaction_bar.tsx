@@ -47,6 +47,8 @@ const styles = StyleSheet.create({
     },
 });
 
+const predefinedReactions = [['+1', '1F44D'], ['clap', '1F44F'], ['joy', '1F602'], ['heart', '2764-FE0F']];
+
 interface Props {
     raisedHand: number;
 }
@@ -88,7 +90,7 @@ const ReactionBar = ({raisedHand}: Props) => {
                 {raisedHand ? LowerHandText : RaiseHandText}
             </Pressable>
             {
-                [['+1', '1F44D'], ['clap', '1F44F'], ['joy', '1F602'], ['heart', '2764-FE0F']].map(([name, unified]) => (
+                predefinedReactions.map(([name, unified]) => (
                     <EmojiButton
                         key={name}
                         emojiName={name}
