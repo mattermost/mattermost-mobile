@@ -380,6 +380,7 @@
     "user.settings.general.field_handled_externally": "Some fields below are handled through your login provider. If you want to change them, you’ll need to do so through your login provider.",
     "user.edit_profile.email.web_client": "Email must be updated using a web client or desktop application.",
     "user.edit_profile.email.auth_service": "Login occurs through {service} and the email cannot be updated. The email address used for notifications is {email}.",
+    "user.edit_profile.profile_photo.change_photo": "Change profile photo",
     "user_profile.custom_status": "Custom Status",
     "unreads.empty.title": "No more unreads",
     "unreads.empty.show_all": "Show all",

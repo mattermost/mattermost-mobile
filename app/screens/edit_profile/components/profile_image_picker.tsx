@@ -8,8 +8,10 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Client} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
+import {typography} from '@app/utils/typography';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
 import PanelItem from '@screens/edit_profile/components/panel_item';
 import {bottomSheet} from '@screens/navigation';
@@ -19,9 +21,10 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
+import FormattedText from '@app/components/formatted_text';
 
 const hitSlop = {top: 100, bottom: 20, right: 20, left: 100};
-const ACTION_HEIGHT = 55;
+const ACTION_HEIGHT = 50;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -38,6 +41,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             right: 0,
             backgroundColor: theme.centerChannelBg,
         },
+        title: {
+            ...typography('Heading', 600, 'SemiBold'),
+            color: theme.centerChannelColor,
+            marginBottom: 8,
+        }
     };
 });
 
@@ -77,11 +85,19 @@ const ProfileImagePicker = ({
     const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles, intl]);
     const canRemovePicture = hasPictureUrl(user, serverUrl);
     const styles = getStyleSheet(theme);
+    const isTablet = useIsTablet();
 
     const showFileAttachmentOptions = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
             return (
                 <>
+                    {!isTablet &&
+                        <FormattedText 
+                            id='user.edit_profile.profile_photo.change_photo'
+                            defaultMessage='Change profile photo'
+                            style={styles.title}
+                        />
+                    }
                     <PanelItem
                         pickerAction='takePhoto'
                         pictureUtils={pictureUtils}
@@ -112,7 +128,7 @@ const ProfileImagePicker = ({
             closeButtonId: 'close-edit-profile',
             renderContent,
             snapPoints: [snapPoint, 10],
-            title: '',
+            title: 'Change profile photo',
             theme,
         });
     }), [canRemovePicture, onRemoveProfileImage, insets, pictureUtils, theme]);

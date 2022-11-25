@@ -869,6 +869,7 @@
   "user_profile.custom_status": "Custom Status",
   "user.edit_profile.email.auth_service": "Login occurs through {service}. Email cannot be updated. Email address used for notifications is {email}.",
   "user.edit_profile.email.web_client": "Email must be updated using a web client or desktop application.",
+  "user.edit_profile.profile_photo.change_photo": "Change profile photo",
   "user.settings.general.email": "Email",
   "user.settings.general.field_handled_externally": "Some fields below are handled through your login provider. If you want to change them, you’ll need to do so through your login provider.",
   "user.settings.general.firstName": "First Name",

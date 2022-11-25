@@ -21,6 +21,8 @@ type Props = {
 const style = StyleSheet.create({
     container: {
         marginBottom: 8,
+        marginHorizontal: -18,
+        flexDirection: 'row',
     },
 });
 
