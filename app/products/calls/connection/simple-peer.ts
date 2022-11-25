@@ -21,6 +21,8 @@ import {
 } from 'react-native-webrtc';
 import stream from 'readable-stream';
 
+import {toMilliseconds} from '@utils/datetime';
+
 import type {ICEServersConfigs} from '@calls/types/calls';
 
 const queueMicrotask = (callback: any) => {
@@ -55,8 +57,8 @@ function generateId(): string {
 }
 
 const MAX_BUFFERED_AMOUNT = 64 * 1024;
-const ICECOMPLETE_TIMEOUT = 5 * 1000;
-const CHANNEL_CLOSING_TIMEOUT = 5 * 1000;
+const ICECOMPLETE_TIMEOUT = toMilliseconds({seconds: 5});
+const CHANNEL_CLOSING_TIMEOUT = toMilliseconds({seconds: 5});
 
 /**
  * WebRTC peer connection. Same API as node core `net.Socket`, plus a few extra methods.

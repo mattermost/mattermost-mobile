@@ -28,6 +28,7 @@ import {
 } from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
+import EmojiList from '@calls/components/emoji_list';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
@@ -439,6 +440,7 @@ const CallScreen = ({
                                     muted={user.muted}
                                     sharingScreen={user.id === currentCall.screenOn}
                                     raisedHand={Boolean(user.raisedHand)}
+                                    reaction={user.reaction?.emoji}
                                     size={currentCall.screenOn ? 'm' : 'l'}
                                     serverUrl={currentCall.serverUrl}
                                 />
@@ -504,6 +506,7 @@ const CallScreen = ({
                 {usersList}
                 {screenShareView}
                 {micPermissionsError && <PermissionErrorBar/>}
+                <EmojiList reactionStream={currentCall.reactionStream}/>
                 <View
                     style={[style.buttons, isLandscape && style.buttonsLandscape, !showControls && style.buttonsLandscapeNoControls]}
                 >

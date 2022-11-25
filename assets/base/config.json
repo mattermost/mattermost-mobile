@@ -4,7 +4,6 @@
     "TestServerUrl": "http://localhost:8065",
     "DefaultTheme": "default",
     "ShowErrorsList": false,
-    "MinServerVersion": "5.25.0",
     "EELearnURL": "about.mattermost.com",
     "TeamEditionLearnURL": "mattermost.org",
     "AboutTeamURL": "http://www.mattermost.org/",
@@ -37,5 +36,6 @@
     "ShowSentryDebugOptions": false,
 
     "CustomRequestHeaders": {},
+    "ShowReview": false,
     "ShowOnboarding": false
 }

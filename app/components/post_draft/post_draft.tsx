@@ -34,6 +34,7 @@ type Props = {
     keyboardTracker: RefObject<KeyboardTrackingViewRef>;
     containerHeight: number;
     isChannelScreen: boolean;
+    canShowPostPriority?: boolean;
 }
 
 const {KEYBOARD_TRACKING_OFFSET} = ViewConstants;
@@ -54,6 +55,7 @@ function PostDraft({
     keyboardTracker,
     containerHeight,
     isChannelScreen,
+    canShowPostPriority,
 }: Props) {
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
@@ -109,6 +111,7 @@ function PostDraft({
             cursorPosition={cursorPosition}
             files={files}
             rootId={rootId}
+            canShowPostPriority={canShowPostPriority}
             updateCursorPosition={setCursorPosition}
             updatePostInputTop={setPostInputTop}
             updateValue={setValue}

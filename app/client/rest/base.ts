@@ -205,12 +205,16 @@ export default class ClientBase {
         return `${this.urlVersion}/plugins`;
     }
 
+    getPluginRoute(id: string) {
+        return `/plugins/${id}`;
+    }
+
     getAppsProxyRoute() {
-        return '/plugins/com.mattermost.apps';
+        return this.getPluginRoute('com.mattermost.apps');
     }
 
     getCallsRoute() {
-        return `/plugins/${Calls.PluginId}`;
+        return this.getPluginRoute(Calls.PluginId);
     }
 
     doFetch = async (url: string, options: ClientOptions, returnDataOnly = true) => {

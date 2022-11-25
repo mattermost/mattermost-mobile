@@ -1,0 +1,84 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/integration_selector/custom_list_row should match snapshot 1`] = `
+<View
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "alignItems": "center",
+      "flex": 1,
+      "flexDirection": "row",
+      "height": 65,
+      "opacity": 1,
+    }
+  }
+>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "height": 50,
+        "justifyContent": "center",
+        "paddingRight": 10,
+      }
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "borderColor": "rgba(61, 60, 64, 0.32)",
+            "borderRadius": 14,
+            "borderWidth": 1,
+            "height": 28,
+            "justifyContent": "center",
+            "width": 28,
+          },
+          {
+            "backgroundColor": "#166DE0",
+            "borderWidth": 0,
+          },
+          false,
+        ]
+      }
+      testID="1"
+    >
+      <Icon
+        color="#fff"
+        name="check"
+        size={24}
+      />
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "flex": 1,
+        "flexDirection": "row",
+      }
+    }
+    testID="1"
+  >
+    <View>
+      <View>
+        <Icon
+          name="globe"
+        />
+        <Text>
+          My channel
+        </Text>
+      </View>
+    </View>
+  </View>
+</View>
+`;

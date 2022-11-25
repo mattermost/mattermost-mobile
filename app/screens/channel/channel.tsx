@@ -166,6 +166,7 @@ const Channel = ({
                         testID='channel.post_draft'
                         containerHeight={containerHeight}
                         isChannelScreen={true}
+                        canShowPostPriority={true}
                     />
                 </>
                 }
