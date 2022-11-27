@@ -28,7 +28,6 @@ type ChannelProps = {
     serverUrl: string;
     channelId: string;
     componentId?: string;
-    isCallsPluginEnabled: boolean;
     isCallInCurrentChannel: boolean;
     isInACall: boolean;
     isInCurrentChannelCall: boolean;
@@ -47,7 +46,6 @@ const Channel = ({
     serverUrl,
     channelId,
     componentId,
-    isCallsPluginEnabled,
     isCallInCurrentChannel,
     isInACall,
     isInCurrentChannelCall,
@@ -94,7 +92,7 @@ const Channel = ({
         return () => back?.remove();
     }, [componentId, isTablet]);
 
-    const marginTop = defaultHeight + (isTablet ? insets.top : 0);
+    const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
     useEffect(() => {
         // This is done so that the header renders
         // and the screen does not look totally blank
@@ -120,7 +118,7 @@ const Channel = ({
 
     let callsComponents: JSX.Element | null = null;
     const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
-    if (isCallsPluginEnabled && (showJoinCallBanner || isInACall)) {
+    if (showJoinCallBanner || isInACall) {
         callsComponents = (
             <FloatingCallContainer>
                 {showJoinCallBanner &&
@@ -168,6 +166,7 @@ const Channel = ({
                         testID='channel.post_draft'
                         containerHeight={containerHeight}
                         isChannelScreen={true}
+                        canShowPostPriority={true}
                     />
                 </>
                 }

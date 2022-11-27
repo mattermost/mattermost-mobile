@@ -7,9 +7,9 @@ import {IntlShape} from 'react-intl';
 import {doAppFetchForm, doAppLookup} from '@actions/remote/apps';
 import {fetchChannelById, fetchChannelByName, searchChannels} from '@actions/remote/channel';
 import {fetchUsersByIds, fetchUsersByUsernames, searchUsers} from '@actions/remote/user';
-import {AppCallResponseTypes, AppFieldTypes, COMMAND_SUGGESTION_ERROR} from '@constants/apps';
+import {AppBindingLocations, AppCallResponseTypes, AppFieldTypes, COMMAND_SUGGESTION_ERROR} from '@constants/apps';
 import DatabaseManager from '@database/manager';
-import IntegrationsManager from '@managers/integrations_manager';
+import AppsManager from '@managers/apps_manager';
 import {getChannelById, getChannelByName} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getUserById, queryUsersByUsername} from '@queries/servers/user';
@@ -173,7 +173,7 @@ export class ParsedCommand {
                 }
 
                 case ParseState.EndCommand: {
-                    const binding = bindings.find(this.findBindings);
+                    const binding = bindings.find(this.findBindings, this);
                     if (!binding) {
                     // gone as far as we could, this token doesn't match a sub-command.
                     // return the state from the last matching binding
@@ -856,15 +856,13 @@ export class AppCommandParser {
     private teamID: string;
     private rootPostID?: string;
     private intl: IntlShape;
-    private theme: Theme;
 
-    constructor(serverUrl: string, intl: IntlShape, channelID: string, teamID = '', rootPostID = '', theme: Theme) {
+    constructor(serverUrl: string, intl: IntlShape, channelID: string, teamID = '', rootPostID = '') {
         this.serverUrl = serverUrl;
         this.channelID = channelID;
         this.rootPostID = rootPostID;
         this.teamID = teamID;
         this.intl = intl;
-        this.theme = theme;
 
         // We are making the assumption the database is always present at this level.
         // This assumption may not be correct. Please review.
@@ -1022,7 +1020,6 @@ export class AppCommandParser {
         const result: AutocompleteSuggestion[] = [];
 
         const bindings = this.getCommandBindings();
-
         for (const binding of bindings) {
             let base = binding.label;
             if (!base) {
@@ -1435,11 +1432,8 @@ export class AppCommandParser {
     // getCommandBindings returns the commands in the redux store.
     // They are grouped by app id since each app has one base command
     private getCommandBindings = (): AppBinding[] => {
-        const manager = IntegrationsManager.getManager(this.serverUrl);
-        if (this.rootPostID) {
-            return manager.getRHSCommandBindings();
-        }
-        return manager.getCommandBindings();
+        const bindings = AppsManager.getBindings(this.serverUrl, AppBindingLocations.COMMAND, Boolean(this.rootPostID));
+        return bindings.reduce<AppBinding[]>((acc, v) => (v.bindings ? acc.concat(v.bindings) : acc), []);
     };
 
     // getChannel gets the channel in which the user is typing the command
@@ -1538,10 +1532,9 @@ export class AppCommandParser {
     };
 
     public getSubmittableForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm; error?: string} | undefined> => {
-        const manager = IntegrationsManager.getManager(this.serverUrl);
         const rootID = this.rootPostID || '';
         const key = `${this.channelID}-${rootID}-${location}`;
-        const submittableForm = this.rootPostID ? manager.getAppRHSCommandForm(key) : manager.getAppCommandForm(key);
+        const submittableForm = AppsManager.getCommandForm(this.serverUrl, key, Boolean(this.rootPostID));
         if (submittableForm) {
             return {form: submittableForm};
         }
@@ -1555,11 +1548,7 @@ export class AppCommandParser {
         const context = await this.getAppContext(binding);
         const fetched = await this.fetchSubmittableForm(binding.form.source, context);
         if (fetched?.form) {
-            if (this.rootPostID) {
-                manager.setAppRHSCommandForm(key, fetched.form);
-            } else {
-                manager.setAppCommandForm(key, fetched.form);
-            }
+            AppsManager.setCommandForm(this.serverUrl, key, fetched.form, Boolean(this.rootPostID));
         }
         return fetched;
     };
@@ -1899,7 +1888,7 @@ export class AppCommandParser {
         if (input[0] === '@') {
             input = input.substring(1);
         }
-        const res = await searchUsers(this.serverUrl, input, this.channelID);
+        const res = await searchUsers(this.serverUrl, input, this.teamID, this.channelID);
         return getUserSuggestions(res.users);
     };
 
@@ -1908,7 +1897,7 @@ export class AppCommandParser {
         if (input[0] === '~') {
             input = input.substring(1);
         }
-        const res = await searchChannels(this.serverUrl, input);
+        const res = await searchChannels(this.serverUrl, input, this.teamID);
         return getChannelSuggestions(res.channels);
     };
 

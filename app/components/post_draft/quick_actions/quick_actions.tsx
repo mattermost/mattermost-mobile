@@ -8,17 +8,23 @@ import CameraAction from './camera_quick_action';
 import FileAction from './file_quick_action';
 import ImageAction from './image_quick_action';
 import InputAction from './input_quick_action';
+import PostPriorityAction from './post_priority_action';
 
 type Props = {
     testID?: string;
     canUploadFiles: boolean;
     fileCount: number;
+    isPostPriorityEnabled: boolean;
+    canShowPostPriority?: boolean;
     maxFileCount: number;
 
     // Draft Handler
     value: string;
     updateValue: (value: string) => void;
     addFiles: (file: FileInfo[]) => void;
+    postProps: Post['props'];
+    updatePostProps: (postProps: Post['props']) => void;
+    focus: () => void;
 }
 
 const style = StyleSheet.create({
@@ -44,9 +50,14 @@ export default function QuickActions({
     canUploadFiles,
     value,
     fileCount,
+    isPostPriorityEnabled,
+    canShowPostPriority,
     maxFileCount,
     updateValue,
     addFiles,
+    postProps,
+    updatePostProps,
+    focus,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
     const slashDisabled = value.length > 0;
@@ -56,6 +67,7 @@ export default function QuickActions({
     const fileActionTestID = `${testID}.file_action`;
     const imageActionTestID = `${testID}.image_action`;
     const cameraActionTestID = `${testID}.camera_action`;
+    const postPriorityActionTestID = `${testID}.post_priority_action`;
 
     const uploadProps = {
         disabled: !canUploadFiles,
@@ -74,15 +86,15 @@ export default function QuickActions({
                 testID={atInputActionTestID}
                 disabled={atDisabled}
                 inputType='at'
-                onTextChange={updateValue}
-                value={value}
+                updateValue={updateValue}
+                focus={focus}
             />
             <InputAction
                 testID={slashInputActionTestID}
                 disabled={slashDisabled}
                 inputType='slash'
-                onTextChange={updateValue}
-                value={''} // Only enabled when value == ''
+                updateValue={updateValue}
+                focus={focus}
             />
             <FileAction
                 testID={fileActionTestID}
@@ -96,6 +108,13 @@ export default function QuickActions({
                 testID={cameraActionTestID}
                 {...uploadProps}
             />
+            {isPostPriorityEnabled && canShowPostPriority && (
+                <PostPriorityAction
+                    testID={postPriorityActionTestID}
+                    postProps={postProps}
+                    updatePostProps={updatePostProps}
+                />
+            )}
         </View>
     );
 }

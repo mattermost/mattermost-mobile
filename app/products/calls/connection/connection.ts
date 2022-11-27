@@ -21,11 +21,17 @@ import {logError, logDebug, logWarning} from '@utils/log';
 import Peer from './simple-peer';
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
-import type {CallsConnection} from '@calls/types/calls';
+import type {CallReactionEmoji, CallsConnection} from '@calls/types/calls';
 
 const peerConnectTimeout = 5000;
 
-export async function newConnection(serverUrl: string, channelID: string, closeCb: () => void, setScreenShareURL: (url: string) => void) {
+export async function newConnection(
+    serverUrl: string,
+    channelID: string,
+    closeCb: () => void,
+    setScreenShareURL: (url: string) => void,
+    hasMicPermission: boolean,
+) {
     let peer: Peer | null = null;
     let stream: MediaStream;
     let voiceTrackAdded = false;
@@ -34,27 +40,36 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
     let onCallEnd: EmitterSubscription | null = null;
     const streams: MediaStream[] = [];
 
-    try {
-        stream = await mediaDevices.getUserMedia({
-            video: false,
-            audio: true,
-        }) as MediaStream;
-        voiceTrack = stream.getAudioTracks()[0];
-        voiceTrack.enabled = false;
-        streams.push(stream);
-    } catch (err) {
-        logError('Unable to get media device:', err);
-    }
+    const initializeVoiceTrack = async () => {
+        if (voiceTrack) {
+            return;
+        }
+
+        try {
+            stream = await mediaDevices.getUserMedia({
+                video: false,
+                audio: true,
+            }) as MediaStream;
+            voiceTrack = stream.getAudioTracks()[0];
+            voiceTrack.enabled = false;
+            streams.push(stream);
+        } catch (err) {
+            logError('Unable to get media device:', err);
+        }
+    };
 
     // getClient can throw an error, which will be handled by the caller.
     const client = NetworkManager.getClient(serverUrl);
-
     const credentials = await getServerCredentials(serverUrl);
 
     const ws = new WebSocketClient(serverUrl, client.getWebSocketUrl(), credentials?.token);
 
     // Throws an error, to be caught by caller.
     await ws.initialize();
+
+    if (hasMicPermission) {
+        initializeVoiceTrack();
+    }
 
     const disconnect = () => {
         if (isClosed) {
@@ -151,6 +166,14 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         }
     };
 
+    const sendReaction = (emoji: CallReactionEmoji) => {
+        if (ws) {
+            ws.send('react', {
+                data: JSON.stringify(emoji),
+            });
+        }
+    };
+
     ws.on('error', (err: Event) => {
         logDebug('calls: ws error', err);
         if (err === wsReconnectionTimeoutErr) {
@@ -182,6 +205,7 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
 
         InCallManager.start({media: 'audio'});
         InCallManager.stopProximitySensor();
+
         peer = new Peer(null, iceConfigs);
         peer.on('signal', (data: any) => {
             if (data.type === 'offer' || data.type === 'answer') {
@@ -265,6 +289,8 @@ export async function newConnection(serverUrl: string, channelID: string, closeC
         waitForPeerConnection,
         raiseHand,
         unraiseHand,
+        sendReaction,
+        initializeVoiceTrack,
     };
 
     return connection;

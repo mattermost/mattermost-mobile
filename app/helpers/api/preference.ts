@@ -29,13 +29,13 @@ export function getPreferenceAsInt(preferences: PreferenceType[] | PreferenceMod
     return defaultValue;
 }
 
-export function getTeammateNameDisplaySetting(preferences: PreferenceType[] | PreferenceModel[], config?: ClientConfig, license?: ClientLicense) {
-    const useAdminTeammateNameDisplaySetting = license?.LockTeammateNameDisplay === 'true' && config?.LockTeammateNameDisplay === 'true';
+export function getTeammateNameDisplaySetting(preferences: PreferenceType[] | PreferenceModel[], lockTeammateNameDisplay?: string, teammateNameDisplay?: string, license?: ClientLicense) {
+    const useAdminTeammateNameDisplaySetting = license?.LockTeammateNameDisplay === 'true' && lockTeammateNameDisplay === 'true';
     const preference = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, '') as string;
     if (preference && !useAdminTeammateNameDisplaySetting) {
         return preference;
-    } else if (config?.TeammateNameDisplay) {
-        return config.TeammateNameDisplay;
+    } else if (teammateNameDisplay) {
+        return teammateNameDisplay;
     }
 
     return General.TEAMMATE_NAME_DISPLAY.SHOW_USERNAME;

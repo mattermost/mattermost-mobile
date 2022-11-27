@@ -469,13 +469,8 @@ export function observeMyChannelMentionCount(database: Database, teamId?: string
         );
 }
 
-export function queryMyChannelsByUnread(database: Database, isUnread: boolean, sortBy: 'last_viewed_at' | 'last_post_at', take: number, excludeIds?: string[]) {
-    const clause: Q.Clause[] = [Q.where('is_unread', Q.eq(isUnread))];
+export function queryMyRecentChannels(database: Database, take: number) {
     const count: Q.Clause[] = [];
-
-    if (excludeIds?.length) {
-        clause.push(Q.where('id', Q.notIn(excludeIds)));
-    }
 
     if (take > 0) {
         count.push(Q.take(take));
@@ -483,8 +478,7 @@ export function queryMyChannelsByUnread(database: Database, isUnread: boolean, s
 
     return queryAllMyChannel(database).extend(
         Q.on(CHANNEL, Q.where('delete_at', Q.eq(0))),
-        ...clause,
-        Q.sortBy(sortBy, Q.desc),
+        Q.sortBy('last_viewed_at', Q.desc),
         ...count,
     );
 }
@@ -604,4 +598,62 @@ export const observeChannelsByLastPostAt = (database: Database, myChannels: MyCh
         ${MY_CHANNEL} mc ON mc.id=c.id AND c.id IN (${idsStr}) ${exclude}
         ORDER BY CASE mc.last_post_at WHEN 0 THEN c.create_at ELSE mc.last_post_at END DESC`),
     ).observe();
+};
+
+export const queryChannelsForAutocomplete = (database: Database, matchTerm: string, isSearch: boolean, teamId: string) => {
+    const likeTerm = `%${Q.sanitizeLikeString(matchTerm)}%`;
+    const clauses: Q.Clause[] = [];
+    if (isSearch) {
+        clauses.push(
+            Q.experimentalJoinTables([CHANNEL_MEMBERSHIP]),
+            Q.experimentalNestedJoin(CHANNEL_MEMBERSHIP, USER),
+        );
+    }
+    const orConditions: Q.Condition[] = [
+        Q.where('display_name', Q.like(matchTerm)),
+        Q.where('name', Q.like(likeTerm)),
+    ];
+
+    if (isSearch) {
+        orConditions.push(
+            Q.and(
+                Q.where('type', Q.oneOf([General.DM_CHANNEL, General.GM_CHANNEL])),
+                Q.on(CHANNEL_MEMBERSHIP, Q.on(USER,
+                    Q.or(
+                        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                        // @ts-ignore: condition type error
+                        Q.unsafeSqlExpr(`first_name || ' ' || last_name LIKE '${likeTerm}'`),
+                        Q.where('nickname', Q.like(likeTerm)),
+                        Q.where('email', Q.like(likeTerm)),
+                        Q.where('username', Q.like(likeTerm)),
+                    ),
+                )),
+            ),
+        );
+    }
+
+    const teamsToSearch = [teamId];
+    if (isSearch) {
+        teamsToSearch.push('');
+    }
+
+    const andConditions: Q.Condition[] = [
+        Q.where('team_id', Q.oneOf(teamsToSearch)),
+    ];
+    if (!isSearch) {
+        andConditions.push(
+            Q.where('type', Q.oneOf([General.OPEN_CHANNEL, General.PRIVATE_CHANNEL])),
+            Q.where('delete_at', 0),
+        );
+    }
+
+    clauses.push(
+        ...andConditions,
+        Q.or(...orConditions),
+        Q.sortBy('display_name', Q.asc),
+        Q.sortBy('name', Q.asc),
+        Q.take(25),
+    );
+
+    return database.get<ChannelModel>(CHANNEL).query(...clauses);
 };

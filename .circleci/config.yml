@@ -28,7 +28,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     macos:
-      xcode: "14.0.1"
+      xcode: "14.0.0"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
     resource_class: <<parameters.resource_class>>
@@ -111,7 +111,9 @@ commands:
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
       - run:
           name: Getting JavaScript dependencies
-          command: NODE_ENV=development npm ci --ignore-scripts
+          command: |
+            NODE_ENV=development npm ci --ignore-scripts
+            node node_modules/\@sentry/cli/scripts/install.js
       - save_cache:
           name: Save npm cache
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}

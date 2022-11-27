@@ -5,6 +5,7 @@ import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {doAppFetchForm, doAppLookup, doAppSubmit, postEphemeralCallResponseForContext} from '@actions/remote/apps';
+import {handleGotoLocation} from '@actions/remote/command';
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {createCallRequest, makeCallErrorResponse} from '@utils/apps';
@@ -77,6 +78,9 @@ function AppsFormContainer({
                 setCurrentForm(callResp.form);
                 break;
             case AppCallResponseTypes.NAVIGATE:
+                if (callResp.navigate_to_url) {
+                    handleGotoLocation(serverUrl, intl, callResp.navigate_to_url);
+                }
                 break;
             default:
                 return {error: makeCallErrorResponse(makeErrorMsg(intl.formatMessage(

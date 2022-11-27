@@ -20,10 +20,6 @@ type EnhanceProps = WithDatabaseArgs & {
 
 const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
     const channelId = observeCurrentChannelId(database);
-    const isCallsPluginEnabled = observeCallsConfig(serverUrl).pipe(
-        switchMap((config) => of$(config.pluginEnabled)),
-        distinctUntilChanged(),
-    );
     const isCallInCurrentChannel = combineLatest([channelId, observeChannelsWithCalls(serverUrl)]).pipe(
         switchMap(([id, calls]) => of$(Boolean(calls[id]))),
         distinctUntilChanged(),
@@ -34,7 +30,7 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         distinctUntilChanged(),
     );
     const isInACall = currentCall.pipe(
-        switchMap((call) => of$(Boolean(call))),
+        switchMap((call) => of$(Boolean(call?.connected))),
         distinctUntilChanged(),
     );
     const isInCurrentChannelCall = combineLatest([channelId, ccChannelId]).pipe(
@@ -60,7 +56,6 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
 
     return {
         channelId,
-        isCallsPluginEnabled,
         isCallInCurrentChannel,
         isInACall,
         isInCurrentChannelCall,

@@ -1,19 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, TouchableOpacity, Pressable, Platform, DeviceEventEmitter} from 'react-native';
+import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
 import {Options} from 'react-native-navigation';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
-import {CurrentCall, VoiceEventData} from '@calls/types/calls';
+import PermissionErrorBar from '@calls/components/permission_error_bar';
+import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
+import {usePermissionsChecker} from '@calls/hooks';
+import {CurrentCall} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
-import {Events, Screens, WebsocketEvents} from '@constants';
+import {Screens} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
-import {goToScreen} from '@screens/navigation';
+import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
@@ -24,6 +27,8 @@ type Props = {
     currentCall: CurrentCall | null;
     userModelsDict: Dictionary<UserModel>;
     teammateNameDisplay: string;
+    micPermissionsGranted: boolean;
+    threadScreen?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -56,18 +61,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.sidebarText,
             opacity: 0.64,
         },
-        micIcon: {
-            color: theme.sidebarText,
+        micIconContainer: {
             width: 42,
             height: 42,
-            textAlign: 'center',
-            textAlignVertical: 'center',
             justifyContent: 'center',
-            backgroundColor: '#3DB887',
+            alignItems: 'center',
+            backgroundColor: theme.onlineIndicator,
             borderRadius: 4,
             margin: 4,
             padding: 9,
-            overflow: 'hidden',
+        },
+        micIcon: {
+            color: theme.sidebarText,
         },
         muted: {
             backgroundColor: 'transparent',
@@ -85,50 +90,15 @@ const CurrentCallBar = ({
     currentCall,
     userModelsDict,
     teammateNameDisplay,
+    micPermissionsGranted,
+    threadScreen,
 }: Props) => {
     const theme = useTheme();
+    const style = getStyleSheet(theme);
     const {formatMessage} = useIntl();
-    const [speaker, setSpeaker] = useState<string | null>(null);
-    const [talkingMessage, setTalkingMessage] = useState('');
+    usePermissionsChecker(micPermissionsGranted);
 
-    const isCurrentCall = Boolean(currentCall);
-    const handleVoiceOn = (data: VoiceEventData) => {
-        if (data.channelId === currentCall?.channelId) {
-            setSpeaker(data.userId);
-        }
-    };
-    const handleVoiceOff = (data: VoiceEventData) => {
-        if (data.channelId === currentCall?.channelId && ((speaker === data.userId) || !speaker)) {
-            setSpeaker(null);
-        }
-    };
-
-    useEffect(() => {
-        const onVoiceOn = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_ON, handleVoiceOn);
-        const onVoiceOff = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_OFF, handleVoiceOff);
-        DeviceEventEmitter.emit(Events.CURRENT_CALL_BAR_VISIBLE, isCurrentCall);
-        return () => {
-            DeviceEventEmitter.emit(Events.CURRENT_CALL_BAR_VISIBLE, Boolean(false));
-            onVoiceOn.remove();
-            onVoiceOff.remove();
-        };
-    }, [isCurrentCall]);
-
-    useEffect(() => {
-        if (speaker) {
-            setTalkingMessage(formatMessage({
-                id: 'mobile.calls_name_is_talking',
-                defaultMessage: '{name} is talking',
-            }, {name: displayUsername(userModelsDict[speaker], teammateNameDisplay)}));
-        } else {
-            setTalkingMessage(formatMessage({
-                id: 'mobile.calls_noone_talking',
-                defaultMessage: 'No one is talking',
-            }));
-        }
-    }, [speaker, setTalkingMessage]);
-
-    const goToCallScreen = useCallback(() => {
+    const goToCallScreen = useCallback(async () => {
         const options: Options = {
             layout: {
                 backgroundColor: '#000',
@@ -143,10 +113,25 @@ const CurrentCallBar = ({
             },
         };
         const title = formatMessage({id: 'mobile.calls_call_screen', defaultMessage: 'Call'});
-        goToScreen(Screens.CALL, title, {}, options);
-    }, []);
+        await dismissAllModalsAndPopToScreen(Screens.CALL, title, {fromThreadScreen: threadScreen}, options);
+    }, [formatMessage, threadScreen]);
 
     const myParticipant = currentCall?.participants[currentCall.myUserId];
+
+    // Since we can only see one user talking, it doesn't really matter who we show here (e.g., we can't
+    // tell who is speaking louder).
+    const talkingUsers = Object.keys(currentCall?.voiceOn || {});
+    const speaker = talkingUsers.length > 0 ? talkingUsers[0] : '';
+    let talkingMessage = formatMessage({
+        id: 'mobile.calls_noone_talking',
+        defaultMessage: 'No one is talking',
+    });
+    if (speaker) {
+        talkingMessage = formatMessage({
+            id: 'mobile.calls_name_is_talking',
+            defaultMessage: '{name} is talking',
+        }, {name: displayUsername(userModelsDict[speaker], teammateNameDisplay)});
+    }
 
     const muteUnmute = () => {
         if (myParticipant?.muted) {
@@ -156,42 +141,48 @@ const CurrentCallBar = ({
         }
     };
 
-    const style = getStyleSheet(theme);
+    const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
 
     return (
-        <View style={style.wrapper}>
-            <View style={style.container}>
-                <CallAvatar
-                    userModel={userModelsDict[speaker || '']}
-                    volume={speaker ? 0.5 : 0}
-                    serverUrl={currentCall?.serverUrl || ''}
-                />
-                <View style={style.userInfo}>
-                    <Text style={style.speakingUser}>{talkingMessage}</Text>
-                    <Text style={style.currentChannel}>{`~${displayName}`}</Text>
+        <>
+            <View style={style.wrapper}>
+                <View style={style.container}>
+                    <CallAvatar
+                        userModel={userModelsDict[speaker || '']}
+                        volume={speaker ? 0.5 : 0}
+                        serverUrl={currentCall?.serverUrl || ''}
+                    />
+                    <View style={style.userInfo}>
+                        <Text style={style.speakingUser}>{talkingMessage}</Text>
+                        <Text style={style.currentChannel}>{`~${displayName}`}</Text>
+                    </View>
+                    <Pressable
+                        onPressIn={goToCallScreen}
+                        style={style.pressable}
+                    >
+                        <CompassIcon
+                            name='arrow-expand'
+                            size={24}
+                            style={style.expandIcon}
+                        />
+                    </Pressable>
+                    <TouchableOpacity
+                        onPress={muteUnmute}
+                        style={[style.pressable, style.micIconContainer, myParticipant?.muted && style.muted]}
+                        disabled={!micPermissionsGranted}
+                    >
+                        <UnavailableIconWrapper
+                            name={myParticipant?.muted ? 'microphone-off' : 'microphone'}
+                            size={24}
+                            unavailable={!micPermissionsGranted}
+                            style={[style.micIcon]}
+                        />
+                    </TouchableOpacity>
                 </View>
-                <Pressable
-                    onPressIn={goToCallScreen}
-                    style={style.pressable}
-                >
-                    <CompassIcon
-                        name='arrow-expand'
-                        size={24}
-                        style={style.expandIcon}
-                    />
-                </Pressable>
-                <TouchableOpacity
-                    onPress={muteUnmute}
-                    style={style.pressable}
-                >
-                    <CompassIcon
-                        name={myParticipant?.muted ? 'microphone-off' : 'microphone'}
-                        size={24}
-                        style={[style.micIcon, myParticipant?.muted ? style.muted : undefined]}
-                    />
-                </TouchableOpacity>
             </View>
-        </View>
+            {micPermissionsError && <PermissionErrorBar/>}
+        </>
     );
 };
+
 export default CurrentCallBar;

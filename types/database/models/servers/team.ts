@@ -47,6 +47,9 @@ declare class TeamModel extends Model {
     /** allowed_domains : List of domains that can join this team */
     allowedDomains: string;
 
+    /** invite_id : The token id to use in invites to the team */
+    inviteId: string;
+
     /** categories : All the categories associated with this team */
     categories: Query<CategoryModel>;
 

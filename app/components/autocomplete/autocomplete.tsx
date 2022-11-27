@@ -61,6 +61,7 @@ type Props = {
     availableSpace: SharedValue<number>;
     inPost?: boolean;
     growDown?: boolean;
+    teamId?: string;
     containerStyle?: StyleProp<ViewStyle>;
 }
 
@@ -81,6 +82,7 @@ const Autocomplete = ({
     inPost = false,
     growDown = false,
     containerStyle,
+    teamId,
 }: Props) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
@@ -152,6 +154,7 @@ const Autocomplete = ({
                     nestedScrollEnabled={nestedScrollEnabled}
                     isSearch={isSearch}
                     channelId={channelId}
+                    teamId={teamId}
                 />
                 <ChannelMention
                     cursorPosition={cursorPosition}
@@ -161,6 +164,8 @@ const Autocomplete = ({
                     value={value || ''}
                     nestedScrollEnabled={nestedScrollEnabled}
                     isSearch={isSearch}
+                    channelId={channelId}
+                    teamId={teamId}
                 />
                 {!isSearch &&
                     <EmojiSuggestion
@@ -184,6 +189,7 @@ const Autocomplete = ({
                         nestedScrollEnabled={nestedScrollEnabled}
                         channelId={channelId}
                         rootId={rootId}
+                        isAppsEnabled={isAppsEnabled}
                     />
                 }
                 {/* {(isSearch && enableDateSuggestion) &&

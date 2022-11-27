@@ -9,6 +9,7 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {enableFreeze, enableScreens} from 'react-native-screens';
 
+import ServerVersion from '@components/server_version';
 import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {findChannels, popToRoot} from '@screens/navigation';
@@ -20,9 +21,8 @@ import Account from './account';
 import ChannelList from './channel_list';
 import RecentMentions from './recent_mentions';
 import SavedMessages from './saved_messages';
+import Search from './search';
 import TabBar from './tab_bar';
-
-// import Search from './search';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -97,55 +97,58 @@ export default function HomeScreen(props: HomeProps) {
     }, [intl.locale]);
 
     return (
-        <NavigationContainer
-            theme={{
-                dark: false,
-                colors: {
-                    primary: theme.centerChannelColor,
-                    background: 'transparent',
-                    card: theme.centerChannelBg,
-                    text: theme.centerChannelColor,
-                    border: 'white',
-                    notification: theme.mentionHighlightBg,
-                },
-            }}
-        >
-            <Tab.Navigator
-                screenOptions={{headerShown: false, lazy: true, unmountOnBlur: false}}
-                backBehavior='none'
-                tabBar={(tabProps: BottomTabBarProps) => (
-                    <TabBar
-                        {...tabProps}
-                        theme={theme}
-                    />)}
+        <>
+            <NavigationContainer
+                theme={{
+                    dark: false,
+                    colors: {
+                        primary: theme.centerChannelColor,
+                        background: 'transparent',
+                        card: theme.centerChannelBg,
+                        text: theme.centerChannelColor,
+                        border: 'white',
+                        notification: theme.mentionHighlightBg,
+                    },
+                }}
             >
-                <Tab.Screen
-                    name={Screens.HOME}
-                    options={{title: 'Channel', unmountOnBlur: false, tabBarTestID: 'tab_bar.home.tab', freezeOnBlur: true}}
+                <Tab.Navigator
+                    screenOptions={{headerShown: false, lazy: true, unmountOnBlur: false}}
+                    backBehavior='none'
+                    tabBar={(tabProps: BottomTabBarProps) => (
+                        <TabBar
+                            {...tabProps}
+                            theme={theme}
+                        />)}
                 >
-                    {() => <ChannelList {...props}/>}
-                </Tab.Screen>
-                {/* <Tab.Screen
-                    name={Screens.SEARCH}
-                    component={Search}
-                    options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.search.tab', freezeOnBlur: true}}
-                /> */}
-                <Tab.Screen
-                    name={Screens.MENTIONS}
-                    component={RecentMentions}
-                    options={{tabBarTestID: 'tab_bar.mentions.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
-                />
-                <Tab.Screen
-                    name={Screens.SAVED_MESSAGES}
-                    component={SavedMessages}
-                    options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.saved_messages.tab', freezeOnBlur: true}}
-                />
-                <Tab.Screen
-                    name={Screens.ACCOUNT}
-                    component={Account}
-                    options={{tabBarTestID: 'tab_bar.account.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
-                />
-            </Tab.Navigator>
-        </NavigationContainer>
+                    <Tab.Screen
+                        name={Screens.HOME}
+                        options={{title: 'Channel', unmountOnBlur: false, tabBarTestID: 'tab_bar.home.tab', freezeOnBlur: true}}
+                    >
+                        {() => <ChannelList {...props}/>}
+                    </Tab.Screen>
+                    <Tab.Screen
+                        name={Screens.SEARCH}
+                        component={Search}
+                        options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.search.tab', freezeOnBlur: true}}
+                    />
+                    <Tab.Screen
+                        name={Screens.MENTIONS}
+                        component={RecentMentions}
+                        options={{tabBarTestID: 'tab_bar.mentions.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
+                    />
+                    <Tab.Screen
+                        name={Screens.SAVED_MESSAGES}
+                        component={SavedMessages}
+                        options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.saved_messages.tab', freezeOnBlur: true}}
+                    />
+                    <Tab.Screen
+                        name={Screens.ACCOUNT}
+                        component={Account}
+                        options={{tabBarTestID: 'tab_bar.account.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
+                    />
+                </Tab.Navigator>
+            </NavigationContainer>
+            <ServerVersion/>
+        </>
     );
 }

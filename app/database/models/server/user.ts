@@ -121,6 +121,12 @@ export default class UserModel extends Model implements UserModelInterface {
     /** timezone : The timezone for this user */
     @json('timezone', safeParseJSON) timezone!: UserTimezone | null;
 
+    /** termsOfServiceId : The id of the last accepted terms of service */
+    @field('terms_of_service_id') termsOfServiceId!: string;
+
+    /** termsOfServiceCreateAt : The last time the user accepted the terms of service */
+    @field('terms_of_service_create_at') termsOfServiceCreateAt!: number;
+
     /** channelsCreated : All the channels that this user created */
     @children(CHANNEL) channelsCreated!: Query<ChannelModel>;
 

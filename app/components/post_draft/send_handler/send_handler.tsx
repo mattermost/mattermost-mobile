@@ -29,6 +29,8 @@ type Props = {
     testID?: string;
     channelId: string;
     rootId: string;
+    canShowPostPriority?: boolean;
+    setIsFocused: (isFocused: boolean) => void;
 
     // From database
     currentUserId: string;
@@ -45,8 +47,8 @@ type Props = {
     value: string;
     files: FileInfo[];
     clearDraft: () => void;
-    updateValue: (message: string) => void;
-    updateCursorPosition: (cursorPosition: number) => void;
+    updateValue: React.Dispatch<React.SetStateAction<string>>;
+    updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     updatePostInputTop: (top: number) => void;
     addFiles: (file: FileInfo[]) => void;
     uploadFileError: React.ReactNode;
@@ -63,6 +65,7 @@ export default function SendHandler({
     membersCount = 0,
     cursorPosition,
     rootId,
+    canShowPostPriority,
     useChannelMentions,
     userIsOutOfOffice,
     customEmojis,
@@ -73,12 +76,15 @@ export default function SendHandler({
     uploadFileError,
     updateCursorPosition,
     updatePostInputTop,
+    setIsFocused,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
     const [channelTimezoneCount, setChannelTimezoneCount] = useState(0);
     const [sendingMessage, setSendingMessage] = useState(false);
+
+    const [postProps, setPostProps] = useState<Post['props']>({});
 
     const canSend = useCallback(() => {
         if (sendingMessage) {
@@ -112,14 +118,19 @@ export default function SendHandler({
             channel_id: channelId,
             root_id: rootId,
             message: value,
-        };
+        } as Post;
+
+        if (Object.keys(postProps).length) {
+            post.props = postProps;
+        }
 
         createPost(serverUrl, post, postFiles);
 
         clearDraft();
         setSendingMessage(false);
+        setPostProps({});
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
-    }, [files, currentUserId, channelId, rootId, value, clearDraft]);
+    }, [files, currentUserId, channelId, rootId, value, clearDraft, postProps]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, Boolean(isTimezoneEnabled), channelTimezoneCount, atHere);
@@ -279,6 +290,7 @@ export default function SendHandler({
             channelId={channelId}
             currentUserId={currentUserId}
             rootId={rootId}
+            canShowPostPriority={canShowPostPriority}
             cursorPosition={cursorPosition}
             updateCursorPosition={updateCursorPosition}
             value={value}
@@ -290,6 +302,9 @@ export default function SendHandler({
             canSend={canSend()}
             maxMessageLength={maxMessageLength}
             updatePostInputTop={updatePostInputTop}
+            postProps={postProps}
+            updatePostProps={setPostProps}
+            setIsFocused={setIsFocused}
         />
     );
 }

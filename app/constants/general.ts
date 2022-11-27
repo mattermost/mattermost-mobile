@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {toMilliseconds} from '@utils/datetime';
+
 export default {
     PAGE_SIZE_DEFAULT: 60,
     POST_CHUNK_SIZE: 60,
@@ -27,7 +29,7 @@ export default {
         SHOW_FULLNAME: 'full_name',
     },
     SPECIAL_MENTIONS: new Set(['all', 'channel', 'here']),
-    MAX_USERS_IN_GM: 8,
+    MAX_USERS_IN_GM: 7,
     MIN_USERS_IN_GM: 3,
     MAX_GROUP_CHANNELS_FOR_PROFILES: 50,
     DEFAULT_AUTOLINKED_URL_SCHEMES: ['http', 'https', 'ftp', 'mailto', 'tel', 'mattermost'],
@@ -36,4 +38,8 @@ export default {
     AUTOCOMPLETE_SPLIT_CHARACTERS: ['.', '-', '_'],
     CHANNEL_USER_ROLE: 'channel_user',
     RESTRICT_DIRECT_MESSAGE_ANY: 'any',
+    TIME_TO_FIRST_REVIEW: toMilliseconds({days: 14}),
+    TIME_TO_NEXT_REVIEW: toMilliseconds({days: 90}),
+    NPS_PLUGIN_ID: 'com.mattermost.nps',
+    NPS_PLUGIN_BOT_USERNAME: 'feedbackbot',
 };

@@ -8,7 +8,7 @@ import {of as of$, combineLatest} from 'rxjs';
 import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {observeConfig} from '@queries/servers/system';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 
 import Opengraph from './opengraph';
 
@@ -21,12 +21,12 @@ const enhance = withObservables(
             return {showLinkPreviews: of$(false)};
         }
 
-        const config = observeConfig(database);
+        const linkPreviewsConfig = observeConfigBooleanValue(database, 'EnableLinkPreviews');
         const linkPreviewPreference = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY).
             observeWithColumns(['value']);
-        const showLinkPreviews = combineLatest([config, linkPreviewPreference], (cfg, pref) => {
+        const showLinkPreviews = combineLatest([linkPreviewsConfig, linkPreviewPreference], (cfg, pref) => {
             const previewsEnabled = getPreferenceAsBool(pref, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY, true);
-            return of$(previewsEnabled && cfg?.EnableLinkPreviews === 'true');
+            return of$(previewsEnabled && cfg);
         });
 
         return {showLinkPreviews};

@@ -9,7 +9,7 @@ import {switchMap} from 'rxjs/operators';
 import {General} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observePost} from '@queries/servers/post';
-import {observeConfig, observeCurrentChannelId, observeCurrentUserId, observeLicense} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentChannelId, observeCurrentUserId, observeLicense} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
 import Footer from './footer';
@@ -27,7 +27,6 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
     const currentChannelId = observeCurrentChannelId(database);
     const currentUserId = observeCurrentUserId(database);
 
-    const config = observeConfig(database);
     const license = observeLicense(database);
     const teammateNameDisplay = observeTeammateNameDisplay(database);
 
@@ -47,10 +46,10 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
             return p?.channel.observe() || observeChannel(database, cId);
         }),
     );
-    const enablePostUsernameOverride = config.pipe(switchMap((c) => of$(c?.EnablePostUsernameOverride === 'true')));
-    const enablePostIconOverride = config.pipe(switchMap((c) => of$(c?.EnablePostIconOverride === 'true')));
-    const enablePublicLink = config.pipe(switchMap((c) => of$(c?.EnablePublicLink === 'true')));
-    const enableMobileFileDownload = config.pipe(switchMap((c) => of$(c?.EnableMobileFileDownload !== 'false')));
+    const enablePostUsernameOverride = observeConfigBooleanValue(database, 'EnablePostUsernameOverride');
+    const enablePostIconOverride = observeConfigBooleanValue(database, 'EnablePostIconOverride');
+    const enablePublicLink = observeConfigBooleanValue(database, 'EnablePublicLink');
+    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload');
     const complianceDisabled = license.pipe(switchMap((l) => of$(l?.IsLicensed === 'false' || l?.Compliance === 'false')));
     const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
         switchMap(([download, compliance]) => of$(compliance || download)),

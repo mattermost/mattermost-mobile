@@ -2,18 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {Database, Q} from '@nozbe/watermelondb';
-import {of as of$, Observable} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {of as of$, Observable, combineLatest} from 'rxjs';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Config, Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
+import {isMinimumServerVersion} from '@utils/helpers';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type ConfigModel from '@typings/database/models/servers/config';
 import type SystemModel from '@typings/database/models/servers/system';
 
 export type PrepareCommonSystemValuesArgs = {
-    config?: ClientConfig;
     lastUnreadChannelId?: string;
     currentChannelId?: string;
     currentTeamId?: string;
@@ -22,7 +23,7 @@ export type PrepareCommonSystemValuesArgs = {
     teamHistory?: string;
 }
 
-const {SERVER: {SYSTEM}} = MM_TABLES;
+const {SERVER: {SYSTEM, CONFIG}} = MM_TABLES;
 
 export const getCurrentChannelId = async (serverDatabase: Database): Promise<string> => {
     try {
@@ -94,7 +95,6 @@ export const observePushVerificationStatus = (database: Database): Observable<st
 
 export const getCommonSystemValues = async (serverDatabase: Database) => {
     const systemRecords = (await serverDatabase.collections.get<SystemModel>(SYSTEM).query().fetch());
-    let config: ClientConfig = {} as ClientConfig;
     let license: ClientLicense = {} as ClientLicense;
     let currentChannelId = '';
     let currentTeamId = '';
@@ -102,9 +102,6 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
     let lastUnreadChannelId = '';
     systemRecords.forEach((systemRecord) => {
         switch (systemRecord.id) {
-            case SYSTEM_IDENTIFIERS.CONFIG:
-                config = systemRecord.value;
-                break;
             case SYSTEM_IDENTIFIERS.CURRENT_CHANNEL_ID:
                 currentChannelId = systemRecord.value;
                 break;
@@ -128,51 +125,75 @@ export const getCommonSystemValues = async (serverDatabase: Database) => {
         currentTeamId,
         currentUserId,
         lastUnreadChannelId,
-        config,
         license,
     };
 };
 
-export const getConfig = async (serverDatabase: Database) => {
-    try {
-        const config = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.CONFIG);
-        return (config?.value || {}) as ClientConfig;
-    } catch {
-        return undefined;
-    }
+const fromModelToClientConfig = (list: ConfigModel[]) => {
+    const config: {[key: string]: any} = {};
+    list.forEach((v) => {
+        config[v.id] = v.value;
+    });
+    return config as ClientConfig;
+};
+
+export const getConfig = async (database: Database) => {
+    const configList = await database.get<ConfigModel>(CONFIG).query().fetch();
+    return fromModelToClientConfig(configList);
+};
+
+export const queryConfigValue = (database: Database, key: keyof ClientConfig) => {
+    return database.get<ConfigModel>(CONFIG).query(Q.where('id', Q.eq(key)));
+};
+
+export const getConfigValue = async (database: Database, key: keyof ClientConfig) => {
+    const list = await queryConfigValue(database, key).fetch();
+    return list.length ? list[0].value : undefined;
 };
 
 export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {
-    return querySystemValue(database, SYSTEM_IDENTIFIERS.CONFIG).observe().pipe(
-        switchMap((result) => (result.length ? result[0].observe() : of$({value: undefined}))),
-        switchMap((model) => of$(model.value)),
+    return database.get<ConfigModel>(CONFIG).query().observeWithColumns(['value']).pipe(
+        switchMap((result) => of$(fromModelToClientConfig(result))),
     );
 };
 
 export const observeConfigValue = (database: Database, key: keyof ClientConfig) => {
-    return observeConfig(database).pipe(
-        switchMap((cfg) => of$(cfg?.[key])),
+    return queryConfigValue(database, key).observeWithColumns(['value']).pipe(
+        switchMap((result) => of$(result.length ? result[0].value : undefined)),
+    );
+};
+
+export const observeMaxFileCount = (database: Database) => {
+    return observeConfigValue(database, 'Version').pipe(
+        switchMap((v) => of$(isMinimumServerVersion(v || '', 6, 0) ? 10 : 5)),
+    );
+};
+
+export const observeIsCustomStatusExpirySupported = (database: Database) => {
+    return observeConfigValue(database, 'Version').pipe(
+        switchMap((v) => of$(isMinimumServerVersion(v || '', 5, 37))),
     );
 };
 
 export const observeConfigBooleanValue = (database: Database, key: keyof ClientConfig) => {
-    return observeConfig(database).pipe(
-        switchMap((cfg) => of$(cfg?.[key] === 'true')),
+    return observeConfigValue(database, key).pipe(
+        switchMap((v) => of$(v === 'true')),
+        distinctUntilChanged(),
     );
 };
 
 export const observeConfigIntValue = (database: Database, key: keyof ClientConfig, defaultValue = 0) => {
-    return observeConfig(database).pipe(
-        switchMap((cfg) => of$((parseInt(cfg?.[key] || '0', 10) || defaultValue))),
+    return observeConfigValue(database, key).pipe(
+        switchMap((v) => of$((parseInt(v || '0', 10) || defaultValue))),
     );
 };
 
 export const observeIsPostPriorityEnabled = (database: Database) => {
-    const config = observeConfig(database);
-    return config.pipe(
-        switchMap(
-            (cfg) => of$(cfg?.FeatureFlagPostPriority === Config.TRUE && cfg?.PostPriority === Config.TRUE),
-        ),
+    const featureFlag = observeConfigValue(database, 'FeatureFlagPostPriority');
+    const cfg = observeConfigValue(database, 'PostPriority');
+    return combineLatest([featureFlag, cfg]).pipe(
+        switchMap(([ff, c]) => of$(ff === Config.TRUE && c === Config.TRUE)),
+        distinctUntilChanged(),
     );
 };
 
@@ -297,14 +318,8 @@ export const patchTeamHistory = (operator: ServerDataOperator, value: string[], 
 export async function prepareCommonSystemValues(
     operator: ServerDataOperator, values: PrepareCommonSystemValuesArgs): Promise<SystemModel[]> {
     try {
-        const {config, lastUnreadChannelId, currentChannelId, currentTeamId, currentUserId, license} = values;
+        const {lastUnreadChannelId, currentChannelId, currentTeamId, currentUserId, license} = values;
         const systems: IdValue[] = [];
-        if (config !== undefined) {
-            systems.push({
-                id: SYSTEM_IDENTIFIERS.CONFIG,
-                value: JSON.stringify(config),
-            });
-        }
 
         if (license !== undefined) {
             systems.push({
@@ -430,4 +445,31 @@ export const getExpiredSession = async (database: Database) => {
     } catch {
         return undefined;
     }
+};
+
+export const observeLastDismissedAnnouncement = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_DISMISSED_BANNER).observeWithColumns(['value']).pipe(
+        switchMap((list) => of$(list[0]?.value)),
+    );
+};
+
+export const observeCanUploadFiles = (database: Database) => {
+    const enableFileAttachments = observeConfigBooleanValue(database, 'EnableFileAttachments');
+    const enableMobileFileUpload = observeConfigBooleanValue(database, 'EnableMobileFileUpload');
+    const license = observeLicense(database);
+
+    return combineLatest([enableFileAttachments, enableMobileFileUpload, license]).pipe(
+        switchMap(([efa, emfu, l]) => of$(
+            efa ||
+                (l?.IsLicensed !== 'true' && l?.Compliance !== 'true' && emfu),
+        ),
+        ),
+    );
+};
+
+export const observeLastServerVersionCheck = (database: Database) => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_SERVER_VERSION_CHECK).observeWithColumns(['value']).pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: 0}))),
+        switchMap((model) => of$(parseInt(model.value, 10))),
+    );
 };

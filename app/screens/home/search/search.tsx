@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useIsFocused, useNavigation} from '@react-navigation/native';
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
@@ -16,10 +16,13 @@ import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
+import {SearchRef} from '@components/search';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {TeamModel} from '@database/models/server';
 import {useKeyboardHeight} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';
@@ -43,6 +46,7 @@ const AutocompletePaddingTop = 4;
 
 type Props = {
     teamId: string;
+    teams: TeamModel[];
 }
 
 const styles = StyleSheet.create({
@@ -69,7 +73,7 @@ const getSearchParams = (terms: string, filterValue?: FileFilter) => {
 
 const searchScreenIndex = 1;
 
-const SearchScreen = ({teamId}: Props) => {
+const SearchScreen = ({teamId, teams}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
     const intl = useIntl();
@@ -81,8 +85,12 @@ const SearchScreen = ({teamId}: Props) => {
     const serverUrl = useServerUrl();
     const searchTerm = (nav.getState().routes[stateIndex].params as any)?.searchTerm;
 
-    const [cursorPosition, setCursorPosition] = useState(searchTerm?.length);
-    const [searchValue, setSearchValue] = useState<string>(searchTerm);
+    const clearRef = useRef<boolean>(false);
+    const cancelRef = useRef<boolean>(false);
+    const searchRef = useRef<SearchRef>(null);
+
+    const [cursorPosition, setCursorPosition] = useState(searchTerm?.length || 0);
+    const [searchValue, setSearchValue] = useState<string>(searchTerm || '');
     const [searchTeamId, setSearchTeamId] = useState<string>(teamId);
     const [selectedTab, setSelectedTab] = useState<TabType>(TabTypes.MESSAGES);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
@@ -96,23 +104,55 @@ const SearchScreen = ({teamId}: Props) => {
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
     const [fileChannelIds, setFileChannelIds] = useState<string[]>([]);
 
-    const onSnap = (offset: number) => {
-        scrollRef.current?.scrollToOffset({offset, animated: true});
+    useEffect(() => {
+        setSearchTeamId(teamId);
+    }, [teamId]);
+
+    const onSnap = (offset: number, animated = true) => {
+        scrollRef.current?.scrollToOffset({offset, animated});
     };
 
-    const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight, hideHeader} = useCollapsibleHeader<FlatList>(true, onSnap);
+    const {
+        headerHeight,
+        headerOffset,
+        hideHeader,
+        lockValue,
+        onScroll,
+        scrollEnabled,
+        scrollPaddingTop,
+        scrollRef,
+        scrollValue,
+        setAutoScroll,
+        unlock,
+    } = useCollapsibleHeader<FlatList>(true, onSnap);
 
-    const handleCancelAndClearSearch = useCallback(() => {
+    const resetToInitial = useCallback(() => {
+        setShowResults(false);
         setSearchValue('');
         setLastSearchedValue('');
         setFilter(FileFilters.ALL);
-        setShowResults(false);
     }, []);
+
+    const handleClearSearch = useCallback(() => {
+        clearRef.current = true;
+        resetToInitial();
+    }, [resetToInitial]);
+
+    const handleCancelSearch = useCallback(() => {
+        cancelRef.current = true;
+        resetToInitial();
+        onSnap(0);
+    }, [resetToInitial]);
 
     const handleTextChange = useCallback((newValue: string) => {
         setSearchValue(newValue);
         setCursorPosition(newValue.length);
     }, []);
+
+    const handleModifierTextChange = useCallback((newValue: string) => {
+        searchRef.current?.focus?.();
+        handleTextChange(newValue);
+    }, [handleTextChange]);
 
     const handleLoading = useCallback((show: boolean) => {
         (showResults ? setResultsLoading : setLoading)(show);
@@ -121,9 +161,10 @@ const SearchScreen = ({teamId}: Props) => {
     const handleSearch = useCallback(async (newSearchTeamId: string, term: string) => {
         const searchParams = getSearchParams(term);
         if (!searchParams.terms) {
-            handleCancelAndClearSearch();
+            handleClearSearch();
             return;
         }
+        hideHeader(true);
         handleLoading(true);
         setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
@@ -141,7 +182,7 @@ const SearchScreen = ({teamId}: Props) => {
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
         handleLoading(false);
         setShowResults(true);
-    }, [handleCancelAndClearSearch, handleLoading, showResults]);
+    }, [handleClearSearch, handleLoading]);
 
     const onSubmit = useCallback(() => {
         handleSearch(searchTeamId, searchValue);
@@ -167,38 +208,34 @@ const SearchScreen = ({teamId}: Props) => {
         handleSearch(newTeamId, lastSearchedValue);
     }, [lastSearchedValue, handleSearch]);
 
-    const containerStyle = useMemo(() => {
-        const justifyContent = (resultsLoading || loading) ? 'center' : 'flex-start';
-        return {paddingTop: scrollPaddingTop, flexGrow: 1, justifyContent} as ViewProps;
+    const initialContainerStyle = useMemo(() => {
+        return {
+            paddingTop: scrollPaddingTop,
+            flexGrow: 1,
+            justifyContent: (resultsLoading || loading) ? 'center' : 'flex-start',
+        } as ViewProps;
     }, [loading, resultsLoading, scrollPaddingTop]);
 
-    const loadingComponent = useMemo(() => (
-        <Loading
-            containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
-            color={theme.buttonBg}
-            size='large'
-        />
-    ), [theme, scrollPaddingTop]);
-
-    const initialComponent = useMemo(() => (
-        <Initial
-            searchValue={searchValue}
-            setRecentValue={handleRecentSearch}
-            setSearchValue={handleTextChange}
-            setTeamId={setSearchTeamId}
-            teamId={searchTeamId}
-        />
-    ), [searchValue, searchTeamId, handleRecentSearch, handleTextChange]);
-
-    const renderItem = useCallback(() => {
-        if (loading) {
-            return loadingComponent;
-        }
-        return initialComponent;
-    }, [
-        loading && loadingComponent,
-        initialComponent,
-    ]);
+    const renderInitialOrLoadingItem = useCallback(() => {
+        return loading ? (
+            <Loading
+                containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
+                color={theme.buttonBg}
+                size='large'
+            />
+        ) : (
+            <Initial
+                scrollEnabled={scrollEnabled}
+                searchValue={searchValue}
+                setRecentValue={handleRecentSearch}
+                setSearchValue={handleModifierTextChange}
+                setTeamId={setSearchTeamId}
+                teamId={searchTeamId}
+                teams={teams}
+            />
+        );
+    }, [handleRecentSearch, handleTextChange, loading,
+        scrollPaddingTop, searchTeamId, searchValue, theme]);
 
     const animated = useAnimatedStyle(() => {
         if (isFocused) {
@@ -211,36 +248,19 @@ const SearchScreen = ({teamId}: Props) => {
 
         return {
             opacity: withTiming(0, {duration: 150}),
+            flex: 1,
             transform: [{translateX: withTiming(stateIndex < searchScreenIndex ? 25 : -25, {duration: 150})}],
         };
     }, [isFocused, stateIndex]);
 
-    const top = useAnimatedStyle(() => {
-        return {
-            top: headerHeight.value,
-            zIndex: lastSearchedValue ? 10 : 0,
-        };
-    }, [headerHeight.value, lastSearchedValue]);
+    const headerTopStyle = useAnimatedStyle(() => ({
+        top: lockValue.value ? lockValue.value : headerHeight.value,
+        zIndex: lastSearchedValue ? 10 : 0,
+    }), [headerHeight, lastSearchedValue, lockValue]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
-
-    let header = null;
-    if (lastSearchedValue && !loading) {
-        header = (
-            <Header
-                teamId={searchTeamId}
-                setTeamId={handleResultsTeamChange}
-                onTabSelect={setSelectedTab}
-                onFilterChanged={handleFilterChange}
-                numberMessages={posts.length}
-                selectedTab={selectedTab}
-                numberFiles={fileInfos.length}
-                selectedFilter={filter}
-            />
-        );
-    }
 
     const autocompleteMaxHeight = useDerivedValue(() => {
         const iosAdjust = keyboardHeight ? keyboardHeight - BOTTOM_TAB_HEIGHT : insets.bottom;
@@ -250,7 +270,7 @@ const SearchScreen = ({teamId}: Props) => {
 
     const autocompletePosition = useDerivedValue(() => {
         return headerHeight.value - AutocompletePaddingTop;
-    }, [containerHeight]);
+    }, [headerHeight]);
 
     const autocomplete = useMemo(() => (
         <Autocomplete
@@ -263,8 +283,34 @@ const SearchScreen = ({teamId}: Props) => {
             position={autocompletePosition}
             growDown={true}
             containerStyle={styles.autocompleteContainer}
+            teamId={searchTeamId}
         />
-    ), [cursorPosition, handleTextChange, searchValue, autocompleteMaxHeight, autocompletePosition]);
+    ), [cursorPosition, handleTextChange, searchValue, autocompleteMaxHeight, autocompletePosition, searchTeamId]);
+
+    // when clearing the input from the search results, scroll the initial view
+    // back to the top so the header is in the collapsed state
+    const onFlatLayout = useCallback(() => {
+        if (clearRef.current || cancelRef.current) {
+            unlock();
+        }
+        if (clearRef.current) {
+            onSnap(headerOffset, false);
+            clearRef.current = false;
+        } else if (cancelRef.current) {
+            onSnap(0);
+            cancelRef.current = false;
+        }
+    }, [headerOffset, scrollRef]);
+
+    useDidUpdate(() => {
+        if (isFocused) {
+            setTimeout(() => {
+                setAutoScroll(true);
+            }, 300);
+        } else {
+            setAutoScroll(false);
+        }
+    }, [isFocused]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
@@ -274,29 +320,45 @@ const SearchScreen = ({teamId}: Props) => {
                 title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
                 hasSearch={true}
                 scrollValue={scrollValue}
+                lockValue={lockValue}
                 hideHeader={hideHeader}
                 onChangeText={handleTextChange}
                 onSubmitEditing={onSubmit}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
-                onClear={handleCancelAndClearSearch}
-                onCancel={handleCancelAndClearSearch}
+                onClear={handleClearSearch}
+                onCancel={handleCancelSearch}
                 defaultValue={searchValue}
+                ref={searchRef}
             />
             <SafeAreaView
                 style={styles.flex}
                 edges={EDGES}
                 onLayout={onLayout}
+                testID='search_messages.screen'
             >
                 <Animated.View style={animated}>
-                    <Animated.View style={top}>
+                    <Animated.View style={headerTopStyle}>
                         <RoundedHeaderContext/>
-                        {header}
+                        {lastSearchedValue && !loading &&
+                            <Header
+                                teamId={searchTeamId}
+                                setTeamId={handleResultsTeamChange}
+                                onTabSelect={setSelectedTab}
+                                onFilterChanged={handleFilterChange}
+                                numberMessages={posts.length}
+                                selectedTab={selectedTab}
+                                numberFiles={fileInfos.length}
+                                selectedFilter={filter}
+                                teams={teams}
+                            />
+                        }
                     </Animated.View>
                     {!showResults &&
                         <AnimatedFlatList
+                            onLayout={onFlatLayout}
                             data={dummyData}
-                            contentContainerStyle={containerStyle}
+                            contentContainerStyle={initialContainerStyle}
                             keyboardShouldPersistTaps='handled'
                             keyboardDismissMode={'interactive'}
                             nestedScrollEnabled={true}
@@ -307,7 +369,7 @@ const SearchScreen = ({teamId}: Props) => {
                             scrollToOverflowEnabled={true}
                             overScrollMode='always'
                             ref={scrollRef}
-                            renderItem={renderItem}
+                            renderItem={renderInitialOrLoadingItem}
                         />
                     }
                     {showResults && !loading &&
@@ -317,7 +379,7 @@ const SearchScreen = ({teamId}: Props) => {
                             searchValue={lastSearchedValue}
                             posts={posts}
                             fileInfos={fileInfos}
-                            scrollPaddingTop={scrollPaddingTop}
+                            scrollPaddingTop={lockValue.value}
                             fileChannelIds={fileChannelIds}
                         />
                     }

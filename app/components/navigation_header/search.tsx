@@ -1,36 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo} from 'react';
-import {DeviceEventEmitter, Keyboard, NativeSyntheticEvent, Platform, TextInputFocusEventData} from 'react-native';
-import Animated, {useAnimatedStyle} from 'react-native-reanimated';
+import React, {forwardRef, useCallback, useEffect, useMemo} from 'react';
+import {DeviceEventEmitter, Keyboard, NativeSyntheticEvent, Platform, TextInputFocusEventData, ViewStyle} from 'react-native';
+import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
 
-import Search, {SearchProps} from '@components/search';
+import Search, {SearchProps, SearchRef} from '@components/search';
 import {Events} from '@constants';
-import {HEADER_SEARCH_HEIGHT} from '@constants/view';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = SearchProps & {
-    defaultHeight: number;
-    largeHeight: number;
-    scrollValue?: Animated.SharedValue<number>;
+    topStyle: AnimatedStyleProp<ViewStyle>;
     hideHeader?: () => void;
     theme: Theme;
-    top: number;
 }
-
-const INITIAL_TOP = -45;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.sidebarBg,
-        height: HEADER_SEARCH_HEIGHT,
-        justifyContent: 'center',
         paddingHorizontal: 20,
         width: '100%',
         zIndex: 10,
-        top: INITIAL_TOP,
     },
     inputContainerStyle: {
         backgroundColor: changeOpacity(theme.sidebarText, 0.12),
@@ -40,14 +31,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const NavigationSearch = ({
-    defaultHeight,
-    largeHeight,
-    scrollValue,
+const NavigationSearch = forwardRef<SearchRef, Props>(({
     hideHeader,
     theme,
+    topStyle,
     ...searchProps
-}: Props) => {
+}: Props, ref) => {
     const styles = getStyleSheet(theme);
 
     const cancelButtonProps: SearchProps['cancelButtonProps'] = useMemo(() => ({
@@ -58,38 +47,35 @@ const NavigationSearch = ({
         color: theme.sidebarText,
     }), [theme]);
 
-    const searchTop = useAnimatedStyle(() => {
-        const value = scrollValue?.value || 0;
-        const min = (largeHeight - defaultHeight);
-        return {marginTop: Math.min(-Math.min((value), min), min)};
-    }, [largeHeight, defaultHeight]);
-
     const onFocus = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => {
         hideHeader?.();
         searchProps.onFocus?.(e);
     }, [hideHeader, searchProps.onFocus]);
 
-    useEffect(() => {
-        const show = Keyboard.addListener('keyboardDidShow', () => {
-            if (Platform.OS === 'android') {
-                DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
-            }
-        });
+    const showEmitter = useCallback(() => {
+        if (Platform.OS === 'android') {
+            DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
+        }
+    }, []);
 
-        const hide = Keyboard.addListener('keyboardDidHide', () => {
-            if (Platform.OS === 'android') {
-                DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
-            }
-        });
+    const hideEmitter = useCallback(() => {
+        if (Platform.OS === 'android') {
+            DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+        }
+    }, []);
+
+    useEffect(() => {
+        const show = Keyboard.addListener('keyboardDidShow', showEmitter);
+        const hide = Keyboard.addListener('keyboardDidHide', hideEmitter);
 
         return () => {
             hide.remove();
             show.remove();
         };
-    }, []);
+    }, [hideEmitter, showEmitter]);
 
     return (
-        <Animated.View style={[styles.container, searchTop]}>
+        <Animated.View style={[styles.container, topStyle]}>
             <Search
                 {...searchProps}
                 cancelButtonProps={cancelButtonProps}
@@ -100,10 +86,13 @@ const NavigationSearch = ({
                 placeholderTextColor={changeOpacity(theme.sidebarText, Platform.select({android: 0.56, default: 0.72}))}
                 searchIconColor={theme.sidebarText}
                 selectionColor={theme.sidebarText}
+                ref={ref}
+                testID='navigation.header.search_bar'
             />
         </Animated.View>
     );
-};
+});
 
+NavigationSearch.displayName = 'NavSearch';
 export default NavigationSearch;
 

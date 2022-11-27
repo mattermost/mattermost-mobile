@@ -11,7 +11,7 @@ import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {fetchNewThreads} from '@actions/remote/thread';
-import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
+import {autoUpdateTimezone, fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
 import {General, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
@@ -64,6 +64,12 @@ export type EntryResponse = {
 
 const FETCH_MISSING_DM_TIMEOUT = 2500;
 export const FETCH_UNREADS_TIMEOUT = 2500;
+
+export const getRemoveTeamIds = async (database: Database, teamData: MyTeamsRequest) => {
+    const myTeams = await queryMyTeams(database).fetch();
+    const joinedTeams = new Set(teamData.memberships?.filter((m) => m.delete_at === 0).map((m) => m.team_id));
+    return myTeams.filter((m) => !joinedTeams.has(m.id)).map((m) => m.id);
+};
 
 export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[]) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -139,7 +145,7 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
 
     const confReq = await fetchConfigAndLicense(serverUrl);
     const prefData = await fetchMyPreferences(serverUrl, fetchOnly);
-    const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config));
+    const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config?.CollapsedThreads, confReq.config?.FeatureFlagCollapsedThreads));
     if (prefData.preferences) {
         const crtToggled = await getHasCRTChanged(database, prefData.preferences);
         if (crtToggled) {
@@ -162,7 +168,6 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
         fetchMe(serverUrl, fetchOnly),
     ];
 
-    const removeTeamIds: string[] = [];
     const resolution = await Promise.all(promises);
     const [teamData, , meData] = resolution;
     let [, chData] = resolution;
@@ -179,10 +184,7 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
         }
     }
 
-    const removedFromTeam = teamData.memberships?.filter((m) => m.delete_at > 0);
-    if (removedFromTeam?.length) {
-        removeTeamIds.push(...removedFromTeam.map((m) => m.team_id));
-    }
+    const removeTeamIds = await getRemoveTeamIds(database, teamData);
 
     let data: AppEntryData = {
         initialTeamId,
@@ -195,10 +197,6 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
     };
 
     if (teamData.teams?.length === 0 && !teamData.error) {
-        // User is no longer a member of any team
-        const myTeams = await queryMyTeams(database).fetch();
-        removeTeamIds.push(...(myTeams.map((myTeam) => myTeam.id) || []));
-
         return {
             ...data,
             initialTeamId: '',
@@ -308,7 +306,7 @@ export async function entryInitialChannelId(database: Database, requestedChannel
 
 export async function restDeferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
-    config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
+    config: ClientConfig, license: ClientLicense | undefined, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string) {
     // defer sidebar DM & GM profiles
     let channelsToFetchProfiles: Set<Channel>|undefined;
@@ -327,7 +325,7 @@ export async function restDeferredAppEntryActions(
         fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
-    if (preferences && processIsCRTEnabled(preferences, config)) {
+    if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
         if (initialTeamId) {
             await fetchNewThreads(serverUrl, initialTeamId, false);
         }
@@ -350,7 +348,7 @@ export async function restDeferredAppEntryActions(
 
     setTimeout(async () => {
         if (channelsToFetchProfiles?.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config, license);
+            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
             fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
         }
     }, FETCH_MISSING_DM_TIMEOUT);
@@ -383,6 +381,7 @@ export const syncOtherServers = async (serverUrl: string) => {
             if (server.url !== serverUrl && server.lastActiveAt > 0) {
                 registerDeviceToken(server.url);
                 syncAllChannelMembersAndThreads(server.url);
+                autoUpdateTimezone(server.url);
             }
         }
     }
@@ -455,7 +454,7 @@ const restSyncAllChannelMembers = async (serverUrl: string) => {
         for (const myTeam of myTeams) {
             fetchMyChannelsForTeam(serverUrl, myTeam.id, false, 0, false, excludeDirect);
             excludeDirect = true;
-            if (preferences && processIsCRTEnabled(preferences, config)) {
+            if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
                 fetchNewThreads(serverUrl, myTeam.id, false);
             }
         }

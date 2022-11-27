@@ -4,6 +4,14 @@
 import type UserModel from '@typings/database/models/servers/user';
 import type {ConfigurationParamWithUrls, ConfigurationParamWithUrl} from 'react-native-webrtc';
 
+export type GlobalCallsState = {
+    micPermissionsGranted: boolean;
+}
+
+export const DefaultGlobalCallsState: GlobalCallsState = {
+    micPermissionsGranted: false,
+};
+
 export type CallsState = {
     serverUrl: string;
     myUserId: string;
@@ -11,12 +19,12 @@ export type CallsState = {
     enabled: Dictionary<boolean>;
 }
 
-export const DefaultCallsState = {
+export const DefaultCallsState: CallsState = {
     serverUrl: '',
     myUserId: '',
-    calls: {} as Dictionary<Call>,
-    enabled: {} as Dictionary<boolean>,
-} as CallsState;
+    calls: {},
+    enabled: {},
+};
 
 export type Call = {
     participants: Dictionary<CallParticipant>;
@@ -27,31 +35,49 @@ export type Call = {
     ownerId: string;
 }
 
-export const DefaultCall = {
-    participants: {} as Dictionary<CallParticipant>,
+export const DefaultCall: Call = {
+    participants: {},
     channelId: '',
     startTime: 0,
     screenOn: '',
     threadId: '',
+    ownerId: '',
 };
 
-export type CurrentCall = {
+export type CurrentCall = Call & {
+    connected: boolean;
     serverUrl: string;
     myUserId: string;
-    participants: Dictionary<CallParticipant>;
-    channelId: string;
-    startTime: number;
-    screenOn: string;
-    threadId: string;
     screenShareURL: string;
     speakerphoneOn: boolean;
+    voiceOn: Dictionary<boolean>;
+    micPermissionsErrorDismissed: boolean;
+    reactionStream: ReactionStreamEmoji[];
 }
+
+export const DefaultCurrentCall: CurrentCall = {
+    connected: false,
+    serverUrl: '',
+    myUserId: '',
+    participants: {},
+    channelId: '',
+    startTime: 0,
+    screenOn: '',
+    threadId: '',
+    ownerId: '',
+    screenShareURL: '',
+    speakerphoneOn: false,
+    voiceOn: {},
+    micPermissionsErrorDismissed: false,
+    reactionStream: [],
+};
 
 export type CallParticipant = {
     id: string;
     muted: boolean;
     raisedHand: number;
     userModel?: UserModel;
+    reaction?: CallReaction;
 }
 
 export type ChannelsWithCalls = Dictionary<boolean>;
@@ -77,11 +103,6 @@ export type ServerCallState = {
     owner_id: string;
 }
 
-export type VoiceEventData = {
-    channelId: string;
-    userId: string;
-}
-
 export type CallsConnection = {
     disconnect: () => void;
     mute: () => void;
@@ -89,6 +110,8 @@ export type CallsConnection = {
     waitForPeerConnection: () => Promise<void>;
     raiseHand: () => void;
     unraiseHand: () => void;
+    initializeVoiceTrack: () => void;
+    sendReaction: (emoji: CallReactionEmoji) => void;
 }
 
 export type ServerCallsConfig = {
@@ -106,7 +129,7 @@ export type CallsConfig = ServerCallsConfig & {
     last_retrieved_at: number;
 }
 
-export const DefaultCallsConfig = {
+export const DefaultCallsConfig: CallsConfig = {
     pluginEnabled: false,
     ICEServers: [], // deprecated
     ICEServersConfigs: [],
@@ -116,7 +139,7 @@ export const DefaultCallsConfig = {
     last_retrieved_at: 0,
     sku_short_name: '',
     MaxCallParticipants: 0,
-} as CallsConfig;
+};
 
 export type ICEServersConfigs = Array<ConfigurationParamWithUrls | ConfigurationParamWithUrl>;
 
@@ -125,3 +148,21 @@ export type ApiResp = {
     detailed_error?: string;
     status_code: number;
 }
+
+export type CallReactionEmoji = {
+    name: string;
+    skin?: string;
+    unified: string;
+}
+
+export type CallReaction = {
+    user_id: string;
+    emoji: CallReactionEmoji;
+    timestamp: number;
+}
+
+export type ReactionStreamEmoji = {
+    name: string;
+    latestTimestamp: number;
+    count: number;
+};

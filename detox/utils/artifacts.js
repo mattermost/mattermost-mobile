@@ -79,7 +79,7 @@ async function saveArtifacts() {
                     return reject(new Error(err));
                 }
 
-                const reportLink = `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/${platform}-report.html`;
+                const reportLink = `https://${DETOX_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/jest-stare/${platform}-report.html`;
                 resolve({success: true, reportLink});
             },
         );
