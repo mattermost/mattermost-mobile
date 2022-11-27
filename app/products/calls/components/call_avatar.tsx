@@ -4,7 +4,9 @@
 import React, {useMemo} from 'react';
 import {View, StyleSheet, Text, Platform} from 'react-native';
 
+import {CallReactionEmoji} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
+import Emoji from '@components/emoji';
 import ProfilePicture from '@components/profile_picture';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -16,6 +18,7 @@ type Props = {
     muted?: boolean;
     sharingScreen?: boolean;
     raisedHand?: boolean;
+    reaction?: CallReactionEmoji;
     size?: 'm' | 'l';
 }
 
@@ -77,49 +80,49 @@ const getStyleSheet = ({volume, muted, size}: { volume: number; muted?: boolean;
                 },
             ),
         },
-        raisedHand: {
+        reaction: {
             position: 'absolute',
             overflow: 'hidden',
             top: 0,
             right: -5,
-            backgroundColor: 'black',
-            borderColor: 'black',
-            borderRadius,
-            padding,
-            borderWidth: 2,
             width: widthHeight,
             height: widthHeight,
+            borderRadius,
+            padding,
+            backgroundColor: 'black',
+            borderColor: 'black',
+            borderWidth: 2,
             fontSize: smallIcon ? 10 : 12,
+        },
+        raisedHand: {
+            backgroundColor: 'white',
+            right: -5,
             ...Platform.select(
                 {
                     android: {
-                        paddingLeft: 4,
-                        paddingTop: 2,
+                        paddingLeft: 5,
+                        paddingTop: 3,
                         color: 'rgb(255, 188, 66)',
                     },
                 },
             ),
         },
         screenSharing: {
-            position: 'absolute',
-            top: 0,
-            right: -5,
-            width: widthHeight,
-            height: widthHeight,
-            borderRadius,
             padding: padding + 1,
             backgroundColor: '#D24B4E',
-            borderColor: 'black',
-            borderWidth: 2,
             color: 'white',
             textAlign: 'center',
             textAlignVertical: 'center',
-            overflow: 'hidden',
+            paddingTop: Platform.select({ios: 3}),
+        },
+        emoji: {
+            paddingLeft: 1,
+            paddingTop: Platform.select({ios: 2, default: 1}),
         },
     });
 };
 
-const CallAvatar = ({userModel, volume, serverUrl, sharingScreen, size, muted, raisedHand}: Props) => {
+const CallAvatar = ({userModel, volume, serverUrl, sharingScreen, size, muted, raisedHand, reaction}: Props) => {
     const style = useMemo(() => getStyleSheet({volume, muted, size}), [volume, muted, size]);
     const profileSize = size === 'm' || !size ? 40 : 72;
     const iconSize = size === 'm' || !size ? 12 : 16;
@@ -132,14 +135,26 @@ const CallAvatar = ({userModel, volume, serverUrl, sharingScreen, size, muted, r
             <CompassIcon
                 name={'monitor'}
                 size={iconSize}
-                style={style.screenSharing}
+                style={[style.reaction, style.screenSharing]}
             />
         );
     } else if (raisedHand) {
         topRightIcon = (
-            <Text style={style.raisedHand}>
+            <Text style={[style.reaction, style.raisedHand]}>
                 {'✋'}
             </Text>
+        );
+    }
+
+    // An emoji will override the top right indicator.
+    if (reaction) {
+        topRightIcon = (
+            <View style={[style.reaction, style.emoji]}>
+                <Emoji
+                    emojiName={reaction.name}
+                    size={iconSize - 3}
+                />
+            </View>
         );
     }
 

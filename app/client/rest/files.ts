@@ -3,6 +3,8 @@
 
 import {ClientResponse, ClientResponseError, ProgressPromise, UploadRequestOptions} from '@mattermost/react-native-network-client';
 
+import {toMilliseconds} from '@utils/datetime';
+
 export interface ClientFilesMix {
     getFileUrl: (fileId: string, timestamp: number) => string;
     getFileThumbnailUrl: (fileId: string, timestamp: number) => string;
@@ -72,7 +74,7 @@ const ClientFiles = (superclass: any) => class extends superclass {
                     channel_id: channelId,
                 },
             },
-            timeoutInterval: 3 * 60 * 1000, // 3 minutes
+            timeoutInterval: toMilliseconds({minutes: 3}),
         };
         const promise = this.apiClient.upload(url, file.localPath, options) as ProgressPromise<ClientResponse>;
         promise.progress!(onProgress).then(onComplete).catch(onError);

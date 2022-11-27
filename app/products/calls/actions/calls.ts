@@ -35,6 +35,7 @@ import type {
     ApiResp,
     Call,
     CallParticipant,
+    CallReactionEmoji,
     CallsConnection,
     ServerCallState,
     ServerChannelState,
@@ -86,7 +87,7 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
     }
     let resp: ServerChannelState[] = [];
     try {
-        resp = await client.getCalls();
+        resp = await client.getCalls() || [];
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
@@ -288,6 +289,12 @@ export const raiseHand = () => {
 export const unraiseHand = () => {
     if (connection) {
         connection.unraiseHand();
+    }
+};
+
+export const sendReaction = (emoji: CallReactionEmoji) => {
+    if (connection) {
+        connection.sendReaction(emoji);
     }
 };
 

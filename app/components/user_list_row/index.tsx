@@ -32,6 +32,7 @@ type Props = {
     onLongPress: (user: UserProfile) => void;
     onPress?: (user: UserProfile) => void;
     selectable: boolean;
+    disabled?: boolean;
     selected: boolean;
     showManageMode: boolean;
     teammateNameDisplay: string;
@@ -115,6 +116,7 @@ export default function UserListRow({
     onLongPress,
     manageMode = false,
     selectable,
+    disabled,
     selected,
     showManageMode = false,
     teammateNameDisplay,
@@ -201,7 +203,11 @@ export default function UserListRow({
     }, [showManageMode, theme]);
 
     const icon = useMemo(() => {
-        const iconOpacity = DEFAULT_ICON_OPACITY * (selectable ? 1 : DISABLED_OPACITY);
+        if (!selectable) {
+            return null;
+        }
+
+        const iconOpacity = DEFAULT_ICON_OPACITY * (disabled ? 1 : DISABLED_OPACITY);
         const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
         return (
             <View style={style.selector}>
@@ -212,7 +218,7 @@ export default function UserListRow({
                 />
             </View>
         );
-    }, [selectable, selected, theme]);
+    }, [selectable, disabled, selected, theme]);
 
     let usernameDisplay = `@${username}`;
     if (isMyUser) {
@@ -226,7 +232,7 @@ export default function UserListRow({
     const showTeammateDisplay = teammateDisplay !== username;
 
     const userItemTestID = `${testID}.${id}`;
-    const opacity = selectable || selected ? 1 : DISABLED_OPACITY;
+    const opacity = selectable || selected || !disabled ? 1 : DISABLED_OPACITY;
 
     return (
         <>

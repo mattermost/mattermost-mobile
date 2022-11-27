@@ -21,7 +21,7 @@ import {logError, logDebug, logWarning} from '@utils/log';
 import Peer from './simple-peer';
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
-import type {CallsConnection} from '@calls/types/calls';
+import type {CallReactionEmoji, CallsConnection} from '@calls/types/calls';
 
 const peerConnectTimeout = 5000;
 
@@ -166,6 +166,14 @@ export async function newConnection(
         }
     };
 
+    const sendReaction = (emoji: CallReactionEmoji) => {
+        if (ws) {
+            ws.send('react', {
+                data: JSON.stringify(emoji),
+            });
+        }
+    };
+
     ws.on('error', (err: Event) => {
         logDebug('calls: ws error', err);
         if (err === wsReconnectionTimeoutErr) {
@@ -281,6 +289,7 @@ export async function newConnection(
         waitForPeerConnection,
         raiseHand,
         unraiseHand,
+        sendReaction,
         initializeVoiceTrack,
     };
 

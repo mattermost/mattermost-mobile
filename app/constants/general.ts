@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {toMilliseconds} from '@utils/datetime';
+
 export default {
     PAGE_SIZE_DEFAULT: 60,
     POST_CHUNK_SIZE: 60,
@@ -39,4 +41,8 @@ export default {
     AUTOCOMPLETE_SPLIT_CHARACTERS: ['.', '-', '_'],
     CHANNEL_USER_ROLE: 'channel_user',
     RESTRICT_DIRECT_MESSAGE_ANY: 'any',
+    TIME_TO_FIRST_REVIEW: toMilliseconds({days: 14}),
+    TIME_TO_NEXT_REVIEW: toMilliseconds({days: 90}),
+    NPS_PLUGIN_ID: 'com.mattermost.nps',
+    NPS_PLUGIN_BOT_USERNAME: 'feedbackbot',
 };
