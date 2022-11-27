@@ -4,17 +4,49 @@
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
-import {schemaMigrations, addColumns} from '@nozbe/watermelondb/Schema/migrations';
+import {schemaMigrations, addColumns, createTable} from '@nozbe/watermelondb/Schema/migrations';
 
 import {MM_TABLES} from '@constants/database';
+import {tableSchemaSpec as configSpec} from '@database/schema/server/table_schemas/config';
 
 const {SERVER: {
     GROUP,
     MY_CHANNEL,
+    TEAM,
     THREAD,
+    USER,
 }} = MM_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 6,
+        steps: [
+            addColumns({
+                table: USER,
+                columns: [
+                    {name: 'terms_of_service_id', type: 'string'},
+                    {name: 'terms_of_service_create_at', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
+        toVersion: 5,
+        steps: [
+            createTable(configSpec),
+        ],
+    },
+    {
+        toVersion: 4,
+        steps: [
+            addColumns({
+                table: TEAM,
+                columns: [
+                    {name: 'invite_id', type: 'string'},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 3,
         steps: [

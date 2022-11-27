@@ -21,20 +21,56 @@ export const getDeviceToken = async (appDatabase: Database): Promise<string> => 
     }
 };
 
-export const observeMultiServerTutorial = (appDatabase: Database) => {
-    return appDatabase.get<GlobalModel>(GLOBAL).query(Q.where('id', GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL), Q.take(1)).observe().pipe(
+export const queryGlobalValue = (key: string) => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        return database.get<GlobalModel>(GLOBAL).query(Q.where('id', key), Q.take(1));
+    } catch {
+        return undefined;
+    }
+};
+
+export const observeMultiServerTutorial = () => {
+    const query = queryGlobalValue(GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL);
+    if (!query) {
+        return of$(false);
+    }
+    return query.observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(false))),
         switchMap((v) => of$(Boolean(v))),
     );
 };
 
 export const observeProfileLongPresTutorial = () => {
-    const appDatabase = DatabaseManager.appDatabase?.database;
-    if (!appDatabase) {
+    const query = queryGlobalValue(GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL);
+    if (!query) {
         return of$(false);
     }
-    return appDatabase.get<GlobalModel>(GLOBAL).query(Q.where('id', GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL), Q.take(1)).observe().pipe(
+    return query.observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(false))),
         switchMap((v) => of$(Boolean(v))),
     );
+};
+
+export const getLastAskedForReview = async () => {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.LAST_ASK_FOR_REVIEW)?.fetch();
+    if (!records?.[0]?.value) {
+        return 0;
+    }
+
+    return records[0].value;
+};
+
+export const getDontAskForReview = async () => {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.DONT_ASK_FOR_REVIEW)?.fetch();
+    return Boolean(records?.[0]?.value);
+};
+
+export const getFirstLaunch = async () => {
+    const records = await queryGlobalValue(GLOBAL_IDENTIFIERS.FIRST_LAUNCH)?.fetch();
+    if (!records?.[0]?.value) {
+        return 0;
+    }
+
+    return records[0].value;
 };

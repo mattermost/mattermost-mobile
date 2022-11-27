@@ -18,6 +18,7 @@ import {
     handleCallUserDisconnected,
     handleCallUserMuted,
     handleCallUserRaiseHand,
+    handleCallUserReacted,
     handleCallUserUnmuted,
     handleCallUserUnraiseHand,
     handleCallUserVoiceOff,
@@ -31,9 +32,9 @@ import AppsManager from '@managers/apps_manager';
 import {getActiveServerUrl, queryActiveServer} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {
-    getCommonSystemValues,
     getConfig,
     getCurrentUserId,
+    getLicense,
     getWebSocketLastDisconnected,
     resetWebSocketLastDisconnected,
     setCurrentTeamAndChannelId,
@@ -178,12 +179,14 @@ async function doReconnect(serverUrl: string) {
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
-    const {config, license} = await getCommonSystemValues(database);
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
+    const license = await getLicense(database);
+    const config = await getConfig(database);
 
     if (isSupportedServerCalls(config?.Version)) {
         loadConfigAndCalls(serverUrl, currentUserId);
     }
+
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
 
     AppsManager.refreshAppBindings(serverUrl);
 }
@@ -390,6 +393,9 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.CALLS_CALL_END:
             handleCallEnded(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_USER_REACTED:
+            handleCallUserReacted(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:

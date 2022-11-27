@@ -6,6 +6,15 @@ class NavigationStore {
     navigationComponentIdStack: string[] = [];
     navigationModalStack: string[] = [];
     visibleTab = 'Home';
+    tosOpen = false;
+
+    setToSOpen = (open: boolean) => {
+        this.tosOpen = open;
+    };
+
+    isToSOpen = () => {
+        return this.tosOpen;
+    };
 
     addNavigationComponentId = (componentId: string) => {
         this.addToNavigationComponentIdStack(componentId);

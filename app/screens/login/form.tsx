@@ -268,14 +268,13 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     // useEffect to set userName for EMM
     useEffect(() => {
         const setEmmUsernameIfAvailable = async () => {
-            if (managedConfig?.username && loginRef.current) {
-                loginRef.current.setNativeProps({text: managedConfig.username});
+            if (managedConfig?.username) {
                 setLoginId(managedConfig.username);
             }
         };
 
         setEmmUsernameIfAvailable();
-    }, []);
+    }, [managedConfig?.username]);
 
     useEffect(() => {
         if (loginId && password) {

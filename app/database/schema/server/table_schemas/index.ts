@@ -31,3 +31,4 @@ export {default as ThreadSchema} from './thread';
 export {default as ThreadParticipantSchema} from './thread_participant';
 export {default as ThreadInTeamSchema} from './thread_in_team';
 export {default as UserSchema} from './user';
+export {default as ConfigSchema} from './config';

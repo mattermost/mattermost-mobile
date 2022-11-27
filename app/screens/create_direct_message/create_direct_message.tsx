@@ -11,6 +11,7 @@ import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remot
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
+import UserList from '@components/user_list';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -23,7 +24,6 @@ import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} 
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
 import SelectedUsers from './selected_users';
-import UserList from './user_list';
 
 const messages = defineMessages({
     dm: {

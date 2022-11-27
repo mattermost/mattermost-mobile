@@ -4,9 +4,9 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {switchMap} from 'rxjs/operators';
 
-import {observeConfig} from '@queries/servers/system';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {getUserCustomStatus, isCustomStatusExpired} from '@utils/user';
 
@@ -21,9 +21,8 @@ type HeaderInputProps = {
 const enhanced = withObservables(
     ['userId'],
     ({userId, database}: WithDatabaseArgs & HeaderInputProps) => {
-        const config = observeConfig(database);
         const user = observeUser(database, userId);
-        const isCustomStatusEnabled = config.pipe(map((cfg) => cfg?.EnableCustomUserStatuses === 'true'));
+        const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
         const customStatus = user.pipe(switchMap((u) => (u?.isBot ? of$(undefined) : of$(getUserCustomStatus(u)))));
         const customStatusExpired = user.pipe(switchMap((u) => (u?.isBot ? of$(false) : of$(isCustomStatusExpired(u)))));
 

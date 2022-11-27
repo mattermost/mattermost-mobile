@@ -4,6 +4,7 @@
 import React, {useEffect} from 'react';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import ThreadsButton from '@components/threads_button';
 import {TABLET_SIDEBAR_WIDTH, TEAM_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -12,7 +13,6 @@ import Categories from './categories';
 import ChannelListHeader from './header';
 import LoadChannelsError from './load_channels_error';
 import SubHeader from './subheader';
-import ThreadsButton from './threads_button';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
