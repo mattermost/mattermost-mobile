@@ -4,6 +4,24 @@
 import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
+import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
+import EphemeralStore from '@store/ephemeral_store';
+
+export function canReceiveNotifications(serverUrl: string, verification: string, intl: IntlShape) {
+    switch (verification) {
+        case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
+            EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_NOT_AVAILABLE);
+            alertPushProxyError(intl);
+            break;
+        case PUSH_PROXY_RESPONSE_UNKNOWN:
+            EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_UNKNOWN);
+            alertPushProxyUnknown(intl);
+            break;
+        default:
+            EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_VERIFIED);
+    }
+}
+
 export function alertPushProxyError(intl: IntlShape) {
     Alert.alert(
         intl.formatMessage({

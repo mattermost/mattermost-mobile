@@ -7,7 +7,15 @@ import {Navigation, Options} from 'react-native-navigation';
 
 import {Screens} from '@constants';
 
-export const appearanceControlledScreens = new Set([Screens.SERVER, Screens.LOGIN, Screens.FORGOT_PASSWORD, Screens.MFA, Screens.SSO]);
+export const appearanceControlledScreens = new Set([
+    Screens.SERVER,
+    Screens.LOGIN,
+    Screens.FORGOT_PASSWORD,
+    Screens.MFA,
+    Screens.SSO,
+    Screens.REVIEW_APP,
+    Screens.SHARE_FEEDBACK,
+]);
 
 export function mergeNavigationOptions(componentId: string, options: Options) {
     Navigation.mergeOptions(componentId, options);

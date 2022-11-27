@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {
     Text,
     TouchableOpacity,
@@ -17,6 +17,8 @@ type Props = {
     channel: Channel;
     onPress: (channel: Channel) => void;
     testID?: string;
+    selectable?: boolean;
+    selected?: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -51,6 +53,8 @@ export default function ChannelListRow({
     channel,
     onPress,
     testID,
+    selectable = false,
+    selected = false,
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -58,6 +62,23 @@ export default function ChannelListRow({
     const handlePress = () => {
         onPress(channel);
     };
+
+    const selectionIcon = useMemo(() => {
+        if (!selectable) {
+            return null;
+        }
+
+        const color = selected ? theme.buttonBg : theme.centerChannelColor;
+        return (
+            <View style={style.selector}>
+                <CompassIcon
+                    name={selected ? 'check-circle' : 'circle-outline'}
+                    size={28}
+                    color={color}
+                />
+            </View>
+        );
+    }, [selectable, selected, theme]);
 
     let purposeComponent;
     if (channel.purpose) {
@@ -105,6 +126,7 @@ export default function ChannelListRow({
                         </Text>
                         {purposeComponent}
                     </View>
+                    {selectionIcon}
                 </View>
             </TouchableOpacity>
         </View>

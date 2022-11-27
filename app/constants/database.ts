@@ -59,6 +59,7 @@ export const SYSTEM_IDENTIFIERS = {
     DATA_RETENTION_POLICIES: 'dataRetentionPolicies',
     EXPANDED_LINKS: 'expandedLinks',
     LAST_DISMISSED_BANNER: 'lastDismissedBanner',
+    LAST_SERVER_VERSION_CHECK: 'LastServerVersionCheck',
     LICENSE: 'license',
     ONLY_UNREADS: 'onlyUnreads',
     PUSH_VERIFICATION_STATUS: 'pushVerificationStatus',
@@ -72,6 +73,9 @@ export const SYSTEM_IDENTIFIERS = {
 
 export const GLOBAL_IDENTIFIERS = {
     DEVICE_TOKEN: 'deviceToken',
+    DONT_ASK_FOR_REVIEW: 'dontAskForReview',
+    FIRST_LAUNCH: 'firstLaunch',
+    LAST_ASK_FOR_REVIEW: 'lastAskForReview',
     MULTI_SERVER_TUTORIAL: 'multiServerTutorial',
     PROFILE_LONG_PRESS_TUTORIAL: 'profileLongPressTutorial',
 };

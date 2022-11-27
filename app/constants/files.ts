@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {toMilliseconds} from '@utils/datetime';
+
 export const VALID_IMAGE_MIME_TYPES = [
     'image/jpeg',
     'image/jpeg',
@@ -43,6 +45,6 @@ export const Files: Record<string, string[]> = {
 };
 Files.DOCUMENT_TYPES = Files.WORD_TYPES.concat(Files.PDF_TYPES, Files.TEXT_TYPES);
 
-export const PROGRESS_TIME_TO_STORE = 60000; // 60 * 1000 (60s)
+export const PROGRESS_TIME_TO_STORE = toMilliseconds({seconds: 60});
 
 export default Files;

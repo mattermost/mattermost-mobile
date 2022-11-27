@@ -39,7 +39,7 @@ const RecentItem = ({item, setRecentValue}: Props) => {
             inline={true}
             label={item.term}
             onRemove={handleRemove}
-            testID={'search.recent_item'}
+            testID={`search.recent_item.${item.term}`}
             type='remove'
             containerStyle={styles.container}
         />

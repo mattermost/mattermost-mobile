@@ -82,6 +82,7 @@ export default function TeamListItem({team, textColor, iconTextColor, iconBackgr
             <Text
                 style={[styles.text, textColor && {color: textColor}]}
                 numberOfLines={1}
+                testID={`${teamListItemTestId}.team_display_name`}
             >
                 {displayName}
             </Text>
