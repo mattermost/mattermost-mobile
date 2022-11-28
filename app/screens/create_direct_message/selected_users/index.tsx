@@ -2,10 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {LayoutChangeEvent, ScrollView, View} from 'react-native';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {KeyboardAvoidingView, LayoutChangeEvent, ScrollView, View} from 'react-native';
+import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {BOTTOM_TAB_HEIGHT} from '@app/constants/view';
 import Toast from '@components/toast';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
@@ -168,19 +169,25 @@ export default function SelectedUsers({
         return u;
     }, [selectedIds, teammateNameDisplay, onRemove]);
 
-    const containerBottomMargin = isTablet ? TABLET_MARGIN_BOTTOM : 0;
+    const totalHeight = useDerivedValue(() => scrollViewHeight.value + BUTTON_HEIGHT, [scrollViewHeight.value]);
+    const animatedHeight = useDerivedValue(() => withTiming(isVisible ? totalHeight.value : 0, {duration: 200}), [isVisible, totalHeight.value]);
 
-    const animatedViewStyle = useAnimatedStyle(() => ({
-        height: withTiming(isVisible ? scrollViewHeight.value + BUTTON_HEIGHT : 0, {duration: 200}),
-        marginBottom: containerBottomMargin + keyboardBottomMargin,
-    }));
+    const animatedViewStyle = useAnimatedStyle(() => {
+        const tabletBottom = (keyboardHeight ? BOTTOM_TAB_HEIGHT + BUTTON_HEIGHT : 0) + TABLET_MARGIN_BOTTOM;
+        const mobileBottom = keyboardBottomMargin;
+
+        return {
+            height: animatedHeight.value,
+            marginBottom: isTablet ? tabletBottom : mobileBottom,
+        };
+    }, [isVisible, keyboardHeight, scrollViewHeight, totalHeight]);
 
     const animatedToastStyle = useAnimatedStyle(() => ({
         bottom: TOAST_BOTTOM_MARGIN +
             SCROLL_VIEW_MAX_HEIGHT +
             BUTTON_HEIGHT +
             insets.bottom +
-            containerBottomMargin,
+            (isTablet ? TABLET_MARGIN_BOTTOM : 0),
         opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
         position: 'absolute',
     }), [scrollViewHeight, showToast]);
@@ -189,31 +196,45 @@ export default function SelectedUsers({
         scrollViewHeight.value = e.nativeEvent.layout.height;
     }, []);
 
+    const contents = useMemo(() => (
+        <Animated.View style={[style.container, animatedViewStyle]}>
+            <ScrollView style={{maxHeight: SCROLL_VIEW_MAX_HEIGHT}}>
+                <View
+                    style={style.users}
+                    onLayout={onLayout}
+                >
+                    {users}
+                </View>
+            </ScrollView>
+            <Button
+                onPress={handleOnPress}
+                icon={buttonIcon}
+                text={buttonText}
+            />
+        </Animated.View>
+    ), [users]);
+
+    const toast = useMemo(() => (
+        <Toast
+            animatedStyle={animatedToastStyle}
+            iconName={toastIcon}
+            style={style.toast}
+            message={toastMessage}
+        />
+    ), [animatedToastStyle]);
+
+    const tabletView = useMemo(() => (
+        <KeyboardAvoidingView
+            behavior='position'
+        >
+            {contents}
+        </KeyboardAvoidingView>
+    ), [contents]);
+
     return (
         <>
-            {showToast &&
-            <Toast
-                animatedStyle={animatedToastStyle}
-                iconName={toastIcon}
-                style={style.toast}
-                message={toastMessage}
-            />
-            }
-            <Animated.View style={[style.container, animatedViewStyle]}>
-                <ScrollView style={{maxHeight: SCROLL_VIEW_MAX_HEIGHT}}>
-                    <View
-                        style={style.users}
-                        onLayout={onLayout}
-                    >
-                        {users}
-                    </View>
-                </ScrollView>
-                <Button
-                    onPress={handleOnPress}
-                    icon={buttonIcon}
-                    text={buttonText}
-                />
-            </Animated.View>
+            {showToast && toast}
+            {isTablet ? tabletView : contents }
         </>
     );
 }

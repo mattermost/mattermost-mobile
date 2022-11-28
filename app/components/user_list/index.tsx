@@ -178,7 +178,8 @@ export default function UserList({
                 isMyUser={currentUserId === item.id}
                 onPress={handleSelectProfile}
                 onLongPress={openUserProfile}
-                selectable={canAdd}
+                disabled={!canAdd}
+                selectable={true}
                 selected={selected}
                 testID='create_direct_message.user_list.user_item'
                 teammateNameDisplay={teammateNameDisplay}

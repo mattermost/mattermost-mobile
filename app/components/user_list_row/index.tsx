@@ -160,7 +160,7 @@ export default function UserListRow({
             return null;
         }
 
-        const iconOpacity = DEFAULT_ICON_OPACITY * (disabled ? 1 : DISABLED_OPACITY);
+        const iconOpacity = DEFAULT_ICON_OPACITY * (disabled ? DISABLED_OPACITY : 1);
         const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
         return (
             <View style={style.selector}>
