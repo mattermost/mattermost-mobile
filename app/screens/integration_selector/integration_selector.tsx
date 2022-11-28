@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
-import {ListItemProps} from 'react-native-elements';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
@@ -454,7 +453,7 @@ function IntegrationSelector(
         );
     }, [loading, style]);
 
-    const renderChannelItem = useCallback((itemProps: ListItemProps) => {
+    const renderChannelItem = useCallback((itemProps: any) => {
         const itemSelected = Boolean(multiselectSelected[itemProps.item.id]);
         return (
             <ChannelListRow
@@ -469,7 +468,7 @@ function IntegrationSelector(
         );
     }, [multiselectSelected, theme, isMultiselect]);
 
-    const renderOptionItem = useCallback((itemProps: ListItemProps) => {
+    const renderOptionItem = useCallback((itemProps: any) => {
         const itemSelected = Boolean(multiselectSelected[itemProps.item.value]);
         return (
             <OptionListRow
@@ -482,7 +481,7 @@ function IntegrationSelector(
         );
     }, [multiselectSelected, theme, isMultiselect]);
 
-    const renderUserItem = useCallback((itemProps: ListItemProps): JSX.Element => {
+    const renderUserItem = useCallback((itemProps: any): JSX.Element => {
         const itemSelected = Boolean(multiselectSelected[itemProps.item.id]);
 
         return (
@@ -498,7 +497,7 @@ function IntegrationSelector(
         );
     }, [multiselectSelected, theme, isMultiselect, teammateNameDisplay]);
 
-    const getRenderItem = (): (itemProps: ListItemProps) => JSX.Element => {
+    const getRenderItem = (): (itemProps: any) => JSX.Element => {
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
                 return renderUserItem;
