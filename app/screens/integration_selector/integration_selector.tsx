@@ -508,8 +508,8 @@ function IntegrationSelector(
         }
     };
 
-    const renderSelectedOptions = useCallback((): React.ReactElement<any, string> | null => {
-        const selectedItems: any = Object.values(multiselectSelected);
+    const renderSelectedOptions = useCallback((): React.ReactElement<string> | null => {
+        const selectedItems: Channel[] | DialogOption[] | UserProfile[] = Object.values(multiselectSelected);
 
         if (!selectedItems.length) {
             return null;
