@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
@@ -19,7 +17,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {observeCurrentTeamId} from '@queries/servers/system';
 import {
     buildNavigationButton,
     popTopScreen, setButtons,
@@ -33,8 +30,6 @@ import ChannelListRow from './channel_list_row';
 import CustomList, {FLATLIST, SECTIONLIST} from './custom_list';
 import OptionListRow from './option_list_row';
 import SelectedOptions from './selected_options';
-
-import type {WithDatabaseArgs} from '@typings/database/database';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DataType;
@@ -593,8 +588,4 @@ function IntegrationSelector(
     );
 }
 
-const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentTeamId: observeCurrentTeamId(database),
-}));
-
-export default withDatabase(withTeamId(IntegrationSelector));
+export default IntegrationSelector;
