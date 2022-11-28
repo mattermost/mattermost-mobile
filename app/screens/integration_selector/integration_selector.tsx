@@ -66,6 +66,18 @@ const extractItemKey = (dataSource: string, item: Selection): string => {
     }
 };
 
+const toggleFromMap = <T extends DialogOption | Channel | UserProfile>(current: MultiselectSelectedMap, key: string, item: T): MultiselectSelectedMap => {
+    const newMap = {...current};
+
+    if (current[key]) {
+        delete newMap[key];
+    } else {
+        newMap[key] = item;
+    }
+
+    return newMap;
+};
+
 const filterSearchData = (source: string, searchData: DataType, searchTerm: string) => {
     if (!searchData) {
         return [];
@@ -190,56 +202,27 @@ function IntegrationSelector(
 
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS: {
-                setMultiselectSelected((current) => {
-                    const multiselectSelectedItems = {...current};
-
-                    if (current[itemKey]) {
-                        delete multiselectSelectedItems[itemKey];
-                    } else {
-                        multiselectSelectedItems[itemKey] = item as UserProfile;
-                    }
-
-                    return multiselectSelectedItems;
-                });
+                setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as UserProfile));
                 return;
             }
             case ViewConstants.DATA_SOURCE_CHANNELS: {
-                setMultiselectSelected((current) => {
-                    const multiselectSelectedItems = {...current};
-
-                    if (current[itemKey]) {
-                        delete multiselectSelectedItems[itemKey];
-                    } else {
-                        multiselectSelectedItems[itemKey] = item as Channel;
-                    }
-
-                    return multiselectSelectedItems;
-                });
+                setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as Channel));
                 return;
             }
             default: {
-                setMultiselectSelected((current) => {
-                    const multiselectSelectedItems = {...current};
-
-                    if (current[itemKey]) {
-                        delete multiselectSelectedItems[itemKey];
-                    } else {
-                        multiselectSelectedItems[itemKey] = item as DialogOption;
-                    }
-
-                    return multiselectSelectedItems;
-                });
+                setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as DialogOption));
             }
         }
     }, [isMultiselect, dataSource, handleSelect]);
 
     const handleRemoveOption = useCallback((item: UserProfile | Channel | DialogOption) => {
-        const currentSelected: Dictionary<UserProfile> | Dictionary<DialogOption> | Dictionary<Channel> = multiselectSelected;
         const itemKey = extractItemKey(dataSource, item);
-        const multiselectSelectedItems = {...currentSelected};
-        delete multiselectSelectedItems[itemKey];
-        setMultiselectSelected(multiselectSelectedItems);
-    }, [dataSource, multiselectSelected]);
+        setMultiselectSelected((current) => {
+            const multiselectSelectedItems = {...current};
+            delete multiselectSelectedItems[itemKey];
+            return multiselectSelectedItems;
+        });
+    }, [dataSource]);
 
     const getChannels = useCallback(debounce(async () => {
         if (next.current && !loading && !term) {
@@ -529,8 +512,8 @@ function IntegrationSelector(
         }
     };
 
-    const renderSelectedOptions = useCallback((): React.ReactElement<any, string> | null => {
-        const selectedItems: any = Object.values(multiselectSelected);
+    const renderSelectedOptions = useCallback((): React.ReactElement<string> | null => {
+        const selectedItems: Channel[] | DialogOption[] | UserProfile[] = Object.values(multiselectSelected);
 
         if (!selectedItems.length) {
             return null;

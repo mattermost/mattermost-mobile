@@ -9,7 +9,6 @@ import IntegrationSelector from './integration_selector';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-// See LICENSE.txt for license information.
 const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentTeamId: observeCurrentTeamId(database),
 }));
