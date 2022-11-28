@@ -73,9 +73,7 @@ const CHIP_HEIGHT_WITH_MARGIN = USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN;
 const EXPOSED_CHIP_HEIGHT = 0.33 * USER_CHIP_HEIGHT;
 const MAX_CHIP_ROWS = 3;
 const SCROLL_PADDING_TOP = 20;
-const SCROLL_VIEW_MAX_HEIGHT = SCROLL_PADDING_TOP +
-    (CHIP_HEIGHT_WITH_MARGIN * MAX_CHIP_ROWS) +
-    EXPOSED_CHIP_HEIGHT;
+const SCROLL_VIEW_MAX_HEIGHT = SCROLL_PADDING_TOP + (CHIP_HEIGHT_WITH_MARGIN * MAX_CHIP_ROWS) + EXPOSED_CHIP_HEIGHT;
 const TABLET_MARGIN_BOTTOM = 20;
 const TOAST_BOTTOM_MARGIN = 8;
 
@@ -184,7 +182,7 @@ export default function SelectedUsers({
 
     const animatedToastStyle = useAnimatedStyle(() => ({
         bottom: TOAST_BOTTOM_MARGIN +
-            SCROLL_VIEW_MAX_HEIGHT +
+            Math.min(SCROLL_VIEW_MAX_HEIGHT, scrollViewHeight.value) +
             BUTTON_HEIGHT +
             insets.bottom +
             (isTablet ? TABLET_MARGIN_BOTTOM : 0),
