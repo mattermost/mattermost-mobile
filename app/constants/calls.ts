@@ -6,9 +6,9 @@ import {toMilliseconds} from '@utils/datetime';
 const RefreshConfigMillis = toMilliseconds({minutes: 20});
 
 const RequiredServer = {
-    FULL_VERSION: '7.1.0',
-    MAJOR_VERSION: 7,
-    MIN_VERSION: 1,
+    FULL_VERSION: '6.3.0',
+    MAJOR_VERSION: 6,
+    MIN_VERSION: 3,
     PATCH_VERSION: 0,
 };
 
