@@ -192,40 +192,51 @@ function IntegrationSelector(
         }
 
         const itemKey = extractItemKey(dataSource, item);
-        const currentSelected: Dictionary<UserProfile> | Dictionary<DialogOption> | Dictionary<Channel> = multiselectSelected;
-        const multiselectSelectedItems = {...currentSelected};
 
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS: {
-                if (currentSelected[itemKey]) {
-                    delete multiselectSelectedItems[itemKey];
-                } else {
-                    multiselectSelectedItems[itemKey] = item as UserProfile;
-                }
+                setMultiselectSelected((current) => {
+                    const multiselectSelectedItems = {...current};
 
-                setMultiselectSelected(multiselectSelectedItems);
+                    if (current[itemKey]) {
+                        delete multiselectSelectedItems[itemKey];
+                    } else {
+                        multiselectSelectedItems[itemKey] = item as UserProfile;
+                    }
+
+                    return multiselectSelectedItems;
+                });
                 return;
             }
             case ViewConstants.DATA_SOURCE_CHANNELS: {
-                if (currentSelected[itemKey]) {
-                    delete multiselectSelectedItems[itemKey];
-                } else {
-                    multiselectSelectedItems[itemKey] = item as Channel;
-                }
+                setMultiselectSelected((current) => {
+                    const multiselectSelectedItems = {...current};
 
-                setMultiselectSelected(multiselectSelectedItems);
+                    if (current[itemKey]) {
+                        delete multiselectSelectedItems[itemKey];
+                    } else {
+                        multiselectSelectedItems[itemKey] = item as Channel;
+                    }
+
+                    return multiselectSelectedItems;
+                });
                 return;
             }
             default: {
-                if (currentSelected[itemKey]) {
-                    delete multiselectSelectedItems[itemKey];
-                } else {
-                    multiselectSelectedItems[itemKey] = item as DialogOption;
-                }
-                setMultiselectSelected(multiselectSelectedItems);
+                setMultiselectSelected((current) => {
+                    const multiselectSelectedItems = {...current};
+
+                    if (current[itemKey]) {
+                        delete multiselectSelectedItems[itemKey];
+                    } else {
+                        multiselectSelectedItems[itemKey] = item as DialogOption;
+                    }
+
+                    return multiselectSelectedItems;
+                });
             }
         }
-    }, [integrationData, multiselectSelected, isMultiselect, dataSource, handleSelect]);
+    }, [isMultiselect, dataSource, handleSelect]);
 
     const handleRemoveOption = useCallback((item: UserProfile | Channel | DialogOption) => {
         const currentSelected: Dictionary<UserProfile> | Dictionary<DialogOption> | Dictionary<Channel> = multiselectSelected;
