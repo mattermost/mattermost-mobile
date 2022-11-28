@@ -299,7 +299,7 @@ function IntegrationSelector(
     }, [options, getDynamicOptions, integrationData]);
 
     const onHandleMultiselectSubmit = useCallback(() => {
-        handleSelect(getMultiselectData(multiselectSelected));
+        handleSelect(Object.values(multiselectSelected));
         close();
     }, [multiselectSelected, handleSelect]);
 
@@ -346,38 +346,6 @@ function IntegrationSelector(
             setLoading(false);
         }, General.SEARCH_TIMEOUT_MILLISECONDS);
     }, [dataSource, integrationData, currentTeamId]);
-
-    const getMultiselectData = useCallback((multiselectSelectedElems: MultiselectSelectedMap): Selection => {
-        let myItems;
-        let multiselectItems: Selection = [];
-
-        switch (dataSource) {
-            case ViewConstants.DATA_SOURCE_USERS:
-                myItems = multiselectSelectedElems as Dictionary<UserProfile>;
-                multiselectItems = multiselectItems as UserProfile[];
-                // eslint-disable-next-line guard-for-in
-                for (const index in myItems) {
-                    multiselectItems.push(myItems[index]);
-                }
-                return multiselectItems;
-            case ViewConstants.DATA_SOURCE_CHANNELS:
-                myItems = multiselectSelectedElems as Dictionary<Channel>;
-                multiselectItems = multiselectItems as Channel[];
-                // eslint-disable-next-line guard-for-in
-                for (const index in myItems) {
-                    multiselectItems.push(myItems[index]);
-                }
-                return multiselectItems;
-            default:
-                myItems = multiselectSelectedElems as Dictionary<DialogOption>;
-                multiselectItems = multiselectItems as DialogOption[];
-                // eslint-disable-next-line guard-for-in
-                for (const index in myItems) {
-                    multiselectItems.push(myItems[index]);
-                }
-                return multiselectItems;
-        }
-    }, [multiselectSelected, dataSource]);
 
     // Effects
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit]);
