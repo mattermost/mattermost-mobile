@@ -217,7 +217,11 @@ function IntegrationSelector(
 
     const handleRemoveOption = useCallback((item: UserProfile | Channel | DialogOption) => {
         const itemKey = extractItemKey(dataSource, item);
-        setMultiselectSelected((current) => toggleFromMap(current, itemKey, item));
+        setMultiselectSelected((current) => {
+            const multiselectSelectedItems = {...current};
+            delete multiselectSelectedItems[itemKey];
+            return multiselectSelectedItems;
+        });
     }, [dataSource]);
 
     const getChannels = useCallback(debounce(async () => {
