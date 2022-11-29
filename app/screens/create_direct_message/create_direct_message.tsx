@@ -26,7 +26,7 @@ import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
 const messages = defineMessages({
     dm: {
-        id: 'mobile.open_dm.error',
+        id: t('mobile.open_dm.error'),
         defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
     },
     gm: {
@@ -34,11 +34,11 @@ const messages = defineMessages({
         defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
     },
     buttonText: {
-        id: t('create_direct_message.start'),
+        id: t('mobile.create_direct_message.start'),
         defaultMessage: 'Start Conversation',
     },
     toastMessage: {
-        id: 'mobile.create_direct_message.max_limit_reached',
+        id: t('mobile.create_direct_message.max_limit_reached'),
         defaultMessage: 'Group messages are limited to {maxCount} members',
     },
 });
