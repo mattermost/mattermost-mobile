@@ -143,10 +143,6 @@ export default function SelectedUsers({
         setIsVisible(numberSelectedIds > 0);
     }, [numberSelectedIds > 0]);
 
-    const handleOnPress = async () => {
-        onPress();
-    };
-
     const users = useMemo(() => {
         const u = [];
         for (const id of Object.keys(selectedIds)) {
@@ -201,7 +197,7 @@ export default function SelectedUsers({
                 </View>
             </ScrollView>
             <Button
-                onPress={handleOnPress}
+                onPress={async () => onPress()}
                 icon={buttonIcon}
                 text={buttonText}
             />
