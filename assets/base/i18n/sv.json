@@ -879,5 +879,16 @@
     "snack.bar.undo": "Ångra",
     "snack.bar.mute.channel": "Den här kanalen mjutades",
     "snack.bar.message.copied": "Texten kopieras till urklipp",
-    "snack.bar.link.copied": "Länken kopieras till urklipp"
+    "snack.bar.link.copied": "Länken kopieras till urklipp",
+    "onboaring.welcome_description": "Mattermost är en plattform byggd på öppen källkod för samarbete mellan utvecklare. Säker, flexibel och integrerad med dina verktyg.",
+    "onboarding.welcome": "Välkommen",
+    "onboarding.realtime_collaboration_description": "Permanenta kanaler, direktmeddelanden och fildelning fungerar smidigt så att du kan hålla kontakten var du än befinner dig.",
+    "onboarding.realtime_collaboration": "Samarbeta i realtid",
+    "onboarding.integrations_description": "Gå längre än chatt med integrerade produktlösningar som är anpassade till gemensamma utvecklingsprocesser.",
+    "onboarding.integrations": "Integrera med verktygen du älskar",
+    "onboarding.calls_description": "När det inte går tillräckligt snabbt att skriva kan du växla från kanalbaserad chatt till ett säkert ljudsamtal med ett enda tryck.",
+    "onboarding.calls": "Börja ett säkert ljudsamtal direkt",
+    "mobile.onboarding.sign_in_to_get_started": "Logga in för att komma igång",
+    "mobile.onboarding.sign_in": "Logga in",
+    "mobile.onboarding.next": "Nästa"
 }
