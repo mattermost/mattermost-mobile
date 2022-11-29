@@ -237,7 +237,7 @@ exports[`components/channel_list_row should show no results 1`] = `
               }
             >
               <Icon
-                color="rgba(63,67,80,0.1024)"
+                color="rgba(63,67,80,0.32)"
                 name="circle-outline"
                 size={28}
               />
@@ -509,7 +509,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
               }
             >
               <Icon
-                color="rgba(63,67,80,0.1024)"
+                color="rgba(63,67,80,0.32)"
                 name="circle-outline"
                 size={28}
               />
@@ -781,7 +781,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
               }
             >
               <Icon
-                color="rgba(63,67,80,0.1024)"
+                color="rgba(63,67,80,0.32)"
                 name="circle-outline"
                 size={28}
               />

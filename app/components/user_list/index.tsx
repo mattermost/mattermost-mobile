@@ -4,7 +4,6 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, Keyboard, ListRenderItemInfo, Platform, SectionList, SectionListData, Text, View} from 'react-native';
-import Animated from 'react-native-reanimated';
 
 import {storeProfile} from '@actions/local/user';
 import Loading from '@components/loading';
@@ -100,9 +99,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-const AnimatedSectionList = Animated.createAnimatedComponent(SectionList<UserProfile>);
 
 type Props = {
     profiles: UserProfile[];
@@ -227,7 +223,7 @@ export default function UserList({
 
     const renderFlatList = (items: UserProfile[]) => {
         return (
-            <AnimatedFlatList
+            <FlatList
                 contentContainerStyle={style.container}
                 data={items}
                 extraData={selectedIds}
@@ -249,7 +245,7 @@ export default function UserList({
 
     const renderSectionList = (sections: Array<SectionListData<UserProfile>>) => {
         return (
-            <AnimatedSectionList
+            <SectionList
                 contentContainerStyle={style.container}
                 extraData={loading ? false : selectedIds}
                 keyboardShouldPersistTaps='always'
