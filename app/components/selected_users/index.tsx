@@ -174,7 +174,7 @@ export default function SelectedUsers({
         let margin = BOTTOM_TAB_HEIGHT + BUTTON_HEIGHT + insets.bottom;
         margin += isTablet ? 0 : -10;
         return margin;
-    }, [keyboardHeight]);
+    }, [insets.bottom, isTablet, keyboardHeight]);
 
     const totalPanelHeight = useDerivedValue(() => (
         isVisible ? scrollViewHeight.value + BUTTON_HEIGHT : 0
