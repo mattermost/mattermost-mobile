@@ -16,13 +16,16 @@ import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {resetToTeams} from '@screens/navigation';
+import {resetToTeams, openToS} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import {tryRunAppReview} from '@utils/reviews';
 import {addSentryContext} from '@utils/sentry';
 
 import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
 import Servers from './servers';
+
+import type {LaunchType} from '@typings/launch';
 
 type ChannelProps = {
     channelsCount: number;
@@ -30,6 +33,9 @@ type ChannelProps = {
     teamsCount: number;
     time?: number;
     isLicensed: boolean;
+    showToS: boolean;
+    launchType: LaunchType;
+    coldStart?: boolean;
 };
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -46,6 +52,14 @@ const styles = StyleSheet.create({
 
 let backPressedCount = 0;
 let backPressTimeout: NodeJS.Timeout|undefined;
+
+// This is needed since the Database Provider is recreating this component
+// when the database is changed (couldn't find exactly why), re-triggering
+// the effect. This makes sure the rate logic is only handle on the first
+// run. Most of the normal users won't see this issue, but on edge times
+// (near the time you will see the rate dialog) will show when switching
+// servers.
+let hasRendered = false;
 
 const ChannelListScreen = (props: ChannelProps) => {
     const theme = useTheme();
@@ -122,6 +136,23 @@ const ChannelListScreen = (props: ChannelProps) => {
     useEffect(() => {
         addSentryContext(serverUrl);
     }, [serverUrl]);
+
+    useEffect(() => {
+        if (props.showToS && !NavigationStore.isToSOpen()) {
+            openToS();
+        }
+    }, [props.showToS]);
+
+    // Init the rate app. Only run the effect on the first render if ToS is not open
+    useEffect(() => {
+        if (hasRendered) {
+            return;
+        }
+        hasRendered = true;
+        if (!NavigationStore.isToSOpen()) {
+            tryRunAppReview(props.launchType, props.coldStart);
+        }
+    }, []);
 
     return (
         <FreezeScreen freeze={!isFocused}>

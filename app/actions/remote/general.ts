@@ -124,3 +124,4 @@ export const getRedirectLocation = async (serverUrl: string, link: string) => {
         return {error};
     }
 };
+

@@ -1,0 +1,241 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`components/integration_selector/selected_options should match snapshot for channels 1`] = `
+<RCTScrollView
+  style={
+    {
+      "flexGrow": 0,
+      "marginBottom": 5,
+      "marginLeft": 5,
+      "maxHeight": 100,
+    }
+  }
+>
+  <View>
+    <View
+      style={
+        {
+          "alignItems": "flex-start",
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "backgroundColor": "rgba(63,67,80,0.2)",
+            "borderRadius": 3,
+            "flexDirection": "row",
+            "height": 27,
+            "marginBottom": 4,
+            "marginRight": 10,
+            "paddingLeft": 10,
+          }
+        }
+      >
+        <Text
+          numberOfLines={1}
+          style={
+            {
+              "color": "#3f4350",
+              "fontFamily": "OpenSans",
+              "fontSize": 14,
+              "fontWeight": "400",
+              "lineHeight": 20,
+              "maxWidth": "90%",
+            }
+          }
+        >
+          channel
+        </Text>
+        <View
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "opacity": 1,
+              "paddingHorizontal": 10,
+            }
+          }
+        >
+          <Icon
+            color="#3f4350"
+            name="close"
+            size={14}
+          />
+        </View>
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`components/integration_selector/selected_options should match snapshot for options 1`] = `
+<RCTScrollView
+  style={
+    {
+      "flexGrow": 0,
+      "marginBottom": 5,
+      "marginLeft": 5,
+      "maxHeight": 100,
+    }
+  }
+>
+  <View>
+    <View
+      style={
+        {
+          "alignItems": "flex-start",
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "backgroundColor": "rgba(63,67,80,0.2)",
+            "borderRadius": 3,
+            "flexDirection": "row",
+            "height": 27,
+            "marginBottom": 4,
+            "marginRight": 10,
+            "paddingLeft": 10,
+          }
+        }
+      >
+        <Text
+          numberOfLines={1}
+          style={
+            {
+              "color": "#3f4350",
+              "fontFamily": "OpenSans",
+              "fontSize": 14,
+              "fontWeight": "400",
+              "lineHeight": 20,
+              "maxWidth": "90%",
+            }
+          }
+        >
+          my text
+        </Text>
+        <View
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "opacity": 1,
+              "paddingHorizontal": 10,
+            }
+          }
+        >
+          <Icon
+            color="#3f4350"
+            name="close"
+            size={14}
+          />
+        </View>
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;
+
+exports[`components/integration_selector/selected_options should match snapshot for users 1`] = `
+<RCTScrollView
+  style={
+    {
+      "flexGrow": 0,
+      "marginBottom": 5,
+      "marginLeft": 5,
+      "maxHeight": 100,
+    }
+  }
+>
+  <View>
+    <View
+      style={
+        {
+          "alignItems": "flex-start",
+          "flexDirection": "row",
+          "flexWrap": "wrap",
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "backgroundColor": "rgba(63,67,80,0.2)",
+            "borderRadius": 3,
+            "flexDirection": "row",
+            "height": 27,
+            "marginBottom": 4,
+            "marginRight": 10,
+            "paddingLeft": 10,
+          }
+        }
+      >
+        <Text
+          numberOfLines={1}
+          style={
+            {
+              "color": "#3f4350",
+              "fontFamily": "OpenSans",
+              "fontSize": 14,
+              "fontWeight": "400",
+              "lineHeight": 20,
+              "maxWidth": "90%",
+            }
+          }
+        >
+          johndoe
+        </Text>
+        <View
+          accessible={true}
+          collapsable={false}
+          focusable={true}
+          onClick={[Function]}
+          onResponderGrant={[Function]}
+          onResponderMove={[Function]}
+          onResponderRelease={[Function]}
+          onResponderTerminate={[Function]}
+          onResponderTerminationRequest={[Function]}
+          onStartShouldSetResponder={[Function]}
+          style={
+            {
+              "opacity": 1,
+              "paddingHorizontal": 10,
+            }
+          }
+        >
+          <Icon
+            color="#3f4350"
+            name="close"
+            size={14}
+          />
+        </View>
+      </View>
+    </View>
+  </View>
+</RCTScrollView>
+`;

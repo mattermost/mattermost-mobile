@@ -13,7 +13,16 @@ import {
     setCurrentCall,
     setGlobalCallsState,
 } from '@calls/state';
-import {Call, CallsConfig, ChannelsWithCalls, DefaultCall, DefaultCurrentCall} from '@calls/types/calls';
+import {
+    Call,
+    CallReaction,
+    CallsConfig,
+    ChannelsWithCalls,
+    CurrentCall,
+    DefaultCall,
+    DefaultCurrentCall, ReactionStreamEmoji,
+} from '@calls/types/calls';
+import {REACTION_LIMIT, REACTION_TIMEOUT} from '@constants/calls';
 
 export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
@@ -406,6 +415,81 @@ export const setMicPermissionsErrorDismissed = () => {
     const nextCurrentCall = {
         ...currentCall,
         micPermissionsErrorDismissed: true,
+    };
+    setCurrentCall(nextCurrentCall);
+};
+
+export const userReacted = (serverUrl: string, channelId: string, reaction: CallReaction) => {
+    // Note: Simplification for performance:
+    //  If you are not in the call with the reaction, ignore it. There could be many calls ongoing in your
+    //  servers, do we want to be tracking reactions and setting timeouts for all those calls? No.
+    //  The downside of this approach: when you join/rejoin a call, you will not see the current reactions.
+    //  When you leave a call, you will lose the reactions you were tracking.
+    //  We can revisit this if it causes UX issues.
+    const currentCall = getCurrentCall();
+    if (currentCall?.channelId !== channelId) {
+        return;
+    }
+
+    // Update the reaction stream.
+    const newReactionStream = [...currentCall.reactionStream];
+    const idx = newReactionStream.findIndex((e) => e.name === reaction.emoji.name);
+    if (idx > -1) {
+        const [newReaction] = newReactionStream.splice(idx, 1);
+        newReaction.count += 1;
+        newReaction.latestTimestamp = reaction.timestamp;
+        newReactionStream.splice(0, 0, newReaction);
+    } else {
+        const newReaction: ReactionStreamEmoji = {
+            name: reaction.emoji.name,
+            count: 1,
+            latestTimestamp: reaction.timestamp,
+        };
+        newReactionStream.splice(0, 0, newReaction);
+    }
+    if (newReactionStream.length > REACTION_LIMIT) {
+        newReactionStream.pop();
+    }
+
+    // Update the participant.
+    const nextParticipants = {...currentCall.participants};
+    if (nextParticipants[reaction.user_id]) {
+        const nextUser = {...nextParticipants[reaction.user_id], reaction};
+        nextParticipants[reaction.user_id] = nextUser;
+    }
+
+    const nextCurrentCall: CurrentCall = {
+        ...currentCall,
+        reactionStream: newReactionStream,
+        participants: nextParticipants,
+    };
+    setCurrentCall(nextCurrentCall);
+
+    setTimeout(() => {
+        userReactionTimeout(serverUrl, channelId, reaction);
+    }, REACTION_TIMEOUT);
+};
+
+const userReactionTimeout = (serverUrl: string, channelId: string, reaction: CallReaction) => {
+    const currentCall = getCurrentCall();
+    if (currentCall?.channelId !== channelId) {
+        return;
+    }
+
+    // Remove the reaction only if it was the last time that emoji was used.
+    const newReactions = currentCall.reactionStream.filter((e) => e.latestTimestamp !== reaction.timestamp);
+
+    const nextParticipants = {...currentCall.participants};
+    if (nextParticipants[reaction.user_id] && nextParticipants[reaction.user_id].reaction?.timestamp === reaction.timestamp) {
+        const nextUser = {...nextParticipants[reaction.user_id]};
+        delete nextUser.reaction;
+        nextParticipants[reaction.user_id] = nextUser;
+    }
+
+    const nextCurrentCall: CurrentCall = {
+        ...currentCall,
+        reactionStream: newReactions,
+        participants: nextParticipants,
     };
     setCurrentCall(nextCurrentCall);
 };

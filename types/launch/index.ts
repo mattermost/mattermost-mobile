@@ -44,4 +44,5 @@ export interface LaunchProps {
     serverUrl?: string;
     displayName?: string;
     time?: number;
+    coldStart?: boolean;
 }

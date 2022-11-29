@@ -5,6 +5,8 @@ import moment from 'moment-timezone';
 import React, {useEffect, useState} from 'react';
 import {Text, StyleProp, TextStyle} from 'react-native';
 
+import {toMilliseconds} from '@utils/datetime';
+
 type CallDurationProps = {
     style: StyleProp<TextStyle>;
     value: number;
@@ -34,7 +36,10 @@ const CallDuration = ({value, style, updateIntervalInSeconds}: CallDurationProps
     const [formattedTime, setFormattedTime] = useState(() => getCallDuration());
     useEffect(() => {
         if (updateIntervalInSeconds) {
-            const interval = setInterval(() => setFormattedTime(getCallDuration()), updateIntervalInSeconds * 1000);
+            const interval = setInterval(
+                () => setFormattedTime(getCallDuration()),
+                toMilliseconds({seconds: updateIntervalInSeconds}),
+            );
             return function cleanup() {
                 clearInterval(interval);
             };

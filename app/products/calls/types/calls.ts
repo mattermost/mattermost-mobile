@@ -22,8 +22,8 @@ export type CallsState = {
 export const DefaultCallsState: CallsState = {
     serverUrl: '',
     myUserId: '',
-    calls: {} as Dictionary<Call>,
-    enabled: {} as Dictionary<boolean>,
+    calls: {},
+    enabled: {},
 };
 
 export type Call = {
@@ -36,7 +36,7 @@ export type Call = {
 }
 
 export const DefaultCall: Call = {
-    participants: {} as Dictionary<CallParticipant>,
+    participants: {},
     channelId: '',
     startTime: 0,
     screenOn: '',
@@ -52,6 +52,7 @@ export type CurrentCall = Call & {
     speakerphoneOn: boolean;
     voiceOn: Dictionary<boolean>;
     micPermissionsErrorDismissed: boolean;
+    reactionStream: ReactionStreamEmoji[];
 }
 
 export const DefaultCurrentCall: CurrentCall = {
@@ -68,6 +69,7 @@ export const DefaultCurrentCall: CurrentCall = {
     speakerphoneOn: false,
     voiceOn: {},
     micPermissionsErrorDismissed: false,
+    reactionStream: [],
 };
 
 export type CallParticipant = {
@@ -75,6 +77,7 @@ export type CallParticipant = {
     muted: boolean;
     raisedHand: number;
     userModel?: UserModel;
+    reaction?: CallReaction;
 }
 
 export type ChannelsWithCalls = Dictionary<boolean>;
@@ -100,11 +103,6 @@ export type ServerCallState = {
     owner_id: string;
 }
 
-export type VoiceEventData = {
-    channelId: string;
-    userId: string;
-}
-
 export type CallsConnection = {
     disconnect: () => void;
     mute: () => void;
@@ -113,6 +111,7 @@ export type CallsConnection = {
     raiseHand: () => void;
     unraiseHand: () => void;
     initializeVoiceTrack: () => void;
+    sendReaction: (emoji: CallReactionEmoji) => void;
 }
 
 export type ServerCallsConfig = {
@@ -149,3 +148,21 @@ export type ApiResp = {
     detailed_error?: string;
     status_code: number;
 }
+
+export type CallReactionEmoji = {
+    name: string;
+    skin?: string;
+    unified: string;
+}
+
+export type CallReaction = {
+    user_id: string;
+    emoji: CallReactionEmoji;
+    timestamp: number;
+}
+
+export type ReactionStreamEmoji = {
+    name: string;
+    latestTimestamp: number;
+    count: number;
+};
