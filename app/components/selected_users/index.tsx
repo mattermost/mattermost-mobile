@@ -138,9 +138,10 @@ export default function SelectedUsers({
     const scrollViewHeight = useSharedValue(0);
     const [isVisible, setIsVisible] = useState(false);
 
+    const numberSelectedIds = Object.keys(selectedIds).length;
     useEffect(() => {
-        setIsVisible(Boolean(Object.keys(selectedIds).length));
-    }, [selectedIds]);
+        setIsVisible(numberSelectedIds > 0);
+    }, [numberSelectedIds > 0]);
 
     const handleOnPress = async () => {
         onPress();
