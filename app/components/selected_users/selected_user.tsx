@@ -10,11 +10,11 @@ import {
 } from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 type Props = {

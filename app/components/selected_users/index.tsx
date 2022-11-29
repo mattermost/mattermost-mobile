@@ -6,8 +6,8 @@ import {KeyboardAvoidingView, LayoutChangeEvent, ScrollView, View} from 'react-n
 import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {BOTTOM_TAB_HEIGHT} from '@app/constants/view';
 import Toast from '@components/toast';
+import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
