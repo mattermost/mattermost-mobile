@@ -191,7 +191,7 @@ export default function SelectedUsers({
         scrollViewHeight.value = Math.min(SCROLL_VIEW_MAX_HEIGHT, e.nativeEvent.layout.height);
     }, []);
 
-    const contents = useMemo(() => (
+    const contents = (
         <Animated.View style={[style.container, animatedViewStyle]}>
             <ScrollView style={{height: scrollViewHeight.value}}>
                 <View
@@ -207,7 +207,7 @@ export default function SelectedUsers({
                 text={buttonText}
             />
         </Animated.View>
-    ), [users]);
+    );
 
     const animatedToastStyle = useAnimatedStyle(() => {
         return {
