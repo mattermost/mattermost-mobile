@@ -181,12 +181,10 @@ export default function SelectedUsers({
         isVisible ? scrollViewHeight.value + BUTTON_HEIGHT : 0
     ), [isVisible]);
 
-    const animatedViewStyle = useAnimatedStyle(() => {
-        return {
-            height: withTiming(totalPanelHeight.value, {duration: 200}),
-            marginBottom,
-        };
-    }, [marginBottom]);
+    const animatedViewStyle = useAnimatedStyle(() => ({
+        height: withTiming(totalPanelHeight.value, {duration: 200}),
+        marginBottom,
+    }), [marginBottom]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         scrollViewHeight.value = Math.min(SCROLL_VIEW_MAX_HEIGHT, e.nativeEvent.layout.height);
@@ -210,15 +208,13 @@ export default function SelectedUsers({
         </Animated.View>
     );
 
-    const animatedToastStyle = useAnimatedStyle(() => {
-        return {
-            bottom: TOAST_BOTTOM_MARGIN +
+    const animatedToastStyle = useAnimatedStyle(() => ({
+        bottom: TOAST_BOTTOM_MARGIN +
                 totalPanelHeight.value +
                 marginBottom,
-            opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
-            position: 'absolute',
-        };
-    }, [showToast, marginBottom]);
+        opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
+        position: 'absolute',
+    }), [showToast, marginBottom]);
 
     const toast = useMemo(() => (
         <Toast
