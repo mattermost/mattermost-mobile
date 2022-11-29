@@ -590,5 +590,14 @@
     "load_categories_error.title": "Не удается загрузить категории для {serverName}",
     "load_categories_error.message": "Возникла проблема с загрузкой содержимого для этого сервера.",
     "invite_people_to_team.message": "Вот ссылка для сотрудничества и общения с нами в Mattermost.",
-    "invite_people_to_team.title": "Присоединяйтесь к команде {team}"
+    "invite_people_to_team.title": "Присоединяйтесь к команде {team}",
+    "mobile.custom_list.no_results": "Нет результатов",
+    "mobile.channel_list.unreads": "Непрочитанное",
+    "mobile.channel_list.recent": "Недавние",
+    "mobile.camera_photo_permission_denied_description": "Сделайте фотографии и загрузите их на сервер или сохраните на своем устройстве. Откройте Настройки, чтобы предоставить {applicationName} доступ на чтение и запись к вашей камере.",
+    "mobile.calls_you": "(это вы)",
+    "mobile.calls_viewing_screen": "Вы просматриваете экран {name}",
+    "mobile.calls_unmute": "Включить звук",
+    "mobile.calls_start_call": "Начать звонок",
+    "mobile.calls_speaker": "Докладчик"
 }
