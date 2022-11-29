@@ -104,7 +104,6 @@ export default function ChannelList({
                 <FormattedText
                     id='browse_channels.noMore'
                     defaultMessage='No more channels to join'
-                    style={style.noResultText}
                 />
             </View>
         );

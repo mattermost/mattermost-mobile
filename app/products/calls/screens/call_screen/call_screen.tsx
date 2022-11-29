@@ -325,7 +325,7 @@ const CallScreen = ({
     const showOtherActions = useCallback(() => {
         const renderContent = () => {
             return (
-                <View style={style.bottomSheet}>
+                <View>
                     <SlideUpPanelItem
                         icon='message-text-outline'
                         onPress={switchToThread}
@@ -394,7 +394,7 @@ const CallScreen = ({
             <ScrollView
                 alwaysBounceVertical={false}
                 horizontal={currentCall.screenOn !== ''}
-                contentContainerStyle={[isLandscape && currentCall.screenOn && style.usersScrollLandscapeScreenOn]}
+                contentContainerStyle={[isLandscape && Boolean(currentCall.screenOn) && style.usersScrollLandscapeScreenOn]}
             >
                 <Pressable
                     testID='users-list'
@@ -404,7 +404,7 @@ const CallScreen = ({
                     {participants.map((user) => {
                         return (
                             <View
-                                style={[style.user, currentCall.screenOn && style.userScreenOn]}
+                                style={[style.user, Boolean(currentCall.screenOn) && style.userScreenOn]}
                                 key={user.id}
                             >
                                 <CallAvatar

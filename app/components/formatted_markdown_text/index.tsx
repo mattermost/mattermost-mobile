@@ -5,7 +5,7 @@ import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {GestureResponderEvent, StyleProp, Text, TextStyle} from 'react-native';
+import {GestureResponderEvent, StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
 
 import AtMention from '@components/markdown/at_mention';
 import MarkdownLink from '@components/markdown/markdown_link';
@@ -24,9 +24,6 @@ type Props = {
     location: string;
     onPostPress?: (e: GestureResponderEvent) => void;
     style?: StyleProp<TextStyle>;
-    textStyles: {
-        [key: string]: TextStyle;
-    };
     values?: Record<string, PrimitiveType>;
 };
 
@@ -50,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, location, onPostPress, style, textStyles, values}: Props) => {
+const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, location, onPostPress, style, values}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -81,14 +78,14 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
     };
 
     const computeTextStyle = (base: StyleProp<TextStyle>, context: string[]) => {
-        return concatStyles(base, context.map((type) => txtStyles[type]));
+        return concatStyles(base, context.map((type) => (txtStyles as {[s: string]: TextStyle})[type]));
     };
 
     const renderAtMention = ({context, mentionName}: {context: string[]; mentionName: string}) => {
         return (
             <AtMention
                 channelId={channelId}
-                mentionStyle={textStyles.mention}
+                mentionStyle={txtStyles.mention}
                 mentionName={mentionName}
                 location={location}
                 onPostPress={onPostPress}
@@ -117,7 +114,7 @@ const FormattedMarkdownText = ({baseTextStyle, channelId, defaultMessage, id, lo
     };
 
     const renderParagraph = ({children, first}: {children: ReactElement; first: boolean}) => {
-        const blockStyle = [styles.block];
+        const blockStyle: StyleProp<ViewStyle> = [styles.block];
         if (!first) {
             const blockS = getMarkdownBlockStyles(theme);
             blockStyle.push(blockS.adjacentParagraph);

@@ -86,7 +86,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
     }), [rootPost]);
 
     const containerStyle = useMemo(() => {
-        const container = [styles.container];
+        const container: StyleProp<ViewStyle> = [styles.container];
         if (repliesCount === 0) {
             container.push({
                 borderBottomWidth: 0,

@@ -209,7 +209,7 @@ const Post = ({
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
-    const rightColumnStyle = [styles.rightColumn, (post.rootId && isLastReply && styles.rightColumnPadding)];
+    const rightColumnStyle: StyleProp<ViewStyle> = [styles.rightColumn, (Boolean(post.rootId) && isLastReply && styles.rightColumnPadding)];
     const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPendingOrFailed ? styles.pendingPost : undefined;
 
     let highlightedStyle: StyleProp<ViewStyle>;
@@ -230,7 +230,7 @@ const Post = ({
 
     const sameSequence = hasReplies ? (hasReplies && post.rootId) : !post.rootId;
     if (!showPostPriority && hasSameRoot && isConsecutivePost && sameSequence) {
-        consecutiveStyle = styles.consective;
+        consecutiveStyle = styles.consecutive;
         postAvatar = <View style={styles.consecutivePostContainer}/>;
     } else {
         postAvatar = (

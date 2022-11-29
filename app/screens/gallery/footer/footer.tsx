@@ -9,7 +9,6 @@ import {SafeAreaView, Edge, useSafeAreaInsets} from 'react-native-safe-area-cont
 import {Events} from '@constants';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
 import {changeOpacity} from '@utils/theme';
-import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
 import Actions from './actions';
@@ -53,15 +52,6 @@ const styles = StyleSheet.create({
         paddingHorizontal: 20,
     },
     details: {flex: 3, flexDirection: 'row'},
-    icon: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        height: '100%',
-    },
-    title: {
-        ...typography('Heading', 300),
-        color: 'white',
-    },
 });
 
 const Footer = ({

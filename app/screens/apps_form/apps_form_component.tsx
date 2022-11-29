@@ -48,8 +48,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             textAlign: 'left',
             color: (theme.errorTextColor || '#DA4A4A'),
         },
-        button: buttonBackgroundStyle(theme, 'lg', 'primary', 'default'),
-        buttonText: buttonTextStyle(theme, 'lg', 'primary', 'default'),
     };
 });
 
@@ -371,6 +369,8 @@ function AppsFormComponent({
         }
     }, []);
 
+    const submitButtonStyle = useMemo(() => buttonBackgroundStyle(theme, 'lg', 'primary', 'default'), [theme]);
+    const submitButtonTextStyle = useMemo(() => buttonTextStyle(theme, 'lg', 'primary', 'default'), [theme]);
     return (
         <SafeAreaView
             testID='interactive_dialog.screen'
@@ -418,9 +418,9 @@ function AppsFormComponent({
                         <Button
                             key={o.value}
                             onPress={() => handleSubmit(o.value)}
-                            containerStyle={style.button}
+                            containerStyle={submitButtonStyle}
                         >
-                            <Text style={style.buttonText}>{o.label}</Text>
+                            <Text style={submitButtonTextStyle}>{o.label}</Text>
                         </Button>
                     ))}
                 </View>

@@ -3,7 +3,7 @@
 
 import React, {memo, RefObject, useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, StyleSheet, TextInputProps, View} from 'react-native';
+import {Platform, TextInputProps, View} from 'react-native';
 
 import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
@@ -24,7 +24,7 @@ export type FieldProps = TextInputProps & {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
-    return StyleSheet.create({
+    return {
         viewContainer: {
             marginVertical: 8,
             alignItems: 'center',
@@ -33,7 +33,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         disabledStyle: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
         },
-    });
+    };
 });
 
 const Field = ({

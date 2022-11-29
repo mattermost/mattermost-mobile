@@ -3,14 +3,14 @@
 
 import {createElement, isValidElement} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleProp, Text, TextProps, TextStyle, ViewStyle} from 'react-native';
+import {StyleProp, Text, TextProps, TextStyle} from 'react-native';
 
 type FormattedTextProps = TextProps & {
     id: string;
     defaultMessage?: string;
     values?: Record<string, any>;
     testID?: string;
-    style?: StyleProp<ViewStyle> | StyleProp<TextStyle>;
+    style?: StyleProp<TextStyle>;
 }
 
 const FormattedText = (props: FormattedTextProps) => {

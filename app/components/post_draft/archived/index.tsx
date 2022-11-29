@@ -6,6 +6,7 @@ import Button from 'react-native-button';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {switchToPenultimateChannel} from '@actions/remote/channel';
+import {typography} from '@app/utils/typography';
 import FormattedMarkdownText from '@components/formatted_markdown_text';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
@@ -27,6 +28,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         borderTopWidth: 1,
         backgroundColor: theme.centerChannelBg,
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
+    },
+    baseTextStyle: {
+        ...typography('Body', 200, 'Regular'),
+        color: theme.centerChannelColor,
     },
     archivedText: {
         textAlign: 'center',
@@ -89,7 +94,6 @@ export default function Archived({
                 {...message}
                 style={style.archivedText}
                 baseTextStyle={style.baseTextStyle}
-                textStyles={style.textStyles}
                 location=''
             />
             <Button

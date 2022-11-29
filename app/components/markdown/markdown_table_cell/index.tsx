@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode} from 'react';
-import {View} from 'react-native';
+import {StyleProp, View, ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -40,7 +40,7 @@ const MarkdownTableCell = ({isLastCell, align, children}: MarkdownTableCellProps
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const cellStyle = [style.cell];
+    const cellStyle: StyleProp<ViewStyle> = [style.cell];
     if (!isLastCell) {
         cellStyle.push(style.cellRightBorder);
     }
