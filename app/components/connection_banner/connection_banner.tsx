@@ -122,7 +122,7 @@ const ConnectionBanner = ({
                     >
                         <CompassIcon
                             color={theme.centerChannelBg}
-                            name='information-outline'
+                            name={isDisconnected ? 'information-outline' : 'check'}
                             size={18}
                         />
                         {'  '}
