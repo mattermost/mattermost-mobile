@@ -134,7 +134,6 @@ export default function SelectedUsers({
     const isTablet = useIsTablet();
     const keyboardHeight = useKeyboardHeight();
     const insets = useSafeAreaInsets();
-    const keyboardBottomMargin = keyboardHeight - (keyboardHeight ? insets.bottom : 0);
 
     const scrollViewHeight = useSharedValue(0);
     const [isVisible, setIsVisible] = useState(false);
@@ -167,17 +166,19 @@ export default function SelectedUsers({
         return u;
     }, [selectedIds, teammateNameDisplay, onRemove]);
 
-    const animatedViewStyle = useAnimatedStyle(() => {
-        const tabletBottom = (keyboardHeight ? BOTTOM_TAB_HEIGHT + BUTTON_HEIGHT : 0) + TABLET_MARGIN_BOTTOM;
-        const mobileBottom = keyboardBottomMargin;
+    const tabletBottom = useMemo(() => (
+        (keyboardHeight ? BOTTOM_TAB_HEIGHT + BUTTON_HEIGHT : 0) + TABLET_MARGIN_BOTTOM
+    ), [keyboardHeight]);
 
+    const animatedViewStyle = useAnimatedStyle(() => {
+        const mobileBottom = keyboardHeight - (keyboardHeight ? insets.bottom : 0);
         const totalHeight = scrollViewHeight.value + BUTTON_HEIGHT;
 
         return {
             height: withTiming(isVisible ? totalHeight : 0, {duration: 200}),
             marginBottom: isTablet ? tabletBottom : mobileBottom,
         };
-    }, [isVisible, keyboardHeight, scrollViewHeight]);
+    }, [isVisible, keyboardHeight, scrollViewHeight, tabletBottom]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         scrollViewHeight.value = e.nativeEvent.layout.height;
@@ -202,7 +203,6 @@ export default function SelectedUsers({
     ), [users]);
 
     const animatedToastStyle = useAnimatedStyle(() => {
-        const tabletBottom = (keyboardHeight ? BOTTOM_TAB_HEIGHT + BUTTON_HEIGHT : 0) + TABLET_MARGIN_BOTTOM;
         const mobileBottom = keyboardHeight || insets.bottom;
 
         return {
@@ -213,9 +213,8 @@ export default function SelectedUsers({
             opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
             position: 'absolute',
         };
-    }, [keyboardHeight, scrollViewHeight, showToast]);
+    }, [keyboardHeight, scrollViewHeight, showToast, tabletBottom]);
 
-    // make the toast keyboard aware
     const toast = useMemo(() => (
         <Toast
             animatedStyle={animatedToastStyle}
@@ -237,7 +236,7 @@ export default function SelectedUsers({
     return (
         <>
             {!isTablet && showToast && toast}
-            {isTablet ? tabletView : contents }
+            {isTablet ? tabletView : contents}
         </>
     );
 }
