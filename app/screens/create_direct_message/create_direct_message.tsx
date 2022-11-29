@@ -128,7 +128,7 @@ export default function CreateDirectMessage({
 
     useEffect(() => {
         setShowToast(selectedCount >= General.MAX_USERS_IN_GM);
-    }, [selectedCount]);
+    }, [selectedCount >= General.MAX_USERS_IN_GM]);
 
     useEffect(() => {
         if (showToast) {
