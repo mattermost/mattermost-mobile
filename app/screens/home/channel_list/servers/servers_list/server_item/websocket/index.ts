@@ -5,14 +5,14 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeWebsocket} from '@queries/servers/system';
+import {observeWebsocketLastDisconnected} from '@queries/servers/system';
 
 import WebSocket from './websocket';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    isConnected: observeWebsocket(database).pipe(
+    isConnected: observeWebsocketLastDisconnected(database).pipe(
         switchMap((value) => of$(value > 0)),
     ),
 }));

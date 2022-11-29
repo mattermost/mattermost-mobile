@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
+import {useNetInfo} from '@react-native-community/netinfo';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     Text,
@@ -12,11 +13,13 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import CompassIcon from '@components/compass_icon';
 import {ANNOUNCEMENT_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
+import {useAppState} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    isDisconnected: boolean;
+    isConnected: boolean;
 }
 
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => {
@@ -59,37 +62,77 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const clearTimeoutRef = (ref: React.MutableRefObject<NodeJS.Timeout | null | undefined>) => {
+    if (ref.current) {
+        clearTimeout(ref.current);
+        ref.current = null;
+    }
+};
+
+const TIME_TO_OPEN = 3000;
+const TIME_TO_CLOSE = 1000;
+
 const ConnectionBanner = ({
-    isDisconnected,
+    isConnected,
 }: Props) => {
     const intl = useIntl();
     const closeTimeout = useRef<NodeJS.Timeout | null>();
+    const openTimeout = useRef<NodeJS.Timeout | null>();
     const height = useSharedValue(0);
     const theme = useTheme();
     const [visible, setVisible] = useState(false);
     const style = getStyle(theme);
+    const appState = useAppState();
+    const netInfo = useNetInfo();
+
+    const openCallback = useCallback(() => {
+        setVisible(true);
+        clearTimeoutRef(openTimeout);
+    }, []);
+
+    const closeCallback = useCallback(() => {
+        setVisible(false);
+        clearTimeoutRef(closeTimeout);
+    }, []);
 
     useEffect(() => {
-        if (isDisconnected) {
+        if (!isConnected) {
+            openTimeout.current = setTimeout(openCallback, TIME_TO_OPEN);
+        }
+        return () => {
+            clearTimeoutRef(openTimeout);
+        };
+    }, []);
+
+    useDidUpdate(() => {
+        if (isConnected) {
             if (visible) {
-                if (closeTimeout.current) {
-                    clearTimeout(closeTimeout.current);
-                    closeTimeout.current = null;
+                if (!closeTimeout.current) {
+                    closeTimeout.current = setTimeout(closeCallback, TIME_TO_CLOSE);
                 }
             } else {
-                setVisible(true);
+                clearTimeoutRef(openTimeout);
             }
         } else if (visible) {
-            if (!closeTimeout.current) {
-                closeTimeout.current = setTimeout(() => {
-                    setVisible(false);
-                    closeTimeout.current = null;
-                }, 1000);
+            clearTimeoutRef(closeTimeout);
+        } else if (appState === 'active') {
+            setVisible(true);
+        }
+    }, [isConnected]);
+
+    useEffect(() => {
+        if (appState === 'active') {
+            if (!isConnected) {
+                if (!openTimeout.current) {
+                    openTimeout.current = setTimeout(openCallback, TIME_TO_OPEN);
+                }
             }
         } else {
-            // Do nothing
+            setVisible(false);
+            clearTimeoutRef(openTimeout);
+            clearTimeoutRef(closeTimeout);
         }
-    }, [isDisconnected]);
+    }, [appState]);
 
     useEffect(() => {
         height.value = withTiming(visible ? ANNOUNCEMENT_BAR_HEIGHT : 0, {
@@ -99,10 +142,7 @@ const ConnectionBanner = ({
 
     useEffect(() => {
         return () => {
-            if (closeTimeout.current) {
-                clearTimeout(closeTimeout.current);
-                closeTimeout.current = null;
-            }
+            clearTimeoutRef(closeTimeout);
         };
     });
 
@@ -110,15 +150,21 @@ const ConnectionBanner = ({
         height: height.value,
     }));
 
-    const text = isDisconnected ? intl.formatMessage({id: 'connection_banner.not_reachable', defaultMessage: 'The server is not reachable'}) :
-        intl.formatMessage({id: 'connection_banner.connected', defaultMessage: 'Connection restored'});
+    let text;
+    if (isConnected) {
+        text = intl.formatMessage({id: 'connection_banner.connected', defaultMessage: 'Connection restored'});
+    } else if (netInfo.isInternetReachable) {
+        text = intl.formatMessage({id: 'connection_banner.not_reachable', defaultMessage: 'The server is not reachable'});
+    } else {
+        text = intl.formatMessage({id: 'connection_banner.not_connected', defaultMessage: 'No internet connection'});
+    }
 
     return (
         <Animated.View
             style={[style.background, bannerStyle]}
         >
             <View
-                style={isDisconnected ? style.bannerContainerNotConnected : style.bannerContainerConnected}
+                style={isConnected ? style.bannerContainerConnected : style.bannerContainerNotConnected}
             >
                 {visible &&
                 <View
@@ -131,7 +177,7 @@ const ConnectionBanner = ({
                     >
                         <CompassIcon
                             color={theme.centerChannelBg}
-                            name={isDisconnected ? 'information-outline' : 'check'}
+                            name={isConnected ? 'check' : 'information-outline'}
                             size={18}
                         />
                         {'  '}
