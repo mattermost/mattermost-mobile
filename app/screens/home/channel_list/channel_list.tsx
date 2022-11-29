@@ -10,6 +10,7 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import AnnouncementBanner from '@components/announcement_banner';
+import ConnectionBanner from '@components/connection_banner';
 import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {Navigation as NavigationConstants, Screens} from '@constants';
@@ -162,6 +163,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                 edges={edges}
                 testID='channel_list.screen'
             >
+                <ConnectionBanner/>
                 {props.isLicensed &&
                     <AnnouncementBanner/>
                 }
