@@ -97,11 +97,20 @@ const ConnectionBanner = ({
         });
     }, [visible]);
 
+    useEffect(() => {
+        return () => {
+            if (closeTimeout.current) {
+                clearTimeout(closeTimeout.current);
+                closeTimeout.current = null;
+            }
+        };
+    });
+
     const bannerStyle = useAnimatedStyle(() => ({
         height: height.value,
     }));
 
-    const text = isDisconnected ? intl.formatMessage({id: 'connection_banner.not_connected', defaultMessage: 'No internet connection'}) :
+    const text = isDisconnected ? intl.formatMessage({id: 'connection_banner.not_reachable', defaultMessage: 'The server is not reachable'}) :
         intl.formatMessage({id: 'connection_banner.connected', defaultMessage: 'Connection restored'});
 
     return (
