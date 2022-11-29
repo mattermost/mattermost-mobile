@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {KeyboardAvoidingView, LayoutChangeEvent, ScrollView, View} from 'react-native';
-import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {BOTTOM_TAB_HEIGHT} from '@app/constants/view';
@@ -167,28 +167,17 @@ export default function SelectedUsers({
         return u;
     }, [selectedIds, teammateNameDisplay, onRemove]);
 
-    const totalHeight = useDerivedValue(() => scrollViewHeight.value + BUTTON_HEIGHT, [scrollViewHeight.value]);
-    const animatedHeight = useDerivedValue(() => withTiming(isVisible ? totalHeight.value : 0, {duration: 200}), [isVisible, totalHeight.value]);
-
     const animatedViewStyle = useAnimatedStyle(() => {
         const tabletBottom = (keyboardHeight ? BOTTOM_TAB_HEIGHT + BUTTON_HEIGHT : 0) + TABLET_MARGIN_BOTTOM;
         const mobileBottom = keyboardBottomMargin;
 
+        const totalHeight = scrollViewHeight.value + BUTTON_HEIGHT;
+
         return {
-            height: animatedHeight.value,
+            height: withTiming(isVisible ? totalHeight : 0, {duration: 200}),
             marginBottom: isTablet ? tabletBottom : mobileBottom,
         };
-    }, [isVisible, keyboardHeight, scrollViewHeight, totalHeight]);
-
-    const animatedToastStyle = useAnimatedStyle(() => ({
-        bottom: TOAST_BOTTOM_MARGIN +
-            Math.min(SCROLL_VIEW_MAX_HEIGHT, scrollViewHeight.value) +
-            BUTTON_HEIGHT +
-            insets.bottom +
-            (isTablet ? TABLET_MARGIN_BOTTOM : 0),
-        opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
-        position: 'absolute',
-    }), [scrollViewHeight, showToast]);
+    }, [isVisible, keyboardHeight, scrollViewHeight]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         scrollViewHeight.value = e.nativeEvent.layout.height;
@@ -212,6 +201,21 @@ export default function SelectedUsers({
         </Animated.View>
     ), [users]);
 
+    const animatedToastStyle = useAnimatedStyle(() => {
+        const tabletBottom = (keyboardHeight ? BOTTOM_TAB_HEIGHT + BUTTON_HEIGHT : 0) + TABLET_MARGIN_BOTTOM;
+        const mobileBottom = keyboardHeight || insets.bottom;
+
+        return {
+            bottom: TOAST_BOTTOM_MARGIN +
+                Math.min(SCROLL_VIEW_MAX_HEIGHT, scrollViewHeight.value) +
+                (isTablet ? tabletBottom : mobileBottom) +
+                BUTTON_HEIGHT,
+            opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
+            position: 'absolute',
+        };
+    }, [keyboardHeight, scrollViewHeight, showToast]);
+
+    // make the toast keyboard aware
     const toast = useMemo(() => (
         <Toast
             animatedStyle={animatedToastStyle}
@@ -225,13 +229,14 @@ export default function SelectedUsers({
         <KeyboardAvoidingView
             behavior='position'
         >
+            {showToast && toast}
             {contents}
         </KeyboardAvoidingView>
-    ), [contents]);
+    ), [contents, toast, showToast]);
 
     return (
         <>
-            {showToast && toast}
+            {!isTablet && showToast && toast}
             {isTablet ? tabletView : contents }
         </>
     );
