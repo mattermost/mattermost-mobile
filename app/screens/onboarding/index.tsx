@@ -83,7 +83,7 @@ const Onboarding = ({
         } else if (slidesRef.current && currentIndex.value === LAST_SLIDE_INDEX) {
             signInHandler();
         }
-    }, [currentIndex, slidesRef.current, moveToSlide, signInHandler]);
+    }, [currentIndex, moveToSlide, signInHandler]);
 
     const scrollHandler = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         scrollX.value = event.nativeEvent.contentOffset.x;
