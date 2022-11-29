@@ -182,7 +182,7 @@ class SessionManager {
             if (DatabaseManager.appDatabase) {
                 const servers = await queryAllServers(DatabaseManager.appDatabase.database);
                 if (!servers.length) {
-                    storeOnboardingViewedValue(false);
+                    await storeOnboardingViewedValue(false);
                 }
             }
 

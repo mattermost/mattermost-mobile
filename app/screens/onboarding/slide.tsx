@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {View, useWindowDimensions} from 'react-native';
 import Animated, {Extrapolate, interpolate, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
-import {OnboardingItem} from '@typings/screens/onboarding';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type {OnboardingItem} from '@typings/screens/onboarding';
 
 type Props = {
     item: OnboardingItem;
@@ -114,9 +115,11 @@ const SlideItem = ({theme, item, scrollX, index, lastSlideIndex}: Props) => {
             }],
             opacity: initialElementsOpacity.value,
         };
-    });// end of code for animating first image load
+    });
 
-    const inputRange = [(index - 1) * width, index * width, (index + 1) * width];
+    // end of code for animating first image load
+
+    const inputRange = useMemo(() => [(index - 1) * width, index * width, (index + 1) * width], [width, index]);
 
     const translateImage = useAnimatedStyle(() => {
         const translateImageInterpolate = interpolate(

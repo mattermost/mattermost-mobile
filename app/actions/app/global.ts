@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {logError} from '@app/utils/log';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {logError} from '@utils/log';
 
 export const storeGlobal = async (id: string, value: unknown, prepareRecordsOnly = false) => {
     try {
@@ -13,6 +13,7 @@ export const storeGlobal = async (id: string, value: unknown, prepareRecordsOnly
             prepareRecordsOnly,
         });
     } catch (error) {
+        logError('storeGlobal', error);
         return {error};
     }
 };
@@ -26,16 +27,7 @@ export const storeMultiServerTutorial = async (prepareRecordsOnly = false) => {
 };
 
 export const storeOnboardingViewedValue = async (value = true) => {
-    try {
-        const {operator} = DatabaseManager.getAppDatabaseAndOperator();
-        return operator.handleGlobal({
-            globals: [{id: GLOBAL_IDENTIFIERS.ONBOARDING, value}],
-            prepareRecordsOnly: false,
-        });
-    } catch (error) {
-        logError('storeOnboardingViewedValue', error);
-        return {error};
-    }
+    return storeGlobal(GLOBAL_IDENTIFIERS.ONBOARDING, value, false);
 };
 
 export const storeProfileLongPressTutorial = async (prepareRecordsOnly = false) => {

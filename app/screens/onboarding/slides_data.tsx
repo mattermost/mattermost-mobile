@@ -24,7 +24,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const useSalidesData = () => {
+const useSlidesData = () => {
     const intl = useIntl();
     const theme = useTheme();
     const callsSvg = (
@@ -78,4 +78,4 @@ const useSalidesData = () => {
     return {slidesData};
 };
 
-export default useSalidesData;
+export default useSlidesData;

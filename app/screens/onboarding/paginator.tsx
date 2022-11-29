@@ -16,41 +16,41 @@ type Props = {
 
 const DOT_SIZE = 16;
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    dot: {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    const commonStyle = {
         height: DOT_SIZE / 2,
         borderRadius: 5,
         backgroundColor: theme.buttonBg,
         marginHorizontal: DOT_SIZE / 2,
         width: DOT_SIZE / 2,
         opacity: 0.25,
-    },
-    fixedDot: {
-        height: DOT_SIZE / 2,
-        borderRadius: 5,
-        backgroundColor: theme.buttonBg,
-        marginHorizontal: DOT_SIZE / 2,
-        width: DOT_SIZE / 2,
-        opacity: 0.25,
-        position: 'absolute',
-    },
-    outerDot: {
-        height: DOT_SIZE,
-        borderRadius: DOT_SIZE / 2,
-        backgroundColor: theme.buttonBg,
-        marginHorizontal: 4,
-        marginTop: -4,
-        position: 'absolute',
-        width: DOT_SIZE,
-        opacity: 0.15,
-    },
-    paginatorContainer: {
-        flexDirection: 'row',
-        height: 15,
-        justifyContent: 'space-between',
-        width: 120,
-    },
-}));
+    };
+    return {
+        dot: {
+            ...commonStyle,
+        },
+        fixedDot: {
+            ...commonStyle,
+            position: 'absolute',
+        },
+        outerDot: {
+            height: DOT_SIZE,
+            borderRadius: DOT_SIZE / 2,
+            backgroundColor: theme.buttonBg,
+            marginHorizontal: 4,
+            marginTop: -4,
+            position: 'absolute',
+            width: DOT_SIZE,
+            opacity: 0.15,
+        },
+        paginatorContainer: {
+            flexDirection: 'row',
+            height: 15,
+            justifyContent: 'space-between',
+            width: 120,
+        },
+    };
+});
 
 const Paginator = ({
     theme,
