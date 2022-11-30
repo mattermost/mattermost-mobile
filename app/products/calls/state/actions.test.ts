@@ -811,6 +811,7 @@ describe('useCallsState', () => {
             last_retrieved_at: 123,
             sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
+            EnableRecordings: true,
         };
 
         // setup

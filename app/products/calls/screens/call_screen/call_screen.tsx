@@ -30,12 +30,14 @@ import PermissionErrorBar from '@calls/components/permission_error_bar';
 import ReactionBar from '@calls/components/reaction_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
+import {useCallsConfig} from '@calls/state';
 import {CallParticipant, CurrentCall} from '@calls/types/calls';
 import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Preferences, Screens, WebsocketEvents} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {
@@ -259,6 +261,8 @@ const CallScreen = ({
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const {width, height} = useWindowDimensions();
+    const serverUrl = useServerUrl();
+    const {EnableRecordings} = useCallsConfig(serverUrl);
     usePermissionsChecker(micPermissionsGranted);
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
     const [showReactions, setShowReactions] = useState(false);
@@ -377,7 +381,7 @@ const CallScreen = ({
             return (
                 <View style={style.bottomSheet}>
                     {
-                        isHost && !(waitingForRecording || recording) &&
+                        isHost && EnableRecordings && !(waitingForRecording || recording) &&
                         <SlideUpPanelItem
                             icon={'record-circle-outline'}
                             onPress={startRecording}
@@ -385,7 +389,7 @@ const CallScreen = ({
                         />
                     }
                     {
-                        isHost && (waitingForRecording || recording) &&
+                        isHost && EnableRecordings && (waitingForRecording || recording) &&
                         <SlideUpPanelItem
                             icon={'record-square-outline'}
                             imageStyles={style.denimDND}
@@ -403,7 +407,7 @@ const CallScreen = ({
             );
         };
 
-        const items = isHost ? 3 : 2;
+        const items = isHost && EnableRecordings ? 3 : 2;
         await bottomSheet({
             closeButtonId: 'close-other-actions',
             renderContent,
@@ -411,8 +415,9 @@ const CallScreen = ({
             title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
             theme,
         });
-    }, [insets, intl, theme, isHost, waitingForRecording, recording, startRecording, recordOptionTitle,
-        stopRecording, stopRecordingOptionTitle, style, switchToThread, callThreadOptionTitle, openChannelOptionTitle]);
+    }, [insets, intl, theme, isHost, EnableRecordings, waitingForRecording, recording, startRecording,
+        recordOptionTitle, stopRecording, stopRecordingOptionTitle, style, switchToThread, callThreadOptionTitle,
+        openChannelOptionTitle]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {

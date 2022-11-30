@@ -124,6 +124,7 @@ export type ServerCallsConfig = {
     NeedsTURNCredentials: boolean;
     sku_short_name: string;
     MaxCallParticipants: number;
+    EnableRecordings: boolean;
 }
 
 export type CallsConfig = ServerCallsConfig & {
@@ -141,6 +142,7 @@ export const DefaultCallsConfig: CallsConfig = {
     last_retrieved_at: 0,
     sku_short_name: '',
     MaxCallParticipants: 0,
+    EnableRecordings: false,
 };
 
 export type ICEServersConfigs = Array<ConfigurationParamWithUrls | ConfigurationParamWithUrl>;
