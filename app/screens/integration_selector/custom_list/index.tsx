@@ -12,14 +12,10 @@ export const FLATLIST = 'flat';
 export const SECTIONLIST = 'section';
 const INITIAL_BATCH_TO_RENDER = 15;
 
-type UserProfileSection = {
-    id: string;
-    data: UserProfile[];
-};
-type DataType = DialogOption[] | Channel[] | UserProfile[] | UserProfileSection[];
+type DataType = DialogOption[] | Channel[];
 type ListItemProps = {
     id: string;
-    item: DialogOption | Channel | UserProfile;
+    item: DialogOption | Channel;
     selected: boolean;
     selectable?: boolean;
     enabled: boolean;
@@ -35,7 +31,7 @@ type Props = {
     refreshing?: boolean;
     onRefresh?: () => void;
     onLoadMore: () => void;
-    onRowPress: (item: UserProfile | Channel | DialogOption) => void;
+    onRowPress: (item: Channel | DialogOption) => void;
     renderItem: (props: ListItemProps) => JSX.Element;
     selectable?: boolean;
     theme?: object;

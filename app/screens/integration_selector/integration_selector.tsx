@@ -7,11 +7,9 @@ import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
-import {fetchProfiles, searchProfiles} from '@actions/remote/user';
 import ServerUserList from '@app/components/server_user_list';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
-import {createProfilesSections} from '@components/user_list';
 import {General, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -24,7 +22,6 @@ import {
 import {filterChannelsMatchingTerm} from '@utils/channel';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {filterProfilesMatchingTerm} from '@utils/user';
 
 import ChannelListRow from './channel_list_row';
 import CustomList from './custom_list';
@@ -51,10 +48,6 @@ const close = () => {
 
 const extractItemKey = (dataSource: string, item: Selection): string => {
     switch (dataSource) {
-        case ViewConstants.DATA_SOURCE_USERS: {
-            const typedItem = item as UserProfile;
-            return typedItem.id;
-        }
         case ViewConstants.DATA_SOURCE_CHANNELS: {
             const typedItem = item as Channel;
             return typedItem.id;
@@ -85,9 +78,7 @@ const filterSearchData = (source: string, searchData: DataType, searchTerm: stri
 
     const lowerCasedTerm = searchTerm.toLowerCase();
 
-    if (source === ViewConstants.DATA_SOURCE_USERS) {
-        return filterProfilesMatchingTerm(searchData as UserProfile[], lowerCasedTerm);
-    } else if (source === ViewConstants.DATA_SOURCE_CHANNELS) {
+    if (source === ViewConstants.DATA_SOURCE_CHANNELS) {
         return filterChannelsMatchingTerm(searchData as Channel[], lowerCasedTerm);
     } else if (source === ViewConstants.DATA_SOURCE_DYNAMIC) {
         return searchData;
@@ -201,10 +192,6 @@ function IntegrationSelector(
         const itemKey = extractItemKey(dataSource, item);
 
         switch (dataSource) {
-            case ViewConstants.DATA_SOURCE_USERS: {
-                setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as UserProfile));
-                return;
-            }
             case ViewConstants.DATA_SOURCE_CHANNELS: {
                 setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as Channel));
                 return;
@@ -241,32 +228,13 @@ function IntegrationSelector(
         }
     }, 100), [loading, term, serverUrl, currentTeamId, integrationData]);
 
-    const getProfiles = useCallback(debounce(async () => {
-        if (next.current && !loading && !term) {
-            setLoading(true);
-            page.current += 1;
-
-            const {users: profiles} = await fetchProfiles(serverUrl, page.current);
-
-            setLoading(false);
-
-            if (profiles && profiles.length > 0) {
-                setIntegrationData([...integrationData as UserProfile[], ...profiles]);
-            } else {
-                next.current = false;
-            }
-        }
-    }, 100), [loading, term, integrationData]);
-
     const loadMore = useCallback(async () => {
-        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            await getProfiles();
-        } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
+        if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             await getChannels();
         }
 
         // dynamic options are not paged so are not reloaded on scroll
-    }, [getProfiles, getChannels, dataSource]);
+    }, [getChannels, dataSource]);
 
     const searchDynamicOptions = useCallback(async (searchTerm = '') => {
         if (options && options !== integrationData && !searchTerm) {
@@ -288,7 +256,12 @@ function IntegrationSelector(
     }, [options, getDynamicOptions, integrationData]);
 
     const handleSelectProfile = (user: UserProfile): void => {
-        // TODO
+        if (!isMultiselect) {
+            handleSelect(user);
+            close();
+        }
+
+        // TODO multiselect seelction
     };
 
     const onHandleMultiselectSubmit = useCallback(() => {
@@ -316,15 +289,7 @@ function IntegrationSelector(
 
             setLoading(true);
 
-            if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-                const {data: userData} = await searchProfiles(
-                    serverUrl, text.toLowerCase(),
-                    {team_id: currentTeamId, allow_inactive: true});
-
-                if (userData) {
-                    setSearchResults(userData);
-                }
-            } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
+            if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
                 const isSearch = true;
                 const {channels: receivedChannels} = await searchChannels(
                     serverUrl, text, currentTeamId, isSearch);
@@ -353,9 +318,7 @@ function IntegrationSelector(
     }, []);
 
     useEffect(() => {
-        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            getProfiles();
-        } else if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
+        if (dataSource === ViewConstants.DATA_SOURCE_CHANNELS) {
             getChannels();
         } else {
             // Static and dynamic option search
@@ -364,14 +327,10 @@ function IntegrationSelector(
     }, []);
 
     useEffect(() => {
-        let listData: (DataType | UserProfileSection[]) = integrationData;
+        let listData: DataType = integrationData;
 
         if (term) {
             listData = searchResults;
-        }
-
-        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            listData = createProfilesSections(listData as UserProfile[]);
         }
 
         if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
@@ -415,12 +374,6 @@ function IntegrationSelector(
 
         let text;
         switch (dataSource) {
-            case ViewConstants.DATA_SOURCE_USERS:
-                text = {
-                    id: intl.formatMessage({id: 'mobile.integration_selector.loading_users'}),
-                    defaultMessage: 'Loading Users...',
-                };
-                break;
             case ViewConstants.DATA_SOURCE_CHANNELS:
                 text = {
                     id: intl.formatMessage({id: 'mobile.integration_selector.loading_channels'}),
