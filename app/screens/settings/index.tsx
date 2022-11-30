@@ -17,13 +17,11 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const helpLink = observeConfigValue(database, 'HelpLink');
     const showHelp = helpLink.pipe(switchMap((link: string) => of$(link ? isValidUrl(link) : false)));
     const siteName = observeConfigValue(database, 'SiteName');
-    const supportEmail = observeConfigValue(database, 'SupportEmail');
 
     return {
         helpLink,
         showHelp,
         siteName,
-        supportEmail,
     };
 });
 
