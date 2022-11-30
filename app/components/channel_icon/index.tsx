@@ -187,7 +187,8 @@ const ChannelIcon = ({
             <DmAvatar
                 channelName={name}
                 isInfo={isInfo}
-            />);
+            />
+        );
     }
 
     return (

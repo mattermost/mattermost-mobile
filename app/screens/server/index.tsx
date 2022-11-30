@@ -17,6 +17,7 @@ import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
 import {Screens, Launch} from '@constants';
 import {t} from '@i18n';
+import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
 import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
@@ -55,7 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     scrollContainer: {
         alignItems: 'center',
-        height: '100%',
+        height: '90%',
         justifyContent: 'center',
     },
 }));
@@ -159,6 +160,8 @@ const Server = ({
                 dismissModal({componentId});
             }
         });
+
+        PushNotifications.registerIfNeeded();
 
         return () => navigationEvents.remove();
     }, []);

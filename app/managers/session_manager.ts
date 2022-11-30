@@ -21,6 +21,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
+import {isMainActivity} from '@utils/helpers';
 import {addNewServer} from '@utils/server';
 
 import type {LaunchType} from '@typings/launch';
@@ -142,7 +143,7 @@ class SessionManager {
     };
 
     private onAppStateChange = async (appState: AppStateStatus) => {
-        if (appState === this.previousAppState) {
+        if (appState === this.previousAppState || !isMainActivity()) {
             return;
         }
 

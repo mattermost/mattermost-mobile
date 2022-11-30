@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
+import {of as of$, switchMap, distinctUntilChanged} from 'rxjs';
 
 import {SupportedServer} from '@constants';
 import {MM_TABLES} from '@constants/database';
@@ -12,6 +13,29 @@ import {isMinimumServerVersion} from '@utils/helpers';
 import type ServerModel from '@typings/database/models/app/servers';
 
 const {APP: {SERVERS}} = MM_TABLES;
+
+export const queryServerDisplayName = (serverUrl: string) => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        return database.get<ServerModel>(SERVERS).query(Q.where('url', serverUrl));
+    } catch {
+        return undefined;
+    }
+};
+
+export const queryAllActiveServers = () => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        return database.get<ServerModel>(MM_TABLES.APP.SERVERS).query(
+            Q.and(
+                Q.where('identifier', Q.notEq('')),
+                Q.where('last_active_at', Q.gt(0)),
+            ),
+        );
+    } catch {
+        return undefined;
+    }
+};
 
 export const getServer = async (serverUrl: string) => {
     try {
@@ -64,13 +88,19 @@ export const getServerByDisplayName = async (displayName: string) => {
 };
 
 export const getServerDisplayName = async (serverUrl: string) => {
-    try {
-        const {database} = DatabaseManager.getAppDatabaseAndOperator();
-        const servers = (await database.get<ServerModel>(SERVERS).query(Q.where('url', serverUrl)).fetch());
-        return servers?.[0].displayName;
-    } catch {
-        return serverUrl;
-    }
+    const servers = await queryServerDisplayName(serverUrl)?.fetch();
+    return servers?.[0].displayName || serverUrl;
+};
+
+export const observeServerDisplayName = (serverUrl: string) => {
+    return queryServerDisplayName(serverUrl)?.observeWithColumns(['display_name']).pipe(
+        switchMap((s) => of$(s.length ? s[0].displayName : serverUrl)),
+        distinctUntilChanged(),
+    );
+};
+
+export const observeAllActiveServers = () => {
+    return queryAllActiveServers()?.observe() || of$([]);
 };
 
 export const areAllServersSupported = async () => {

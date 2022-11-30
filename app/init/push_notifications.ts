@@ -13,6 +13,7 @@ import {
     NotificationTextInput,
     Registered,
 } from 'react-native-notifications';
+import {requestNotifications} from 'react-native-permissions';
 
 import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
@@ -28,19 +29,33 @@ import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import {dismissOverlay, showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {isTablet} from '@utils/helpers';
+import {isMainActivity, isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 
 class PushNotifications {
     configured = false;
 
-    init() {
-        Notifications.registerRemoteNotifications();
+    init(register: boolean) {
+        if (register) {
+            Notifications.registerRemoteNotifications();
+        }
+
         Notifications.events().registerNotificationOpened(this.onNotificationOpened);
         Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered);
         Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
         Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
+    }
+
+    async registerIfNeeded() {
+        const isRegistered = await Notifications.isRegisteredForRemoteNotifications();
+        if (!isRegistered) {
+            if (Platform.OS === 'android') {
+                Notifications.registerRemoteNotifications();
+            } else {
+                await requestNotifications(['alert', 'sound', 'badge']);
+            }
+        }
     }
 
     createReplyCategory = () => {
@@ -218,7 +233,7 @@ class PushNotifications {
     onNotificationReceivedForeground = (incoming: Notification, completion: (response: NotificationCompletion) => void) => {
         const notification = convertToNotificationData(incoming, false);
         if (AppState.currentState !== 'inactive') {
-            notification.foreground = AppState.currentState === 'active';
+            notification.foreground = AppState.currentState === 'active' && isMainActivity();
 
             this.processNotification(notification);
         }

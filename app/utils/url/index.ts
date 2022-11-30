@@ -78,6 +78,24 @@ export function extractFirstLink(text: string) {
     return '';
 }
 
+export function extractStartLink(text: string) {
+    const pattern = /^((?:https?|ftp):\/\/[-A-Z0-9+\u0026\u2019@#/%?=()~_|!:,.;]*[-A-Z0-9+\u0026@#/%=~()_|])/i;
+    let inText = text;
+
+    // strip out code blocks
+    inText = inText.replace(/`[^`]*`/g, '');
+
+    // strip out inline markdown images
+    inText = inText.replace(/!\[[^\]]*]\([^)]*\)/g, '');
+
+    const match = pattern.exec(inText);
+    if (match) {
+        return match[0].trim();
+    }
+
+    return '';
+}
+
 export function isYoutubeLink(link: string) {
     return link.trim().match(ytRegex);
 }
