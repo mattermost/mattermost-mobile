@@ -10,6 +10,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
 import {fetchProfiles, searchProfiles} from '@actions/remote/user';
+import {t} from '@app/i18n';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
 import UserListRow from '@components/user_list_row';
@@ -23,6 +24,7 @@ import {
     buildNavigationButton,
     popTopScreen, setButtons,
 } from '@screens/navigation';
+import {WithDatabaseArgs} from '@typings/database/database';
 import {filterChannelsMatchingTerm} from '@utils/channel';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -34,8 +36,6 @@ import ChannelListRow from './channel_list_row';
 import CustomList, {FLATLIST, SECTIONLIST} from './custom_list';
 import OptionListRow from './option_list_row';
 import SelectedOptions from './selected_options';
-
-import type {WithDatabaseArgs} from '@typings/database/database';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DataType;
@@ -456,19 +456,19 @@ function IntegrationSelector(
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
                 text = {
-                    id: 'mobile.integration_selector.loading_users',
+                    id: t('mobile.integration_selector.loading_users'),
                     defaultMessage: 'Loading Users...',
                 };
                 break;
             case ViewConstants.DATA_SOURCE_CHANNELS:
                 text = {
-                    id: 'mobile.integration_selector.loading_channels',
+                    id: t('mobile.integration_selector.loading_channels'),
                     defaultMessage: 'Loading Channels...',
                 };
                 break;
             default:
                 text = {
-                    id: 'mobile.integration_selector.loading_options',
+                    id: t('mobile.integration_selector.loading_options'),
                     defaultMessage: 'Loading Options...',
                 };
                 break;
