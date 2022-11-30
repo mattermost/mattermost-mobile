@@ -15,14 +15,10 @@ type OptionIconProps = {
     destructive?: boolean;
 };
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+const getStyleSheet = makeStyleSheetFromTheme(() => {
     return {
-        destructive: {
-            color: theme.dndIndicator,
-        },
         icon: {
             fontSize: 24,
-            color: changeOpacity(theme.centerChannelColor, 0.64),
             width: 24,
             height: 24,
         },
@@ -32,10 +28,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const OptionIcon = ({icon, iconColor, destructive}: OptionIconProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
-    const imageStyle = useMemo(() => (
-        [styles.icon, destructive ? styles.destructive : null]
-    ), [styles, destructive]);
 
     const [failedToLoadImage, setFailedToLoadImage] = useState(false);
     const onErrorLoadingIcon = useCallback(() => {
@@ -50,7 +42,7 @@ const OptionIcon = ({icon, iconColor, destructive}: OptionIconProps) => {
         return (
             <FastImage
                 source={iconAsSource}
-                style={imageStyle}
+                style={styles.icon}
                 onError={onErrorLoadingIcon}
             />
         );
