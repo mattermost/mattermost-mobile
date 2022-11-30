@@ -36,6 +36,17 @@ describe('Thread item in the channel list', () => {
         expect(toJSON()).toMatchSnapshot();
     });
 
+    test('Threads Component should match snapshot with isInfo', () => {
+        const {toJSON} = renderWithIntlAndTheme(
+            <Threads
+                {...baseProps}
+                isInfo={true}
+            />,
+        );
+
+        expect(toJSON()).toMatchSnapshot();
+    });
+
     test('Threads Component should match snapshot, groupUnreadsSeparately false, always show', () => {
         const {toJSON} = renderWithIntlAndTheme(
             <Threads

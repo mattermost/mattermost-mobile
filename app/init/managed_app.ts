@@ -7,9 +7,10 @@ import JailMonkey from 'jail-monkey';
 import {Alert, AlertButton, AppState, AppStateStatus, Platform} from 'react-native';
 
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import {toMilliseconds} from '@utils/datetime';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
-const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 60 * 1000;
+const PROMPT_IN_APP_PIN_CODE_AFTER = toMilliseconds({minutes: 5});
 
 class ManagedApp {
     backgroundSince = 0;

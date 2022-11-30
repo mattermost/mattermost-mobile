@@ -184,6 +184,8 @@ query ${QueryNames.QUERY_ENTRY} {
             createAt
             expiresAt
         }
+        termsOfServiceId
+        termsOfServiceCreateAt
     }
     teamMembers(userId:"me") {
         deleteAt

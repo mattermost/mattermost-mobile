@@ -2,5 +2,5 @@
 <resources>
     <color name="white">#FFFFFF</color>
     <color name="transparent">#00000000</color>
-    <color name="splashscreen_bg">#1E325C</color>
+    <color name="splashscreen_bg">#090A0B</color>
 </resources>

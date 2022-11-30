@@ -7,8 +7,8 @@ import {
     View,
 } from 'react-native';
 
-import {typography} from '@app/utils/typography';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import CustomListRow, {Props as CustomListRowProps} from '../custom_list_row';
 

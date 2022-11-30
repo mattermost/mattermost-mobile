@@ -8,10 +8,10 @@ import {
     View,
 } from 'react-native';
 
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import {View as ViewConstants} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     theme: Theme;

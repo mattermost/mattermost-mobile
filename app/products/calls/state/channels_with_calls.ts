@@ -6,7 +6,7 @@ import {BehaviorSubject} from 'rxjs';
 
 import {ChannelsWithCalls} from '@calls/types/calls';
 
-const channelsWithCallsSubject = {} as Dictionary<BehaviorSubject<ChannelsWithCalls>>;
+const channelsWithCallsSubject: Dictionary<BehaviorSubject<ChannelsWithCalls>> = {};
 
 const getChannelsWithCallsSubject = (serverUrl: string) => {
     if (!channelsWithCallsSubject[serverUrl]) {

@@ -5,8 +5,8 @@ import {
     Text, Platform, FlatList, RefreshControl, View, SectionList,
 } from 'react-native';
 
-import {typography} from '@app/utils/typography';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 export const FLATLIST = 'flat';
 export const SECTIONLIST = 'section';
