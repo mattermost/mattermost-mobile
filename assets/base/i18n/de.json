@@ -879,5 +879,16 @@
     "announcment_banner.dismiss": "Ankündigung entfernen",
     "mobile.announcement_banner.title": "Ankündigung",
     "integration_selector.multiselect.submit": "Erledigt",
-    "announcment_banner.okay": "OK"
+    "announcment_banner.okay": "OK",
+    "onboaring.welcome_description": "Mattermost ist eine Open-Source-Plattform für die Zusammenarbeit von Entwicklern. Sicher, flexibel und mit deinen Tools integriert.",
+    "onboarding.welcome": "Willkommen",
+    "onboarding.realtime_collaboration_description": "Persistente Kanäle, Direktnachrichten und Dateifreigabe funktionieren nahtlos, sodass du immer in Verbindung bleiben kannst, egal wo du bist.",
+    "onboarding.realtime_collaboration": "Zusammenarbeit in Echtzeit",
+    "onboarding.integrations_description": "Gehe über den Chat hinaus mit integrierten Produktlösungen, die auf gemeinsame Entwicklungsprozesse abgestimmt sind.",
+    "onboarding.integrations": "Integriere deine bevorzugten Tools",
+    "onboarding.calls_description": "Wenn dir das Tippen nicht schnell genug geht, kannst du mit einem einzigen Fingertipp vom Chat zu sicheren Anrufen wechseln.",
+    "onboarding.calls": "Sichere Audioanrufe sofort starten",
+    "mobile.onboarding.sign_in_to_get_started": "Anmelden um loszulegen",
+    "mobile.onboarding.sign_in": "Anmelden",
+    "mobile.onboarding.next": "Weiter"
 }
