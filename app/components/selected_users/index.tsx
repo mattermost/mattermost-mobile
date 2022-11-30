@@ -122,6 +122,7 @@ export default function SelectedUsers({
     selectedIds,
     teammateNameDisplay,
     showToast = false,
+    setShowToast,
     toastIcon,
     toastMessage,
     onPress,
@@ -137,6 +138,18 @@ export default function SelectedUsers({
 
     const scrollViewHeight = useSharedValue(0);
     const [isVisible, setIsVisible] = useState(false);
+
+    // This effect hides the toast after 4 seconds
+    useEffect(() => {
+        let timer: NodeJS.Timeout;
+        if (showToast) {
+            timer = setTimeout(() => {
+                setShowToast(false);
+            }, 4000);
+        }
+
+        return () => clearTimeout(timer);
+    }, [showToast]);
 
     const numberSelectedIds = Object.keys(selectedIds).length;
     useEffect(() => {

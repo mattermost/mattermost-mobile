@@ -130,14 +130,6 @@ export default function CreateDirectMessage({
         setShowToast(selectedCount >= General.MAX_USERS_IN_GM);
     }, [selectedCount >= General.MAX_USERS_IN_GM]);
 
-    useEffect(() => {
-        if (showToast) {
-            setTimeout(() => {
-                setShowToast(false);
-            }, 4000);
-        }
-    }, [showToast]);
-
     const isSearch = Boolean(term);
 
     const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
