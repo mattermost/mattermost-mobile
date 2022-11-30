@@ -6,8 +6,8 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {AppBindingLocations} from '@app/constants/apps';
 import {General, Permissions, Post, Screens} from '@constants';
+import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import AppsManager from '@managers/apps_manager';
 import {observePost, observePostSaved} from '@queries/servers/post';
