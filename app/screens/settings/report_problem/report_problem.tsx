@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import TurboLogger from '@mattermost/react-native-turbo-log';
+import TurboMailer from '@mattermost/react-native-turbo-mailer';
 import React from 'react';
 import {Alert, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import TurboMailer from 'react-native-turbo-mailer';
 
 import {preventDoubleTap} from '@app/utils/tap';
 import {useTheme} from '@context/theme';
