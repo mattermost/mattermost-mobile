@@ -31,10 +31,6 @@ import SelectedOptions from './selected_options';
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DataType;
 type MultiselectSelectedMap = Dictionary<DialogOption> | Dictionary<Channel> | Dictionary<UserProfile>;
-type UserProfileSection = {
-    id: string;
-    data: UserProfile[];
-};
 
 const VALID_DATASOURCES = [
     ViewConstants.DATA_SOURCE_CHANNELS,
@@ -157,7 +153,7 @@ function IntegrationSelector(
     const [term, setTerm] = useState<string>('');
     const [searchResults, setSearchResults] = useState<DataType>([]);
     const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
-    const [customListData, setCustomListData] = useState<DataType | UserProfileSection[]>([]);
+    const [customListData, setCustomListData] = useState<DataType>([]);
 
     const page = useRef<number>(-1);
     const next = useRef<boolean>(VALID_DATASOURCES.includes(dataSource));
@@ -189,20 +185,20 @@ function IntegrationSelector(
             return;
         }
 
-        const itemKey = extractItemKey(dataSource, item);
-
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_CHANNELS: {
+                const itemKey = extractItemKey(dataSource, item);
                 setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as Channel));
                 return;
             }
             default: {
+                const itemKey = extractItemKey(dataSource, item);
                 setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as DialogOption));
             }
         }
     }, [isMultiselect, dataSource, handleSelect]);
 
-    const handleRemoveOption = useCallback((item: UserProfile | Channel | DialogOption) => {
+    const handleRemoveOption = useCallback((item: Channel | DialogOption) => {
         const itemKey = extractItemKey(dataSource, item);
         setMultiselectSelected((current) => {
             const multiselectSelectedItems = {...current};
@@ -487,7 +483,7 @@ function IntegrationSelector(
             default:
                 return (
                     <CustomList
-                        data={customListData as DataType}
+                        data={customListData as (Channel[] | DialogOption[])}
                         key='custom_list'
                         loading={loading}
                         loadingComponent={renderLoading()}

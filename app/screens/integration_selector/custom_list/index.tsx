@@ -8,8 +8,6 @@ import {
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-export const FLATLIST = 'flat';
-export const SECTIONLIST = 'section';
 const INITIAL_BATCH_TO_RENDER = 15;
 
 type DataType = DialogOption[] | Channel[];
