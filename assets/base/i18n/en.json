@@ -804,7 +804,7 @@
   "settings.advanced_settings": "Advanced Settings",
   "settings.advanced.cancel": "Cancel",
   "settings.advanced.delete": "Delete",
-  "settings.advanced.delete_data": "Delete Files & Cache",
+  "settings.advanced.delete_data": "Delete local files",
   "settings.advanced.delete_message.confirmation": "\nThis will delete all files downloaded through the app for this server. Please confirm to proceed.\n",
   "settings.display": "Display",
   "settings.link.error.text": "Unable to open the link.",

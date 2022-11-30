@@ -54,7 +54,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                 const {formatMessage} = intl;
 
                 Alert.alert(
-                    formatMessage({id: t('settings.advanced.delete_data'), defaultMessage: 'Delete Documents & Data'}),
+                    formatMessage({id: t('settings.advanced.delete_data'), defaultMessage: 'Delete local files'}),
                     formatMessage({
                         id: t('settings.advanced.delete_message.confirmation'),
                         defaultMessage: '\nThis will delete all files downloaded through the app for this server. Please confirm to proceed.\n',
@@ -99,7 +99,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                     destructive={true}
                     icon='trash-can-outline'
                     info={getFormattedFileSize(dataSize || 0)}
-                    label={intl.formatMessage({id: 'settings.advanced.delete_data', defaultMessage: 'Delete Files & Cache'})}
+                    label={intl.formatMessage({id: 'settings.advanced.delete_data', defaultMessage: 'Delete local files'})}
                     testID='settings.advanced.delete_data.option'
                     type='none'
                 />
