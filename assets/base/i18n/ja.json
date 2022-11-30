@@ -590,7 +590,6 @@
     "mobile.calls_enable": "通話を有効にする",
     "mobile.calls_disable": "通話を無効にする",
     "mobile.calls_current_call": "現在の通話",
-    "mobile.calls_chat_thread": "チャットスレッド",
     "mobile.calls_call_screen": "通話",
     "mobile.calls_call_ended": "通話が終了しました",
     "mobile.android.photos_permission_denied_description": "サーバーへ写真をアップロードするか、デバイスに写真を保存します。設定を開き、{applicationName} にフォトライブラリへの読み込みと書き込みのアクセス権を付与してください。",
