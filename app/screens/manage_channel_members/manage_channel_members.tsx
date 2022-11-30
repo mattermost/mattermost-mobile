@@ -13,21 +13,21 @@ import UserList from '@components/user_list';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {UserModel} from '@database/models/server';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {openAsBottomSheet, setButtons} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
-import {filterProfilesMatchingTerm, isChannelAdmin, isSystemAdmin} from '@utils/user';
+import {filterProfilesMatchingTerm} from '@utils/user';
 
 const MANAGE_BUTTON = 'manage-button';
 
 type Props = {
+    canManage: boolean;
     channelId: string;
     componentId: string;
     currentTeamId: string;
-    currentUser: UserModel;
+    currentUserId: string;
     restrictDirectMessage: boolean;
     teammateNameDisplay: string;
     tutorialWatched: boolean;
@@ -81,10 +81,11 @@ const messages = defineMessages({
 });
 
 export default function ManageChannelMembers({
+    canManage,
     channelId,
     componentId,
     currentTeamId,
-    currentUser,
+    currentUserId,
     restrictDirectMessage,
     teammateNameDisplay,
     tutorialWatched,
@@ -95,9 +96,6 @@ export default function ManageChannelMembers({
     const intl = useIntl();
     const {formatMessage} = intl;
 
-    const currentUserId = currentUser.id;
-
-    const canManage = isSystemAdmin(currentUser.roles) || isChannelAdmin(currentUser.roles);
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const next = useRef(true);
     const page = useRef(-1);

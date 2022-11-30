@@ -367,7 +367,7 @@ function IntegrationSelector(
         }
 
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
-            listData = createProfilesSections(listData as UserProfile[]);
+            listData = createProfilesSections(false, listData as UserProfile[]);
         }
 
         if (dataSource === ViewConstants.DATA_SOURCE_DYNAMIC) {
