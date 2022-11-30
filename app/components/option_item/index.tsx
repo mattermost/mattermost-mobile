@@ -126,6 +126,7 @@ const OptionItem = ({
     description,
     destructive,
     icon,
+    iconColor,
     info,
     inline = false,
     label,
@@ -240,6 +241,7 @@ const OptionItem = ({
                         <View style={styles.iconContainer}>
                             <OptionIcon
                                 icon={icon!}
+                                iconColor={iconColor}
                                 destructive={destructive}
                             />
                         </View>

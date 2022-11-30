@@ -10,8 +10,9 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {isValidUrl} from '@utils/url';
 
 type OptionIconProps = {
-    destructive?: boolean;
     icon: string;
+    iconColor?: string;
+    destructive?: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -28,7 +29,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const OptionIcon = ({icon, destructive}: OptionIconProps) => {
+const OptionIcon = ({icon, iconColor, destructive}: OptionIconProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -60,7 +61,7 @@ const OptionIcon = ({icon, destructive}: OptionIconProps) => {
         <CompassIcon
             name={iconName}
             size={24}
-            color={destructive ? theme.dndIndicator : changeOpacity(theme.centerChannelColor, 0.64)}
+            color={iconColor || (destructive ? theme.dndIndicator : changeOpacity(theme.centerChannelColor, 0.64))}
         />
     );
 };

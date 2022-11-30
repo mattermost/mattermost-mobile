@@ -2,15 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import withObservables from '@nozbe/with-observables';
 import React, {useMemo} from 'react';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
-import {AppBindingLocations} from '@constants/apps';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import AppsManager from '@managers/apps_manager';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
 import {isSystemMessage} from '@utils/post';
