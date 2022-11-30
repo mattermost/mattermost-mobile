@@ -901,5 +901,10 @@
     "mobile.calls_host": "Gastgeber",
     "mobile.calls_host_rec": "Du zeichnest diese Besprechung auf. Bitte informiere alle Teilnehmer darüber, dass diese Sitzung aufgezeichnet wird.",
     "mobile.calls_dismiss": "Verwerfen",
-    "mobile.calls_call_thread": "Kanal öffnen"
+    "mobile.calls_call_thread": "Kanal öffnen",
+    "mobile.calls_stop_recording": "Aufnahme stoppen",
+    "mobile.calls_record": "Aufnehmen",
+    "mobile.calls_host_rec_title": "Sie zeichnest gerade auf",
+    "mobile.calls_host_rec_stopped_title": "Die Aufnahme wurde gestoppt. Verarbeitung...",
+    "mobile.calls_host_rec_stopped": "Du kannst die Aufzeichnung in der Unterhaltung dieses Anrufs finden, sobald die Verarbeitung abgeschlossen ist."
 }
