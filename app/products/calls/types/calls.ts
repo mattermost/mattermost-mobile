@@ -113,6 +113,7 @@ export type CallsConnection = {
     raiseHand: () => void;
     unraiseHand: () => void;
     initializeVoiceTrack: () => void;
+    sendReaction: (emoji: CallReactionEmoji) => void;
 }
 
 export type ServerCallsConfig = {

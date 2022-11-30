@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
-import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
@@ -19,7 +17,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {observeCurrentTeamId} from '@queries/servers/system';
 import {
     buildNavigationButton,
     popTopScreen, setButtons,
@@ -33,8 +30,6 @@ import ChannelListRow from './channel_list_row';
 import CustomList, {FLATLIST, SECTIONLIST} from './custom_list';
 import OptionListRow from './option_list_row';
 import SelectedOptions from './selected_options';
-
-import type {WithDatabaseArgs} from '@typings/database/database';
 
 type DataType = DialogOption[] | Channel[] | UserProfile[];
 type Selection = DialogOption | Channel | UserProfile | DataType;
@@ -69,6 +64,18 @@ const extractItemKey = (dataSource: string, item: Selection): string => {
             return typedItem.value;
         }
     }
+};
+
+const toggleFromMap = <T extends DialogOption | Channel | UserProfile>(current: MultiselectSelectedMap, key: string, item: T): MultiselectSelectedMap => {
+    const newMap = {...current};
+
+    if (current[key]) {
+        delete newMap[key];
+    } else {
+        newMap[key] = item;
+    }
+
+    return newMap;
 };
 
 const filterSearchData = (source: string, searchData: DataType, searchTerm: string) => {
@@ -192,48 +199,30 @@ function IntegrationSelector(
         }
 
         const itemKey = extractItemKey(dataSource, item);
-        const currentSelected: Dictionary<UserProfile> | Dictionary<DialogOption> | Dictionary<Channel> = multiselectSelected;
-        const multiselectSelectedItems = {...currentSelected};
 
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS: {
-                if (currentSelected[itemKey]) {
-                    delete multiselectSelectedItems[itemKey];
-                } else {
-                    multiselectSelectedItems[itemKey] = item as UserProfile;
-                }
-
-                setMultiselectSelected(multiselectSelectedItems);
+                setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as UserProfile));
                 return;
             }
             case ViewConstants.DATA_SOURCE_CHANNELS: {
-                if (currentSelected[itemKey]) {
-                    delete multiselectSelectedItems[itemKey];
-                } else {
-                    multiselectSelectedItems[itemKey] = item as Channel;
-                }
-
-                setMultiselectSelected(multiselectSelectedItems);
+                setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as Channel));
                 return;
             }
             default: {
-                if (currentSelected[itemKey]) {
-                    delete multiselectSelectedItems[itemKey];
-                } else {
-                    multiselectSelectedItems[itemKey] = item as DialogOption;
-                }
-                setMultiselectSelected(multiselectSelectedItems);
+                setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as DialogOption));
             }
         }
-    }, [integrationData, multiselectSelected, isMultiselect, dataSource, handleSelect]);
+    }, [isMultiselect, dataSource, handleSelect]);
 
     const handleRemoveOption = useCallback((item: UserProfile | Channel | DialogOption) => {
-        const currentSelected: Dictionary<UserProfile> | Dictionary<DialogOption> | Dictionary<Channel> = multiselectSelected;
         const itemKey = extractItemKey(dataSource, item);
-        const multiselectSelectedItems = {...currentSelected};
-        delete multiselectSelectedItems[itemKey];
-        setMultiselectSelected(multiselectSelectedItems);
-    }, [dataSource, multiselectSelected]);
+        setMultiselectSelected((current) => {
+            const multiselectSelectedItems = {...current};
+            delete multiselectSelectedItems[itemKey];
+            return multiselectSelectedItems;
+        });
+    }, [dataSource]);
 
     const getChannels = useCallback(debounce(async () => {
         if (next.current && !loading && !term) {
@@ -299,7 +288,7 @@ function IntegrationSelector(
     }, [options, getDynamicOptions, integrationData]);
 
     const onHandleMultiselectSubmit = useCallback(() => {
-        handleSelect(getMultiselectData(multiselectSelected));
+        handleSelect(Object.values(multiselectSelected));
         close();
     }, [multiselectSelected, handleSelect]);
 
@@ -346,38 +335,6 @@ function IntegrationSelector(
             setLoading(false);
         }, General.SEARCH_TIMEOUT_MILLISECONDS);
     }, [dataSource, integrationData, currentTeamId]);
-
-    const getMultiselectData = useCallback((multiselectSelectedElems: MultiselectSelectedMap): Selection => {
-        let myItems;
-        let multiselectItems: Selection = [];
-
-        switch (dataSource) {
-            case ViewConstants.DATA_SOURCE_USERS:
-                myItems = multiselectSelectedElems as Dictionary<UserProfile>;
-                multiselectItems = multiselectItems as UserProfile[];
-                // eslint-disable-next-line guard-for-in
-                for (const index in myItems) {
-                    multiselectItems.push(myItems[index]);
-                }
-                return multiselectItems;
-            case ViewConstants.DATA_SOURCE_CHANNELS:
-                myItems = multiselectSelectedElems as Dictionary<Channel>;
-                multiselectItems = multiselectItems as Channel[];
-                // eslint-disable-next-line guard-for-in
-                for (const index in myItems) {
-                    multiselectItems.push(myItems[index]);
-                }
-                return multiselectItems;
-            default:
-                myItems = multiselectSelectedElems as Dictionary<DialogOption>;
-                multiselectItems = multiselectItems as DialogOption[];
-                // eslint-disable-next-line guard-for-in
-                for (const index in myItems) {
-                    multiselectItems.push(myItems[index]);
-                }
-                return multiselectItems;
-        }
-    }, [multiselectSelected, dataSource]);
 
     // Effects
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit]);
@@ -555,8 +512,8 @@ function IntegrationSelector(
         }
     };
 
-    const renderSelectedOptions = useCallback((): React.ReactElement<any, string> | null => {
-        const selectedItems: any = Object.values(multiselectSelected);
+    const renderSelectedOptions = useCallback((): React.ReactElement<string> | null => {
+        const selectedItems: Channel[] | DialogOption[] | UserProfile[] = Object.values(multiselectSelected);
 
         if (!selectedItems.length) {
             return null;
@@ -614,8 +571,4 @@ function IntegrationSelector(
     );
 }
 
-const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
-    currentTeamId: observeCurrentTeamId(database),
-}));
-
-export default withDatabase(withTeamId(IntegrationSelector));
+export default IntegrationSelector;

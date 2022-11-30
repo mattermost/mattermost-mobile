@@ -41,6 +41,16 @@ export const observeMultiServerTutorial = () => {
     );
 };
 
+export const getOnboardingViewed = async (): Promise<boolean> => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        const onboardingVal = await database.get<GlobalModel>(GLOBAL).find(GLOBAL_IDENTIFIERS.ONBOARDING);
+        return onboardingVal?.value ?? false;
+    } catch {
+        return false;
+    }
+};
+
 export const observeProfileLongPresTutorial = () => {
     const query = queryGlobalValue(GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL);
     if (!query) {

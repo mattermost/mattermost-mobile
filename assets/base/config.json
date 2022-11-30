@@ -36,5 +36,6 @@
     "ShowSentryDebugOptions": false,
 
     "CustomRequestHeaders": {},
-    "ShowReview": false
+    "ShowReview": false,
+    "ShowOnboarding": false
 }
