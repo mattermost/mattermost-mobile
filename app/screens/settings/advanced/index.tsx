@@ -11,11 +11,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import SettingSeparator from '@screens/settings/settings_separator';
-import {
-    deleteFileCache,
-    getAllFilesInCachesDirectory,
-    getFormattedFileSize,
-} from '@utils/file';
+import {deleteFileCache, getAllFilesInCachesDirectory, getFormattedFileSize} from '@utils/file';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -58,21 +54,15 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                 const {formatMessage} = intl;
 
                 Alert.alert(
+                    formatMessage({id: t('settings.advanced.delete_data'), defaultMessage: 'Delete Documents & Data'}),
                     formatMessage({
-                        id: t('advanced_settings.delete_data'),
-                        defaultMessage: 'Delete Documents & Data',
-                    }),
-                    formatMessage({
-                        id: t('mobile.advanced_settings.delete_message.confirmation'),
+                        id: t('settings.advanced.delete_message.confirmation'),
                         defaultMessage: '\nThis will delete all offline data downloaded through the app. Please confirm to proceed.\n',
                     }),
                     [
+                        {text: formatMessage({id: 'settings.advanced.cancel', defaultMessage: 'Cancel'}), style: 'cancel'},
                         {
-                            text: formatMessage({id: 'mobile.advanced_settings.cancel', defaultMessage: 'Cancel'}),
-                            style: 'cancel',
-                        },
-                        {
-                            text: formatMessage({id: 'mobile.advanced_settings.delete', defaultMessage: 'Delete'}),
+                            text: formatMessage({id: 'settings.advanced.delete', defaultMessage: 'Delete'}),
                             style: 'destructive',
                             onPress: async () => {
                                 await deleteFileCache(serverUrl);
@@ -109,11 +99,8 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                     destructive={true}
                     icon='trash-can-outline'
                     info={getFormattedFileSize(dataSize || 0)}
-                    label={intl.formatMessage({
-                        id: 'advanced_settings.delete_data',
-                        defaultMessage: 'Delete Documents & Data',
-                    })}
-                    testID='advanced_settings.delete_data.option'
+                    label={intl.formatMessage({id: 'settings.advanced.delete_data', defaultMessage: 'Delete Files & Cache'})}
+                    testID='settings.advanced.delete_data.option'
                     type='none'
                 />
                 <SettingSeparator/>
