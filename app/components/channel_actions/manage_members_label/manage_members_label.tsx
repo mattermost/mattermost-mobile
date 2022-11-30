@@ -8,7 +8,7 @@ import {Alert} from 'react-native';
 import {removeMemberFromChannel} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
-import {General} from '@constants';
+import {Members} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
@@ -85,20 +85,20 @@ const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, t
 
     const onAction = () => {
         switch (manageOption) {
-            case General.MANAGE_MEMBERS_OPTIONS.REMOVE_USER:
+            case Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER:
                 removeFromChannel();
                 break;
         }
     };
 
-    if (manageOption === General.MANAGE_MEMBERS_OPTIONS.REMOVE_USER && !canRemove) {
+    if (manageOption === Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER && !canRemove) {
         return null;
     }
 
     let actionText;
     let icon;
     switch (manageOption) {
-        case General.MANAGE_MEMBERS_OPTIONS.REMOVE_USER:
+        case Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER:
             actionText = intl.formatMessage(messages.remove_title);
             icon = 'trash-can-outline';
             break;

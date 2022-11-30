@@ -19,6 +19,7 @@ import Integrations from './integrations';
 import Launch from './launch';
 import License from './license';
 import List from './list';
+import Members from './members';
 import Navigation from './navigation';
 import Network from './network';
 import NotificationLevel from './notification_level';
@@ -56,6 +57,7 @@ export {
     Launch,
     License,
     List,
+    Members,
     Navigation,
     Network,
     NotificationLevel,
