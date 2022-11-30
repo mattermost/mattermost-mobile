@@ -378,7 +378,6 @@
     "alert.push_proxy_error.description": "Door de configuratie voor deze server kunnen meldingen niet worden ontvangen in de mobiele app. Neem contact op met jouw systeembeheerder voor meer informatie.",
     "alert.channel_deleted.title": "Gearchiveerd kanaal",
     "alert.channel_deleted.description": "Het kanaal {displayName} is gearchiveerd.",
-    "advanced_settings.delete_data": "Documenten en gegevens wissen",
     "account.your_profile": "Jouw profiel",
     "account.user_status.title": "Beschikbaarheid van de gebruiker",
     "mobile.login_options.cant_heading": "Kan niet aanmelden",

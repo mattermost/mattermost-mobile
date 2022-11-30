@@ -373,7 +373,6 @@
     "user.settings.general.username": "Kullanıcı adı",
     "alert.channel_deleted.title": "Kanal arşivlenmiş",
     "alert.channel_deleted.description": "{displayName} kanalı arşivlendi.",
-    "advanced_settings.delete_data": "Belge ve verileri sil",
     "account.your_profile": "Profiliniz",
     "account.user_status.title": "Kullanıcı varoluşu",
     "account.settings": "Ayarlar",

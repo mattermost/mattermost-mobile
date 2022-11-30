@@ -373,7 +373,6 @@
     "user.settings.general.username": "Nazwa użytkownika",
     "alert.channel_deleted.title": "Kanał zarchiwizowany",
     "alert.channel_deleted.description": "Kanał {displayName} został zarchiwizowany.",
-    "advanced_settings.delete_data": "Usuń dokumenty i dane",
     "account.your_profile": "Twój Profil",
     "account.user_status.title": "Obecność użytkownika",
     "account.settings": "Ustawienia",

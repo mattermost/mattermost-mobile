@@ -531,7 +531,6 @@
     "alert.push_proxy_error.description": "Aufgrund der Konfiguration deines Servers können keine Benachrichtigungen in der mobilen App empfangen werden. Wende dich für weitere Informationen an deinen Systemadministrator.",
     "alert.channel_deleted.title": "Archivierter Kanal",
     "alert.channel_deleted.description": "Der Kanal {displayName} wurde archiviert.",
-    "advanced_settings.delete_data": "Dokumente & Daten löschen",
     "account.your_profile": "Dein Profil",
     "account.user_status.title": "Benutzerpräsenz",
     "account.settings": "Einstellungen",

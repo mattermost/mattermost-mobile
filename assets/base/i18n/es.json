@@ -373,7 +373,6 @@
     "user.settings.general.username": "Nombre de usuario",
     "alert.channel_deleted.title": "Canal archivado",
     "alert.channel_deleted.description": "El canal {displayName} se ha archivado.",
-    "advanced_settings.delete_data": "Borrar Documentos y Datos",
     "account.your_profile": "Tu Perfil",
     "account.settings": "Ajustes",
     "account.logout_from": "Desconectar de {serverName}",

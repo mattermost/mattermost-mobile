@@ -670,7 +670,6 @@
     "channel_info.set_header": "ヘッダーを設定する",
     "browse_channels.dropdownTitle": "表示",
     "alert.channel_deleted.description": "チャンネル {displayName} はアーカイブされました。",
-    "advanced_settings.delete_data": "ドキュメントとデータの削除",
     "account.your_profile": "あなたのプロフィール",
     "server.logout.alert_description": "関連するデータはすべて削除されます",
     "server_list.push_proxy_unknown": "このサーバーの設定により、通知を受け取ることができません。一度ログアウトした後に再ログインし、再度試してみてください。",
