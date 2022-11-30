@@ -5,7 +5,7 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 
-import {sortServers} from '@utils/server';
+import {sortServersByDisplayName} from '@utils/server';
 
 import ServerItem from './server_item';
 
@@ -31,7 +31,7 @@ const keyExtractor = (item: ServersModel) => item.url;
 
 const ServersList = ({servers, theme}: Props) => {
     const intl = useIntl();
-    const data = useMemo(() => sortServers(servers, intl), [intl.locale, servers]);
+    const data = useMemo(() => sortServersByDisplayName(servers, intl), [intl.locale, servers]);
 
     const renderServer = useCallback(({item}: ListRenderItemInfo<ServersModel>) => {
         return (

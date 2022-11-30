@@ -12,7 +12,7 @@ import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
-import {sortServers} from '@utils/server';
+import {sortServersByDisplayName} from '@utils/server';
 
 import ServerList from './servers_list';
 
@@ -75,7 +75,7 @@ const Servers = React.forwardRef<ServersRef>((props, ref) => {
     };
 
     const serversObserver = async (servers: ServersModel[]) => {
-        registeredServers.current = sortServers(servers, intl);
+        registeredServers.current = sortServersByDisplayName(servers, intl);
 
         // unsubscribe mentions from servers that were removed
         const allUrls = new Set(servers.map((s) => s.url));

@@ -154,7 +154,7 @@ export function hasTrailingSpaces(term: string) {
 }
 
 /**
- * isMainActivity returns true if the current activity on Android is the MainActivity otherwise it returns false
+ * isMainActivity returns true if the current activity on Android is the MainActivity otherwise it returns false,
  * on iOS the result is always true
  *
  * @returns boolean

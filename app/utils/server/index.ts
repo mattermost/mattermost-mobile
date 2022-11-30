@@ -194,7 +194,7 @@ export function alertServerAlreadyConnected(intl: IntlShape) {
     );
 }
 
-export const sortServers = (servers: ServersModel[], intl: IntlShape) => {
+export const sortServersByDisplayName = (servers: ServersModel[], intl: IntlShape) => {
     function serverName(s: ServersModel) {
         if (s.displayName === s.url) {
             return intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});

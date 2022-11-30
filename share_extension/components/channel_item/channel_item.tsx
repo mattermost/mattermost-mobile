@@ -69,7 +69,7 @@ const ChannelListItem = ({
     const styles = getStyleSheet(theme);
 
     const height = useMemo(() => {
-        return (teamDisplayName) ? 58 : 44;
+        return teamDisplayName ? 58 : 44;
     }, [teamDisplayName]);
 
     const handleOnPress = useCallback(() => {
