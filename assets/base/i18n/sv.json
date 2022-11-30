@@ -546,7 +546,6 @@
     "mobile.calls_enable": "Aktivera samtal",
     "mobile.calls_disable": "Inaktivera samtal",
     "mobile.calls_current_call": "Aktuellt samtal",
-    "mobile.calls_chat_thread": "Chatt-tråd",
     "mobile.calls_call_screen": "Samtal",
     "mobile.calls_call_ended": "Samtalet avslutades",
     "mobile.android.photos_permission_denied_description": "Ladda upp foton till servern eller spara dem på din enhet. Öppna Inställningar för att ge {applicationName} läs och skriv-rättigheter till fotobiblioteket.",

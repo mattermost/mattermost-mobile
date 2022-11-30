@@ -746,7 +746,6 @@
     "mobile.calls_enable": "Enable calls",
     "mobile.calls_disable": "Disable calls",
     "mobile.calls_current_call": "Current call",
-    "mobile.calls_chat_thread": "Chat thread",
     "mobile.calls_call_screen": "Call",
     "mobile.calls_call_ended": "Call ended",
     "mobile.android.photos_permission_denied_description": "Upload photos to your server or save them to your device. Open Settings to grant {applicationName} Read and Write access to your photo library.",

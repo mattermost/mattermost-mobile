@@ -445,7 +445,6 @@
     "mobile.calls_enable": "Oproepen inschakelen",
     "mobile.calls_disable": "Oproepen uitschakelen",
     "mobile.calls_current_call": "Huidige oproep",
-    "mobile.calls_chat_thread": "Chatdraadje",
     "mobile.calls_call_screen": "Calls",
     "mobile.calls_call_ended": "Oproep beëindigd",
     "mobile.android.photos_permission_denied_description": "Upload foto's naar jouw server of sla ze op jouw toestel op. Open Instellingen om {applicationName} Lees- en schrijftoegang tot jouw fotobibliotheek te verlenen.",

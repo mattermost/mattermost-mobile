@@ -378,7 +378,6 @@
     "mobile.calls_enable": "Anrufe aktivieren",
     "mobile.calls_disable": "Anrufe deaktivieren",
     "mobile.calls_current_call": "Aktueller Anruf",
-    "mobile.calls_chat_thread": "Gesprächsverlauf",
     "mobile.calls_call_screen": "Anruf",
     "mobile.calls_call_ended": "Anruf beendet",
     "mobile.android.photos_permission_denied_description": "Laden Sie Fotos auf deinen Server hoch oder speicher sie auf deinem Gerät. Öffne die Einstellungen, um {applicationName} Lese- und Schreibzugriff auf deine Fotobibliothek zu gewähren.",
