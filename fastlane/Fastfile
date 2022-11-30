@@ -170,6 +170,11 @@ lane :configure do
     json['ShowReview'] = true
   end
 
+  # Configure Show Onboarding
+  if ENV['SHOW_ONBOARDING'] == 'true'
+    json['ShowOnboarding'] = true
+  end
+
   # Save the config.json file
   save_json_as_file('../dist/assets/config.json', json)
 

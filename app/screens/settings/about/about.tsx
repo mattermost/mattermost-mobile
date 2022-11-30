@@ -118,15 +118,11 @@ const About = ({config, license}: AboutProps) => {
     }, []);
 
     const handleAboutTeam = useCallback(preventDoubleTap(() => {
-        return openURL(Config.AboutTeamURL);
-    }), []);
-
-    const handleAboutEnterprise = useCallback(preventDoubleTap(() => {
-        return openURL(Config.AboutEnterpriseURL);
+        return openURL(Config.WebsiteURL);
     }), []);
 
     const handlePlatformNotice = useCallback(preventDoubleTap(() => {
-        return openURL(Config.PlatformNoticeURL);
+        return openURL(Config.ServerNoticeURL);
     }), []);
 
     const handleMobileNotice = useCallback(preventDoubleTap(() => {
@@ -256,8 +252,7 @@ const About = ({config, license}: AboutProps) => {
                 )}
                 <LearnMore
                     config={config}
-                    onHandleAboutEnterprise={handleAboutEnterprise}
-                    onHandleAboutTeam={handleAboutTeam}
+                    onPress={handleAboutTeam}
                 />
                 {!MATTERMOST_BUNDLE_IDS.includes(DeviceInfo.getBundleId()) &&
                     <FormattedText

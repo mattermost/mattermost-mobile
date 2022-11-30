@@ -6,13 +6,15 @@ import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
+import LocalConfig from '@assets/config.json';
 import {Screens, DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
+import {getOnboardingViewed} from '@queries/app/global';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
-import {goToScreen, resetToHome, resetToSelectServer, resetToTeams} from '@screens/navigation';
+import {goToScreen, resetToHome, resetToSelectServer, resetToTeams, resetToOnboarding} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
@@ -58,6 +60,13 @@ const launchAppFromNotification = async (notification: NotificationWithData, col
     launchApp(props);
 };
 
+/**
+ *
+ * @param props set of properties used to determine how to launch the app depending on the containing values
+ * @param resetNavigation used when loading the add_server screen and remove all the navigation stack
+
+ * @returns a redirection to a screen, either onboarding, add_server, login or home depending on the scenario
+ */
 const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     let serverUrl: string | undefined;
     switch (props?.launchType) {
@@ -124,6 +133,13 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
 
             return launchToHome({...props, launchType, serverUrl});
         }
+    }
+
+    const onboardingViewed = LocalConfig.ShowOnboarding && await getOnboardingViewed();
+
+    // if the config value is set and the onboarding has not been seeing yet, show the onboarding
+    if (LocalConfig.ShowOnboarding && !onboardingViewed) {
+        return resetToOnboarding(props);
     }
 
     return launchToServer(props, resetNavigation);
