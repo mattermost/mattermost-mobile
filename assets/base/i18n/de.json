@@ -889,5 +889,10 @@
     "onboarding.calls": "Sichere Audioanrufe sofort starten",
     "mobile.onboarding.sign_in_to_get_started": "Anmelden um loszulegen",
     "mobile.onboarding.sign_in": "Anmelden",
-    "mobile.onboarding.next": "Weiter"
+    "mobile.onboarding.next": "Weiter",
+    "settings.advanced.delete_message.confirmation": "\nDadurch werden alle über die App heruntergeladenen Dateien für diesen Server gelöscht. Bitte bestätigen Sie, um fortzufahren.\n",
+    "settings.advanced.delete_data": "Lokale Dateien löschen",
+    "settings.advanced.delete": "Löschen",
+    "settings.advanced.cancel": "Abbrechen",
+    "mobile.calls_react": "Reaktion"
 }
