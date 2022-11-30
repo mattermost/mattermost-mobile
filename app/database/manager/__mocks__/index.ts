@@ -21,12 +21,12 @@ import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
-import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
 import {deleteIOSDatabase} from '@utils/mattermost_managed';
 import {urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, Models, RegisterServerDatabaseArgs, ServerDatabase, ServerDatabases} from '@typings/database/database';
+import type ServerModel from '@typings/database/models/app/servers';
 
 const {SERVERS} = MM_TABLES.APP;
 const APP_DATABASE = 'app';
@@ -85,7 +85,6 @@ class DatabaseManager {
                 database,
                 operator,
             };
-
             return this.appDatabase;
         } catch (e) {
             // do nothing
@@ -168,9 +167,9 @@ class DatabaseManager {
     public updateServerIdentifier = async (serverUrl: string, identifier: string) => {
         const appDatabase = this.appDatabase?.database;
         if (appDatabase) {
-            const server = await queryServer(appDatabase, serverUrl);
+            const server = await this.getServer(serverUrl);
             await appDatabase.write(async () => {
-                await server.update((record) => {
+                await server?.update((record) => {
                     record.identifier = identifier;
                 });
             });
@@ -180,9 +179,9 @@ class DatabaseManager {
     public updateServerDisplayName = async (serverUrl: string, displayName: string) => {
         const appDatabase = this.appDatabase?.database;
         if (appDatabase) {
-            const server = await queryServer(appDatabase, serverUrl);
+            const server = await this.getServer(serverUrl);
             await appDatabase.write(async () => {
-                await server.update((record) => {
+                await server?.update((record) => {
                     record.displayName = displayName;
                 });
             });
@@ -190,42 +189,23 @@ class DatabaseManager {
     };
 
     private isServerPresent = async (serverUrl: string): Promise<boolean> => {
-        if (this.appDatabase?.database) {
-            const server = await queryServer(this.appDatabase.database, serverUrl);
-            return Boolean(server);
-        }
-
-        return false;
+        const server = await this.getServer(serverUrl);
+        return Boolean(server);
     };
 
-    public getActiveServerUrl = async (): Promise<string|null|undefined> => {
-        const database = this.appDatabase?.database;
-        if (database) {
-            const server = await queryActiveServer(database);
-            return server?.url;
-        }
-
-        return null;
+    public getActiveServerUrl = async (): Promise<string|undefined> => {
+        const server = await this.getActiveServer();
+        return server?.url;
     };
 
-    public getActiveServerDisplayName = async (): Promise<string|null|undefined> => {
-        const database = this.appDatabase?.database;
-        if (database) {
-            const server = await queryActiveServer(database);
-            return server?.displayName;
-        }
-
-        return null;
+    public getActiveServerDisplayName = async (): Promise<string|undefined> => {
+        const server = await this.getActiveServer();
+        return server?.displayName;
     };
 
     public getServerUrlFromIdentifier = async (identifier: string): Promise<string|undefined> => {
-        const database = this.appDatabase?.database;
-        if (database) {
-            const server = await queryServerByIdentifier(database, identifier);
-            return server?.url;
-        }
-
-        return undefined;
+        const server = await this.getServerByIdentifier(identifier);
+        return server?.url;
     };
 
     public getAppDatabaseAndOperator = () => {
@@ -247,12 +227,9 @@ class DatabaseManager {
     };
 
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
-        const database = this.appDatabase?.database;
-        if (database) {
-            const server = await queryActiveServer(database);
-            if (server?.url) {
-                return this.serverDatabases[server.url]!.database;
-            }
+        const server = await this.getActiveServer();
+        if (server?.url) {
+            return this.serverDatabases[server.url]!.database;
         }
 
         return undefined;
@@ -273,9 +250,9 @@ class DatabaseManager {
     };
 
     public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
-        if (this.appDatabase?.database) {
-            const database = this.appDatabase?.database;
-            const server = await queryServer(database, serverUrl);
+        const database = this.appDatabase?.database;
+        if (database) {
+            const server = await this.getServer(serverUrl);
             if (server) {
                 database.write(async () => {
                     await server.update((record) => {
@@ -291,9 +268,9 @@ class DatabaseManager {
     };
 
     public destroyServerDatabase = async (serverUrl: string): Promise<void> => {
-        if (this.appDatabase?.database) {
-            const database = this.appDatabase?.database;
-            const server = await queryServer(database, serverUrl);
+        const database = this.appDatabase?.database;
+        if (database) {
+            const server = await this.getServer(serverUrl);
             if (server) {
                 database.write(async () => {
                     await server.destroyPermanently();
@@ -379,6 +356,46 @@ class DatabaseManager {
     public searchUrl = (toFind: string): string | undefined => {
         const toFindWithoutProtocol = removeProtocol(toFind);
         return Object.keys(this.serverDatabases).find((k) => removeProtocol(k) === toFindWithoutProtocol);
+    };
+
+    // This actions already exists but the mock fails when using them cause of cyclic requires
+    private getServer = async (serverUrl: string) => {
+        try {
+            const {database} = this.getAppDatabaseAndOperator();
+            const servers = (await database.get<ServerModel>(SERVERS).query(Q.where('url', serverUrl)).fetch());
+            return servers?.[0];
+        } catch {
+            return undefined;
+        }
+    };
+
+    private getAllServers = async () => {
+        try {
+            const {database} = this.getAppDatabaseAndOperator();
+            return database.get<ServerModel>(MM_TABLES.APP.SERVERS).query().fetch();
+        } catch {
+            return [];
+        }
+    };
+
+    private getActiveServer = async () => {
+        try {
+            const servers = await this.getAllServers();
+            const server = servers?.filter((s) => s.identifier)?.reduce((a, b) => (b.lastActiveAt > a.lastActiveAt ? b : a));
+            return server;
+        } catch {
+            return undefined;
+        }
+    };
+
+    private getServerByIdentifier = async (identifier: string) => {
+        try {
+            const {database} = this.getAppDatabaseAndOperator();
+            const servers = (await database.get<ServerModel>(SERVERS).query(Q.where('identifier', identifier)).fetch());
+            return servers?.[0];
+        } catch {
+            return undefined;
+        }
     };
 }
 

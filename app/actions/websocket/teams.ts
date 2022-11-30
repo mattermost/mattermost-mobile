@@ -41,11 +41,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
         }
 
         if (currentTeam?.id === teamId) {
-            const appDatabase = DatabaseManager.appDatabase?.database;
-            let currentServer = '';
-            if (appDatabase) {
-                currentServer = await getActiveServerUrl(appDatabase);
-            }
+            const currentServer = await getActiveServerUrl();
 
             if (currentServer === serverUrl) {
                 DeviceEventEmitter.emit(Events.LEAVE_TEAM, currentTeam?.displayName);

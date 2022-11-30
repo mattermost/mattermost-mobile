@@ -101,6 +101,8 @@ PODS:
     - RNPermissions
   - Permission-Microphone (3.6.1):
     - RNPermissions
+  - Permission-Notifications (3.6.1):
+    - RNPermissions
   - Permission-PhotoLibrary (3.6.1):
     - RNPermissions
   - RCT-Folly (2021.07.22.00):
@@ -584,6 +586,7 @@ DEPENDENCIES:
   - OpenSSL-Universal (= 1.1.1100)
   - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera`)
   - Permission-Microphone (from `../node_modules/react-native-permissions/ios/Microphone`)
+  - Permission-Notifications (from `../node_modules/react-native-permissions/ios/Notifications`)
   - Permission-PhotoLibrary (from `../node_modules/react-native-permissions/ios/PhotoLibrary`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
@@ -711,6 +714,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-permissions/ios/Camera"
   Permission-Microphone:
     :path: "../node_modules/react-native-permissions/ios/Microphone"
+  Permission-Notifications:
+    :path: "../node_modules/react-native-permissions/ios/Notifications"
   Permission-PhotoLibrary:
     :path: "../node_modules/react-native-permissions/ios/PhotoLibrary"
   RCT-Folly:
@@ -893,6 +898,7 @@ SPEC CHECKSUMS:
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: bf6791b17c7f614b6826019fcfdcc286d3a107f6
   Permission-Microphone: 48212dd4d28025d9930d583e3c7a56da7268665c
+  Permission-Notifications: 150484ae586eb9be4e32217582a78350a9bb31c3
   Permission-PhotoLibrary: 5b34ca67279f7201ae109cef36f9806a6596002d
   RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
   RCTRequired: 21229f84411088e5d8538f21212de49e46cc83e2
@@ -975,6 +981,6 @@ SPEC CHECKSUMS:
   Yoga: eca980a5771bf114c41a754098cd85e6e0d90ed7
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 62c761c9aec9bb4ef459a75ab630937696026291
+PODFILE CHECKSUM: 96049f4170c9cafd0ff121db4444b3f46f51bc97
 
 COCOAPODS: 1.11.3

@@ -29,7 +29,7 @@ extension Database {
             let db = try getDatabaseForServer(serverUrl)
             let stmtString = """
             SELECT COUNT(DISTINCT my.id) FROM Channel c \
-            INNER JOIN MyChannel my ON c.id=my.id \
+            INNER JOIN MyChannel my ON c.id=my.id AND c.delete_at = 0 \
             INNER JOIN Team t ON c.team_id=t.id
             """
             let stmt = try db.prepare(stmtString)
