@@ -359,11 +359,13 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
     const fileIdPath = file.id?.replace(/[^0-9a-z]/g, '');
     if (serverUrl) {
         const server = urlSafeBase64Encode(serverUrl);
-        if (file?.name && !file.name.includes('/')) {
+        const hasValidFilename = file?.name && !file.name.includes('/');
+        const hasValidExtension = file?.extension && !file.extension.includes('/');
+        if (hasValidFilename) {
             let extension: string | undefined = file.extension;
             let filename = file.name;
 
-            if (!extension) {
+            if (!hasValidExtension) {
                 const mimeType = (file instanceof Model) ? file.mimeType : file.mime_type;
                 extension = getExtensionFromMime(mimeType);
             }
@@ -380,8 +382,10 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
             }
 
             return `${FileSystem.CachesDirectoryPath}/${server}/${filename}-${fileIdPath}.${extension}`;
-        } else if (file?.id && file?.extension) {
+        } else if (file?.id && hasValidExtension) {
             return `${FileSystem.CachesDirectoryPath}/${server}/${fileIdPath}.${file.extension}`;
+        } else if (file?.id) {
+            return `${FileSystem.CachesDirectoryPath}/${server}/${fileIdPath}`;
         }
     }
 
@@ -531,7 +535,6 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
             totalSize,
         };
     } catch (error) {
-        logError('Failed getAllFilesInCachesDirectory', error);
         return {error};
     }
 };

@@ -11,6 +11,8 @@ import {
     handleCallChannelDisabled,
     handleCallChannelEnabled,
     handleCallEnded,
+    handleCallHostChanged,
+    handleCallRecordingState,
     handleCallScreenOff,
     handleCallScreenOn,
     handleCallStarted,
@@ -396,6 +398,12 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.CALLS_USER_REACTED:
             handleCallUserReacted(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_RECORDING_STATE:
+            handleCallRecordingState(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_HOST_CHANGED:
+            handleCallHostChanged(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:

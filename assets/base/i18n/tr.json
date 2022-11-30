@@ -842,5 +842,7 @@
     "mobile.session_expired.title": "Oturumun süresi dolmuş",
     "mobile.session_expired": "Lütfen bildirimleri alabilmek için oturum açın. {siteName} oturumları {daysCount, number} {daysCount, plural, one {gün} other {gün}} süreyle açık kalır.",
     "mobile.server_url.deeplink.emm.denied": "Bu uygulama bir EMM tarafından denetleniyor ve DeepLink sunucu adresi EMM tarafından izin verilen bir sunucuyla eşleşmiyor",
-    "permalink.show_dialog_warn.description": "{channel} kanalına, kanal yöneticisi tarafından açıkça eklenmeden katılmak üzeresiniz. Bu özel kanala katılmak istediğinize emin misiniz?"
+    "permalink.show_dialog_warn.description": "{channel} kanalına, kanal yöneticisi tarafından açıkça eklenmeden katılmak üzeresiniz. Bu özel kanala katılmak istediğinize emin misiniz?",
+    "announcment_banner.okay": "Tamam",
+    "announcment_banner.dismiss": "Duyuruyu kapat"
 }

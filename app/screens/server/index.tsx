@@ -34,6 +34,7 @@ import ServerHeader from './header';
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 interface ServerProps extends LaunchProps {
+    animated?: boolean;
     closeButtonId?: string;
     componentId: string;
     theme: Theme;
@@ -46,9 +47,24 @@ const defaultServerUrlMessage = {
     defaultMessage: 'Please enter a valid server URL',
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    appInfo: {
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+    },
+    flex: {
+        flex: 1,
+    },
+    scrollContainer: {
+        alignItems: 'center',
+        height: '100%',
+        justifyContent: 'center',
+    },
+}));
+
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const Server = ({
+    animated,
     closeButtonId,
     componentId,
     displayName: defaultDisplayName,
@@ -61,7 +77,7 @@ const Server = ({
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const dimensions = useWindowDimensions();
-    const translateX = useSharedValue(0);
+    const translateX = useSharedValue(animated ? dimensions.width : 0);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
@@ -347,19 +363,5 @@ const Server = ({
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    appInfo: {
-        color: changeOpacity(theme.centerChannelColor, 0.56),
-    },
-    flex: {
-        flex: 1,
-    },
-    scrollContainer: {
-        alignItems: 'center',
-        height: '100%',
-        justifyContent: 'center',
-    },
-}));
 
 export default Server;
