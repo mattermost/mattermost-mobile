@@ -31,24 +31,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 type LearnMoreProps = {
     config: ClientConfig;
-    onHandleAboutEnterprise: () => void;
-    onHandleAboutTeam: () => void;
+    onPress: () => void;
 };
 
-const LearnMore = ({config, onHandleAboutEnterprise, onHandleAboutTeam}: LearnMoreProps) => {
+const LearnMore = ({config, onPress}: LearnMoreProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
     let id = t('about.teamEditionLearn');
     let defaultMessage = 'Join the Mattermost community at ';
-    let onPress = onHandleAboutTeam;
-    let url = Config.TeamEditionLearnURL;
+    const url = Config.WebsiteURL;
 
     if (config.BuildEnterpriseReady === 'true') {
         id = t('about.enterpriseEditionLearn');
         defaultMessage = 'Learn more about Enterprise Edition at ';
-        onPress = onHandleAboutEnterprise;
-        url = Config.EELearnURL;
     }
 
     return (

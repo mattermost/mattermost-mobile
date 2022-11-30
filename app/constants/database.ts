@@ -78,6 +78,7 @@ export const GLOBAL_IDENTIFIERS = {
     LAST_ASK_FOR_REVIEW: 'lastAskForReview',
     MULTI_SERVER_TUTORIAL: 'multiServerTutorial',
     PROFILE_LONG_PRESS_TUTORIAL: 'profileLongPressTutorial',
+    ONBOARDING: 'onboarding',
 };
 
 export enum OperationType {

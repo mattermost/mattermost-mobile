@@ -34,6 +34,7 @@ export const LOGIN = 'Login';
 export const MANAGE_CHANNEL_MEMBERS = 'ManageChannelMembers';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
+export const ONBOARDING = 'Onboarding';
 export const PERMALINK = 'Permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
@@ -99,6 +100,7 @@ export default {
     MANAGE_CHANNEL_MEMBERS,
     MENTIONS,
     MFA,
+    ONBOARDING,
     PERMALINK,
     PINNED_MESSAGES,
     POST_OPTIONS,

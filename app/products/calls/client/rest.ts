@@ -1,7 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {ServerChannelState, ServerCallsConfig, ApiResp, ICEServersConfigs} from '@calls/types/calls';
+import type {
+    ServerChannelState,
+    ServerCallsConfig,
+    ApiResp,
+    ICEServersConfigs,
+    RecordingState,
+} from '@calls/types/calls';
 
 export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;
@@ -11,6 +17,8 @@ export interface ClientCallsMix {
     enableChannelCalls: (channelId: string, enable: boolean) => Promise<ServerChannelState>;
     endCall: (channelId: string) => Promise<ApiResp>;
     genTURNCredentials: () => Promise<ICEServersConfigs>;
+    startCallRecording: (callId: string) => Promise<ApiResp | RecordingState>;
+    stopCallRecording: (callId: string) => Promise<ApiResp | RecordingState>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -65,6 +73,20 @@ const ClientCalls = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getCallsRoute()}/turn-credentials`,
             {method: 'get'},
+        );
+    };
+
+    startCallRecording = async (callID: string) => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/calls/${callID}/recording/start`,
+            {method: 'post'},
+        );
+    };
+
+    stopCallRecording = async (callID: string) => {
+        return this.doFetch(
+            `${this.getCallsRoute()}/calls/${callID}/recording/stop`,
+            {method: 'post'},
         );
     };
 };

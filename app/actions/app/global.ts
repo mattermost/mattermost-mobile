@@ -3,6 +3,7 @@
 
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
+import {logError} from '@utils/log';
 
 export const storeGlobal = async (id: string, value: unknown, prepareRecordsOnly = false) => {
     try {
@@ -12,6 +13,7 @@ export const storeGlobal = async (id: string, value: unknown, prepareRecordsOnly
             prepareRecordsOnly,
         });
     } catch (error) {
+        logError('storeGlobal', error);
         return {error};
     }
 };
@@ -22,6 +24,10 @@ export const storeDeviceToken = async (token: string, prepareRecordsOnly = false
 
 export const storeMultiServerTutorial = async (prepareRecordsOnly = false) => {
     return storeGlobal(GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL, 'true', prepareRecordsOnly);
+};
+
+export const storeOnboardingViewedValue = async (value = true) => {
+    return storeGlobal(GLOBAL_IDENTIFIERS.ONBOARDING, value, false);
 };
 
 export const storeProfileLongPressTutorial = async (prepareRecordsOnly = false) => {

@@ -3,13 +3,15 @@
 
 import assert from 'assert';
 
+import {CallsConfig} from '@calls/types/calls';
 import {License} from '@constants';
 
 import {getICEServersConfigs} from './utils';
 
 describe('getICEServersConfigs', () => {
     it('backwards compatible case, no ICEServersConfigs present', () => {
-        const config = {
+        const config: CallsConfig = {
+            pluginEnabled: true,
             ICEServers: ['stun:stun.example.com:3478'],
             AllowEnableCalls: true,
             DefaultEnabled: true,
@@ -17,6 +19,7 @@ describe('getICEServersConfigs', () => {
             last_retrieved_at: 0,
             sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
+            EnableRecordings: true,
         };
         const iceConfigs = getICEServersConfigs(config);
 
@@ -28,7 +31,8 @@ describe('getICEServersConfigs', () => {
     });
 
     it('ICEServersConfigs set', () => {
-        const config = {
+        const config: CallsConfig = {
+            pluginEnabled: true,
             ICEServersConfigs: [
                 {
                     urls: ['stun:stun.example.com:3478'],
@@ -43,6 +47,7 @@ describe('getICEServersConfigs', () => {
             last_retrieved_at: 0,
             sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
+            EnableRecordings: true,
         };
         const iceConfigs = getICEServersConfigs(config);
 
@@ -57,7 +62,8 @@ describe('getICEServersConfigs', () => {
     });
 
     it('Both ICEServers and ICEServersConfigs set', () => {
-        const config = {
+        const config: CallsConfig = {
+            pluginEnabled: true,
             ICEServers: ['stun:stuna.example.com:3478'],
             ICEServersConfigs: [
                 {
@@ -73,6 +79,7 @@ describe('getICEServersConfigs', () => {
             last_retrieved_at: 0,
             sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
+            EnableRecordings: true,
         };
         const iceConfigs = getICEServersConfigs(config);
 
