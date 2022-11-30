@@ -805,7 +805,7 @@
   "settings.advanced.cancel": "Cancel",
   "settings.advanced.delete": "Delete",
   "settings.advanced.delete_data": "Delete Files & Cache",
-  "settings.advanced.delete_message.confirmation": "\nThis will delete all offline data downloaded through the app. Please confirm to proceed.\n",
+  "settings.advanced.delete_message.confirmation": "\nThis will delete all files downloaded through the app for this server. Please confirm to proceed.\n",
   "settings.display": "Display",
   "settings.link.error.text": "Unable to open the link.",
   "settings.link.error.title": "Error",

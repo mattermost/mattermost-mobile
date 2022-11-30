@@ -57,7 +57,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                     formatMessage({id: t('settings.advanced.delete_data'), defaultMessage: 'Delete Documents & Data'}),
                     formatMessage({
                         id: t('settings.advanced.delete_message.confirmation'),
-                        defaultMessage: '\nThis will delete all offline data downloaded through the app. Please confirm to proceed.\n',
+                        defaultMessage: '\nThis will delete all files downloaded through the app for this server. Please confirm to proceed.\n',
                     }),
                     [
                         {text: formatMessage({id: 'settings.advanced.cancel', defaultMessage: 'Cancel'}), style: 'cancel'},
