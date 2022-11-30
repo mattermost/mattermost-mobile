@@ -19,6 +19,19 @@ type Props = {
     term: string;
 }
 
+function handleIdSelection(currentIds: {[id: string]: UserProfile}, user: UserProfile) {
+    const newSelectedIds = {...currentIds};
+    const wasSelected = currentIds[user.id];
+
+    if (wasSelected) {
+        Reflect.deleteProperty(newSelectedIds, user.id);
+    } else {
+        newSelectedIds[user.id] = user;
+    }
+
+    return newSelectedIds;
+}
+
 function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
     if (action.type === 'add' && action.values?.length) {
         return [...state, ...action.values];
@@ -67,6 +80,11 @@ export default function ServerUserList({
         }
     }, 100), [loading, isSearch, serverUrl, currentTeamId]);
 
+    const onHandleSelectProfile = (user: UserProfile) => {
+        handleSelectProfile(user);
+        setSelectedIds((current) => handleIdSelection(current, user));
+    };
+
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
         setLoading(true);
@@ -114,7 +132,7 @@ export default function ServerUserList({
     return (
         <UserList
             currentUserId={currentUserId}
-            handleSelectProfile={handleSelectProfile}
+            handleSelectProfile={onHandleSelectProfile}
             loading={loading}
             profiles={data}
             selectedIds={selectedIds}
