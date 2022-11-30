@@ -38,7 +38,7 @@ const {
     THREAD,
     THREAD_PARTICIPANT,
     THREADS_IN_TEAM,
-    THREADS_TEAM_SYNC,
+    TEAM_THREADS_SYNC,
     USER,
 } = MM_TABLES.SERVER;
 
@@ -579,8 +579,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'thread_id', type: 'string', isIndexed: true},
                     ],
                 },
-                [THREADS_TEAM_SYNC]: {
-                    name: THREADS_TEAM_SYNC,
+                [TEAM_THREADS_SYNC]: {
+                    name: TEAM_THREADS_SYNC,
                     unsafeSql: undefined,
                     columns: {
                         earliest: {name: 'earliest', type: 'number'},

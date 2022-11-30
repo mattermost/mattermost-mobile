@@ -1,7 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {markTeamThreadsAsRead, markThreadAsViewed, processReceivedThreads, switchToThread, updateThread} from '@actions/local/thread';
+import Model from '@nozbe/watermelondb/Model';
+
+import {markTeamThreadsAsRead, markThreadAsViewed, processReceivedThreads, switchToThread, updateTeamThreadsSync, updateThread} from '@actions/local/thread';
 import {fetchPostThread} from '@actions/remote/post';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -10,19 +12,13 @@ import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
 import {getPostById} from '@queries/servers/post';
 import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
-import {getIsCRTEnabled, getNewestThreadInTeam, getThreadById} from '@queries/servers/thread';
+import {getIsCRTEnabled, getThreadById, getTeamThreadsSyncData} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
+import {getThreadsListEdges} from '@utils/thread';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
-import type {Model} from '@nozbe/watermelondb';
-
-type FetchThreadsRequest = {
-    error?: unknown;
-} | {
-    data: GetUserThreadsResponse;
-};
 
 type FetchThreadsOptions = {
     before?: string;
@@ -33,6 +29,11 @@ type FetchThreadsOptions = {
     since?: number;
     totalsOnly?: boolean;
 };
+
+enum Direction {
+    Up,
+    Down,
+}
 
 export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, isFromNotification = false) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
@@ -74,57 +75,6 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
     return {};
 };
 
-export const fetchThreads = async (
-    serverUrl: string,
-    teamId: string,
-    {
-        before,
-        after,
-        perPage = General.CRT_CHUNK_SIZE,
-        deleted = false,
-        unread = false,
-        since,
-    }: FetchThreadsOptions = {
-        perPage: General.CRT_CHUNK_SIZE,
-        deleted: false,
-        unread: false,
-        since: 0,
-    },
-): Promise<FetchThreadsRequest> => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
-        const version = await getConfigValue(database, 'Version');
-        const data = await client.getThreads('me', teamId, before, after, perPage, deleted, unread, since, false, version);
-
-        const {threads} = data;
-
-        if (threads.length) {
-            // Mark all fetched threads as following
-            threads.forEach((thread: Thread) => {
-                thread.is_following = true;
-            });
-
-            await processReceivedThreads(serverUrl, threads, teamId, !unread);
-        }
-
-        return {data};
-    } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        return {error};
-    }
-};
-
 export const fetchThread = async (serverUrl: string, teamId: string, threadId: string, extended?: boolean) => {
     let client;
     try {
@@ -136,7 +86,7 @@ export const fetchThread = async (serverUrl: string, teamId: string, threadId: s
     try {
         const thread = await client.getThread('me', teamId, threadId, extended);
 
-        await processReceivedThreads(serverUrl, [thread], teamId, false);
+        await processReceivedThreads(serverUrl, [thread], teamId);
 
         return {data: thread};
     } catch (error) {
@@ -286,17 +236,13 @@ export const updateThreadFollowing = async (serverUrl: string, teamId: string, t
     }
 };
 
-enum Direction {
-    Up,
-    Down,
-}
-
-async function fetchBatchThreads(
+export const fetchThreads = async (
     serverUrl: string,
     teamId: string,
     options: FetchThreadsOptions,
+    direction?: Direction,
     pages?: number,
-): Promise<{error: unknown; data?: Thread[]}> {
+) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
 
     if (!operator) {
@@ -310,12 +256,7 @@ async function fetchBatchThreads(
         return {error};
     }
 
-    // if we start from the begging of time (since = 0) we need to fetch threads from newest to oldest (Direction.Down)
-    // if there is another point in time, we need to fetch threads from oldest to newest (Direction.Up)
-    let direction = Direction.Up;
-    if (options.since === 0) {
-        direction = Direction.Down;
-    }
+    const fetchDirection = direction ?? Direction.Up;
 
     const currentUser = await getCurrentUser(operator.database);
     if (!currentUser) {
@@ -323,34 +264,32 @@ async function fetchBatchThreads(
     }
 
     const version = await getConfigValue(operator.database, 'Version');
-    const data: Thread[] = [];
+    const threadsData: Thread[] = [];
 
+    let currentPage = 0;
     const fetchThreadsFunc = async (opts: FetchThreadsOptions) => {
-        let page = 0;
         const {before, after, perPage = General.CRT_CHUNK_SIZE, deleted, unread, since} = opts;
 
-        page += 1;
+        currentPage++;
         const {threads} = await client.getThreads(currentUser.id, teamId, before, after, perPage, deleted, unread, since, false, version);
         if (threads.length) {
             // Mark all fetched threads as following
             for (const thread of threads) {
-                thread.is_following = true;
+                thread.is_following = thread.is_following ?? true;
             }
 
-            data.push(...threads);
+            threadsData.push(...threads);
 
-            if (threads.length === perPage) {
+            if (threads.length === perPage && (pages == null || currentPage < pages!)) {
                 const newOptions: FetchThreadsOptions = {perPage, deleted, unread};
-                if (direction === Direction.Down) {
+                if (fetchDirection === Direction.Down) {
                     const last = threads[threads.length - 1];
                     newOptions.before = last.id;
                 } else {
                     const first = threads[0];
                     newOptions.after = first.id;
                 }
-                if (pages != null && page < pages) {
-                    fetchThreadsFunc(newOptions);
-                }
+                await fetchThreadsFunc(newOptions);
             }
         }
     };
@@ -361,136 +300,179 @@ async function fetchBatchThreads(
         if (__DEV__) {
             throw error;
         }
-
-        return {error, data};
+        return {error};
     }
 
-    return {error: false, data};
-}
+    return {error: false, threads: threadsData};
+};
 
-export async function fetchNewThreads(
-    serverUrl: string,
-    teamId: string,
-    prepareRecordsOnly = false,
-): Promise<{error: unknown; models?: Model[]}> {
-    const options: FetchThreadsOptions = {
-        unread: false,
-        deleted: true,
-        perPage: 60,
-    };
-
+export const syncTeamThreads = async (serverUrl: string, teamId: string, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const newestThread = await getNewestThreadInTeam(operator.database, teamId, false);
-    options.since = newestThread ? newestThread.lastReplyAt : 0;
+    try {
+        const syncData = await getTeamThreadsSyncData(operator.database, teamId);
+        const syncDataUpdate = {
+            id: teamId,
+        } as TeamThreadsSync;
 
-    let response: {
-        error: unknown;
-        data?: Thread[];
-    } = {
-        error: undefined,
-        data: [],
-    };
+        const threads: Thread[] = [];
 
-    // if we have no threads in the DB fetch all unread ones
-    if (options.since === 0) {
-        // options to fetch all unread threads
-        options.deleted = false;
-        options.unread = true;
-    }
-
-    response = await fetchBatchThreads(serverUrl, teamId, options);
-
-    const {error: nErr, data} = response;
-
-    if (nErr) {
-        return {error: nErr};
-    }
-
-    if (!data?.length) {
-        return {error: false, models: []};
-    }
-
-    const {error, models} = await processReceivedThreads(serverUrl, data, teamId, true);
-
-    if (!error && !prepareRecordsOnly && models?.length) {
-        try {
-            await operator.batchRecords(models);
-        } catch (err) {
-            if (__DEV__) {
-                throw err;
+        /**
+         * If Syncing for the first time,
+         *     - Get all unread threads to show the right badges
+         *     - Get latest threads to show by default in the global threads screen
+         * Else
+         *     - Get all threads since last sync
+         */
+        if (!syncData || !syncData?.latest) {
+            const [allUnreadThreads, latestThreads] = await Promise.all([
+                fetchThreads(
+                    serverUrl,
+                    teamId,
+                    {unread: true},
+                    Direction.Down,
+                ),
+                fetchThreads(
+                    serverUrl,
+                    teamId,
+                    {},
+                    undefined,
+                    1,
+                ),
+            ]);
+            if (allUnreadThreads.error || latestThreads.error) {
+                return {error: allUnreadThreads.error || latestThreads.error};
             }
-            return {error: true};
+            if (latestThreads.threads?.length) {
+                // We are fetching the threads for the first time. We get "latest" and "earliest" values.
+                const {earliestThread, latestThread} = getThreadsListEdges(latestThreads.threads);
+                syncDataUpdate.latest = latestThread.last_reply_at;
+                syncDataUpdate.earliest = earliestThread.last_reply_at;
+
+                threads.push(...latestThreads.threads);
+            }
+            if (allUnreadThreads.threads?.length) {
+                threads.push(...allUnreadThreads.threads);
+            }
+        } else {
+            const allNewThreads = await fetchThreads(
+                serverUrl,
+                teamId,
+                {deleted: true, since: syncData.latest},
+            );
+            if (allNewThreads.error) {
+                return {error: allNewThreads.error};
+            }
+            if (allNewThreads.threads?.length) {
+                // As we are syncing, we get all new threads and we will update the "latest" value.
+                const {latestThread} = getThreadsListEdges(allNewThreads.threads);
+                syncDataUpdate.latest = latestThread.last_reply_at;
+
+                threads.push(...allNewThreads.threads);
+            }
         }
+
+        const models: Model[] = [];
+
+        if (threads.length) {
+            const {error, models: threadModels = []} = await processReceivedThreads(serverUrl, threads, teamId, true);
+            if (error) {
+                return {error};
+            }
+
+            if (threadModels?.length) {
+                models.push(...threadModels);
+            }
+
+            if (syncDataUpdate.earliest || syncDataUpdate.latest) {
+                const {models: updateModels} = await updateTeamThreadsSync(serverUrl, syncDataUpdate, true);
+                if (updateModels?.length) {
+                    models.push(...updateModels);
+                }
+            }
+
+            if (!prepareRecordsOnly && models?.length) {
+                try {
+                    await operator.batchRecords(models);
+                } catch (err) {
+                    if (__DEV__) {
+                        throw err;
+                    }
+                    return {error: err};
+                }
+            }
+        }
+
+        return {error: false, models};
+    } catch (error) {
+        return {error};
     }
+};
 
-    return {error: false, models};
-}
-
-export async function fetchRefreshThreads(
-    serverUrl: string,
-    teamId: string,
-    unread = false,
-    prepareRecordsOnly = false,
-): Promise<{error: unknown; models?: Model[]}> {
-    const options: FetchThreadsOptions = {
-        unread,
-        deleted: true,
-        perPage: 60,
-    };
-
+export const loadEarlierThreads = async (serverUrl: string, teamId: string, lastThreadId: string, prepareRecordsOnly = false) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
-    const newestThread = await getNewestThreadInTeam(operator.database, teamId, unread);
-    options.since = newestThread ? newestThread.lastReplyAt : 0;
-
-    let response: {
-        error: unknown;
-        data?: Thread[];
-    } = {
-        error: undefined,
-        data: [],
-    };
-
-    let pages;
-
-    // in the case of global threads: if we have no threads in the DB fetch just one page
-    if (options.since === 0 && !unread) {
-        pages = 1;
-    }
-
-    response = await fetchBatchThreads(serverUrl, teamId, options, pages);
-
-    const {error: nErr, data} = response;
-
-    if (nErr) {
-        return {error: nErr};
-    }
-
-    if (!data?.length) {
-        return {error: false, models: []};
-    }
-
-    const {error, models} = await processReceivedThreads(serverUrl, data, teamId, true);
-
-    if (!error && !prepareRecordsOnly && models?.length) {
-        try {
-            await operator.batchRecords(models);
-        } catch (err) {
-            if (__DEV__) {
-                throw err;
-            }
-            return {error: true};
+    try {
+        /*
+         * - We will fetch one page of old threads
+         * - Update the sync data with the earliest thread last_reply_at timestamp
+         */
+        const fetchedThreads = await fetchThreads(
+            serverUrl,
+            teamId,
+            {
+                before: lastThreadId,
+            },
+            undefined,
+            1,
+        );
+        if (fetchedThreads.error) {
+            return {error: fetchedThreads.error};
         }
-    }
 
-    return {error: false, models};
-}
+        const models: Model[] = [];
+        const threads = fetchedThreads.threads || [];
+
+        if (threads?.length) {
+            const {error, models: threadModels = []} = await processReceivedThreads(serverUrl, threads, teamId, true);
+            if (error) {
+                return {error};
+            }
+
+            if (threadModels?.length) {
+                models.push(...threadModels);
+            }
+
+            const {earliestThread} = getThreadsListEdges(threads);
+            const syncDataUpdate = {
+                id: teamId,
+                earliest: earliestThread.last_reply_at,
+            } as TeamThreadsSync;
+            const {models: updateModels} = await updateTeamThreadsSync(serverUrl, syncDataUpdate, true);
+            if (updateModels?.length) {
+                models.push(...updateModels);
+            }
+
+            if (!prepareRecordsOnly && models?.length) {
+                try {
+                    await operator.batchRecords(models);
+                } catch (err) {
+                    if (__DEV__) {
+                        throw err;
+                    }
+                    return {error: err};
+                }
+            }
+        }
+
+        return {error: false, models, threads};
+    } catch (error) {
+        return {error};
+    }
+};

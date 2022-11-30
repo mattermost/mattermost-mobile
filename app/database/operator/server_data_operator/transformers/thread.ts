@@ -5,16 +5,16 @@ import {MM_TABLES, OperationType} from '@constants/database';
 import {prepareBaseRecord} from '@database/operator/server_data_operator/transformers/index';
 
 import type {TransformerArgs} from '@typings/database/database';
+import type TeamThreadsSyncModel from '@typings/database/models/servers/team_threads_sync';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
-import type ThreadsTeamSyncModel from '@typings/database/models/servers/threads_team_sync';
 
 const {
     THREAD,
     THREAD_PARTICIPANT,
     THREADS_IN_TEAM,
-    THREADS_TEAM_SYNC,
+    TEAM_THREADS_SYNC,
 } = MM_TABLES.SERVER;
 
 /**
@@ -93,21 +93,21 @@ export const transformThreadInTeamRecord = ({action, database, value}: Transform
     }) as Promise<ThreadInTeamModel>;
 };
 
-export const transformThreadsTeamSyncRecord = ({action, database, value}: TransformerArgs): Promise<ThreadsTeamSyncModel> => {
-    const raw = value.raw as ThreadsTeamSync;
-    const record = value.record as ThreadsTeamSyncModel;
+export const transformTeamThreadsSyncRecord = ({action, database, value}: TransformerArgs): Promise<TeamThreadsSyncModel> => {
+    const raw = value.raw as TeamThreadsSync;
+    const record = value.record as TeamThreadsSyncModel;
 
-    const fieldsMapper = (threadsTeamSync: ThreadsTeamSyncModel) => {
-        threadsTeamSync._raw.id = raw.id;
-        threadsTeamSync.earliest = raw.earliest || record?.earliest || Date.now();
-        threadsTeamSync.latest = raw.latest || record?.latest || 0;
+    const fieldsMapper = (teamThreadsSync: TeamThreadsSyncModel) => {
+        teamThreadsSync._raw.id = raw.id;
+        teamThreadsSync.earliest = raw.earliest || record?.earliest;
+        teamThreadsSync.latest = raw.latest || record?.latest;
     };
 
     return prepareBaseRecord({
         action,
         database,
-        tableName: THREADS_TEAM_SYNC,
+        tableName: TEAM_THREADS_SYNC,
         value,
         fieldsMapper,
-    }) as Promise<ThreadsTeamSyncModel>;
+    }) as Promise<TeamThreadsSyncModel>;
 };

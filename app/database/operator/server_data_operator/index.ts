@@ -10,9 +10,9 @@ import PostsInChannelHandler, {PostsInChannelHandlerMix} from '@database/operato
 import PostsInThreadHandler, {PostsInThreadHandlerMix} from '@database/operator/server_data_operator/handlers/posts_in_thread';
 import ReactionHander, {ReactionHandlerMix} from '@database/operator/server_data_operator/handlers/reaction';
 import TeamHandler, {TeamHandlerMix} from '@database/operator/server_data_operator/handlers/team';
+import TeamThreadsSyncHandler, {TeamThreadsSyncHandlerMix} from '@database/operator/server_data_operator/handlers/team_threads_sync';
 import ThreadHandler, {ThreadHandlerMix} from '@database/operator/server_data_operator/handlers/thread';
 import ThreadInTeamHandler, {ThreadInTeamHandlerMix} from '@database/operator/server_data_operator/handlers/thread_in_team';
-import ThreadsTeamSyncHandler, {ThreadsTeamSyncHandlerMix} from '@database/operator/server_data_operator/handlers/threads_team_sync';
 import UserHandler, {UserHandlerMix} from '@database/operator/server_data_operator/handlers/user';
 import mix from '@utils/mix';
 
@@ -30,7 +30,7 @@ interface ServerDataOperator extends
     TeamHandlerMix,
     ThreadHandlerMix,
     ThreadInTeamHandlerMix,
-    ThreadsTeamSyncHandlerMix,
+    TeamThreadsSyncHandlerMix,
     UserHandlerMix
 {}
 
@@ -45,7 +45,7 @@ class ServerDataOperator extends mix(ServerDataOperatorBase).with(
     TeamHandler,
     ThreadHandler,
     ThreadInTeamHandler,
-    ThreadsTeamSyncHandler,
+    TeamThreadsSyncHandler,
     UserHandler,
 ) {
     // eslint-disable-next-line no-useless-constructor

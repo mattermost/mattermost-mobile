@@ -6,25 +6,24 @@ import type {Relation, Model} from '@nozbe/watermelondb';
 import type {Associations} from '@nozbe/watermelondb/Model';
 
 /**
- * ThreadsTeamSync model helps us to determine for which team we have loaded which threads
- * this was done mostly because of threads belonging in DM/GM channels,
- * so they belong in multiple teams.
+ * ThreadInTeam model helps us to sync threads without creating any gaps between the threads
+ * by keeping track of the latest and earliest last_replied_at timestamps loaded for a team.
  */
-declare class ThreadsTeamSyncModel extends Model {
-    /** table (name) : ThreadsTeamSync */
+declare class TeamThreadsSyncModel extends Model {
+    /** table (name) : TeamThreadsSync */
     static table: string;
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations;
 
-    /** earliest: Associated thread identifier */
+    /** earliest: Oldest last_replied_at loaded through infinite loading */
     earliest: number;
 
-    /** latest: Associated thread identifier */
+    /** latest: Newest last_replied_at loaded during app init / navigating to global threads / pull to refresh */
     latest: number;
 
     /** team : The related record to the parent Team model */
     team: Relation<TeamModel>;
 }
 
-export default ThreadsTeamSyncModel;
+export default TeamThreadsSyncModel;

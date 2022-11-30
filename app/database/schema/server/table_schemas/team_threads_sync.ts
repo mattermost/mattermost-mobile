@@ -5,10 +5,10 @@ import {tableSchema} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
-const {THREADS_TEAM_SYNC} = MM_TABLES.SERVER;
+const {TEAM_THREADS_SYNC} = MM_TABLES.SERVER;
 
 export default tableSchema({
-    name: THREADS_TEAM_SYNC,
+    name: TEAM_THREADS_SYNC,
     columns: [
         {name: 'earliest', type: 'number'},
         {name: 'latest', type: 'number'},

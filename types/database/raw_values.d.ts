@@ -93,7 +93,7 @@ type ThreadInTeam = {
     team_id: string;
 };
 
-type ThreadsTeamSync = {
+type TeamThreadsSync = {
     id: string;
     earliest: number;
     latest: number;
@@ -130,6 +130,6 @@ type RawValue =
   | ThreadWithLastFetchedAt
   | ThreadInTeam
   | ThreadParticipant
-  | ThreadsTeamSync
+  | TeamThreadsSync
   | UserProfile
   | Pick<ChannelMembership, 'channel_id' | 'user_id'>

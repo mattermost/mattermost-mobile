@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {transformThreadRecord, transformThreadParticipantRecord, transformThreadInTeamRecord, transformThreadsTeamSyncRecord} from '@database/operator/server_data_operator/transformers/thread';
+import {transformThreadRecord, transformThreadParticipantRecord, transformThreadInTeamRecord, transformTeamThreadsSyncRecord} from '@database/operator/server_data_operator/transformers/thread';
 
 import ServerDataOperator from '..';
 
@@ -175,7 +175,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
         });
     });
 
-    it('=> HandleThreadsTeamSync: should write to the the ThreadsTeamSync table', async () => {
+    it('=> HandleTeamThreadsSync: should write to the the TeamThreadsSync table', async () => {
         expect.assertions(1);
 
         const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
@@ -191,9 +191,9 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                 earliest: 100,
                 latest: 300,
             },
-        ] as ThreadsTeamSync[];
+        ] as TeamThreadsSync[];
 
-        await operator.handleThreadsTeamSync({data, prepareRecordsOnly: false});
+        await operator.handleTeamThreadsSync({data, prepareRecordsOnly: false});
 
         expect(spyOnPrepareRecords).toHaveBeenCalledWith({
             createRaws: [{
@@ -202,8 +202,8 @@ describe('*** Operator: Thread Handlers tests ***', () => {
                 raw: {id: 'team_id_2', earliest: 100, latest: 300},
             }],
             updateRaws: [],
-            transformer: transformThreadsTeamSyncRecord,
-            tableName: 'ThreadsTeamSync',
+            transformer: transformTeamThreadsSyncRecord,
+            tableName: 'TeamThreadsSync',
         });
     });
 });

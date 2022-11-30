@@ -10,7 +10,7 @@ import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preferen
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
-import {fetchNewThreads} from '@actions/remote/thread';
+import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
 import {General, Preferences, Screens} from '@constants';
@@ -327,14 +327,14 @@ export async function restDeferredAppEntryActions(
 
     if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
         if (initialTeamId) {
-            await fetchNewThreads(serverUrl, initialTeamId, false);
+            await syncTeamThreads(serverUrl, initialTeamId);
         }
 
         if (teamData.teams?.length) {
             for await (const team of teamData.teams) {
                 if (team.id !== initialTeamId) {
                     // need to await here since GM/DM threads in different teams overlap
-                    await fetchNewThreads(serverUrl, team.id, false);
+                    await syncTeamThreads(serverUrl, team.id);
                 }
             }
         }
@@ -455,7 +455,7 @@ const restSyncAllChannelMembers = async (serverUrl: string) => {
             fetchMyChannelsForTeam(serverUrl, myTeam.id, false, 0, false, excludeDirect);
             excludeDirect = true;
             if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
-                fetchNewThreads(serverUrl, myTeam.id, false);
+                syncTeamThreads(serverUrl, myTeam.id);
             }
         }
     } catch {

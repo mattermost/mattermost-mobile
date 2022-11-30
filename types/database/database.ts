@@ -103,8 +103,8 @@ export type HandleThreadInTeamArgs = {
   prepareRecordsOnly?: boolean;
 };
 
-export type HandleThreadsTeamSyncArgs = {
-  data: ThreadsTeamSync[];
+export type HandleTeamThreadsSyncArgs = {
+  data: TeamThreadsSync[];
   prepareRecordsOnly?: boolean;
 };
 

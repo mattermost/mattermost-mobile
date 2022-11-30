@@ -8,27 +8,27 @@ import Model, {Associations} from '@nozbe/watermelondb/Model';
 import {MM_TABLES} from '@constants/database';
 
 import type TeamModel from '@typings/database/models/servers/team';
-import type ThreadsTeamSyncModelInterface from '@typings/database/models/servers/threads_team_sync';
+import type TeamThreadsSyncModelInterface from '@typings/database/models/servers/team_threads_sync';
 
-const {TEAM, THREADS_TEAM_SYNC} = MM_TABLES.SERVER;
+const {TEAM, TEAM_THREADS_SYNC} = MM_TABLES.SERVER;
 
 /**
- * ThreadInTeam model helps us to combine adjacent threads together without leaving
- * gaps in between for an efficient user reading experience for threads.
+ * ThreadInTeam model helps us to sync threads without creating any gaps between the threads
+ * by keeping track of the latest and earliest last_replied_at timestamps loaded for a team.
  */
-export default class ThreadsTeamSyncModel extends Model implements ThreadsTeamSyncModelInterface {
-    /** table (name) : ThreadsTeamSync */
-    static table = THREADS_TEAM_SYNC;
+export default class TeamThreadsSyncModel extends Model implements TeamThreadsSyncModelInterface {
+    /** table (name) : TeamThreadsSync */
+    static table = TEAM_THREADS_SYNC;
 
     /** associations : Describes every relationship to this table. */
     static associations: Associations = {
         [TEAM]: {type: 'belongs_to', key: 'id'},
     };
 
-    /** oldest_at: Oldest thread loaded through infinite loading */
+    /** earliest: Oldest last_replied_at loaded through infinite loading */
     @field('earliest') earliest!: number;
 
-    /** newest_at: Newest thread loaded during app init / navigating to global threads / pull to refresh */
+    /** latest: Newest last_replied_at loaded during app init / navigating to global threads / pull to refresh */
     @field('latest') latest!: number;
 
     @immutableRelation(TEAM, 'id') team!: Relation<TeamModel>;
