@@ -706,7 +706,6 @@
     "alert.push_proxy_error.description": "Due to the configuration for this server, notifications cannot be received in the mobile app. Contact your system admin for more information.",
     "alert.channel_deleted.title": "Archived channel",
     "alert.channel_deleted.description": "The channel {displayName} has been archived.",
-    "advanced_settings.delete_data": "Delete Documents & Data",
     "account.your_profile": "Your Profile",
     "account.user_status.title": "User Presence",
     "account.settings": "Settings",

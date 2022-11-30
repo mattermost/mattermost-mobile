@@ -386,7 +386,6 @@
     "alert.push_proxy_error.description": "På grund av serverns konfiguration kan notifieringar inte tas emot i mobilappen. Kontakta din systemadministratör för mer information.",
     "alert.channel_deleted.title": "Arkiverad kanal",
     "alert.channel_deleted.description": "Kanalen {displayName} har arkiverats.",
-    "advanced_settings.delete_data": "Radera dokument & data",
     "account.your_profile": "Din profil",
     "account.user_status.title": "Användarnärvaro",
     "account.settings": "Inställningar",
