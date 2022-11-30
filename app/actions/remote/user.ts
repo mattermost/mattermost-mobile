@@ -544,7 +544,7 @@ export const fetchProfilesNotInChannel = async (
         const client = NetworkManager.getClient(serverUrl);
         const users = await client.getProfilesNotInChannel(teamId, channelId, groupConstrained, page, perPage);
 
-        if (!fetchOnly) {
+        if (!fetchOnly && users.length) {
             const currentUserId = await getCurrentUserId(operator.database);
             const toStore = removeUserFromList(currentUserId, users);
             await operator.handleUsers({

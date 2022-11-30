@@ -47,29 +47,21 @@ export type MyChannelsRequest = {
 }
 
 export async function addMembersToChannel(serverUrl: string, channelId: string, userIds: string[], postRootId = '', fetchOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
         const promises = userIds.map((id) => client.addToChannel(id, channelId, postRootId));
         const channelMemberships: ChannelMembership[] = await Promise.all(promises);
         const {users} = await fetchUsersByIds(serverUrl, userIds, true);
 
         if (!fetchOnly) {
             const modelPromises: Array<Promise<Model[]>> = [];
-            modelPromises.push(operator.handleUsers({
-                users,
-                prepareRecordsOnly: true,
-            }));
+            if (users?.length) {
+                modelPromises.push(operator.handleUsers({
+                    users,
+                    prepareRecordsOnly: true,
+                }));
+            }
             modelPromises.push(operator.handleChannelMembership({
                 channelMemberships,
                 prepareRecordsOnly: true,
