@@ -15,6 +15,7 @@ import {ANNOUNCEMENT_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
+import {toMilliseconds} from '@utils/datetime';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -69,8 +70,8 @@ const clearTimeoutRef = (ref: React.MutableRefObject<NodeJS.Timeout | null | und
     }
 };
 
-const TIME_TO_OPEN = 3000;
-const TIME_TO_CLOSE = 1000;
+const TIME_TO_OPEN = toMilliseconds({seconds: 3});
+const TIME_TO_CLOSE = toMilliseconds({seconds: 1});
 
 const ConnectionBanner = ({
     isConnected,
