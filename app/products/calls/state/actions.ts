@@ -212,11 +212,9 @@ export const callStarted = (serverUrl: string, call: Call) => {
         return;
     }
 
-    const nextCurrentCall = {
+    const nextCurrentCall: CurrentCall = {
         ...currentCall,
-        startTime: call.startTime,
-        threadId: call.threadId,
-        ownerId: call.ownerId,
+        ...call,
     };
     setCurrentCall(nextCurrentCall);
 };
@@ -515,19 +513,6 @@ export const setRecordingState = (serverUrl: string, channelId: string, recState
     const nextCurrentCall = {
         ...currentCall,
         recState,
-    };
-    setCurrentCall(nextCurrentCall);
-};
-
-export const setRecAcknowledged = () => {
-    const currentCall = getCurrentCall();
-    if (!currentCall) {
-        return;
-    }
-
-    const nextCurrentCall: CurrentCall = {
-        ...currentCall,
-        recAcknowledged: true,
     };
     setCurrentCall(nextCurrentCall);
 };
