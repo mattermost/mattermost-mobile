@@ -5,21 +5,22 @@ import CookieManager, {Cookie} from '@react-native-cookies/cookies';
 import {AppState, AppStateStatus, DeviceEventEmitter, Platform} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
+import {storeOnboardingViewedValue} from '@actions/app/global';
 import {cancelSessionNotification, logout, scheduleSessionNotification} from '@actions/remote/session';
-import {resetMomentLocale} from '@app/i18n';
-import {deleteFileCache, deleteFileCacheByDir} from '@app/utils/file';
 import {Events, Launch} from '@constants';
 import DatabaseManager from '@database/manager';
+import {resetMomentLocale} from '@i18n';
 import {getAllServerCredentials, removeServerCredentials} from '@init/credentials';
 import {relaunchApp} from '@init/launch';
 import PushNotifications from '@init/push_notifications';
 import * as analytics from '@managers/analytics';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
-import {queryServerName} from '@queries/app/servers';
+import {queryAllServers, queryServerName} from '@queries/app/servers';
 import {getCurrentUser} from '@queries/servers/user';
 import {getThemeFromState} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {deleteFileCache, deleteFileCacheByDir} from '@utils/file';
 import {addNewServer} from '@utils/server';
 
 import type {LaunchType} from '@typings/launch';
@@ -174,6 +175,14 @@ class SessionManager {
 
                 if (activeServerDisplayName) {
                     displayName = activeServerDisplayName;
+                }
+            }
+
+            // set the onboardingViewed value to false so the launch will show the onboarding screen after all servers were removed
+            if (DatabaseManager.appDatabase) {
+                const servers = await queryAllServers(DatabaseManager.appDatabase.database);
+                if (!servers.length) {
+                    await storeOnboardingViewedValue(false);
                 }
             }
 

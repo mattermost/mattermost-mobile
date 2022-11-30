@@ -8,6 +8,9 @@ class NavigationHeader {
         headerSubtitle: 'navigation.header.subtitle',
         largeHeaderTitle: 'navigation.large_header.title',
         largeHeaderSubtitle: 'navigation.large_header.subtitle',
+        searchInput: 'navigation.header.search_bar.search.input',
+        searchClearButton: 'navigation.header.search_bar.search.clear.button',
+        searchCancelButton: 'navigation.header.search_bar.search.cancel.button',
     };
 
     backButton = element(by.id(this.testID.backButton));
@@ -15,6 +18,9 @@ class NavigationHeader {
     headerSubtitle = element(by.id(this.testID.headerSubtitle));
     largeHeaderTitle = element(by.id(this.testID.largeHeaderTitle));
     largeHeaderSubtitle = element(by.id(this.testID.largeHeaderSubtitle));
+    searchInput = element(by.id(this.testID.searchInput));
+    searchClearButton = element(by.id(this.testID.searchClearButton));
+    searchCancelButton = element(by.id(this.testID.searchCancelButton));
 }
 
 const navigationHeader = new NavigationHeader();

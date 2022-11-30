@@ -14,10 +14,11 @@ import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
+import {toMilliseconds} from '@utils/datetime';
 import {logError} from '@utils/log';
 
-const WAIT_TO_CLOSE = 15 * 1000;
-const WAIT_UNTIL_NEXT = 20 * 1000;
+const WAIT_TO_CLOSE = toMilliseconds({seconds: 15});
+const WAIT_UNTIL_NEXT = toMilliseconds({seconds: 20});
 
 class WebsocketManager {
     private clients: Record<string, WebSocketClient> = {};

@@ -4,14 +4,13 @@
 import React, {useCallback, useMemo} from 'react';
 import {View, FlatList} from 'react-native';
 
+import ChannelListRow from '@components/channel_list_row';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import ChannelListRow from './channel_list_row';
 
 type Props = {
     onEndReached: () => void;

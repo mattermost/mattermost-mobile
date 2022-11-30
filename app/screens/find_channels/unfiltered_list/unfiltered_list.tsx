@@ -20,15 +20,10 @@ type Props = {
     keyboardHeight: number;
     recentChannels: ChannelModel[];
     showTeamName: boolean;
-    unreadChannels: ChannelModel[];
     testID?: string;
 }
 
 const sectionNames = {
-    unreads: {
-        id: t('mobile.channel_list.unreads'),
-        defaultMessage: 'Unreads',
-    },
     recent: {
         id: t('mobile.channel_list.recent'),
         defaultMessage: 'Recent',
@@ -39,15 +34,8 @@ const style = StyleSheet.create({
     flex: {flex: 1},
 });
 
-const buildSections = (unreadChannels: ChannelModel[], recentChannels: ChannelModel[]) => {
+const buildSections = (recentChannels: ChannelModel[]) => {
     const sections = [];
-    if (unreadChannels.length) {
-        sections.push({
-            ...sectionNames.unreads,
-            data: unreadChannels,
-        });
-    }
-
     if (recentChannels.length) {
         sections.push({
             ...sectionNames.recent,
@@ -58,10 +46,10 @@ const buildSections = (unreadChannels: ChannelModel[], recentChannels: ChannelMo
     return sections;
 };
 
-const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, unreadChannels, testID}: Props) => {
+const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const [sections, setSections] = useState(buildSections(unreadChannels, recentChannels));
+    const [sections, setSections] = useState(buildSections(recentChannels));
     const sectionListStyle = useMemo(() => ({paddingBottom: keyboardHeight}), [keyboardHeight]);
 
     const onPress = useCallback(async (channelId: string) => {
@@ -86,8 +74,8 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, un
     }, [onPress, showTeamName]);
 
     useEffect(() => {
-        setSections(buildSections(unreadChannels, recentChannels));
-    }, [unreadChannels, recentChannels]);
+        setSections(buildSections(recentChannels));
+    }, [recentChannels]);
 
     return (
         <Animated.View

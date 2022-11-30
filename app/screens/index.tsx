@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withManagedConfig} from '@mattermost/react-native-emm';
+import {Provider as EMMProvider} from '@mattermost/react-native-emm';
 import React, {ComponentType} from 'react';
 import {IntlProvider} from 'react-intl';
 import {Platform, StyleProp, ViewStyle} from 'react-native';
@@ -46,6 +46,16 @@ const withSafeAreaInsets = (Screen: React.ComponentType) => {
             <SafeAreaProvider>
                 <Screen {...props}/>
             </SafeAreaProvider>
+        );
+    };
+};
+
+const withManagedConfig = (Screen: React.ComponentType) => {
+    return function EmmProvider(props: any) {
+        return (
+            <EMMProvider>
+                <Screen {...props}/>
+            </EMMProvider>
         );
     };
 };
@@ -114,6 +124,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.INTERACTIVE_DIALOG:
             screen = withServerDatabase(require('@screens/interactive_dialog').default);
             break;
+        case Screens.INTEGRATION_SELECTOR:
+            screen = withServerDatabase(require('@screens/integration_selector').default);
+            break;
         case Screens.IN_APP_NOTIFICATION: {
             const notificationScreen = require('@screens/in_app_notification').default;
             Navigation.registerComponent(Screens.IN_APP_NOTIFICATION, () =>
@@ -147,6 +160,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.REACTIONS:
             screen = withServerDatabase(require('@screens/reactions').default);
+            break;
+        case Screens.REVIEW_APP:
+            screen = withServerDatabase(require('@screens/review_app').default);
             break;
         case Screens.SETTINGS:
             screen = withServerDatabase(require('@screens/settings').default);
@@ -184,6 +200,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.SETTINGS_NOTIFICATION_PUSH:
             screen = withServerDatabase(require('@screens/settings/notification_push').default);
             break;
+        case Screens.SHARE_FEEDBACK:
+            screen = withServerDatabase(require('@screens/share_feedback').default);
+            break;
         case Screens.SNACK_BAR: {
             const snackBarScreen = withServerDatabase(require('@screens/snack_bar').default);
             Navigation.registerComponent(Screens.SNACK_BAR, () =>
@@ -199,6 +218,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.TABLE:
             screen = withServerDatabase(require('@screens/table').default);
+            break;
+        case Screens.TERMS_OF_SERVICE:
+            screen = withServerDatabase(require('@screens/terms_of_service').default);
             break;
         case Screens.THREAD:
             screen = withServerDatabase(require('@screens/thread').default);
@@ -220,13 +242,15 @@ Navigation.setLazyComponentRegistrator((screenName) => {
     }
 
     if (screen) {
-        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig<ManagedConfig>(screen)), extraStyles));
+        Navigation.registerComponent(screenName, () => withGestures(withSafeAreaInsets(withManagedConfig(screen)), extraStyles));
     }
 });
 
 export function registerScreens() {
     const homeScreen = require('@screens/home').default;
     const serverScreen = require('@screens/server').default;
-    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig<ManagedConfig>(serverScreen)), undefined));
-    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig<ManagedConfig>(homeScreen))), undefined));
+    const onboardingScreen = require('@screens/onboarding').default;
+    Navigation.registerComponent(Screens.ONBOARDING, () => withGestures(withIntl(withManagedConfig(onboardingScreen)), undefined));
+    Navigation.registerComponent(Screens.SERVER, () => withGestures(withIntl(withManagedConfig(serverScreen)), undefined));
+    Navigation.registerComponent(Screens.HOME, () => withGestures(withSafeAreaInsets(withServerDatabase(withManagedConfig(homeScreen))), undefined));
 }

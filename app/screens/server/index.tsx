@@ -16,16 +16,14 @@ import LocalConfig from '@assets/config.json';
 import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
 import {Screens, Launch} from '@constants';
-import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
 import {getErrorMessage} from '@utils/client_error';
-import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
+import {canReceiveNotifications} from '@utils/push_proxy';
 import {loginOptions} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
@@ -36,6 +34,7 @@ import ServerHeader from './header';
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 interface ServerProps extends LaunchProps {
+    animated?: boolean;
     closeButtonId?: string;
     componentId: string;
     theme: Theme;
@@ -48,9 +47,24 @@ const defaultServerUrlMessage = {
     defaultMessage: 'Please enter a valid server URL',
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    appInfo: {
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+    },
+    flex: {
+        flex: 1,
+    },
+    scrollContainer: {
+        alignItems: 'center',
+        height: '100%',
+        justifyContent: 'center',
+    },
+}));
+
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const Server = ({
+    animated,
     closeButtonId,
     componentId,
     displayName: defaultDisplayName,
@@ -63,7 +77,7 @@ const Server = ({
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const dimensions = useWindowDimensions();
-    const translateX = useSharedValue(0);
+    const translateX = useSharedValue(animated ? dimensions.width : 0);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
@@ -73,6 +87,7 @@ const Server = ({
     const [urlError, setUrlError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
+    const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
 
     useEffect(() => {
         let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
@@ -111,7 +126,7 @@ const Server = ({
             // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
             handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
         }
-    }, []);
+    }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName]);
 
     useEffect(() => {
         if (url && displayName) {
@@ -251,7 +266,7 @@ const Server = ({
         };
 
         const serverUrl = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp);
-        const result = await doPing(serverUrl, true);
+        const result = await doPing(serverUrl, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined);
 
         if (canceled) {
             return;
@@ -269,19 +284,7 @@ const Server = ({
             return;
         }
 
-        switch (result.canReceiveNotifications) {
-            case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
-                EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_NOT_AVAILABLE);
-                alertPushProxyError(intl);
-                break;
-            case PUSH_PROXY_RESPONSE_UNKNOWN:
-                EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_UNKNOWN);
-                alertPushProxyUnknown(intl);
-                break;
-            default:
-                EphemeralStore.setPushProxyVerificationState(serverUrl, PUSH_PROXY_STATUS_VERIFIED);
-        }
-
+        canReceiveNotifications(serverUrl, result.canReceiveNotifications as string, intl);
         const data = await fetchConfigAndLicense(serverUrl, true);
         if (data.error) {
             setButtonDisabled(true);
@@ -345,6 +348,7 @@ const Server = ({
                         connecting={connecting}
                         displayName={displayName}
                         displayNameError={displayNameError}
+                        disableServerUrl={disableServerUrl}
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}
@@ -359,19 +363,5 @@ const Server = ({
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    appInfo: {
-        color: changeOpacity(theme.centerChannelColor, 0.56),
-    },
-    flex: {
-        flex: 1,
-    },
-    scrollContainer: {
-        alignItems: 'center',
-        height: '100%',
-        justifyContent: 'center',
-    },
-}));
 
 export default Server;

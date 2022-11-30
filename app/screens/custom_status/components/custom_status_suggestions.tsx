@@ -13,7 +13,6 @@ import CustomStatusSuggestion from './custom_status_suggestion';
 
 type Props = {
     intl: IntlShape;
-    isExpirySupported: boolean;
     onHandleCustomStatusSuggestionClick: (status: UserCustomStatus) => void;
     recentCustomStatuses: UserCustomStatus[];
     theme: Theme;
@@ -57,7 +56,6 @@ const defaultCustomStatusSuggestions: DefaultUserCustomStatus[] = [
 
 const CustomStatusSuggestions = ({
     intl,
-    isExpirySupported,
     onHandleCustomStatusSuggestionClick,
     recentCustomStatuses,
     theme,
@@ -81,7 +79,6 @@ const CustomStatusSuggestions = ({
                 theme={theme}
                 separator={index !== arr.length - 1}
                 duration={status.duration}
-                isExpirySupported={isExpirySupported}
             />
         ));
 

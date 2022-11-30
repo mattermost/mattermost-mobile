@@ -23,8 +23,11 @@ export const SEARCH_INPUT_MARGIN = 5;
 
 export const JOIN_CALL_BAR_HEIGHT = 38;
 export const CURRENT_CALL_BAR_HEIGHT = 74;
+export const CALL_ERROR_BAR_HEIGHT = 62;
 
 export const QUICK_OPTIONS_HEIGHT = 270;
+
+export const ANNOUNCEMENT_BAR_HEIGHT = 40;
 
 export default {
     BOTTOM_TAB_HEIGHT,

@@ -43,10 +43,10 @@ export const gqlToClientUser = (u: Partial<GQLUser>): UserProfile => {
         bot_description: u.botDescription,
         bot_last_icon_update: u.botLastIconUpdate,
 
-        auth_data: '',
-        terms_of_service_id: '',
-        terms_of_service_create_at: 0,
+        terms_of_service_id: u.termsOfServiceId || '',
+        terms_of_service_create_at: u.termsOfServiceCreateAt || 0,
 
+        auth_data: '',
     };
 };
 

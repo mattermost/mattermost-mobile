@@ -18,18 +18,14 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
 import {appEntry} from '@actions/remote/entry';
-import {
-    leaveCall,
-    muteMyself,
-    raiseHand,
-    setSpeakerphoneOn,
-    unmuteMyself,
-    unraiseHand,
-} from '@calls/actions';
+import {leaveCall, muteMyself, setSpeakerphoneOn, unmuteMyself} from '@calls/actions';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
-import RaisedHandIcon from '@calls/icons/raised_hand_icon';
-import UnraisedHandIcon from '@calls/icons/unraised_hand_icon';
+import EmojiList from '@calls/components/emoji_list';
+import PermissionErrorBar from '@calls/components/permission_error_bar';
+import ReactionBar from '@calls/components/reaction_bar';
+import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
+import {usePermissionsChecker} from '@calls/hooks';
 import {CallParticipant, CurrentCall} from '@calls/types/calls';
 import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
@@ -48,13 +44,14 @@ import {
 import NavigationStore from '@store/navigation_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
 export type Props = {
     componentId: string;
     currentCall: CurrentCall | null;
     participantsDict: Dictionary<CallParticipant>;
+    micPermissionsGranted: boolean;
     teammateNameDisplay: string;
     fromThreadScreen?: boolean;
 }
@@ -170,37 +167,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     mute: {
         flexDirection: 'column',
         alignItems: 'center',
-        padding: 30,
+        padding: 24,
         backgroundColor: '#3DB887',
         borderRadius: 20,
         marginBottom: 10,
         marginTop: 20,
-        marginLeft: 10,
-        marginRight: 10,
+        marginLeft: 16,
+        marginRight: 16,
     },
     muteMuted: {
         backgroundColor: 'rgba(255,255,255,0.16)',
-    },
-    handIcon: {
-        borderRadius: 34,
-        padding: 34,
-        margin: 10,
-        overflow: 'hidden',
-        backgroundColor: 'rgba(255,255,255,0.12)',
-    },
-    handIconRaisedHand: {
-        backgroundColor: 'rgba(255, 188, 66, 0.16)',
-    },
-    handIconSvgStyle: {
-        position: 'relative',
-        top: -12,
-        right: 13,
     },
     speakerphoneIcon: {
         color: theme.sidebarText,
         backgroundColor: 'rgba(255,255,255,0.12)',
     },
-    speakerphoneIconOn: {
+    buttonOn: {
         color: 'black',
         backgroundColor: 'white',
     },
@@ -252,19 +234,32 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: 'white',
         margin: 3,
     },
+    unavailableText: {
+        color: changeOpacity(theme.sidebarText, 0.32),
+    },
 }));
 
-const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDisplay, fromThreadScreen}: Props) => {
+const CallScreen = ({
+    componentId,
+    currentCall,
+    participantsDict,
+    micPermissionsGranted,
+    teammateNameDisplay,
+    fromThreadScreen,
+}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const {width, height} = useWindowDimensions();
+    usePermissionsChecker(micPermissionsGranted);
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
+    const [showReactions, setShowReactions] = useState(false);
 
     const style = getStyleSheet(theme);
     const isLandscape = width > height;
     const showControls = !isLandscape || showControlsInLandscape;
     const myParticipant = currentCall?.participants[currentCall.myUserId];
+    const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
     const chatThreadTitle = intl.formatMessage({id: 'mobile.calls_chat_thread', defaultMessage: 'Chat thread'});
 
     useEffect(() => {
@@ -291,14 +286,9 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         }
     }, [myParticipant?.muted]);
 
-    const toggleRaiseHand = useCallback(() => {
-        const raisedHand = myParticipant?.raisedHand || 0;
-        if (raisedHand > 0) {
-            unraiseHand();
-        } else {
-            raiseHand();
-        }
-    }, [myParticipant?.raisedHand]);
+    const toggleReactions = useCallback(() => {
+        setShowReactions((prev) => !prev);
+    }, [setShowReactions]);
 
     const toggleSpeakerPhone = useCallback(() => {
         setSpeakerphoneOn(!currentCall?.speakerphoneOn);
@@ -423,6 +413,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                                     muted={user.muted}
                                     sharingScreen={user.id === currentCall.screenOn}
                                     raisedHand={Boolean(user.raisedHand)}
+                                    reaction={user.reaction?.emoji}
                                     size={currentCall.screenOn ? 'm' : 'l'}
                                     serverUrl={currentCall.serverUrl}
                                 />
@@ -440,19 +431,6 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         );
     }
 
-    const HandIcon = myParticipant.raisedHand ? UnraisedHandIcon : RaisedHandIcon;
-    const LowerHandText = (
-        <FormattedText
-            id={'mobile.calls_lower_hand'}
-            defaultMessage={'Lower hand'}
-            style={style.buttonText}
-        />);
-    const RaiseHandText = (
-        <FormattedText
-            id={'mobile.calls_raise_hand'}
-            defaultMessage={'Raise hand'}
-            style={style.buttonText}
-        />);
     const MuteText = (
         <FormattedText
             id={'mobile.calls_mute'}
@@ -463,7 +441,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         <FormattedText
             id={'mobile.calls_unmute'}
             defaultMessage={'Unmute'}
-            style={style.buttonText}
+            style={[style.buttonText, !micPermissionsGranted && style.unavailableText]}
         />);
 
     return (
@@ -487,6 +465,9 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                 </View>
                 {usersList}
                 {screenShareView}
+                {micPermissionsError && <PermissionErrorBar/>}
+                <EmojiList reactionStream={currentCall.reactionStream}/>
+                {showReactions && <ReactionBar raisedHand={myParticipant.raisedHand}/>}
                 <View
                     style={[style.buttons, isLandscape && style.buttonsLandscape, !showControls && style.buttonsLandscapeNoControls]}
                 >
@@ -495,10 +476,12 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                             testID='mute-unmute'
                             style={[style.mute, myParticipant.muted && style.muteMuted]}
                             onPress={muteUnmuteHandler}
+                            disabled={!micPermissionsGranted}
                         >
-                            <CompassIcon
+                            <UnavailableIconWrapper
                                 name={myParticipant.muted ? 'microphone-off' : 'microphone'}
                                 size={24}
+                                unavailable={!micPermissionsGranted}
                                 style={style.muteIcon}
                             />
                             {myParticipant.muted ? UnmuteText : MuteText}
@@ -528,7 +511,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                             <CompassIcon
                                 name={'volume-high'}
                                 size={24}
-                                style={[style.buttonIcon, style.speakerphoneIcon, currentCall.speakerphoneOn && style.speakerphoneIconOn]}
+                                style={[style.buttonIcon, style.speakerphoneIcon, currentCall.speakerphoneOn && style.buttonOn]}
                             />
                             <FormattedText
                                 id={'mobile.calls_speaker'}
@@ -538,16 +521,18 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                         </Pressable>
                         <Pressable
                             style={style.button}
-                            onPress={toggleRaiseHand}
+                            onPress={toggleReactions}
                         >
-                            <HandIcon
-                                fill={myParticipant.raisedHand ? 'rgb(255, 188, 66)' : theme.sidebarText}
-                                height={24}
-                                width={24}
-                                style={[style.buttonIcon, style.handIcon, myParticipant.raisedHand && style.handIconRaisedHand]}
-                                svgStyle={style.handIconSvgStyle}
+                            <CompassIcon
+                                name={'emoticon-happy-outline'}
+                                size={24}
+                                style={[style.buttonIcon, showReactions && style.buttonOn]}
                             />
-                            {myParticipant.raisedHand ? LowerHandText : RaiseHandText}
+                            <FormattedText
+                                id={'mobile.calls_react'}
+                                defaultMessage={'React'}
+                                style={style.buttonText}
+                            />
                         </Pressable>
                         <Pressable
                             style={style.button}

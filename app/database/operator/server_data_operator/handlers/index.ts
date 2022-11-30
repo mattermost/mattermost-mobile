@@ -4,6 +4,7 @@
 import {MM_TABLES} from '@constants/database';
 import BaseDataOperator from '@database/operator/base_data_operator';
 import {
+    transformConfigRecord,
     transformCustomEmojiRecord,
     transformRoleRecord,
     transformSystemRecord,
@@ -12,12 +13,12 @@ import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {logWarning} from '@utils/log';
 
 import type {Model} from '@nozbe/watermelondb';
-import type {HandleCustomEmojiArgs, HandleRoleArgs, HandleSystemArgs, OperationArgs} from '@typings/database/database';
+import type {HandleConfigArgs, HandleCustomEmojiArgs, HandleRoleArgs, HandleSystemArgs, OperationArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SystemModel from '@typings/database/models/servers/system';
 
-const {SERVER: {CUSTOM_EMOJI, ROLE, SYSTEM}} = MM_TABLES;
+const {SERVER: {CONFIG, CUSTOM_EMOJI, ROLE, SYSTEM}} = MM_TABLES;
 
 export default class ServerDataOperatorBase extends BaseDataOperator {
     handleRole = async ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
@@ -69,6 +70,24 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             createOrUpdateRawValues: getUniqueRawsBy({raws: systems, key: 'id'}),
             tableName: SYSTEM,
         }) as Promise<SystemModel[]>;
+    };
+
+    handleConfigs = async ({configs, configsToDelete, prepareRecordsOnly = true}: HandleConfigArgs) => {
+        if (!configs?.length && !configsToDelete?.length) {
+            logWarning(
+                'An empty or undefined "configs" and "configsToDelete" arrays has been passed to the handleConfigs',
+            );
+            return [];
+        }
+
+        return this.handleRecords({
+            fieldName: 'id',
+            transformer: transformConfigRecord,
+            prepareRecordsOnly,
+            createOrUpdateRawValues: getUniqueRawsBy({raws: configs, key: 'id'}),
+            tableName: CONFIG,
+            deleteRawValues: configsToDelete,
+        });
     };
 
     /**

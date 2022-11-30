@@ -25,3 +25,10 @@ export function isYesterday(date: Date): boolean {
 
     return isSameDate(date, yesterday);
 }
+
+export function toMilliseconds({days, hours, minutes, seconds}: {days?: number; hours?: number; minutes?: number; seconds?: number}) {
+    const totalHours = ((days || 0) * 24) + (hours || 0);
+    const totalMinutes = (totalHours * 60) + (minutes || 0);
+    const totalSeconds = (totalMinutes * 60) + (seconds || 0);
+    return totalSeconds * 1000;
+}

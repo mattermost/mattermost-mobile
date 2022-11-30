@@ -6,13 +6,15 @@ import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
+import LocalConfig from '@assets/config.json';
 import {Screens, DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
+import {getOnboardingViewed} from '@queries/app/global';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
-import {goToScreen, resetToHome, resetToSelectServer, resetToTeams} from '@screens/navigation';
+import {goToScreen, resetToHome, resetToSelectServer, resetToTeams, resetToOnboarding} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
@@ -25,7 +27,7 @@ const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, Pu
 export const initialLaunch = async () => {
     const deepLinkUrl = await Linking.getInitialURL();
     if (deepLinkUrl) {
-        launchAppFromDeepLink(deepLinkUrl);
+        launchAppFromDeepLink(deepLinkUrl, true);
         return;
     }
 
@@ -41,23 +43,30 @@ export const initialLaunch = async () => {
         tapped = delivered.find((d) => (d as unknown as NotificationData).ack_id === notification?.payload.ack_id) == null;
     }
     if (initialNotificationTypes.includes(notification?.payload?.type) && tapped) {
-        launchAppFromNotification(convertToNotificationData(notification!));
+        launchAppFromNotification(convertToNotificationData(notification!), true);
         return;
     }
 
-    launchApp({launchType: Launch.Normal});
+    launchApp({launchType: Launch.Normal, coldStart: true});
 };
 
-const launchAppFromDeepLink = (deepLinkUrl: string) => {
-    const props = getLaunchPropsFromDeepLink(deepLinkUrl);
+const launchAppFromDeepLink = (deepLinkUrl: string, coldStart = false) => {
+    const props = getLaunchPropsFromDeepLink(deepLinkUrl, coldStart);
     launchApp(props);
 };
 
-const launchAppFromNotification = async (notification: NotificationWithData) => {
-    const props = await getLaunchPropsFromNotification(notification);
+const launchAppFromNotification = async (notification: NotificationWithData, coldStart = false) => {
+    const props = await getLaunchPropsFromNotification(notification, coldStart);
     launchApp(props);
 };
 
+/**
+ *
+ * @param props set of properties used to determine how to launch the app depending on the containing values
+ * @param resetNavigation used when loading the add_server screen and remove all the navigation stack
+
+ * @returns a redirection to a screen, either onboarding, add_server, login or home depending on the scenario
+ */
 const launchApp = async (props: LaunchProps, resetNavigation = true) => {
     let serverUrl: string | undefined;
     switch (props?.launchType) {
@@ -126,6 +135,13 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         }
     }
 
+    const onboardingViewed = LocalConfig.ShowOnboarding && await getOnboardingViewed();
+
+    // if the config value is set and the onboarding has not been seeing yet, show the onboarding
+    if (LocalConfig.ShowOnboarding && !onboardingViewed) {
+        return resetToOnboarding(props);
+    }
+
     return launchToServer(props, resetNavigation);
 };
 
@@ -184,10 +200,11 @@ export const relaunchApp = (props: LaunchProps, resetNavigation = false) => {
     return launchApp(props, resetNavigation);
 };
 
-export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => {
+export const getLaunchPropsFromDeepLink = (deepLinkUrl: string, coldStart = false): LaunchProps => {
     const parsed = parseDeepLink(deepLinkUrl);
     const launchProps: LaunchProps = {
         launchType: Launch.DeepLink,
+        coldStart,
     };
 
     switch (parsed.type) {
@@ -219,9 +236,10 @@ export const getLaunchPropsFromDeepLink = (deepLinkUrl: string): LaunchProps => 
     return launchProps;
 };
 
-export const getLaunchPropsFromNotification = async (notification: NotificationWithData): Promise<LaunchProps> => {
+export const getLaunchPropsFromNotification = async (notification: NotificationWithData, coldStart = false): Promise<LaunchProps> => {
     const launchProps: LaunchProps = {
         launchType: Launch.Notification,
+        coldStart,
     };
 
     const {payload} = notification;

@@ -112,6 +112,12 @@ declare class UserModel extends Model {
 
     /* user mentions keys always excluding @channel, @all, @here */
     userMentionKeys: UserMentionKey[];
+
+    /** termsOfServiceId : The id of the last accepted terms of service */
+    termsOfServiceId: string;
+
+    /** termsOfServiceCreateAt : The last time the user accepted the terms of service */
+    termsOfServiceCreateAt: number;
 }
 
 export default UserModel;

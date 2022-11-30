@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, StyleSheet} from 'react-native';
+import {ColorValue, StyleProp} from 'react-native';
 import FastImage, {ImageStyle, Source} from 'react-native-fast-image';
 import Animated, {SharedValue} from 'react-native-reanimated';
 
@@ -14,9 +14,10 @@ type ThumbnailProps = {
     opacity?: SharedValue<number>;
     source?: Source;
     style: StyleProp<ImageStyle>;
+    tintColor?: ColorValue;
 }
 
-const Thumbnail = ({onError, opacity, style, source}: ThumbnailProps) => {
+const Thumbnail = ({onError, opacity, style, source, tintColor}: ThumbnailProps) => {
     if (source?.uri) {
         return (
             <AnimatedFastImage
@@ -28,8 +29,6 @@ const Thumbnail = ({onError, opacity, style, source}: ThumbnailProps) => {
             />
         );
     }
-
-    const tintColor = StyleSheet.flatten(style).tintColor;
 
     return (
         <AnimatedFastImage
