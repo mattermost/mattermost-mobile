@@ -878,5 +878,10 @@
     "mobile.announcement_banner.title": "Ogłoszenie",
     "integration_selector.multiselect.submit": "Ukończono",
     "announcment_banner.okay": "Okej",
-    "announcment_banner.dismiss": "Odrzucenie ogłoszenia"
+    "announcment_banner.dismiss": "Odrzucenie ogłoszenia",
+    "onboarding.calls": "Natychmiastowe rozpoczęcie bezpiecznych połączeń audio",
+    "mobile.onboarding.sign_in_to_get_started": "Zaloguj się, aby zacząć",
+    "mobile.onboarding.sign_in": "Zaloguj się",
+    "mobile.onboarding.next": "Dalej",
+    "mobile.calls_react": "Reaguj"
 }
