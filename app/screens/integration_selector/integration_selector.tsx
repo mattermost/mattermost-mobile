@@ -22,7 +22,6 @@ import {
     buildNavigationButton,
     popTopScreen, setButtons,
 } from '@screens/navigation';
-import {WithDatabaseArgs} from '@typings/database/database';
 import {filterChannelsMatchingTerm} from '@utils/channel';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
