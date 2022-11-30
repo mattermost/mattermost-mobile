@@ -8,7 +8,6 @@ import {Alert, TouchableOpacity} from 'react-native';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import SettingSeparator from '@screens/settings/settings_separator';
 import {deleteFileCache, getAllFilesInCachesDirectory, getFormattedFileSize} from '@utils/file';
@@ -54,9 +53,9 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                 const {formatMessage} = intl;
 
                 Alert.alert(
-                    formatMessage({id: t('settings.advanced.delete_data'), defaultMessage: 'Delete local files'}),
+                    formatMessage({id: 'settings.advanced.delete_data', defaultMessage: 'Delete local files'}),
                     formatMessage({
-                        id: t('settings.advanced.delete_message.confirmation'),
+                        id: 'settings.advanced.delete_message.confirmation',
                         defaultMessage: '\nThis will delete all files downloaded through the app for this server. Please confirm to proceed.\n',
                     }),
                     [
