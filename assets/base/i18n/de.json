@@ -898,5 +898,8 @@
     "mobile.calls_participant_rec_title": "Aufnahme läuft",
     "mobile.calls_participant_rec": "Der Gastgeber hat mit der Aufzeichnung dieses Treffens begonnen. Wenn du an der Sitzung teilnimmst, erklärst du dich mit der Aufzeichnung einverstanden.",
     "mobile.calls_okay": "Ok",
-    "mobile.calls_host": "Gastgeber"
+    "mobile.calls_host": "Gastgeber",
+    "mobile.calls_host_rec": "Du zeichnest diese Besprechung auf. Bitte informiere alle Teilnehmer darüber, dass diese Sitzung aufgezeichnet wird.",
+    "mobile.calls_dismiss": "Verwerfen",
+    "mobile.calls_call_thread": "Kanal öffnen"
 }
