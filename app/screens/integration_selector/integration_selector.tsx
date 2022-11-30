@@ -8,6 +8,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
 import {fetchProfiles, searchProfiles} from '@actions/remote/user';
+import {t} from '@app/i18n';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
 import {createProfilesSections} from '@components/user_list';
@@ -104,7 +105,7 @@ export type Props = {
     dataSource: string;
     handleSelect: (opt: Selection) => void;
     isMultiselect?: boolean;
-    selected?: DialogOption[];
+    selected: SelectedDialogValue;
     theme: Theme;
     teammateNameDisplay: string;
     componentId: string;
@@ -390,18 +391,17 @@ function IntegrationSelector(
     useEffect(() => {
         const multiselectItems: MultiselectSelectedMap = {};
 
-        if (multiselectSelected) {
-            return;
-        }
-
-        if (isMultiselect && selected && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
-            selected.forEach((opt) => {
-                multiselectItems[opt.value] = opt;
-            });
+        if (isMultiselect && Array.isArray(selected) && !([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource))) {
+            for (const value of selected) {
+                const option = options?.find((opt) => opt.value === value);
+                if (option) {
+                    multiselectItems[value] = option;
+                }
+            }
 
             setMultiselectSelected(multiselectItems);
         }
-    }, [multiselectSelected]);
+    }, []);
 
     // Renders
     const renderLoading = useCallback(() => {
@@ -413,19 +413,19 @@ function IntegrationSelector(
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_USERS:
                 text = {
-                    id: intl.formatMessage({id: 'mobile.integration_selector.loading_users'}),
+                    id: t('mobile.integration_selector.loading_users'),
                     defaultMessage: 'Loading Users...',
                 };
                 break;
             case ViewConstants.DATA_SOURCE_CHANNELS:
                 text = {
-                    id: intl.formatMessage({id: 'mobile.integration_selector.loading_channels'}),
+                    id: t('mobile.integration_selector.loading_channels'),
                     defaultMessage: 'Loading Channels...',
                 };
                 break;
             default:
                 text = {
-                    id: intl.formatMessage({id: 'mobile.integration_selector.loading_options'}),
+                    id: t('mobile.integration_selector.loading_options'),
                     defaultMessage: 'Loading Options...',
                 };
                 break;

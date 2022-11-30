@@ -7,7 +7,9 @@ import {combineLatest, of as of$, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions, Post, Screens} from '@constants';
+import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
+import AppsManager from '@managers/apps_manager';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeConfigIntValue, observeConfigValue, observeLicense} from '@queries/servers/system';
@@ -33,6 +35,7 @@ type EnhancedProps = WithDatabaseArgs & {
     post: PostModel;
     showAddReaction: boolean;
     location: string;
+    serverUrl: string;
 }
 
 const observeCanEditPost = (database: Database, isOwner: boolean, post: PostModel, postEditTimeLimit: number, isLicensed: boolean, channel: ChannelModel, user: UserModel) => {
@@ -58,7 +61,7 @@ const observeCanEditPost = (database: Database, isOwner: boolean, post: PostMode
 const withPost = withObservables([], ({post, database}: {post: Post | PostModel} & WithDatabaseArgs) => {
     let id: string | undefined;
     let combinedPost: Observable<Post | PostModel | undefined> = of$(undefined);
-    if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
+    if (post?.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
         const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
         id = systemPostIds?.pop();
         combinedPost = of$(post);
@@ -70,7 +73,7 @@ const withPost = withObservables([], ({post, database}: {post: Post | PostModel}
     };
 });
 
-const enhanced = withObservables([], ({combinedPost, post, showAddReaction, location, database}: EnhancedProps) => {
+const enhanced = withObservables([], ({combinedPost, post, showAddReaction, location, database, serverUrl}: EnhancedProps) => {
     const channel = post.channel.observe();
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = observeCurrentUser(database);
@@ -78,6 +81,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     const allowEditPost = observeConfigValue(database, 'AllowEditPost');
     const serverVersion = observeConfigValue(database, 'Version');
     const postEditTimeLimit = observeConfigIntValue(database, 'PostEditTimeLimit', -1);
+    const bindings = AppsManager.observeBindings(serverUrl, AppBindingLocations.POST_MENU_ITEM);
 
     const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => observePermissionForChannel(database, c, u, Permissions.CREATE_POST, false)));
     const hasAddReactionPermission = currentUser.pipe(switchMap((u) => observePermissionForPost(database, post, u, Permissions.ADD_REACTION, true)));
@@ -156,8 +160,8 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         canEdit,
         post,
         thread,
+        bindings,
     };
 });
 
 export default withDatabase(withPost(enhanced(PostOptions)));
-
