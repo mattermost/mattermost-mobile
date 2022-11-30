@@ -159,12 +159,4 @@ const PostOptions = ({
     );
 };
 
-type OwnProps = {
-    serverUrl: string;
-}
-
-const withBindings = withObservables([], (ownProps: OwnProps) => ({
-    bindings: AppsManager.observeBindings(ownProps.serverUrl, AppBindingLocations.POST_MENU_ITEM),
-}));
-
-export default React.memo(withBindings(PostOptions));
+export default React.memo(PostOptions);
