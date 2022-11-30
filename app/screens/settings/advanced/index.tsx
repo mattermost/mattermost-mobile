@@ -3,7 +3,7 @@
 
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {TouchableOpacity} from 'react-native';
+import {Alert, TouchableOpacity} from 'react-native';
 
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -32,17 +32,17 @@ const EMPTY_FILES: ReadDirItem[] = [];
 
 type AdvancedSettingsProps = {
     componentId: string;
-}
+};
 const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const [dataSize, setDataSize] = useState<number|undefined>(0);
+    const [dataSize, setDataSize] = useState<number | undefined>(0);
     const [files, setFiles] = useState<ReadDirItem[]>(EMPTY_FILES);
     const styles = getStyleSheet(theme);
 
     const getAllCachedFiles = async () => {
-        const {totalSize, files: cachedFiles} = await getAllFilesInCachesDirectory(serverUrl);
+        const {totalSize = 0, files: cachedFiles} = await getAllFilesInCachesDirectory(serverUrl);
         setDataSize(totalSize);
         setFiles(cachedFiles || EMPTY_FILES);
     };
@@ -50,8 +50,27 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const onPressDeleteData = preventDoubleTap(async () => {
         try {
             if (files.length > 0) {
-                await deleteFileCache(serverUrl);
-                await getAllCachedFiles();
+                const {formatMessage} = intl;
+
+                Alert.alert(
+                    formatMessage({id: 'settings.advanced.delete_data', defaultMessage: 'Delete local files'}),
+                    formatMessage({
+                        id: 'settings.advanced.delete_message.confirmation',
+                        defaultMessage: '\nThis will delete all files downloaded through the app for this server. Please confirm to proceed.\n',
+                    }),
+                    [
+                        {text: formatMessage({id: 'settings.advanced.cancel', defaultMessage: 'Cancel'}), style: 'cancel'},
+                        {
+                            text: formatMessage({id: 'settings.advanced.delete', defaultMessage: 'Delete'}),
+                            style: 'destructive',
+                            onPress: async () => {
+                                await deleteFileCache(serverUrl);
+                                await getAllCachedFiles();
+                            },
+                        },
+                    ],
+                    {cancelable: false},
+                );
             }
         } catch (e) {
             //do nothing
@@ -65,7 +84,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const close = () => popTopScreen(componentId);
     useAndroidHardwareBackHandler(componentId, close);
 
-    const hasData = Boolean(dataSize && (dataSize > 0));
+    const hasData = Boolean(dataSize && dataSize > 0);
 
     return (
         <SettingContainer testID='advanced_settings'>
@@ -79,8 +98,8 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                     destructive={true}
                     icon='trash-can-outline'
                     info={getFormattedFileSize(dataSize || 0)}
-                    label={intl.formatMessage({id: 'advanced_settings.delete_data', defaultMessage: 'Delete Documents & Data'})}
-                    testID='advanced_settings.delete_data.option'
+                    label={intl.formatMessage({id: 'settings.advanced.delete_data', defaultMessage: 'Delete local files'})}
+                    testID='settings.advanced.delete_data.option'
                     type='none'
                 />
                 <SettingSeparator/>
