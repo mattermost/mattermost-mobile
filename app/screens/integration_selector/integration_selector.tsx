@@ -8,10 +8,10 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
 import {fetchProfiles, searchProfiles} from '@actions/remote/user';
+import ServerUserList from '@app/components/server_user_list';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
 import {createProfilesSections} from '@components/user_list';
-import UserListRow from '@components/user_list_row';
 import {General, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -27,7 +27,7 @@ import {typography} from '@utils/typography';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
 import ChannelListRow from './channel_list_row';
-import CustomList, {FLATLIST, SECTIONLIST} from './custom_list';
+import CustomList from './custom_list';
 import OptionListRow from './option_list_row';
 import SelectedOptions from './selected_options';
 
@@ -287,6 +287,10 @@ function IntegrationSelector(
         }
     }, [options, getDynamicOptions, integrationData]);
 
+    const handleSelectProfile = (user: UserProfile): void => {
+        // TODO
+    };
+
     const onHandleMultiselectSubmit = useCallback(() => {
         handleSelect(Object.values(multiselectSelected));
         close();
@@ -485,26 +489,8 @@ function IntegrationSelector(
         );
     }, [multiselectSelected, theme, isMultiselect]);
 
-    const renderUserItem = useCallback((itemProps: any): JSX.Element => {
-        const itemSelected = Boolean(multiselectSelected[itemProps.item.id]);
-
-        return (
-            <UserListRow
-                key={itemProps.id}
-                {...itemProps}
-                theme={theme}
-                selectable={isMultiselect}
-                user={itemProps.item}
-                teammateNameDisplay={teammateNameDisplay}
-                selected={itemSelected}
-            />
-        );
-    }, [multiselectSelected, theme, isMultiselect, teammateNameDisplay]);
-
     const getRenderItem = (): (itemProps: any) => JSX.Element => {
         switch (dataSource) {
-            case ViewConstants.DATA_SOURCE_USERS:
-                return renderUserItem;
             case ViewConstants.DATA_SOURCE_CHANNELS:
                 return renderChannelItem;
             default:
@@ -532,7 +518,36 @@ function IntegrationSelector(
         );
     }, [multiselectSelected, style, theme]);
 
-    const listType = dataSource === ViewConstants.DATA_SOURCE_USERS ? SECTIONLIST : FLATLIST;
+    const renderDataTypeList = () => {
+        switch (dataSource) {
+            case ViewConstants.DATA_SOURCE_USERS:
+                return (
+                    <ServerUserList
+                        currentTeamId={currentTeamId}
+                        currentUserId={null}
+                        teammateNameDisplay={teammateNameDisplay}
+                        term={term}
+                        tutorialWatched={true}
+                        handleSelectProfile={handleSelectProfile}
+                    />
+                );
+            default:
+                return (
+                    <CustomList
+                        data={customListData as DataType}
+                        key='custom_list'
+                        loading={loading}
+                        loadingComponent={renderLoading()}
+                        noResults={renderNoResults}
+                        onLoadMore={loadMore}
+                        onRowPress={handleSelectItem}
+                        renderItem={getRenderItem()}
+                        theme={theme}
+                    />
+                );
+        }
+    };
+
     const selectedOptionsComponent = renderSelectedOptions();
 
     return (
@@ -555,18 +570,7 @@ function IntegrationSelector(
 
             {selectedOptionsComponent}
 
-            <CustomList
-                data={customListData as DataType}
-                key='custom_list'
-                listType={listType}
-                loading={loading}
-                loadingComponent={renderLoading()}
-                noResults={renderNoResults}
-                onLoadMore={loadMore}
-                onRowPress={handleSelectItem}
-                renderItem={getRenderItem()}
-                theme={theme}
-            />
+            {renderDataTypeList()}
         </SafeAreaView>
     );
 }

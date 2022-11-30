@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 import React, {useCallback} from 'react';
 import {
-    Text, Platform, FlatList, RefreshControl, View, SectionList,
+    Platform, FlatList, RefreshControl, View,
 } from 'react-native';
 
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -29,7 +29,6 @@ type ListItemProps = {
 type Props = {
     data: DataType;
     canRefresh?: boolean;
-    listType?: string;
     loading?: boolean;
     loadingComponent?: React.ReactElement<any, string> | null;
     noResults: () => JSX.Element | null;
@@ -111,7 +110,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 });
 
 function CustomList({
-    data, shouldRenderSeparator, listType, loading, loadingComponent, noResults,
+    data, shouldRenderSeparator, loading, loadingComponent, noResults,
     onLoadMore, onRowPress, selectable, renderItem, theme,
     canRefresh = true, testID, refreshing = false, onRefresh,
 }: Props) {
@@ -156,76 +155,35 @@ function CustomList({
         return loadingComponent;
     }, [loading, loadingComponent]);
 
-    const renderSectionHeader = useCallback(({section}: any) => {
-        return (
-            <View style={style.sectionWrapper}>
-                <View style={style.sectionContainer}>
-                    <Text style={style.sectionText}>{section.id}</Text>
-                </View>
-            </View>
-        );
-    }, [style]);
-
-    const renderSectionList = () => {
-        return (
-            <SectionList
-                contentContainerStyle={style.container}
-                keyExtractor={keyExtractor}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER}
-                ItemSeparatorComponent={renderSeparator}
-                ListEmptyComponent={renderEmptyList()}
-                ListFooterComponent={renderFooter}
-                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
-                onEndReached={onLoadMore}
-                removeClippedSubviews={true}
-                renderItem={renderListItem}
-                renderSectionHeader={renderSectionHeader}
-                scrollEventThrottle={60}
-                sections={data as UserProfileSection[]}
-                style={style.list}
-                stickySectionHeadersEnabled={false}
-                testID={testID}
-            />
-        );
-    };
-
-    const renderFlatList = () => {
-        let refreshControl;
-        if (canRefresh) {
-            refreshControl = (
-                <RefreshControl
-                    refreshing={refreshing}
-                    onRefresh={onRefresh}
-                />);
-        }
-
-        return (
-            <FlatList
-                contentContainerStyle={style.container}
-                data={data}
-                keyboardShouldPersistTaps='always'
-                keyExtractor={keyExtractor}
-                initialNumToRender={INITIAL_BATCH_TO_RENDER}
-                ItemSeparatorComponent={renderSeparator}
-                ListEmptyComponent={renderEmptyList()}
-                ListFooterComponent={renderFooter}
-                maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
-                onEndReached={onLoadMore}
-                refreshControl={refreshControl}
-                removeClippedSubviews={true}
-                renderItem={renderListItem}
-                scrollEventThrottle={60}
-                style={style.list}
-                testID={testID}
-            />
-        );
-    };
-
-    if (listType === FLATLIST) {
-        return renderFlatList();
+    let refreshControl;
+    if (canRefresh) {
+        refreshControl = (
+            <RefreshControl
+                refreshing={refreshing}
+                onRefresh={onRefresh}
+            />);
     }
 
-    return renderSectionList();
+    return (
+        <FlatList
+            contentContainerStyle={style.container}
+            data={data}
+            keyboardShouldPersistTaps='always'
+            keyExtractor={keyExtractor}
+            initialNumToRender={INITIAL_BATCH_TO_RENDER}
+            ItemSeparatorComponent={renderSeparator}
+            ListEmptyComponent={renderEmptyList()}
+            ListFooterComponent={renderFooter}
+            maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
+            onEndReached={onLoadMore}
+            refreshControl={refreshControl}
+            removeClippedSubviews={true}
+            renderItem={renderListItem}
+            scrollEventThrottle={60}
+            style={style.list}
+            testID={testID}
+        />
+    );
 }
 
 export default CustomList;
