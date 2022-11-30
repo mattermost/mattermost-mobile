@@ -100,6 +100,10 @@ export default function ServerUserList({
     }, [serverUrl, currentTeamId]);
 
     useEffect(() => {
+        searchUsers(term);
+    }, [term]);
+
+    useEffect(() => {
         mounted.current = true;
         getProfiles();
         return () => {
