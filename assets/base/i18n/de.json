@@ -894,5 +894,10 @@
     "settings.advanced.delete_data": "Lokale Dateien löschen",
     "settings.advanced.delete": "Löschen",
     "settings.advanced.cancel": "Abbrechen",
-    "mobile.calls_react": "Reaktion"
+    "mobile.calls_react": "Reaktion",
+    "mobile.calls_rec": "rec",
+    "mobile.calls_participant_rec_title": "Aufnahme läuft",
+    "mobile.calls_participant_rec": "Der Gastgeber hat mit der Aufzeichnung dieses Treffens begonnen. Wenn du an der Sitzung teilnimmst, erklärst du dich mit der Aufzeichnung einverstanden.",
+    "mobile.calls_okay": "Ok",
+    "mobile.calls_host": "Gastgeber"
 }
