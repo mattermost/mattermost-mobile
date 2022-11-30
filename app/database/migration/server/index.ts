@@ -14,9 +14,22 @@ const {SERVER: {
     MY_CHANNEL,
     TEAM,
     THREAD,
+    USER,
 }} = MM_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 6,
+        steps: [
+            addColumns({
+                table: USER,
+                columns: [
+                    {name: 'terms_of_service_id', type: 'string'},
+                    {name: 'terms_of_service_create_at', type: 'number'},
+                ],
+            }),
+        ],
+    },
     {
         toVersion: 5,
         steps: [

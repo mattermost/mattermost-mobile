@@ -30,6 +30,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     iconActive: {
         color: theme.sidebarText,
     },
+    iconInfo: {
+        color: changeOpacity(theme.centerChannelColor, 0.72),
+    },
     text: {
         flex: 1,
     },
@@ -37,15 +40,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     currentChannelId: string;
-    onlyUnreads: boolean;
     groupUnreadsSeparately: boolean;
+    isInfo?: boolean;
+    onlyUnreads: boolean;
+    onPress?: () => void;
     unreadsAndMentions: {
         unreads: boolean;
         mentions: number;
     };
 };
 
-const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, onlyUnreads, unreadsAndMentions}: Props) => {
+const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUnreads, onPress, unreadsAndMentions}: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
@@ -54,33 +59,44 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, onlyUnreads, u
     const customStyles = getStyleSheet(theme);
 
     const handlePress = useCallback(preventDoubleTap(() => {
-        switchToGlobalThreads(serverUrl);
-    }), [serverUrl]);
+        if (onPress) {
+            onPress();
+        } else {
+            switchToGlobalThreads(serverUrl);
+        }
+    }), [onPress, serverUrl]);
 
     const {unreads, mentions} = unreadsAndMentions;
     const isActive = isTablet && !currentChannelId;
 
-    const [containerStyle, iconStyle, textStyle] = useMemo(() => {
+    const [containerStyle, iconStyle, textStyle, badgeStyle] = useMemo(() => {
         const container = [
             styles.container,
-            isActive ? styles.activeItem : undefined,
+            isActive && styles.activeItem,
         ];
 
         const icon = [
             customStyles.icon,
-            isActive || unreads ? customStyles.iconActive : undefined,
+            (isActive || unreads) && customStyles.iconActive,
+            isInfo && customStyles.iconInfo,
         ];
 
         const text = [
             customStyles.text,
             unreads ? channelItemTextStyle.bold : channelItemTextStyle.regular,
             styles.text,
-            unreads ? styles.highlight : undefined,
-            isActive ? styles.textActive : undefined,
+            unreads && styles.highlight,
+            isActive && styles.textActive,
+            isInfo && styles.textInfo,
         ];
 
-        return [container, icon, text];
-    }, [customStyles, isActive, styles, unreads]);
+        const badge = [
+            styles.badge,
+            isInfo && styles.infoBadge,
+        ];
+
+        return [container, icon, text, badge];
+    }, [customStyles, isActive, isInfo, styles, unreads]);
 
     if (groupUnreadsSeparately && (onlyUnreads && !isActive && !unreads && !mentions)) {
         return null;
@@ -104,7 +120,7 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, onlyUnreads, u
                     />
                     <Badge
                         value={mentions}
-                        style={styles.badge}
+                        style={badgeStyle}
                         visible={mentions > 0}
                     />
                 </View>
@@ -113,4 +129,4 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, onlyUnreads, u
     );
 };
 
-export default ThreadsButton;
+export default React.memo(ThreadsButton);

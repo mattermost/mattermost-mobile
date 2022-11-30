@@ -15,6 +15,7 @@ import {observePermissionForChannel, observePermissionForPost} from '@queries/se
 import {observeConfigBooleanValue, observeConfigIntValue, observeConfigValue, observeLicense} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
+import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -43,7 +44,7 @@ const observeCanEditPost = (database: Database, isOwner: boolean, post: PostMode
     }
 
     if (isLicensed && postEditTimeLimit !== -1) {
-        const timeLeft = (post.createAt + (postEditTimeLimit * 1000)) - Date.now();
+        const timeLeft = (post.createAt + toMilliseconds({seconds: postEditTimeLimit})) - Date.now();
         if (timeLeft <= 0) {
             return of$(false);
         }

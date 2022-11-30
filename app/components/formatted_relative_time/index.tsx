@@ -5,6 +5,8 @@ import moment from 'moment-timezone';
 import React, {useEffect, useState} from 'react';
 import {Text, TextProps} from 'react-native';
 
+import {toMilliseconds} from '@utils/datetime';
+
 type FormattedRelativeTimeProps = TextProps & {
     timezone?: UserTimezone | string;
     value: number | string | Date;
@@ -24,7 +26,10 @@ const FormattedRelativeTime = ({timezone, value, updateIntervalInSeconds, ...pro
     const [formattedTime, setFormattedTime] = useState(getFormattedRelativeTime);
     useEffect(() => {
         if (updateIntervalInSeconds) {
-            const interval = setInterval(() => setFormattedTime(getFormattedRelativeTime()), updateIntervalInSeconds * 1000);
+            const interval = setInterval(
+                () => setFormattedTime(getFormattedRelativeTime()),
+                toMilliseconds({seconds: updateIntervalInSeconds}),
+            );
             return function cleanup() {
                 return clearInterval(interval);
             };

@@ -77,7 +77,7 @@ export const loginAnimationOptions = () => {
     };
 };
 
-export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) => {
+export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string): Options => {
     if (closeButtonId) {
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.centerChannelColor);
         const closeButtonTestId = `${closeButtonId.replace('close-', 'close.').replace(/-/g, '_')}.button`;
@@ -124,6 +124,19 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string) =>
 // This locks phones to portrait for all screens while keeps
 // all orientations available for Tablets.
 Navigation.setDefaultOptions({
+    animations: {
+        setRoot: {
+            enter: {
+                waitForRender: true,
+                enabled: true,
+                alpha: {
+                    from: 0,
+                    to: 1,
+                    duration: 300,
+                },
+            },
+        },
+    },
     layout: {
         orientation: Device.IS_TABLET ? undefined : ['portrait'],
     },
@@ -148,7 +161,7 @@ Appearance.addChangeListener(() => {
     const theme = getThemeFromState();
     const screens = NavigationStore.getAllNavigationComponents();
 
-    if (screens.includes(Screens.SERVER)) {
+    if (screens.includes(Screens.SERVER) || screens.includes(Screens.ONBOARDING)) {
         for (const screen of screens) {
             if (appearanceControlledScreens.has(screen)) {
                 Navigation.updateProps(screen, {theme});
@@ -180,6 +193,11 @@ function isScreenRegistered(screen: string) {
     }
 
     return true;
+}
+
+export function openToS() {
+    NavigationStore.setToSOpen(true);
+    return showOverlay(Screens.TERMS_OF_SERVICE, {}, {overlay: {interceptTouchOutside: true}});
 }
 
 export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}) {
@@ -244,6 +262,54 @@ export function resetToSelectServer(passProps: LaunchProps) {
         component: {
             id: Screens.SERVER,
             name: Screens.SERVER,
+            passProps: {
+                ...passProps,
+                theme,
+            },
+            options: {
+                layout: {
+                    backgroundColor: theme.centerChannelBg,
+                    componentBackgroundColor: theme.centerChannelBg,
+                },
+                statusBar: {
+                    visible: true,
+                    backgroundColor: theme.sidebarBg,
+                },
+                topBar: {
+                    backButton: {
+                        color: theme.sidebarHeaderTextColor,
+                        title: '',
+                    },
+                    background: {
+                        color: theme.sidebarBg,
+                    },
+                    visible: false,
+                    height: 0,
+                },
+            },
+        },
+    }];
+
+    return Navigation.setRoot({
+        root: {
+            stack: {
+                children,
+            },
+        },
+    });
+}
+
+export function resetToOnboarding(passProps: LaunchProps) {
+    const theme = getDefaultThemeByAppearance();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
+    NavigationStore.clearNavigationComponents();
+
+    const children = [{
+        component: {
+            id: Screens.ONBOARDING,
+            name: Screens.ONBOARDING,
             passProps: {
                 ...passProps,
                 theme,
@@ -432,7 +498,7 @@ export async function dismissAllModalsAndPopToScreen(screenId: string, title: st
     }
 }
 
-export function showModal(name: string, title: string, passProps = {}, options = {}) {
+export function showModal(name: string, title: string, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return;
     }
@@ -485,7 +551,7 @@ export function showModal(name: string, title: string, passProps = {}, options =
     });
 }
 
-export function showModalOverCurrentContext(name: string, passProps = {}, options = {}) {
+export function showModalOverCurrentContext(name: string, passProps = {}, options: Options = {}) {
     const title = '';
     let animations;
     switch (Platform.OS) {
@@ -599,7 +665,7 @@ export function setButtons(componentId: string, buttons: NavButtons = {leftButto
     mergeNavigationOptions(componentId, options);
 }
 
-export function showOverlay(name: string, passProps = {}, options = {}) {
+export function showOverlay(name: string, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return;
     }
@@ -692,6 +758,22 @@ export async function openAsBottomSheet({closeButtonId, screen, theme, title, pr
 export const showAppForm = async (form: AppForm, context: AppContext) => {
     const passProps = {form, context};
     showModal(Screens.APPS_FORM, form.title || '', passProps);
+};
+
+export const showReviewOverlay = (hasAskedBefore: boolean) => {
+    showOverlay(
+        Screens.REVIEW_APP,
+        {hasAskedBefore},
+        {overlay: {interceptTouchOutside: true}},
+    );
+};
+
+export const showShareFeedbackOverlay = () => {
+    showOverlay(
+        Screens.SHARE_FEEDBACK,
+        {},
+        {overlay: {interceptTouchOutside: true}},
+    );
 };
 
 export async function findChannels(title: string, theme: Theme) {
