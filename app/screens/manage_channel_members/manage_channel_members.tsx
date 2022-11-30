@@ -6,7 +6,6 @@ import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {storeProfile} from '@actions/local/user';
 import {fetchProfilesInChannel, searchProfiles} from '@actions/remote/user';
 import Search from '@components/search';
 import UserList from '@components/user_list';
@@ -139,22 +138,19 @@ export default function ManageChannelMembers({
         if (!manageEnabled) {
             return;
         }
-        const {user} = await storeProfile(serverUrl, profile);
-        if (user) {
-            const screen = Screens.USER_PROFILE;
-            const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-            const closeButtonId = 'close-user-profile';
-            const props = {
-                channelId,
-                closeButtonId,
-                location: Screens.USER_PROFILE,
-                manageMode: true,
-                userId: user.id,
-            };
+        const screen = Screens.USER_PROFILE;
+        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+        const closeButtonId = 'close-user-profile';
+        const props = {
+            channelId,
+            closeButtonId,
+            location: Screens.USER_PROFILE,
+            manageMode: true,
+            userId: profile.id,
+        };
 
-            Keyboard.dismiss();
-            openAsBottomSheet({screen, title, theme, closeButtonId, props});
-        }
+        Keyboard.dismiss();
+        openAsBottomSheet({screen, title, theme, closeButtonId, props});
     }, [manageEnabled]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
