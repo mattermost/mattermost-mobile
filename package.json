@@ -18,6 +18,7 @@
     "@mattermost/react-native-network-client": "1.0.0",
     "@mattermost/react-native-paste-input": "0.5.1",
     "@mattermost/react-native-turbo-log": "0.2.0",
+    "@mattermost/react-native-turbo-mailer": "0.1.0",
     "@msgpack/msgpack": "2.8.0",
     "@nozbe/watermelondb": "0.24.0",
     "@nozbe/with-observables": "1.4.1",

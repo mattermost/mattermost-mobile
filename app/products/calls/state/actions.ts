@@ -20,7 +20,9 @@ import {
     ChannelsWithCalls,
     CurrentCall,
     DefaultCall,
-    DefaultCurrentCall, ReactionStreamEmoji,
+    DefaultCurrentCall,
+    ReactionStreamEmoji,
+    RecordingState,
 } from '@calls/types/calls';
 import {REACTION_LIMIT, REACTION_TIMEOUT} from '@constants/calls';
 
@@ -210,11 +212,9 @@ export const callStarted = (serverUrl: string, call: Call) => {
         return;
     }
 
-    const nextCurrentCall = {
+    const nextCurrentCall: CurrentCall = {
         ...currentCall,
-        startTime: call.startTime,
-        threadId: call.threadId,
-        ownerId: call.ownerId,
+        ...call,
     };
     setCurrentCall(nextCurrentCall);
 };
@@ -490,6 +490,52 @@ const userReactionTimeout = (serverUrl: string, channelId: string, reaction: Cal
         ...currentCall,
         reactionStream: newReactions,
         participants: nextParticipants,
+    };
+    setCurrentCall(nextCurrentCall);
+};
+
+export const setRecordingState = (serverUrl: string, channelId: string, recState: RecordingState) => {
+    const callsState = getCallsState(serverUrl);
+    if (!callsState.calls[channelId]) {
+        return;
+    }
+
+    const nextCall = {...callsState.calls[channelId], recState};
+    const nextCalls = {...callsState.calls, [channelId]: nextCall};
+    setCallsState(serverUrl, {...callsState, calls: nextCalls});
+
+    // Was it the current call? If so, update that too.
+    const currentCall = getCurrentCall();
+    if (!currentCall || currentCall.channelId !== channelId) {
+        return;
+    }
+
+    const nextCurrentCall = {
+        ...currentCall,
+        recState,
+    };
+    setCurrentCall(nextCurrentCall);
+};
+
+export const setHost = (serverUrl: string, channelId: string, hostId: string) => {
+    const callsState = getCallsState(serverUrl);
+    if (!callsState.calls[channelId]) {
+        return;
+    }
+
+    const nextCall = {...callsState.calls[channelId], hostId};
+    const nextCalls = {...callsState.calls, [channelId]: nextCall};
+    setCallsState(serverUrl, {...callsState, calls: nextCalls});
+
+    // Was it the current call? If so, update that too.
+    const currentCall = getCurrentCall();
+    if (!currentCall || currentCall.channelId !== channelId) {
+        return;
+    }
+
+    const nextCurrentCall = {
+        ...currentCall,
+        hostId,
     };
     setCurrentCall(nextCurrentCall);
 };

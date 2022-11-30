@@ -10,7 +10,9 @@ import {
     setCallScreenOff,
     setCallScreenOn,
     setChannelEnabled,
+    setHost,
     setRaisedHand,
+    setRecordingState,
     setUserMuted,
     setUserVoiceOn,
     userJoinedCall,
@@ -60,6 +62,7 @@ export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage) => {
         screenOn: '',
         participants: {},
         ownerId: msg.data.owner_id,
+        hostId: msg.data.host_id,
     });
 };
 
@@ -97,4 +100,12 @@ export const handleCallUserUnraiseHand = (serverUrl: string, msg: WebSocketMessa
 
 export const handleCallUserReacted = (serverUrl: string, msg: WebSocketMessage) => {
     userReacted(serverUrl, msg.broadcast.channel_id, msg.data);
+};
+
+export const handleCallRecordingState = (serverUrl: string, msg: WebSocketMessage) => {
+    setRecordingState(serverUrl, msg.broadcast.channel_id, msg.data.recState);
+};
+
+export const handleCallHostChanged = (serverUrl: string, msg: WebSocketMessage) => {
+    setHost(serverUrl, msg.broadcast.channel_id, msg.data.hostID);
 };

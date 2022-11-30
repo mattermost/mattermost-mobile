@@ -207,7 +207,7 @@ export function postEphemeralCallResponseForPost(serverUrl: string, response: Ap
         serverUrl,
         message,
         post.channelId,
-        post.rootId,
+        post.rootId || post.id,
         response.app_metadata?.bot_user_id,
     );
 }

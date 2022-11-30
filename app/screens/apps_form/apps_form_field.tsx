@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {View} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
@@ -9,7 +9,7 @@ import Markdown from '@components/markdown';
 import BoolSetting from '@components/settings/bool_setting';
 import TextSetting from '@components/settings/text_setting';
 import {View as ViewConstants} from '@constants';
-import {AppFieldTypes} from '@constants/apps';
+import {AppFieldTypes, SelectableAppFieldTypes} from '@constants/apps';
 import {useTheme} from '@context/theme';
 import {selectKeyboardType} from '@utils/integrations';
 import {getMarkdownBlockStyles, getMarkdownTextStyles} from '@utils/markdown';
@@ -23,9 +23,19 @@ export type Props = {
     name: string;
     errorText?: string;
     value: AppFormValue;
-    onChange: (name: string, value: string | string[] | boolean) => void;
+    onChange: (name: string, value: AppFormValue) => void;
     performLookup: (name: string, userInput: string) => Promise<AppSelectOption[]>;
 }
+
+const dialogOptionToAppSelectOption = (option: DialogOption): AppSelectOption => ({
+    label: option.text,
+    value: option.value,
+});
+
+const appSelectOptionToDialogOption = (option: AppSelectOption): DialogOption => ({
+    text: option.label,
+    value: option.value,
+});
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -69,17 +79,67 @@ function AppsFormField({
     const placeholder = field.hint || '';
     const displayName = field.modal_label || field.label || '';
 
-    const handleChange = useCallback((newValue: string | boolean | string[]) => {
+    const handleChange = useCallback((newValue: string | boolean) => {
         onChange(name, newValue);
     }, [name]);
 
+    const handleSelect = useCallback((newValue: SelectedDialogOption) => {
+        if (!newValue) {
+            const emptyValue = field.multiselect ? [] : null;
+            onChange(name, emptyValue);
+            return;
+        }
+
+        if (Array.isArray(newValue)) {
+            const selectedOptions = newValue.map(dialogOptionToAppSelectOption);
+            onChange(name, selectedOptions);
+            return;
+        }
+
+        onChange(name, dialogOptionToAppSelectOption(newValue));
+    }, [onChange, field, name]);
+
     const getDynamicOptions = useCallback(async (userInput = ''): Promise<DialogOption[]> => {
         const options = await performLookup(field.name, userInput);
-        return options.map((option) => ({
-            text: option.label,
-            value: option.value,
-        }));
+        return options.map(appSelectOptionToDialogOption);
     }, [performLookup, field]);
+
+    const options = useMemo(() => {
+        if (field.type === AppFieldTypes.STATIC_SELECT) {
+            return field.options?.map(appSelectOptionToDialogOption);
+        }
+
+        if (field.type === AppFieldTypes.DYNAMIC_SELECT) {
+            if (!value) {
+                return undefined;
+            }
+
+            if (Array.isArray(value)) {
+                return value.map(appSelectOptionToDialogOption);
+            }
+
+            const selectedOption = value as AppSelectOption;
+            return [appSelectOptionToDialogOption(selectedOption)];
+        }
+
+        return undefined;
+    }, [field, value]);
+
+    const selectedValue = useMemo(() => {
+        if (!value || !SelectableAppFieldTypes.includes(field.type)) {
+            return undefined;
+        }
+
+        if (!value) {
+            return undefined;
+        }
+
+        if (Array.isArray(value)) {
+            return value.map((v) => v.value);
+        }
+
+        return value as string;
+    }, [field, value]);
 
     switch (field.type) {
         case AppFieldTypes.TEXT: {
@@ -105,24 +165,19 @@ function AppsFormField({
         case AppFieldTypes.CHANNEL:
         case AppFieldTypes.STATIC_SELECT:
         case AppFieldTypes.DYNAMIC_SELECT: {
-            let options: DialogOption[] | undefined;
-            if (field.type === AppFieldTypes.STATIC_SELECT && field.options) {
-                options = field.options.map((option) => ({text: option.label, value: option.value}));
-            }
-
             return (
                 <AutocompleteSelector
                     label={displayName}
                     dataSource={selectDataSource(field.type)}
                     options={options}
                     optional={!field.is_required}
-                    onSelected={handleChange}
-                    getDynamicOptions={getDynamicOptions}
+                    onSelected={handleSelect}
+                    getDynamicOptions={field.type === AppFieldTypes.DYNAMIC_SELECT ? getDynamicOptions : undefined}
                     helpText={field.description}
                     errorText={errorText}
                     placeholder={placeholder}
                     showRequiredAsterisk={true}
-                    selected={value as string | string[]}
+                    selected={selectedValue}
                     roundedBorders={false}
                     disabled={field.readonly}
                     isMultiselect={field.multiselect}

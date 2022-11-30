@@ -89,6 +89,7 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
         screenOn: '',
         threadId: 'abcd1234567',
         ownerId: 'xohi8cki9787fgiryne716u84o',
+        hostId: 'xohi8cki9787fgiryne716u84o',
     } as Call;
     act(() => {
         State.setCallsState(serverUrl, {serverUrl, myUserId: 'myUserId', calls: {}, enabled: {}});
