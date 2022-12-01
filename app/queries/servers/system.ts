@@ -187,12 +187,13 @@ export const getGranularDataRetentionPolicies = async (database: Database) => {
 
 export const getIsDataRetentionEnabled = async (database: Database) => {
     const license = await getLicense(database);
-    const config = await getConfig(database);
-
-    if (!Object.keys(config)?.length || !license || !Object.keys(license)?.length) {
+    if (!license || !Object.keys(license)?.length) {
         return null;
     }
-    return config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true';
+
+    const dataRetentionEnableMessageDeletion = await getConfigValue(database, 'DataRetentionEnableMessageDeletion');
+
+    return dataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true';
 };
 
 export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {

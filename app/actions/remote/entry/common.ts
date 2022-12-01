@@ -385,9 +385,10 @@ export const syncOtherServers = async (serverUrl: string) => {
     for (const server of servers) {
         if (server.url !== serverUrl && server.lastActiveAt > 0) {
             registerDeviceToken(server.url);
-            syncAllChannelMembersAndThreads(server.url);
+            syncAllChannelMembersAndThreads(server.url).then(() => {
+                dataRetentionCleanup(server.url);
+            });
             autoUpdateTimezone(server.url);
-            dataRetentionCleanup(server.url);
         }
     }
 };

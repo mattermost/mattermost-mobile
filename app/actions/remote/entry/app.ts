@@ -27,8 +27,6 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
         }
     }
 
-    const {database} = operator;
-
     // Run data retention cleanup
     await dataRetentionCleanup(serverUrl);
 
@@ -37,6 +35,8 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     if (removeLastUnreadChannelId) {
         operator.batchRecords(removeLastUnreadChannelId);
     }
+
+    const {database} = operator;
 
     const tabletDevice = await isTablet();
     const currentTeamId = await getCurrentTeamId(database);

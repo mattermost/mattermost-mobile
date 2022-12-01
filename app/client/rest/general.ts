@@ -6,6 +6,11 @@ import {buildQueryString} from '@utils/helpers';
 import {PER_PAGE_DEFAULT} from './constants';
 import ClientError from './error';
 
+type PoliciesResponse<T> = {
+    policies: T[];
+    total_count: number;
+}
+
 export interface ClientGeneralMix {
     getOpenGraphMetadata: (url: string) => Promise<any>;
     ping: (deviceId?: string, timeoutInterval?: number) => Promise<any>;
@@ -14,14 +19,8 @@ export interface ClientGeneralMix {
     getClientLicenseOld: () => Promise<ClientLicense>;
     getTimezones: () => Promise<string[]>;
     getGlobalDataRetentionPolicy: () => Promise<GlobalDataRetentionPolicy>;
-    getTeamDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<{
-        policies: TeamDataRetentionPolicy[];
-        total_count: number;
-    }>;
-    getChannelDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<{
-        policies: ChannelDataRetentionPolicy[];
-        total_count: number;
-    }>;
+    getTeamDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<PoliciesResponse<TeamDataRetentionPolicy>>;
+    getChannelDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<PoliciesResponse<ChannelDataRetentionPolicy>>;
     getRolesByNames: (rolesNames: string[]) => Promise<Role[]>;
     getRedirectLocation: (urlParam: string) => Promise<Record<string, string>>;
 }
