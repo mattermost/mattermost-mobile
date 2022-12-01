@@ -173,7 +173,7 @@ function IntegrationSelector(
     const [term, setTerm] = useState<string>('');
     const [searchResults, setSearchResults] = useState<DataTypeList>([]);
 
-    // Channels and DialogOptions, will disappear
+    // Channels and DialogOptions, will be removed
     const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
 
     // Users selection and in the future Channels and DialogOptions
@@ -276,14 +276,14 @@ function IntegrationSelector(
         }
     }, [options, getDynamicOptions, integrationData]);
 
-    const handleSelectProfile = (user: UserProfile): void => {
+    const handleSelectProfile = useCallback((user: UserProfile): void => {
         if (!isMultiselect) {
             handleSelect(user);
             close();
         }
 
         setSelectedIds((current) => handleIdSelection(dataSource, current, user));
-    };
+    }, [isMultiselect, handleIdSelection, handleSelect, close, dataSource]);
 
     const onHandleMultiselectSubmit = useCallback(() => {
         if (dataSource === ViewConstants.DATA_SOURCE_USERS) {

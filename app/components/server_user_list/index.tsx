@@ -79,10 +79,10 @@ export default function ServerUserList({
         }
     }, 100), [loading, isSearch, serverUrl, currentTeamId]);
 
-    const onHandleSelectProfile = (user: UserProfile) => {
+    const onHandleSelectProfile = useCallback((user: UserProfile) => {
         handleSelectProfile(user);
         setSelectedIds((current) => handleIdSelection(current, user));
-    };
+    }, [handleSelectProfile]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
