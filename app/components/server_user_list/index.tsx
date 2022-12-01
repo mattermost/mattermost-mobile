@@ -18,6 +18,7 @@ type Props = {
     handleSelectProfile: (user: UserProfile) => void;
     term: string;
     selectedIds: {[id: string]: UserProfile};
+    selectable?: boolean;
 }
 
 export default function ServerUserList({
@@ -26,6 +27,7 @@ export default function ServerUserList({
     teammateNameDisplay,
     tutorialWatched,
     handleSelectProfile,
+    selectable = false,
     term,
     selectedIds,
 }: Props) {
@@ -132,6 +134,7 @@ export default function ServerUserList({
             term={term}
             testID='create_direct_message.user_list'
             tutorialWatched={tutorialWatched}
+            selectable={selectable}
         />
     );
 }

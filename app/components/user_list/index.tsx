@@ -113,6 +113,7 @@ type Props = {
     testID?: string;
     term?: string;
     tutorialWatched: boolean;
+    selectable?: boolean;
 }
 
 export default function UserList({
@@ -127,6 +128,7 @@ export default function UserList({
     term,
     testID,
     tutorialWatched,
+    selectable = false,
 }: Props) {
     const intl = useIntl();
     const theme = useTheme();
@@ -165,7 +167,7 @@ export default function UserList({
     const renderItem = useCallback(({item, index, section}: ListRenderItemInfo<UserProfile> & {section?: SectionListData<UserProfile>}) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = Boolean(selectedIds[item.id]);
-        const canAdd = Object.keys(selectedIds).length < General.MAX_USERS_IN_GM;
+        const canAdd = (Object.keys(selectedIds).length < General.MAX_USERS_IN_GM) && selectable;
 
         return (
             <UserListRow

@@ -10,10 +10,9 @@ import {typography} from '@utils/typography';
 
 const INITIAL_BATCH_TO_RENDER = 15;
 
-type DataType = DialogOption[] | Channel[];
 type ListItemProps = {
     id: string;
-    item: DialogOption | Channel;
+    item: DialogOption;
     selected: boolean;
     selectable?: boolean;
     enabled: boolean;
@@ -21,15 +20,14 @@ type ListItemProps = {
 }
 
 type Props = {
-    data: DataType;
+    data: DialogOption[];
     canRefresh?: boolean;
     loading?: boolean;
     loadingComponent?: React.ReactElement<any, string> | null;
     noResults: () => JSX.Element | null;
     refreshing?: boolean;
     onRefresh?: () => void;
-    onLoadMore: () => void;
-    onRowPress: (item: Channel | DialogOption) => void;
+    onRowPress: (item: DialogOption) => void;
     renderItem: (props: ListItemProps) => JSX.Element;
     selectable?: boolean;
     theme?: object;
@@ -105,7 +103,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 function CustomList({
     data, shouldRenderSeparator, loading, loadingComponent, noResults,
-    onLoadMore, onRowPress, selectable, renderItem, theme,
+    onRowPress, selectable, renderItem, theme,
     canRefresh = true, testID, refreshing = false, onRefresh,
 }: Props) {
     const style = getStyleFromTheme(theme);
@@ -169,7 +167,6 @@ function CustomList({
             ListEmptyComponent={renderEmptyList()}
             ListFooterComponent={renderFooter}
             maxToRenderPerBatch={INITIAL_BATCH_TO_RENDER + 1}
-            onEndReached={onLoadMore}
             refreshControl={refreshControl}
             removeClippedSubviews={true}
             renderItem={renderListItem}

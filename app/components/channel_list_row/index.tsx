@@ -19,13 +19,17 @@ type Props = {
     testID?: string;
     selectable?: boolean;
     selected?: boolean;
+    disabled?: boolean;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         titleContainer: {
             marginLeft: 16,
+            paddingHorizontal: 10,
             flexDirection: 'column',
+            justifyContent: 'center',
+            flex: 1,
         },
         displayName: {
             color: theme.centerChannelColor,
@@ -42,6 +46,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         outerContainer: {
             paddingVertical: 9,
         },
+        selector: {
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
         purpose: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 75),
@@ -49,12 +57,16 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+const DISABLED_OPACITY = 0.32;
+const DEFAULT_ICON_OPACITY = 0.32;
+
 export default function ChannelListRow({
     channel,
     onPress,
     testID,
     selectable = false,
     selected = false,
+    disabled = false,
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -68,7 +80,8 @@ export default function ChannelListRow({
             return null;
         }
 
-        const color = selected ? theme.buttonBg : theme.centerChannelColor;
+        const iconOpacity = DEFAULT_ICON_OPACITY * (disabled ? 1 : DISABLED_OPACITY);
+        const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
         return (
             <View style={style.selector}>
                 <CompassIcon
@@ -117,7 +130,6 @@ export default function ChannelListRow({
                         style={style.icon}
                     />
                     <View style={style.titleContainer}>
-
                         <Text
                             style={style.displayName}
                             testID={channelDisplayNameTestID}

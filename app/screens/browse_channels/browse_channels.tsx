@@ -8,6 +8,7 @@ import {ImageResource, OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
+import ChannelList from '@components/channel_list';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import {Screens} from '@constants';
@@ -19,7 +20,6 @@ import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import ChannelDropdown from './channel_dropdown';
-import ChannelList from './channel_list';
 
 import type {NavButtons} from '@typings/screens/navigation';
 
