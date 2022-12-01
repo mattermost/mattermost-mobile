@@ -8,7 +8,7 @@ import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getConfig, getCurrentTeamId, getLicense, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
@@ -136,7 +136,8 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     await operator.batchRecords(models);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(operator.database))!;
-    const {config, license} = await getCommonSystemValues(operator.database);
+    const config = await getConfig(database);
+    const license = await getLicense(database);
 
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, selectedChannelId);
 

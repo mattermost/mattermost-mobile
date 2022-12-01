@@ -165,6 +165,16 @@ lane :configure do
     json['SentryDsnAndroid'] = ENV['SENTRY_DSN_ANDROID']
   end
 
+  # Configure show app review
+  if ENV['SHOW_REVIEW'] == 'true'
+    json['ShowReview'] = true
+  end
+
+  # Configure Show Onboarding
+  if ENV['SHOW_ONBOARDING'] == 'true'
+    json['ShowOnboarding'] = true
+  end
+
   # Save the config.json file
   save_json_as_file('../dist/assets/config.json', json)
 
@@ -675,6 +685,14 @@ platform :android do
             path_to_file: item[1..-1],
             old_string: 'package com.mattermost.rnbeta;',
             new_string: "package #{package_id};"
+        )
+      end
+
+      Dir.glob('../android/app/src/main/java/com/mattermost/share/*.java') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.MainApplication;',
+            new_string: "import #{package_id}.MainApplication;"
         )
       end
 

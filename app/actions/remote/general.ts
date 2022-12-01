@@ -27,12 +27,7 @@ async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
         }
     }
 
-    const appDatabase = DatabaseManager.appDatabase?.database;
-    if (!appDatabase) {
-        return '';
-    }
-
-    return getDeviceToken(appDatabase);
+    return getDeviceToken();
 }
 
 // Default timeout interval for ping is 5 seconds
@@ -124,3 +119,4 @@ export const getRedirectLocation = async (serverUrl: string, link: string) => {
         return {error};
     }
 };
+

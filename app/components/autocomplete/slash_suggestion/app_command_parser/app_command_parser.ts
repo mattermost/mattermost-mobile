@@ -984,6 +984,9 @@ export class AppCommandParser {
                                 break;
                             }
                             user = res.users[0] || res.existingUsers[0];
+                            if (!user) {
+                                break;
+                            }
                         }
                         parsed.values[f.name] = user.username;
                         break;
@@ -998,6 +1001,9 @@ export class AppCommandParser {
                                 break;
                             }
                             channel = res.channel;
+                            if (!channel) {
+                                break;
+                            }
                         }
                         parsed.values[f.name] = channel.name;
                         break;
@@ -1176,14 +1182,21 @@ export class AppCommandParser {
 
         const errors: {[key: string]: string} = {};
         await Promise.all(parsed.resolvedForm.fields.map(async (f) => {
-            if (!values[f.name]) {
+            const fieldValue = values[f.name];
+            if (!fieldValue) {
                 return;
             }
             switch (f.type) {
                 case AppFieldTypes.DYNAMIC_SELECT:
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
+                        } else {
+                            commandValues = [fieldValue] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         for (const value of commandValues) {
                             if (options.find((o) => o.value === value)) {
                                 errors[f.name] = this.intl.formatMessage({
@@ -1199,7 +1212,7 @@ export class AppCommandParser {
                         break;
                     }
 
-                    values[f.name] = {label: values[f.name], value: values[f.name]};
+                    values[f.name] = {label: fieldValue, value: fieldValue};
                     break;
                 case AppFieldTypes.STATIC_SELECT: {
                     const getOption = (value: string) => {
@@ -1217,9 +1230,15 @@ export class AppCommandParser {
                         values[f.name] = undefined;
                     };
 
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
+                        } else {
+                            commandValues = [fieldValue] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         for (const value of commandValues) {
                             const option = getOption(value);
                             if (!option) {
@@ -1241,9 +1260,9 @@ export class AppCommandParser {
                         break;
                     }
 
-                    const option = getOption(values[f.name]);
+                    const option = getOption(fieldValue);
                     if (!option) {
-                        setOptionError(values[f.name]);
+                        setOptionError(fieldValue);
                         return;
                     }
                     values[f.name] = option;
@@ -1272,9 +1291,15 @@ export class AppCommandParser {
                         });
                     };
 
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
+                        } else {
+                            commandValues = [fieldValue] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         /* eslint-disable no-await-in-loop */
                         for (const value of commandValues) {
                             let userName = value;
@@ -1338,9 +1363,15 @@ export class AppCommandParser {
                         });
                     };
 
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
+                        } else {
+                            commandValues = [fieldValue] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         /* eslint-disable no-await-in-loop */
                         for (const value of commandValues) {
                             let channelName = value;
@@ -1432,8 +1463,7 @@ export class AppCommandParser {
     // getCommandBindings returns the commands in the redux store.
     // They are grouped by app id since each app has one base command
     private getCommandBindings = (): AppBinding[] => {
-        const bindings = AppsManager.getBindings(this.serverUrl, AppBindingLocations.COMMAND, Boolean(this.rootPostID));
-        return bindings.reduce<AppBinding[]>((acc, v) => (v.bindings ? acc.concat(v.bindings) : acc), []);
+        return AppsManager.getBindings(this.serverUrl, AppBindingLocations.COMMAND, Boolean(this.rootPostID));
     };
 
     // getChannel gets the channel in which the user is typing the command
@@ -1685,7 +1715,13 @@ export class AppCommandParser {
             prefix = '';
         }
 
-        const applicable = parsed.resolvedForm.fields.filter((field) => field.label && field.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()) && !parsed.values[field.name]);
+        const applicable = parsed.resolvedForm.fields.filter((field) => (
+            field.label &&
+            field.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()) &&
+            !parsed.values[field.name] &&
+            !field.readonly &&
+            field.type !== AppFieldTypes.MARKDOWN
+        ));
         if (applicable) {
             return applicable.map((f) => {
                 return {

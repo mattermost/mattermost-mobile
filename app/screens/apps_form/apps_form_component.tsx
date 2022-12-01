@@ -49,6 +49,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             color: (theme.errorTextColor || '#DA4A4A'),
         },
         button: buttonBackgroundStyle(theme, 'lg', 'primary', 'default'),
+        buttonContainer: {
+            paddingTop: 20,
+            paddingLeft: 50,
+            paddingRight: 50,
+        },
         buttonText: buttonTextStyle(theme, 'lg', 'primary', 'default'),
     };
 });
@@ -75,7 +80,7 @@ export type Props = {
     form: AppForm;
     componentId: string;
     refreshOnSelect: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<FormResponseData>>;
-    submit: (submission: {values: AppFormValues}) => Promise<DoAppCallResult<FormResponseData>>;
+    submit: (values: AppFormValues) => Promise<DoAppCallResult<FormResponseData>>;
     performLookupCall: (field: AppField, values: AppFormValues, value: AppFormValue) => Promise<DoAppCallResult<AppLookupResponse>>;
 }
 
@@ -94,9 +99,9 @@ function valuesReducer(state: AppFormValues, action: ValuesAction) {
     return {...state, [action.name]: action.value};
 }
 
-function initValues(elements?: AppField[]) {
+function initValues(fields?: AppField[]) {
     const values: AppFormValues = {};
-    elements?.forEach((e) => {
+    fields?.forEach((e) => {
         if (e.type === 'bool') {
             values[e.name] = (e.value === true || String(e.value).toLowerCase() === 'true');
         } else if (e.value) {
@@ -126,15 +131,6 @@ function AppsFormComponent({
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
-    const onHandleSubmit = useCallback(() => {
-        if (!submitting) {
-            handleSubmit();
-        }
-    }, [serverUrl, componentId, submitting]);
-
-    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
-    useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleSubmit, [onHandleSubmit]);
-
     useDidUpdate(() => {
         dispatchValues({elements: form.fields});
     }, [form]);
@@ -153,26 +149,62 @@ function AppsFormComponent({
             undefined,
             intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'}),
         );
-        base.enabled = submitting;
+        base.enabled = !submitting;
         base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
-    }, [theme.sidebarHeaderTextColor, intl, Boolean(submitButtons)]);
+    }, [theme.sidebarHeaderTextColor, Boolean(submitButtons), submitting, intl]);
 
     useEffect(() => {
         setButtons(componentId, {
             rightButtons: rightButton ? [rightButton] : [],
         });
-    }, [rightButton, componentId]);
+    }, [componentId, rightButton]);
 
     useEffect(() => {
         const icon = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
         setButtons(componentId, {
             leftButtons: [makeCloseButton(icon)],
         });
-    }, [theme]);
+    }, [componentId, theme]);
 
-    const onChange = useCallback((name: string, value: any) => {
+    const updateErrors = useCallback((elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
+        let hasErrors = false;
+        let hasHeaderError = false;
+        if (formError) {
+            hasErrors = true;
+            hasHeaderError = true;
+            setError(formError);
+        } else {
+            setError('');
+        }
+
+        if (fieldErrors && Object.keys(fieldErrors).length > 0) {
+            hasErrors = true;
+            if (checkIfErrorsMatchElements(fieldErrors, elements)) {
+                setErrors(fieldErrors);
+            } else if (!hasHeaderError) {
+                hasHeaderError = true;
+                const field = Object.keys(fieldErrors)[0];
+                setError(intl.formatMessage({
+                    id: 'apps.error.responses.unknown_field_error',
+                    defaultMessage: 'Received an error for an unknown field. Field name: `{field}`. Error: `{error}`.',
+                }, {
+                    field,
+                    error: fieldErrors[field],
+                }));
+            }
+        }
+
+        if (hasErrors) {
+            if (hasHeaderError && scrollView.current) {
+                scrollView.current.scrollTo({x: 0, y: 0});
+            }
+        }
+        return hasErrors;
+    }, [intl]);
+
+    const onChange = useCallback((name: string, value: AppFormValue) => {
         const field = form.fields?.find((f) => f.name === name);
         if (!field) {
             return;
@@ -216,43 +248,13 @@ function AppsFormComponent({
         }
 
         dispatchValues({name, value});
-    }, []);
-
-    const updateErrors = (elements: DialogElement[], fieldErrors?: {[x: string]: string}, formError?: string): boolean => {
-        let hasErrors = false;
-        let hasHeaderError = false;
-        if (formError) {
-            hasErrors = true;
-            hasHeaderError = true;
-            setError(formError);
-        }
-
-        if (fieldErrors && Object.keys(fieldErrors).length > 0) {
-            hasErrors = true;
-            if (checkIfErrorsMatchElements(fieldErrors, elements)) {
-                setErrors(fieldErrors);
-            } else if (!hasHeaderError) {
-                hasHeaderError = true;
-                const field = Object.keys(fieldErrors)[0];
-                setError(intl.formatMessage({
-                    id: 'apps.error.responses.unknown_field_error',
-                    defaultMessage: 'Received an error for an unknown field. Field name: `{field}`. Error: `{error}`.',
-                }, {
-                    field,
-                    error: fieldErrors[field],
-                }));
-            }
-        }
-
-        if (hasErrors) {
-            if (hasHeaderError && scrollView.current) {
-                scrollView.current.scrollTo({x: 0, y: 0});
-            }
-        }
-        return hasErrors;
-    };
+    }, [form, values, refreshOnSelect, updateErrors, intl]);
 
     const handleSubmit = useCallback(async (button?: string) => {
+        if (submitting) {
+            return;
+        }
+
         const {fields} = form;
         const fieldErrors: {[name: string]: string} = {};
 
@@ -269,21 +271,19 @@ function AppsFormComponent({
             }
         });
 
-        setErrors(hasErrors ? fieldErrors : emptyErrorsState);
-
         if (hasErrors) {
+            setErrors(fieldErrors);
             return;
         }
 
-        const submission = {
-            values,
-        };
+        const submission = {...values};
 
         if (button && form.submit_buttons) {
-            submission.values[form.submit_buttons] = button;
+            submission[form.submit_buttons] = button;
         }
 
         setSubmitting(true);
+
         const res = await submit(submission);
 
         if (res.error) {
@@ -297,6 +297,9 @@ function AppsFormComponent({
             setSubmitting(false);
             return;
         }
+
+        setError('');
+        setErrors(emptyErrorsState);
 
         const callResponse = res.data!;
         switch (callResponse.type) {
@@ -319,7 +322,7 @@ function AppsFormComponent({
                 }));
                 setSubmitting(false);
         }
-    }, []);
+    }, [form, values, submit, submitting, updateErrors, serverUrl, intl]);
 
     const performLookup = useCallback(async (name: string, userInput: string): Promise<AppSelectOption[]> => {
         const field = form.fields?.find((f) => f.name === name);
@@ -369,7 +372,10 @@ function AppsFormComponent({
                 return [];
             }
         }
-    }, []);
+    }, [form, values, performLookupCall, intl]);
+
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
+    useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, handleSubmit, [handleSubmit]);
 
     return (
         <SafeAreaView
@@ -415,13 +421,17 @@ function AppsFormComponent({
                     style={{marginHorizontal: 5}}
                 >
                     {submitButtons?.options?.map((o) => (
-                        <Button
+                        <View
                             key={o.value}
-                            onPress={() => handleSubmit(o.value)}
-                            containerStyle={style.button}
+                            style={style.buttonContainer}
                         >
-                            <Text style={style.buttonText}>{o.label}</Text>
-                        </Button>
+                            <Button
+                                onPress={() => handleSubmit(o.value)}
+                                containerStyle={style.button}
+                            >
+                                <Text style={style.buttonText}>{o.label}</Text>
+                            </Button>
+                        </View>
                     ))}
                 </View>
             </ScrollView>

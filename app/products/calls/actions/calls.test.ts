@@ -89,6 +89,7 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
         screenOn: '',
         threadId: 'abcd1234567',
         ownerId: 'xohi8cki9787fgiryne716u84o',
+        hostId: 'xohi8cki9787fgiryne716u84o',
     } as Call;
     act(() => {
         State.setCallsState(serverUrl, {serverUrl, myUserId: 'myUserId', calls: {}, enabled: {}});
@@ -266,6 +267,36 @@ describe('Actions.Calls', () => {
         assert.equal((result.current[0] as CallsState).enabled['channel-1'], true);
         assert.equal((result.current[1] as ChannelsWithCalls)['channel-1'], true);
         assert.equal((result.current[2] as CurrentCall | null), null);
+    });
+
+    it('loadCalls fails from server', async () => {
+        const expectedCallsState: CallsState = {
+            serverUrl: 'server1',
+            myUserId: 'userId1',
+            calls: {},
+            enabled: {},
+        };
+
+        // setup
+        const oldGetCalls = mockClient.getCalls;
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        mockClient.getCalls = jest.fn(() => null);
+
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useChannelsWithCalls('server1'), useCurrentCall()];
+        });
+
+        await act(async () => {
+            await CallsActions.loadCalls('server1', 'userId1');
+        });
+        expect(mockClient.getCalls).toBeCalled();
+        assert.deepEqual((result.current[0] as CallsState), expectedCallsState);
+        assert.deepEqual((result.current[1] as ChannelsWithCalls), {});
+        assert.equal((result.current[2] as CurrentCall | null), null);
+
+        mockClient.getCalls = oldGetCalls;
     });
 
     it('loadConfig', async () => {

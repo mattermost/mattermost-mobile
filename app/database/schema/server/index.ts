@@ -9,6 +9,7 @@ import {
     ChannelInfoSchema,
     ChannelMembershipSchema,
     ChannelSchema,
+    ConfigSchema,
     CustomEmojiSchema,
     DraftSchema,
     FileSchema,
@@ -37,13 +38,14 @@ import {
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 4,
+    version: 6,
     tables: [
         CategorySchema,
         CategoryChannelSchema,
         ChannelInfoSchema,
         ChannelMembershipSchema,
         ChannelSchema,
+        ConfigSchema,
         CustomEmojiSchema,
         DraftSchema,
         FileSchema,

@@ -7,11 +7,13 @@ import {useIntl} from 'react-intl';
 import {Alert, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
+import {switchToGlobalThreads} from '@actions/local/thread';
 import {joinChannelIfNeeded, makeDirectChannel, searchAllChannels, switchToChannelById} from '@actions/remote/channel';
 import {searchProfiles} from '@actions/remote/user';
 import ChannelItem from '@components/channel_item';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
+import ThreadsButton from '@components/threads_button';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {sortChannelsByDisplayName} from '@utils/channel';
@@ -22,6 +24,8 @@ import UserItem from './user_item';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
+
+type ResultItem = ChannelModel|Channel|UserModel|'thread';
 
 type RemoteChannels = {
     archived: Channel[];
@@ -35,6 +39,7 @@ type Props = {
     channelsMatch: ChannelModel[];
     channelsMatchStart: ChannelModel[];
     currentTeamId: string;
+    isCRTEnabled: boolean;
     keyboardHeight: number;
     loading: boolean;
     onLoading: (loading: boolean) => void;
@@ -77,7 +82,7 @@ const sortByUserOrChannel = <T extends Channel |UserModel>(locale: string, teamm
 
 const FilteredList = ({
     archivedChannels, close, channelsMatch, channelsMatchStart, currentTeamId,
-    keyboardHeight, loading, onLoading, restrictDirectMessage, showTeamName,
+    isCRTEnabled, keyboardHeight, loading, onLoading, restrictDirectMessage, showTeamName,
     teamIds, teammateDisplayNameSetting, term, usersMatch, usersMatchStart, testID,
 }: Props) => {
     const bounce = useRef<DebouncedFunc<() => void>>();
@@ -87,6 +92,7 @@ const FilteredList = ({
     const {locale, formatMessage} = useIntl();
     const flatListStyle = useMemo(() => ({flexGrow: 1, paddingBottom: keyboardHeight}), [keyboardHeight]);
     const [remoteChannels, setRemoteChannels] = useState<RemoteChannels>({archived: [], startWith: [], matches: []});
+
     const totalLocalResults = channelsMatchStart.length + channelsMatch.length + usersMatchStart.length;
 
     const search = async () => {
@@ -182,6 +188,11 @@ const FilteredList = ({
         switchToChannelById(serverUrl, channelId);
     }, [serverUrl, close]);
 
+    const onSwitchToThreads = useCallback(async () => {
+        await close();
+        switchToGlobalThreads(serverUrl);
+    }, [serverUrl, close]);
+
     const renderEmpty = useCallback(() => {
         if (loading) {
             return (
@@ -204,7 +215,15 @@ const FilteredList = ({
         return null;
     }, [term, loading, theme]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<ChannelModel|Channel|UserModel>) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<ResultItem>) => {
+        if (item === 'thread') {
+            return (
+                <ThreadsButton
+                    isInfo={true}
+                    onPress={onSwitchToThreads}
+                />
+            );
+        }
         if ('teamId' in item) {
             return (
                 <ChannelItem
@@ -235,8 +254,26 @@ const FilteredList = ({
         );
     }, [onJoinChannel, onOpenDirectMessage, onSwitchToChannel, showTeamName, teammateDisplayNameSetting]);
 
+    const threadLabel = useMemo(
+        () => formatMessage({
+            id: 'threads',
+            defaultMessage: 'Threads',
+        }).toLowerCase(),
+        [locale],
+    );
+
     const data = useMemo(() => {
-        const items: Array<ChannelModel|Channel|UserModel> = [...channelsMatchStart];
+        const items: ResultItem[] = [];
+
+        // Add threads item to show it on the top of the list
+        if (isCRTEnabled) {
+            const isThreadTerm = threadLabel.indexOf(term.toLowerCase()) === 0;
+            if (isThreadTerm) {
+                items.push('thread');
+            }
+        }
+
+        items.push(...channelsMatchStart);
 
         // Channels that matches
         if (items.length < MAX_RESULTS) {
@@ -275,14 +312,14 @@ const FilteredList = ({
         }
 
         return [...new Set(items)].slice(0, MAX_RESULTS + 1);
-    }, [archivedChannels, channelsMatchStart, channelsMatch, remoteChannels, usersMatch, usersMatchStart, locale, teammateDisplayNameSetting]);
+    }, [archivedChannels, channelsMatchStart, channelsMatch, isCRTEnabled, remoteChannels, usersMatch, usersMatchStart, locale, teammateDisplayNameSetting, term, threadLabel]);
 
     useEffect(() => {
         mounted.current = true;
         return () => {
             mounted.current = false;
         };
-    });
+    }, []);
 
     useEffect(() => {
         bounce.current = debounce(search, 500);

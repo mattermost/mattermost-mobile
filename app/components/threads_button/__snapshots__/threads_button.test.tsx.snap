@@ -1,0 +1,260 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Thread item in the channel list Threads Component should match snapshot 1`] = `
+<View
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "opacity": 1,
+    }
+  }
+  testID="channel_list.threads.button"
+>
+  <View
+    style={
+      {
+        "marginLeft": -18,
+        "marginRight": -20,
+      }
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "minHeight": 40,
+            "paddingHorizontal": 20,
+          },
+          false,
+        ]
+      }
+    >
+      <Icon
+        name="message-text-outline"
+        style={
+          [
+            {
+              "color": "rgba(255,255,255,0.5)",
+              "fontSize": 24,
+            },
+            false,
+            undefined,
+          ]
+        }
+      />
+      <Text
+        style={
+          [
+            {
+              "flex": 1,
+            },
+            {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            {
+              "color": "rgba(255,255,255,0.72)",
+              "marginTop": -1,
+              "paddingLeft": 12,
+              "paddingRight": 20,
+            },
+            false,
+            false,
+            undefined,
+          ]
+        }
+      >
+        Threads
+      </Text>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`Thread item in the channel list Threads Component should match snapshot with isInfo 1`] = `
+<View
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "opacity": 1,
+    }
+  }
+  testID="channel_list.threads.button"
+>
+  <View
+    style={
+      {
+        "marginLeft": -18,
+        "marginRight": -20,
+      }
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "minHeight": 40,
+            "paddingHorizontal": 20,
+          },
+          false,
+        ]
+      }
+    >
+      <Icon
+        name="message-text-outline"
+        style={
+          [
+            {
+              "color": "rgba(255,255,255,0.5)",
+              "fontSize": 24,
+            },
+            false,
+            {
+              "color": "rgba(63,67,80,0.72)",
+            },
+          ]
+        }
+      />
+      <Text
+        style={
+          [
+            {
+              "flex": 1,
+            },
+            {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            {
+              "color": "rgba(255,255,255,0.72)",
+              "marginTop": -1,
+              "paddingLeft": 12,
+              "paddingRight": 20,
+            },
+            false,
+            false,
+            {
+              "color": "#3f4350",
+              "paddingRight": 20,
+            },
+          ]
+        }
+      >
+        Threads
+      </Text>
+    </View>
+  </View>
+</View>
+`;
+
+exports[`Thread item in the channel list Threads Component should match snapshot with only unreads filter 1`] = `null`;
+
+exports[`Thread item in the channel list Threads Component should match snapshot, groupUnreadsSeparately false, always show 1`] = `
+<View
+  accessible={true}
+  collapsable={false}
+  focusable={true}
+  onClick={[Function]}
+  onResponderGrant={[Function]}
+  onResponderMove={[Function]}
+  onResponderRelease={[Function]}
+  onResponderTerminate={[Function]}
+  onResponderTerminationRequest={[Function]}
+  onStartShouldSetResponder={[Function]}
+  style={
+    {
+      "opacity": 1,
+    }
+  }
+  testID="channel_list.threads.button"
+>
+  <View
+    style={
+      {
+        "marginLeft": -18,
+        "marginRight": -20,
+      }
+    }
+  >
+    <View
+      style={
+        [
+          {
+            "alignItems": "center",
+            "flexDirection": "row",
+            "minHeight": 40,
+            "paddingHorizontal": 20,
+          },
+          false,
+        ]
+      }
+    >
+      <Icon
+        name="message-text-outline"
+        style={
+          [
+            {
+              "color": "rgba(255,255,255,0.5)",
+              "fontSize": 24,
+            },
+            false,
+            undefined,
+          ]
+        }
+      />
+      <Text
+        style={
+          [
+            {
+              "flex": 1,
+            },
+            {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            {
+              "color": "rgba(255,255,255,0.72)",
+              "marginTop": -1,
+              "paddingLeft": 12,
+              "paddingRight": 20,
+            },
+            false,
+            false,
+            undefined,
+          ]
+        }
+      >
+        Threads
+      </Text>
+    </View>
+  </View>
+</View>
+`;

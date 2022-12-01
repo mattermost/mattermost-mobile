@@ -113,7 +113,7 @@ const executeAppCommand = async (serverUrl: string, intl: IntlShape, parser: App
             return {data: {}};
         case AppCallResponseTypes.FORM:
             if (callResp.form) {
-                showAppForm(callResp.form);
+                showAppForm(callResp.form, creq.context);
             }
             return {data: {}};
         case AppCallResponseTypes.NAVIGATE:

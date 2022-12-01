@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {setLastServerVersionCheck} from '@actions/local/systems';
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
-import {prepareCommonSystemValues, getCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId, getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
@@ -21,6 +22,9 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
 
     if (!since) {
         registerDeviceToken(serverUrl);
+        if (Object.keys(DatabaseManager.serverDatabases).length === 1) {
+            await setLastServerVersionCheck(serverUrl, true);
+        }
     }
 
     // clear lastUnreadChannelId
@@ -65,7 +69,8 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     logInfo('ENTRY MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
 
     const {id: currentUserId, locale: currentUserLocale} = meData?.user || (await getCurrentUser(database))!;
-    const {config, license} = await getCommonSystemValues(database);
+    const config = await getConfig(database);
+    const license = await getLicense(database);
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchToChannel ? initialChannelId : undefined);
 
     if (!since) {

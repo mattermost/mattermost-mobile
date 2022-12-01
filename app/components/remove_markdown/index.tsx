@@ -3,7 +3,7 @@
 
 import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {ReactElement, useCallback, useRef} from 'react';
+import React, {ReactElement, useCallback, useMemo, useRef} from 'react';
 import {StyleProp, Text, TextStyle} from 'react-native';
 
 import Emoji from '@components/emoji';
@@ -14,7 +14,7 @@ type Props = {
     enableEmoji?: boolean;
     enableHardBreak?: boolean;
     enableSoftBreak?: boolean;
-    textStyle: StyleProp<TextStyle>;
+    textStyle?: StyleProp<TextStyle>;
     value: string;
 };
 
@@ -34,9 +34,9 @@ const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, textStyl
         return '\n';
     }, []);
 
-    const renderText = ({literal}: {literal: string}) => {
+    const renderText = useCallback(({literal}: {literal: string}) => {
         return <Text style={textStyle}>{literal}</Text>;
-    };
+    }, [textStyle]);
 
     const renderNull = () => {
         return null;
@@ -85,7 +85,7 @@ const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, textStyl
     };
 
     const parser = useRef(new Parser()).current;
-    const renderer = useRef(createRenderer()).current;
+    const renderer = useMemo(createRenderer, [renderText, renderEmoji]);
     const ast = parser.parse(value);
 
     return renderer.render(ast) as ReactElement;

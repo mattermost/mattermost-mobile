@@ -8,16 +8,21 @@ import CompassIcon from '@components/compass_icon';
 import {Screens, Sso, SupportedServer, Launch} from '@constants';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {getErrorMessage} from '@utils/client_error';
+import {isMinimumServerVersion} from '@utils/helpers';
 import {changeOpacity} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import type ServersModel from '@typings/database/models/app/servers';
 
-export function unsupportedServer(isSystemAdmin: boolean, intl: IntlShape) {
+export function isSupportedServer(currentVersion: string) {
+    return isMinimumServerVersion(currentVersion, SupportedServer.MAJOR_VERSION, SupportedServer.MIN_VERSION, SupportedServer.PATCH_VERSION);
+}
+
+export function unsupportedServer(serverDisplayName: string, isSystemAdmin: boolean, intl: IntlShape, onPress?: () => void) {
     if (isSystemAdmin) {
-        return unsupportedServerAdminAlert(intl);
+        return unsupportedServerAdminAlert(serverDisplayName, intl, onPress);
     }
-    return unsupportedServerAlert(intl);
+    return unsupportedServerAlert(serverDisplayName, intl, onPress);
 }
 
 export function semverFromServerVersion(value: string) {
@@ -53,9 +58,19 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
     const isLicensed = license.IsLicensed === 'true';
     const samlEnabled = config.EnableSaml === 'true' && isLicensed && license.SAML === 'true';
     const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-    const googleEnabled = config.EnableSignUpWithGoogle === 'true' && isLicensed;
-    const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license.Office365OAuth === 'true';
-    const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && isLicensed;
+    const isMinServerVersionForFreeOAuth = isMinimumServerVersion(config.Version, 7, 6);
+    let googleEnabled = false;
+    let o365Enabled = false;
+    let openIdEnabled = false;
+    if (isMinServerVersionForFreeOAuth) {
+        googleEnabled = config.EnableSignUpWithGoogle === 'true';
+        o365Enabled = config.EnableSignUpWithOffice365 === 'true';
+        openIdEnabled = config.EnableSignUpWithOpenId === 'true';
+    } else {
+        googleEnabled = config.EnableSignUpWithGoogle === 'true' && isLicensed;
+        o365Enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license.Office365OAuth === 'true';
+        openIdEnabled = config.EnableSignUpWithOpenId === 'true' && isLicensed;
+    }
     const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
     const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;
     const ssoOptions: Record<string, boolean> = {
@@ -179,21 +194,36 @@ export function alertServerAlreadyConnected(intl: IntlShape) {
     );
 }
 
-function unsupportedServerAdminAlert(intl: IntlShape) {
+export const sortServersByDisplayName = (servers: ServersModel[], intl: IntlShape) => {
+    function serverName(s: ServersModel) {
+        if (s.displayName === s.url) {
+            return intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
+        }
+
+        return s.displayName;
+    }
+
+    return servers.sort((a, b) => {
+        return serverName(a).localeCompare(serverName(b));
+    });
+};
+
+function unsupportedServerAdminAlert(serverDisplayName: string, intl: IntlShape, onPress?: () => void) {
     const title = intl.formatMessage({id: 'mobile.server_upgrade.title', defaultMessage: 'Server upgrade required'});
 
     const message = intl.formatMessage({
-        id: 'mobile.server_upgrade.alert_description',
-        defaultMessage: 'This server version is unsupported and users will be exposed to compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Upgrading to server version {serverVersion} or later is required.',
-    }, {serverVersion: SupportedServer.FULL_VERSION});
+        id: 'server_upgrade.alert_description',
+        defaultMessage: 'Your server, {serverDisplayName}, is running an unsupported server version. Users will be exposed to compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Upgrading to server version {supportedServerVersion} or later is required.',
+    }, {serverDisplayName, supportedServerVersion: SupportedServer.FULL_VERSION});
 
     const cancel: AlertButton = {
-        text: intl.formatMessage({id: 'mobile.server_upgrade.dismiss', defaultMessage: 'Dismiss'}),
+        text: intl.formatMessage({id: 'server_upgrade.dismiss', defaultMessage: 'Dismiss'}),
         style: 'default',
+        onPress,
     };
 
     const learnMore: AlertButton = {
-        text: intl.formatMessage({id: 'mobile.server_upgrade.learn_more', defaultMessage: 'Learn More'}),
+        text: intl.formatMessage({id: 'server_upgrade.learn_more', defaultMessage: 'Learn More'}),
         style: 'cancel',
         onPress: () => {
             const url = 'https://docs.mattermost.com/administration/release-lifecycle.html';
@@ -213,17 +243,18 @@ function unsupportedServerAdminAlert(intl: IntlShape) {
     Alert.alert(title, message, buttons, options);
 }
 
-function unsupportedServerAlert(intl: IntlShape) {
-    const title = intl.formatMessage({id: 'mobile.unsupported_server.title', defaultMessage: 'Unsupported server version'});
+function unsupportedServerAlert(serverDisplayName: string, intl: IntlShape, onPress?: () => void) {
+    const title = intl.formatMessage({id: 'unsupported_server.title', defaultMessage: 'Unsupported server version'});
 
     const message = intl.formatMessage({
-        id: 'mobile.unsupported_server.message',
-        defaultMessage: 'Attachments, link previews, reactions and embed data may not be displayed correctly. If this issue persists contact your System Administrator to upgrade your Mattermost server.',
-    });
+        id: 'unsupported_server.message',
+        defaultMessage: 'Your server, {serverDisplayName}, is running an unsupported server version. You may experience compatibility issues that cause crashes or severe bugs breaking core functionality of the app. Please contact your System Administrator to upgrade your Mattermost server.',
+    }, {serverDisplayName});
 
     const okButton: AlertButton = {
-        text: intl.formatMessage({id: 'mobile.unsupported_server.ok', defaultMessage: 'OK'}),
+        text: intl.formatMessage({id: 'mobile.server_upgrade.button', defaultMessage: 'OK'}),
         style: 'default',
+        onPress,
     };
 
     const buttons: AlertButton[] = [okButton];
