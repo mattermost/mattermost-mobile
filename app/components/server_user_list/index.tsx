@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
 import {fetchProfiles, searchProfiles} from '@actions/remote/user';
 import UserList from '@components/user_list';
@@ -32,13 +32,6 @@ function handleIdSelection(currentIds: {[id: string]: UserProfile}, user: UserPr
     return newSelectedIds;
 }
 
-function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
-    if (action.type === 'add' && action.values?.length) {
-        return [...state, ...action.values];
-    }
-    return state;
-}
-
 export default function ServerUserList({
     currentTeamId,
     currentUserId,
@@ -53,7 +46,7 @@ export default function ServerUserList({
     const page = useRef(-1);
     const mounted = useRef(false);
 
-    const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
+    const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
@@ -69,7 +62,13 @@ export default function ServerUserList({
 
             page.current += 1;
             setLoading(false);
-            dispatchProfiles({type: 'add', values: users});
+            setProfiles((current) => {
+                if (users?.length) {
+                    return [...current, ...users];
+                }
+
+                return current;
+            });
         }
     };
 
