@@ -106,6 +106,7 @@ export type Props = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     options?: PostActionOption[];
     currentTeamId: string;
+    currentUserId: string;
     data?: DataTypeList;
     dataSource: string;
     handleSelect: (opt: Selection) => void;
@@ -159,7 +160,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 function IntegrationSelector(
     {dataSource, data, isMultiselect = false, selected, handleSelect,
-        currentTeamId, componentId, getDynamicOptions, options, teammateNameDisplay}: Props) {
+        currentTeamId, currentUserId, componentId, getDynamicOptions, options, teammateNameDisplay}: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
@@ -503,7 +504,7 @@ function IntegrationSelector(
                 return (
                     <ServerUserList
                         currentTeamId={currentTeamId}
-                        currentUserId={null}
+                        currentUserId={currentUserId}
                         teammateNameDisplay={teammateNameDisplay}
                         term={term}
                         tutorialWatched={true}
