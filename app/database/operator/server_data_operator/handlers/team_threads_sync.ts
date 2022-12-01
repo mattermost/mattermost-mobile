@@ -21,7 +21,7 @@ const TeamThreadsSyncHandler = (superclass: any) => class extends superclass {
     handleTeamThreadsSync = async ({data, prepareRecordsOnly = false}: HandleTeamThreadsSyncArgs): Promise<TeamThreadsSyncModel[]> => {
         if (!data || !data.length) {
             logWarning(
-                'An empty or undefined "data" object has been passed to the handleTeamThreadsSync method',
+                'An empty or undefined "data" array has been passed to the handleTeamThreadsSync method',
             );
             return [];
         }
