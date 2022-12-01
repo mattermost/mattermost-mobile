@@ -19,6 +19,10 @@ executors:
     resource_class: <<parameters.resource_class>>
 
   ios:
+    parameters:
+      resource_class:
+        default: medium
+        type: string
     environment:
       NODE_OPTIONS: --max_old_space_size=12000
       NODE_ENV: production
@@ -27,6 +31,7 @@ executors:
       xcode: "14.0.0"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
+    resource_class: <<parameters.resource_class>>
 
 commands:
   checkout-private:
@@ -192,13 +197,15 @@ commands:
         type: string
       file:
         type: string
+      env:
+        type: string
     steps:
       - attach_workspace:
           at: ~/
       - run:
           name: <<parameters.task>>
           working_directory: fastlane
-          command: bundle exec fastlane <<parameters.target>> deploy file:$HOME/mattermost-mobile/<<parameters.file>>
+          command: <<parameters.env>> bundle exec fastlane <<parameters.target>> deploy file:$HOME/mattermost-mobile/<<parameters.file>>
 
   persist:
     description: "Persist mattermost-mobile directory"
@@ -302,13 +309,13 @@ jobs:
       - save:
           filename: "*.apk"
 
-  build-android-release:
-    executor: android
-    steps:
-      - build-android
-      - persist
-      - save:
-          filename: "*.apk"
+  # build-android-release:
+  #   executor: android
+  #   steps:
+  #     - build-android
+  #     - persist
+  #     - save:
+  #         filename: "*.apk"
 
   build-android-pr:
     executor: android
@@ -319,43 +326,45 @@ jobs:
       - save:
           filename: "*.apk"
 
-  build-android-unsigned:
-    executor: android
-    steps:
-      - checkout:
-          path: ~/mattermost-mobile
-      - npm-dependencies
-      - assets
-      - fastlane-dependencies:
-          for: android
-      - gradle-dependencies
-      - run:
-          name: Jetify Android libraries
-          command: ./node_modules/.bin/jetify
-      - run:
-          working_directory: fastlane
-          name: Run fastlane to build unsigned android
-          no_output_timeout: 30m
-          command: bundle exec fastlane android unsigned
-      - persist
-      - save:
-          filename: "*.apk"
+  # build-android-unsigned:
+  #   executor: android
+  #   steps:
+  #     - checkout:
+  #         path: ~/mattermost-mobile
+  #     - npm-dependencies
+  #     - assets
+  #     - fastlane-dependencies:
+  #         for: android
+  #     - gradle-dependencies
+  #     - run:
+  #         name: Jetify Android libraries
+  #         command: ./node_modules/.bin/jetify
+  #     - run:
+  #         working_directory: fastlane
+  #         name: Run fastlane to build unsigned android
+  #         no_output_timeout: 30m
+  #         command: bundle exec fastlane android unsigned
+  #     - persist
+  #     - save:
+  #         filename: "*.apk"
 
   build-ios-beta:
-    executor: ios
+    executor:
+      name: ios
+      resource_class: large
     steps:
       - build-ios
       - persist
       - save:
           filename: "*.ipa"
 
-  build-ios-release:
-    executor: ios
-    steps:
-      - build-ios
-      - persist
-      - save:
-          filename: "*.ipa"
+  # build-ios-release:
+  #   executor: ios
+  #   steps:
+  #     - build-ios
+  #     - persist
+  #     - save:
+  #         filename: "*.ipa"
 
   build-ios-pr:
     executor: ios
@@ -366,63 +375,63 @@ jobs:
       - save:
           filename: "*.ipa"
 
-  build-ios-unsigned:
-    executor: ios
-    steps:
-      - checkout:
-          path: ~/mattermost-mobile
-      - npm-dependencies
-      - pods-dependencies
-      - assets
-      - fastlane-dependencies:
-          for: ios
-      - run:
-          working_directory: fastlane
-          name: Run fastlane to build unsigned iOS
-          no_output_timeout: 30m
-          command: |
-            HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
-            bundle exec fastlane ios unsigned
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - mattermost-mobile/*.ipa
-      - save:
-          filename: "*.ipa"
+  # build-ios-unsigned:
+  #   executor: ios
+  #   steps:
+  #     - checkout:
+  #         path: ~/mattermost-mobile
+  #     - npm-dependencies
+  #     - pods-dependencies
+  #     - assets
+  #     - fastlane-dependencies:
+  #         for: ios
+  #     - run:
+  #         working_directory: fastlane
+  #         name: Run fastlane to build unsigned iOS
+  #         no_output_timeout: 30m
+  #         command: |
+  #           HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
+  #           bundle exec fastlane ios unsigned
+  #     - persist_to_workspace:
+  #         root: ~/
+  #         paths:
+  #           - mattermost-mobile/*.ipa
+  #     - save:
+  #         filename: "*.ipa"
 
-  build-ios-simulator:
-    executor: ios
-    steps:
-      - checkout:
-          path: ~/mattermost-mobile
-      - npm-dependencies
-      - pods-dependencies
-      - assets
-      - fastlane-dependencies:
-          for: ios
-      - run:
-          working_directory: fastlane
-          name: Run fastlane to build unsigned x86_64 iOS app for iPhone simulator
-          no_output_timeout: 30m
-          command: |
-            HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
-            bundle exec fastlane ios simulator
-      - persist_to_workspace:
-          root: ~/
-          paths:
-            - mattermost-mobile/Mattermost-simulator-x86_64.app.zip
-      - save:
-          filename: "Mattermost-simulator-x86_64.app.zip"
+  # build-ios-simulator:
+  #   executor: ios
+  #   steps:
+  #     - checkout:
+  #         path: ~/mattermost-mobile
+  #     - npm-dependencies
+  #     - pods-dependencies
+  #     - assets
+  #     - fastlane-dependencies:
+  #         for: ios
+  #     - run:
+  #         working_directory: fastlane
+  #         name: Run fastlane to build unsigned x86_64 iOS app for iPhone simulator
+  #         no_output_timeout: 30m
+  #         command: |
+  #           HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
+  #           bundle exec fastlane ios simulator
+  #     - persist_to_workspace:
+  #         root: ~/
+  #         paths:
+  #           - mattermost-mobile/Mattermost-simulator-x86_64.app.zip
+  #     - save:
+  #         filename: "Mattermost-simulator-x86_64.app.zip"
 
-  deploy-android-release:
-    executor:
-      name: android
-      resource_class: medium
-    steps:
-      - deploy-to-store:
-          task: "Deploy to Google Play"
-          target: android
-          file: "*.apk"
+  # deploy-android-release:
+  #   executor:
+  #     name: android
+  #     resource_class: medium
+  #   steps:
+  #     - deploy-to-store:
+  #         task: "Deploy to Google Play"
+  #         target: android
+  #         file: "*.apk"
 
   deploy-android-beta:
     executor:
@@ -433,14 +442,15 @@ jobs:
           task: "Deploy to Google Play"
           target: android
           file: "*.apk"
+          env: "SUPPLY_TRACK=alpha"
 
-  deploy-ios-release:
-    executor: ios
-    steps:
-      - deploy-to-store:
-          task: "Deploy to TestFlight"
-          target: ios
-          file: "*.ipa"
+  # deploy-ios-release:
+  #   executor: ios
+  #   steps:
+  #     - deploy-to-store:
+  #         task: "Deploy to TestFlight"
+  #         target: ios
+  #         file: "*.ipa"
 
   deploy-ios-beta:
     executor: ios
@@ -449,18 +459,19 @@ jobs:
           task: "Deploy to TestFlight"
           target: ios
           file: "*.ipa"
+          env: ""
 
-  github-release:
-    executor:
-      name: android
-      resource_class: medium
-    steps:
-      - attach_workspace:
-          at: ~/
-      - run:
-          name: Create GitHub release
-          working_directory: fastlane
-          command: bundle exec fastlane github
+  # github-release:
+  #   executor:
+  #     name: android
+  #     resource_class: medium
+  #   steps:
+  #     - attach_workspace:
+  #         at: ~/
+  #     - run:
+  #         name: Create GitHub release
+  #         working_directory: fastlane
+  #         command: bundle exec fastlane github
 
 workflows:
   version: 2
@@ -472,31 +483,29 @@ workflows:
       #     requires:
       #       - test
 
-      - build-android-release:
-          context: mattermost-mobile-android-release
-          requires:
-            - test
-          filters:
-            branches:
-              only:
-                - /^build-\d+$/
-                - /^build-android-\d+$/
-                - /^build-android-release-\d+$/
-      - deploy-android-release:
-          context: mattermost-mobile-android-release
-          requires:
-            - build-android-release
-          filters:
-            branches:
-              only:
-                - /^build-\d+$/
-                - /^build-android-\d+$/
-                - /^build-android-release-\d+$/
+      # - build-android-release:
+      #     context: mattermost-mobile-android-release
+      #     requires:
+      #       - test
+      #     filters:
+      #       branches:
+      #         only:
+      #           - /^build-\d+$/
+      #           - /^build-android-\d+$/
+      #           - /^build-android-release-\d+$/
+      # - deploy-android-release:
+      #     context: mattermost-mobile-android-release
+      #     requires:
+      #       - build-android-release
+      #     filters:
+      #       branches:
+      #         only:
+      #           - /^build-\d+$/
+      #           - /^build-android-\d+$/
+      #           - /^build-android-release-\d+$/
 
       - build-android-beta:
           context: mattermost-mobile-android-beta
-          requires:
-            - test
           filters:
             branches:
               only:
@@ -514,31 +523,29 @@ workflows:
                 - /^build-android-\d+$/
                 - /^build-android-beta-\d+$/
 
-      - build-ios-release:
-          context: mattermost-mobile-ios-release
-          requires:
-            - test
-          filters:
-            branches:
-              only:
-                - /^build-\d+$/
-                - /^build-ios-\d+$/
-                - /^build-ios-release-\d+$/
-      - deploy-ios-release:
-          context: mattermost-mobile-ios-release
-          requires:
-            - build-ios-release
-          filters:
-            branches:
-              only:
-                - /^build-\d+$/
-                - /^build-ios-\d+$/
-                - /^build-ios-release-\d+$/
+      # - build-ios-release:
+      #     context: mattermost-mobile-ios-release
+      #     requires:
+      #       - test
+      #     filters:
+      #       branches:
+      #         only:
+      #           - /^build-\d+$/
+      #           - /^build-ios-\d+$/
+      #           - /^build-ios-release-\d+$/
+      # - deploy-ios-release:
+      #     context: mattermost-mobile-ios-release
+      #     requires:
+      #       - build-ios-release
+      #     filters:
+      #       branches:
+      #         only:
+      #           - /^build-\d+$/
+      #           - /^build-ios-\d+$/
+      #           - /^build-ios-release-\d+$/
 
       - build-ios-beta:
           context: mattermost-mobile-ios-beta
-          requires:
-            - test
           filters:
             branches:
               only:
@@ -571,43 +578,43 @@ workflows:
             branches:
               only: /^(build|ios)-pr-.*/
 
-      - build-android-unsigned:
-          context: mattermost-mobile-unsigned
-          requires:
-            - test
-          filters:
-            tags:
-              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
-            branches:
-              only: unsigned
-      - build-ios-unsigned:
-          context: mattermost-mobile-unsigned
-          requires:
-            - test
-          filters:
-            tags:
-              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
-            branches:
-              only: unsigned
-      - build-ios-simulator:
-          context: mattermost-mobile-unsigned
-          requires:
-            - test
-          filters:
-            branches:
-              only:
-                - /^build-\d+$/
-                - /^build-ios-\d+$/
-                - /^build-ios-beta-\d+$/
-                - /^build-ios-sim-\d+$/
+      # - build-android-unsigned:
+      #     context: mattermost-mobile-unsigned
+      #     requires:
+      #       - test
+      #     filters:
+      #       tags:
+      #         only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
+      #       branches:
+      #         only: unsigned
+      # - build-ios-unsigned:
+      #     context: mattermost-mobile-unsigned
+      #     requires:
+      #       - test
+      #     filters:
+      #       tags:
+      #         only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
+      #       branches:
+      #         only: unsigned
+      # - build-ios-simulator:
+          # context: mattermost-mobile-unsigned
+          # requires:
+          #   - test
+          # filters:
+          #   branches:
+          #     only:
+          #       - /^build-\d+$/
+          #       - /^build-ios-\d+$/
+          #       - /^build-ios-beta-\d+$/
+          #       - /^build-ios-sim-\d+$/
 
-      - github-release:
-          context: mattermost-mobile-unsigned
-          requires:
-            - build-android-unsigned
-            - build-ios-unsigned
-          filters:
-            tags:
-              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
-            branches:
-              only: unsigned
+      # - github-release:
+      #     context: mattermost-mobile-unsigned
+      #     requires:
+      #       - build-android-unsigned
+      #       - build-ios-unsigned
+      #     filters:
+      #       tags:
+      #         only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
+      #       branches:
+      #         only: unsigned
