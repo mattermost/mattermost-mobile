@@ -25,11 +25,11 @@ const {SERVER: {
 
 export default schemaMigrations({migrations: [
     {
-        toVersion: 6,
+        toVersion: 7,
         steps: [
 
             // Along with adding the new table - TeamThreadsSync,
-            // We need to clear the thread related tables (DROP & CREATE) to refetch the data
+            // We need to clear the data in thread related tables (DROP & CREATE) to fetch the fresh data from the server
             createTable({
                 ...teamThreadsSyncSpec,
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
@@ -46,7 +46,11 @@ export default schemaMigrations({migrations: [
             createTable(threadSpec),
             createTable(threadInTeamSpec),
             createTable(threadParticipantSpec),
-
+        ],
+    },
+    {
+        toVersion: 6,
+        steps: [
             addColumns({
                 table: USER,
                 columns: [
