@@ -688,6 +688,14 @@ platform :android do
         )
       end
 
+      Dir.glob('../android/app/src/main/java/com/mattermost/share/*.java') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.MainApplication;',
+            new_string: "import #{package_id}.MainApplication;"
+        )
+      end
+
       Dir.glob('../android/app/src/main/java/com/mattermost/helpers/*.java') do |item|
         find_replace_string(
             path_to_file: item[1..-1],

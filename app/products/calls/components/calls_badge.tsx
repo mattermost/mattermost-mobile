@@ -6,6 +6,7 @@ import {StyleSheet, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import Loading from '@components/loading';
 import {typography} from '@utils/typography';
 
 const styles = StyleSheet.create({
@@ -16,12 +17,19 @@ const styles = StyleSheet.create({
         justifyContent: 'center',
         borderRadius: 4,
     },
+    loading: {
+        paddingLeft: 8,
+        paddingRight: 8,
+        color: 'white',
+        height: 34,
+        backgroundColor: 'rgba(255, 255, 255, 0.16)',
+    },
     recording: {
         paddingLeft: 8,
         paddingRight: 8,
-        backgroundColor: '#D24B4E',
         color: 'white',
         height: 34,
+        backgroundColor: '#D24B4E',
     },
     text: {
         color: 'white',
@@ -45,6 +53,7 @@ const styles = StyleSheet.create({
 });
 
 export enum CallsBadgeType {
+    Waiting,
     Rec,
     Host,
 }
@@ -54,9 +63,11 @@ interface Props {
 }
 
 const CallsBadge = ({type}: Props) => {
+    const isLoading = type === CallsBadgeType.Waiting;
     const isRec = type === CallsBadgeType.Rec;
+    const isParticipant = !(isLoading || isRec);
 
-    const text = isRec ? (
+    const text = isLoading || isRec ? (
         <FormattedText
             id={'mobile.calls_rec'}
             defaultMessage={'rec'}
@@ -70,8 +81,17 @@ const CallsBadge = ({type}: Props) => {
         />
     );
 
+    const containerStyles = [
+        styles.container,
+        isLoading && styles.loading,
+        isRec && styles.recording,
+        isParticipant && styles.participant,
+    ];
     return (
-        <View style={[styles.container, isRec ? styles.recording : styles.participant]}>
+        <View style={containerStyles}>
+            {
+                isLoading && <Loading/>
+            }
             {
                 isRec &&
                 <CompassIcon

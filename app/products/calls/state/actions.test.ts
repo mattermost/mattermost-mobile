@@ -13,13 +13,13 @@ import {
     setHost,
     setMicPermissionsErrorDismissed,
     setMicPermissionsGranted,
-    setRecAcknowledged,
     setRecordingState,
     useCallsConfig,
     useCallsState,
     useChannelsWithCalls,
     useCurrentCall,
-    useGlobalCallsState, userReacted,
+    useGlobalCallsState,
+    userReacted,
 } from '@calls/state';
 import {
     setCalls,
@@ -811,6 +811,7 @@ describe('useCallsState', () => {
             last_retrieved_at: 123,
             sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
+            EnableRecordings: true,
         };
 
         // setup
@@ -952,44 +953,6 @@ describe('useCallsState', () => {
         assert.deepEqual((result.current[1] as CurrentCall | null), expectedCurrentCallState);
         act(() => setRecordingState('server1', 'channel-2', recState));
         assert.deepEqual((result.current[0] as CallsState).calls['channel-2'], {...call2, recState});
-        assert.deepEqual((result.current[1] as CurrentCall | null), expectedCurrentCallState);
-    });
-
-    it('setRecAcknowledged', () => {
-        const initialCallsState = {
-            ...DefaultCallsState,
-            calls: {'channel-1': call1, 'channel-2': call2},
-        };
-        const initialCurrentCallState: CurrentCall = {
-            ...DefaultCurrentCall,
-            connected: true,
-            serverUrl: 'server1',
-            myUserId: 'myUserId',
-            ...call1,
-        };
-        const expectedCurrentCallState: CurrentCall = {
-            ...DefaultCurrentCall,
-            connected: true,
-            serverUrl: 'server1',
-            myUserId: 'myUserId',
-            ...call1,
-            recAcknowledged: true,
-        };
-
-        // setup
-        const {result} = renderHook(() => {
-            return [useCallsState('server1'), useCurrentCall()];
-        });
-        act(() => {
-            setCallsState('server1', initialCallsState);
-            setCurrentCall(initialCurrentCallState);
-        });
-        assert.deepEqual(result.current[0], initialCallsState);
-        assert.deepEqual(result.current[1], initialCurrentCallState);
-
-        // test
-        act(() => setRecAcknowledged());
-        assert.deepEqual(result.current[0], initialCallsState);
         assert.deepEqual((result.current[1] as CurrentCall | null), expectedCurrentCallState);
     });
 

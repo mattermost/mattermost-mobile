@@ -24,7 +24,7 @@ type AppsState = {
 
 type AppBinding = {
     app_id: string;
-    location?: string;
+    location: string;
     icon?: string;
 
     // Label is the (usually short) primary text to display at the location.
@@ -148,7 +148,7 @@ type AppForm = {
     depends_on?: string[];
 };
 
-type AppFormValue = string | boolean | number | AppSelectOption | AppSelectOption[];
+type AppFormValue = string | boolean | number | AppSelectOption | AppSelectOption[] | null;
 type AppFormValues = {[name: string]: AppFormValue};
 
 type AppSelectOption = {

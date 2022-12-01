@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
+import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
 import ServerIcon from '@components/server_icon';
@@ -12,6 +12,7 @@ import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheet} from '@screens/navigation';
+import {sortServersByDisplayName} from '@utils/server';
 
 import ServerList from './servers_list';
 
@@ -32,20 +33,6 @@ const styles = StyleSheet.create({
         height: 40,
     },
 });
-
-const sortServers = (servers: ServersModel[], intl: IntlShape) => {
-    function serverName(s: ServersModel) {
-        if (s.displayName === s.url) {
-            return intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
-        }
-
-        return s.displayName;
-    }
-
-    return servers.sort((a, b) => {
-        return serverName(a).localeCompare(serverName(b));
-    });
-};
 
 export type ServersRef = {
     openServers: () => void;
@@ -88,7 +75,7 @@ const Servers = React.forwardRef<ServersRef>((props, ref) => {
     };
 
     const serversObserver = async (servers: ServersModel[]) => {
-        registeredServers.current = sortServers(servers, intl);
+        registeredServers.current = sortServersByDisplayName(servers, intl);
 
         // unsubscribe mentions from servers that were removed
         const allUrls = new Set(servers.map((s) => s.url));
