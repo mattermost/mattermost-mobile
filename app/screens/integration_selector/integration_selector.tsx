@@ -28,8 +28,9 @@ import CustomList from './custom_list';
 import OptionListRow from './option_list_row';
 import SelectedOptions from './selected_options';
 
-type DataType = DialogOption[] | Channel[] | UserProfile[];
-type Selection = DialogOption | Channel | UserProfile | DataType;
+type DataType = DialogOption | Channel | UserProfile;
+type DataTypeList = DialogOption[] | Channel[] | UserProfile[];
+type Selection = DataType | DataTypeList;
 type MultiselectSelectedMap = Dictionary<DialogOption> | Dictionary<Channel> | Dictionary<UserProfile>;
 
 const VALID_DATASOURCES = [
@@ -42,8 +43,12 @@ const close = () => {
     popTopScreen();
 };
 
-const extractItemKey = (dataSource: string, item: Selection): string => {
+const extractItemKey = (dataSource: string, item: DataType): string => {
     switch (dataSource) {
+        case ViewConstants.DATA_SOURCE_USERS: {
+            const typedItem = item as UserProfile;
+            return typedItem.id;
+        }
         case ViewConstants.DATA_SOURCE_CHANNELS: {
             const typedItem = item as Channel;
             return typedItem.id;
@@ -67,7 +72,7 @@ const toggleFromMap = <T extends DialogOption | Channel | UserProfile>(current: 
     return newMap;
 };
 
-const filterSearchData = (source: string, searchData: DataType, searchTerm: string) => {
+const filterSearchData = (source: string, searchData: DataTypeList, searchTerm: string) => {
     if (!searchData) {
         return [];
     }
@@ -83,11 +88,25 @@ const filterSearchData = (source: string, searchData: DataType, searchTerm: stri
     return (searchData as DialogOption[]).filter((option) => option.text && option.text.includes(lowerCasedTerm));
 };
 
+const handleIdSelection = (dataSource: string, currentIds: {[id: string]: DataType}, item: DataType) => {
+    const newSelectedIds = {...currentIds};
+    const key = extractItemKey(dataSource, item);
+    const wasSelected = currentIds[key];
+
+    if (wasSelected) {
+        Reflect.deleteProperty(newSelectedIds, key);
+    } else {
+        newSelectedIds[key] = item;
+    }
+
+    return newSelectedIds;
+};
+
 export type Props = {
     getDynamicOptions?: (userInput?: string) => Promise<DialogOption[]>;
     options?: PostActionOption[];
     currentTeamId: string;
-    data?: DataType;
+    data?: DataTypeList;
     dataSource: string;
     handleSelect: (opt: Selection) => void;
     isMultiselect?: boolean;
@@ -148,12 +167,17 @@ function IntegrationSelector(
     const intl = useIntl();
 
     // HOOKS
-    const [integrationData, setIntegrationData] = useState<DataType>(data || []);
+    const [integrationData, setIntegrationData] = useState<DataTypeList>(data || []);
     const [loading, setLoading] = useState<boolean>(false);
     const [term, setTerm] = useState<string>('');
-    const [searchResults, setSearchResults] = useState<DataType>([]);
+    const [searchResults, setSearchResults] = useState<DataTypeList>([]);
+
+    // Channels and DialogOptions, will disappear
     const [multiselectSelected, setMultiselectSelected] = useState<MultiselectSelectedMap>({});
-    const [customListData, setCustomListData] = useState<DataType>([]);
+
+    // Users selection and in the future Channels and DialogOptions
+    const [selectedIds, setSelectedIds] = useState<{[id: string]: DataType}>({});
+    const [customListData, setCustomListData] = useState<DataTypeList>([]);
 
     const page = useRef<number>(-1);
     const next = useRef<boolean>(VALID_DATASOURCES.includes(dataSource));
@@ -187,12 +211,12 @@ function IntegrationSelector(
 
         switch (dataSource) {
             case ViewConstants.DATA_SOURCE_CHANNELS: {
-                const itemKey = extractItemKey(dataSource, item);
+                const itemKey = extractItemKey(dataSource, item as Channel);
                 setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as Channel));
                 return;
             }
             default: {
-                const itemKey = extractItemKey(dataSource, item);
+                const itemKey = extractItemKey(dataSource, item as DialogOption);
                 setMultiselectSelected((current) => toggleFromMap(current, itemKey, item as DialogOption));
             }
         }
@@ -257,13 +281,19 @@ function IntegrationSelector(
             close();
         }
 
-        // TODO multiselect seelction
+        setSelectedIds((current) => handleIdSelection(dataSource, current, user));
     };
 
     const onHandleMultiselectSubmit = useCallback(() => {
-        handleSelect(Object.values(multiselectSelected));
+        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+            // New multiselect
+            handleSelect(Object.values(selectedIds) as UserProfile[]);
+        } else {
+            // Legacy multiselect
+            handleSelect(Object.values(multiselectSelected));
+        }
         close();
-    }, [multiselectSelected, handleSelect]);
+    }, [multiselectSelected, selectedIds, handleSelect]);
 
     const onSearch = useCallback((text: string) => {
         if (!text) {
@@ -323,7 +353,7 @@ function IntegrationSelector(
     }, []);
 
     useEffect(() => {
-        let listData: DataType = integrationData;
+        let listData: DataTypeList = integrationData;
 
         if (term) {
             listData = searchResults;
