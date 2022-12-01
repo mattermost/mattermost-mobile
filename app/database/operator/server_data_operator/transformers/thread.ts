@@ -32,7 +32,10 @@ export const transformThreadRecord = ({action, database, value}: TransformerArgs
     // If isCreateAction is true, we will use the id (API response) from the RAW, else we shall use the existing record id from the database
     const fieldsMapper = (thread: ThreadModel) => {
         thread._raw.id = isCreateAction ? (raw?.id ?? thread.id) : record.id;
-        thread.lastReplyAt = raw.last_reply_at;
+
+        // When post is individually fetched, we get last_reply_at as 0, so we use the record's value
+        thread.lastReplyAt = raw.last_reply_at || record.lastReplyAt;
+
         thread.lastViewedAt = raw.last_viewed_at ?? record?.lastViewedAt ?? 0;
         thread.replyCount = raw.reply_count;
         thread.isFollowing = raw.is_following ?? record?.isFollowing;
