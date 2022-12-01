@@ -8,7 +8,6 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
 import ServerUserList from '@app/components/server_user_list';
-
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
 import {General, View as ViewConstants} from '@constants';
