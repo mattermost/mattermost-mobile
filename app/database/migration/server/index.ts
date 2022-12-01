@@ -8,15 +8,42 @@ import {schemaMigrations, addColumns, createTable} from '@nozbe/watermelondb/Sch
 
 import {MM_TABLES} from '@constants/database';
 import {tableSchemaSpec as configSpec} from '@database/schema/server/table_schemas/config';
+import {tableSchemaSpec as teamThreadsSyncSpec} from '@database/schema/server/table_schemas/team_threads_sync';
+import {tableSchemaSpec as threadSpec} from '@database/schema/server/table_schemas/thread';
+import {tableSchemaSpec as threadInTeamSpec} from '@database/schema/server/table_schemas/thread_in_team';
+import {tableSchemaSpec as threadParticipantSpec} from '@database/schema/server/table_schemas/thread_participant';
 
 const {SERVER: {
     GROUP,
     MY_CHANNEL,
     TEAM,
     THREAD,
+    THREAD_PARTICIPANT,
+    THREADS_IN_TEAM,
 }} = MM_TABLES;
 
 export default schemaMigrations({migrations: [
+    {
+        toVersion: 6,
+        steps: [
+
+            // Along with adding the new table - TeamThreadsSync,
+            // We need to clear the thread related tables (DROP & CREATE) to refetch the data
+            createTable({
+                ...teamThreadsSyncSpec,
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
+                unsafeSql: `
+                    DROP TABLE ${THREAD};
+                    DROP TABLE ${THREADS_IN_TEAM};
+                    DROP TABLE ${THREAD_PARTICIPANT};
+                `,
+            }),
+            createTable(threadSpec),
+            createTable(threadInTeamSpec),
+            createTable(threadParticipantSpec),
+        ],
+    },
     {
         toVersion: 5,
         steps: [

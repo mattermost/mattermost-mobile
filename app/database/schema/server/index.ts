@@ -39,7 +39,7 @@ import {
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 5,
+    version: 6,
     tables: [
         CategorySchema,
         CategoryChannelSchema,
@@ -68,10 +68,10 @@ export const serverSchema: AppSchema = appSchema({
         TeamMembershipSchema,
         TeamSchema,
         TeamSearchHistorySchema,
+        TeamThreadsSyncSchema,
         ThreadSchema,
         ThreadInTeamSchema,
         ThreadParticipantSchema,
-        TeamThreadsSyncSchema,
         UserSchema,
     ],
 });
