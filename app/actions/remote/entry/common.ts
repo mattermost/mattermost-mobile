@@ -23,7 +23,7 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
-import {queryAllServers} from '@queries/app/servers';
+import {getAllServers} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
@@ -372,28 +372,22 @@ export const registerDeviceToken = async (serverUrl: string) => {
         return {error};
     }
 
-    const appDatabase = DatabaseManager.appDatabase?.database;
-    if (appDatabase) {
-        const deviceToken = await getDeviceToken(appDatabase);
-        if (deviceToken) {
-            client.attachDevice(deviceToken);
-        }
+    const deviceToken = await getDeviceToken();
+    if (deviceToken) {
+        client.attachDevice(deviceToken);
     }
 
     return {error: undefined};
 };
 
 export const syncOtherServers = async (serverUrl: string) => {
-    const database = DatabaseManager.appDatabase?.database;
-    if (database) {
-        const servers = await queryAllServers(database);
-        for (const server of servers) {
-            if (server.url !== serverUrl && server.lastActiveAt > 0) {
-                registerDeviceToken(server.url);
-                syncAllChannelMembersAndThreads(server.url);
-                autoUpdateTimezone(server.url);
-                dataRetentionCleanup(server.url);
-            }
+    const servers = await getAllServers();
+    for (const server of servers) {
+        if (server.url !== serverUrl && server.lastActiveAt > 0) {
+            registerDeviceToken(server.url);
+            syncAllChannelMembersAndThreads(server.url);
+            autoUpdateTimezone(server.url);
+            dataRetentionCleanup(server.url);
         }
     }
 };
@@ -490,12 +484,7 @@ export async function verifyPushProxy(serverUrl: string) {
         return;
     }
 
-    const appDatabase = DatabaseManager.appDatabase?.database;
-    if (!appDatabase) {
-        return;
-    }
-
-    const deviceId = await getDeviceToken(appDatabase);
+    const deviceId = await getDeviceToken();
     if (!deviceId) {
         return;
     }

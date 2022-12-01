@@ -58,9 +58,19 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
     const isLicensed = license.IsLicensed === 'true';
     const samlEnabled = config.EnableSaml === 'true' && isLicensed && license.SAML === 'true';
     const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-    const googleEnabled = config.EnableSignUpWithGoogle === 'true' && isLicensed;
-    const o365Enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license.Office365OAuth === 'true';
-    const openIdEnabled = config.EnableSignUpWithOpenId === 'true' && isLicensed;
+    const isMinServerVersionForFreeOAuth = isMinimumServerVersion(config.Version, 7, 6);
+    let googleEnabled = false;
+    let o365Enabled = false;
+    let openIdEnabled = false;
+    if (isMinServerVersionForFreeOAuth) {
+        googleEnabled = config.EnableSignUpWithGoogle === 'true';
+        o365Enabled = config.EnableSignUpWithOffice365 === 'true';
+        openIdEnabled = config.EnableSignUpWithOpenId === 'true';
+    } else {
+        googleEnabled = config.EnableSignUpWithGoogle === 'true' && isLicensed;
+        o365Enabled = config.EnableSignUpWithOffice365 === 'true' && isLicensed && license.Office365OAuth === 'true';
+        openIdEnabled = config.EnableSignUpWithOpenId === 'true' && isLicensed;
+    }
     const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
     const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;
     const ssoOptions: Record<string, boolean> = {
@@ -183,6 +193,20 @@ export function alertServerAlreadyConnected(intl: IntlShape) {
         }),
     );
 }
+
+export const sortServersByDisplayName = (servers: ServersModel[], intl: IntlShape) => {
+    function serverName(s: ServersModel) {
+        if (s.displayName === s.url) {
+            return intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
+        }
+
+        return s.displayName;
+    }
+
+    return servers.sort((a, b) => {
+        return serverName(a).localeCompare(serverName(b));
+    });
+};
 
 function unsupportedServerAdminAlert(serverDisplayName: string, intl: IntlShape, onPress?: () => void) {
     const title = intl.formatMessage({id: 'mobile.server_upgrade.title', defaultMessage: 'Server upgrade required'});

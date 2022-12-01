@@ -2,6 +2,8 @@
 // See LICENSE.txt for license information.
 import {AppBindingLocations, AppCallResponseTypes, AppFieldTypes} from '@constants/apps';
 
+import {generateId} from './general';
+
 export function cleanBinding(binding: AppBinding, topLocation: string): AppBinding {
     return cleanBindingRec(binding, topLocation, 0);
 }
@@ -21,6 +23,10 @@ function cleanBindingRec(binding: AppBinding, topLocation: string, depth: number
 
         if (!b.label) {
             b.label = b.location || '';
+        }
+
+        if (!b.location) {
+            b.location = generateId();
         }
 
         b.location = binding.location + '/' + b.location;

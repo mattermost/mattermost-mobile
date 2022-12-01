@@ -14,6 +14,8 @@ import NetworkManager from './network_manager';
 
 const emptyBindings: AppBinding[] = [];
 
+const normalizeBindings = (bindings: AppBinding[]) => bindings.reduce<AppBinding[]>((acc, v) => (v.bindings ? acc.concat(v.bindings) : acc), []);
+
 class AppsManager {
     private enabled: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
 
@@ -177,22 +179,23 @@ class AppsManager {
         return combineLatest([isEnabled, bindings]).pipe(
             switchMap(([e, bb]) => of$(e ? bb : emptyBindings)),
             switchMap((bb) => {
-                const result = location ? bb.filter((b) => b.location === location) : bb;
+                let result = location ? bb.filter((b) => b.location === location) : bb;
+                result = normalizeBindings(result);
                 return of$(result.length ? result : emptyBindings);
             }),
         );
     };
 
     getBindings = (serverUrl: string, location?: string, forThread = false) => {
-        const bindings = forThread ?
+        let bindings = forThread ?
             this.getThreadsBindingsSubject(serverUrl).value.bindings :
             this.getBindingsSubject(serverUrl).value;
 
         if (location) {
-            return bindings.filter((b) => b.location === location);
+            bindings = bindings.filter((b) => b.location === location);
         }
 
-        return bindings;
+        return normalizeBindings(bindings);
     };
 
     getCommandForm = (serverUrl: string, key: string, forThread = false) => {

@@ -182,7 +182,7 @@ const Post = ({
         }
 
         Keyboard.dismiss();
-        const passProps = {sourceScreen: location, post, showAddReaction};
+        const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         if (isTablet) {
@@ -222,9 +222,14 @@ const Post = ({
     let header: ReactNode;
     let postAvatar: ReactNode;
     let consecutiveStyle: StyleProp<ViewStyle>;
-    const isProrityPost = Boolean(isPostPriorityEnabled && post.props?.priority);
+
+    // If the post is a priority post:
+    // 1. Show the priority label in channel screen
+    // 2. Show the priority label in thread screen for the root post
+    const showPostPriority = Boolean(isPostPriorityEnabled && post.props?.priority) && (location !== Screens.THREAD || !post.rootId);
+
     const sameSequence = hasReplies ? (hasReplies && post.rootId) : !post.rootId;
-    if (!isProrityPost && hasSameRoot && isConsecutivePost && sameSequence) {
+    if (!showPostPriority && hasSameRoot && isConsecutivePost && sameSequence) {
         consecutiveStyle = styles.consective;
         postAvatar = <View style={styles.consecutivePostContainer}/>;
     } else {
@@ -256,13 +261,13 @@ const Post = ({
                     differentThreadSequence={differentThreadSequence}
                     isAutoResponse={isAutoResponder}
                     isCRTEnabled={isCRTEnabled}
-                    isPostPriorityEnabled={isPostPriorityEnabled}
                     isEphemeral={isEphemeral}
                     isPendingOrFailed={isPendingOrFailed}
                     isSystemPost={isSystemPost}
                     isWebHook={isWebHook}
                     location={location}
                     post={post}
+                    showPostPriority={showPostPriority}
                     shouldRenderReplyButton={shouldRenderReplyButton}
                 />
             );

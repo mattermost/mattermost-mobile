@@ -75,8 +75,12 @@ export const SYSTEM_IDENTIFIERS = {
 
 export const GLOBAL_IDENTIFIERS = {
     DEVICE_TOKEN: 'deviceToken',
+    DONT_ASK_FOR_REVIEW: 'dontAskForReview',
+    FIRST_LAUNCH: 'firstLaunch',
+    LAST_ASK_FOR_REVIEW: 'lastAskForReview',
     MULTI_SERVER_TUTORIAL: 'multiServerTutorial',
     PROFILE_LONG_PRESS_TUTORIAL: 'profileLongPressTutorial',
+    ONBOARDING: 'onboarding',
 };
 
 export enum OperationType {

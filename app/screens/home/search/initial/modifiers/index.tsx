@@ -43,35 +43,35 @@ const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
     const sectionsData = [
         {
             term: 'From:',
-            testID: 'search.from_section',
+            testID: 'search.modifier.from',
             description: formatMessage({id: 'mobile.search.modifier.from', defaultMessage: ' a specific user'}),
         }, {
             term: 'In:',
-            testID: 'search.in_section',
+            testID: 'search.modifier.in',
             description: formatMessage({id: 'mobile.search.modifier.in', defaultMessage: ' a specific channel'}),
         },
 
         // {
         //     term: 'On:',
-        //     testID: 'search.on_section',
+        //     testID: 'search.modifier.on',
         //     description: formatMessage({id: 'mobile.search.modifier.on', defaultMessage: ' a specific date'}),
         // },
         // {
         //     term: 'After:',
-        //     testID: 'search.after_section',
+        //     testID: 'search.modifier.after',
         //     description: formatMessage({id: 'mobile.search.modifier.after', defaultMessage: ' after a date'}),
         // }, {
         //     term: 'Before:',
-        //     testID: 'search.before_section',
+        //     testID: 'search.modifier.before',
         //     description: formatMessage({id: 'mobile.search.modifier.before', defaultMessage: ' before a date'}),
         // },
         {
             term: '-',
-            testID: 'search.exclude_section',
+            testID: 'search.modifier.exclude',
             description: formatMessage({id: 'mobile.search.modifier.exclude', defaultMessage: ' exclude search terms'}),
         }, {
             term: '""',
-            testID: 'search.phrases_section',
+            testID: 'search.modifier.phrases',
             description: formatMessage({id: 'mobile.search.modifier.phrases', defaultMessage: ' messages with phrases'}),
         },
     ];
@@ -143,6 +143,7 @@ const Modifiers = ({scrollEnabled, searchValue, setSearchValue, setTeamId, teamI
                     style={styles.title}
                     id={'screen.search.modifier.header'}
                     defaultMessage='Search options'
+                    testID='search.modifier.header'
                 />
                 {teams.length > 1 &&
                 <TeamPickerIcon

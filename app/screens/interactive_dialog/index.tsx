@@ -66,9 +66,9 @@ function valuesReducer(state: Values, action: ValuesAction) {
     }
     return {...state, [action.name]: action.value};
 }
-function initValues(elements: DialogElement[]) {
+function initValues(elements?: DialogElement[]) {
     const values: Values = {};
-    elements.forEach((e) => {
+    elements?.forEach((e) => {
         if (e.type === 'bool') {
             values[e.name] = (e.default === true || String(e.default).toLowerCase() === 'true');
         } else if (e.default) {
@@ -115,11 +115,11 @@ function InteractiveDialog({
             undefined,
             submitLabel || intl.formatMessage({id: 'interactive_dialog.submit', defaultMessage: 'Submit'}),
         );
-        base.enabled = submitting;
+        base.enabled = !submitting;
         base.showAsAction = 'always';
         base.color = theme.sidebarHeaderTextColor;
         return base;
-    }, [theme.sidebarHeaderTextColor, intl]);
+    }, [intl, submitting, theme]);
 
     useEffect(() => {
         setButtons(componentId, {
@@ -132,7 +132,7 @@ function InteractiveDialog({
         setButtons(componentId, {
             leftButtons: [makeCloseButton(icon)],
         });
-    }, [theme.sidebarHeaderTextColor]);
+    }, [componentId, theme]);
 
     const handleSubmit = useCallback(async () => {
         const newErrors: Errors = {};
@@ -147,7 +147,7 @@ function InteractiveDialog({
             });
         }
 
-        setErrors(hasErrors ? errors : emptyErrorsState);
+        setErrors(hasErrors ? newErrors : emptyErrorsState);
 
         if (hasErrors) {
             return;

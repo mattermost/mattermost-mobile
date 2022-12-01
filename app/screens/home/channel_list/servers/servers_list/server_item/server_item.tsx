@@ -23,7 +23,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
-import {queryServerByIdentifier} from '@queries/app/servers';
+import {getServerByIdentifier} from '@queries/app/servers';
 import {dismissBottomSheet} from '@screens/navigation';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {alertServerAlreadyConnected, alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
@@ -243,7 +243,7 @@ const ServerItem = ({
             setSwitching(false);
             return;
         }
-        const existingServer = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
+        const existingServer = await getServerByIdentifier(data.config!.DiagnosticId);
         if (existingServer && existingServer.lastActiveAt > 0) {
             alertServerAlreadyConnected(intl);
             setSwitching(false);
