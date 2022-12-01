@@ -38,13 +38,14 @@ const {
     THREAD,
     THREAD_PARTICIPANT,
     THREADS_IN_TEAM,
+    TEAM_THREADS_SYNC,
     USER,
 } = MM_TABLES.SERVER;
 
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 6,
+            version: 7,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -570,14 +571,24 @@ describe('*** Test schema for SERVER database ***', () => {
                     name: THREADS_IN_TEAM,
                     unsafeSql: undefined,
                     columns: {
-                        loaded_in_global_threads: {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
                         team_id: {name: 'team_id', type: 'string', isIndexed: true},
                         thread_id: {name: 'thread_id', type: 'string', isIndexed: true},
                     },
                     columnArray: [
-                        {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
                         {name: 'team_id', type: 'string', isIndexed: true},
                         {name: 'thread_id', type: 'string', isIndexed: true},
+                    ],
+                },
+                [TEAM_THREADS_SYNC]: {
+                    name: TEAM_THREADS_SYNC,
+                    unsafeSql: undefined,
+                    columns: {
+                        earliest: {name: 'earliest', type: 'number'},
+                        latest: {name: 'latest', type: 'number'},
+                    },
+                    columnArray: [
+                        {name: 'earliest', type: 'number'},
+                        {name: 'latest', type: 'number'},
                     ],
                 },
                 [USER]: {
