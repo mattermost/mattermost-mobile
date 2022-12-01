@@ -34,11 +34,14 @@ export default schemaMigrations({migrations: [
                 ...teamThreadsSyncSpec,
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                unsafeSql: () => `
-                    DROP TABLE ${THREAD};
-                    DROP TABLE ${THREADS_IN_TEAM};
-                    DROP TABLE ${THREAD_PARTICIPANT};
-                `,
+                unsafeSql: (baseSql) => {
+                    return `
+                        ${baseSql}
+                        DROP TABLE ${THREAD};
+                        DROP TABLE ${THREADS_IN_TEAM};
+                        DROP TABLE ${THREAD_PARTICIPANT};
+                    `;
+                },
             }),
             createTable(threadSpec),
             createTable(threadInTeamSpec),
