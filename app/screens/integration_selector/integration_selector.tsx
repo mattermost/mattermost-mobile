@@ -479,7 +479,12 @@ function IntegrationSelector(
     };
 
     const renderSelectedOptions = useCallback((): React.ReactElement<string> | null => {
-        const selectedItems: Channel[] | DialogOption[] | UserProfile[] = Object.values(multiselectSelected);
+        let selectedItems: Channel[] | DialogOption[] | UserProfile[] = Object.values(multiselectSelected);
+
+        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+            // New multiselect
+            selectedItems = Object.values(selectedIds) as UserProfile[];
+        }
 
         if (!selectedItems.length) {
             return null;
@@ -496,7 +501,7 @@ function IntegrationSelector(
                 <View style={style.separator}/>
             </>
         );
-    }, [multiselectSelected, style, theme]);
+    }, [multiselectSelected, selectedIds, style, theme]);
 
     const renderDataTypeList = () => {
         switch (dataSource) {
