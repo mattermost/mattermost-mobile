@@ -29,5 +29,7 @@ export default tableSchema({
         {name: 'timezone', type: 'string'},
         {name: 'update_at', type: 'number'},
         {name: 'username', type: 'string'},
+        {name: 'terms_of_service_id', type: 'string'},
+        {name: 'terms_of_service_create_at', type: 'number'},
     ],
 });

@@ -44,6 +44,8 @@ type GQLUser = {
 	remoteId: string;
 	botDescription: string;
 	botLastIconUpdate: number;
+	termsOfServiceId: string;
+	termsOfServiceCreateAt: number;
 
 	roles: Array<Partial<GQLRole>>;
 	customStatus: Partial<GQLUserCustomStatus>;

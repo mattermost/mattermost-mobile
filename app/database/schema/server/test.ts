@@ -614,6 +614,9 @@ describe('*** Test schema for SERVER database ***', () => {
                         timezone: {name: 'timezone', type: 'string'},
                         update_at: {name: 'update_at', type: 'number'},
                         username: {name: 'username', type: 'string'},
+                        terms_of_service_create_at: {name: 'terms_of_service_create_at', type: 'number'},
+                        terms_of_service_id: {name: 'terms_of_service_id', type: 'string'},
+
                     },
                     columnArray: [
                         {name: 'auth_service', type: 'string'},
@@ -635,6 +638,8 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'timezone', type: 'string'},
                         {name: 'update_at', type: 'number'},
                         {name: 'username', type: 'string'},
+                        {name: 'terms_of_service_id', type: 'string'},
+                        {name: 'terms_of_service_create_at', type: 'number'},
                     ],
                 },
             },

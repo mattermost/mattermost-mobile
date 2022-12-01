@@ -20,6 +20,7 @@ const {SERVER: {
     THREAD,
     THREAD_PARTICIPANT,
     THREADS_IN_TEAM,
+    USER,
 }} = MM_TABLES;
 
 export default schemaMigrations({migrations: [
@@ -42,6 +43,14 @@ export default schemaMigrations({migrations: [
             createTable(threadSpec),
             createTable(threadInTeamSpec),
             createTable(threadParticipantSpec),
+
+            addColumns({
+                table: USER,
+                columns: [
+                    {name: 'terms_of_service_id', type: 'string'},
+                    {name: 'terms_of_service_create_at', type: 'number'},
+                ],
+            }),
         ],
     },
     {

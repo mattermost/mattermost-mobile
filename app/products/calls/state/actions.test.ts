@@ -16,7 +16,7 @@ import {
     useCallsState,
     useChannelsWithCalls,
     useCurrentCall,
-    useGlobalCallsState,
+    useGlobalCallsState, userReacted,
 } from '@calls/state';
 import {
     setCalls,
@@ -814,5 +814,78 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current, {...newConfig, pluginEnabled: true});
         act(() => setPluginEnabled('server1', false));
         assert.deepEqual(result.current, {...newConfig, pluginEnabled: false});
+    });
+
+    it('user reactions', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+        };
+        const expectedCurrentCallState: CurrentCall = {
+            ...initialCurrentCallState,
+            reactionStream: [
+                {name: 'smile', latestTimestamp: 202, count: 1},
+                {name: '+1', latestTimestamp: 145, count: 2},
+            ],
+            participants: {
+                ...initialCurrentCallState.participants,
+                'user-1': {
+                    ...initialCurrentCallState.participants['user-1'],
+                    reaction: {
+                        user_id: 'user-1',
+                        emoji: {name: 'smile', unified: 'something'},
+                        timestamp: 202,
+                    },
+                },
+                'user-2': {
+                    ...initialCurrentCallState.participants['user-2'],
+                    reaction: {
+                        user_id: 'user-2',
+                        emoji: {name: '+1', unified: 'something'},
+                        timestamp: 123,
+                    },
+                },
+            },
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => {
+            setCallsState('server1', initialCallsState);
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+
+        // test
+        act(() => {
+            userReacted('server1', 'channel-1', {
+                user_id: 'user-2',
+                emoji: {name: '+1', unified: 'something'},
+                timestamp: 123,
+            });
+            userReacted('server1', 'channel-1', {
+                user_id: 'user-1',
+                emoji: {name: '+1', unified: 'something'},
+                timestamp: 145,
+            });
+            userReacted('server1', 'channel-1', {
+                user_id: 'user-1',
+                emoji: {name: 'smile', unified: 'something'},
+                timestamp: 202,
+            });
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], expectedCurrentCallState);
     });
 });

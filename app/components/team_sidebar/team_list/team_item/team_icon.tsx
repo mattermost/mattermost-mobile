@@ -31,7 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         text: {
             color: theme.sidebarText,
-            textTransform: 'capitalize',
+            textTransform: 'uppercase',
         },
         image: {
             borderRadius: 8,
