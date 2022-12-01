@@ -37,7 +37,7 @@ export const getThreadById = async (database: Database, threadId: string) => {
 
 export const getTeamThreadsSyncData = async (database: Database, teamId: string): Promise<TeamThreadsSyncModel | undefined> => {
     const result = await queryTeamThreadsSync(database, teamId).fetch();
-    return result?.[0] || undefined;
+    return result?.[0];
 };
 
 export const observeIsCRTEnabled = (database: Database) => {
