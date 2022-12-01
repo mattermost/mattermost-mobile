@@ -206,4 +206,31 @@ describe('*** Operator: Thread Handlers tests ***', () => {
             tableName: 'TeamThreadsSync',
         });
     });
+
+    it('=> HandleTeamThreadsSync: should update the record in TeamThreadsSync table', async () => {
+        expect.assertions(1);
+
+        const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
+
+        const data = [
+            {
+                id: 'team_id_1',
+                earliest: 100,
+                latest: 300,
+            },
+        ] as TeamThreadsSync[];
+
+        await operator.handleTeamThreadsSync({data, prepareRecordsOnly: false});
+
+        expect(spyOnPrepareRecords).toHaveBeenCalledWith({
+            createRaws: [],
+            updateRaws: [
+                expect.objectContaining({
+                    raw: {id: 'team_id_1', earliest: 100, latest: 300},
+                }),
+            ],
+            transformer: transformTeamThreadsSyncRecord,
+            tableName: 'TeamThreadsSync',
+        });
+    });
 });

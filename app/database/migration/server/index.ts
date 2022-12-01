@@ -33,7 +33,7 @@ export default schemaMigrations({migrations: [
             createTable({
                 ...teamThreadsSyncSpec,
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
+                // @ts-expect-error
                 unsafeSql: (baseSql) => {
                     return `
                         ${baseSql}

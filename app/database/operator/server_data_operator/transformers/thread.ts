@@ -96,9 +96,10 @@ export const transformThreadInTeamRecord = ({action, database, value}: Transform
 export const transformTeamThreadsSyncRecord = ({action, database, value}: TransformerArgs): Promise<TeamThreadsSyncModel> => {
     const raw = value.raw as TeamThreadsSync;
     const record = value.record as TeamThreadsSyncModel;
+    const isCreateAction = action === OperationType.CREATE;
 
     const fieldsMapper = (teamThreadsSync: TeamThreadsSyncModel) => {
-        teamThreadsSync._raw.id = raw.id;
+        teamThreadsSync._raw.id = isCreateAction ? (raw?.id ?? teamThreadsSync.id) : record.id;
         teamThreadsSync.earliest = raw.earliest || record?.earliest;
         teamThreadsSync.latest = raw.latest || record?.latest;
     };
