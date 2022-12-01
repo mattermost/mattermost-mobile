@@ -94,10 +94,6 @@ export default function ServerChannelList({
         setLoading(false);
     }, [serverUrl]);
 
-    const onEndReached = () => {
-        // TODO
-    };
-
     useEffect(() => {
         searchChannels(term);
     }, [term]);
@@ -138,7 +134,7 @@ export default function ServerChannelList({
             onSelectChannel={onHandleSelectChannel}
             channels={data}
             loading={false}
-            onEndReached={onEndReached}
+            onEndReached={getChannels}
             selectable={selectable}
             selectedIds={selectedIds}
         />
