@@ -34,7 +34,7 @@ export default schemaMigrations({migrations: [
                 ...teamThreadsSyncSpec,
                 // eslint-disable-next-line @typescript-eslint/ban-ts-comment
                 // @ts-ignore
-                unsafeSql: `
+                unsafeSql: () => `
                     DROP TABLE ${THREAD};
                     DROP TABLE ${THREADS_IN_TEAM};
                     DROP TABLE ${THREAD_PARTICIPANT};
