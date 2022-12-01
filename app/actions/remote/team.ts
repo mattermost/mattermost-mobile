@@ -8,7 +8,7 @@ import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
+import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
@@ -73,8 +73,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                     operator.handleMyTeam({myTeams, prepareRecordsOnly: true}),
                     operator.handleTeamMemberships({teamMemberships: [member], prepareRecordsOnly: true}),
                     ...await prepareMyChannelsForTeam(operator, teamId, channels || [], channelMembers || []),
-                    prepareCategories(operator, categories || []),
-                    prepareCategoryChannels(operator, categories || []),
+                    prepareCategoriesAndCategoriesChannels(operator, categories || [], true),
                 ])).flat();
 
                 await operator.batchRecords(models);

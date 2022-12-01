@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.provider.DocumentsContract;
 import android.provider.MediaStore;
 import android.provider.OpenableColumns;
+import android.content.ContentResolver;
 import android.os.Environment;
 import android.webkit.MimeTypeMap;
 import android.util.Log;
@@ -182,8 +183,14 @@ public class RealPathUtil {
     }
 
     public static String getExtension(String uri) {
+        String extension = "";
         if (uri == null) {
-            return null;
+            return extension;
+        }
+
+        extension = MimeTypeMap.getFileExtensionFromUrl(uri);
+        if (!extension.equals("")) {
+            return extension;
         }
 
         int dot = uri.lastIndexOf(".");
@@ -208,6 +215,15 @@ public class RealPathUtil {
     public static String getMimeType(String filePath) {
         File file = new File(filePath);
         return getMimeType(file);
+    }
+
+     public static String getMimeTypeFromUri(final Context context, final Uri uri) {
+        try {
+            ContentResolver cR = context.getContentResolver();
+            return cR.getType(uri);
+        } catch (Exception e) {
+            return "application/octet-stream";
+        }
     }
 
     public static void deleteTempFiles(final File dir) {
@@ -241,4 +257,21 @@ public class RealPathUtil {
         return f.getName();
     }
 
+    public static File createDirIfNotExists(String path) {
+        File dir = new File(path);
+        if (dir.exists()) {
+            return dir;
+        }
+
+        try {
+            dir.mkdirs();
+            // Add .nomedia to hide the thumbnail directory from gallery
+            File noMedia = new File(path, ".nomedia");
+            noMedia.createNewFile();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+
+        return dir;
+    }
 }

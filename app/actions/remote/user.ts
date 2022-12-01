@@ -407,7 +407,7 @@ export const fetchUsersByIds = async (serverUrl: string, userIds: string[], fetc
             return {users: [], existingUsers};
         }
         const users = await client.getProfilesByIds([...new Set(usersToLoad)]);
-        if (!fetchOnly) {
+        if (!fetchOnly && users.length) {
             await operator.handleUsers({
                 users,
                 prepareRecordsOnly: false,

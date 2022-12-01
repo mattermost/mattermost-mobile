@@ -8,6 +8,7 @@ import {Alert, AlertButton, AppState, AppStateStatus, Platform} from 'react-nati
 
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {toMilliseconds} from '@utils/datetime';
+import {isMainActivity} from '@utils/helpers';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
 const PROMPT_IN_APP_PIN_CODE_AFTER = toMilliseconds({minutes: 5});
@@ -146,7 +147,7 @@ class ManagedApp {
         const isBackground = appState === 'background';
 
         if (isActive && this.previousAppState === 'background' && !this.performingAuthentication) {
-            if (this.enabled && this.inAppPinCode) {
+            if (this.enabled && this.inAppPinCode && isMainActivity()) {
                 const authExpired = this.backgroundSince > 0 && (Date.now() - this.backgroundSince) >= PROMPT_IN_APP_PIN_CODE_AFTER;
                 await this.handleDeviceAuthentication(authExpired);
             }

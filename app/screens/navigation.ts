@@ -124,6 +124,19 @@ export const bottomSheetModalOptions = (theme: Theme, closeButtonId?: string): O
 // This locks phones to portrait for all screens while keeps
 // all orientations available for Tablets.
 Navigation.setDefaultOptions({
+    animations: {
+        setRoot: {
+            enter: {
+                waitForRender: true,
+                enabled: true,
+                alpha: {
+                    from: 0,
+                    to: 1,
+                    duration: 300,
+                },
+            },
+        },
+    },
     layout: {
         orientation: Device.IS_TABLET ? undefined : ['portrait'],
     },
@@ -148,7 +161,7 @@ Appearance.addChangeListener(() => {
     const theme = getThemeFromState();
     const screens = NavigationStore.getAllNavigationComponents();
 
-    if (screens.includes(Screens.SERVER)) {
+    if (screens.includes(Screens.SERVER) || screens.includes(Screens.ONBOARDING)) {
         for (const screen of screens) {
             if (appearanceControlledScreens.has(screen)) {
                 Navigation.updateProps(screen, {theme});
@@ -249,6 +262,54 @@ export function resetToSelectServer(passProps: LaunchProps) {
         component: {
             id: Screens.SERVER,
             name: Screens.SERVER,
+            passProps: {
+                ...passProps,
+                theme,
+            },
+            options: {
+                layout: {
+                    backgroundColor: theme.centerChannelBg,
+                    componentBackgroundColor: theme.centerChannelBg,
+                },
+                statusBar: {
+                    visible: true,
+                    backgroundColor: theme.sidebarBg,
+                },
+                topBar: {
+                    backButton: {
+                        color: theme.sidebarHeaderTextColor,
+                        title: '',
+                    },
+                    background: {
+                        color: theme.sidebarBg,
+                    },
+                    visible: false,
+                    height: 0,
+                },
+            },
+        },
+    }];
+
+    return Navigation.setRoot({
+        root: {
+            stack: {
+                children,
+            },
+        },
+    });
+}
+
+export function resetToOnboarding(passProps: LaunchProps) {
+    const theme = getDefaultThemeByAppearance();
+    const isDark = tinyColor(theme.sidebarBg).isDark();
+    StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
+
+    NavigationStore.clearNavigationComponents();
+
+    const children = [{
+        component: {
+            id: Screens.ONBOARDING,
+            name: Screens.ONBOARDING,
             passProps: {
                 ...passProps,
                 theme,
@@ -694,8 +755,8 @@ export async function openAsBottomSheet({closeButtonId, screen, theme, title, pr
     }
 }
 
-export const showAppForm = async (form: AppForm) => {
-    const passProps = {form};
+export const showAppForm = async (form: AppForm, context: AppContext) => {
+    const passProps = {form, context};
     showModal(Screens.APPS_FORM, form.title || '', passProps);
 };
 

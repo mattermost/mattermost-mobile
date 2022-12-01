@@ -17,6 +17,7 @@ import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
+import {isMainActivity} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 const WAIT_TO_CLOSE = toMilliseconds({seconds: 15});
@@ -205,6 +206,8 @@ class WebsocketManager {
             return;
         }
 
+        const isMain = isMainActivity();
+
         this.cancelAllConnections();
         if (appState !== 'active' && !this.isBackgroundTimerRunning) {
             this.isBackgroundTimerRunning = true;
@@ -219,7 +222,7 @@ class WebsocketManager {
             return;
         }
 
-        if (appState === 'active' && this.netConnected) { // Reopen the websockets only if there is connection
+        if (appState === 'active' && this.netConnected && isMain) { // Reopen the websockets only if there is connection
             if (this.backgroundIntervalId) {
                 BackgroundTimer.clearInterval(this.backgroundIntervalId);
             }
@@ -229,7 +232,9 @@ class WebsocketManager {
             return;
         }
 
-        this.previousAppState = appState;
+        if (isMain) {
+            this.previousAppState = appState;
+        }
     };
 
     private onNetStateChange = async (netState: NetInfoState) => {

@@ -6,7 +6,7 @@ import {StyleSheet, TextStyle} from 'react-native';
 // type FontFamilies = 'OpenSans' | 'Metropolis';
 type FontTypes = 'Heading' | 'Body';
 type FontStyles = 'SemiBold' | 'Regular' | 'Light';
-type FontSizes = 25 | 50 | 75 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000;
+type FontSizes = 25 | 50 | 75 | 100 | 200 | 300 | 400 | 500 | 600 | 700 | 800 | 900 | 1000 | 1200;
 
 const fontFamily = StyleSheet.create({
     OpenSans: {
@@ -30,6 +30,11 @@ const fontStyle = StyleSheet.create({
 });
 
 const fontSize = StyleSheet.create({
+    1200: {
+        fontSize: 66,
+        lineHeight: 48,
+        letterSpacing: -0.02,
+    },
     1000: {
         fontSize: 40,
         lineHeight: 48,

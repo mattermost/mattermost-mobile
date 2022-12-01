@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React from 'react';
+import React, {useMemo} from 'react';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/option_item';
@@ -12,6 +12,7 @@ import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
 import {isSystemMessage} from '@utils/post';
 
+import AppBindingsPostOptions from './options/app_bindings_post_option';
 import CopyTextOption from './options/copy_text_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
@@ -37,12 +38,14 @@ type PostOptionsProps = {
     post: PostModel;
     thread?: ThreadModel;
     componentId: string;
+    bindings: AppBinding[];
+    serverUrl: string;
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
     combinedPost, componentId, isSaved,
-    sourceScreen, post, thread,
+    sourceScreen, post, thread, bindings, serverUrl,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
 
@@ -58,6 +61,7 @@ const PostOptions = ({
     const canCopyText = canCopyPermalink && post.message;
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
+    const shouldShowBindings = bindings.length > 0 && !isSystemPost;
 
     const snapPoints = [
         canAddReaction, canCopyPermalink, canCopyText,
@@ -73,64 +77,83 @@ const PostOptions = ({
                 {canAddReaction && <ReactionBar postId={post.id}/>}
                 {canReply && sourceScreen !== Screens.THREAD && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
-                    <FollowThreadOption thread={thread}/>
+                <FollowThreadOption thread={thread}/>
                 }
                 {canMarkAsUnread && !isSystemPost &&
-                    <MarkAsUnreadOption
-                        post={post}
-                        sourceScreen={sourceScreen}
-                    />
+                <MarkAsUnreadOption
+                    post={post}
+                    sourceScreen={sourceScreen}
+                />
                 }
                 {canCopyPermalink &&
-                    <CopyPermalinkOption
-                        post={post}
-                        sourceScreen={sourceScreen}
-                    />
+                <CopyPermalinkOption
+                    post={post}
+                    sourceScreen={sourceScreen}
+                />
                 }
                 {!isSystemPost &&
-                    <SaveOption
-                        isSaved={isSaved}
-                        postId={post.id}
-                    />
+                <SaveOption
+                    isSaved={isSaved}
+                    postId={post.id}
+                />
                 }
                 {Boolean(canCopyText && post.message) &&
-                    <CopyTextOption
-                        postMessage={post.message}
-                        sourceScreen={sourceScreen}
-                    />}
+                <CopyTextOption
+                    postMessage={post.message}
+                    sourceScreen={sourceScreen}
+                />}
                 {canPin &&
-                    <PinChannelOption
-                        isPostPinned={post.isPinned}
-                        postId={post.id}
-                    />
+                <PinChannelOption
+                    isPostPinned={post.isPinned}
+                    postId={post.id}
+                />
                 }
                 {canEdit &&
-                    <EditOption
-                        post={post}
-                        canDelete={canDelete}
-                    />
+                <EditOption
+                    post={post}
+                    canDelete={canDelete}
+                />
                 }
                 {canDelete &&
                 <DeletePostOption
                     combinedPost={combinedPost}
                     post={post}
                 />}
+                {shouldShowBindings &&
+                <AppBindingsPostOptions
+                    post={post}
+                    serverUrl={serverUrl}
+                    bindings={bindings}
+                />
+                }
             </>
         );
     };
 
-    const additionalSnapPoints = 2;
+    const finalSnapPoints = useMemo(() => {
+        const additionalSnapPoints = 2;
+
+        const lowerSnapPoints = snapPoints + additionalSnapPoints;
+        if (!shouldShowBindings) {
+            return [lowerSnapPoints * ITEM_HEIGHT, 10];
+        }
+
+        const upperSnapPoints = lowerSnapPoints + bindings.length;
+        return [upperSnapPoints * ITEM_HEIGHT, lowerSnapPoints * ITEM_HEIGHT, 10];
+    }, [snapPoints, shouldShowBindings, bindings.length]);
+
+    const initialSnapIndex = shouldShowBindings ? 1 : 0;
 
     return (
         <BottomSheet
             renderContent={renderContent}
             closeButtonId={POST_OPTIONS_BUTTON}
             componentId={Screens.POST_OPTIONS}
-            initialSnapIndex={0}
-            snapPoints={[((snapPoints + additionalSnapPoints) * ITEM_HEIGHT), 10]}
+            initialSnapIndex={initialSnapIndex}
+            snapPoints={finalSnapPoints}
             testID='post_options'
         />
     );
 };
 
-export default PostOptions;
+export default React.memo(PostOptions);

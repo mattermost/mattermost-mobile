@@ -11,6 +11,8 @@ import {
     handleCallChannelDisabled,
     handleCallChannelEnabled,
     handleCallEnded,
+    handleCallHostChanged,
+    handleCallRecordingState,
     handleCallScreenOff,
     handleCallScreenOn,
     handleCallStarted,
@@ -29,7 +31,7 @@ import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
-import {getActiveServerUrl, queryActiveServer} from '@queries/app/servers';
+import {getActiveServerUrl, getActiveServer} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {
     getConfig,
@@ -133,7 +135,7 @@ async function doReconnect(serverUrl: string) {
 
     const currentTeam = await getCurrentTeam(database);
     const currentChannel = await getCurrentChannel(database);
-    const currentActiveServerUrl = await getActiveServerUrl(DatabaseManager.appDatabase!.database);
+    const currentActiveServerUrl = await getActiveServerUrl();
 
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
@@ -148,7 +150,7 @@ async function doReconnect(serverUrl: string) {
 
     // if no longer a member of the current team or the current channel
     if (initialTeamId !== currentTeam?.id || initialChannelId !== currentChannel?.id) {
-        const currentServer = await queryActiveServer(appDatabase);
+        const currentServer = await getActiveServer();
         const isChannelScreenMounted = NavigationStore.getNavigationComponents().includes(Screens.CHANNEL);
         if (serverUrl === currentServer?.url) {
             if (currentTeam && initialTeamId !== currentTeam.id) {
@@ -396,6 +398,12 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.CALLS_USER_REACTED:
             handleCallUserReacted(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_RECORDING_STATE:
+            handleCallRecordingState(serverUrl, msg);
+            break;
+        case WebsocketEvents.CALLS_HOST_CHANGED:
+            handleCallHostChanged(serverUrl, msg);
             break;
 
         case WebsocketEvents.GROUP_RECEIVED:
