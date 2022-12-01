@@ -249,26 +249,31 @@ export async function getPosts(serverUrl: string, ids: string[]) {
 }
 
 export async function deletePosts(serverUrl: string, postIds: string[]) {
-    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    const postsFormatted = `'${postIds.join("','")}'`;
+        const postsFormatted = `'${postIds.join("','")}'`;
 
-    await database.write(() => {
-        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-        // @ts-ignore
-        return database.adapter.unsafeExecute({
-            sqls: [
-                [`DELETE FROM ${POST} where id IN (${postsFormatted})`, []],
-                [`DELETE FROM ${REACTION} where post_id IN (${postsFormatted})`, []],
-                [`DELETE FROM ${FILE} where post_id IN (${postsFormatted})`, []],
-                [`DELETE FROM ${DRAFT} where root_id IN (${postsFormatted})`, []],
+        await database.write(() => {
+            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+            // @ts-ignore
+            return database.adapter.unsafeExecute({
+                sqls: [
+                    [`DELETE FROM ${POST} where id IN (${postsFormatted})`, []],
+                    [`DELETE FROM ${REACTION} where post_id IN (${postsFormatted})`, []],
+                    [`DELETE FROM ${FILE} where post_id IN (${postsFormatted})`, []],
+                    [`DELETE FROM ${DRAFT} where root_id IN (${postsFormatted})`, []],
 
-                [`DELETE FROM ${POSTS_IN_THREAD} where root_id IN (${postsFormatted})`, []],
+                    [`DELETE FROM ${POSTS_IN_THREAD} where root_id IN (${postsFormatted})`, []],
 
-                [`DELETE FROM ${THREAD} where id IN (${postsFormatted})`, []],
-                [`DELETE FROM ${THREAD_PARTICIPANT} where thread_id IN (${postsFormatted})`, []],
-                [`DELETE FROM ${THREADS_IN_TEAM} where thread_id IN (${postsFormatted})`, []],
-            ],
+                    [`DELETE FROM ${THREAD} where id IN (${postsFormatted})`, []],
+                    [`DELETE FROM ${THREAD_PARTICIPANT} where thread_id IN (${postsFormatted})`, []],
+                    [`DELETE FROM ${THREADS_IN_TEAM} where thread_id IN (${postsFormatted})`, []],
+                ],
+            });
         });
-    });
+        return {error: false};
+    } catch (error) {
+        return {error};
+    }
 }
