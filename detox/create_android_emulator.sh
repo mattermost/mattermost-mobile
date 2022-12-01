@@ -9,7 +9,7 @@ if emulator -list-avds | grep -q $NAME; then
     echo "'${NAME}' Android virtual device already exists."
 else
     # Create virtual device in a relative "detox_pixel_4_xl_api_30" folder
-    avdmanager create avd -n $NAME -k 'system-images;android-30;google_apis;x86_64' -g google_apis -p $NAME -d 'pixel'
+    avdmanager create avd -n $NAME -k 'system-images;android-30;google_apis;x86' -g google_apis -p $NAME -d 'pixel'
 
     # Copy predefined config and skin
     cp -r android_emulator/ $NAME/
