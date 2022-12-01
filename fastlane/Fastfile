@@ -187,7 +187,7 @@ lane :upload_file_to_s3 do |options|
   extension = os_type == "android" ? "*.apk" : "*.ipa"
   build_folder_path = Dir[File.expand_path('..')].first
   files = []
-  
+
   unless options[:file].nil? || options[:file].empty?
     files.push("#{build_folder_path}/#{options[:file]}")
   else
@@ -204,7 +204,7 @@ lane :upload_file_to_s3 do |options|
       pr_file = File.basename(files.first)
       plist_file = "#{File.basename(files.first, '.*')}.plist"
     else
-      version_number = os_type == "android" ? 
+      version_number = os_type == "android" ?
         android_get_version_name(gradle_file: './android/app/build.gradle') :
         get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
       build_number = os_type == "android" ?
@@ -217,7 +217,7 @@ lane :upload_file_to_s3 do |options|
     s3_folder = is_build_pr ?
       "#{ENV['AWS_FOLDER_NAME']}/#{ENV['BRANCH_TO_BUILD']}" :
       "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
-    
+
     s3 = Aws::S3::Resource.new(region: s3_region)
     s3_bucket = s3.bucket(s3_bucket_name)
     mutex = Mutex.new
@@ -264,7 +264,7 @@ lane :upload_file_to_s3 do |options|
                             :install_url => install_url
                         })
     end
-  
+
     if options[:file] == 'Mattermost-simulator-x86_64.app.zip'
       pretext = '#### New iOS build for VM/Simulator'
       msg = "Download link: #{links.first}"
@@ -380,7 +380,7 @@ platform :ios do
 
     sh 'rm -rf ../ios/build/'
     sh 'rm -rf ../build-ios/'
-    sh 'cd ../ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -arch x86_64 -sdk iphonesimulator -configuration Release -parallelizeTargets -derivedDataPath ../build-ios ENABLE_BITCODE=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_BITCODE=NO'
+    sh 'cd ../ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -arch x86_64 -sdk iphonesimulator -configuration Release -parallelizeTargets -derivedDataPath ../#{data_path} ENABLE_BITCODE=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_BITCODE=NO'
     sh "cd ../#{data_path}/Build/Products/Release-iphonesimulator && zip -r Mattermost-simulator-x86_64.app.zip Mattermost.app"
     sh "mv ../#{data_path}/Build/Products/Release-iphonesimulator/Mattermost-simulator-x86_64.app.zip ../"
     sh 'rm -rf ../build-ios/'
@@ -868,14 +868,14 @@ def get_apple_api_key
           f.write("\n") unless index == p8_array.length - 1
         end
       end
-    
+
       api_key = app_store_connect_api_key(
         key_id: ENV['IOS_API_KEY_ID'],
         issuer_id: ENV['IOS_API_ISSUER_ID'],
         key_filepath: "./#{api_key_path}",
         in_house: ENV['IOS_IN_HOUSE'] == 'true', # optional but may be required if using match/sigh
       )
-    
+
       File.delete("../#{api_key_path}")
     end
 
