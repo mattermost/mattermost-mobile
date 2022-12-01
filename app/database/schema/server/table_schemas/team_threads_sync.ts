@@ -7,13 +7,13 @@ import {MM_TABLES} from '@constants/database';
 
 import type {TableSchemaSpec} from '@nozbe/watermelondb/Schema';
 
-const {THREADS_IN_TEAM} = MM_TABLES.SERVER;
+const {TEAM_THREADS_SYNC} = MM_TABLES.SERVER;
 
 export const tableSchemaSpec: TableSchemaSpec = {
-    name: THREADS_IN_TEAM,
+    name: TEAM_THREADS_SYNC,
     columns: [
-        {name: 'team_id', type: 'string', isIndexed: true},
-        {name: 'thread_id', type: 'string', isIndexed: true},
+        {name: 'earliest', type: 'number'},
+        {name: 'latest', type: 'number'},
     ],
 };
 

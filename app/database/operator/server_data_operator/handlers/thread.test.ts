@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {transformThreadRecord, transformThreadParticipantRecord, transformThreadInTeamRecord} from '@database/operator/server_data_operator/transformers/thread';
+import {transformThreadRecord, transformThreadParticipantRecord, transformThreadInTeamRecord, transformTeamThreadsSyncRecord} from '@database/operator/server_data_operator/transformers/thread';
 
 import ServerDataOperator from '..';
 
@@ -51,7 +51,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
         ] as ThreadWithLastFetchedAt[];
 
         const threadsMap = {team_id_1: threads};
-        await operator.handleThreads({threads, loadedInGlobalThreads: false, prepareRecordsOnly: false, teamId: 'team_id_1'});
+        await operator.handleThreads({threads, prepareRecordsOnly: false, teamId: 'team_id_1'});
 
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'id',
@@ -76,7 +76,6 @@ describe('*** Operator: Thread Handlers tests ***', () => {
         expect(spyOnHandleThreadInTeam).toHaveBeenCalledWith({
             threadsMap,
             prepareRecordsOnly: true,
-            loadedInGlobalThreads: false,
         });
 
         // Only one batch operation for both tables
@@ -161,21 +160,77 @@ describe('*** Operator: Thread Handlers tests ***', () => {
             team_id_2: team2Threads,
         };
 
-        await operator.handleThreadInTeam({threadsMap, loadedInGlobalThreads: true, prepareRecordsOnly: false});
+        await operator.handleThreadInTeam({threadsMap, prepareRecordsOnly: false});
 
         expect(spyOnPrepareRecords).toHaveBeenCalledWith({
             createRaws: [{
-                raw: {team_id: 'team_id_1', thread_id: 'thread-2', loaded_in_global_threads: true},
+                raw: {team_id: 'team_id_1', thread_id: 'thread-1'},
             }, {
-                raw: {team_id: 'team_id_2', thread_id: 'thread-2', loaded_in_global_threads: true},
+                raw: {team_id: 'team_id_1', thread_id: 'thread-2'},
+            }, {
+                raw: {team_id: 'team_id_2', thread_id: 'thread-2'},
             }],
             transformer: transformThreadInTeamRecord,
+            tableName: 'ThreadsInTeam',
+        });
+    });
+
+    it('=> HandleTeamThreadsSync: should write to the the TeamThreadsSync table', async () => {
+        expect.assertions(1);
+
+        const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
+
+        const data = [
+            {
+                id: 'team_id_1',
+                earliest: 100,
+                latest: 200,
+            },
+            {
+                id: 'team_id_2',
+                earliest: 100,
+                latest: 300,
+            },
+        ] as TeamThreadsSync[];
+
+        await operator.handleTeamThreadsSync({data, prepareRecordsOnly: false});
+
+        expect(spyOnPrepareRecords).toHaveBeenCalledWith({
+            createRaws: [{
+                raw: {id: 'team_id_1', earliest: 100, latest: 200},
+            }, {
+                raw: {id: 'team_id_2', earliest: 100, latest: 300},
+            }],
+            updateRaws: [],
+            transformer: transformTeamThreadsSyncRecord,
+            tableName: 'TeamThreadsSync',
+        });
+    });
+
+    it('=> HandleTeamThreadsSync: should update the record in TeamThreadsSync table', async () => {
+        expect.assertions(1);
+
+        const spyOnPrepareRecords = jest.spyOn(operator, 'prepareRecords');
+
+        const data = [
+            {
+                id: 'team_id_1',
+                earliest: 100,
+                latest: 300,
+            },
+        ] as TeamThreadsSync[];
+
+        await operator.handleTeamThreadsSync({data, prepareRecordsOnly: false});
+
+        expect(spyOnPrepareRecords).toHaveBeenCalledWith({
+            createRaws: [],
             updateRaws: [
                 expect.objectContaining({
-                    raw: {team_id: 'team_id_1', thread_id: 'thread-1', loaded_in_global_threads: true},
+                    raw: {id: 'team_id_1', earliest: 100, latest: 300},
                 }),
             ],
-            tableName: 'ThreadsInTeam',
+            transformer: transformTeamThreadsSyncRecord,
+            tableName: 'TeamThreadsSync',
         });
     });
 });
