@@ -367,7 +367,7 @@ PODS:
     - RCTTypeSafety
     - React-Core
     - ReactCommon/turbomodule/core
-  - react-native-turbo-mailer (0.1.0):
+  - react-native-turbo-mailer (0.2.0):
     - React-Core
   - react-native-user-agent (2.3.1):
     - React
@@ -929,7 +929,7 @@ SPEC CHECKSUMS:
   react-native-notifications: 83b4fd4a127a6c918fc846cae90da60f84819e44
   react-native-paste-input: 183ad7dc224e192719616f4258dde5b548627d08
   react-native-safe-area-context: 99b24a0c5acd0d5dcac2b1a7f18c49ea317be99a
-  react-native-turbo-mailer: c709786e47b70c535a356cd7ee6fe1c185ed7c53
+  react-native-turbo-mailer: 226fc3533d16500fb4ad08cf8ab2cfc7bb1ef593
   react-native-user-agent: a90a1e839b99801baad67a73dd6f361a52aa3cf1
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
   react-native-webrtc: 86d841823e66d68cc1f86712db1c2956056bf0c2
