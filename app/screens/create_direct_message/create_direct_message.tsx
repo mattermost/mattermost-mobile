@@ -99,6 +99,13 @@ function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: Use
     return state;
 }
 
+function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
+    const newSelectedIds = Object.assign({}, list);
+
+    Reflect.deleteProperty(newSelectedIds, id);
+    return newSelectedIds;
+}
+
 export default function CreateDirectMessage({
     componentId,
     currentTeamId,
@@ -162,12 +169,8 @@ export default function CreateDirectMessage({
     }, 100), [loading, isSearch, restrictDirectMessage, serverUrl, currentTeamId]);
 
     const handleRemoveProfile = useCallback((id: string) => {
-        const newSelectedIds = Object.assign({}, selectedIds);
-
-        Reflect.deleteProperty(newSelectedIds, id);
-
-        setSelectedIds(newSelectedIds);
-    }, [selectedIds]);
+        setSelectedIds((current) => removeProfileFromList(current, id));
+    }, []);
 
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
         const user = selectedIds[id];
@@ -216,11 +219,6 @@ export default function CreateDirectMessage({
     }, [startingConversation, selectedIds, createGroupChannel, createDirectChannel]);
 
     const handleSelectProfile = useCallback((user: UserProfile) => {
-        if (selectedIds[user.id]) {
-            handleRemoveProfile(user.id);
-            return;
-        }
-
         if (user.id === currentUserId) {
             const selectedId = {
                 [currentUserId]: true,
@@ -228,23 +226,28 @@ export default function CreateDirectMessage({
 
             startConversation(selectedId);
         } else {
-            const wasSelected = selectedIds[user.id];
-
-            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
-                setShowToast(true);
-                return;
-            }
-
-            const newSelectedIds = Object.assign({}, selectedIds);
-            if (!wasSelected) {
-                newSelectedIds[user.id] = user;
-            }
-
-            setSelectedIds(newSelectedIds);
-
             clearSearch();
+            setSelectedIds((current) => {
+                if (current[user.id]) {
+                    return removeProfileFromList(current, user.id);
+                }
+
+                const wasSelected = current[user.id];
+
+                if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+                    setShowToast(true);
+                    return current;
+                }
+
+                const newSelectedIds = Object.assign({}, current);
+                if (!wasSelected) {
+                    newSelectedIds[user.id] = user;
+                }
+
+                return newSelectedIds;
+            });
         }
-    }, [selectedIds, currentUserId, handleRemoveProfile, startConversation, clearSearch]);
+    }, [currentUserId, clearSearch]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
