@@ -679,9 +679,7 @@
     "mobile.create_post.read_only": "Este canal es de sólo lectura.",
     "mobile.create_direct_message.you": "@{username} - tú",
     "mobile.create_direct_message.start": "Comenzar",
-    "mobile.create_direct_message.one_more": "Puedes añadir 1 usuario más",
     "mobile.create_direct_message.cannot_add_more": "No puedes añadir más usuarios",
-    "mobile.create_direct_message.add_more": "Puedes añadir {remaining, number} más usuarios",
     "mobile.create_channel.title": "Nuevo canal",
     "mobile.components.select_server_view.msg_welcome": "Bienvenido",
     "mobile.components.select_server_view.msg_connect": "Conectémonos a un Servidor",
@@ -847,6 +845,5 @@
     "post_priority.picker.label.important": "Importante",
     "post_priority.picker.beta": "BETA",
     "mobile.integration_selector.loading_options": "Cargando opciones...",
-    "mobile.integration_selector.loading_channels": "Cargando canales...",
-    "mobile.integration_selector.loading_users": "Cargando usuarios..."
+    "mobile.integration_selector.loading_channels": "Cargando canales..."
 }
