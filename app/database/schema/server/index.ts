@@ -34,11 +34,12 @@ import {
     ThreadSchema,
     ThreadInTeamSchema,
     ThreadParticipantSchema,
+    TeamThreadsSyncSchema,
     UserSchema,
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 6,
+    version: 7,
     tables: [
         CategorySchema,
         CategoryChannelSchema,
@@ -67,6 +68,7 @@ export const serverSchema: AppSchema = appSchema({
         TeamMembershipSchema,
         TeamSchema,
         TeamSearchHistorySchema,
+        TeamThreadsSyncSchema,
         ThreadSchema,
         ThreadInTeamSchema,
         ThreadParticipantSchema,

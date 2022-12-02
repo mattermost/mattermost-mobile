@@ -22,6 +22,7 @@ import {t} from '@i18n';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
 const messages = defineMessages({
@@ -85,8 +86,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
         },
         noResultText: {
-            fontSize: 26,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 600, 'Regular'),
         },
     };
 });

@@ -3,13 +3,14 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {observeCurrentTeamId} from '@queries/servers/system';
+import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 
 import IntegrationSelector from './integration_selector';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
+    currentUserId: observeCurrentUserId(database),
     currentTeamId: observeCurrentTeamId(database),
 }));
 

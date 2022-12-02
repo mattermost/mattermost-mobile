@@ -7,7 +7,7 @@ import DatabaseManager from '@database/manager';
 import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import NetworkManager from '@managers/network_manager';
-import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
+import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {prepareCommonSystemValues, getConfig, getLicense} from '@queries/servers/system';
@@ -105,8 +105,7 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
             storeConfig(serverUrl, clData.config, true),
             ...prepareMyTeams(operator, teamData.teams!, teamData.memberships!),
             ...await prepareMyChannelsForTeam(operator, initialTeam.id, chData!.channels!, chData!.memberships!),
-            prepareCategories(operator, chData!.categories!),
-            prepareCategoryChannels(operator, chData!.categories!),
+            prepareCategoriesAndCategoriesChannels(operator, chData!.categories!, true),
 
             prepareCommonSystemValues(
                 operator,
@@ -193,8 +192,7 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
 
         const models: Model[] = (await Promise.all([
             ...await prepareMyChannelsForTeam(operator, teamId, chData!.channels!, chData!.memberships!),
-            prepareCategories(operator, chData!.categories!),
-            prepareCategoryChannels(operator, chData!.categories!),
+            prepareCategoriesAndCategoriesChannels(operator, chData!.categories!, true),
             prepareCommonSystemValues(operator, {currentChannelId: initialChannel?.id}),
         ])).flat();
 
