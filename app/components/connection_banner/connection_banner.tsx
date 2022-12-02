@@ -123,13 +123,17 @@ const ConnectionBanner = ({
 
     useEffect(() => {
         if (appState === 'active') {
-            if (!isConnected) {
+            if (!isConnected && !visible) {
                 if (!openTimeout.current) {
                     openTimeout.current = setTimeout(openCallback, TIME_TO_OPEN);
                 }
             }
+            if (isConnected && visible) {
+                if (!closeTimeout.current) {
+                    closeTimeout.current = setTimeout(closeCallback, TIME_TO_CLOSE);
+                }
+            }
         } else {
-            setVisible(false);
             clearTimeoutRef(openTimeout);
             clearTimeoutRef(closeTimeout);
         }
