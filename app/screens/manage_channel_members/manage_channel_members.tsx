@@ -107,12 +107,10 @@ export default function ManageChannelMembers({
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
 
-    const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
+    const loadedProfiles = (users: UserProfile[]) => {
         if (mounted.current) {
             setLoading(false);
-            if (users?.length) {
-                setProfiles(users);
-            }
+            setProfiles(users);
         }
     };
 
@@ -121,12 +119,16 @@ export default function ManageChannelMembers({
         setSearchResults(EMPTY);
     }, []);
 
-    const getProfiles = useCallback(debounce(() => {
-        if (!loading && !term && mounted.current) {
+    const getProfiles = useCallback(debounce(async () => {
+        const hasTerm = Boolean(term);
+        if (!loading && !hasTerm && mounted.current) {
             setLoading(true);
-            fetchProfilesInChannel(serverUrl, channelId).then(loadedProfiles);
+            const {users = EMPTY} = await fetchProfilesInChannel(serverUrl, channelId);
+            if (users.length) {
+                loadedProfiles(users);
+            }
         }
-    }, 100), [loading, restrictDirectMessage, serverUrl, currentTeamId]);
+    }, 100), [channelId, loading, restrictDirectMessage, serverUrl, term]);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
         if (!manageEnabled) {
