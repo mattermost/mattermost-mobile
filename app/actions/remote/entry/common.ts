@@ -9,7 +9,7 @@ import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
-import {DataRetentionPoliciesRequest, fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
+import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
@@ -27,7 +27,7 @@ import {getAllServers} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig, getCurrentUserId, getIsDataRetentionEnabled, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
+import {getConfig, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
@@ -45,7 +45,6 @@ export type AppEntryData = {
     meData: MyUserRequest;
     removeTeamIds?: string[];
     removeChannelIds?: string[];
-    dataRetentionPolicies?: DataRetentionPoliciesRequest;
     isCRTEnabled: boolean;
 }
 
@@ -110,7 +109,7 @@ export const entryRest = async (serverUrl: string, teamId?: string, channelId?: 
         return {error: fetchedData.error};
     }
 
-    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, dataRetentionPolicies, isCRTEnabled} = fetchedData;
+    const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, isCRTEnabled} = fetchedData;
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     if (error) {
         return {error};
@@ -127,7 +126,7 @@ export const entryRest = async (serverUrl: string, teamId?: string, channelId?: 
         removeChannels = await queryChannelsById(database, removeChannelIds).fetch();
     }
 
-    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData, dataRetentionPolicies, isCRTEnabled});
+    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData, isCRTEnabled});
     if (rolesData.roles?.length) {
         modelPromises.push(operator.handleRole({roles: rolesData.roles, prepareRecordsOnly: true}));
     }
@@ -164,13 +163,6 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
         }
     }
 
-    // Fetch data retention policies
-    let dataRetentionPolicies = {};
-    const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
-    if (isDataRetentionEnabled) {
-        dataRetentionPolicies = await fetchDataRetentionPolicy(serverUrl);
-    }
-
     // Fetch in parallel teams / team membership / channels for current team / user preferences / user
     const promises: [Promise<MyTeamsRequest>, Promise<MyChannelsRequest | undefined>, Promise<MyUserRequest>] = [
         fetchMyTeams(serverUrl, fetchOnly),
@@ -203,7 +195,6 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
         prefData,
         meData,
         removeTeamIds,
-        dataRetentionPolicies,
         isCRTEnabled,
     };
 

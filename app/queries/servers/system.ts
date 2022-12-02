@@ -5,7 +5,6 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {DataRetentionPoliciesRequest} from '@actions/remote/systems';
 import {Config, Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
@@ -400,29 +399,6 @@ export async function prepareCommonSystemValues(
                 value: currentChannelId,
             });
         }
-
-        return operator.handleSystem({
-            systems,
-            prepareRecordsOnly: true,
-        });
-    } catch {
-        return [];
-    }
-}
-
-export async function prepareDataRetentionPolicies(
-    operator: ServerDataOperator, {globalPolicy, teamPolicies, channelPolicies}: DataRetentionPoliciesRequest): Promise<SystemModel[]> {
-    try {
-        const systems: IdValue[] = [{
-            id: SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES,
-            value: JSON.stringify(globalPolicy || {}),
-        }, {
-            id: SYSTEM_IDENTIFIERS.GRANULAR_DATA_RETENTION_POLICIES,
-            value: JSON.stringify({
-                team: teamPolicies || [],
-                channel: channelPolicies || [],
-            }),
-        }];
 
         return operator.handleSystem({
             systems,

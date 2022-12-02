@@ -200,13 +200,6 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
         }
     }
 
-    // Fetch data retention policies
-    let dataRetentionPolicies = {};
-    const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
-    if (isDataRetentionEnabled) {
-        dataRetentionPolicies = await fetchDataRetentionPolicy(serverUrl);
-    }
-
     let initialTeamId = currentTeamId;
     if (!teamData.teams.length) {
         initialTeamId = '';
@@ -237,7 +230,7 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
     const removeTeamIds = await getRemoveTeamIds(database, teamData);
     const removeTeams = await teamsToRemove(serverUrl, removeTeamIds);
 
-    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, dataRetentionPolicies, meData}, true);
+    const modelPromises = await prepareModels({operator, initialTeamId, removeTeams, removeChannels, teamData, chData, prefData, meData}, true);
     if (roles.length) {
         modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
     }
@@ -257,6 +250,12 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
         }
     } else {
         result = entryRest(serverUrl, teamId, channelId, since);
+    }
+
+    // Fetch data retention policies
+    const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
+    if (isDataRetentionEnabled) {
+        fetchDataRetentionPolicy(serverUrl);
     }
 
     return result;

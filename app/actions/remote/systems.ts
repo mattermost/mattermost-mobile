@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {storeConfigAndLicense} from '@actions/local/systems';
+import {storeConfigAndLicense, storeDataRetentionPolicies} from '@actions/local/systems';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -22,7 +22,7 @@ export type DataRetentionPoliciesRequest = {
     error?: unknown;
 }
 
-export const fetchDataRetentionPolicy = async (serverUrl: string): Promise<DataRetentionPoliciesRequest> => {
+export const fetchDataRetentionPolicy = async (serverUrl: string, fetchOnly = false): Promise<DataRetentionPoliciesRequest> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
@@ -38,11 +38,17 @@ export const fetchDataRetentionPolicy = async (serverUrl: string): Promise<DataR
             return hasError;
         }
 
-        return {
+        const data = {
             globalPolicy,
             teamPolicies: teamPolicies as TeamDataRetentionPolicy[],
             channelPolicies: channelPolicies as ChannelDataRetentionPolicy[],
         };
+
+        if (!fetchOnly) {
+            await storeDataRetentionPolicies(serverUrl, data);
+        }
+
+        return data;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};

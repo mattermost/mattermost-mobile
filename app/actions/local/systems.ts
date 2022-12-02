@@ -13,6 +13,7 @@ import {logError} from '@utils/log';
 
 import {deletePosts} from './post';
 
+import type {DataRetentionPoliciesRequest} from '@actions/remote/systems';
 import type PostModel from '@typings/database/models/servers/post';
 
 const {SERVER: {POST}} = MM_TABLES;
@@ -80,6 +81,30 @@ export async function storeConfig(serverUrl: string, config: ClientConfig | unde
         logError('storeConfig', error);
     }
     return [];
+}
+
+export async function storeDataRetentionPolicies(serverUrl: string, data: DataRetentionPoliciesRequest, prepareRecordsOnly = false) {
+    try {
+        const {globalPolicy, teamPolicies, channelPolicies} = data;
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const systems: IdValue[] = [{
+            id: SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES,
+            value: globalPolicy || {},
+        }, {
+            id: SYSTEM_IDENTIFIERS.GRANULAR_DATA_RETENTION_POLICIES,
+            value: {
+                team: teamPolicies || [],
+                channel: channelPolicies || [],
+            },
+        }];
+
+        return operator.handleSystem({
+            systems,
+            prepareRecordsOnly,
+        });
+    } catch {
+        return [];
+    }
 }
 
 export async function updateLastDataRetentionRun(serverUrl: string, value?: number, prepareRecordsOnly = false) {
