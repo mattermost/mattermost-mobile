@@ -2,11 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {setLastServerVersionCheck} from '@actions/local/systems';
-import {switchToChannelById} from '@actions/remote/channel';
+import {handleKickFromChannel} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
+import {handleKickFromTeam} from '@actions/remote/team';
+import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId, getConfig, getLicense} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, getCurrentChannelId, getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import NavigationStore from '@store/navigation_store';
 import {deleteV1Data} from '@utils/file';
 import {isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
@@ -53,15 +56,26 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
         }
     }
 
-    let switchToChannel = false;
+    const currentTeamIdAfterLoad = await getCurrentTeamId(database);
+    const currentChannelIdAfterLoad = await getCurrentChannelId(database);
 
-    // Immediately set the new team as the current team in the database so that the UI
-    // renders the correct team.
-    if (tabletDevice && initialChannelId) {
-        switchToChannel = true;
-        switchToChannelById(serverUrl, initialChannelId, initialTeamId);
-    } else {
-        setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
+    if (currentTeamIdAfterLoad !== currentTeamId) {
+        // Switched teams while loading
+        if (!(teamData.teams?.find((t) => t.id === currentTeamIdAfterLoad))) {
+            handleKickFromTeam(serverUrl, currentTeamIdAfterLoad);
+        }
+    } else if (currentTeamId !== initialTeamId) {
+        handleKickFromTeam(serverUrl, currentTeamId);
+    } else if (currentChannelIdAfterLoad !== currentChannelId) {
+        // Switched channels while loading
+        if (!(chData?.memberships?.find((m) => m.channel_id === currentChannelIdAfterLoad))) {
+            handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
+        }
+    } else if (currentChannelId !== initialChannelId) {
+        const navComponents = NavigationStore.getNavigationComponents();
+        if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
+            handleKickFromChannel(serverUrl, currentChannelId);
+        }
     }
 
     const dt = Date.now();
@@ -71,7 +85,7 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     const {id: currentUserId, locale: currentUserLocale} = meData?.user || (await getCurrentUser(database))!;
     const config = await getConfig(database);
     const license = await getLicense(database);
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchToChannel ? initialChannelId : undefined);
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 
     if (!since) {
         // Load data from other servers

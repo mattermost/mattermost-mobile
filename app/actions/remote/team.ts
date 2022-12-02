@@ -8,12 +8,15 @@ import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
+import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
-import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable} from '@queries/servers/team';
+import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable, getLastTeam, getTeamById} from '@queries/servers/team';
+import {dismissAllModals, popToRoot, resetToTeams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 
 import {fetchMyChannelsForTeam, switchToChannelById} from './channel';
 import {fetchGroupsForTeamIfConstrained} from './groups';
@@ -323,4 +326,28 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
 
     // Fetch Groups + GroupTeams
     fetchGroupsForTeamIfConstrained(serverUrl, teamId);
+}
+
+export async function handleKickFromTeam(serverUrl: string, teamId: string) {
+    try {
+        const currentServer = await getActiveServerUrl();
+
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const team = await getTeamById(database, teamId);
+
+        if (currentServer === serverUrl) {
+            DeviceEventEmitter.emit(Events.LEAVE_TEAM, team?.displayName);
+            await dismissAllModals();
+            await popToRoot();
+        }
+
+        const teamToJumpTo = await getLastTeam(database);
+        if (teamToJumpTo) {
+            handleTeamChange(serverUrl, teamToJumpTo);
+        } else if (currentServer === serverUrl) {
+            resetToTeams();
+        }
+    } catch (error) {
+        logDebug('Failed to kick user from team', error);
+    }
 }

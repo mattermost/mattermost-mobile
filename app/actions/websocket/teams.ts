@@ -2,21 +2,17 @@
 // See LICENSE.txt for license information.
 
 import {Model} from '@nozbe/watermelondb';
-import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam} from '@actions/local/team';
 import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
-import {fetchAllTeams, handleTeamChange, fetchMyTeam} from '@actions/remote/team';
+import {fetchAllTeams, fetchMyTeam, handleKickFromTeam} from '@actions/remote/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
-import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
-import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
-import {getCurrentTeam, getLastTeam, prepareMyTeams} from '@queries/servers/team';
+import {getCurrentTeam, prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModals, popToRoot, resetToTeams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
 export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMessage) {
@@ -41,20 +37,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
         }
 
         if (currentTeam?.id === teamId) {
-            const currentServer = await getActiveServerUrl();
-
-            if (currentServer === serverUrl) {
-                DeviceEventEmitter.emit(Events.LEAVE_TEAM, currentTeam?.displayName);
-                await dismissAllModals();
-                await popToRoot();
-            }
-
-            const teamToJumpTo = await getLastTeam(database.database);
-            if (teamToJumpTo) {
-                handleTeamChange(serverUrl, teamToJumpTo);
-            } else if (currentServer === serverUrl) {
-                resetToTeams();
-            }
+            handleKickFromTeam(serverUrl, teamId);
         }
     }
 }

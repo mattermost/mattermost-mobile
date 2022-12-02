@@ -3,8 +3,9 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {switchToChannelById} from '@actions/remote/channel';
+import {handleKickFromChannel} from '@actions/remote/channel';
 import {deferredAppEntryActions, entry} from '@actions/remote/entry/gql_common';
+import {handleKickFromTeam} from '@actions/remote/team';
 import {fetchStatusByIds} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
@@ -31,19 +32,19 @@ import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
-import {getActiveServerUrl, getActiveServer} from '@queries/app/servers';
+import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {
     getConfig,
+    getCurrentChannelId,
+    getCurrentTeamId,
     getCurrentUserId,
     getLicense,
     getWebSocketLastDisconnected,
     resetWebSocketLastDisconnected,
-    setCurrentTeamAndChannelId,
 } from '@queries/servers/system';
 import {getCurrentTeam} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModals, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
@@ -135,10 +136,10 @@ async function doReconnect(serverUrl: string) {
 
     const currentTeam = await getCurrentTeam(database);
     const currentChannel = await getCurrentChannel(database);
-    const currentActiveServerUrl = await getActiveServerUrl();
 
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
+        const currentActiveServerUrl = await getActiveServerUrl();
         if (serverUrl === currentActiveServerUrl) {
             DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
         }
@@ -146,33 +147,28 @@ async function doReconnect(serverUrl: string) {
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
 
-    let switchedToChannel = false;
+    const switchedToChannel = false;
 
-    // if no longer a member of the current team or the current channel
-    if (initialTeamId !== currentTeam?.id || initialChannelId !== currentChannel?.id) {
-        const currentServer = await getActiveServer();
-        const isChannelScreenMounted = NavigationStore.getNavigationComponents().includes(Screens.CHANNEL);
-        if (serverUrl === currentServer?.url) {
-            if (currentTeam && initialTeamId !== currentTeam.id) {
-                DeviceEventEmitter.emit(Events.LEAVE_TEAM, {displayName: currentTeam.displayName});
-                await dismissAllModals();
-                await popToRoot();
-            } else if (currentChannel && initialChannelId !== currentChannel.id && isChannelScreenMounted) {
-                DeviceEventEmitter.emit(Events.LEAVE_CHANNEL, {displayName: currentChannel?.displayName});
-                await dismissAllModals();
-                await popToRoot();
-            }
+    const currentTeamIdAfterLoad = await getCurrentTeamId(database);
+    const currentChannelIdAfterLoad = await getCurrentChannelId(database);
 
-            const tabletDevice = await isTablet();
-
-            if (tabletDevice && initialChannelId) {
-                switchedToChannel = true;
-                switchToChannelById(serverUrl, initialChannelId, initialTeamId);
-            } else {
-                setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
-            }
-        } else {
-            setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
+    if (currentTeamIdAfterLoad !== currentTeam?.id) {
+        // Switched teams while loading
+        if (!(teamData.teams?.find((t) => t.id === currentTeamIdAfterLoad))) {
+            handleKickFromTeam(serverUrl, currentTeamIdAfterLoad);
+        }
+    } else if (currentTeamIdAfterLoad !== initialTeamId) {
+        handleKickFromTeam(serverUrl, currentTeamIdAfterLoad);
+    } else if (currentChannelIdAfterLoad !== currentChannel?.id) {
+        // Switched channels while loading
+        if (!(chData?.memberships?.find((m) => m.channel_id === currentChannelIdAfterLoad))) {
+            handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
+        }
+    } else if (currentChannelIdAfterLoad !== initialChannelId) {
+        const tabletDevice = await isTablet();
+        const navComponents = NavigationStore.getNavigationComponents();
+        if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
+            handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
         }
     }
 

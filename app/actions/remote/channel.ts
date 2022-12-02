@@ -15,15 +15,17 @@ import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
+import {getActiveServer} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {getCommonSystemValues, getConfig, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId} from '@queries/servers/system';
+import {getCommonSystemValues, getConfig, getCurrentTeamId, getCurrentUserId, getLicense, prepareCommonSystemValues, setCurrentChannelId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
+import {dismissAllModals, popToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
-import {logError, logInfo} from '@utils/log';
+import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
 import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
@@ -1295,5 +1297,49 @@ export const convertChannelToPrivate = async (serverUrl: string, channelId: stri
         return {error};
     } finally {
         EphemeralStore.removeConvertingChannel(channelId);
+    }
+};
+
+export const handleKickFromChannel = async (serverUrl: string, channelId: string) => {
+    try {
+        const currentServer = await getActiveServer();
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const channel = await getChannelById(database, channelId);
+        const models: Model[] = [];
+
+        if (currentServer?.url === serverUrl) {
+            DeviceEventEmitter.emit(Events.LEAVE_CHANNEL, channel?.displayName);
+            await dismissAllModals();
+            await popToRoot();
+
+            if (await isTablet()) {
+                let tId = channel?.teamId;
+                if (!tId) {
+                    tId = await getCurrentTeamId(database);
+                }
+                const channelToJumpTo = await getNthLastChannelFromTeam(database, tId);
+                if (channelToJumpTo) {
+                    if (channelToJumpTo === Screens.GLOBAL_THREADS) {
+                        const {models: switchToGlobalThreadsModels} = await switchToGlobalThreads(serverUrl, tId, true);
+                        if (switchToGlobalThreadsModels) {
+                            models.push(...switchToGlobalThreadsModels);
+                        }
+                    } else {
+                        switchToChannelById(serverUrl, channelToJumpTo, tId, true);
+                    }
+                } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
+            } else {
+                const currentChannelModels = await prepareCommonSystemValues(operator, {currentChannelId: ''});
+                if (currentChannelModels?.length) {
+                    models.push(...currentChannelModels);
+                }
+            }
+        }
+
+        if (models.length) {
+            operator.batchRecords(models);
+        }
+    } catch (error) {
+        logDebug('cannot kick user from channel', error);
     }
 };
