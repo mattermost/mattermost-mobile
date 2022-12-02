@@ -296,7 +296,7 @@
   "general_settings.display": "Display",
   "general_settings.help": "Help",
   "general_settings.notifications": "Notifications",
-  "general_settings.report_problem": "",
+  "general_settings.report_problem": "Report a problem",
   "get_post_link_modal.title": "Copy Link",
   "global_threads.allThreads": "All Your Threads",
   "global_threads.emptyThreads.message": "Any threads you are mentioned in or have participated in will show here along with any threads you have followed.",
