@@ -5,6 +5,8 @@ import NetInfo, {NetInfoState} from '@react-native-community/netinfo';
 import {debounce, DebouncedFunc} from 'lodash';
 import {AppState, AppStateStatus} from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
+import {BehaviorSubject} from 'rxjs';
+import {distinctUntilChanged} from 'rxjs/operators';
 
 import {setCurrentUserStatusOffline} from '@actions/local/user';
 import {fetchStatusByIds} from '@actions/remote/user';
@@ -15,12 +17,15 @@ import DatabaseManager from '@database/manager';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryAllUsers} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
+import {isMainActivity} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 const WAIT_TO_CLOSE = toMilliseconds({seconds: 15});
 const WAIT_UNTIL_NEXT = toMilliseconds({seconds: 20});
 
 class WebsocketManager {
+    private connectedSubjects: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
+
     private clients: Record<string, WebSocketClient> = {};
     private connectionTimerIDs: Record<string, DebouncedFunc<() => void>> = {};
     private isBackgroundTimerRunning = false;
@@ -63,6 +68,9 @@ class WebsocketManager {
             this.connectionTimerIDs[serverUrl].cancel();
         }
         delete this.clients[serverUrl];
+
+        this.getConnectedSubject(serverUrl).next(false);
+        delete this.connectedSubjects[serverUrl];
     };
 
     public createClient = (serverUrl: string, bearerToken: string, storedLastDisconnect = 0) => {
@@ -84,9 +92,11 @@ class WebsocketManager {
     };
 
     public closeAll = () => {
-        for (const client of Object.values(this.clients)) {
+        for (const url of Object.keys(this.clients)) {
+            const client = this.clients[url];
             if (client.isConnected()) {
                 client.close(true);
+                this.getConnectedSubject(url).next(false);
             }
         }
     };
@@ -106,6 +116,20 @@ class WebsocketManager {
 
     public isConnected = (serverUrl: string): boolean => {
         return this.clients[serverUrl]?.isConnected();
+    };
+
+    public observeConnected = (serverUrl: string) => {
+        return this.getConnectedSubject(serverUrl).asObservable().pipe(
+            distinctUntilChanged(),
+        );
+    };
+
+    private getConnectedSubject = (serverUrl: string) => {
+        if (!this.connectedSubjects[serverUrl]) {
+            this.connectedSubjects[serverUrl] = new BehaviorSubject(this.isConnected(serverUrl));
+        }
+
+        return this.connectedSubjects[serverUrl];
     };
 
     private cancelAllConnections = () => {
@@ -129,11 +153,13 @@ class WebsocketManager {
     private onFirstConnect = (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
         handleFirstConnect(serverUrl);
+        this.getConnectedSubject(serverUrl).next(true);
     };
 
     private onReconnect = (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
         handleReconnect(serverUrl);
+        this.getConnectedSubject(serverUrl).next(true);
     };
 
     private onWebsocketClose = async (serverUrl: string, connectFailCount: number, lastDisconnect: number) => {
@@ -142,6 +168,7 @@ class WebsocketManager {
             await handleClose(serverUrl, lastDisconnect);
 
             this.stopPeriodicStatusUpdates(serverUrl);
+            this.getConnectedSubject(serverUrl).next(false);
         }
     };
 
@@ -181,6 +208,8 @@ class WebsocketManager {
             return;
         }
 
+        const isMain = isMainActivity();
+
         this.cancelAllConnections();
         if (appState !== 'active' && !this.isBackgroundTimerRunning) {
             this.isBackgroundTimerRunning = true;
@@ -195,7 +224,7 @@ class WebsocketManager {
             return;
         }
 
-        if (appState === 'active' && this.netConnected) { // Reopen the websockets only if there is connection
+        if (appState === 'active' && this.netConnected && isMain) { // Reopen the websockets only if there is connection
             if (this.backgroundIntervalId) {
                 BackgroundTimer.clearInterval(this.backgroundIntervalId);
             }
@@ -205,7 +234,9 @@ class WebsocketManager {
             return;
         }
 
-        this.previousAppState = appState;
+        if (isMain) {
+            this.previousAppState = appState;
+        }
     };
 
     private onNetStateChange = async (netState: NetInfoState) => {

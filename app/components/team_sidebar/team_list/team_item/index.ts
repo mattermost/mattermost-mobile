@@ -8,7 +8,7 @@ import {combineLatestWith, map, switchMap, distinctUntilChanged} from 'rxjs/oper
 
 import {observeAllMyChannelNotifyProps, queryMyChannelsByTeam} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {observeMentionCount} from '@queries/servers/team';
+import {observeMentionCount, observeTeam} from '@queries/servers/team';
 
 import TeamItem from './team_item';
 
@@ -38,7 +38,7 @@ const enhance = withObservables(['myTeam'], ({myTeam, database}: WithTeamsArgs) 
 
     return {
         selected,
-        team: myTeam.team.observe(),
+        team: observeTeam(database, myTeam.id),
         mentionCount: observeMentionCount(database, myTeam.id, false),
         hasUnreads,
     };

@@ -101,6 +101,8 @@ PODS:
     - RNPermissions
   - Permission-Microphone (3.6.1):
     - RNPermissions
+  - Permission-Notifications (3.6.1):
+    - RNPermissions
   - Permission-PhotoLibrary (3.6.1):
     - RNPermissions
   - RCT-Folly (2021.07.22.00):
@@ -365,6 +367,8 @@ PODS:
     - RCTTypeSafety
     - React-Core
     - ReactCommon/turbomodule/core
+  - react-native-turbo-mailer (0.2.0):
+    - React-Core
   - react-native-user-agent (2.3.1):
     - React
   - react-native-video (5.2.1):
@@ -582,6 +586,7 @@ DEPENDENCIES:
   - OpenSSL-Universal (= 1.1.1100)
   - Permission-Camera (from `../node_modules/react-native-permissions/ios/Camera`)
   - Permission-Microphone (from `../node_modules/react-native-permissions/ios/Microphone`)
+  - Permission-Notifications (from `../node_modules/react-native-permissions/ios/Notifications`)
   - Permission-PhotoLibrary (from `../node_modules/react-native-permissions/ios/PhotoLibrary`)
   - RCT-Folly (from `../node_modules/react-native/third-party-podspecs/RCT-Folly.podspec`)
   - RCTRequired (from `../node_modules/react-native/Libraries/RCTRequired`)
@@ -614,6 +619,7 @@ DEPENDENCIES:
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - "react-native-paste-input (from `../node_modules/@mattermost/react-native-paste-input`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
+  - "react-native-turbo-mailer (from `../node_modules/@mattermost/react-native-turbo-mailer`)"
   - react-native-user-agent (from `../node_modules/react-native-user-agent`)
   - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webrtc (from `../node_modules/react-native-webrtc`)
@@ -708,6 +714,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/react-native-permissions/ios/Camera"
   Permission-Microphone:
     :path: "../node_modules/react-native-permissions/ios/Microphone"
+  Permission-Notifications:
+    :path: "../node_modules/react-native-permissions/ios/Notifications"
   Permission-PhotoLibrary:
     :path: "../node_modules/react-native-permissions/ios/PhotoLibrary"
   RCT-Folly:
@@ -768,6 +776,8 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@mattermost/react-native-paste-input"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
+  react-native-turbo-mailer:
+    :path: "../node_modules/@mattermost/react-native-turbo-mailer"
   react-native-user-agent:
     :path: "../node_modules/react-native-user-agent"
   react-native-video:
@@ -888,6 +898,7 @@ SPEC CHECKSUMS:
   OpenSSL-Universal: ebc357f1e6bc71fa463ccb2fe676756aff50e88c
   Permission-Camera: bf6791b17c7f614b6826019fcfdcc286d3a107f6
   Permission-Microphone: 48212dd4d28025d9930d583e3c7a56da7268665c
+  Permission-Notifications: 150484ae586eb9be4e32217582a78350a9bb31c3
   Permission-PhotoLibrary: 5b34ca67279f7201ae109cef36f9806a6596002d
   RCT-Folly: 0080d0a6ebf2577475bda044aa59e2ca1f909cda
   RCTRequired: 21229f84411088e5d8538f21212de49e46cc83e2
@@ -918,6 +929,7 @@ SPEC CHECKSUMS:
   react-native-notifications: 83b4fd4a127a6c918fc846cae90da60f84819e44
   react-native-paste-input: 183ad7dc224e192719616f4258dde5b548627d08
   react-native-safe-area-context: 99b24a0c5acd0d5dcac2b1a7f18c49ea317be99a
+  react-native-turbo-mailer: 226fc3533d16500fb4ad08cf8ab2cfc7bb1ef593
   react-native-user-agent: a90a1e839b99801baad67a73dd6f361a52aa3cf1
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
   react-native-webrtc: 86d841823e66d68cc1f86712db1c2956056bf0c2
@@ -969,6 +981,6 @@ SPEC CHECKSUMS:
   Yoga: eca980a5771bf114c41a754098cd85e6e0d90ed7
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 62c761c9aec9bb4ef459a75ab630937696026291
+PODFILE CHECKSUM: 96049f4170c9cafd0ff121db4444b3f46f51bc97
 
 COCOAPODS: 1.11.3

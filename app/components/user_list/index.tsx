@@ -58,9 +58,10 @@ export function createProfilesSections(profiles: UserProfile[]) {
 
     sectionKeys.sort();
 
-    return sectionKeys.map((sectionKey) => {
+    return sectionKeys.map((sectionKey, index) => {
         return {
             id: sectionKey,
+            first: index === 0,
             data: sections[sectionKey],
         };
     });
@@ -71,11 +72,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         list: {
             backgroundColor: theme.centerChannelBg,
             flex: 1,
-            ...Platform.select({
-                android: {
-                    marginBottom: 20,
-                },
-            }),
         },
         container: {
             flexGrow: 1,
@@ -175,12 +171,13 @@ export default function UserList({
         return (
             <UserListRow
                 key={item.id}
-                highlight={section?.id === data?.[0].id && index === 0}
+                highlight={section?.first && index === 0}
                 id={item.id}
                 isMyUser={currentUserId === item.id}
                 onPress={handleSelectProfile}
                 onLongPress={openUserProfile}
-                selectable={canAdd}
+                disabled={!canAdd}
+                selectable={true}
                 selected={selected}
                 testID='create_direct_message.user_list.user_item'
                 teammateNameDisplay={teammateNameDisplay}
@@ -188,7 +185,7 @@ export default function UserList({
                 user={item}
             />
         );
-    }, [selectedIds, currentUserId, handleSelectProfile, teammateNameDisplay, tutorialWatched, data]);
+    }, [selectedIds, currentUserId, handleSelectProfile, teammateNameDisplay, tutorialWatched]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {
@@ -231,7 +228,6 @@ export default function UserList({
             <FlatList
                 contentContainerStyle={style.container}
                 data={items}
-                extraData={selectedIds}
                 keyboardShouldPersistTaps='always'
                 {...keyboardDismissProp}
                 keyExtractor={keyExtractor}
@@ -252,7 +248,6 @@ export default function UserList({
         return (
             <SectionList
                 contentContainerStyle={style.container}
-                extraData={loading ? false : selectedIds}
                 keyboardShouldPersistTaps='always'
                 {...keyboardDismissProp}
                 keyExtractor={keyExtractor}

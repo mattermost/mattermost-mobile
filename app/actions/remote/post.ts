@@ -791,7 +791,7 @@ export async function fetchPostById(serverUrl: string, postId: string, fetchOnly
             if (authors?.length) {
                 const users = await operator.handleUsers({
                     users: authors,
-                    prepareRecordsOnly: false,
+                    prepareRecordsOnly: true,
                 });
                 models.push(...users);
             }

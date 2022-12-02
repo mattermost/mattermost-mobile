@@ -18,7 +18,7 @@ import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user'
 import {loadCallForChannel} from '@calls/actions/calls';
 import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
-import {queryActiveServer} from '@queries/app/servers';
+import {getActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getConfig, setCurrentChannelId, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam} from '@queries/servers/team';
@@ -356,7 +356,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         if (user.id === userId) {
             await removeCurrentUserFromChannel(serverUrl, channelId);
             if (channel && channel.id === channelId) {
-                const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
+                const currentServer = await getActiveServer();
 
                 if (currentServer?.url === serverUrl) {
                     DeviceEventEmitter.emit(Events.LEAVE_CHANNEL, channel.displayName);
@@ -431,7 +431,7 @@ export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocke
             await removeCurrentUserFromChannel(serverUrl, channelId);
 
             if (currentChannel && currentChannel.id === channelId) {
-                const currentServer = await queryActiveServer(DatabaseManager.appDatabase!.database);
+                const currentServer = await getActiveServer();
 
                 if (currentServer?.url === serverUrl) {
                     DeviceEventEmitter.emit(Events.CHANNEL_ARCHIVED, currentChannel.displayName);

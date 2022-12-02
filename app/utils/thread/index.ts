@@ -23,3 +23,15 @@ export function processIsCRTEnabled(preferences: PreferenceModel[]|PreferenceTyp
         configValue === Config.ALWAYS_ON
     );
 }
+
+export const getThreadsListEdges = (threads: Thread[]) => {
+    // Sort a clone of 'threads' array by last_reply_at
+    const sortedThreads = [...threads].sort((a, b) => {
+        return a.last_reply_at - b.last_reply_at;
+    });
+
+    const earliestThread = sortedThreads[0];
+    const latestThread = sortedThreads[sortedThreads.length - 1];
+
+    return {earliestThread, latestThread};
+};

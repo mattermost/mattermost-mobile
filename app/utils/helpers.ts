@@ -10,6 +10,7 @@ import {IOS_STATUS_BAR_HEIGHT} from '@constants/view';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
+const ShareModule: NativeShareExtension|undefined = Platform.select({android: NativeModules.MattermostShare});
 
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than
 // the provided minimum version. A non-equal major version will ignore minor and dot
@@ -150,4 +151,17 @@ export function bottomSheetSnapPoint(itemsCount: number, itemHeight: number, bot
 
 export function hasTrailingSpaces(term: string) {
     return term.length !== term.trimEnd().length;
+}
+
+/**
+ * isMainActivity returns true if the current activity on Android is the MainActivity otherwise it returns false,
+ * on iOS the result is always true
+ *
+ * @returns boolean
+ */
+export function isMainActivity() {
+    return Platform.select({
+        default: true,
+        android: ShareModule?.getCurrentActivityName() === 'MainActivity',
+    });
 }

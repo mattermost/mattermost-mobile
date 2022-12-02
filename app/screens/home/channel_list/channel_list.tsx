@@ -10,6 +10,7 @@ import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import AnnouncementBanner from '@components/announcement_banner';
+import ConnectionBanner from '@components/connection_banner';
 import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {Navigation as NavigationConstants, Screens} from '@constants';
@@ -18,6 +19,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {resetToTeams, openToS} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import {isMainActivity} from '@utils/helpers';
 import {tryRunAppReview} from '@utils/reviews';
 import {addSentryContext} from '@utils/sentry';
 
@@ -79,24 +81,27 @@ const ChannelListScreen = (props: ChannelProps) => {
         const isHomeScreen = NavigationStore.getNavigationTopComponentId() === Screens.HOME;
         const homeTab = NavigationStore.getVisibleTab() === Screens.HOME;
         const focused = navigation.isFocused() && isHomeScreen && homeTab;
-        if (!backPressedCount && focused) {
-            backPressedCount++;
-            ToastAndroid.show(intl.formatMessage({
-                id: 'mobile.android.back_handler_exit',
-                defaultMessage: 'Press back again to exit',
-            }), ToastAndroid.SHORT);
 
-            if (backPressTimeout) {
-                clearTimeout(backPressTimeout);
+        if (isMainActivity()) {
+            if (!backPressedCount && focused) {
+                backPressedCount++;
+                ToastAndroid.show(intl.formatMessage({
+                    id: 'mobile.android.back_handler_exit',
+                    defaultMessage: 'Press back again to exit',
+                }), ToastAndroid.SHORT);
+
+                if (backPressTimeout) {
+                    clearTimeout(backPressTimeout);
+                }
+                backPressTimeout = setTimeout(() => {
+                    clearTimeout(backPressTimeout!);
+                    backPressedCount = 0;
+                }, 2000);
+                return true;
+            } else if (isHomeScreen && !homeTab) {
+                DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME);
+                return true;
             }
-            backPressTimeout = setTimeout(() => {
-                clearTimeout(backPressTimeout!);
-                backPressedCount = 0;
-            }, 2000);
-            return true;
-        } else if (isHomeScreen && !homeTab) {
-            DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_HOME);
-            return true;
         }
         return false;
     }, [intl]);
@@ -162,6 +167,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                 edges={edges}
                 testID='channel_list.screen'
             >
+                <ConnectionBanner/>
                 {props.isLicensed &&
                     <AnnouncementBanner/>
                 }

@@ -45,21 +45,21 @@ export function useIsTablet() {
     return Device.IS_TABLET && !isSplitView;
 }
 
-export function useKeyboardHeight(keyboardTracker?: React.RefObject<KeyboardTrackingViewRef>) {
-    const [keyboardHeight, setKeyboardHeight] = useState(0);
+export function useKeyboardHeightWithDuration(keyboardTracker?: React.RefObject<KeyboardTrackingViewRef>) {
+    const [keyboardHeight, setKeyboardHeight] = useState({height: 0, duration: 0});
     const updateTimeout = useRef<NodeJS.Timeout | null>(null);
     const insets = useSafeAreaInsets();
 
     // This is a magic number. With tracking view, to properly get the final position, this had to be added.
     const KEYBOARD_TRACKINGVIEW_SEPARATION = 4;
 
-    const updateValue = (v: number) => {
+    const updateValue = (height: number, duration: number) => {
         if (updateTimeout.current != null) {
             clearTimeout(updateTimeout.current);
             updateTimeout.current = null;
         }
         updateTimeout.current = setTimeout(() => {
-            setKeyboardHeight(v);
+            setKeyboardHeight({height, duration});
             updateTimeout.current = null;
         }, 200);
     };
@@ -69,21 +69,21 @@ export function useKeyboardHeight(keyboardTracker?: React.RefObject<KeyboardTrac
             if (keyboardTracker?.current) {
                 const props = await keyboardTracker.current.getNativeProps();
                 if (props.keyboardHeight) {
-                    updateValue((props.trackingViewHeight + props.keyboardHeight) - KEYBOARD_TRACKINGVIEW_SEPARATION);
+                    updateValue((props.trackingViewHeight + props.keyboardHeight) - KEYBOARD_TRACKINGVIEW_SEPARATION, event.duration);
                 } else {
-                    updateValue((props.trackingViewHeight + insets.bottom) - KEYBOARD_TRACKINGVIEW_SEPARATION);
+                    updateValue((props.trackingViewHeight + insets.bottom) - KEYBOARD_TRACKINGVIEW_SEPARATION, event.duration);
                 }
             } else {
-                updateValue(event.endCoordinates.height);
+                setKeyboardHeight({height: event.endCoordinates.height, duration: event.duration});
             }
         });
 
-        const hide = Keyboard.addListener(Platform.select({ios: 'keyboardWillHide', default: 'keyboardDidHide'}), () => {
+        const hide = Keyboard.addListener(Platform.select({ios: 'keyboardWillHide', default: 'keyboardDidHide'}), (event) => {
             if (updateTimeout.current != null) {
                 clearTimeout(updateTimeout.current);
                 updateTimeout.current = null;
             }
-            setKeyboardHeight(0);
+            setKeyboardHeight({height: 0, duration: event.duration});
         });
 
         return () => {
@@ -95,9 +95,15 @@ export function useKeyboardHeight(keyboardTracker?: React.RefObject<KeyboardTrac
     return keyboardHeight;
 }
 
+export function useKeyboardHeight(keyboardTracker?: React.RefObject<KeyboardTrackingViewRef>) {
+    const {height} = useKeyboardHeightWithDuration(keyboardTracker);
+    return height;
+}
+
 export function useModalPosition(viewRef: RefObject<View>, deps?: React.DependencyList) {
     const [modalPosition, setModalPosition] = useState(0);
     const isTablet = useIsTablet();
+    const height = useKeyboardHeight();
 
     useEffect(() => {
         if (Platform.OS === 'ios' && isTablet) {
@@ -107,7 +113,7 @@ export function useModalPosition(viewRef: RefObject<View>, deps?: React.Dependen
                 }
             });
         }
-    }, deps);
+    }, [...(deps || []), isTablet, height]);
 
     return modalPosition;
 }

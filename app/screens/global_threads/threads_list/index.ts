@@ -4,9 +4,10 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {AppStateStatus} from 'react-native';
+import {switchMap} from 'rxjs/operators';
 
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {queryThreadsInTeam} from '@queries/servers/thread';
+import {queryTeamThreadsSync, queryThreadsInTeam} from '@queries/servers/thread';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
 import ThreadsList from './threads_list';
@@ -26,10 +27,17 @@ const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
 const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], ({database, tab, teamId}: Props) => {
     const getOnlyUnreads = tab !== 'all';
 
+    const teamThreadsSyncObserver = queryTeamThreadsSync(database, teamId).observeWithColumns(['earliest']);
+
     return {
         unreadsCount: queryThreadsInTeam(database, teamId, true).observeCount(false),
         teammateNameDisplay: observeTeammateNameDisplay(database),
-        threads: queryThreadsInTeam(database, teamId, getOnlyUnreads, false, true, true).observe(),
+        threads: teamThreadsSyncObserver.pipe(
+            switchMap((teamThreadsSync) => {
+                const earliest = teamThreadsSync?.[0]?.earliest;
+                return queryThreadsInTeam(database, teamId, getOnlyUnreads, false, true, true, earliest).observe();
+            }),
+        ),
     };
 });
 

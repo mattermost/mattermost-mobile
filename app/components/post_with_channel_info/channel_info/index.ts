@@ -4,6 +4,8 @@
 import withObservables from '@nozbe/with-observables';
 import {switchMap, of as of$} from 'rxjs';
 
+import {observeTeam} from '@queries/servers/team';
+
 import ChannelInfo from './channel_info';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -16,7 +18,7 @@ const enhance = withObservables(['post'], ({post}: {post: PostModel}) => {
             switchMap((chan) => (chan ? of$(chan.displayName) : '')),
         ),
         teamName: channel.pipe(
-            switchMap((chan) => (chan && chan.teamId ? chan.team.observe() : of$(null))),
+            switchMap((chan) => (chan && chan.teamId ? observeTeam(post.database, chan.teamId) : of$(null))),
             switchMap((team) => of$(team?.displayName || null)),
         ),
     };

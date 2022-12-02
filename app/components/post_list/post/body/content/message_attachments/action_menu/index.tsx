@@ -25,14 +25,14 @@ const ActionMenu = ({dataSource, defaultOption, disabled, id, name, options, pos
     }
     const [selected, setSelected] = useState(isSelected?.value);
 
-    const handleSelect = useCallback(async (selectedItem: string | string[]) => {
-        if (Array.isArray(selectedItem)) { // Since AutocompleteSelector is not multiselect, we are sure we only receive a string
+    const handleSelect = useCallback(async (selectedItem: SelectedDialogOption) => {
+        if (!selectedItem || Array.isArray(selectedItem)) {
             return;
         }
 
-        const result = await selectAttachmentMenuAction(serverUrl, postId, id, selectedItem);
+        const result = await selectAttachmentMenuAction(serverUrl, postId, id, selectedItem.value);
         if (result.data?.trigger_id) {
-            setSelected(selectedItem);
+            setSelected(selectedItem.value);
         }
     }, []);
 
@@ -40,6 +40,7 @@ const ActionMenu = ({dataSource, defaultOption, disabled, id, name, options, pos
         <AutocompleteSelector
             placeholder={name}
             dataSource={dataSource}
+            isMultiselect={false}
             options={options}
             selected={selected}
             onSelected={handleSelect}
