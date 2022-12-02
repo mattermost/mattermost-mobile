@@ -178,6 +178,10 @@ export default function SelectedUsers({
         return margin;
     }, [keyboard, isTablet, insets.bottom, bottomSpace]);
 
+    const handlePress = useCallback(() => {
+        onPress();
+    }, [onPress]);
+
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         panelHeight.value = Math.min(PANEL_MAX_HEIGHT, e.nativeEvent.layout.height);
     }, []);
@@ -240,7 +244,7 @@ export default function SelectedUsers({
                 </ScrollView>
                 <Animated.View style={animatedButtonStyle}>
                     <Button
-                        onPress={async () => onPress()}
+                        onPress={handlePress}
                         icon={buttonIcon}
                         text={buttonText}
                         disabled={numberSelectedIds > General.MAX_USERS_IN_GM}
