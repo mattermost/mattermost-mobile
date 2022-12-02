@@ -2,12 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {KeyboardAvoidingView, LayoutChangeEvent, ScrollView, View} from 'react-native';
+import {LayoutChangeEvent, ScrollView, View} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Toast from '@components/toast';
-import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
