@@ -84,7 +84,7 @@ export type ChannelsWithCalls = Dictionary<boolean>;
 
 export type ServerChannelState = {
     channel_id: string;
-    enabled: boolean;
+    enabled?: boolean;
     call?: ServerCallState;
 }
 
@@ -125,6 +125,7 @@ export type ServerCallsConfig = {
     sku_short_name: string;
     MaxCallParticipants: number;
     EnableRecordings: boolean;
+    bot_user_id: string;
 }
 
 export type CallsConfig = ServerCallsConfig & {
@@ -143,6 +144,7 @@ export const DefaultCallsConfig: CallsConfig = {
     sku_short_name: '',
     MaxCallParticipants: 0,
     EnableRecordings: false,
+    bot_user_id: '',
 };
 
 export type ICEServersConfigs = Array<ConfigurationParamWithUrls | ConfigurationParamWithUrl>;

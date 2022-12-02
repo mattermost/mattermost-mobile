@@ -52,9 +52,12 @@ export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<
     setCurrentCall(nextCall);
 };
 
-export const setCallForChannel = (serverUrl: string, channelId: string, enabled: boolean, call?: Call) => {
+export const setCallForChannel = (serverUrl: string, channelId: string, enabled?: boolean, call?: Call) => {
     const callsState = getCallsState(serverUrl);
-    const nextEnabled = {...callsState.enabled, [channelId]: enabled};
+    let nextEnabled = callsState.enabled;
+    if (typeof enabled !== 'undefined') {
+        nextEnabled = {...callsState.enabled, [channelId]: enabled};
+    }
 
     const nextCalls = {...callsState.calls};
     if (call) {
