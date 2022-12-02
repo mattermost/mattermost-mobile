@@ -92,9 +92,11 @@ class WebsocketManager {
     };
 
     public closeAll = () => {
-        for (const client of Object.values(this.clients)) {
+        for (const url of Object.keys(this.clients)) {
+            const client = this.clients[url];
             if (client.isConnected()) {
                 client.close(true);
+                this.getConnectedSubject(url).next(false);
             }
         }
     };
