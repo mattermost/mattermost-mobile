@@ -924,5 +924,8 @@
     "extension.no_servers.title": "Keine Verbindung zu einem Server",
     "extension.no_servers.description": "Um Inhalte zu teilen, musst du bei einem Mattermost-Server angemeldet sein.",
     "extension.no_memberships.title": "Noch kein Mitglied in einem Team",
-    "extension.no_memberships.description": "Um Inhalte zu teilen, musst du Mitglied eines Teams auf einem Mattermost-Server sein."
+    "extension.no_memberships.description": "Um Inhalte zu teilen, musst du Mitglied eines Teams auf einem Mattermost-Server sein.",
+    "connection_banner.not_reachable": "Der Server ist nicht erreichbar",
+    "connection_banner.not_connected": "Keine Internetverbindung",
+    "connection_banner.connected": "Verbindung wiederhergestellt"
 }
