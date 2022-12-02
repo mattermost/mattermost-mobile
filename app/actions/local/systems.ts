@@ -200,6 +200,7 @@ export async function dataRetentionCleanup(serverUrl: string) {
             const batchSize = 1000;
             for (let i = 0; i < postIds.length; i += batchSize) {
                 const batch = postIds.slice(i, batchSize);
+                // eslint-disable-next-line no-await-in-loop
                 const {error} = await deletePosts(serverUrl, batch);
                 if (error) {
                     return {error};
