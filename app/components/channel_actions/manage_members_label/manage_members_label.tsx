@@ -1,14 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Alert} from 'react-native';
+import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {removeMemberFromChannel} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
-import {Members} from '@constants';
+import {Events, Members} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
@@ -36,35 +36,12 @@ const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, t
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
-    // const isTablet = useIsTablet();
+    const handleRemoveUser = useCallback(async () => {
+        await removeMemberFromChannel(serverUrl, channelId, userId);
+        DeviceEventEmitter.emit(Events.REMOVE_USER, userId);
+        await dismissBottomSheet();
+    }, [channelId, userId, serverUrl]);
 
-    // const close = async () => {
-    //     await dismissBottomSheet();
-    //     if (!isTablet) {
-    //         await dismissAllModals();
-    //         popToRoot();
-    //     }
-    // };
-
-    // removeCurrentUserFromChannel (gekidou)
-    // removeChannelMember (master)
-
-    // const handleRemoveFromChannel = useCallback(async () => {
-    //     removeFromChannel();
-    // }, [userId, serverUrl]);
-
-    // await dismissBottomSheet(Screens.USER_PROFILE);
-    // X - 1. click remove
-    // X - 2. verify want to remove user
-    // 3. remove from remote server
-    // 3a. check response
-    // 4. if yes, remove from local
-    // 5. close panel
-    // 6 update the user list (should happen by database observe)
-    // const {data} = await removeFromChannel(serverUrl, userId);
-    // if (data) {
-    //     switchToChannelById(serverUrl, data.id);
-    // }
     const removeFromChannel = () => {
         Alert.alert(
             intl.formatMessage(messages.remove_title),
@@ -75,10 +52,7 @@ const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, t
             }, {
                 text: intl.formatMessage(messages.remove_confirm),
                 style: 'destructive',
-                onPress: async () => {
-                    await removeMemberFromChannel(serverUrl, channelId, userId);
-                    await dismissBottomSheet();
-                },
+                onPress: handleRemoveUser,
             }], {cancelable: false},
         );
     };

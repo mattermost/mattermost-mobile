@@ -3,13 +3,13 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, Platform, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchProfilesInChannel, searchProfiles} from '@actions/remote/user';
 import Search from '@components/search';
 import UserList from '@components/user_list';
-import {General, Screens} from '@constants';
+import {Events, General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
@@ -215,6 +215,22 @@ export default function ManageChannelMembers({
             mounted.current = false;
         };
     }, []);
+
+    const handleRemoveUser = useCallback((userId: string) => {
+        const index = profiles.findIndex((user) => user.id === userId);
+        if (index !== -1) {
+            const newProfiles = [...profiles];
+            newProfiles.splice(index, 1);
+            setProfiles(newProfiles);
+        }
+    }, [profiles]);
+
+    useEffect(() => {
+        const removeUserListener = DeviceEventEmitter.addListener(Events.REMOVE_USER, handleRemoveUser);
+        return (() => {
+            removeUserListener?.remove();
+        });
+    }, [handleRemoveUser]);
 
     const data = useMemo(() => {
         if (term) {
