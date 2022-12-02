@@ -5,6 +5,7 @@ import {Alert} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
+import {LimitRestrictedInfo} from '@calls/observers';
 import {getCallsConfig, getCallsState, setMicPermissionsGranted} from '@calls/state';
 import {errorAlert} from '@calls/utils';
 import {Screens} from '@constants';
@@ -23,15 +24,21 @@ let recordingAlertLock = false;
 // Only unlock if/when the user starts a recording.
 let recordingWillBePostedLock = true;
 
-export const showLimitRestrictedAlert = (maxParticipants: number, intl: IntlShape) => {
+export const showLimitRestrictedAlert = (info: LimitRestrictedInfo, intl: IntlShape) => {
     const title = intl.formatMessage({
-        id: 'mobile.calls_participant_limit_title',
-        defaultMessage: 'Participant limit reached',
+        id: 'mobile.calls_participant_limit_title_GA',
+        defaultMessage: 'This call is at capacity',
     });
-    const message = intl.formatMessage({
+    let message = intl.formatMessage({
         id: 'mobile.calls_limit_msg',
         defaultMessage: 'The maximum number of participants per call is {maxParticipants}. Contact your System Admin to increase the limit.',
-    }, {maxParticipants});
+    }, {maxParticipants: info.maxParticipants});
+    if (info.isCloudStarter) {
+        message = intl.formatMessage({
+            id: 'mobile.calls_limit_msg_GA',
+            defaultMessage: 'Upgrade to Cloud Professional or Cloud Enterprise to enable group calls with more than {maxParticipants} participants.',
+        }, {maxParticipants: info.maxParticipants});
+    }
     const ok = intl.formatMessage({
         id: 'mobile.calls_ok',
         defaultMessage: 'Okay',

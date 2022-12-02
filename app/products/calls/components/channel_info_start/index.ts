@@ -58,7 +58,7 @@ const enhanced = withObservables([], ({serverUrl, channelId, database}: EnhanceP
         confirmToJoin,
         alreadyInCall,
         currentCallChannelName,
-        limitRestrictedInfo: observeIsCallLimitRestricted(serverUrl, channelId),
+        limitRestrictedInfo: observeIsCallLimitRestricted(database, serverUrl, channelId),
     };
 });
 
