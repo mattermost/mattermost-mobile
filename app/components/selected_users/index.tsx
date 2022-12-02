@@ -90,13 +90,11 @@ const TOAST_BOTTOM_MARGIN = 24;
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
-            backgroundColor: theme.centerChannelBg,
             borderBottomWidth: 0,
             borderColor: changeOpacity(theme.centerChannelColor, 0.16),
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
             borderWidth: 1,
-            elevation: 4,
             maxHeight: PANEL_MAX_HEIGHT + BUTTON_HEIGHT,
             overflow: 'hidden',
             paddingHorizontal: 20,
@@ -186,10 +184,18 @@ export default function SelectedUsers({
         panelHeight.value = Math.min(PANEL_MAX_HEIGHT, e.nativeEvent.layout.height);
     }, []);
 
+    const androidMaxHeight = Platform.select({
+        android: {
+            maxHeight: isVisible ? undefined : 0,
+        },
+    });
+
     const animatedContainerStyle = useAnimatedStyle(() => ({
         marginBottom: withTiming(marginBottom, {duration: keyboard.duration}),
-        paddingBottom: isTablet && isVisible ? TABLET_MARGIN_BOTTOM : 0,
-    }), [marginBottom, keyboard.duration, isTablet, isVisible]);
+        paddingBottom: (isVisible || Platform.OS === 'android') ? TABLET_MARGIN_BOTTOM + insets.bottom : 0,
+        backgroundColor: isVisible ? theme.centerChannelBg : 'transparent',
+        ...androidMaxHeight,
+    }), [marginBottom, keyboard.duration, isVisible, theme.centerChannelBg]);
 
     const animatedToastStyle = useAnimatedStyle(() => {
         return {
@@ -201,7 +207,9 @@ export default function SelectedUsers({
 
     const animatedViewStyle = useAnimatedStyle(() => ({
         height: withTiming(totalPanelHeight.value, {duration: 250}),
-    }), [totalPanelHeight.value]);
+        borderWidth: isVisible ? 1 : 0,
+        maxHeight: isVisible ? PANEL_MAX_HEIGHT + BUTTON_HEIGHT : 0,
+    }), [totalPanelHeight.value, isVisible]);
 
     const animatedButtonStyle = useAnimatedStyle(() => ({
         opacity: withTiming(isVisible ? 1 : 0, {duration: isVisible ? 500 : 100}),
@@ -224,7 +232,7 @@ export default function SelectedUsers({
     }, [showToast]);
 
     return (
-        <Animated.View style={[animatedContainerStyle]}>
+        <Animated.View style={animatedContainerStyle}>
             {showToast &&
             <Toast
                 animatedStyle={animatedToastStyle}

@@ -61,7 +61,7 @@ const close = () => {
     dismissModal();
 };
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
@@ -354,6 +354,7 @@ export default function CreateDirectMessage({
             testID='create_direct_message.screen'
             onLayout={onLayout}
             ref={mainView}
+            edges={['top', 'left', 'right']}
         >
             <View style={style.searchBar}>
                 <Search
