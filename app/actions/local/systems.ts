@@ -160,9 +160,8 @@ export async function dataRetentionCleanup(serverUrl: string) {
         const channelsCutoffs: {[key: string]: number} = {};
 
         // Get channel level cutoff from team policies
-        for (let i = 0; i < teamPolicies.length; i++) {
-            const {team_id, post_duration} = teamPolicies[i];
-            // eslint-disable-next-line no-await-in-loop
+        for await (const teamPolicy of teamPolicies) {
+            const {team_id, post_duration} = teamPolicy;
             const channelIds = await queryAllChannelsForTeam(database, team_id).fetchIds();
             if (channelIds.length) {
                 const cutoff = getDataRetentionPolicyCutoff(post_duration);
@@ -201,7 +200,6 @@ export async function dataRetentionCleanup(serverUrl: string) {
             const batchSize = 1000;
             for (let i = 0; i < postIds.length; i += batchSize) {
                 const batch = postIds.slice(i, batchSize);
-                // eslint-disable-next-line no-await-in-loop
                 const {error} = await deletePosts(serverUrl, batch);
                 if (error) {
                     return {error};
