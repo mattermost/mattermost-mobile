@@ -16,6 +16,8 @@ import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {openAsBottomSheet, setButtons} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
+import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
@@ -106,8 +108,6 @@ export default function ManageChannelMembers({
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
 
-    const isSearch = Boolean(term);
-
     const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
         if (mounted.current) {
             if (users && !users.length) {
@@ -132,7 +132,7 @@ export default function ManageChannelMembers({
             setLoading(true);
             fetchProfilesInChannel(serverUrl, channelId).then(loadedProfiles);
         }
-    }, 100), [loading, isSearch, restrictDirectMessage, serverUrl, currentTeamId]);
+    }, 100), [loading, restrictDirectMessage, serverUrl, currentTeamId]);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
         if (!manageEnabled) {
@@ -216,12 +216,15 @@ export default function ManageChannelMembers({
         };
     }, []);
 
-    const handleRemoveUser = useCallback((userId: string) => {
+    const handleRemoveUser = useCallback(async (userId: string) => {
         const index = profiles.findIndex((user) => user.id === userId);
         if (index !== -1) {
             const newProfiles = [...profiles];
             newProfiles.splice(index, 1);
             setProfiles(newProfiles);
+
+            await NavigationStore.waitUntilScreensIsRemoved(Screens.USER_PROFILE);
+            showRemoveChannelUserSnackbar();
         }
     }, [profiles]);
 
@@ -233,7 +236,8 @@ export default function ManageChannelMembers({
     }, [handleRemoveUser]);
 
     const data = useMemo(() => {
-        if (term) {
+        const isSearch = Boolean(term);
+        if (isSearch) {
             const exactMatches: UserProfile[] = [];
             const filterByTerm = (p: UserProfile) => {
                 if (p.id === currentUserId) {
@@ -252,7 +256,7 @@ export default function ManageChannelMembers({
             return [...exactMatches, ...results];
         }
         return profiles;
-    }, [term, isSearch && searchResults, profiles]);
+    }, [term, searchResults, profiles]);
 
     return (
         <SafeAreaView

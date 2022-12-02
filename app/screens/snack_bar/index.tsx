@@ -115,7 +115,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
                     width: (SNACK_BAR_WIDTH / 100) * diffWidth,
                 };
                 break;
-            case [Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_MESSAGES].includes(sourceScreen):
+            case [Screens.PERMALINK, Screens.MANAGE_CHANNEL_MEMBERS, Screens.MENTIONS, Screens.SAVED_MESSAGES].includes(sourceScreen):
                 tabletStyle = {
                     marginBottom: 0,
                     marginLeft: 0,
