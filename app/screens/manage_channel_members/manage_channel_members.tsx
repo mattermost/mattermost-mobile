@@ -226,7 +226,7 @@ export default function ManageChannelMembers({
     }, [profiles]);
 
     useEffect(() => {
-        const removeUserListener = DeviceEventEmitter.addListener(Events.REMOVE_USER, handleRemoveUser);
+        const removeUserListener = DeviceEventEmitter.addListener(Events.REMOVE_USER_FROM_CHANNEL, handleRemoveUser);
         return (() => {
             removeUserListener?.remove();
         });

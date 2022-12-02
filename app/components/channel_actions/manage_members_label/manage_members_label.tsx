@@ -38,7 +38,7 @@ const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, t
 
     const handleRemoveUser = useCallback(async () => {
         await removeMemberFromChannel(serverUrl, channelId, userId);
-        DeviceEventEmitter.emit(Events.REMOVE_USER, userId);
+        DeviceEventEmitter.emit(Events.REMOVE_USER_FROM_CHANNEL, userId);
         await dismissBottomSheet();
     }, [channelId, userId, serverUrl]);
 
