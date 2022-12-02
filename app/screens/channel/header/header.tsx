@@ -73,6 +73,9 @@ const ChannelHeader = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const defaultHeight = useDefaultHeaderHeight();
+
+    // NOTE: callsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
+    //   which ultimately comes from channel/index.tsx, and observeIsCallsEnabledInChannel
     const callsAvailable = callsEnabledInChannel;
 
     const isDMorGM = isTypeDMorGM(channelType);

@@ -4,7 +4,6 @@
 import {Alert} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {sendEphemeralPost} from '@actions/local/post';
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
 import {getCallsConfig, getCallsState, setMicPermissionsGranted} from '@calls/state';
 import {errorAlert} from '@calls/utils';
@@ -123,27 +122,17 @@ const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolea
 
             // if explicitly disabled, we wouldn't get to this point.
             // if pre-GA calls:
-            //   we won't get here
+            //   if enabled is false, then this channel was returned as enabled=false from the server (it was either
+            //     explicitly disabled, or DefaultEnabled=false), and the StartCall button would not be shown
+            //   if enabled is true, then this channel was return as enabled=true from the server (it was either
+            //     explicitly enabled, or DefaultEnabled=true), everyone can start
             // if GA calls:
             //   if explicitly enabled, everyone can start a call
             //   if !explicitly enabled and defaultEnabled, everyone can start
             //   if !explicitly enabled and !defaultEnabled, system admins can start, regular users get alert
             // Note: the below is a 'badly' coded if. But it's clear, which trumps.
             if (enabled || (!enabled && DefaultEnabled) || (!enabled && !DefaultEnabled && isAdmin)) {
-                if (isAdmin) {
-                    const config = getCallsConfig(serverUrl);
-
-                    await sendEphemeralPost(
-                        serverUrl,
-                        formatMessage({
-                            id: 'mobile.calls_not_enabled_msg',
-                            defaultMessage: 'Currently calls are not enabled for non-admin users. You can change the setting through the system console',
-                        }),
-                        channelId,
-                        '',
-                        config.bot_user_id,
-                    );
-                }
+                // continue through and start the call
             } else {
                 contactAdminAlert(intl);
                 return;

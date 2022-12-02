@@ -58,6 +58,7 @@ const ChannelInfo = ({
     const styles = getStyleSheet(theme);
 
     // NOTE: isCallsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
+    //   which comes from observeIsCallsEnabledInChannel
     const callsAvailable = isCallsEnabledInChannel;
 
     const onPressed = useCallback(() => {

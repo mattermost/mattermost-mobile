@@ -20,7 +20,6 @@ describe('getICEServersConfigs', () => {
             sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
             EnableRecordings: true,
-            bot_user_id: 'thebot',
         };
         const iceConfigs = getICEServersConfigs(config);
 
@@ -49,7 +48,6 @@ describe('getICEServersConfigs', () => {
             sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
             EnableRecordings: true,
-            bot_user_id: 'thebot',
         };
         const iceConfigs = getICEServersConfigs(config);
 
@@ -82,7 +80,6 @@ describe('getICEServersConfigs', () => {
             sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
             EnableRecordings: true,
-            bot_user_id: 'thebot',
         };
         const iceConfigs = getICEServersConfigs(config);
 
