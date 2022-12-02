@@ -277,7 +277,7 @@ export const getWebSocketLastDisconnected = async (serverDatabase: Database) => 
     }
 };
 
-export const observeWebsocket = (database: Database) => {
+export const observeWebsocketLastDisconnected = (database: Database) => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.WEBSOCKET).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: '0'}))),
         switchMap((model) => of$(parseInt(model.value || 0, 10) || 0)),
