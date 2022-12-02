@@ -27,7 +27,7 @@ function AppsFormContainer({
     const [currentForm, setCurrentForm] = useState(form);
     const serverUrl = useServerUrl();
 
-    const submit = useCallback(async (submission: {values: AppFormValues}): Promise<{data?: AppCallResponse<FormResponseData>; error?: AppCallResponse<FormResponseData>}> => {
+    const submit = useCallback(async (submission: AppFormValues): Promise<{data?: AppCallResponse<FormResponseData>; error?: AppCallResponse<FormResponseData>}> => {
         const makeErrorMsg = (msg: string) => {
             return intl.formatMessage(
                 {
@@ -60,7 +60,7 @@ function AppsFormContainer({
             return {error: makeCallErrorResponse('unreachable: empty context')};
         }
 
-        const creq = createCallRequest(currentForm.submit, context, {}, submission.values);
+        const creq = createCallRequest(currentForm.submit, context, {}, submission);
         const res = await doAppSubmit<FormResponseData>(serverUrl, creq, intl);
 
         if (res.error) {
@@ -93,7 +93,7 @@ function AppsFormContainer({
                 )))};
         }
         return res;
-    }, []);
+    }, [currentForm, setCurrentForm, context, serverUrl, intl]);
 
     const refreshOnSelect = useCallback(async (field: AppField, values: AppFormValues): Promise<DoAppCallResult<FormResponseData>> => {
         const makeErrorMsg = (message: string) => intl.formatMessage(
@@ -161,7 +161,7 @@ function AppsFormContainer({
                 )))};
         }
         return res;
-    }, []);
+    }, [currentForm, setCurrentForm, context, serverUrl, intl]);
 
     const performLookupCall = useCallback(async (field: AppField, values: AppFormValues, userInput: string): Promise<DoAppCallResult<AppLookupResponse>> => {
         const makeErrorMsg = (message: string) => intl.formatMessage(
@@ -187,7 +187,7 @@ function AppsFormContainer({
         creq.query = userInput;
 
         return doAppLookup<AppLookupResponse>(serverUrl, creq, intl);
-    }, []);
+    }, [context, serverUrl, intl]);
 
     if (!currentForm?.submit || !context) {
         return null;

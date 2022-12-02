@@ -12,7 +12,7 @@ import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl} from '@queries/app/servers';
-import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
+import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeam, getLastTeam, prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
@@ -41,11 +41,7 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
         }
 
         if (currentTeam?.id === teamId) {
-            const appDatabase = DatabaseManager.appDatabase?.database;
-            let currentServer = '';
-            if (appDatabase) {
-                currentServer = await getActiveServerUrl(appDatabase);
-            }
+            const currentServer = await getActiveServerUrl();
 
             if (currentServer === serverUrl) {
                 DeviceEventEmitter.emit(Events.LEAVE_TEAM, currentTeam?.displayName);
@@ -98,8 +94,7 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     const modelPromises: Array<Promise<Model[]>> = [];
     if (teams?.length && teamMemberships?.length) {
         const {channels, memberships, categories} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
-        modelPromises.push(prepareCategories(operator, categories));
-        modelPromises.push(prepareCategoryChannels(operator, categories));
+        modelPromises.push(prepareCategoriesAndCategoriesChannels(operator, categories || [], true));
         modelPromises.push(...await prepareMyChannelsForTeam(operator, teamId, channels || [], memberships || []));
 
         const {roles} = await fetchRoles(serverUrl, teamMemberships, memberships, undefined, true);

@@ -56,6 +56,10 @@ type DialogOption = {
     value: string;
 };
 
+type SelectedDialogOption = DialogOption | DialogOption[] | undefined;
+
+type SelectedDialogValue = string | string[] | undefined;
+
 type DialogElement = {
     display_name: string;
     name: string;

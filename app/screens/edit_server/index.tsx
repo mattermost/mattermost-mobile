@@ -9,7 +9,7 @@ import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import DatabaseManager from '@database/manager';
-import {queryServerByDisplayName} from '@queries/app/servers';
+import {getServerByDisplayName} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -73,7 +73,7 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         }
 
         setSaving(true);
-        const knownServer = await queryServerByDisplayName(DatabaseManager.appDatabase!.database, displayName);
+        const knownServer = await getServerByDisplayName(displayName);
         if (knownServer && knownServer.lastActiveAt > 0 && knownServer.url !== server.url) {
             setButtonDisabled(true);
             setDisplayNameError(formatMessage({

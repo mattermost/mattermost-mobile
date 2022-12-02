@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {useServerUrl} from '@app/context/server';
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ChannelActions from '@components/channel_actions';
 import {useTheme} from '@context/theme';
@@ -12,6 +13,7 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import ChannelInfoAppBindings from './app_bindings';
 import DestructiveOptions from './destructive_options';
 import Extra from './extra';
 import Options from './options';
@@ -54,11 +56,12 @@ const ChannelInfo = ({
     isCallsFeatureRestricted,
 }: Props) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
     const callsAvailable = isCallsEnabledInChannel && !isCallsFeatureRestricted;
 
     const onPressed = useCallback(() => {
-        dismissModal({componentId});
+        return dismissModal({componentId});
     }, [componentId]);
 
     useNavButtonPressed(closeButtonId, componentId, onPressed, []);
@@ -103,6 +106,11 @@ const ChannelInfo = ({
                         <View style={styles.separator}/>
                     </>
                 }
+                <ChannelInfoAppBindings
+                    channelId={channelId}
+                    serverUrl={serverUrl}
+                    dismissChannelInfo={onPressed}
+                />
                 <DestructiveOptions
                     channelId={channelId}
                     componentId={componentId}

@@ -5,11 +5,10 @@ import {Model} from '@nozbe/watermelondb';
 
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
-import {prepareCategories, prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById} from '@queries/servers/categories';
+import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
-import {pluckUnique} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -34,48 +33,18 @@ export const deleteCategory = async (serverUrl: string, categoryId: string) => {
 
 export async function storeCategories(serverUrl: string, categories: CategoryWithChannels[], prune = false, prepareRecordsOnly = false) {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        const modelPromises: Array<Promise<Model[]>> = [];
-        const preparedCategories = prepareCategories(operator, categories);
-        if (preparedCategories) {
-            modelPromises.push(preparedCategories);
-        }
-
-        const preparedCategoryChannels = prepareCategoryChannels(operator, categories);
-        if (preparedCategoryChannels) {
-            modelPromises.push(preparedCategoryChannels);
-        }
-
-        const models = await Promise.all(modelPromises);
-        const flattenedModels = models.flat();
-
-        if (prune && categories.length) {
-            const remoteCategoryIds = new Set(categories.map((cat) => cat.id));
-
-            // If the passed categories have more than one team, we want to update across teams
-            const teamIds = pluckUnique('team_id')(categories) as string[];
-            const localCategories = await queryCategoriesByTeamIds(database, teamIds).fetch();
-
-            localCategories.
-                filter((category) => category.type === 'custom').
-                forEach((localCategory) => {
-                    if (!remoteCategoryIds.has(localCategory.id)) {
-                        localCategory.prepareDestroyPermanently();
-                        flattenedModels.push(localCategory);
-                    }
-                });
-        }
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const models = await prepareCategoriesAndCategoriesChannels(operator, categories, prune);
 
         if (prepareRecordsOnly) {
-            return {models: flattenedModels};
+            return {models};
         }
 
-        if (flattenedModels?.length > 0) {
-            await operator.batchRecords(flattenedModels);
+        if (models.length > 0) {
+            await operator.batchRecords(models);
         }
 
-        return {models: flattenedModels};
+        return {models};
     } catch (error) {
         logError('FAILED TO STORE CATEGORIES', error);
         return {error};

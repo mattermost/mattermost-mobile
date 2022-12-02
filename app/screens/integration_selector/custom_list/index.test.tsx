@@ -9,7 +9,7 @@ import {Preferences} from '@constants';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
-import CustomList, {FLATLIST} from '.';
+import CustomList from '.';
 
 describe('components/integration_selector/custom_list', () => {
     let database: Database;
@@ -42,7 +42,6 @@ describe('components/integration_selector/custom_list', () => {
             <CustomList
                 data={[channel]}
                 key='custom_list'
-                listType={FLATLIST}
                 loading={false}
                 theme={Preferences.THEMES.denim}
                 testID='ChannelListRow'

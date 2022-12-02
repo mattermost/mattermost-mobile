@@ -5,9 +5,11 @@ import {tableSchema} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
+import type {TableSchemaSpec} from '@nozbe/watermelondb/Schema';
+
 const {THREAD} = MM_TABLES.SERVER;
 
-export default tableSchema({
+export const tableSchemaSpec: TableSchemaSpec = {
     name: THREAD,
     columns: [
         {name: 'is_following', type: 'boolean'},
@@ -19,5 +21,7 @@ export default tableSchema({
         {name: 'viewed_at', type: 'number'},
         {name: 'last_fetched_at', type: 'number', isIndexed: true},
     ],
-});
+};
+
+export default tableSchema(tableSchemaSpec);
 

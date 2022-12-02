@@ -105,7 +105,7 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
                 return;
             case AppCallResponseTypes.FORM:
                 if (callResp.form) {
-                    showAppForm(callResp.form);
+                    showAppForm(callResp.form, context);
                 }
                 return;
             default: {

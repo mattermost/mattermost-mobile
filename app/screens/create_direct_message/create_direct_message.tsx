@@ -21,6 +21,7 @@ import {t} from '@i18n';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
 import SelectedUsers from './selected_users';
@@ -68,8 +69,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
         },
         noResultText: {
-            fontSize: 26,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 600, 'Regular'),
         },
     };
 });

@@ -8,6 +8,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {FAVORITES_CATEGORY} from '@constants/categories';
 import {MM_TABLES} from '@constants/database';
 import {makeCategoryChannelId} from '@utils/categories';
+import {pluckUnique} from '@utils/helpers';
 
 import {observeChannelsByLastPostAt} from './channel';
 
@@ -34,6 +35,46 @@ export const queryCategoriesById = (database: Database, categoryIds: string[]) =
 export const queryCategoriesByTeamIds = (database: Database, teamIds: string[]) => {
     return database.get<CategoryModel>(CATEGORY).query(Q.where('team_id', Q.oneOf(teamIds)));
 };
+
+export async function prepareCategoriesAndCategoriesChannels(operator: ServerDataOperator, categories: CategoryWithChannels[], prune = false) {
+    try {
+        const modelPromises: Array<Promise<Model[]>> = [];
+        const preparedCategories = prepareCategories(operator, categories);
+        if (preparedCategories) {
+            modelPromises.push(preparedCategories);
+        }
+
+        const preparedCategoryChannels = prepareCategoryChannels(operator, categories);
+        if (preparedCategoryChannels) {
+            modelPromises.push(preparedCategoryChannels);
+        }
+
+        const models = await Promise.all(modelPromises);
+        const flattenedModels = models.flat();
+
+        if (prune && categories.length) {
+            const remoteCategoryIds = new Set(categories.map((cat) => cat.id));
+
+            // If the passed categories have more than one team, we want to update across teams
+            const teamIds = pluckUnique('team_id')(categories) as string[];
+            const localCategories = await queryCategoriesByTeamIds(operator.database, teamIds).fetch();
+            const customCategories = localCategories.filter((c) => c.type === 'custom');
+            for await (const custom of customCategories) {
+                if (!remoteCategoryIds.has(custom.id)) {
+                    const categoryChannels = await custom.categoryChannels.fetch();
+                    for (const cc of categoryChannels) {
+                        flattenedModels.push(cc.prepareDestroyPermanently());
+                    }
+                    flattenedModels.push(custom.prepareDestroyPermanently());
+                }
+            }
+        }
+
+        return flattenedModels;
+    } catch {
+        return [];
+    }
+}
 
 export const prepareCategories = (operator: ServerDataOperator, categories?: CategoryWithChannels[]) => {
     return operator.handleCategories({categories, prepareRecordsOnly: true});
