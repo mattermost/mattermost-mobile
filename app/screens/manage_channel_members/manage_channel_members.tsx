@@ -94,12 +94,9 @@ export default function ManageChannelMembers({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
-    const intl = useIntl();
-    const {formatMessage} = intl;
+    const {formatMessage, locale} = useIntl();
 
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
-    const next = useRef(true);
-    const page = useRef(-1);
     const mounted = useRef(false);
 
     const [manageEnabled, setManageEnabled] = useState(false);
@@ -110,14 +107,9 @@ export default function ManageChannelMembers({
 
     const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
         if (mounted.current) {
-            if (users && !users.length) {
-                next.current = false;
-            }
-
-            page.current += 1;
             setLoading(false);
             if (users?.length) {
-                setProfiles((prev: UserProfile[]) => [...prev, ...users]);
+                setProfiles(users);
             }
         }
     };
@@ -128,7 +120,7 @@ export default function ManageChannelMembers({
     }, []);
 
     const getProfiles = useCallback(debounce(() => {
-        if (next.current && !loading && !term && mounted.current) {
+        if (!loading && !term && mounted.current) {
             setLoading(true);
             fetchProfilesInChannel(serverUrl, channelId).then(loadedProfiles);
         }
@@ -139,7 +131,7 @@ export default function ManageChannelMembers({
             return;
         }
         const screen = Screens.USER_PROFILE;
-        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+        const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const closeButtonId = 'close-user-profile';
         const props = {
             channelId,
@@ -198,23 +190,12 @@ export default function ManageChannelMembers({
                 text: formatMessage(manage ? messages.button_done : messages.button_manage),
             }],
         });
-    }, [intl.locale, manageEnabled, theme]);
+    }, [locale, manageEnabled, theme]);
 
     const toggleManageEnabled = useCallback(() => {
         updateNavigationButtons(!manageEnabled);
         setManageEnabled(!manageEnabled);
     }, [manageEnabled, updateNavigationButtons]);
-
-    useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
-
-    useEffect(() => {
-        mounted.current = true;
-        updateNavigationButtons(false);
-        getProfiles();
-        return () => {
-            mounted.current = false;
-        };
-    }, []);
 
     const handleRemoveUser = useCallback(async (userId: string) => {
         const index = profiles.findIndex((user) => user.id === userId);
@@ -228,13 +209,6 @@ export default function ManageChannelMembers({
         }
     }, [profiles]);
 
-    useEffect(() => {
-        const removeUserListener = DeviceEventEmitter.addListener(Events.REMOVE_USER_FROM_CHANNEL, handleRemoveUser);
-        return (() => {
-            removeUserListener?.remove();
-        });
-    }, [handleRemoveUser]);
-
     const data = useMemo(() => {
         const isSearch = Boolean(term);
         if (isSearch) {
@@ -242,6 +216,24 @@ export default function ManageChannelMembers({
         }
         return profiles;
     }, [term, searchResults, profiles]);
+
+    useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
+
+    useEffect(() => {
+        mounted.current = true;
+        updateNavigationButtons(false);
+        getProfiles();
+        return () => {
+            mounted.current = false;
+        };
+    }, []);
+
+    useEffect(() => {
+        const removeUserListener = DeviceEventEmitter.addListener(Events.REMOVE_USER_FROM_CHANNEL, handleRemoveUser);
+        return (() => {
+            removeUserListener?.remove();
+        });
+    }, [handleRemoveUser]);
 
     return (
         <SafeAreaView
@@ -251,12 +243,12 @@ export default function ManageChannelMembers({
             <View style={style.searchBar}>
                 <Search
                     autoCapitalize='none'
-                    cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                    cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     onCancel={clearSearch}
                     onChangeText={onSearch}
                     onSubmitEditing={search}
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     testID='manage_members.search_bar'
                     value={term}
@@ -271,7 +263,7 @@ export default function ManageChannelMembers({
                 profiles={data}
                 selectedIds={{}}
                 showManageMode={canManage && manageEnabled}
-                showNoResults={!loading && page.current !== -1}
+                showNoResults={!loading}
                 teammateNameDisplay={teammateNameDisplay}
                 term={term}
                 testID='manage_members.user_list'
