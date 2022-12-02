@@ -26,7 +26,6 @@ type Props = {
     type?: ChannelType;
     canEnableDisableCalls: boolean;
     isCallsEnabledInChannel: boolean;
-    isCallsFeatureRestricted: boolean;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -53,12 +52,14 @@ const ChannelInfo = ({
     type,
     canEnableDisableCalls,
     isCallsEnabledInChannel,
-    isCallsFeatureRestricted,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
-    const callsAvailable = isCallsEnabledInChannel && !isCallsFeatureRestricted;
+
+    // NOTE: isCallsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
+    //   which comes from observeIsCallsEnabledInChannel
+    const callsAvailable = isCallsEnabledInChannel;
 
     const onPressed = useCallback(() => {
         return dismissModal({componentId});
@@ -97,7 +98,7 @@ const ChannelInfo = ({
                     callsEnabled={callsAvailable}
                 />
                 <View style={styles.separator}/>
-                {canEnableDisableCalls && !isCallsFeatureRestricted &&
+                {canEnableDisableCalls &&
                     <>
                         <ChannelInfoEnableCalls
                             channelId={channelId}

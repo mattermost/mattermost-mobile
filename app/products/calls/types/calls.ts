@@ -84,7 +84,7 @@ export type ChannelsWithCalls = Dictionary<boolean>;
 
 export type ServerChannelState = {
     channel_id: string;
-    enabled: boolean;
+    enabled?: boolean;
     call?: ServerCallState;
 }
 

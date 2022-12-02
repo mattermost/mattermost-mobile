@@ -9,6 +9,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
 import {removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
+import {loadCallForChannel} from '@calls/actions/calls';
 import {Events, General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
@@ -614,6 +615,7 @@ export async function joinChannel(serverUrl: string, teamId: string, channelId?:
     }
 
     if (channelId || channel?.id) {
+        loadCallForChannel(serverUrl, channelId || channel!.id);
         EphemeralStore.removeJoiningChannel(channelId || channel!.id);
     }
     return {channel, member};

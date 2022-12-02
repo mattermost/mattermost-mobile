@@ -6,13 +6,19 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {observeIsCallsFeatureRestricted} from '@calls/observers';
-import {observeCallsConfig, observeCallsState} from '@calls/state';
-import {General} from '@constants';
+import {observeIsCallsEnabledInChannel} from '@calls/observers';
+import {observeCallsConfig} from '@calls/state';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannel} from '@queries/servers/channel';
-import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
-import {observeCurrentUser, observeUserIsChannelAdmin} from '@queries/servers/user';
+import {
+    observeConfigValue,
+    observeCurrentChannelId,
+    observeCurrentTeamId,
+    observeCurrentUserId,
+} from '@queries/servers/system';
+import {observeCurrentUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
+import {isTypeDMorGM} from '@utils/channel';
+import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemAdmin} from '@utils/user';
 
 import ChannelInfo from './channel_info';
@@ -27,7 +33,17 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
     const channel = observeCurrentChannel(database);
     const type = channel.pipe(switchMap((c) => of$(c?.type)));
     const channelId = channel.pipe(switchMap((c) => of$(c?.id || '')));
+    const teamId = channel.pipe(switchMap((c) => (c?.teamId ? of$(c.teamId) : observeCurrentTeamId(database))));
+    const userId = observeCurrentUserId(database);
+    const isTeamAdmin = combineLatest([teamId, userId]).pipe(
+        switchMap(([tId, uId]) => observeUserIsTeamAdmin(database, uId, tId)),
+    );
 
+    // callsDefaultEnabled means "live mode" post 7.6
+    const callsDefaultEnabled = observeCallsConfig(serverUrl).pipe(
+        switchMap((config) => of$(config.DefaultEnabled)),
+        distinctUntilChanged(),
+    );
     const allowEnableCalls = observeCallsConfig(serverUrl).pipe(
         switchMap((config) => of$(config.AllowEnableCalls)),
         distinctUntilChanged(),
@@ -37,48 +53,55 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         switchMap((roles) => of$(isSystemAdmin(roles || ''))),
         distinctUntilChanged(),
     );
-    const channelAdmin = combineLatest([observeCurrentUserId(database), channelId]).pipe(
-        switchMap(([userId, chId]) => observeUserIsChannelAdmin(database, userId, chId)),
+    const channelAdmin = combineLatest([userId, channelId]).pipe(
+        switchMap(([uId, chId]) => observeUserIsChannelAdmin(database, uId, chId)),
         distinctUntilChanged(),
     );
-    const canEnableDisableCalls = combineLatest([type, allowEnableCalls, systemAdmin, channelAdmin]).pipe(
-        switchMap(([t, allow, sysAdmin, chAdmin]) => {
-            const isDirectMessage = t === General.DM_CHANNEL;
-            const isGroupMessage = t === General.GM_CHANNEL;
+    const callsGAServer = observeConfigValue(database, 'Version').pipe(
+        switchMap((v) => of$(isMinimumServerVersion(v || '', 7, 6))),
+    );
+    const dmOrGM = type.pipe(switchMap((t) => of$(isTypeDMorGM(t))));
+    const canEnableDisableCalls = combineLatest([callsDefaultEnabled, allowEnableCalls, systemAdmin, channelAdmin, callsGAServer, dmOrGM, isTeamAdmin]).pipe(
+        switchMap(([liveMode, allow, sysAdmin, chAdmin, gaServer, dmGM, tAdmin]) => {
+            // if GA 7.6:
+            //   allow (will always be true) and !liveMode = system admins can enable/disable
+            //   allow (will always be true) and liveMode = channel, team, system admins, DM/GM participants can enable/disable
+            // if pre GA 7.6:
+            //   allow and !liveMode  = channel, system admins, DM/GM participants can enable/disable
+            //   allow and liveMode   = channel, system admins, DM/GM participants can enable/disable
+            //   !allow and !liveMode = system admins can enable/disable -- can combine with below
+            //   !allow and liveMode  = system admins can enable/disable -- can combine with above
+            // Note: There are ways to 'simplify' the conditions below. Here we're preferring clarity.
 
-            const isAdmin = sysAdmin || chAdmin;
-            let temp = Boolean(sysAdmin);
-            if (allow) {
-                temp = Boolean(isDirectMessage || isGroupMessage || isAdmin);
+            if (gaServer) {
+                if (allow && !liveMode) {
+                    return of$(Boolean(sysAdmin));
+                }
+                if (allow && liveMode) {
+                    return of$(Boolean(chAdmin || tAdmin || sysAdmin || dmGM));
+                }
+                return of$(false);
             }
-            return of$(temp);
+
+            // now we're pre GA 7.6
+            if (allow && liveMode) {
+                return of$(Boolean(chAdmin || sysAdmin || dmGM));
+            }
+            if (allow && !liveMode) {
+                return of$(Boolean(sysAdmin || chAdmin || dmGM));
+            }
+            if (!allow) {
+                return of$(Boolean(sysAdmin));
+            }
+            return of$(false);
         }),
     );
-    const callsDefaultEnabled = observeCallsConfig(serverUrl).pipe(
-        switchMap((config) => of$(config.DefaultEnabled)),
-        distinctUntilChanged(),
-    );
-    const callsStateEnabledDict = observeCallsState(serverUrl).pipe(
-        switchMap((state) => of$(state.enabled)),
-        distinctUntilChanged(), // Did the enabled object ref change? If so, a channel's enabled state has changed.
-    );
-    const isCallsEnabledInChannel = combineLatest([observeCurrentChannelId(database), callsStateEnabledDict, callsDefaultEnabled]).pipe(
-        switchMap(([id, enabled, defaultEnabled]) => {
-            const explicitlyEnabled = enabled.hasOwnProperty(id as string) && enabled[id];
-            const explicitlyDisabled = enabled.hasOwnProperty(id as string) && !enabled[id];
-            return of$(explicitlyEnabled || (!explicitlyDisabled && defaultEnabled));
-        }),
-        distinctUntilChanged(),
-    );
-    const isCallsFeatureRestricted = channelId.pipe(
-        switchMap((id) => observeIsCallsFeatureRestricted(database, serverUrl, id)),
-    );
+    const isCallsEnabledInChannel = observeIsCallsEnabledInChannel(database, serverUrl, observeCurrentChannelId(database));
 
     return {
         type,
         canEnableDisableCalls,
         isCallsEnabledInChannel,
-        isCallsFeatureRestricted,
     };
 });
 
