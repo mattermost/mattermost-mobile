@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, Platform, View} from 'react-native';
+import {Keyboard, LayoutChangeEvent, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
@@ -17,6 +17,7 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
+import {useModalPosition} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {dismissModal, setButtons} from '@screens/navigation';
@@ -124,6 +125,8 @@ export default function CreateDirectMessage({
     const next = useRef(true);
     const page = useRef(-1);
     const mounted = useRef(false);
+    const mainView = useRef<View>(null);
+    const modalPosition = useModalPosition(mainView);
 
     const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
@@ -132,11 +135,8 @@ export default function CreateDirectMessage({
     const [startingConversation, setStartingConversation] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const [showToast, setShowToast] = useState(false);
+    const [containerHeight, setContainerHeight] = useState(0);
     const selectedCount = Object.keys(selectedIds).length;
-
-    useEffect(() => {
-        setShowToast(selectedCount >= General.MAX_USERS_IN_GM);
-    }, [selectedCount >= General.MAX_USERS_IN_GM]);
 
     const isSearch = Boolean(term);
 
@@ -151,6 +151,28 @@ export default function CreateDirectMessage({
             dispatchProfiles({type: 'add', values: users});
         }
     };
+
+    const data = useMemo(() => {
+        if (term) {
+            const exactMatches: UserProfile[] = [];
+            const filterByTerm = (p: UserProfile) => {
+                if (selectedCount > 0 && p.id === currentUserId) {
+                    return false;
+                }
+
+                if (p.username === term || p.username.startsWith(term)) {
+                    exactMatches.push(p);
+                    return false;
+                }
+
+                return true;
+            };
+
+            const results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
+            return [...exactMatches, ...results];
+        }
+        return profiles;
+    }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -260,18 +282,22 @@ export default function CreateDirectMessage({
             results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
         }
 
-        let data: UserProfile[] = [];
+        let searchData: UserProfile[] = [];
         if (results.data) {
-            data = results.data;
+            searchData = results.data;
         }
 
-        setSearchResults(data);
+        setSearchResults(searchData);
         setLoading(false);
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
 
     const search = useCallback(() => {
         searchUsers(term);
     }, [searchUsers, term]);
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
 
     const onSearch = useCallback((text: string) => {
         if (text) {
@@ -310,27 +336,9 @@ export default function CreateDirectMessage({
         };
     }, []);
 
-    const data = useMemo(() => {
-        if (term) {
-            const exactMatches: UserProfile[] = [];
-            const filterByTerm = (p: UserProfile) => {
-                if (selectedCount > 0 && p.id === currentUserId) {
-                    return false;
-                }
-
-                if (p.username === term || p.username.startsWith(term)) {
-                    exactMatches.push(p);
-                    return false;
-                }
-
-                return true;
-            };
-
-            const results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
-            return [...exactMatches, ...results];
-        }
-        return profiles;
-    }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
+    useEffect(() => {
+        setShowToast(selectedCount >= General.MAX_USERS_IN_GM);
+    }, [selectedCount >= General.MAX_USERS_IN_GM]);
 
     if (startingConversation) {
         return (
@@ -344,6 +352,8 @@ export default function CreateDirectMessage({
         <SafeAreaView
             style={style.container}
             testID='create_direct_message.screen'
+            onLayout={onLayout}
+            ref={mainView}
         >
             <View style={style.searchBar}>
                 <Search
@@ -373,6 +383,8 @@ export default function CreateDirectMessage({
                 tutorialWatched={tutorialWatched}
             />
             <SelectedUsers
+                containerHeight={containerHeight}
+                modalPosition={modalPosition}
                 showToast={showToast}
                 setShowToast={setShowToast}
                 toastIcon={'check'}

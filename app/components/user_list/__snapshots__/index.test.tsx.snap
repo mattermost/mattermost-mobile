@@ -40,11 +40,11 @@ exports[`components/channel_list_row should show no results 1`] = `
             "username": "johndoe",
           },
         ],
+        "first": true,
         "id": "J",
       },
     ]
   }
-  extraData={false}
   getItem={[Function]}
   getItemCount={[Function]}
   initialNumToRender={15}
@@ -312,11 +312,11 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             "username": "johndoe",
           },
         ],
+        "first": true,
         "id": "J",
       },
     ]
   }
-  extraData={false}
   getItem={[Function]}
   getItemCount={[Function]}
   initialNumToRender={15}
@@ -584,11 +584,11 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             "username": "johndoe",
           },
         ],
+        "first": true,
         "id": "J",
       },
     ]
   }
-  extraData={false}
   getItem={[Function]}
   getItemCount={[Function]}
   initialNumToRender={15}
