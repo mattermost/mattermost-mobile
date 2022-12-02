@@ -142,7 +142,7 @@ const AtMention = ({
     // Effects
     useEffect(() => {
         // Fetches and updates the local db store with the mention
-        if (!user.username) {
+        if (!user.username && !group?.name) {
             fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
         }
     }, []);
