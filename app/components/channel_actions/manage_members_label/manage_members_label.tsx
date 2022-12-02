@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 
+import {removeMemberFromChannel} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {Events, Members} from '@constants';
@@ -36,6 +37,7 @@ const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, t
     const serverUrl = useServerUrl();
 
     const handleRemoveUser = useCallback(async () => {
+        await removeMemberFromChannel(serverUrl, channelId, userId);
         await dismissBottomSheet();
         DeviceEventEmitter.emit(Events.REMOVE_USER_FROM_CHANNEL, userId);
     }, [channelId, userId, serverUrl]);
