@@ -82,6 +82,8 @@ const messages = defineMessages({
 });
 
 const EMPTY: UserProfile[] = [];
+const {USER_PROFILE} = Screens;
+const CLOSE_BUTTON_ID = 'close-user-profile';
 
 export default function ManageChannelMembers({
     canManage,
@@ -134,19 +136,17 @@ export default function ManageChannelMembers({
         if (!manageEnabled) {
             return;
         }
-        const screen = Screens.USER_PROFILE;
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-        const closeButtonId = 'close-user-profile';
         const props = {
             channelId,
-            closeButtonId,
-            location: Screens.USER_PROFILE,
+            closeButtonId: CLOSE_BUTTON_ID,
+            location: USER_PROFILE,
             manageMode: true,
             userId: profile.id,
         };
 
         Keyboard.dismiss();
-        openAsBottomSheet({screen, title, theme, closeButtonId, props});
+        openAsBottomSheet({screen: USER_PROFILE, title, theme, closeButtonId: CLOSE_BUTTON_ID, props});
     }, [manageEnabled]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
@@ -210,7 +210,7 @@ export default function ManageChannelMembers({
             newProfiles.splice(index, 1);
             setProfiles(newProfiles);
 
-            await NavigationStore.waitUntilScreensIsRemoved(Screens.USER_PROFILE);
+            await NavigationStore.waitUntilScreensIsRemoved(USER_PROFILE);
             showRemoveChannelUserSnackbar();
         }
     }, [profiles]);
