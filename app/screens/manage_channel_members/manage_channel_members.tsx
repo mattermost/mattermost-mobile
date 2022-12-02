@@ -238,22 +238,7 @@ export default function ManageChannelMembers({
     const data = useMemo(() => {
         const isSearch = Boolean(term);
         if (isSearch) {
-            const exactMatches: UserProfile[] = [];
-            const filterByTerm = (p: UserProfile) => {
-                if (p.id === currentUserId) {
-                    return false;
-                }
-
-                if (p.username === term || p.username.startsWith(term)) {
-                    exactMatches.push(p);
-                    return false;
-                }
-
-                return true;
-            };
-
-            const results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
-            return [...exactMatches, ...results];
+            return filterProfilesMatchingTerm(searchResults, term);
         }
         return profiles;
     }, [term, searchResults, profiles]);
