@@ -24,9 +24,6 @@ declare class ThreadInTeamModel extends Model {
     /** teamId: Associated thread identifier */
     teamId: string;
 
-    /** loaded_in_global_threads : Flag to differentiate the unread threads loaded for showing unread counts/mentions */
-    loadedInGlobalThreads: boolean;
-
     /** thread : The related record to the parent Thread model */
     thread: Relation<ThreadModel>;
 

@@ -11,7 +11,7 @@ import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preferen
 import {fetchRoles} from '@actions/remote/role';
 import {DataRetentionPoliciesRequest, fetchConfigAndLicense, fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
-import {fetchNewThreads} from '@actions/remote/thread';
+import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
 import {General, Preferences, Screens} from '@constants';
@@ -29,6 +29,7 @@ import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getConfig, getCurrentUserId, getIsDataRetentionEnabled, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getMemberChannelsFromGQLQuery, gqlToClientChannelMembership} from '@utils/graphql';
 import {logDebug} from '@utils/log';
@@ -337,14 +338,14 @@ export async function restDeferredAppEntryActions(
 
     if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
         if (initialTeamId) {
-            await fetchNewThreads(serverUrl, initialTeamId, false);
+            await syncTeamThreads(serverUrl, initialTeamId);
         }
 
         if (teamData.teams?.length) {
             for await (const team of teamData.teams) {
                 if (team.id !== initialTeamId) {
                     // need to await here since GM/DM threads in different teams overlap
-                    await fetchNewThreads(serverUrl, team.id, false);
+                    await syncTeamThreads(serverUrl, team.id);
                 }
             }
         }
@@ -418,6 +419,8 @@ const graphQLSyncAllChannelMembers = async (serverUrl: string) => {
         return 'Server database not found';
     }
 
+    const {database} = operator;
+
     const response = await gqlAllChannels(serverUrl);
     if ('error' in response) {
         return response.error;
@@ -427,7 +430,7 @@ const graphQLSyncAllChannelMembers = async (serverUrl: string) => {
         return response.errors[0].message;
     }
 
-    const userId = await getCurrentUserId(operator.database);
+    const userId = await getCurrentUserId(database);
 
     const channels = getMemberChannelsFromGQLQuery(response.data);
     const memberships = response.data.channelMembers?.map((m) => gqlToClientChannelMembership(m, userId));
@@ -436,7 +439,16 @@ const graphQLSyncAllChannelMembers = async (serverUrl: string) => {
         const modelPromises = await prepareMyChannelsForTeam(operator, '', channels, memberships, undefined, true);
         const models = (await Promise.all(modelPromises)).flat();
         if (models.length) {
-            operator.batchRecords(models);
+            await operator.batchRecords(models);
+        }
+    }
+
+    const isCRTEnabled = await getIsCRTEnabled(database);
+    if (isCRTEnabled) {
+        const myTeams = await queryMyTeams(operator.database).fetch();
+        for await (const myTeam of myTeams) {
+            // need to await here since GM/DM threads in different teams overlap
+            await syncTeamThreads(serverUrl, myTeam.id);
         }
     }
 
@@ -457,11 +469,12 @@ const restSyncAllChannelMembers = async (serverUrl: string) => {
         const config = await client.getClientConfigOld();
 
         let excludeDirect = false;
-        for (const myTeam of myTeams) {
+        for await (const myTeam of myTeams) {
             fetchMyChannelsForTeam(serverUrl, myTeam.id, false, 0, false, excludeDirect);
             excludeDirect = true;
             if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
-                fetchNewThreads(serverUrl, myTeam.id, false);
+                // need to await here since GM/DM threads in different teams overlap
+                await syncTeamThreads(serverUrl, myTeam.id);
             }
         }
     } catch {

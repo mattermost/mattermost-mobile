@@ -9,7 +9,7 @@ import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {MyTeamsRequest} from '@actions/remote/team';
-import {fetchNewThreads} from '@actions/remote/thread';
+import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
 import {Preferences} from '@constants';
@@ -55,14 +55,14 @@ export async function deferredAppEntryGraphQLActions(
 
     if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
         if (initialTeamId) {
-            await fetchNewThreads(serverUrl, initialTeamId, false);
+            await syncTeamThreads(serverUrl, initialTeamId);
         }
 
         if (teamData.teams?.length) {
             for await (const team of teamData.teams) {
                 if (team.id !== initialTeamId) {
                     // need to await here since GM/DM threads in different teams overlap
-                    await fetchNewThreads(serverUrl, team.id, false);
+                    await syncTeamThreads(serverUrl, team.id);
                 }
             }
         }

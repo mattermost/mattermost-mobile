@@ -29,14 +29,13 @@ const ReportProblem = ({buildNumber, currentTeamId, currentUserId, siteName, sup
         const appBuild = DeviceInfo.getBuildNumber();
         const deviceId = DeviceInfo.getDeviceId();
 
-        const logPaths = await TurboLogger.getLogPaths();
-
-        const attachments = logPaths.map((path) => ({
-            path,
-            mimeType: 'message/rfc822',
-        }));
-
         try {
+            const logPaths = await TurboLogger.getLogPaths();
+            const attachments = logPaths.map((path) => ({
+                path,
+                mimeType: 'message/rfc822',
+            }));
+
             await TurboMailer.sendMail({
                 subject: `Problem with ${siteName} React Native app`,
                 recipients: [supportEmail],
