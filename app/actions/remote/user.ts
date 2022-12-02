@@ -451,7 +451,7 @@ export const fetchUsersByUsernames = async (serverUrl: string, usernames: string
 
         const users = await client.getProfilesByUsernames([...new Set(usersToLoad)]);
 
-        if (!fetchOnly) {
+        if (users.length && !fetchOnly) {
             await operator.handleUsers({
                 users,
                 prepareRecordsOnly: false,
