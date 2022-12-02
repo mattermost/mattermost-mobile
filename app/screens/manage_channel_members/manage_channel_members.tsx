@@ -81,6 +81,8 @@ const messages = defineMessages({
     },
 });
 
+const EMPTY: UserProfile[] = [];
+
 export default function ManageChannelMembers({
     canManage,
     channelId,
@@ -100,8 +102,8 @@ export default function ManageChannelMembers({
     const mounted = useRef(false);
 
     const [manageEnabled, setManageEnabled] = useState(false);
-    const [profiles, setProfiles] = useState<UserProfile[]>([]);
-    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+    const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
+    const [searchResults, setSearchResults] = useState<UserProfile[]>(EMPTY);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
 
@@ -116,7 +118,7 @@ export default function ManageChannelMembers({
 
     const clearSearch = useCallback(() => {
         setTerm('');
-        setSearchResults([]);
+        setSearchResults(EMPTY);
     }, []);
 
     const getProfiles = useCallback(debounce(() => {
@@ -165,18 +167,20 @@ export default function ManageChannelMembers({
     }, [searchUsers, term]);
 
     const onSearch = useCallback((text: string) => {
-        if (text) {
-            setTerm(text);
-            if (searchTimeoutId.current) {
-                clearTimeout(searchTimeoutId.current);
-            }
-
-            searchTimeoutId.current = setTimeout(() => {
-                searchUsers(text);
-            }, General.SEARCH_TIMEOUT_MILLISECONDS);
-        } else {
+        const hasText = Boolean(text);
+        if (!hasText) {
             clearSearch();
+            return;
         }
+
+        setTerm(text);
+        if (searchTimeoutId.current) {
+            clearTimeout(searchTimeoutId.current);
+        }
+
+        searchTimeoutId.current = setTimeout(() => {
+            searchUsers(text);
+        }, General.SEARCH_TIMEOUT_MILLISECONDS);
     }, [searchUsers, clearSearch]);
 
     const updateNavigationButtons = useCallback(async (manage: boolean) => {
