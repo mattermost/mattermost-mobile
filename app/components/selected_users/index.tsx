@@ -176,54 +176,35 @@ export default function SelectedUsers({
         return u;
     }, [selectedIds, teammateNameDisplay, onRemove]);
 
-    const marginBottom = useMemo(() => {
-        if (!keyboardHeight) {
-            return isTablet ? TABLET_MARGIN_BOTTOM : 0;
-        }
-
-        let margin = BOTTOM_TAB_HEIGHT + BUTTON_HEIGHT + insets.bottom;
-        margin += isTablet ? 0 : -10;
-        return margin;
-    }, [insets.bottom, isTablet, keyboardHeight]);
-
     const totalPanelHeight = useDerivedValue(() => (
         isVisible ? scrollViewHeight.value + BUTTON_HEIGHT : 0
     ), [isVisible]);
 
+    const paddingBottom = useMemo(() => {
+        let padding = keyboardHeight || TABLET_MARGIN_BOTTOM;
+        if (!isTablet) {
+            padding = keyboardHeight ? keyboardHeight - insets.bottom : 0;
+        }
+        return padding;
+    }, [keyboardHeight, isTablet, insets.bottom]);
+
     const animatedViewStyle = useAnimatedStyle(() => ({
         height: withTiming(totalPanelHeight.value, {duration: 200}),
-        marginBottom,
-    }), [marginBottom]);
+    }), [totalPanelHeight.value]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         scrollViewHeight.value = Math.min(SCROLL_VIEW_MAX_HEIGHT, e.nativeEvent.layout.height);
     }, []);
 
-    const contents = (
-        <Animated.View style={[style.container, animatedViewStyle]}>
-            <ScrollView style={{height: scrollViewHeight.value}}>
-                <View
-                    style={style.users}
-                    onLayout={onLayout}
-                >
-                    {users}
-                </View>
-            </ScrollView>
-            <Button
-                onPress={async () => onPress()}
-                icon={buttonIcon}
-                text={buttonText}
-            />
-        </Animated.View>
-    );
-
-    const animatedToastStyle = useAnimatedStyle(() => ({
-        bottom: TOAST_BOTTOM_MARGIN +
+    const animatedToastStyle = useAnimatedStyle(() => {
+        return {
+            bottom: TOAST_BOTTOM_MARGIN +
                 totalPanelHeight.value +
-                marginBottom,
-        opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
-        position: 'absolute',
-    }), [showToast, marginBottom]);
+                paddingBottom,
+            opacity: withTiming(showToast ? 1 : 0, {duration: 300}),
+            position: 'absolute',
+        };
+    }, [showToast, keyboardHeight]);
 
     const toast = useMemo(() => (
         <Toast
@@ -235,12 +216,24 @@ export default function SelectedUsers({
     ), [animatedToastStyle]);
 
     return (
-        <KeyboardAvoidingView
-            behavior='position'
-        >
+        <View style={{paddingBottom}}>
             {showToast && toast}
-            {contents}
-        </KeyboardAvoidingView>
+            <Animated.View style={[style.container, animatedViewStyle]}>
+                <ScrollView style={{height: scrollViewHeight.value}}>
+                    <View
+                        style={style.users}
+                        onLayout={onLayout}
+                    >
+                        {users}
+                    </View>
+                </ScrollView>
+                <Button
+                    onPress={async () => onPress()}
+                    icon={buttonIcon}
+                    text={buttonText}
+                />
+            </Animated.View>
+        </View>
     );
 }
 
