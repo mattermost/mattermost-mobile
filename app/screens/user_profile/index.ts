@@ -29,6 +29,9 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
     const user = observeUser(database, userId);
     const teammateDisplayName = observeTeammateNameDisplay(database);
     const isChannelAdmin = channelId ? observeUserIsChannelAdmin(database, userId, channelId) : of$(false);
+    const isDefaultChannel = channel ? channel.pipe(
+        switchMap((c) => of$(c?.name === General.DEFAULT_CHANNEL)),
+    ) : of$(false);
     const isDirectMessage = channelId ? channel.pipe(
         switchMap((c) => of$(c?.type === General.DM_CHANNEL)),
     ) : of$(false);
@@ -48,6 +51,7 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
         enablePostUsernameOverride,
         isChannelAdmin,
         isCustomStatusEnabled,
+        isDefaultChannel,
         isDirectMessage,
         isMilitaryTime,
         isSystemAdmin: systemAdmin,

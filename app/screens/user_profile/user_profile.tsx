@@ -47,6 +47,7 @@ type Props = {
     isChannelAdmin: boolean;
     isCustomStatusEnabled: boolean;
     isDirectMessage: boolean;
+    isDefaultChannel: boolean;
     isMilitaryTime: boolean;
     isSystemAdmin: boolean;
     isTeamAdmin: boolean;
@@ -67,8 +68,8 @@ const EXTRA_HEIGHT = 60;
 
 const UserProfile = ({
     channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
-    isChannelAdmin, isCustomStatusEnabled, isDirectMessage, isMilitaryTime, isSystemAdmin, isTeamAdmin,
-    location, manageMode = false, teamId, teammateDisplayName,
+    isChannelAdmin, isCustomStatusEnabled, isDirectMessage, isDefaultChannel, isMilitaryTime,
+    isSystemAdmin, isTeamAdmin, location, manageMode = false, teamId, teammateDisplayName,
     user, userIconOverride, usernameOverride,
 }: Props) => {
     const {formatMessage, locale} = useIntl();
@@ -180,6 +181,7 @@ const UserProfile = ({
                         <View style={styles.divider}/>
                         <ManageMembersLabel
                             channelId={channelId}
+                            isDefaultChannel={isDefaultChannel}
                             isOptionItem={true}
                             manageOption={Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER}
                             testID='channel.remove_member'
