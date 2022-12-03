@@ -176,6 +176,26 @@ export default function SelectedUsers({
         return margin;
     }, [keyboard, isTablet, insets.bottom, bottomSpace]);
 
+    const paddingBottom = useMemo(() => {
+        if (Platform.OS === 'android') {
+            return TABLET_MARGIN_BOTTOM + insets.bottom;
+        }
+
+        if (!isVisible) {
+            return 0;
+        }
+
+        if (isTablet) {
+            return TABLET_MARGIN_BOTTOM + insets.bottom;
+        }
+
+        if (!keyboard.height) {
+            return insets.bottom;
+        }
+
+        return TABLET_MARGIN_BOTTOM + insets.bottom;
+    }, [isTablet, isVisible, insets.bottom, keyboard.height]);
+
     const handlePress = useCallback(() => {
         onPress();
     }, [onPress]);
@@ -192,10 +212,10 @@ export default function SelectedUsers({
 
     const animatedContainerStyle = useAnimatedStyle(() => ({
         marginBottom: withTiming(marginBottom, {duration: keyboard.duration}),
-        paddingBottom: (isVisible || Platform.OS === 'android') ? TABLET_MARGIN_BOTTOM + insets.bottom : 0,
+        paddingBottom: withTiming(paddingBottom, {duration: keyboard.duration}),
         backgroundColor: isVisible ? theme.centerChannelBg : 'transparent',
         ...androidMaxHeight,
-    }), [marginBottom, keyboard.duration, isVisible, theme.centerChannelBg]);
+    }), [marginBottom, paddingBottom, keyboard.duration, isVisible, theme.centerChannelBg]);
 
     const animatedToastStyle = useAnimatedStyle(() => {
         return {
