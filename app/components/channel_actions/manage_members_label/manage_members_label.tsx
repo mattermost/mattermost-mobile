@@ -24,7 +24,7 @@ const messages = defineMessages({
 });
 
 type Props = {
-    canRemove: boolean;
+    canRemoveUser: boolean;
     channelId: string;
     isOptionItem?: boolean;
     manageOption?: string;
@@ -32,7 +32,7 @@ type Props = {
     userId: string;
 }
 
-const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, testID, userId}: Props) => {
+const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOption, testID, userId}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
@@ -66,7 +66,7 @@ const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, t
         }
     };
 
-    if (manageOption === Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER && !canRemove) {
+    if (manageOption === Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER && !canRemoveUser) {
         return null;
     }
 
