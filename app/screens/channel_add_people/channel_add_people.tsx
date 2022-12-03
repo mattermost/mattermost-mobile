@@ -66,9 +66,11 @@ type Props = {
 }
 
 const MAX_SELECTED_USERS = General.MAX_USERS_ADD_TO_CHANNEL;
+const EMPTY: UserProfile[] = [];
+const EMPTY_IDS = {};
 
 function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
-    const newSelectedIds = Object.assign({}, list);
+    const newSelectedIds = Object.assign(EMPTY_IDS, list);
 
     Reflect.deleteProperty(newSelectedIds, id);
     return newSelectedIds;
@@ -95,12 +97,12 @@ export default function ChannelAddPeople({
     const mainView = useRef<View>(null);
     const modalPosition = useModalPosition(mainView);
 
-    const [profiles, setProfiles] = useState<UserProfile[]>([]);
-    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+    const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
+    const [searchResults, setSearchResults] = useState<UserProfile[]>(EMPTY);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
     const [startingAddPeople, setStartingAddPeople] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
+    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>(EMPTY_IDS);
     const [containerHeight, setContainerHeight] = useState(0);
     const [showToast, setShowToast] = useState(false);
 
@@ -152,7 +154,7 @@ export default function ChannelAddPeople({
     const clearSearch = useCallback(() => {
         setLoading(false);
         setTerm('');
-        setSearchResults([]);
+        setSearchResults(EMPTY);
     }, []);
 
     const startAddPeople = useCallback(async (selectedId?: {[id: string]: boolean}) => {
@@ -191,7 +193,7 @@ export default function ChannelAddPeople({
                 return current;
             }
 
-            const newSelectedIds = Object.assign({}, current);
+            const newSelectedIds = Object.assign(EMPTY_IDS, current);
             if (!wasSelected) {
                 newSelectedIds[user.id] = user;
             }
@@ -210,7 +212,7 @@ export default function ChannelAddPeople({
             allow_inactive: true,
         });
 
-        let data: UserProfile[] = [];
+        let data: UserProfile[] = EMPTY;
         if (results.data) {
             data = results.data;
         }
@@ -257,7 +259,7 @@ export default function ChannelAddPeople({
 
     const data = useMemo(() => {
         if (isSearch) {
-            const exactMatches: UserProfile[] = [];
+            const exactMatches: UserProfile[] = EMPTY;
             const filterByTerm = (p: UserProfile) => {
                 if (selectedCount > 0 && p.id === currentUserId) {
                     return false;

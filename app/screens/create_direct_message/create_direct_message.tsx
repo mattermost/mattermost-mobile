@@ -58,6 +58,7 @@ type Props = {
 
 const MAX_SELECTED_USERS = General.MAX_USERS_IN_GM;
 const EMPTY: UserProfile[] = [];
+const EMPTY_IDS = {};
 
 const close = () => {
     Keyboard.dismiss();
@@ -97,7 +98,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
-    const newSelectedIds = Object.assign({}, list);
+    const newSelectedIds = Object.assign(EMPTY_IDS, list);
 
     Reflect.deleteProperty(newSelectedIds, id);
     return newSelectedIds;
@@ -129,7 +130,7 @@ export default function CreateDirectMessage({
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
+    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>(EMPTY_IDS);
     const [showToast, setShowToast] = useState(false);
     const [containerHeight, setContainerHeight] = useState(0);
     const selectedCount = Object.keys(selectedIds).length;
@@ -259,7 +260,7 @@ export default function CreateDirectMessage({
                 return current;
             }
 
-            const newSelectedIds = Object.assign({}, current);
+            const newSelectedIds = Object.assign(EMPTY_IDS, current);
             if (!wasSelected) {
                 newSelectedIds[user.id] = user;
             }
