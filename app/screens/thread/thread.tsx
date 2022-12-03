@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {DeviceEventEmitter, LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import {LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
+import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CurrentCallBar from '@calls/components/current_call_bar';
@@ -11,12 +12,13 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {Events} from '@constants';
+import {Screens} from '@constants';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
 
 import ThreadPostList from './thread_post_list';
 
@@ -38,19 +40,29 @@ const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
     const appState = useAppState();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
+    const isPostDraftPaused = useRef(false);
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.PAUSE_KEYBOARD_TRACKING_VIEW, (pause: boolean) => {
-            if (pause) {
+        const commandListener = Navigation.events().registerCommandListener(() => {
+            if (!isPostDraftPaused.current) {
+                isPostDraftPaused.current = true;
                 postDraftRef.current?.pauseTracking(rootPost!.id);
-                return;
             }
-
-            postDraftRef.current?.resumeTracking(rootPost!.id);
         });
 
-        return () => listener.remove();
-    }, []);
+        const commandCompletedListener = Navigation.events().registerCommandCompletedListener(() => {
+            const id = NavigationStore.getNavigationTopComponentId();
+            if (Screens.THREAD === id && isPostDraftPaused.current) {
+                isPostDraftPaused.current = false;
+                postDraftRef.current?.resumeTracking(rootPost!.id);
+            }
+        });
+
+        return () => {
+            commandListener.remove();
+            commandCompletedListener.remove();
+        };
+    }, [rootPost?.id]);
 
     useEffect(() => {
         return () => {

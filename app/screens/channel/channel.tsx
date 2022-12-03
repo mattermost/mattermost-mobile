@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {BackHandler, DeviceEventEmitter, LayoutChangeEvent, NativeEventSubscription, StyleSheet, View} from 'react-native';
+import {BackHandler, LayoutChangeEvent, NativeEventSubscription, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
+import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CurrentCallBar from '@calls/components/current_call_bar';
@@ -11,7 +12,7 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import JoinCallBanner from '@calls/components/join_call_banner';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
-import {Events} from '@constants';
+import {Screens} from '@constants';
 import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useChannelSwitch} from '@hooks/channel_switch';
 import {useAppState, useIsTablet} from '@hooks/device';
@@ -59,22 +60,32 @@ const Channel = ({
     const switchingChannels = useChannelSwitch();
     const defaultHeight = useDefaultHeaderHeight();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
+    const isPostDraftPaused = useRef(false);
     const [containerHeight, setContainerHeight] = useState(0);
 
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.PAUSE_KEYBOARD_TRACKING_VIEW, (pause: boolean) => {
-            if (pause) {
+        const commandListener = Navigation.events().registerCommandListener(() => {
+            if (!isPostDraftPaused.current) {
+                isPostDraftPaused.current = true;
                 postDraftRef.current?.pauseTracking(channelId);
-                return;
             }
-
-            postDraftRef.current?.resumeTracking(channelId);
         });
 
-        return () => listener.remove();
-    }, []);
+        const commandCompletedListener = Navigation.events().registerCommandCompletedListener(() => {
+            const id = NavigationStore.getNavigationTopComponentId();
+            if ([Screens.HOME, Screens.CHANNEL].includes(id) && isPostDraftPaused.current) {
+                isPostDraftPaused.current = false;
+                postDraftRef.current?.resumeTracking(channelId);
+            }
+        });
+
+        return () => {
+            commandListener.remove();
+            commandCompletedListener.remove();
+        };
+    }, [channelId]);
 
     useEffect(() => {
         let back: NativeEventSubscription|undefined;
