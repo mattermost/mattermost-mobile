@@ -3,29 +3,26 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleSheet, View} from 'react-native';
+import {Keyboard, LayoutChangeEvent, Platform, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-// import SelectedUsers from '@components/selected_users_panel';
 import {addMembersToChannel} from '@actions/remote/channel';
 import {fetchProfilesNotInChannel, searchProfiles} from '@actions/remote/user';
 import Loading from '@components/loading';
 import Search from '@components/search';
+import SelectedUsers from '@components/selected_users';
 import UserList from '@components/user_list';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {ChannelModel} from '@database/models/server';
 import {debounce} from '@helpers/api/general';
-import useDidUpdate from '@hooks/did_update';
-import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {useModalPosition} from '@hooks/device';
 import {t} from '@i18n';
-import {popTopScreen, setButtons} from '@screens/navigation';
+import {popTopScreen} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
-
-const ADD_BUTTON = 'add-button';
 
 const close = () => {
     Keyboard.dismiss();
@@ -52,6 +49,10 @@ const messages = defineMessages({
         id: t('mobile.channel_add_people.title'),
         defaultMessage: 'Add Members',
     },
+    toastMessage: {
+        id: t('mobile.channel_add_people.max_limit_reached'),
+        defaultMessage: 'Max selected users are limited to {maxCount} members',
+    },
 });
 
 type Props = {
@@ -64,8 +65,17 @@ type Props = {
     tutorialWatched: boolean;
 }
 
+const MAX_SELECTED_USERS = General.MAX_USERS_ADD_TO_CHANNEL;
+
+function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
+    const newSelectedIds = Object.assign({}, list);
+
+    Reflect.deleteProperty(newSelectedIds, id);
+    return newSelectedIds;
+}
+
 export default function ChannelAddPeople({
-    componentId,
+    // componentId,
     currentChannel,
     currentTeamId,
     currentUserId,
@@ -82,6 +92,8 @@ export default function ChannelAddPeople({
     const next = useRef(true);
     const page = useRef(-1);
     const mounted = useRef(false);
+    const mainView = useRef<View>(null);
+    const modalPosition = useModalPosition(mainView);
 
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
@@ -89,6 +101,9 @@ export default function ChannelAddPeople({
     const [term, setTerm] = useState('');
     const [startingAddPeople, setStartingAddPeople] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
+    const [containerHeight, setContainerHeight] = useState(0);
+    const [showToast, setShowToast] = useState(false);
+
     const selectedCount = Object.keys(selectedIds).length;
     const groupConstrained = currentChannel.isGroupConstrained;
     const currentChannelId = currentChannel.id;
@@ -121,11 +136,7 @@ export default function ChannelAddPeople({
     }, 100), [loading, isSearch, serverUrl, currentTeamId]);
 
     const handleRemoveProfile = useCallback((id: string) => {
-        const newSelectedIds = Object.assign({}, selectedIds);
-
-        Reflect.deleteProperty(newSelectedIds, id);
-
-        setSelectedIds(newSelectedIds);
+        setSelectedIds((current) => removeProfileFromList(current, id));
     }, [selectedIds]);
 
     const addPeopleToChannel = useCallback(async (ids: string[]): Promise<boolean> => {
@@ -167,17 +178,27 @@ export default function ChannelAddPeople({
     }, [startingAddPeople, selectedIds, addPeopleToChannel]);
 
     const handleSelectProfile = useCallback((user: UserProfile) => {
-        if (selectedIds[user.id]) {
-            handleRemoveProfile(user.id);
-            return;
-        }
-
-        const newSelectedIds = Object.assign({}, selectedIds);
-        newSelectedIds[user.id] = user;
-
-        setSelectedIds(newSelectedIds);
         clearSearch();
-    }, [selectedIds, handleRemoveProfile, startAddPeople, clearSearch]);
+        setSelectedIds((current) => {
+            if (current[user.id]) {
+                return removeProfileFromList(current, user.id);
+            }
+
+            const wasSelected = current[user.id];
+
+            if (!wasSelected && selectedCount >= MAX_SELECTED_USERS) {
+                setShowToast(true);
+                return current;
+            }
+
+            const newSelectedIds = Object.assign({}, current);
+            if (!wasSelected) {
+                newSelectedIds[user.id] = user;
+            }
+
+            return newSelectedIds;
+        });
+    }, [clearSearch, selectedIds, startAddPeople]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
@@ -218,36 +239,21 @@ export default function ChannelAddPeople({
         }
     }, [searchUsers, clearSearch]);
 
-    const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
-        if (hasProfiles) {
-            setButtons(componentId, {
-                rightButtons: [{
-                    color: theme.sidebarHeaderTextColor,
-                    id: ADD_BUTTON,
-                    text: formatMessage({id: 'mobile.channel_add_people.button', defaultMessage: 'Add'}),
-                    showAsAction: 'always',
-                    enabled: startEnabled,
-                    testID: 'add_members.start.button',
-                }],
-            });
-        }
-    }, [intl.locale, hasProfiles, theme]);
-
-    useNavButtonPressed(ADD_BUTTON, componentId, startAddPeople, [startAddPeople]);
-
     useEffect(() => {
         mounted.current = true;
-        updateNavigationButtons(false);
         getProfiles();
         return () => {
             mounted.current = false;
         };
     }, []);
 
-    useDidUpdate(() => {
-        const canStart = selectedCount > 0 && !startingAddPeople;
-        updateNavigationButtons(canStart);
-    }, [selectedCount > 0, startingAddPeople, updateNavigationButtons]);
+    useEffect(() => {
+        setShowToast(selectedCount >= MAX_SELECTED_USERS);
+    }, [selectedCount >= MAX_SELECTED_USERS]);
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
 
     const data = useMemo(() => {
         if (isSearch) {
@@ -283,6 +289,8 @@ export default function ChannelAddPeople({
         <SafeAreaView
             style={style.container}
             testID='add_members.screen'
+            onLayout={onLayout}
+            edges={['top', 'left', 'right']}
         >
             {hasProfiles &&
                 <View style={style.searchBar}>
@@ -300,20 +308,6 @@ export default function ChannelAddPeople({
                     />
                 </View>
             }
-            {/*
-                https://mattermost.atlassian.net/browse/MM-48489
-                V1 does not have the selected users modal.
-                Add this back in after build the scrollable selectable users panel
-            */}
-            {/* {selectedCount > 0 &&
-                 <SelectedUsers
-                     selectedIds={selectedIds}
-                     warnCount={General.MAX_ADD_USERS - 2}
-                     maxCount={General.MAX_ADD_USERS}
-                     onRemove={handleRemoveProfile}
-                     teammateNameDisplay={teammateNameDisplay}
-                 />
-             } */}
             <UserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
@@ -326,6 +320,20 @@ export default function ChannelAddPeople({
                 term={term}
                 testID='add_members.user_list'
                 tutorialWatched={tutorialWatched}
+            />
+            <SelectedUsers
+                containerHeight={containerHeight}
+                modalPosition={modalPosition}
+                showToast={showToast}
+                setShowToast={setShowToast}
+                toastIcon={'check'}
+                toastMessage={formatMessage(messages.toastMessage, {maxCount: MAX_SELECTED_USERS})}
+                selectedIds={selectedIds}
+                onRemove={handleRemoveProfile}
+                teammateNameDisplay={teammateNameDisplay}
+                onPress={startAddPeople}
+                buttonIcon={'account-plus-outline'}
+                buttonText={formatMessage(messages.button)}
             />
         </SafeAreaView>
     );

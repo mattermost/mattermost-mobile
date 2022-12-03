@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, LayoutChangeEvent, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -56,6 +56,9 @@ type Props = {
     tutorialWatched: boolean;
 }
 
+const MAX_SELECTED_USERS = General.MAX_USERS_IN_GM;
+const EMPTY: UserProfile[] = [];
+
 const close = () => {
     Keyboard.dismiss();
     dismissModal();
@@ -93,13 +96,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
-    if (action.type === 'add' && action.values?.length) {
-        return [...state, ...action.values];
-    }
-    return state;
-}
-
 function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
     const newSelectedIds = Object.assign({}, list);
 
@@ -128,8 +124,8 @@ export default function CreateDirectMessage({
     const mainView = useRef<View>(null);
     const modalPosition = useModalPosition(mainView);
 
-    const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
-    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
+    const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
+    const [searchResults, setSearchResults] = useState<UserProfile[]>(EMPTY);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
@@ -140,7 +136,7 @@ export default function CreateDirectMessage({
 
     const isSearch = Boolean(term);
 
-    const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
+    const loadedProfiles = ({users}: {users: UserProfile[]}) => {
         if (mounted.current) {
             if (users && !users.length) {
                 next.current = false;
@@ -148,13 +144,13 @@ export default function CreateDirectMessage({
 
             page.current += 1;
             setLoading(false);
-            dispatchProfiles({type: 'add', values: users});
+            setProfiles((prev: UserProfile[]) => [...prev, ...users]);
         }
     };
 
     const data = useMemo(() => {
         if (term) {
-            const exactMatches: UserProfile[] = [];
+            const exactMatches: UserProfile[] = EMPTY;
             const filterByTerm = (p: UserProfile) => {
                 if (selectedCount > 0 && p.id === currentUserId) {
                     return false;
@@ -247,29 +243,30 @@ export default function CreateDirectMessage({
             };
 
             startConversation(selectedId);
-        } else {
-            clearSearch();
-            setSelectedIds((current) => {
-                if (current[user.id]) {
-                    return removeProfileFromList(current, user.id);
-                }
-
-                const wasSelected = current[user.id];
-
-                if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
-                    setShowToast(true);
-                    return current;
-                }
-
-                const newSelectedIds = Object.assign({}, current);
-                if (!wasSelected) {
-                    newSelectedIds[user.id] = user;
-                }
-
-                return newSelectedIds;
-            });
+            return;
         }
-    }, [currentUserId, clearSearch]);
+
+        clearSearch();
+        setSelectedIds((current) => {
+            if (current[user.id]) {
+                return removeProfileFromList(current, user.id);
+            }
+
+            const wasSelected = current[user.id];
+
+            if (!wasSelected && selectedCount >= MAX_SELECTED_USERS) {
+                setShowToast(true);
+                return current;
+            }
+
+            const newSelectedIds = Object.assign({}, current);
+            if (!wasSelected) {
+                newSelectedIds[user.id] = user;
+            }
+
+            return newSelectedIds;
+        });
+    }, [currentUserId, clearSearch, selectedCount]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
@@ -282,7 +279,7 @@ export default function CreateDirectMessage({
             results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
         }
 
-        let searchData: UserProfile[] = [];
+        let searchData: UserProfile[] = EMPTY;
         if (results.data) {
             searchData = results.data;
         }
@@ -338,8 +335,8 @@ export default function CreateDirectMessage({
     }, []);
 
     useEffect(() => {
-        setShowToast(selectedCount >= General.MAX_USERS_IN_GM);
-    }, [selectedCount >= General.MAX_USERS_IN_GM]);
+        setShowToast(selectedCount >= MAX_SELECTED_USERS);
+    }, [selectedCount >= MAX_SELECTED_USERS]);
 
     if (startingConversation) {
         return (
@@ -390,7 +387,7 @@ export default function CreateDirectMessage({
                 showToast={showToast}
                 setShowToast={setShowToast}
                 toastIcon={'check'}
-                toastMessage={formatMessage(messages.toastMessage, {maxCount: General.MAX_USERS_IN_GM})}
+                toastMessage={formatMessage(messages.toastMessage, {maxCount: MAX_SELECTED_USERS})}
                 selectedIds={selectedIds}
                 onRemove={handleRemoveProfile}
                 teammateNameDisplay={teammateNameDisplay}

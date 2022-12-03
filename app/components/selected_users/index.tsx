@@ -7,7 +7,6 @@ import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming}
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Toast from '@components/toast';
-import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
@@ -275,7 +274,6 @@ export default function SelectedUsers({
                         onPress={handlePress}
                         icon={buttonIcon}
                         text={buttonText}
-                        disabled={numberSelectedIds > General.MAX_USERS_IN_GM}
                     />
                 </Animated.View>
             </Animated.View>

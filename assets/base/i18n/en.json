@@ -428,6 +428,7 @@
   "mobile.channel_add_people.error": "We could not add those users to the channel. Please check your connection and try again.",
   "mobile.channel_add_people.title": "Add Members",
   "mobile.channel_add_people.button": "Add",
+  "mobile.channel_add_people.max_limit_reached": "Max selected users are limited to {maxCount} members",
   "mobile.channel_info.alertNo": "No",
   "mobile.channel_info.alertYes": "Yes",
   "mobile.channel_list.recent": "Recent",
