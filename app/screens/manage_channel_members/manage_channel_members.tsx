@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {DeviceEventEmitter, Keyboard, Platform, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchProfilesInChannel, searchProfiles} from '@actions/remote/user';
@@ -18,7 +18,7 @@ import {t} from '@i18n';
 import {openAsBottomSheet, setButtons} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
-import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
 const MANAGE_BUTTON = 'manage-button';
@@ -29,41 +29,19 @@ type Props = {
     componentId: string;
     currentTeamId: string;
     currentUserId: string;
-    restrictDirectMessage: boolean;
     teammateNameDisplay: string;
     tutorialWatched: boolean;
 }
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
-    return {
-        container: {
-            flex: 1,
-        },
-        searchBar: {
-            marginLeft: 12,
-            marginRight: Platform.select({ios: 4, default: 12}),
-            marginVertical: 12,
-        },
-        loadingContainer: {
-            alignItems: 'center',
-            backgroundColor: theme.centerChannelBg,
-            height: 70,
-            justifyContent: 'center',
-        },
-        loadingText: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
-        },
-        noResultContainer: {
-            flexGrow: 1,
-            flexDirection: 'row',
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-        noResultText: {
-            fontSize: 26,
-            color: changeOpacity(theme.centerChannelColor, 0.5),
-        },
-    };
+const styles = StyleSheet.create({
+    container: {
+        flex: 1,
+    },
+    searchBar: {
+        marginLeft: 12,
+        marginRight: Platform.select({ios: 4, default: 12}),
+        marginVertical: 12,
+    },
 });
 
 const messages = defineMessages({
@@ -82,6 +60,7 @@ const messages = defineMessages({
 });
 
 const EMPTY: UserProfile[] = [];
+const EMPTY_IDS = {};
 const {USER_PROFILE} = Screens;
 const CLOSE_BUTTON_ID = 'close-user-profile';
 
@@ -91,19 +70,17 @@ export default function ManageChannelMembers({
     componentId,
     currentTeamId,
     currentUserId,
-    restrictDirectMessage,
     teammateNameDisplay,
     tutorialWatched,
 }: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const style = getStyleFromTheme(theme);
-    const {formatMessage, locale} = useIntl();
+    const {formatMessage} = useIntl();
 
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const mounted = useRef(false);
 
-    const [manageEnabled, setManageEnabled] = useState(false);
+    const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
     const [searchResults, setSearchResults] = useState<UserProfile[]>(EMPTY);
     const [loading, setLoading] = useState(false);
@@ -130,10 +107,10 @@ export default function ManageChannelMembers({
                 loadedProfiles(users);
             }
         }
-    }, 100), [channelId, loading, restrictDirectMessage, serverUrl, term]);
+    }, 100), [channelId, loading, serverUrl, term]);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
-        if (!manageEnabled) {
+        if (!isManageMode) {
             return;
         }
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
@@ -147,22 +124,18 @@ export default function ManageChannelMembers({
 
         Keyboard.dismiss();
         openAsBottomSheet({screen: USER_PROFILE, title, theme, closeButtonId: CLOSE_BUTTON_ID, props});
-    }, [manageEnabled]);
+    }, [isManageMode]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
         setLoading(true);
 
-        const results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, channel_id: channelId, allow_inactive: true});
-
-        let data: UserProfile[] = [];
-        if (results.data) {
-            data = results.data;
-        }
+        // TODO search through profiles state instead of server call
+        const {data = EMPTY} = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, channel_id: channelId, allow_inactive: true});
 
         setSearchResults(data);
         setLoading(false);
-    }, [restrictDirectMessage, serverUrl, currentTeamId]);
+    }, [serverUrl, channelId, currentTeamId]);
 
     const search = useCallback(() => {
         searchUsers(term);
@@ -196,12 +169,12 @@ export default function ManageChannelMembers({
                 text: formatMessage(manage ? messages.button_done : messages.button_manage),
             }],
         });
-    }, [locale, manageEnabled, theme]);
+    }, [theme]);
 
     const toggleManageEnabled = useCallback(() => {
-        updateNavigationButtons(!manageEnabled);
-        setManageEnabled(!manageEnabled);
-    }, [manageEnabled, updateNavigationButtons]);
+        updateNavigationButtons(!isManageMode);
+        setIsManageMode((prev) => !prev);
+    }, [isManageMode, updateNavigationButtons]);
 
     const handleRemoveUser = useCallback(async (userId: string) => {
         const index = profiles.findIndex((user) => user.id === userId);
@@ -243,10 +216,10 @@ export default function ManageChannelMembers({
 
     return (
         <SafeAreaView
-            style={style.container}
+            style={styles.container}
             testID='manage_members.screen'
         >
-            <View style={style.searchBar}>
+            <View style={styles.searchBar}>
                 <Search
                     autoCapitalize='none'
                     cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
@@ -260,15 +233,17 @@ export default function ManageChannelMembers({
                     value={term}
                 />
             </View>
+
+            {/* TODO https://mattermost.atlassian.net/browse/MM-48830 */}
             <UserList
                 currentUserId={currentUserId}
                 fetchMore={getProfiles}
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
-                manageMode={true}
+                manageMode={true} // default true to change row select icon to a dropdown
                 profiles={data}
-                selectedIds={{}}
-                showManageMode={canManage && manageEnabled}
+                selectedIds={EMPTY_IDS}
+                showManageMode={canManage && isManageMode}
                 showNoResults={!loading}
                 teammateNameDisplay={teammateNameDisplay}
                 term={term}
