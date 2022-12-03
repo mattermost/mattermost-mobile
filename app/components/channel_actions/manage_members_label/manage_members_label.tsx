@@ -58,6 +58,7 @@ const ManageMembersLabel = ({canRemove, channelId, isOptionItem, manageOption, t
     };
 
     const onAction = () => {
+        // In the future this switch / case will accomodate more user cases
         switch (manageOption) {
             case Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER:
                 removeFromChannel();
