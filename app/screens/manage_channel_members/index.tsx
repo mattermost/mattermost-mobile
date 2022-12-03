@@ -5,7 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 
-import {observeProfileLongPresTutorial} from '@app/queries/app/global';
+import {observeProfileLongPresTutorial} from '@queries/app/global';
 import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeCurrentUser, observeTeammateNameDisplay} from '@queries/servers/user';
 import {isSystemAdmin, isChannelAdmin} from '@utils/user';
