@@ -3,6 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {observeProfileLongPresTutorial} from '@queries/app/global';
 import {observeCurrentChannel} from '@queries/servers/channel';
@@ -14,8 +16,17 @@ import ChannelAddPeople from './channel_add_people';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    const currentChannel = observeCurrentChannel(database);
+    const isGroupConstrained = currentChannel.pipe(
+        switchMap((c) => of$(Boolean(c?.isGroupConstrained))),
+    );
+    const channelId = currentChannel.pipe(
+        switchMap((c) => of$(c?.id)),
+    );
+
     return {
-        currentChannel: observeCurrentChannel(database),
+        channelId,
+        isGroupConstrained,
         currentTeamId: observeCurrentTeamId(database),
         teammateNameDisplay: observeTeammateNameDisplay(database),
         tutorialWatched: observeProfileLongPresTutorial(),

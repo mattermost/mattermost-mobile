@@ -15,7 +15,6 @@ import UserList from '@components/user_list';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {ChannelModel} from '@database/models/server';
 import {debounce} from '@helpers/api/general';
 import {useModalPosition} from '@hooks/device';
 import {t} from '@i18n';
@@ -56,10 +55,11 @@ const messages = defineMessages({
 });
 
 type Props = {
+    channelId: string;
     componentId: string;
-    currentChannel: ChannelModel;
     currentTeamId: string;
     currentUserId: string;
+    isGroupConstrained: boolean;
     restrictDirectMessage: boolean;
     teammateNameDisplay: string;
     tutorialWatched: boolean;
@@ -77,9 +77,11 @@ function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
 
 export default function ChannelAddPeople({
     // componentId,
-    currentChannel,
+    channelId,
+    componentId,
     currentTeamId,
     currentUserId,
+    isGroupConstrained,
     restrictDirectMessage,
     teammateNameDisplay,
     tutorialWatched,
@@ -106,8 +108,6 @@ export default function ChannelAddPeople({
     const [showToast, setShowToast] = useState(false);
 
     const selectedCount = Object.keys(selectedIds).length;
-    const groupConstrained = currentChannel.isGroupConstrained;
-    const currentChannelId = currentChannel.id;
 
     const isSearch = Boolean(term);
     const hasProfiles = useMemo(() => Boolean(profiles.length), [profiles]);
@@ -129,8 +129,8 @@ export default function ChannelAddPeople({
             setLoading(true);
             fetchProfilesNotInChannel(serverUrl,
                 currentTeamId,
-                currentChannelId,
-                groupConstrained,
+                channelId,
+                isGroupConstrained,
                 page.current + 1,
                 General.PROFILE_CHUNK_SIZE).then(loadedProfiles);
         }
@@ -141,7 +141,7 @@ export default function ChannelAddPeople({
     }, [selectedIds]);
 
     const addPeopleToChannel = useCallback(async (ids: string[]): Promise<boolean> => {
-        const result = await addMembersToChannel(serverUrl, currentChannelId, ids, '', false);
+        const result = await addMembersToChannel(serverUrl, channelId, ids, '', false);
 
         if (result.error) {
             alertErrorWithFallback(intl, result.error, messages.error);
@@ -207,7 +207,7 @@ export default function ChannelAddPeople({
 
         const results = await searchProfiles(serverUrl, lowerCasedTerm, {
             team_id: currentTeamId,
-            not_in_channel_id: currentChannel.id,
+            not_in_channel_id: channelId,
             allow_inactive: true,
         });
 
