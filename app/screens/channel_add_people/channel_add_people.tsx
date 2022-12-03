@@ -60,7 +60,6 @@ type Props = {
     currentTeamId: string;
     currentUserId: string;
     isGroupConstrained: boolean;
-    restrictDirectMessage: boolean;
     teammateNameDisplay: string;
     tutorialWatched: boolean;
 }
@@ -82,7 +81,6 @@ export default function ChannelAddPeople({
     currentTeamId,
     currentUserId,
     isGroupConstrained,
-    restrictDirectMessage,
     teammateNameDisplay,
     tutorialWatched,
 }: Props) {
@@ -218,7 +216,7 @@ export default function ChannelAddPeople({
 
         setSearchResults(data);
         setLoading(false);
-    }, [restrictDirectMessage, serverUrl, currentTeamId]);
+    }, [channelId, serverUrl, currentTeamId]);
 
     const search = useCallback(() => {
         searchUsers(term);
@@ -288,53 +286,53 @@ export default function ChannelAddPeople({
 
     return (
         <SafeAreaView
+            edges={['top', 'left', 'right']}
+            onLayout={onLayout}
             style={style.container}
             testID='add_members.screen'
-            onLayout={onLayout}
-            edges={['top', 'left', 'right']}
         >
             {hasProfiles &&
                 <View style={style.searchBar}>
                     <Search
-                        testID='add_members.search_bar'
-                        placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        autoCapitalize='none'
+                        cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        onCancel={clearSearch}
                         onChangeText={onSearch}
                         onSubmitEditing={search}
-                        onCancel={clearSearch}
-                        autoCapitalize='none'
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                        testID='add_members.search_bar'
                         value={term}
                     />
                 </View>
             }
             <UserList
                 currentUserId={currentUserId}
+                fetchMore={getProfiles}
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 profiles={data}
                 selectedIds={selectedIds}
                 showNoResults={!loading && page.current !== -1}
                 teammateNameDisplay={teammateNameDisplay}
-                fetchMore={getProfiles}
                 term={term}
                 testID='add_members.user_list'
                 tutorialWatched={tutorialWatched}
             />
             <SelectedUsers
-                containerHeight={containerHeight}
-                modalPosition={modalPosition}
-                showToast={showToast}
-                setShowToast={setShowToast}
-                toastIcon={'check'}
-                toastMessage={formatMessage(messages.toastMessage, {maxCount: MAX_SELECTED_USERS})}
-                selectedIds={selectedIds}
-                onRemove={handleRemoveProfile}
-                teammateNameDisplay={teammateNameDisplay}
-                onPress={startAddPeople}
                 buttonIcon={'account-plus-outline'}
                 buttonText={formatMessage(messages.button)}
+                containerHeight={containerHeight}
+                modalPosition={modalPosition}
+                onPress={startAddPeople}
+                onRemove={handleRemoveProfile}
+                selectedIds={selectedIds}
+                setShowToast={setShowToast}
+                showToast={showToast}
+                teammateNameDisplay={teammateNameDisplay}
+                toastIcon={'check'}
+                toastMessage={formatMessage(messages.toastMessage, {maxCount: MAX_SELECTED_USERS})}
             />
         </SafeAreaView>
     );
