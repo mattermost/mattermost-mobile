@@ -67,10 +67,9 @@ type Props = {
 
 const MAX_SELECTED_USERS = General.MAX_USERS_ADD_TO_CHANNEL;
 const EMPTY: UserProfile[] = [];
-const EMPTY_IDS = {};
 
 function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
-    const newSelectedIds = Object.assign(EMPTY_IDS, list);
+    const newSelectedIds = Object.assign({}, list);
 
     Reflect.deleteProperty(newSelectedIds, id);
     return newSelectedIds;
@@ -102,7 +101,7 @@ export default function ChannelAddPeople({
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
     const [startingAddPeople, setStartingAddPeople] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>(EMPTY_IDS);
+    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const [containerHeight, setContainerHeight] = useState(0);
     const [showToast, setShowToast] = useState(false);
 
@@ -193,14 +192,14 @@ export default function ChannelAddPeople({
                 return current;
             }
 
-            const newSelectedIds = Object.assign(EMPTY_IDS, current);
+            const newSelectedIds = Object.assign({}, current);
             if (!wasSelected) {
                 newSelectedIds[user.id] = user;
             }
 
             return newSelectedIds;
         });
-    }, [clearSearch, selectedIds, startAddPeople]);
+    }, [selectedIds, clearSearch]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
