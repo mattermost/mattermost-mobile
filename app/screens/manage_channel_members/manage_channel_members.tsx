@@ -200,12 +200,14 @@ export default function ManageChannelMembers({
 
     useEffect(() => {
         mounted.current = true;
-        updateNavigationButtons(false);
+        if (canManage) {
+            updateNavigationButtons(false);
+        }
         getProfiles();
         return () => {
             mounted.current = false;
         };
-    }, []);
+    }, [canManage]);
 
     useEffect(() => {
         const removeUserListener = DeviceEventEmitter.addListener(Events.REMOVE_USER_FROM_CHANNEL, handleRemoveUser);
