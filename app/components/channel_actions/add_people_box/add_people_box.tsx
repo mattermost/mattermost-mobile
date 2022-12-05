@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {StyleProp, ViewStyle} from 'react-native';
 
 import OptionBox from '@components/option_box';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {dismissBottomSheet, goToScreen, showModal} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
@@ -19,12 +20,25 @@ type Props = {
     testID?: string;
 }
 
+const messages = defineMessages({
+    title: {
+        id: t('mobile.channel_add_people.title'),
+        defaultMessage: 'Add Members',
+    },
+    boxText: {
+        id: t('intro.add_people'),
+        defaultMessage: 'Add People',
+    },
+});
+
+const {CHANNEL_ADD_PEOPLE} = Screens;
+
 const AddPeopleBox = ({channelId, containerStyle, displayName, inModal, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
 
     const onAddPeople = useCallback(async () => {
-        const title = formatMessage({id: 'mobile.channel_add_people.title', defaultMessage: 'Add Members'});
+        const title = formatMessage(messages.title);
         const options = {
             topBar: {
                 subtitle: {
@@ -34,11 +48,11 @@ const AddPeopleBox = ({channelId, containerStyle, displayName, inModal, testID}:
             },
         };
         if (inModal) {
-            goToScreen(Screens.CHANNEL_ADD_PEOPLE, title, {channelId}, options);
+            goToScreen(CHANNEL_ADD_PEOPLE, title, {channelId}, options);
             return;
         }
         await dismissBottomSheet();
-        showModal(Screens.CHANNEL_ADD_PEOPLE, title, {channelId});
+        showModal(CHANNEL_ADD_PEOPLE, title, {channelId});
     }, [formatMessage, channelId, inModal]);
 
     return (
@@ -47,7 +61,7 @@ const AddPeopleBox = ({channelId, containerStyle, displayName, inModal, testID}:
             iconName='account-plus-outline'
             onPress={onAddPeople}
             testID={testID}
-            text={formatMessage({id: 'intro.add_people', defaultMessage: 'Add People'})}
+            text={formatMessage(messages.boxText)}
         />
     );
 };
