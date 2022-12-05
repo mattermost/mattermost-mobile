@@ -52,15 +52,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 
 const NoResultsWithButton = () => {
     const theme = useTheme();
-    const style = getStyleFromTheme(theme);
+    const styles = getStyleFromTheme(theme);
 
     const {formatMessage} = useIntl();
 
     return (
-        <View style={style.container}>
-            <Text style={style.title}>{formatMessage(messages.no_more_members_title)}</Text>
-            <Text style={style.subText}>{formatMessage(messages.no_more_members_subtext)}</Text>
-            <View style={style.buttonContainer}>
+        <View style={styles.container}>
+            <Text style={styles.title}>{formatMessage(messages.no_more_members_title)}</Text>
+            <Text style={styles.subText}>{formatMessage(messages.no_more_members_subtext)}</Text>
+            <View style={styles.buttonContainer}>
                 <Button
                     onPress={popToRoot}
                     icon={'arrow-left'}
