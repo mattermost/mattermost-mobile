@@ -45,6 +45,7 @@ class NotificationService: UNNotificationServiceExtension {
     if (preferences.object(forKey: "ApplicationIsForeground") as? String != "true") {
       Network.default.fetchAndStoreDataForPushNotification(bestAttemptContent, withContentHandler: contentHandler)
     } else if let contentHandler = contentHandler {
+      bestAttemptContent.badge = Gekidou.Database.default.getTotalMentions() as NSNumber
       contentHandler(bestAttemptContent)
     }
   }
