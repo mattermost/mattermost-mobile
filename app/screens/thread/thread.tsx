@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
-import {Navigation} from 'react-native-navigation';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CurrentCallBar from '@calls/components/current_call_bar';
@@ -16,9 +15,9 @@ import {Screens} from '@constants';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
+import {useKeyboardTrackingPaused} from '@hooks/keyboard_tracking';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
 
 import ThreadPostList from './thread_post_list';
 
@@ -31,6 +30,7 @@ type ThreadProps = {
 };
 
 const edges: Edge[] = ['left', 'right'];
+const trackKeyboardForScreens = [Screens.THREAD];
 
 const styles = StyleSheet.create({
     flex: {flex: 1},
@@ -40,29 +40,9 @@ const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
     const appState = useAppState();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
-    const isPostDraftPaused = useRef(false);
+    const rootId = rootPost?.id || '';
 
-    useEffect(() => {
-        const commandListener = Navigation.events().registerCommandListener(() => {
-            if (!isPostDraftPaused.current) {
-                isPostDraftPaused.current = true;
-                postDraftRef.current?.pauseTracking(rootPost!.id);
-            }
-        });
-
-        const commandCompletedListener = Navigation.events().registerCommandCompletedListener(() => {
-            const id = NavigationStore.getNavigationTopComponentId();
-            if (Screens.THREAD === id && isPostDraftPaused.current) {
-                isPostDraftPaused.current = false;
-                postDraftRef.current?.resumeTracking(rootPost!.id);
-            }
-        });
-
-        return () => {
-            commandListener.remove();
-            commandCompletedListener.remove();
-        };
-    }, [rootPost?.id]);
+    useKeyboardTrackingPaused(postDraftRef, rootId, trackKeyboardForScreens);
 
     useEffect(() => {
         return () => {
