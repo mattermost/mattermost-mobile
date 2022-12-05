@@ -4,6 +4,7 @@
 import {Database} from '@nozbe/watermelondb';
 import {Breadcrumb} from '@sentry/types';
 import {Platform} from 'react-native';
+import DeviceInfo from 'react-native-device-info';
 import {Navigation} from 'react-native-navigation';
 
 import Config from '@assets/config.json';
@@ -39,9 +40,20 @@ export function initializeSentry() {
         return;
     }
 
+    const isBetaApp = DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta');
+    const mmConfig = {
+        environment: isBetaApp ? 'beta' : 'production',
+        tracesSampleRate: isBetaApp ? 1.0 : 0.2,
+        sampleRate: isBetaApp ? 1.0 : 0.2,
+        attachStacktrace: isBetaApp, // For Beta, stack traces are automatically attached to all messages logged
+        logLevel: isBetaApp ? Sentry.LogLevel.Debug : Sentry.LogLevel.Error,
+    };
+
     Sentry.init({
         dsn,
-        tracesSampleRate: 0.2,
+        sendDefaultPii: false,
+        ...mmConfig,
+        ...Config.SentryOptions,
         integrations: [
             new Sentry.ReactNativeTracing({
 
@@ -51,8 +63,6 @@ export function initializeSentry() {
                 ),
             }),
         ],
-        sendDefaultPii: false,
-        ...Config.SentryOptions,
     });
 }
 
