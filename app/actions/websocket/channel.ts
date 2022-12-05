@@ -26,6 +26,7 @@ import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/serv
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 
 // Received when current user created a channel in a different client
 export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
@@ -323,12 +324,9 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 }
 
 export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: any) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
     try {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         // Depending on who was removed, the ids may come from one place dataset or the other.
         const userId = msg.data.user_id || msg.broadcast.user_id;
         const channelId = msg.data.channel_id || msg.broadcast.channel_id;
@@ -337,8 +335,6 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
             return;
         }
 
-        const {database} = operator;
-        const channel = await getCurrentChannel(database);
         const user = await getCurrentUser(database);
         if (!user) {
             return;
@@ -354,10 +350,11 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         }
 
         if (user.id === userId) {
-            await removeCurrentUserFromChannel(serverUrl, channelId);
-            if (channel && channel.id === channelId) {
-                handleKickFromChannel(serverUrl, channel.id);
+            const currentChannelId = await getCurrentChannelId(database);
+            if (currentChannelId && currentChannelId === channelId) {
+                await handleKickFromChannel(serverUrl, currentChannelId);
             }
+            await removeCurrentUserFromChannel(serverUrl, channelId);
         } else {
             const {models: deleteMemberModels} = await deleteChannelMembership(operator, userId, channelId, true);
             if (deleteMemberModels) {
@@ -366,8 +363,8 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         }
 
         operator.batchRecords(models);
-    } catch {
-        // Do nothing
+    } catch (error) {
+        logDebug('cannot handle user removed from channel websocket event', error);
     }
 }
 

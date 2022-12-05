@@ -18,7 +18,7 @@ import NetworkManager from '@managers/network_manager';
 import {getActiveServer} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {getCommonSystemValues, getConfig, getCurrentTeamId, getCurrentUserId, getLicense, prepareCommonSystemValues, setCurrentChannelId} from '@queries/servers/system';
+import {getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
@@ -1302,42 +1302,39 @@ export const convertChannelToPrivate = async (serverUrl: string, channelId: stri
 
 export const handleKickFromChannel = async (serverUrl: string, channelId: string) => {
     try {
-        const currentServer = await getActiveServer();
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const channel = await getChannelById(database, channelId);
-        const models: Model[] = [];
 
+        const currentChannelId = await getCurrentChannelId(database);
+        if (currentChannelId !== channelId) {
+            return;
+        }
+
+        const currentServer = await getActiveServer();
         if (currentServer?.url === serverUrl) {
+            const channel = await getChannelById(database, channelId);
             DeviceEventEmitter.emit(Events.LEAVE_CHANNEL, channel?.displayName);
             await dismissAllModals();
             await popToRoot();
-
-            if (await isTablet()) {
-                let tId = channel?.teamId;
-                if (!tId) {
-                    tId = await getCurrentTeamId(database);
-                }
-                const channelToJumpTo = await getNthLastChannelFromTeam(database, tId);
-                if (channelToJumpTo) {
-                    if (channelToJumpTo === Screens.GLOBAL_THREADS) {
-                        const {models: switchToGlobalThreadsModels} = await switchToGlobalThreads(serverUrl, tId, true);
-                        if (switchToGlobalThreadsModels) {
-                            models.push(...switchToGlobalThreadsModels);
-                        }
-                    } else {
-                        switchToChannelById(serverUrl, channelToJumpTo, tId, true);
-                    }
-                } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
-            } else {
-                const currentChannelModels = await prepareCommonSystemValues(operator, {currentChannelId: ''});
-                if (currentChannelModels?.length) {
-                    models.push(...currentChannelModels);
-                }
-            }
         }
 
-        if (models.length) {
-            operator.batchRecords(models);
+        const tabletDevice = await isTablet();
+
+        if (tabletDevice) {
+            const teamId = await getCurrentTeamId(database);
+            const newChannelId = await getNthLastChannelFromTeam(database, teamId);
+            if (newChannelId) {
+                if (currentServer?.url === serverUrl) {
+                    if (newChannelId === Screens.GLOBAL_THREADS) {
+                        await switchToGlobalThreads(serverUrl, teamId, false);
+                    } else {
+                        await switchToChannelById(serverUrl, newChannelId, teamId, true);
+                    }
+                } else {
+                    await setCurrentTeamAndChannelId(operator, teamId, channelId);
+                }
+            } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
+        } else {
+            await setCurrentChannelId(operator, '');
         }
     } catch (error) {
         logDebug('cannot kick user from channel', error);

@@ -3,9 +3,8 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {handleKickFromChannel} from '@actions/remote/channel';
+import {handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
 import {deferredAppEntryActions, entry} from '@actions/remote/entry/gql_common';
-import {handleKickFromTeam} from '@actions/remote/team';
 import {fetchStatusByIds} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
@@ -28,7 +27,7 @@ import {
     handleCallUserVoiceOn,
 } from '@calls/connection/websocket_event_handlers';
 import {isSupportedServerCalls} from '@calls/utils';
-import {Events, Screens, WebsocketEvents} from '@constants';
+import {Events, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
@@ -36,8 +35,6 @@ import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {
     getConfig,
-    getCurrentChannelId,
-    getCurrentTeamId,
     getCurrentUserId,
     getLicense,
     getWebSocketLastDisconnected,
@@ -45,8 +42,6 @@ import {
 } from '@queries/servers/system';
 import {getCurrentTeam} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import NavigationStore from '@store/navigation_store';
-import {isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
@@ -147,30 +142,7 @@ async function doReconnect(serverUrl: string) {
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
 
-    const switchedToChannel = false;
-
-    const currentTeamIdAfterLoad = await getCurrentTeamId(database);
-    const currentChannelIdAfterLoad = await getCurrentChannelId(database);
-
-    if (currentTeamIdAfterLoad !== currentTeam?.id) {
-        // Switched teams while loading
-        if (!(teamData.teams?.find((t) => t.id === currentTeamIdAfterLoad))) {
-            handleKickFromTeam(serverUrl, currentTeamIdAfterLoad);
-        }
-    } else if (currentTeamIdAfterLoad !== initialTeamId) {
-        handleKickFromTeam(serverUrl, currentTeamIdAfterLoad);
-    } else if (currentChannelIdAfterLoad !== currentChannel?.id) {
-        // Switched channels while loading
-        if (!(chData?.memberships?.find((m) => m.channel_id === currentChannelIdAfterLoad))) {
-            handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
-        }
-    } else if (currentChannelIdAfterLoad !== initialChannelId) {
-        const tabletDevice = await isTablet();
-        const navComponents = NavigationStore.getNavigationComponents();
-        if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
-            handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
-        }
-    }
+    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeam?.id || '', currentChannel?.id || '', initialTeamId, initialChannelId);
 
     const dt = Date.now();
     await operator.batchRecords(models);
@@ -184,7 +156,7 @@ async function doReconnect(serverUrl: string) {
         loadConfigAndCalls(serverUrl, currentUserId);
     }
 
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 
     AppsManager.refreshAppBindings(serverUrl);
 }

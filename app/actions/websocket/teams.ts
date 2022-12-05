@@ -14,31 +14,33 @@ import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeam, prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
+import {logDebug} from '@utils/log';
 
 export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMessage) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
-        return;
-    }
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    const currentTeam = await getCurrentTeam(database.database);
-    const user = await getCurrentUser(database.database);
-    if (!user) {
-        return;
-    }
-
-    const {user_id: userId, team_id: teamId} = msg.data;
-    if (user.id === userId) {
-        await removeUserFromTeam(serverUrl, teamId);
-        fetchAllTeams(serverUrl);
-
-        if (user.isGuest) {
-            updateUsersNoLongerVisible(serverUrl);
+        const user = await getCurrentUser(database);
+        if (!user) {
+            return;
         }
 
-        if (currentTeam?.id === teamId) {
-            handleKickFromTeam(serverUrl, teamId);
+        const {user_id: userId, team_id: teamId} = msg.data;
+        if (user.id === userId) {
+            const currentTeam = await getCurrentTeam(database);
+            if (currentTeam?.id === teamId) {
+                await handleKickFromTeam(serverUrl, teamId);
+            }
+
+            await removeUserFromTeam(serverUrl, teamId);
+            fetchAllTeams(serverUrl);
+
+            if (user.isGuest) {
+                updateUsersNoLongerVisible(serverUrl);
+            }
         }
+    } catch (error) {
+        logDebug('cannot handle leave team websocket event', error);
     }
 }
 

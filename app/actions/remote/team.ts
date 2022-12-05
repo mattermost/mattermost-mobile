@@ -330,12 +330,15 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
 
 export async function handleKickFromTeam(serverUrl: string, teamId: string) {
     try {
-        const currentServer = await getActiveServerUrl();
-
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const team = await getTeamById(database, teamId);
+        const currentTeamId = await getCurrentTeamId(database);
+        if (currentTeamId !== teamId) {
+            return;
+        }
 
+        const currentServer = await getActiveServerUrl();
         if (currentServer === serverUrl) {
+            const team = await getTeamById(database, teamId);
             DeviceEventEmitter.emit(Events.LEAVE_TEAM, team?.displayName);
             await dismissAllModals();
             await popToRoot();
@@ -343,9 +346,9 @@ export async function handleKickFromTeam(serverUrl: string, teamId: string) {
 
         const teamToJumpTo = await getLastTeam(database);
         if (teamToJumpTo) {
-            handleTeamChange(serverUrl, teamToJumpTo);
+            await handleTeamChange(serverUrl, teamToJumpTo);
         } else if (currentServer === serverUrl) {
-            resetToTeams();
+            await resetToTeams();
         }
     } catch (error) {
         logDebug('Failed to kick user from team', error);

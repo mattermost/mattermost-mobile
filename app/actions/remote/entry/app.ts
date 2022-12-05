@@ -2,19 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {setLastServerVersionCheck} from '@actions/local/systems';
-import {handleKickFromChannel} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {handleKickFromTeam} from '@actions/remote/team';
-import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, getCurrentChannelId, getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
-import NavigationStore from '@store/navigation_store';
 import {deleteV1Data} from '@utils/file';
-import {isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 
-import {registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
+import {handleEntryAfterLoadNavigation, registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
 import {deferredAppEntryActions, entry} from './gql_common';
 
 export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) {
@@ -38,7 +33,6 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
 
     const {database} = operator;
 
-    const tabletDevice = await isTablet();
     const currentTeamId = await getCurrentTeamId(database);
     const currentChannelId = await getCurrentChannelId(database);
     const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || since;
@@ -56,27 +50,7 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
         }
     }
 
-    const currentTeamIdAfterLoad = await getCurrentTeamId(database);
-    const currentChannelIdAfterLoad = await getCurrentChannelId(database);
-
-    if (currentTeamIdAfterLoad !== currentTeamId) {
-        // Switched teams while loading
-        if (!(teamData.teams?.find((t) => t.id === currentTeamIdAfterLoad))) {
-            handleKickFromTeam(serverUrl, currentTeamIdAfterLoad);
-        }
-    } else if (currentTeamId !== initialTeamId) {
-        handleKickFromTeam(serverUrl, currentTeamId);
-    } else if (currentChannelIdAfterLoad !== currentChannelId) {
-        // Switched channels while loading
-        if (!(chData?.memberships?.find((m) => m.channel_id === currentChannelIdAfterLoad))) {
-            handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
-        }
-    } else if (currentChannelId !== initialChannelId) {
-        const navComponents = NavigationStore.getNavigationComponents();
-        if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
-            handleKickFromChannel(serverUrl, currentChannelId);
-        }
-    }
+    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId, currentChannelId, initialTeamId, initialChannelId);
 
     const dt = Date.now();
     await operator.batchRecords(models);
