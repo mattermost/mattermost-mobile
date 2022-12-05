@@ -438,7 +438,7 @@
     "login_mfa.enterToken": "Для завершения процесса входа в систему введите код из приложения аутентификатора вашего мобильного устройства.",
     "mobile.create_post.read_only": "Этот канал только для чтения.",
     "mobile.create_direct_message.you": "@{username} - вы",
-    "mobile.create_direct_message.start": "Начать",
+    "mobile.create_direct_message.start": "Начать разговор",
     "mobile.create_channel.title": "Новый канал",
     "mobile.components.select_server_view.msg_description": "Сервер - это коммуникационный узел вашей команды, доступ к которому осуществляется через уникальный URL-адрес",
     "mobile.components.select_server_view.msg_connect": "Давайте подключимся к серверу",
@@ -919,5 +919,15 @@
     "post.reactions.title": "Реакции",
     "post_priority.picker.beta": "БЕТА",
     "post_priority.label.urgent": "СРОЧНО",
-    "post_priority.label.important": "ВАЖНО"
+    "post_priority.label.important": "ВАЖНО",
+    "mobile.open_dm.error": "Мы не можем открыть личные сообщения с {displayName}. Пожалуйста, проверьте подключение и попробуйте снова.",
+    "mobile.create_direct_message.max_limit_reached": "Групповые сообщения ограничены участниками: {maxCount}",
+    "mobile.calls_request_title": "Звонки в настоящее время не включены",
+    "mobile.calls_request_message": "В настоящее время звонки работают в тестовом режиме, и запустить их могут только системные администраторы. Обращайтесь за помощью непосредственно к системному администратору",
+    "mobile.calls_participant_limit_title_GA": "Этот звонок находится на пределе возможностей",
+    "mobile.calls_limit_msg_GA": "Обновление до Cloud Professional или Cloud Enterprise позволяет осуществлять групповые звонки с более чем {maxParticipants} участников.",
+    "general_settings.report_problem": "Сообщить о проблеме",
+    "connection_banner.not_reachable": "Сервер недоступен",
+    "connection_banner.not_connected": "Нет соединения с интернетом",
+    "connection_banner.connected": "Соединение восстановлено"
 }
