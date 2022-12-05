@@ -31,7 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const WebSocket = ({isConnected}: Props) => {
     const theme = useTheme();
 
-    if (!isConnected) {
+    if (isConnected) {
         return null;
     }
 

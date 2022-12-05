@@ -44,7 +44,7 @@ const ChannelInfoStartButton = ({
         if (alreadyInCall) {
             leaveCall();
         } else if (isLimitRestricted) {
-            showLimitRestrictedAlert(limitRestrictedInfo.maxParticipants, intl);
+            showLimitRestrictedAlert(limitRestrictedInfo, intl);
         } else {
             leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, !isACallInCurrentChannel, channelIsDMorGM);
         }

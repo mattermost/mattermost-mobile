@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState, useRef} from 'react';
 import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
 
-import {fetchNewThreads, fetchRefreshThreads, fetchThreads} from '@actions/remote/thread';
+import {loadEarlierThreads, syncTeamThreads} from '@actions/remote/thread';
 import Loading from '@components/loading';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -57,6 +57,7 @@ const ThreadsList = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
 
+    const flatListRef = useRef<FlatList<ThreadModel>>(null);
     const hasFetchedOnce = useRef(false);
     const [isLoading, setIsLoading] = useState(false);
     const [endReached, setEndReached] = useState(false);
@@ -66,22 +67,21 @@ const ThreadsList = ({
     const lastThread = threads?.length > 0 ? threads[threads.length - 1] : null;
 
     useEffect(() => {
-        // This is to be called only when there are no threads
-        if (tab === 'all' && noThreads && !hasFetchedOnce.current) {
-            setIsLoading(true);
-            fetchThreads(serverUrl, teamId).finally(() => {
-                hasFetchedOnce.current = true;
-                setIsLoading(false);
-            });
+        if (hasFetchedOnce.current || tab !== 'all') {
+            return;
         }
-    }, [noThreads, serverUrl, tab]);
 
-    useEffect(() => {
-        // This is to be called when threads already exist locally and to fetch the latest threads
+        // Display loading only when there are no threads
         if (!noThreads) {
-            fetchNewThreads(serverUrl, teamId);
+            setIsLoading(true);
         }
-    }, [noThreads, serverUrl, teamId]);
+        syncTeamThreads(serverUrl, teamId).then(() => {
+            hasFetchedOnce.current = true;
+        });
+        if (!noThreads) {
+            setIsLoading(false);
+        }
+    }, [noThreads, serverUrl, tab, teamId]);
 
     const listEmptyComponent = useMemo(() => {
         if (isLoading) {
@@ -118,33 +118,33 @@ const ThreadsList = ({
         return null;
     }, [isLoading, tab, theme, endReached]);
 
+    const handleTabChange = useCallback((value: GlobalThreadsTab) => {
+        setTab(value);
+        flatListRef.current?.scrollToOffset({animated: true, offset: 0});
+    }, [setTab]);
+
     const handleRefresh = useCallback(() => {
         setRefreshing(true);
 
-        fetchRefreshThreads(serverUrl, teamId, tab === 'unreads').finally(() => {
+        syncTeamThreads(serverUrl, teamId).finally(() => {
             setRefreshing(false);
         });
     }, [serverUrl, teamId]);
 
     const handleEndReached = useCallback(() => {
-        if (!lastThread || tab === 'unreads' || endReached) {
+        if (tab === 'unreads' || endReached || !lastThread) {
             return;
         }
 
-        const options = {
-            before: lastThread.id,
-            perPage: General.CRT_CHUNK_SIZE,
-        };
-
         setIsLoading(true);
-        fetchThreads(serverUrl, teamId, options).then((response) => {
-            if ('data' in response) {
-                setEndReached(response.data.threads.length < General.CRT_CHUNK_SIZE);
+        loadEarlierThreads(serverUrl, teamId, lastThread.id).then((response) => {
+            if (response.threads) {
+                setEndReached(response.threads.length < General.CRT_CHUNK_SIZE);
             }
         }).finally(() => {
             setIsLoading(false);
         });
-    }, [endReached, lastThread?.id, serverUrl, tab, teamId]);
+    }, [endReached, serverUrl, tab, teamId, lastThread]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<ThreadModel>) => (
         <Thread
@@ -158,7 +158,7 @@ const ThreadsList = ({
     return (
         <>
             <Header
-                setTab={setTab}
+                setTab={handleTabChange}
                 tab={tab}
                 teamId={teamId}
                 testID={`${testID}.header`}
@@ -172,6 +172,7 @@ const ThreadsList = ({
                 maxToRenderPerBatch={10}
                 onEndReached={handleEndReached}
                 onRefresh={handleRefresh}
+                ref={flatListRef}
                 refreshing={isRefreshing}
                 removeClippedSubviews={true}
                 renderItem={renderItem}

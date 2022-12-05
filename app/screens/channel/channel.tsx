@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {BackHandler, DeviceEventEmitter, LayoutChangeEvent, NativeEventSubscription, StyleSheet, View} from 'react-native';
+import {BackHandler, LayoutChangeEvent, NativeEventSubscription, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -11,11 +11,12 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import JoinCallBanner from '@calls/components/join_call_banner';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
-import {Events} from '@constants';
+import {Screens} from '@constants';
 import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useChannelSwitch} from '@hooks/channel_switch';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
+import {useKeyboardTrackingPaused} from '@hooks/keyboard_tracking';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -35,6 +36,7 @@ type ChannelProps = {
 };
 
 const edges: Edge[] = ['left', 'right'];
+const trackKeyboardForScreens = [Screens.HOME, Screens.CHANNEL];
 
 const styles = StyleSheet.create({
     flex: {
@@ -60,21 +62,9 @@ const Channel = ({
     const defaultHeight = useDefaultHeaderHeight();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
-
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
 
-    useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.PAUSE_KEYBOARD_TRACKING_VIEW, (pause: boolean) => {
-            if (pause) {
-                postDraftRef.current?.pauseTracking(channelId);
-                return;
-            }
-
-            postDraftRef.current?.resumeTracking(channelId);
-        });
-
-        return () => listener.remove();
-    }, []);
+    useKeyboardTrackingPaused(postDraftRef, channelId, trackKeyboardForScreens);
 
     useEffect(() => {
         let back: NativeEventSubscription|undefined;
@@ -142,7 +132,6 @@ const Channel = ({
                 onLayout={onLayout}
             >
                 <ChannelHeader
-                    serverUrl={serverUrl}
                     channelId={channelId}
                     componentId={componentId}
                     callsEnabledInChannel={isCallsEnabledInChannel}

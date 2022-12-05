@@ -788,7 +788,6 @@ export async function findChannels(title: string, theme: Theme) {
         }],
     };
 
-    DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, true);
     showModal(
         Screens.FIND_CHANNELS,
         title,

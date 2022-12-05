@@ -132,9 +132,12 @@ async function doReconnect(serverUrl: string) {
     const currentTeam = await getCurrentTeam(database);
     const currentChannel = await getCurrentChannel(database);
 
+    const currentActiveServerUrl = await getActiveServerUrl();
+    if (serverUrl === currentActiveServerUrl) {
+        DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
+    }
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
-        const currentActiveServerUrl = await getActiveServerUrl();
         if (serverUrl === currentActiveServerUrl) {
             DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
         }

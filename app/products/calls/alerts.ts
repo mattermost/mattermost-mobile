@@ -5,7 +5,8 @@ import {Alert} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
-import {setMicPermissionsGranted} from '@calls/state';
+import {LimitRestrictedInfo} from '@calls/observers';
+import {getCallsConfig, getCallsState, setMicPermissionsGranted} from '@calls/state';
 import {errorAlert} from '@calls/utils';
 import {Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -13,6 +14,7 @@ import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {logError} from '@utils/log';
+import {isSystemAdmin} from '@utils/user';
 
 import type {IntlShape} from 'react-intl';
 
@@ -22,15 +24,21 @@ let recordingAlertLock = false;
 // Only unlock if/when the user starts a recording.
 let recordingWillBePostedLock = true;
 
-export const showLimitRestrictedAlert = (maxParticipants: number, intl: IntlShape) => {
+export const showLimitRestrictedAlert = (info: LimitRestrictedInfo, intl: IntlShape) => {
     const title = intl.formatMessage({
-        id: 'mobile.calls_participant_limit_title',
-        defaultMessage: 'Participant limit reached',
+        id: 'mobile.calls_participant_limit_title_GA',
+        defaultMessage: 'This call is at capacity',
     });
-    const message = intl.formatMessage({
+    let message = intl.formatMessage({
         id: 'mobile.calls_limit_msg',
         defaultMessage: 'The maximum number of participants per call is {maxParticipants}. Contact your System Admin to increase the limit.',
-    }, {maxParticipants});
+    }, {maxParticipants: info.maxParticipants});
+    if (info.isCloudStarter) {
+        message = intl.formatMessage({
+            id: 'mobile.calls_limit_msg_GA',
+            defaultMessage: 'Upgrade to Cloud Professional or Cloud Enterprise to enable group calls with more than {maxParticipants} participants.',
+        }, {maxParticipants: info.maxParticipants});
+    }
     const ok = intl.formatMessage({
         id: 'mobile.calls_ok',
         defaultMessage: 'Okay',
@@ -91,17 +99,17 @@ export const leaveAndJoinWithAlert = (
                         id: 'mobile.leave_and_join_confirmation',
                         defaultMessage: 'Leave & Join',
                     }),
-                    onPress: () => doJoinCall(serverUrl, channelId, isDMorGM, intl),
+                    onPress: () => doJoinCall(serverUrl, channelId, isDMorGM, newCall, intl),
                     style: 'cancel',
                 },
             ],
         );
     } else {
-        doJoinCall(serverUrl, channelId, isDMorGM, intl);
+        doJoinCall(serverUrl, channelId, isDMorGM, newCall, intl);
     }
 };
 
-const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolean, intl: IntlShape) => {
+const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolean, newCall: boolean, intl: IntlShape) => {
     const {formatMessage} = intl;
 
     let user;
@@ -112,6 +120,30 @@ const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolea
         if (!user) {
             // This shouldn't happen, so don't bother localizing and displaying an alert.
             return;
+        }
+
+        if (newCall) {
+            const enabled = getCallsState(serverUrl).enabled[channelId];
+            const {DefaultEnabled} = getCallsConfig(serverUrl);
+            const isAdmin = isSystemAdmin(user.roles);
+
+            // if explicitly disabled, we wouldn't get to this point.
+            // if pre-GA calls:
+            //   if enabled is false, then this channel was returned as enabled=false from the server (it was either
+            //     explicitly disabled, or DefaultEnabled=false), and the StartCall button would not be shown
+            //   if enabled is true, then this channel was return as enabled=true from the server (it was either
+            //     explicitly enabled, or DefaultEnabled=true), everyone can start
+            // if GA calls:
+            //   if explicitly enabled, everyone can start a call
+            //   if !explicitly enabled and defaultEnabled, everyone can start
+            //   if !explicitly enabled and !defaultEnabled, system admins can start, regular users get alert
+            // Note: the below is a 'badly' coded if. But it's clear, which trumps.
+            if (enabled || (!enabled && DefaultEnabled) || (!enabled && !DefaultEnabled && isAdmin)) {
+                // continue through and start the call
+            } else {
+                contactAdminAlert(intl);
+                return;
+            }
         }
     } catch (error) {
         logError('failed to getServerDatabaseAndOperator in doJoinCall', error);
@@ -137,6 +169,25 @@ const doJoinCall = async (serverUrl: string, channelId: string, isDMorGM: boolea
         // Waiting for a second before unmuting is a decent workaround that should work in most cases.
         setTimeout(() => unmuteMyself(), 1000);
     }
+};
+
+const contactAdminAlert = ({formatMessage}: IntlShape) => {
+    Alert.alert(
+        formatMessage({
+            id: 'mobile.calls_request_title',
+            defaultMessage: 'Calls is not currently enabled',
+        }),
+        formatMessage({
+            id: 'mobile.calls_request_message',
+            defaultMessage: 'Calls are currently running in test mode and only system admins can start them. Reach out directly to your system admin for assistance',
+        }),
+        [{
+            text: formatMessage({
+                id: 'mobile.calls_okay',
+                defaultMessage: 'Okay',
+            }),
+        }],
+    );
 };
 
 export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
