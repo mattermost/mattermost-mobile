@@ -22,7 +22,7 @@ const messages = defineMessages({
         defaultMessage: 'All team members are already in this channel.',
     },
     go_back: {
-        id: t('mobile.go_back'),
+        id: t('mobile.no_more_members.go_back'),
         defaultMessage: 'Go back',
     },
 });
