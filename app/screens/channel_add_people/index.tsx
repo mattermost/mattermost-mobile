@@ -26,8 +26,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         channelId,
-        isGroupConstrained,
         currentTeamId: observeCurrentTeamId(database),
+        isGroupConstrained,
         teammateNameDisplay: observeTeammateNameDisplay(database),
         tutorialWatched: observeProfileLongPresTutorial(),
     };

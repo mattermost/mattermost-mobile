@@ -29,7 +29,7 @@ const close = () => {
     popTopScreen();
 };
 
-const style = StyleSheet.create({
+const styles = StyleSheet.create({
     container: {
         flex: 1,
     },
@@ -41,6 +41,7 @@ const style = StyleSheet.create({
 });
 
 const messages = defineMessages({
+    cancel: {id: t('mobile.post.cancel'), defaultMessage: 'Cancel'},
     error: {
         id: t('mobile.channel_add_people.error'),
         defaultMessage: 'We could not add those users to the channel. Please check your connection and try again.',
@@ -49,6 +50,7 @@ const messages = defineMessages({
         id: t('mobile.channel_add_people.title'),
         defaultMessage: 'Add Members',
     },
+    search: {id: t('search_bar.search'), defaultMessage: 'Search'},
     toastMessage: {
         id: t('mobile.channel_add_people.max_limit_reached'),
         defaultMessage: 'Max selected users are limited to {maxCount} members',
@@ -280,7 +282,7 @@ export default function ChannelAddPeople({
 
     if (startingAddPeople) {
         return (
-            <View style={style.container}>
+            <View style={styles.container}>
                 <Loading color={theme.centerChannelColor}/>
             </View>
         );
@@ -290,19 +292,19 @@ export default function ChannelAddPeople({
         <SafeAreaView
             edges={['top', 'left', 'right']}
             onLayout={onLayout}
-            style={style.container}
+            style={styles.container}
             testID='add_members.screen'
         >
             {hasProfiles &&
-                <View style={style.searchBar}>
+                <View style={styles.searchBar}>
                     <Search
                         autoCapitalize='none'
-                        cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                        cancelButtonTitle={formatMessage(messages.cancel)}
                         keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                         onCancel={clearSearch}
                         onChangeText={onSearch}
                         onSubmitEditing={search}
-                        placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                        placeholder={formatMessage(messages.search)}
                         placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                         testID='add_members.search_bar'
                         value={term}
