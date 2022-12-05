@@ -58,8 +58,6 @@ function registerNavigationListeners() {
 function screenWillAppear({componentId}: ComponentDidAppearEvent) {
     if (componentId === Screens.HOME) {
         DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
-    } else if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
-        DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, true);
     }
 }
 
@@ -71,10 +69,6 @@ function screenDidAppearListener({componentId, componentType}: ComponentDidAppea
 
 function screenDidDisappearListener({componentId}: ComponentDidDisappearEvent) {
     if (componentId !== Screens.HOME) {
-        if ([Screens.EDIT_POST, Screens.THREAD].includes(componentId)) {
-            DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, false);
-        }
-
         if (NavigationStore.getNavigationTopComponentId() === Screens.HOME) {
             DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
         }

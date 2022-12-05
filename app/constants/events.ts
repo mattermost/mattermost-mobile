@@ -16,7 +16,6 @@ export default keyMirror({
     LEAVE_TEAM: null,
     LOADING_CHANNEL_POSTS: null,
     NOTIFICATION_ERROR: null,
-    PAUSE_KEYBOARD_TRACKING_VIEW: null,
     SERVER_LOGOUT: null,
     SERVER_VERSION_CHANGED: null,
     SESSION_EXPIRED: null,
