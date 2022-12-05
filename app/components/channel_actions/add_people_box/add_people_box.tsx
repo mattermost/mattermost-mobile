@@ -20,11 +20,11 @@ type Props = {
 }
 
 const AddPeopleBox = ({channelId, containerStyle, displayName, inModal, testID}: Props) => {
-    const intl = useIntl();
+    const {formatMessage} = useIntl();
     const theme = useTheme();
 
     const onAddPeople = useCallback(async () => {
-        const title = intl.formatMessage({id: 'mobile.channel_add_people.title', defaultMessage: 'Add Members'});
+        const title = formatMessage({id: 'mobile.channel_add_people.title', defaultMessage: 'Add Members'});
         const options = {
             topBar: {
                 subtitle: {
@@ -39,7 +39,7 @@ const AddPeopleBox = ({channelId, containerStyle, displayName, inModal, testID}:
         }
         await dismissBottomSheet();
         showModal(Screens.CHANNEL_ADD_PEOPLE, title, {channelId});
-    }, [intl, channelId, inModal]);
+    }, [formatMessage, channelId, inModal]);
 
     return (
         <OptionBox
@@ -47,7 +47,7 @@ const AddPeopleBox = ({channelId, containerStyle, displayName, inModal, testID}:
             iconName='account-plus-outline'
             onPress={onAddPeople}
             testID={testID}
-            text={intl.formatMessage({id: 'intro.add_people', defaultMessage: 'Add People'})}
+            text={formatMessage({id: 'intro.add_people', defaultMessage: 'Add People'})}
         />
     );
 };
