@@ -224,13 +224,22 @@ function IntegrationSelector(
         }
     }, [isMultiselect, dataSource, handleSelect]);
 
-    const handleRemoveOption = useCallback((item: Channel | DialogOption) => {
+    const handleRemoveOption = useCallback((item: Channel | DialogOption | UserProfile) => {
         const itemKey = extractItemKey(dataSource, item);
-        setMultiselectSelected((current) => {
-            const multiselectSelectedItems = {...current};
-            delete multiselectSelectedItems[itemKey];
-            return multiselectSelectedItems;
-        });
+
+        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+            setSelectedIds((current) => {
+                const selectedIdItems = {...current};
+                delete selectedIdItems[itemKey];
+                return selectedIdItems;
+            });
+        } else {
+            setMultiselectSelected((current) => {
+                const multiselectSelectedItems = {...current};
+                delete multiselectSelectedItems[itemKey];
+                return multiselectSelectedItems;
+            });
+        }
     }, [dataSource]);
 
     const getChannels = useCallback(debounce(async () => {
@@ -514,6 +523,7 @@ function IntegrationSelector(
                         term={term}
                         tutorialWatched={true}
                         handleSelectProfile={handleSelectProfile}
+                        selectedIds={selectedIds}
                     />
                 );
             default:
