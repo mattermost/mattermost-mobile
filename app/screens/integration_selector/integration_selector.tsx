@@ -523,7 +523,7 @@ function IntegrationSelector(
                         term={term}
                         tutorialWatched={true}
                         handleSelectProfile={handleSelectProfile}
-                        selectedIds={selectedIds}
+                        selectedIds={selectedIds as {[id: string]: UserProfile}}
                     />
                 );
             default:
