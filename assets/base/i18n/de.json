@@ -549,7 +549,7 @@
     "mobile.custom_status.clear_after.title": "Benutzerdefinierten Status löschen nach",
     "mobile.create_post.read_only": "Dieser Kanal kann nur gelesen werden.",
     "mobile.create_direct_message.you": "@{username} - Du",
-    "mobile.create_direct_message.start": "Start",
+    "mobile.create_direct_message.start": "Starte Unterhaltung",
     "mobile.create_channel.title": "Neuer Kanal",
     "mobile.components.select_server_view.msg_welcome": "Willkommen",
     "mobile.components.select_server_view.msg_description": "Ein Server ist das Kommunikationszentrum deines Teams, auf den über eine eindeutige URL zugegriffen wird",
@@ -922,5 +922,12 @@
     "extension.no_memberships.description": "Um Inhalte zu teilen, musst du Mitglied eines Teams auf einem Mattermost-Server sein.",
     "connection_banner.not_reachable": "Der Server ist nicht erreichbar",
     "connection_banner.not_connected": "Keine Internetverbindung",
-    "connection_banner.connected": "Verbindung wiederhergestellt"
+    "connection_banner.connected": "Verbindung wiederhergestellt",
+    "mobile.open_dm.error": "Der Direktnachrichtenkanal mit {displayName} konnte nicht geöffnet werden. Bitte überprüfe deine Verbindung und versuche es erneut.",
+    "mobile.create_direct_message.max_limit_reached": "Gruppennachrichten sind auf {maxCount} Mitglieder beschränkt",
+    "mobile.calls_request_title": "Anrufe sind derzeit nicht aktiviert",
+    "mobile.calls_request_message": "Die Anrufe laufen derzeit im Testmodus, und nur Systemadministratoren können sie starten. Wende dich für Hilfe direkt an deinen Systemadministrator",
+    "mobile.calls_participant_limit_title_GA": "Dieser Aufruf ist ausgelastet",
+    "mobile.calls_limit_msg_GA": "Upgrade auf Cloud Professional oder Cloud Enterprise, um Gruppenanrufe mit mehr als {maxParticipants} Teilnehmern zu ermöglichen.",
+    "general_settings.report_problem": "Fehler melden"
 }
