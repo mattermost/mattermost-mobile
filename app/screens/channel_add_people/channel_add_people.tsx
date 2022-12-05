@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Keyboard, LayoutChangeEvent, Platform, StyleSheet, View} from 'react-native';
-import {SafeAreaView} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {addMembersToChannel} from '@actions/remote/channel';
 import {fetchProfilesNotInChannel, searchProfiles} from '@actions/remote/user';
@@ -69,6 +69,7 @@ type Props = {
 
 const MAX_SELECTED_USERS = General.MAX_USERS_ADD_TO_CHANNEL;
 const EMPTY: UserProfile[] = [];
+const EDGES: Edge[] = ['top', 'left', 'right'];
 
 function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
     const newSelectedIds = Object.assign({}, list);
@@ -290,7 +291,7 @@ export default function ChannelAddPeople({
 
     return (
         <SafeAreaView
-            edges={['top', 'left', 'right']}
+            edges={EDGES}
             onLayout={onLayout}
             style={styles.container}
             testID='add_members.screen'
