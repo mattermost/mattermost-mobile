@@ -858,7 +858,7 @@
   "smobile.search.recent_title": "Recent searches in {teamName}",
   "snack.bar.favorited.channel": "This channel was favorited",
   "snack.bar.channel.member.added": "1 member addeed",
-  "snack.bar.channel.members.added": "members addeed",
+  "snack.bar.channel.members.added": "{numMembers} members added",
   "snack.bar.link.copied": "Link copied to clipboard",
   "snack.bar.message.copied": "Text copied to clipboard",
   "snack.bar.mute.channel": "This channel was muted",
