@@ -8,22 +8,20 @@ import {StyleProp, ViewStyle} from 'react-native';
 import OptionBox from '@components/option_box';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {ChannelModel} from '@database/models/server';
 import {dismissBottomSheet, goToScreen, showModal} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
-    channel: ChannelModel;
+    channelId: string;
     containerStyle?: StyleProp<ViewStyle>;
+    displayName: string;
     inModal?: boolean;
     testID?: string;
 }
 
-const AddPeopleBox = ({channel, containerStyle, inModal, testID}: Props) => {
+const AddPeopleBox = ({channelId, containerStyle, displayName, inModal, testID}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const channelId = channel.id;
-    const displayName = channel.displayName;
 
     const onAddPeople = useCallback(async () => {
         const title = intl.formatMessage({id: 'mobile.channel_add_people.title', defaultMessage: 'Add Members'});

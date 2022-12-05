@@ -3,6 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {observeChannel} from '@queries/servers/channel';
 
@@ -15,8 +17,11 @@ type Props = WithDatabaseArgs & {
 }
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
+    const channel = observeChannel(database, channelId);
+    const displayName = channel.pipe(switchMap((c) => of$(c?.displayName)));
+
     return {
-        channel: observeChannel(database, channelId),
+        displayName,
     };
 });
 
