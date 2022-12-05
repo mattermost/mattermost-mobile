@@ -11,6 +11,15 @@
         }
       },
       {
+        "package": "Sentry",
+        "repositoryURL": "https://github.com/getsentry/sentry-cocoa.git",
+        "state": {
+          "branch": "8.0.0",
+          "revision": "459ae5e5a86f77c1862a55847365cb3bdee349fa",
+          "version": null
+        }
+      },
+      {
         "package": "SQLite.swift",
         "repositoryURL": "https://github.com/stephencelis/SQLite.swift.git",
         "state": {
