@@ -20,6 +20,7 @@ import {useModalPosition} from '@hooks/device';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
+import {showAddChannelMembersSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
@@ -171,6 +172,7 @@ export default function ChannelAddPeople({
 
         if (success) {
             close();
+            showAddChannelMembersSnackbar(idsToUse);
         } else {
             setStartingAddPeople(false);
         }

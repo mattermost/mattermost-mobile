@@ -24,6 +24,7 @@ import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissOverlay} from '@screens/navigation';
+import {ShowSnackBarArgs} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -72,14 +73,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 type SnackBarProps = {
     componentId: string;
-    onAction?: () => void;
-    barType: keyof typeof SNACK_BAR_TYPE;
     sourceScreen: typeof Screens[keyof typeof Screens];
-}
+} & ShowSnackBarArgs;
 
-const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps) => {
+const SnackBar = ({barType, componentId, messageValues = {}, onAction, sourceScreen}: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
-    const intl = useIntl();
+    const {formatMessage} = useIntl();
     const theme = useTheme();
     const isTablet = useIsTablet();
     const {width: windowWidth, height: windowHeight} = useWindowDimensions();
@@ -241,14 +240,17 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
                     <Toast
                         animatedStyle={snackBarStyle}
                         iconName={config.iconName}
-                        message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
+                        message={formatMessage({
+                            id: config.id,
+                            defaultMessage: config.defaultMessage,
+                        }, messageValues)}
                         style={[styles.toast, barType === SNACK_BAR_TYPE.LINK_COPIED && {backgroundColor: theme.onlineIndicator}]}
                         textStyle={styles.text}
                     >
                         {config.canUndo && onAction && (
                             <TouchableOpacity onPress={onUndoPressHandler}>
                                 <Text style={styles.undo}>
-                                    {intl.formatMessage({
+                                    {formatMessage({
                                         id: 'snack.bar.undo',
                                         defaultMessage: 'Undo',
                                     })}
