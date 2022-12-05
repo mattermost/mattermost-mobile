@@ -31,7 +31,7 @@
     "@react-navigation/native": "6.0.13",
     "@react-navigation/stack": "6.3.7",
     "@rudderstack/rudder-sdk-react-native": "1.5.1",
-    "@sentry/react-native": "4.8.0",
+    "@sentry/react-native": "4.11.0",
     "@stream-io/flat-list-mvcp": "0.10.2",
     "base-64": "1.0.0",
     "commonmark": "npm:@mattermost/commonmark@0.30.1-0",
