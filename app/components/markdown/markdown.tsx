@@ -11,7 +11,7 @@ import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import Hashtag from '@components/markdown/hashtag';
 import {computeTextStyle} from '@utils/markdown';
-import {blendColors, changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {blendColors, changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
 import AtMention from './at_mention';
