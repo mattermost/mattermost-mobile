@@ -240,6 +240,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                 scrollEnabled={scrollEnabled}
                 searchValue={searchValue}
                 setRecentValue={handleRecentSearch}
+                searchRef={searchRef}
                 setSearchValue={handleModifierTextChange}
                 setTeamId={setSearchTeamId}
                 teamId={searchTeamId}
