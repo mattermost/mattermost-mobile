@@ -492,6 +492,10 @@ const Markdown = ({
             styles = computeTextStyle(textStyles, baseTextStyle, context);
         }
 
+        if (context.includes('mention_highlight')) {
+            styles = concatStyles(styles, {backgroundColor: theme.mentionHighlightBg});
+        }
+
         return (
             <Text
                 testID='markdown_text'
