@@ -23,6 +23,10 @@ type Props = {
 
 const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, enableCodeSpan, baseStyle, textStyle = {}, value}: Props) => {
     const renderEmoji = useCallback(({emojiName, literal}: MarkdownEmojiRenderer) => {
+        if (!enableEmoji) {
+            return renderText({literal});
+        }
+
         return (
             <Emoji
                 emojiName={emojiName}
@@ -31,7 +35,7 @@ const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, enableCo
                 textStyle={baseStyle}
             />
         );
-    }, [baseStyle]);
+    }, [baseStyle, enableEmoji]);
 
     const renderBreak = useCallback(() => {
         return '\n';
@@ -41,7 +45,7 @@ const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, enableCo
         return <Text style={baseStyle}>{literal}</Text>;
     }, [baseStyle]);
 
-    const renderCodeSpan = ({context, literal}: MarkdownBaseRenderer) => {
+    const renderCodeSpan = useCallback(({context, literal}: MarkdownBaseRenderer) => {
         if (!enableCodeSpan) {
             return renderText({literal});
         }
@@ -55,7 +59,7 @@ const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, enableCo
                 {literal}
             </Text>
         );
-    };
+    }, [baseStyle, textStyle, enableCodeSpan]);
 
     const renderNull = () => {
         return null;
@@ -74,7 +78,7 @@ const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, enableCo
                 image: renderNull,
                 atMention: Renderer.forwardChildren,
                 channelLink: Renderer.forwardChildren,
-                emoji: enableEmoji ? renderEmoji : renderNull,
+                emoji: renderEmoji,
                 hashtag: Renderer.forwardChildren,
                 latexinline: Renderer.forwardChildren,
 
