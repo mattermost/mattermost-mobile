@@ -10,7 +10,8 @@ import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import Hashtag from '@components/markdown/hashtag';
-import {blendColors, changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
+import {computeTextStyle} from '@utils/markdown';
+import {blendColors, changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
 import AtMention from './at_mention';
@@ -118,11 +119,6 @@ const getExtraPropsForNode = (node: any) => {
     }
 
     return extraProps;
-};
-
-const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: StyleProp<TextStyle>, context: string[]) => {
-    const contextStyles: TextStyle[] = context.map((type) => textStyles[type]).filter((f) => f !== undefined);
-    return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
 };
 
 const Markdown = ({
