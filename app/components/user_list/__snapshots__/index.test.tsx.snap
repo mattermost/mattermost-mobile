@@ -228,20 +228,6 @@ exports[`components/channel_list_row should show no results 1`] = `
                 </Text>
               </View>
             </View>
-            <View
-              style={
-                {
-                  "alignItems": "center",
-                  "justifyContent": "center",
-                }
-              }
-            >
-              <Icon
-                color="rgba(63,67,80,0.32)"
-                name="circle-outline"
-                size={28}
-              />
-            </View>
           </View>
         </View>
       </View>
@@ -500,20 +486,6 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                 </Text>
               </View>
             </View>
-            <View
-              style={
-                {
-                  "alignItems": "center",
-                  "justifyContent": "center",
-                }
-              }
-            >
-              <Icon
-                color="rgba(63,67,80,0.32)"
-                name="circle-outline"
-                size={28}
-              />
-            </View>
           </View>
         </View>
       </View>
@@ -771,20 +743,6 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                   johndoe
                 </Text>
               </View>
-            </View>
-            <View
-              style={
-                {
-                  "alignItems": "center",
-                  "justifyContent": "center",
-                }
-              }
-            >
-              <Icon
-                color="rgba(63,67,80,0.32)"
-                name="circle-outline"
-                size={28}
-              />
             </View>
           </View>
         </View>

@@ -47,8 +47,11 @@ exports[`components/channel_list_row should be selected 1`] = `
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "justifyContent": "center",
             "marginLeft": 16,
+            "paddingHorizontal": 10,
           }
         }
       >
@@ -82,7 +85,14 @@ exports[`components/channel_list_row should be selected 1`] = `
           My purpose
         </Text>
       </View>
-      <View>
+      <View
+        style={
+          {
+            "alignItems": "center",
+            "justifyContent": "center",
+          }
+        }
+      >
         <Icon
           color="#1c58d9"
           name="check-circle"
@@ -141,8 +151,11 @@ exports[`components/channel_list_row should match snapshot with delete_at filled
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "justifyContent": "center",
             "marginLeft": 16,
+            "paddingHorizontal": 10,
           }
         }
       >
@@ -213,8 +226,11 @@ exports[`components/channel_list_row should match snapshot with open channel ico
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "justifyContent": "center",
             "marginLeft": 16,
+            "paddingHorizontal": 10,
           }
         }
       >
@@ -285,8 +301,11 @@ exports[`components/channel_list_row should match snapshot with private channel 
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "justifyContent": "center",
             "marginLeft": 16,
+            "paddingHorizontal": 10,
           }
         }
       >
@@ -357,8 +376,11 @@ exports[`components/channel_list_row should match snapshot with purpose filled i
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "justifyContent": "center",
             "marginLeft": 16,
+            "paddingHorizontal": 10,
           }
         }
       >
@@ -444,8 +466,11 @@ exports[`components/channel_list_row should match snapshot with shared filled in
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
+            "justifyContent": "center",
             "marginLeft": 16,
+            "paddingHorizontal": 10,
           }
         }
       >
