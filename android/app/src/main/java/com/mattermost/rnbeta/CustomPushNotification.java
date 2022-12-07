@@ -81,7 +81,8 @@ public class CustomPushNotification extends PushNotification {
         switch (type) {
             case CustomPushNotificationHelper.PUSH_TYPE_MESSAGE:
             case CustomPushNotificationHelper.PUSH_TYPE_SESSION:
-                String currentActivityName = ShareModule.getInstance().getCurrentActivityName();
+                ShareModule shareModule = ShareModule.getInstance();
+                String currentActivityName = shareModule != null ? shareModule.getCurrentActivityName() : "";
                 Log.i("ReactNative", currentActivityName);
                 if (!mAppLifecycleFacade.isAppVisible() || !currentActivityName.equals("MainActivity")) {
                     boolean createSummary = type.equals(CustomPushNotificationHelper.PUSH_TYPE_MESSAGE);

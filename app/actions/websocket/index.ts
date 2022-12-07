@@ -3,7 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
-import {switchToChannelById} from '@actions/remote/channel';
+import {handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
 import {deferredAppEntryActions, entry} from '@actions/remote/entry/gql_common';
 import {fetchStatusByIds} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
@@ -27,11 +27,11 @@ import {
     handleCallUserVoiceOn,
 } from '@calls/connection/websocket_event_handlers';
 import {isSupportedServerCalls} from '@calls/utils';
-import {Events, Screens, WebsocketEvents} from '@constants';
+import {Events, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
-import {getActiveServerUrl, getActiveServer} from '@queries/app/servers';
+import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {
     getConfig,
@@ -39,13 +39,9 @@ import {
     getLicense,
     getWebSocketLastDisconnected,
     resetWebSocketLastDisconnected,
-    setCurrentTeamAndChannelId,
 } from '@queries/servers/system';
 import {getCurrentTeam} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModals, popToRoot} from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
-import {isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
@@ -135,8 +131,11 @@ async function doReconnect(serverUrl: string) {
 
     const currentTeam = await getCurrentTeam(database);
     const currentChannel = await getCurrentChannel(database);
-    const currentActiveServerUrl = await getActiveServerUrl();
 
+    const currentActiveServerUrl = await getActiveServerUrl();
+    if (serverUrl === currentActiveServerUrl) {
+        DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
+    }
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
         if (serverUrl === currentActiveServerUrl) {
@@ -146,35 +145,7 @@ async function doReconnect(serverUrl: string) {
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
 
-    let switchedToChannel = false;
-
-    // if no longer a member of the current team or the current channel
-    if (initialTeamId !== currentTeam?.id || initialChannelId !== currentChannel?.id) {
-        const currentServer = await getActiveServer();
-        const isChannelScreenMounted = NavigationStore.getNavigationComponents().includes(Screens.CHANNEL);
-        if (serverUrl === currentServer?.url) {
-            if (currentTeam && initialTeamId !== currentTeam.id) {
-                DeviceEventEmitter.emit(Events.LEAVE_TEAM, {displayName: currentTeam.displayName});
-                await dismissAllModals();
-                await popToRoot();
-            } else if (currentChannel && initialChannelId !== currentChannel.id && isChannelScreenMounted) {
-                DeviceEventEmitter.emit(Events.LEAVE_CHANNEL, {displayName: currentChannel?.displayName});
-                await dismissAllModals();
-                await popToRoot();
-            }
-
-            const tabletDevice = await isTablet();
-
-            if (tabletDevice && initialChannelId) {
-                switchedToChannel = true;
-                switchToChannelById(serverUrl, initialChannelId, initialTeamId);
-            } else {
-                setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
-            }
-        } else {
-            setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
-        }
-    }
+    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeam?.id || '', currentChannel?.id || '', initialTeamId, initialChannelId);
 
     const dt = Date.now();
     await operator.batchRecords(models);
@@ -188,7 +159,7 @@ async function doReconnect(serverUrl: string) {
         loadConfigAndCalls(serverUrl, currentUserId);
     }
 
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchedToChannel ? initialChannelId : undefined);
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 
     AppsManager.refreshAppBindings(serverUrl);
 }

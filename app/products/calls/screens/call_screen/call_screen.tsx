@@ -421,7 +421,7 @@ const CallScreen = ({
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
-            if (channelId === currentCall?.channelId && NavigationStore.getNavigationTopComponentId() === componentId) {
+            if (channelId === currentCall?.channelId && NavigationStore.getVisibleScreen() === componentId) {
                 Navigation.pop(componentId);
             }
         });
@@ -433,7 +433,7 @@ const CallScreen = ({
         // Note: this happens because the screen is "rendered", even after the screen has been popped, and the
         // currentCall will have already been set to null when those extra renders run. We probably don't ever need
         // to pop, but just in case.
-        if (NavigationStore.getNavigationTopComponentId() === componentId) {
+        if (NavigationStore.getVisibleScreen() === componentId) {
             // ignore the error because the call screen has likely already been popped async
             Navigation.pop(componentId).catch(() => null);
         }

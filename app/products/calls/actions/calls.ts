@@ -104,7 +104,10 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
         if (channel.call) {
             callsResults[channel.channel_id] = createCallAndAddToIds(channel.channel_id, channel.call, ids);
         }
-        enabledChannels[channel.channel_id] = channel.enabled;
+
+        if (typeof channel.enabled !== 'undefined') {
+            enabledChannels[channel.channel_id] = channel.enabled;
+        }
     }
 
     // Batch load user models async because we'll need them later

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {DeviceEventEmitter, LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import {LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
@@ -11,10 +11,11 @@ import FloatingCallContainer from '@calls/components/floating_call_container';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {Events} from '@constants';
+import {Screens} from '@constants';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
+import {useKeyboardTrackingPaused} from '@hooks/keyboard_tracking';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
@@ -29,6 +30,7 @@ type ThreadProps = {
 };
 
 const edges: Edge[] = ['left', 'right'];
+const trackKeyboardForScreens = [Screens.THREAD];
 
 const styles = StyleSheet.create({
     flex: {flex: 1},
@@ -38,19 +40,9 @@ const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
     const appState = useAppState();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
+    const rootId = rootPost?.id || '';
 
-    useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.PAUSE_KEYBOARD_TRACKING_VIEW, (pause: boolean) => {
-            if (pause) {
-                postDraftRef.current?.pauseTracking(rootPost!.id);
-                return;
-            }
-
-            postDraftRef.current?.resumeTracking(rootPost!.id);
-        });
-
-        return () => listener.remove();
-    }, []);
+    useKeyboardTrackingPaused(postDraftRef, rootId, trackKeyboardForScreens);
 
     useEffect(() => {
         return () => {

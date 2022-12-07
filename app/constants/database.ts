@@ -61,6 +61,7 @@ export const SYSTEM_IDENTIFIERS = {
     EXPANDED_LINKS: 'expandedLinks',
     GRANULAR_DATA_RETENTION_POLICIES: 'granularDataRetentionPolicies',
     LAST_DATA_RETENTION_RUN: 'lastDataRetentionRun',
+    GLOBAL_THREADS_TAB: 'globalThreadsTab',
     LAST_DISMISSED_BANNER: 'lastDismissedBanner',
     LAST_SERVER_VERSION_CHECK: 'LastServerVersionCheck',
     LICENSE: 'license',

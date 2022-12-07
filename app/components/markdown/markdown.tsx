@@ -10,6 +10,7 @@ import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
 import Hashtag from '@components/markdown/hashtag';
+import {computeTextStyle} from '@utils/markdown';
 import {blendColors, changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
@@ -118,11 +119,6 @@ const getExtraPropsForNode = (node: any) => {
     }
 
     return extraProps;
-};
-
-const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: StyleProp<TextStyle>, context: string[]) => {
-    const contextStyles: TextStyle[] = context.map((type) => textStyles[type]).filter((f) => f !== undefined);
-    return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
 };
 
 const Markdown = ({
@@ -490,6 +486,10 @@ const Markdown = ({
             styles = computeTextStyle(textStyles, baseTextStyle, context.filter((c) => !c.startsWith('heading')));
         } else {
             styles = computeTextStyle(textStyles, baseTextStyle, context);
+        }
+
+        if (context.includes('mention_highlight')) {
+            styles = concatStyles(styles, {backgroundColor: theme.mentionHighlightBg});
         }
 
         return (

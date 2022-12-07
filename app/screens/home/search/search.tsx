@@ -96,6 +96,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [showResults, setShowResults] = useState(false);
     const [containerHeight, setContainerHeight] = useState(0);
+    const [searchIsFocused, setSearchIsFocused] = useState(false);
 
     const [loading, setLoading] = useState(false);
     const [resultsLoading, setResultsLoading] = useState(false);
@@ -150,8 +151,11 @@ const SearchScreen = ({teamId, teams}: Props) => {
     }, []);
 
     const handleModifierTextChange = useCallback((newValue: string) => {
-        searchRef.current?.focus?.();
-        handleTextChange(newValue);
+        setSearchIsFocused(true);
+        requestAnimationFrame(() => {
+            searchRef.current?.focus?.();
+            handleTextChange(newValue);
+        });
     }, [handleTextChange]);
 
     const handleLoading = useCallback((show: boolean) => {
@@ -183,6 +187,14 @@ const SearchScreen = ({teamId, teams}: Props) => {
         handleLoading(false);
         setShowResults(true);
     }, [handleClearSearch, handleLoading]);
+
+    const onBlur = useCallback(() => {
+        setSearchIsFocused(false);
+    }, []);
+
+    const onFocus = useCallback(() => {
+        setSearchIsFocused(true);
+    }, []);
 
     const onSubmit = useCallback(() => {
         handleSearch(searchTeamId, searchValue);
@@ -228,6 +240,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                 scrollEnabled={scrollEnabled}
                 searchValue={searchValue}
                 setRecentValue={handleRecentSearch}
+                searchRef={searchRef}
                 setSearchValue={handleModifierTextChange}
                 setTeamId={setSearchTeamId}
                 teamId={searchTeamId}
@@ -272,21 +285,6 @@ const SearchScreen = ({teamId, teams}: Props) => {
         return headerHeight.value - AutocompletePaddingTop;
     }, [headerHeight]);
 
-    const autocomplete = useMemo(() => (
-        <Autocomplete
-            updateValue={handleTextChange}
-            cursorPosition={cursorPosition}
-            value={searchValue}
-            isSearch={true}
-            hasFilesAttached={false}
-            availableSpace={autocompleteMaxHeight}
-            position={autocompletePosition}
-            growDown={true}
-            containerStyle={styles.autocompleteContainer}
-            teamId={searchTeamId}
-        />
-    ), [cursorPosition, handleTextChange, searchValue, autocompleteMaxHeight, autocompletePosition, searchTeamId]);
-
     // when clearing the input from the search results, scroll the initial view
     // back to the top so the header is in the collapsed state
     const onFlatLayout = useCallback(() => {
@@ -326,8 +324,10 @@ const SearchScreen = ({teamId, teams}: Props) => {
                 onSubmitEditing={onSubmit}
                 blurOnSubmit={true}
                 placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
+                onBlur={onBlur}
                 onClear={handleClearSearch}
                 onCancel={handleCancelSearch}
+                onFocus={onFocus}
                 defaultValue={searchValue}
                 ref={searchRef}
             />
@@ -385,7 +385,20 @@ const SearchScreen = ({teamId, teams}: Props) => {
                     }
                 </Animated.View>
             </SafeAreaView>
-            {autocomplete}
+            {searchIsFocused &&
+            <Autocomplete
+                updateValue={handleTextChange}
+                cursorPosition={cursorPosition}
+                value={searchValue}
+                isSearch={true}
+                hasFilesAttached={false}
+                availableSpace={autocompleteMaxHeight}
+                position={autocompletePosition}
+                growDown={true}
+                containerStyle={styles.autocompleteContainer}
+                teamId={searchTeamId}
+            />
+            }
         </FreezeScreen>
     );
 };

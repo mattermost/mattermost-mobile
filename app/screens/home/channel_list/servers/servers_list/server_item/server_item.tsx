@@ -101,7 +101,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderWidth: 1,
         height: 72,
         justifyContent: 'center',
-        width: 45,
+        width: 50,
     },
     unread: {
         top: -2,
@@ -157,7 +157,7 @@ const ServerItem = ({
     const viewRef = useRef<View>(null);
     const [showTutorial, setShowTutorial] = useState(false);
     const [itemBounds, setItemBounds] = useState<TutorialItemBounds>({startX: 0, startY: 0, endX: 0, endY: 0});
-    const database = DatabaseManager.serverDatabases[server.url]?.database;
+
     let displayName = server.displayName;
 
     if (server.url === server.displayName) {
@@ -451,9 +451,9 @@ const ServerItem = ({
                 </Text>
             )}
 
-            {Boolean(database) && server.lastActiveAt > 0 &&
+            {server.lastActiveAt > 0 &&
             <WebSocket
-                database={database!}
+                serverUrl={server.url}
             />
             }
             {showTutorial &&
