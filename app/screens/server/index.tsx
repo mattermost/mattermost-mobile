@@ -37,6 +37,7 @@ interface ServerProps extends LaunchProps {
     animated?: boolean;
     closeButtonId?: string;
     componentId: string;
+    isModal?: boolean;
     theme: Theme;
 }
 
@@ -69,6 +70,7 @@ const Server = ({
     componentId,
     displayName: defaultDisplayName,
     extra,
+    isModal,
     launchType,
     launchError,
     serverUrl: defaultServerUrl,
@@ -354,6 +356,7 @@ const Server = ({
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}
+                        isModal={isModal}
                         keyboardAwareRef={keyboardAwareRef}
                         theme={theme}
                         url={url}
