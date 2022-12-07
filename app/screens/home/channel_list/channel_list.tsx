@@ -78,7 +78,7 @@ const ChannelListScreen = (props: ChannelProps) => {
     const canAddOtherServers = managedConfig?.allowOtherServers !== 'false';
 
     const handleBackPress = useCallback(() => {
-        const isHomeScreen = NavigationStore.getNavigationTopComponentId() === Screens.HOME;
+        const isHomeScreen = NavigationStore.getVisibleScreen() === Screens.HOME;
         const homeTab = NavigationStore.getVisibleTab() === Screens.HOME;
         const focused = navigation.isFocused() && isHomeScreen && homeTab;
 

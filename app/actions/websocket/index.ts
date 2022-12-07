@@ -154,7 +154,7 @@ async function doReconnect(serverUrl: string) {
     // if no longer a member of the current team or the current channel
     if (initialTeamId !== currentTeam?.id || initialChannelId !== currentChannel?.id) {
         const currentServer = await getActiveServer();
-        const isChannelScreenMounted = NavigationStore.getNavigationComponents().includes(Screens.CHANNEL);
+        const isChannelScreenMounted = NavigationStore.getScreensInStack().includes(Screens.CHANNEL);
         if (serverUrl === currentServer?.url) {
             if (currentTeam && initialTeamId !== currentTeam.id) {
                 DeviceEventEmitter.emit(Events.LEAVE_TEAM, {displayName: currentTeam.displayName});

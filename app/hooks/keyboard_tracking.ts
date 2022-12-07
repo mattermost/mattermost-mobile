@@ -19,7 +19,7 @@ export const useKeyboardTrackingPaused = (keyboardTrackingRef: RefObject<Keyboar
         });
 
         const commandCompletedListener = Navigation.events().registerCommandCompletedListener(() => {
-            const id = NavigationStore.getNavigationTopComponentId();
+            const id = NavigationStore.getVisibleScreen();
             if (screens.includes(id) && isPostDraftPaused.current) {
                 isPostDraftPaused.current = false;
                 keyboardTrackingRef.current?.resumeTracking(trackerId);
