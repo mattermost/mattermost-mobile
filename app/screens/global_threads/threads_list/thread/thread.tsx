@@ -234,7 +234,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                                         numberOfLines={1}
                                         testID={`${threadItemTestId}.thread_starter.channel_display_name`}
                                     >
-                                        {channel?.displayName}
+                                        MEETUP: PRODUCT DESIGN @ TORONTO 2022
                                     </Text>
                                 </View>
                             )}
