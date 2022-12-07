@@ -11,7 +11,7 @@ import {
 } from '@actions/local/channel';
 import {storePostsForChannel} from '@actions/local/post';
 import {switchToGlobalThreads} from '@actions/local/thread';
-import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, switchToChannelById} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannel, fetchChannelStats, fetchChannelById, switchToChannelById, handleKickFromChannel} from '@actions/remote/channel';
 import {fetchPostsForChannel} from '@actions/remote/post';
 import {fetchRolesIfNeeded} from '@actions/remote/role';
 import {fetchUsersByIds, updateUsersNoLongerVisible} from '@actions/remote/user';
@@ -20,12 +20,13 @@ import {Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServer} from '@queries/app/servers';
 import {deleteChannelMembership, getChannelById, prepareMyChannelsForTeam, getCurrentChannel} from '@queries/servers/channel';
-import {prepareCommonSystemValues, getConfig, setCurrentChannelId, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
+import {getConfig, setCurrentChannelId, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam} from '@queries/servers/team';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 
 // Received when current user created a channel in a different client
 export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
@@ -323,12 +324,9 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
 }
 
 export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: any) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
     try {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         // Depending on who was removed, the ids may come from one place dataset or the other.
         const userId = msg.data.user_id || msg.broadcast.user_id;
         const channelId = msg.data.channel_id || msg.broadcast.channel_id;
@@ -337,8 +335,6 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
             return;
         }
 
-        const {database} = operator;
-        const channel = await getCurrentChannel(database);
         const user = await getCurrentUser(database);
         if (!user) {
             return;
@@ -354,39 +350,11 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         }
 
         if (user.id === userId) {
-            await removeCurrentUserFromChannel(serverUrl, channelId);
-            if (channel && channel.id === channelId) {
-                const currentServer = await getActiveServer();
-
-                if (currentServer?.url === serverUrl) {
-                    DeviceEventEmitter.emit(Events.LEAVE_CHANNEL, channel.displayName);
-                    await dismissAllModals();
-                    await popToRoot();
-
-                    if (await isTablet()) {
-                        let tId = channel.teamId;
-                        if (!tId) {
-                            tId = await getCurrentTeamId(database);
-                        }
-                        const channelToJumpTo = await getNthLastChannelFromTeam(database, tId);
-                        if (channelToJumpTo) {
-                            if (channelToJumpTo === Screens.GLOBAL_THREADS) {
-                                const {models: switchToGlobalThreadsModels} = await switchToGlobalThreads(serverUrl, tId, true);
-                                if (switchToGlobalThreadsModels) {
-                                    models.push(...switchToGlobalThreadsModels);
-                                }
-                            } else {
-                                switchToChannelById(serverUrl, channelToJumpTo, tId, true);
-                            }
-                        } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
-                    } else {
-                        const currentChannelModels = await prepareCommonSystemValues(operator, {currentChannelId: ''});
-                        if (currentChannelModels?.length) {
-                            models.push(...currentChannelModels);
-                        }
-                    }
-                }
+            const currentChannelId = await getCurrentChannelId(database);
+            if (currentChannelId && currentChannelId === channelId) {
+                await handleKickFromChannel(serverUrl, currentChannelId);
             }
+            await removeCurrentUserFromChannel(serverUrl, channelId);
         } else {
             const {models: deleteMemberModels} = await deleteChannelMembership(operator, userId, channelId, true);
             if (deleteMemberModels) {
@@ -395,8 +363,8 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
         }
 
         operator.batchRecords(models);
-    } catch {
-        // Do nothing
+    } catch (error) {
+        logDebug('cannot handle user removed from channel websocket event', error);
     }
 }
 
