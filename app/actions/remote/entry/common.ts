@@ -4,9 +4,10 @@
 import {Database, Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, MyChannelsRequest} from '@actions/remote/channel';
+import {markChannelAsViewed} from '@actions/local/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
-import {fetchPostsForUnreadChannels, fetchPostThread} from '@actions/remote/post';
+import {fetchPostsForUnreadChannels, fetchPostsSince, fetchPostThread} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -530,6 +531,7 @@ export async function handleEntryAfterLoadNavigation(
     currentChannelId: string,
     initialTeamId: string,
     initialChannelId: string,
+    lastDisconnectedAt?: number,
 ) {
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -563,19 +565,30 @@ export async function handleEntryAfterLoadNavigation(
             } else {
                 await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
             }
-        } else if (NavigationStore.getVisibleScreen() === Screens.THREAD) {
-            // Fetch new posts in the thread
-            const rootId = EphemeralStore.getCurrentThreadId();
-            if (rootId) {
-                const lastPost = await getLastPostInThread(database, rootId);
-                if (lastPost) {
+        } else if (lastDisconnectedAt) {
+            if (NavigationStore.getVisibleScreen() === Screens.THREAD) {
+                // Fetch new posts in the thread
+                const rootId = EphemeralStore.getCurrentThreadId();
+                if (rootId) {
+                    const lastPost = await getLastPostInThread(database, rootId);
                     if (lastPost) {
-                        const options: FetchPaginatedThreadOptions = {};
-                        options.fromCreateAt = lastPost.createAt;
-                        options.fromPost = lastPost.id;
-                        options.direction = 'down';
-                        await fetchPostThread(serverUrl, rootId, options);
+                        if (lastPost) {
+                            const options: FetchPaginatedThreadOptions = {};
+                            options.fromCreateAt = lastPost.createAt;
+                            options.fromPost = lastPost.id;
+                            options.direction = 'down';
+                            await fetchPostThread(serverUrl, rootId, options);
+                        }
                     }
+                }
+            }
+            if (currentChannelId) {
+                fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);
+                const isChannelScreenMounted = NavigationStore.getScreensInStack().includes(Screens.CHANNEL);
+                const tabletDevice = await isTablet();
+                if (isChannelScreenMounted || tabletDevice) {
+                    markChannelAsRead(serverUrl, currentChannelId);
+                    markChannelAsViewed(serverUrl, currentChannelId);
                 }
             }
         }

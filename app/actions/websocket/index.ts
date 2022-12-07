@@ -145,7 +145,7 @@ async function doReconnect(serverUrl: string) {
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
 
-    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeam?.id || '', currentChannel?.id || '', initialTeamId, initialChannelId);
+    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeam?.id || '', currentChannel?.id || '', initialTeamId, initialChannelId, lastDisconnectedAt);
 
     const dt = Date.now();
     await operator.batchRecords(models);
