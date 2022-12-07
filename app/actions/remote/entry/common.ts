@@ -555,7 +555,7 @@ export async function handleEntryAfterLoadNavigation(
                     await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
                 }
             }
-        } else if (currentChannelIdAfterLoad !== initialChannelId) {
+        } else if (currentChannelIdAfterLoad && currentChannelIdAfterLoad !== initialChannelId) {
             const tabletDevice = await isTablet();
             const navComponents = NavigationStore.getScreensInStack();
             if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
