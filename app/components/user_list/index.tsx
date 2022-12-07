@@ -114,6 +114,7 @@ type Props = {
     term?: string;
     tutorialWatched: boolean;
     selectable?: boolean;
+    disabled?: boolean;
 }
 
 export default function UserList({
@@ -129,6 +130,7 @@ export default function UserList({
     testID,
     tutorialWatched,
     selectable = false,
+    disabled = false,
 }: Props) {
     const intl = useIntl();
     const theme = useTheme();
@@ -167,7 +169,6 @@ export default function UserList({
     const renderItem = useCallback(({item, index, section}: ListRenderItemInfo<UserProfile> & {section?: SectionListData<UserProfile>}) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = Boolean(selectedIds[item.id]);
-        const canAdd = (Object.keys(selectedIds).length < General.MAX_USERS_IN_GM) && selectable;
 
         return (
             <UserListRow
@@ -177,8 +178,8 @@ export default function UserList({
                 isMyUser={currentUserId === item.id}
                 onPress={handleSelectProfile}
                 onLongPress={openUserProfile}
-                disabled={!canAdd}
-                selectable={true}
+                disabled={disabled}
+                selectable={selectable}
                 selected={selected}
                 testID='create_direct_message.user_list.user_item'
                 teammateNameDisplay={teammateNameDisplay}

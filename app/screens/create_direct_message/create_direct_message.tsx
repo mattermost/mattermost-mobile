@@ -370,6 +370,7 @@ export default function CreateDirectMessage({
                     value={term}
                 />
             </View>
+
             <UserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
@@ -382,6 +383,7 @@ export default function CreateDirectMessage({
                 term={term}
                 testID='create_direct_message.user_list'
                 tutorialWatched={tutorialWatched}
+                disabled={Object.keys(selectedIds).length >= General.MAX_USERS_IN_GM}
             />
             <SelectedUsers
                 containerHeight={containerHeight}

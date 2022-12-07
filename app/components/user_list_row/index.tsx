@@ -106,7 +106,7 @@ function UserListRow({
     onLongPress,
     tutorialWatched = false,
     selectable,
-    disabled,
+    disabled = false,
     selected,
 }: Props) {
     const theme = useTheme();
@@ -185,7 +185,7 @@ function UserListRow({
     const showTeammateDisplay = teammateDisplay !== username;
 
     const userItemTestID = `${testID}.${id}`;
-    const opacity = selectable || selected || !disabled ? 1 : DISABLED_OPACITY;
+    const opacity = disabled ? DISABLED_OPACITY : 1;
 
     return (
         <>
