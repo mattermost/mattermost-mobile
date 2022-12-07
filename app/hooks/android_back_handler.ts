@@ -9,7 +9,7 @@ import NavigationStore from '@store/navigation_store';
 const useAndroidHardwareBackHandler = (componentId: string, callback: () => void) => {
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (NavigationStore.getNavigationTopComponentId() === componentId) {
+            if (NavigationStore.getVisibleScreen() === componentId) {
                 callback();
                 return true;
             }
