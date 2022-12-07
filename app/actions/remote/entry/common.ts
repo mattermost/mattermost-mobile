@@ -546,7 +546,7 @@ export async function handleEntryAfterLoadNavigation(
             // Switched channels while loading
             if (!channelMembers.find((m) => m.channel_id === currentChannelIdAfterLoad)) {
                 const tabletDevice = await isTablet();
-                const navComponents = NavigationStore.getNavigationComponents();
+                const navComponents = NavigationStore.getScreensInStack();
                 if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
                     await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
                 } else {
@@ -555,7 +555,7 @@ export async function handleEntryAfterLoadNavigation(
             }
         } else if (currentChannelIdAfterLoad !== initialChannelId) {
             const tabletDevice = await isTablet();
-            const navComponents = NavigationStore.getNavigationComponents();
+            const navComponents = NavigationStore.getScreensInStack();
             if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
                 await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
             } else {

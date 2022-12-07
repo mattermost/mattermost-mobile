@@ -70,7 +70,7 @@ const Channel = ({
         let back: NativeEventSubscription|undefined;
         if (!isTablet && componentId) {
             back = BackHandler.addEventListener('hardwareBackPress', () => {
-                if (NavigationStore.getNavigationTopComponentId() === componentId) {
+                if (NavigationStore.getVisibleScreen() === componentId) {
                     popTopScreen(componentId);
                     return true;
                 }

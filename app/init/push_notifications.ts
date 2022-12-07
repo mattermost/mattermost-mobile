@@ -121,11 +121,11 @@ class PushNotifications {
             const isSameChannelNotification = payload?.channel_id === channelId;
             const isSameThreadNotification = isThreadNotification && payload?.root_id === EphemeralStore.getCurrentThreadId();
 
-            let isInChannelScreen = NavigationStore.getNavigationTopComponentId() === Screens.CHANNEL;
+            let isInChannelScreen = NavigationStore.getVisibleScreen() === Screens.CHANNEL;
             if (isTabletDevice) {
                 isInChannelScreen = NavigationStore.getVisibleTab() === Screens.HOME;
             }
-            const isInThreadScreen = NavigationStore.getNavigationTopComponentId() === Screens.THREAD;
+            const isInThreadScreen = NavigationStore.getVisibleScreen() === Screens.THREAD;
 
             // Conditions:
             // 1. If not in channel screen or thread screen, show the notification
