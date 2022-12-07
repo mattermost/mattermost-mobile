@@ -144,8 +144,11 @@ const PostList = ({
         };
     }, []);
 
-    const fetchNewThreadPosts = useCallback(async () => {
-        if (location === Screens.THREAD && rootId) {
+    const onRefresh = useCallback(async () => {
+        setRefreshing(true);
+        if (location === Screens.CHANNEL && channelId) {
+            await fetchPosts(serverUrl, channelId);
+        } else if (location === Screens.THREAD && rootId) {
             const options: FetchPaginatedThreadOptions = {};
             const lastPost = posts[0];
             if (lastPost) {
@@ -155,23 +158,8 @@ const PostList = ({
             }
             await fetchPostThread(serverUrl, rootId, options);
         }
-    }, [location, posts, rootId]);
-
-    // Fetch new thread posts when websocket reconnects
-    useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.WEBSOCKET_RECONNECTED, fetchNewThreadPosts);
-        return () => listener.remove();
-    }, [fetchNewThreadPosts]);
-
-    const onRefresh = useCallback(async () => {
-        setRefreshing(true);
-        if (location === Screens.CHANNEL && channelId) {
-            await fetchPosts(serverUrl, channelId);
-        } else {
-            await fetchNewThreadPosts();
-        }
         setRefreshing(false);
-    }, [channelId, location, fetchNewThreadPosts]);
+    }, [channelId, location, posts, rootId]);
 
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (Platform.OS === 'android') {

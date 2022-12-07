@@ -6,7 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
-import {fetchPostsForUnreadChannels} from '@actions/remote/post';
+import {fetchPostsForUnreadChannels, fetchPostThread} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -26,10 +26,12 @@ import {getDeviceToken} from '@queries/app/global';
 import {getAllServers} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
+import {getLastPostInThread} from '@queries/servers/post';
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getMemberChannelsFromGQLQuery, gqlToClientChannelMembership} from '@utils/graphql';
@@ -560,6 +562,21 @@ export async function handleEntryAfterLoadNavigation(
                 await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
             } else {
                 await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
+            }
+        } else if (NavigationStore.getVisibleScreen() === Screens.THREAD) {
+            // Fetch new posts in the thread
+            const rootId = EphemeralStore.getCurrentThreadId();
+            if (rootId) {
+                const lastPost = await getLastPostInThread(database, rootId);
+                if (lastPost) {
+                    if (lastPost) {
+                        const options: FetchPaginatedThreadOptions = {};
+                        options.fromCreateAt = lastPost.createAt;
+                        options.fromPost = lastPost.id;
+                        options.direction = 'down';
+                        await fetchPostThread(serverUrl, rootId, options);
+                    }
+                }
             }
         }
     } catch (error) {

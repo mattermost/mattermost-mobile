@@ -124,8 +124,6 @@ async function doReconnect(serverUrl: string) {
         return;
     }
 
-    DeviceEventEmitter.emit(Events.WEBSOCKET_RECONNECTED, true);
-
     const {database} = operator;
 
     const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
