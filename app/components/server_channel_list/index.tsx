@@ -15,19 +15,7 @@ type Props = {
     term: string;
     currentTeamId: string;
     selectable?: boolean;
-}
-
-function handleIdSelection(currentIds: {[id: string]: Channel}, user: Channel) {
-    const newSelectedIds = {...currentIds};
-    const wasSelected = currentIds[user.id];
-
-    if (wasSelected) {
-        Reflect.deleteProperty(newSelectedIds, user.id);
-    } else {
-        newSelectedIds[user.id] = user;
-    }
-
-    return newSelectedIds;
+    selectedIds: {[id: string]: Channel};
 }
 
 export default function ServerChannelList({
@@ -35,6 +23,7 @@ export default function ServerChannelList({
     term,
     currentTeamId,
     selectable = false,
+    selectedIds,
 }: Props) {
     const serverUrl = useServerUrl();
 
@@ -45,7 +34,6 @@ export default function ServerChannelList({
     const [stateChannels, setStateChannels] = useState<Channel[]>([]);
     const [searchResults, setSearchResults] = useState<Channel[]>([]);
     const [loading, setLoading] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: Channel}>({});
     const selectedCount = Object.keys(selectedIds).length;
 
     const isSearch = Boolean(term);
@@ -77,7 +65,6 @@ export default function ServerChannelList({
 
     const onHandleSelectChannel = useCallback((channel: Channel) => {
         handleSelectChannel(channel);
-        setSelectedIds((current) => handleIdSelection(current, channel));
     }, [handleSelectChannel]);
 
     const searchChannels = useCallback(async (searchTerm: string) => {

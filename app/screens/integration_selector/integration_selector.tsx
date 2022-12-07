@@ -208,7 +208,7 @@ function IntegrationSelector(
     const handleRemoveOption = useCallback((item: Channel | DialogOption | UserProfile) => {
         const itemKey = extractItemKey(dataSource, item);
 
-        if (dataSource === ViewConstants.DATA_SOURCE_USERS) {
+        if ([ViewConstants.DATA_SOURCE_USERS, ViewConstants.DATA_SOURCE_CHANNELS].includes(dataSource)) {
             setSelectedIds((current) => {
                 const selectedIdItems = {...current};
                 delete selectedIdItems[itemKey];
@@ -441,6 +441,7 @@ function IntegrationSelector(
                         term={term}
                         handleSelectChannel={handleSelectDataType}
                         selectable={isMultiselect}
+                        selectedIds={selectedIds as {[id: string]: Channel}}
                     />
                 );
             default:
