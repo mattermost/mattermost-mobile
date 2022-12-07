@@ -26,6 +26,7 @@ type Props = {
     handleConnect: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
     handleUrlTextChanged: (text: string) => void;
+    isModal?: boolean;
     keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
     theme: Theme;
     url?: string;
@@ -82,6 +83,7 @@ const ServerForm = ({
     handleConnect,
     handleDisplayNameTextChanged,
     handleUrlTextChanged,
+    isModal,
     keyboardAwareRef,
     theme,
     url = '',
@@ -96,7 +98,7 @@ const ServerForm = ({
 
     const focus = () => {
         if (Platform.OS === 'ios') {
-            let offsetY = 160;
+            let offsetY = isModal ? 120 : 160;
             if (isTablet) {
                 const {width, height} = dimensions;
                 const isLandscape = width > height;

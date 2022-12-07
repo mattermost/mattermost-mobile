@@ -115,7 +115,7 @@ class NavigationStore {
         let found = false;
         while (!found) {
             // eslint-disable-next-line no-await-in-loop
-            await (new Promise((r) => requestAnimationFrame(r)));
+            await (new Promise((r) => setTimeout(r, 250)));
 
             found = !this.screensInStack.includes(screenId);
         }
