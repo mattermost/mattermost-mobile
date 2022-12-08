@@ -28,11 +28,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme(() => {
             flexGrow: 0,
             flexDirection: 'row',
         },
-        users: {
-            alignItems: 'flex-start',
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-        },
     };
 });
 
