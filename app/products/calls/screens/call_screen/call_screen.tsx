@@ -118,10 +118,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         flexDirection: 'row',
         flexWrap: 'wrap',
-        width: '100%',
-        height: '100%',
-        alignContent: 'center',
-        alignItems: 'flex-start',
+        alignContent: 'flex-start',
     },
     usersScrollLandscapeScreenOn: {
         position: 'absolute',
