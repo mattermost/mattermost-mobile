@@ -136,7 +136,7 @@ export const getLastPostInThread = async (database: Database, rootId: string) =>
             return posts[0];
         }
     }
-    return null;
+    return undefined;
 };
 
 export const queryPostsChunk = (database: Database, id: string, earliest: number, latest: number, inThread = false, includeDeleted = false, limit = 0) => {

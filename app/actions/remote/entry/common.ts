@@ -4,10 +4,9 @@
 import {Database, Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {markChannelAsViewed} from '@actions/local/channel';
-import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
-import {fetchPostsForUnreadChannels, fetchPostsSince, fetchPostThread} from '@actions/remote/post';
+import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -27,12 +26,10 @@ import {getDeviceToken} from '@queries/app/global';
 import {getAllServers} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
-import {getLastPostInThread} from '@queries/servers/post';
 import {getHasCRTChanged} from '@queries/servers/preference';
 import {getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
-import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getMemberChannelsFromGQLQuery, gqlToClientChannelMembership} from '@utils/graphql';
@@ -531,13 +528,16 @@ export async function handleEntryAfterLoadNavigation(
     currentChannelId: string,
     initialTeamId: string,
     initialChannelId: string,
-    lastDisconnectedAt?: number,
 ) {
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const currentTeamIdAfterLoad = await getCurrentTeamId(database);
         const currentChannelIdAfterLoad = await getCurrentChannelId(database);
+        const mountedScreens = NavigationStore.getScreensInStack();
+        const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
+        const isThreadsMounted = mountedScreens.includes(Screens.THREAD);
+        const tabletDevice = await isTablet();
 
         if (currentTeamIdAfterLoad !== currentTeamId) {
             // Switched teams while loading
@@ -549,47 +549,17 @@ export async function handleEntryAfterLoadNavigation(
         } else if (currentChannelIdAfterLoad !== currentChannelId) {
             // Switched channels while loading
             if (!channelMembers.find((m) => m.channel_id === currentChannelIdAfterLoad)) {
-                const tabletDevice = await isTablet();
-                const navComponents = NavigationStore.getScreensInStack();
-                if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
+                if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
                     await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
                 } else {
                     await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
                 }
             }
         } else if (currentChannelIdAfterLoad && currentChannelIdAfterLoad !== initialChannelId) {
-            const tabletDevice = await isTablet();
-            const navComponents = NavigationStore.getScreensInStack();
-            if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
+            if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
                 await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
             } else {
                 await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
-            }
-        } else if (lastDisconnectedAt) {
-            if (NavigationStore.getVisibleScreen() === Screens.THREAD) {
-                // Fetch new posts in the thread
-                const rootId = EphemeralStore.getCurrentThreadId();
-                if (rootId) {
-                    const lastPost = await getLastPostInThread(database, rootId);
-                    if (lastPost) {
-                        if (lastPost) {
-                            const options: FetchPaginatedThreadOptions = {};
-                            options.fromCreateAt = lastPost.createAt;
-                            options.fromPost = lastPost.id;
-                            options.direction = 'down';
-                            await fetchPostThread(serverUrl, rootId, options);
-                        }
-                    }
-                }
-            }
-            if (currentChannelId) {
-                fetchPostsSince(serverUrl, currentChannelId, lastDisconnectedAt);
-                const isChannelScreenMounted = NavigationStore.getScreensInStack().includes(Screens.CHANNEL);
-                const tabletDevice = await isTablet();
-                if (isChannelScreenMounted || tabletDevice) {
-                    markChannelAsRead(serverUrl, currentChannelId);
-                    markChannelAsViewed(serverUrl, currentChannelId);
-                }
             }
         }
     } catch (error) {
