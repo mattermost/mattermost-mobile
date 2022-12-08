@@ -455,7 +455,7 @@ const CallScreen = ({
                 <FormattedText
                     id={'mobile.calls_viewing_screen'}
                     defaultMessage={'You are viewing {name}\'s screen'}
-                    values={{name: displayUsername(participantsDict[currentCall.screenOn].userModel, teammateNameDisplay)}}
+                    values={{name: displayUsername(participantsDict[currentCall.screenOn].userModel, intl.locale, teammateNameDisplay)}}
                     style={style.screenShareText}
                 />
             </Pressable>
@@ -493,7 +493,7 @@ const CallScreen = ({
                                     serverUrl={currentCall.serverUrl}
                                 />
                                 <Text style={style.username}>
-                                    {displayUsername(user.userModel, teammateNameDisplay)}
+                                    {displayUsername(user.userModel, intl.locale, teammateNameDisplay)}
                                     {user.id === myParticipant.id &&
                                         ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
                                     }
