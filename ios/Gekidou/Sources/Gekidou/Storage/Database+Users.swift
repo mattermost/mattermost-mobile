@@ -104,7 +104,7 @@ extension Database {
             return try result.get(valueCol).replacingOccurrences(of: "\"", with: "")
         }
         
-        throw DatabaseError.NoResults(query.asSQL())
+        throw DatabaseError.NoResults(query.expression.description)
     }
     
     public func queryCurrentUser(_ serverUrl: String) throws -> Row? {
@@ -117,7 +117,7 @@ extension Database {
             return result
         }
         
-        throw DatabaseError.NoResults(query.asSQL())
+        throw DatabaseError.NoResults(query.expression.description)
     }
 
     public func queryUsers(byIds: Set<String>, withServerUrl: String) throws -> Set<String> {
