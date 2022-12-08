@@ -1,18 +1,8 @@
 diff --git a/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js b/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js
-index d8befd8..6357426 100644
+index 4f6187c..a9fc703 100644
 --- a/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js
 +++ b/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js
-@@ -148,6 +148,9 @@ export const setUpTests = (userConfig = {}) => {
-     let expect;
-     try {
-         expect = require('expect');
-+        if (!expect.extend) {
-+            throw new Error('expect does not have extend, falling back...')
-+        }
-     }
-     catch (_) {
-         // for Jest in version 28+
-@@ -162,6 +165,9 @@ export const setUpTests = (userConfig = {}) => {
+@@ -169,6 +169,9 @@ export const setUpTests = (userConfig = {}) => {
              return compareStyle(received, expectedStyle, config);
          },
      });
