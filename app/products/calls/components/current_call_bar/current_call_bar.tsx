@@ -132,7 +132,7 @@ const CurrentCallBar = ({
         talkingMessage = formatMessage({
             id: 'mobile.calls_name_is_talking',
             defaultMessage: '{name} is talking',
-        }, {name: displayUsername(userModelsDict[speaker], teammateNameDisplay)});
+        }, {name: displayUsername(userModelsDict[speaker], intl.locale, teammateNameDisplay)});
     }
 
     const muteUnmute = () => {
