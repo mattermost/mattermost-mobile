@@ -12,7 +12,7 @@ import {getActiveServerUrl} from '@queries/app/servers';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
-import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable, getLastTeam, getTeamById} from '@queries/servers/team';
+import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable, getLastTeam, getTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
 import {dismissAllModals, popToRoot, resetToTeams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
@@ -330,7 +330,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
 
 export async function handleKickFromTeam(serverUrl: string, teamId: string) {
     try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentTeamId = await getCurrentTeamId(database);
         if (currentTeamId !== teamId) {
             return;
@@ -344,7 +344,8 @@ export async function handleKickFromTeam(serverUrl: string, teamId: string) {
             await popToRoot();
         }
 
-        const teamToJumpTo = await getLastTeam(database);
+        await removeTeamFromTeamHistory(operator, teamId);
+        const teamToJumpTo = await getLastTeam(database, teamId);
         if (teamToJumpTo) {
             await handleTeamChange(serverUrl, teamToJumpTo);
         } else if (currentServer === serverUrl) {
