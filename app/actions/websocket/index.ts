@@ -417,9 +417,10 @@ async function fetchPostDataIfNeeded(serverUrl: string) {
         const isCRTEnabled = await getIsCRTEnabled(database);
         const mountedScreens = NavigationStore.getScreensInStack();
         const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
+        const isThreadScreenMounted = mountedScreens.includes(Screens.THREAD);
         const tabletDevice = await isTablet();
 
-        if (isCRTEnabled && NavigationStore.getVisibleScreen() === Screens.THREAD) {
+        if (isCRTEnabled && isThreadScreenMounted) {
             // Fetch new posts in the thread only when CRT is enabled,
             // for non-CRT fetchPostsForChannel includes posts in the thread
             const rootId = EphemeralStore.getCurrentThreadId();
