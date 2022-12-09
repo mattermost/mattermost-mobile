@@ -125,7 +125,7 @@ const ChannelListScreen = (props: ChannelProps) => {
 
     const top = useAnimatedStyle(() => {
         return {height: insets.top, backgroundColor: theme.sidebarBg};
-    }, [theme]);
+    }, [theme, insets.top]);
 
     useEffect(() => {
         if (!props.teamsCount) {
