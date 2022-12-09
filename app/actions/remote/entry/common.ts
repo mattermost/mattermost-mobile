@@ -534,6 +534,10 @@ export async function handleEntryAfterLoadNavigation(
 
         const currentTeamIdAfterLoad = await getCurrentTeamId(database);
         const currentChannelIdAfterLoad = await getCurrentChannelId(database);
+        const mountedScreens = NavigationStore.getScreensInStack();
+        const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
+        const isThreadsMounted = mountedScreens.includes(Screens.THREAD);
+        const tabletDevice = await isTablet();
 
         if (currentTeamIdAfterLoad !== currentTeamId) {
             // Switched teams while loading
@@ -545,18 +549,14 @@ export async function handleEntryAfterLoadNavigation(
         } else if (currentChannelIdAfterLoad !== currentChannelId) {
             // Switched channels while loading
             if (!channelMembers.find((m) => m.channel_id === currentChannelIdAfterLoad)) {
-                const tabletDevice = await isTablet();
-                const navComponents = NavigationStore.getScreensInStack();
-                if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
+                if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
                     await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
                 } else {
                     await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
                 }
             }
-        } else if (currentChannelIdAfterLoad !== initialChannelId) {
-            const tabletDevice = await isTablet();
-            const navComponents = NavigationStore.getScreensInStack();
-            if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
+        } else if (currentChannelIdAfterLoad && currentChannelIdAfterLoad !== initialChannelId) {
+            if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
                 await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
             } else {
                 await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);

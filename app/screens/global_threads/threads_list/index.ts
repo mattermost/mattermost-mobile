@@ -34,7 +34,7 @@ const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], (
         teammateNameDisplay: observeTeammateNameDisplay(database),
         threads: teamThreadsSyncObserver.pipe(
             switchMap((teamThreadsSync) => {
-                const earliest = teamThreadsSync?.[0]?.earliest;
+                const earliest = tab === 'all' ? teamThreadsSync?.[0]?.earliest : 0;
                 return queryThreadsInTeam(database, teamId, getOnlyUnreads, false, true, true, earliest).observe();
             }),
         ),
