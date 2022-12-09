@@ -3,8 +3,11 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
+import {markChannelAsViewed} from '@actions/local/channel';
+import {markChannelAsRead} from '@actions/remote/channel';
 import {handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
 import {deferredAppEntryActions, entry} from '@actions/remote/entry/gql_common';
+import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
 import {fetchStatusByIds} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
@@ -27,22 +30,28 @@ import {
     handleCallUserVoiceOn,
 } from '@calls/connection/websocket_event_handlers';
 import {isSupportedServerCalls} from '@calls/utils';
-import {Events, WebsocketEvents} from '@constants';
+import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
+import {getLastPostInThread} from '@queries/servers/post';
 import {
     getConfig,
+    getCurrentChannelId,
     getCurrentUserId,
     getLicense,
     getWebSocketLastDisconnected,
     resetWebSocketLastDisconnected,
 } from '@queries/servers/system';
 import {getCurrentTeam} from '@queries/servers/team';
+import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {logInfo} from '@utils/log';
+import EphemeralStore from '@store/ephemeral_store';
+import NavigationStore from '@store/navigation_store';
+import {isTablet} from '@utils/helpers';
+import {logDebug, logInfo} from '@utils/log';
 
 import {handleCategoryCreatedEvent, handleCategoryDeletedEvent, handleCategoryOrderUpdatedEvent, handleCategoryUpdatedEvent} from './category';
 import {handleChannelConvertedEvent, handleChannelCreatedEvent,
@@ -150,6 +159,8 @@ async function doReconnect(serverUrl: string) {
     const dt = Date.now();
     await operator.batchRecords(models);
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
+
+    await fetchPostDataIfNeeded(serverUrl);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
     const license = await getLicense(database);
@@ -396,5 +407,43 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             break;
         case WebsocketEvents.GROUP_DISSOCIATED_TO_CHANNEL:
             break;
+    }
+}
+
+async function fetchPostDataIfNeeded(serverUrl: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const currentChannelId = await getCurrentChannelId(database);
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        const mountedScreens = NavigationStore.getScreensInStack();
+        const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
+        const isThreadScreenMounted = mountedScreens.includes(Screens.THREAD);
+        const tabletDevice = await isTablet();
+
+        if (isCRTEnabled && isThreadScreenMounted) {
+            // Fetch new posts in the thread only when CRT is enabled,
+            // for non-CRT fetchPostsForChannel includes posts in the thread
+            const rootId = EphemeralStore.getCurrentThreadId();
+            if (rootId) {
+                const lastPost = await getLastPostInThread(database, rootId);
+                if (lastPost) {
+                    if (lastPost) {
+                        const options: FetchPaginatedThreadOptions = {};
+                        options.fromCreateAt = lastPost.createAt;
+                        options.fromPost = lastPost.id;
+                        options.direction = 'down';
+                        await fetchPostThread(serverUrl, rootId, options);
+                    }
+                }
+            }
+        }
+
+        if (currentChannelId && (isChannelScreenMounted || tabletDevice)) {
+            await fetchPostsForChannel(serverUrl, currentChannelId);
+            markChannelAsRead(serverUrl, currentChannelId);
+            markChannelAsViewed(serverUrl, currentChannelId);
+        }
+    } catch (error) {
+        logDebug('could not fetch needed post after WS reconnect', error);
     }
 }

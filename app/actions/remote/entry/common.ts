@@ -149,7 +149,7 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
 
     const confReq = await fetchConfigAndLicense(serverUrl);
     const prefData = await fetchMyPreferences(serverUrl, fetchOnly);
-    const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config?.CollapsedThreads, confReq.config?.FeatureFlagCollapsedThreads));
+    const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config?.CollapsedThreads, confReq.config?.FeatureFlagCollapsedThreads, confReq.config?.Version));
     if (prefData.preferences) {
         const crtToggled = await getHasCRTChanged(database, prefData.preferences);
         if (crtToggled) {
@@ -331,7 +331,7 @@ export async function restDeferredAppEntryActions(
         fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
-    if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
+    if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads, config.Version)) {
         if (initialTeamId) {
             await syncTeamThreads(serverUrl, initialTeamId);
         }
@@ -465,7 +465,7 @@ const restSyncAllChannelMembers = async (serverUrl: string) => {
         for await (const myTeam of myTeams) {
             fetchMyChannelsForTeam(serverUrl, myTeam.id, false, 0, false, excludeDirect);
             excludeDirect = true;
-            if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
+            if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads, config.Version)) {
                 // need to await here since GM/DM threads in different teams overlap
                 await syncTeamThreads(serverUrl, myTeam.id);
             }
@@ -534,6 +534,10 @@ export async function handleEntryAfterLoadNavigation(
 
         const currentTeamIdAfterLoad = await getCurrentTeamId(database);
         const currentChannelIdAfterLoad = await getCurrentChannelId(database);
+        const mountedScreens = NavigationStore.getScreensInStack();
+        const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
+        const isThreadsMounted = mountedScreens.includes(Screens.THREAD);
+        const tabletDevice = await isTablet();
 
         if (currentTeamIdAfterLoad !== currentTeamId) {
             // Switched teams while loading
@@ -545,18 +549,14 @@ export async function handleEntryAfterLoadNavigation(
         } else if (currentChannelIdAfterLoad !== currentChannelId) {
             // Switched channels while loading
             if (!channelMembers.find((m) => m.channel_id === currentChannelIdAfterLoad)) {
-                const tabletDevice = await isTablet();
-                const navComponents = NavigationStore.getScreensInStack();
-                if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
+                if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
                     await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
                 } else {
                     await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
                 }
             }
-        } else if (currentChannelIdAfterLoad !== initialChannelId) {
-            const tabletDevice = await isTablet();
-            const navComponents = NavigationStore.getScreensInStack();
-            if (tabletDevice || navComponents.includes(Screens.CHANNEL) || navComponents.includes(Screens.THREAD)) {
+        } else if (currentChannelIdAfterLoad && currentChannelIdAfterLoad !== initialChannelId) {
+            if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
                 await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
             } else {
                 await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);

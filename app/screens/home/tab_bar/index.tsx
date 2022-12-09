@@ -131,7 +131,7 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
         return {
             transform: [{translateY: height}],
         };
-    }, [visible]);
+    }, [visible, safeareaInsets.bottom]);
 
     return (
         <Animated.View style={[style.container, style.separator, animatedStyle]}>
