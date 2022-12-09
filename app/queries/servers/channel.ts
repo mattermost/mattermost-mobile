@@ -245,7 +245,7 @@ export const getChannelInfo = async (database: Database, channelId: string) => {
     }
 };
 
-export const getDefaultChannelForTeam = async (database: Database, teamId: string) => {
+export const getDefaultChannelForTeam = async (database: Database, teamId: string, ignoreId?: string) => {
     let channel: ChannelModel|undefined;
     let canIJoinPublicChannelsInTeam = false;
     const roles = await queryRoles(database).fetch();
@@ -254,13 +254,19 @@ export const getDefaultChannelForTeam = async (database: Database, teamId: strin
         canIJoinPublicChannelsInTeam = hasPermission(roles, Permissions.JOIN_PUBLIC_CHANNELS);
     }
 
+    const clauses = [
+        Q.where('team_id', teamId),
+        Q.where('delete_at', 0),
+        Q.where('type', General.OPEN_CHANNEL),
+    ];
+
+    if (ignoreId) {
+        clauses.push(Q.where('channel_id', Q.notEq(ignoreId)));
+    }
+
     const myChannels = await database.get<ChannelModel>(CHANNEL).query(
         Q.on(MY_CHANNEL, 'id', Q.notEq('')),
-        Q.and(
-            Q.where('team_id', teamId),
-            Q.where('delete_at', 0),
-            Q.where('type', General.OPEN_CHANNEL),
-        ),
+        Q.and(...clauses),
         Q.sortBy('display_name', Q.asc),
     ).fetch();
 

@@ -20,7 +20,7 @@ import {getActiveServer} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
-import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams} from '@queries/servers/team';
+import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
@@ -1302,7 +1302,7 @@ export const convertChannelToPrivate = async (serverUrl: string, channelId: stri
     }
 };
 
-export const handleKickFromChannel = async (serverUrl: string, channelId: string) => {
+export const handleKickFromChannel = async (serverUrl: string, channelId: string, event: string = Events.LEAVE_CHANNEL) => {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -1314,7 +1314,7 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         const currentServer = await getActiveServer();
         if (currentServer?.url === serverUrl) {
             const channel = await getChannelById(database, channelId);
-            DeviceEventEmitter.emit(Events.LEAVE_CHANNEL, channel?.displayName);
+            DeviceEventEmitter.emit(event, channel?.displayName);
             await dismissAllModals();
             await popToRoot();
         }
@@ -1323,7 +1323,8 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
 
         if (tabletDevice) {
             const teamId = await getCurrentTeamId(database);
-            const newChannelId = await getNthLastChannelFromTeam(database, teamId);
+            await removeChannelFromTeamHistory(operator, teamId, channelId);
+            const newChannelId = await getNthLastChannelFromTeam(database, teamId, 0, channelId);
             if (newChannelId) {
                 if (currentServer?.url === serverUrl) {
                     if (newChannelId === Screens.GLOBAL_THREADS) {
