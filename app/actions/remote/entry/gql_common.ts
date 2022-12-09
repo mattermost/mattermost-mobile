@@ -56,7 +56,7 @@ export async function deferredAppEntryGraphQLActions(
         }
     }, FETCH_UNREADS_TIMEOUT);
 
-    if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
+    if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads, config.Version)) {
         if (initialTeamId) {
             await syncTeamThreads(serverUrl, initialTeamId);
         }

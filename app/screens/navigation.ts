@@ -30,11 +30,11 @@ const alpha = {
 };
 
 export function registerNavigationListeners() {
-    Navigation.events().registerScreenPoppedListener(screenPoppedListener);
-    Navigation.events().registerCommandListener(registerCommandListener);
+    Navigation.events().registerScreenPoppedListener(onPoppedListener);
+    Navigation.events().registerCommandListener(onCommandListener);
 }
 
-function registerCommandListener(name: string, params: any) {
+function onCommandListener(name: string, params: any) {
     switch (name) {
         case 'setRoot':
             NavigationStore.clearScreensFromStack();
@@ -63,9 +63,12 @@ function registerCommandListener(name: string, params: any) {
     }
 }
 
-function screenPoppedListener({componentId}: ScreenPoppedEvent) {
+function onPoppedListener({componentId}: ScreenPoppedEvent) {
     // screen pop does not trigger registerCommandListener, but does trigger screenPoppedListener
     NavigationStore.removeScreenFromStack(componentId);
+    if (NavigationStore.getVisibleScreen() === Screens.HOME) {
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+    }
 }
 
 export const loginAnimationOptions = () => {

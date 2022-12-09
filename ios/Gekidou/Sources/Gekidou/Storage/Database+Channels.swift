@@ -20,8 +20,8 @@ extension Database {
         if let result = try db.pluck(query) {
             return try result.get(valueCol).replacingOccurrences(of: "\"", with: "")
         }
-        
-        throw DatabaseError.NoResults(query.asSQL())
+
+        throw DatabaseError.NoResults(query.expression.description)
     }
     
     public func serverHasChannels(_ serverUrl: String) -> Bool {
@@ -60,8 +60,7 @@ extension Database {
             GROUP BY c.id, my.last_viewed_at
             """
             
-            let stmt = try db.prepare(stmtString)
-            let results: [T] = try stmt.prepareRowIterator().map { try $0.decode()}
+            let results: [T] = try db.prepareRowIterator(stmtString).map { try $0.decode()}
             return results.first
         } catch {
             return nil
@@ -89,8 +88,7 @@ extension Database {
             LIMIT 20
             """
             
-            let stmt = try db.prepare(stmtString)
-            let results: [T] = try stmt.prepareRowIterator()
+            let results: [T] = try db.prepareRowIterator(stmtString)
                 .map { try $0.decode()}
             
             return results
@@ -129,8 +127,7 @@ extension Database {
             LIMIT 20
             """
             
-            let stmt = try db.prepare(stmtString, bindings)
-            let results: [T] = try stmt.prepareRowIterator()
+            let results: [T] = try db.prepareRowIterator(stmtString, bindings: bindings)
                 .map{ try $0.decode()}
             
             return results
@@ -181,8 +178,7 @@ extension Database {
             LIMIT 20
             """
             
-            let stmt = try db.prepare(stmtString, bindings)
-            let results: [T] = try stmt.prepareRowIterator()
+            let results: [T] = try db.prepareRowIterator(stmtString, bindings: bindings)
                 .map{ try $0.decode()}
             
             return results
