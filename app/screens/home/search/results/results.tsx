@@ -74,7 +74,10 @@ const Results = ({
                 {translateX: withTiming(translateX, {duration})},
             ],
         };
-    }, [selectedTab, dimensions.width]);
+
+        // Do not transform if loading new data. Causes a case where post
+        // results show up in Files results when the team is changed
+    }, [selectedTab, dimensions.width, !loading]);
 
     const paddingTop = useMemo(() => (
         {paddingTop: scrollPaddingTop, flexGrow: 1}

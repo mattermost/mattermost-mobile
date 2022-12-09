@@ -163,14 +163,13 @@ const SearchScreen = ({teamId, teams}: Props) => {
     }, [showResults]);
 
     const handleSearch = useCallback(async (newSearchTeamId: string, term: string) => {
-        const searchParams = getSearchParams(term);
+        const searchParams = getSearchParams(term, filter);
         if (!searchParams.terms) {
             handleClearSearch();
             return;
         }
         hideHeader(true);
         handleLoading(true);
-        setFilter(FileFilters.ALL);
         setLastSearchedValue(term);
         addSearchToTeamSearchHistory(serverUrl, newSearchTeamId, term);
         const [postResults, {files, channels}] = await Promise.all([
@@ -186,7 +185,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
         handleLoading(false);
         setShowResults(true);
-    }, [handleClearSearch, handleLoading]);
+    }, [filter, handleClearSearch, handleLoading]);
 
     const onBlur = useCallback(() => {
         setSearchIsFocused(false);
