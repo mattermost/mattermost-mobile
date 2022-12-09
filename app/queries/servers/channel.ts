@@ -256,7 +256,7 @@ export const getDefaultChannelForTeam = async (database: Database, teamId: strin
 
     const clauses = [
         Q.where('team_id', teamId),
-        Q.where('delete_at', 0),
+        Q.where('delete_at', Q.eq(0)),
         Q.where('type', General.OPEN_CHANNEL),
     ];
 
