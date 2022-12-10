@@ -101,7 +101,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderWidth: 1,
         height: 72,
         justifyContent: 'center',
-        width: 45,
+        width: 50,
     },
     unread: {
         top: -2,

@@ -14,17 +14,18 @@ import {dismissBottomSheet} from '@screens/navigation';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    isCRTEnabled: boolean;
     sourceScreen: typeof Screens[keyof typeof Screens];
     post: PostModel;
     teamId: string;
 }
 
-const MarkAsUnreadOption = ({sourceScreen, post, teamId}: Props) => {
+const MarkAsUnreadOption = ({isCRTEnabled, sourceScreen, post, teamId}: Props) => {
     const serverUrl = useServerUrl();
 
     const onPress = useCallback(async () => {
         await dismissBottomSheet(Screens.POST_OPTIONS);
-        if (sourceScreen === Screens.THREAD) {
+        if (sourceScreen === Screens.THREAD && isCRTEnabled) {
             const threadId = post.rootId || post.id;
             markThreadAsUnread(serverUrl, teamId, threadId, post.id);
         } else {

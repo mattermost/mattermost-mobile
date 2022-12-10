@@ -348,8 +348,13 @@ const PostList = ({
                 scrolledToHighlighted.current = true;
                 // eslint-disable-next-line max-nested-callbacks
                 const index = orderedPosts.findIndex((p) => typeof p !== 'string' && p.id === highlightedId);
-                if (index >= 0) {
-                    scrollToIndex(index, true);
+                if (index >= 0 && listRef.current) {
+                    listRef.current?.scrollToIndex({
+                        animated: true,
+                        index,
+                        viewOffset: 0,
+                        viewPosition: 0.5, // 0 is at bottom
+                    });
                 }
             }
         }, 500);

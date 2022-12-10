@@ -83,8 +83,7 @@ export default function HomeScreen(props: HomeProps) {
 
     useEffect(() => {
         const listener = HWKeyboardEvent.onHWKeyPressed((keyEvent: {pressedKey: string}) => {
-            const screen = NavigationStore.getAllNavigationComponents();
-            if (!screen.includes(Screens.FIND_CHANNELS) && keyEvent.pressedKey === 'find-channels') {
+            if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS) && keyEvent.pressedKey === 'find-channels') {
                 findChannels(
                     intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
                     theme,

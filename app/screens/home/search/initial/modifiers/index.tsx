@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {Dispatch, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {View} from 'react-native';
 import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
+import {SearchRef} from '@components/search';
 import {useTheme} from '@context/theme';
 import {TeamModel} from '@database/models/server';
 import TeamPickerIcon from '@screens/home/search/team_picker_icon';
@@ -73,6 +74,7 @@ const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
             term: '""',
             testID: 'search.modifier.phrases',
             description: formatMessage({id: 'mobile.search.modifier.phrases', defaultMessage: ' messages with phrases'}),
+            cursorPosition: -1,
         },
     ];
     return sectionsData;
@@ -80,13 +82,14 @@ const getModifiersSectionsData = (intl: IntlShape): ModifierItem[] => {
 
 type Props = {
     scrollEnabled: Animated.SharedValue<boolean>;
-    setSearchValue: (value: string) => void;
+    searchRef: RefObject<SearchRef>;
+    setSearchValue: Dispatch<SetStateAction<string>>;
     searchValue?: string;
     setTeamId: (id: string) => void;
     teamId: string;
     teams: TeamModel[];
 }
-const Modifiers = ({scrollEnabled, searchValue, setSearchValue, setTeamId, teamId, teams}: Props) => {
+const Modifiers = ({scrollEnabled, searchValue, setSearchValue, searchRef, setTeamId, teamId, teams}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
 
@@ -130,6 +133,7 @@ const Modifiers = ({scrollEnabled, searchValue, setSearchValue, setTeamId, teamI
             <Modifier
                 key={item.term}
                 item={item}
+                searchRef={searchRef}
                 searchValue={searchValue}
                 setSearchValue={setSearchValue}
             />

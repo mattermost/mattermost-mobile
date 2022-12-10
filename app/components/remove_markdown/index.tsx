@@ -7,36 +7,59 @@ import React, {ReactElement, useCallback, useMemo, useRef} from 'react';
 import {StyleProp, Text, TextStyle} from 'react-native';
 
 import Emoji from '@components/emoji';
+import {computeTextStyle} from '@utils/markdown';
 
-import type {MarkdownEmojiRenderer} from '@typings/global/markdown';
+import type {MarkdownBaseRenderer, MarkdownEmojiRenderer, MarkdownTextStyles} from '@typings/global/markdown';
 
 type Props = {
     enableEmoji?: boolean;
+    enableCodeSpan?: boolean;
     enableHardBreak?: boolean;
     enableSoftBreak?: boolean;
-    textStyle?: StyleProp<TextStyle>;
+    baseStyle?: StyleProp<TextStyle>;
+    textStyle?: MarkdownTextStyles;
     value: string;
 };
 
-const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, textStyle, value}: Props) => {
+const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, enableCodeSpan, baseStyle, textStyle = {}, value}: Props) => {
     const renderEmoji = useCallback(({emojiName, literal}: MarkdownEmojiRenderer) => {
+        if (!enableEmoji) {
+            return renderText({literal});
+        }
+
         return (
             <Emoji
                 emojiName={emojiName}
                 literal={literal}
                 testID='markdown_emoji'
-                textStyle={textStyle}
+                textStyle={baseStyle}
             />
         );
-    }, [textStyle]);
+    }, [baseStyle, enableEmoji]);
 
     const renderBreak = useCallback(() => {
         return '\n';
     }, []);
 
     const renderText = useCallback(({literal}: {literal: string}) => {
-        return <Text style={textStyle}>{literal}</Text>;
-    }, [textStyle]);
+        return <Text style={baseStyle}>{literal}</Text>;
+    }, [baseStyle]);
+
+    const renderCodeSpan = useCallback(({context, literal}: MarkdownBaseRenderer) => {
+        if (!enableCodeSpan) {
+            return renderText({literal});
+        }
+
+        const {code} = textStyle;
+        return (
+            <Text
+                style={computeTextStyle(textStyle, [baseStyle, code], context)}
+                testID='markdown_code_span'
+            >
+                {literal}
+            </Text>
+        );
+    }, [baseStyle, textStyle, enableCodeSpan]);
 
     const renderNull = () => {
         return null;
@@ -50,12 +73,12 @@ const RemoveMarkdown = ({enableEmoji, enableHardBreak, enableSoftBreak, textStyl
                 emph: Renderer.forwardChildren,
                 strong: Renderer.forwardChildren,
                 del: Renderer.forwardChildren,
-                code: Renderer.forwardChildren,
+                code: renderCodeSpan,
                 link: Renderer.forwardChildren,
                 image: renderNull,
                 atMention: Renderer.forwardChildren,
                 channelLink: Renderer.forwardChildren,
-                emoji: enableEmoji ? renderEmoji : renderNull,
+                emoji: renderEmoji,
                 hashtag: Renderer.forwardChildren,
                 latexinline: Renderer.forwardChildren,
 

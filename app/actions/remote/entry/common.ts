@@ -4,13 +4,13 @@
 import {Database, Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
-import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from '@actions/remote/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, MyTeamsRequest} from '@actions/remote/team';
+import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, handleKickFromTeam, MyTeamsRequest} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
@@ -27,11 +27,13 @@ import {getAllServers} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected} from '@queries/servers/system';
+import {getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import NavigationStore from '@store/navigation_store';
 import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
 import {getMemberChannelsFromGQLQuery, gqlToClientChannelMembership} from '@utils/graphql';
+import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
@@ -147,7 +149,7 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
 
     const confReq = await fetchConfigAndLicense(serverUrl);
     const prefData = await fetchMyPreferences(serverUrl, fetchOnly);
-    const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config?.CollapsedThreads, confReq.config?.FeatureFlagCollapsedThreads));
+    const isCRTEnabled = Boolean(prefData.preferences && processIsCRTEnabled(prefData.preferences, confReq.config?.CollapsedThreads, confReq.config?.FeatureFlagCollapsedThreads, confReq.config?.Version));
     if (prefData.preferences) {
         const crtToggled = await getHasCRTChanged(database, prefData.preferences);
         if (crtToggled) {
@@ -329,7 +331,7 @@ export async function restDeferredAppEntryActions(
         fetchTeamsChannelsAndUnreadPosts(serverUrl, since, teamData.teams, teamData.memberships, initialTeamId);
     }
 
-    if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
+    if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads, config.Version)) {
         if (initialTeamId) {
             await syncTeamThreads(serverUrl, initialTeamId);
         }
@@ -463,7 +465,7 @@ const restSyncAllChannelMembers = async (serverUrl: string) => {
         for await (const myTeam of myTeams) {
             fetchMyChannelsForTeam(serverUrl, myTeam.id, false, 0, false, excludeDirect);
             excludeDirect = true;
-            if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads)) {
+            if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads, config.Version)) {
                 // need to await here since GM/DM threads in different teams overlap
                 await syncTeamThreads(serverUrl, myTeam.id);
             }
@@ -515,5 +517,52 @@ export async function verifyPushProxy(serverUrl: string) {
         }
     } catch (err) {
         // Do nothing
+    }
+}
+
+export async function handleEntryAfterLoadNavigation(
+    serverUrl: string,
+    teamMembers: TeamMembership[],
+    channelMembers: ChannelMember[],
+    currentTeamId: string,
+    currentChannelId: string,
+    initialTeamId: string,
+    initialChannelId: string,
+) {
+    try {
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const currentTeamIdAfterLoad = await getCurrentTeamId(database);
+        const currentChannelIdAfterLoad = await getCurrentChannelId(database);
+        const mountedScreens = NavigationStore.getScreensInStack();
+        const isChannelScreenMounted = mountedScreens.includes(Screens.CHANNEL);
+        const isThreadsMounted = mountedScreens.includes(Screens.THREAD);
+        const tabletDevice = await isTablet();
+
+        if (currentTeamIdAfterLoad !== currentTeamId) {
+            // Switched teams while loading
+            if (!teamMembers.find((t) => t.team_id === currentTeamIdAfterLoad && t.delete_at === 0)) {
+                await handleKickFromTeam(serverUrl, currentTeamIdAfterLoad);
+            }
+        } else if (currentTeamIdAfterLoad !== initialTeamId) {
+            await handleKickFromTeam(serverUrl, currentTeamIdAfterLoad);
+        } else if (currentChannelIdAfterLoad !== currentChannelId) {
+            // Switched channels while loading
+            if (!channelMembers.find((m) => m.channel_id === currentChannelIdAfterLoad)) {
+                if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
+                    await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
+                } else {
+                    await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
+                }
+            }
+        } else if (currentChannelIdAfterLoad && currentChannelIdAfterLoad !== initialChannelId) {
+            if (tabletDevice || isChannelScreenMounted || isThreadsMounted) {
+                await handleKickFromChannel(serverUrl, currentChannelIdAfterLoad);
+            } else {
+                await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
+            }
+        }
+    } catch (error) {
+        logDebug('could not manage the entry after load navigation', error);
     }
 }
