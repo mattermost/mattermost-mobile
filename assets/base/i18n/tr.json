@@ -841,5 +841,15 @@
     "announcment_banner.dismiss": "Duyuruyu kapat",
     "connection_banner.not_reachable": "Sunucuya erişilemiyor",
     "connection_banner.not_connected": "İnternet bağlantısı yok",
-    "connection_banner.connected": "Bağlantı yeniden kuruldu"
+    "connection_banner.connected": "Bağlantı yeniden kuruldu",
+    "mobile.calls_host": "sunucu",
+    "mobile.calls_dismiss": "Yok say",
+    "mobile.calls_call_thread": "Kanalı aç",
+    "mobile.announcement_banner.title": "Duyuru",
+    "integration_selector.multiselect.submit": "Bitti",
+    "extension.no_memberships.description": "İçerik paylaşabilmek için bir Mattermost sunucusundaki bir takımın üyesi olmalısınız.",
+    "general_settings.report_problem": "Sorun bildirin",
+    "extension.no_servers.title": "Herhangi bir sunucu ile bağlantı kurulmamış",
+    "extension.no_servers.description": "İçerik paylaşabilmek için bir Mattermost sunucusundaki oturum açmış olmalısınız.",
+    "extension.no_memberships.title": "Henüz herhangi bir takımın üyesi değil"
 }
