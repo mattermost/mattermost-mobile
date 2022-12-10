@@ -5,7 +5,6 @@ import {t} from '@i18n';
 import keyMirror from '@utils/key_mirror';
 
 export const SNACK_BAR_TYPE = keyMirror({
-    ADD_CHANNEL_MEMBER: null,
     ADD_CHANNEL_MEMBERS: null,
     FAVORITE_CHANNEL: null,
     LINK_COPIED: null,
@@ -23,15 +22,9 @@ type SnackBarConfig = {
 };
 
 export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
-    ADD_CHANNEL_MEMBER: {
-        id: t('snack.bar.channel.member.added'),
-        defaultMessage: '1 member added',
-        iconName: 'check',
-        canUndo: false,
-    },
     ADD_CHANNEL_MEMBERS: {
         id: t('snack.bar.channel.members.added'),
-        defaultMessage: '{numMembers} members added',
+        defaultMessage: '{numMembers, number} {numMembers, plural, one {member} other {members} added}',
         iconName: 'check',
         canUndo: false,
     },

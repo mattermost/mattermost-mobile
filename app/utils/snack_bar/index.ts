@@ -35,11 +35,8 @@ export const showFavoriteChannelSnackbar = (favorited: boolean, onAction: () => 
 };
 
 export const showAddChannelMembersSnackbar = (ids: string[]) => {
-    const plural = SNACK_BAR_TYPE.ADD_CHANNEL_MEMBERS;
-    const singular = SNACK_BAR_TYPE.ADD_CHANNEL_MEMBER;
-
     return showSnackBar({
-        barType: ids.length > 1 ? plural : singular,
+        barType: SNACK_BAR_TYPE.ADD_CHANNEL_MEMBERS,
         sourceScreen: Screens.CHANNEL_ADD_PEOPLE,
         messageValues: {numMembers: ids.length},
     });
