@@ -36,14 +36,14 @@ const ClientCalls = (superclass: any) => class extends superclass {
 
     getCalls = async () => {
         return this.doFetch(
-            `${this.getCallsRoute()}/channels`,
+            `${this.getCallsRoute()}/channels?mobilev2=true`,
             {method: 'get'},
         );
     };
 
     getCallForChannel = async (channelId: string) => {
         return this.doFetch(
-            `${this.getCallsRoute()}/${channelId}`,
+            `${this.getCallsRoute()}/${channelId}?mobilev2=true`,
             {method: 'get'},
         );
     };

@@ -10,6 +10,7 @@ import {SEARCH} from '@constants/screens';
 import {useShowMoreAnimatedStyle} from '@hooks/show_more';
 import {getMarkdownTextStyles, getMarkdownBlockStyles} from '@utils/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import ShowMoreButton from './show_more_button';
 
@@ -42,9 +43,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         message: {
             color: theme.centerChannelColor,
-            fontFamily: 'OpenSans',
-            fontSize: 16,
-            lineHeight: 24,
+            ...typography('Body', 200),
         },
         pendingPost: {
             opacity: 0.5,

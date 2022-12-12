@@ -23,7 +23,7 @@ const {SERVER: {CHANNEL, POST, THREAD, THREADS_IN_TEAM, THREAD_PARTICIPANT, TEAM
 export const getIsCRTEnabled = async (database: Database): Promise<boolean> => {
     const config = await getConfig(database);
     const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).fetch();
-    return processIsCRTEnabled(preferences, config?.CollapsedThreads, config?.FeatureFlagCollapsedThreads);
+    return processIsCRTEnabled(preferences, config?.CollapsedThreads, config?.FeatureFlagCollapsedThreads, config?.Version);
 };
 
 export const getThreadById = async (database: Database, threadId: string) => {
@@ -43,10 +43,11 @@ export const getTeamThreadsSyncData = async (database: Database, teamId: string)
 export const observeIsCRTEnabled = (database: Database) => {
     const cfgValue = observeConfigValue(database, 'CollapsedThreads');
     const featureFlag = observeConfigValue(database, 'FeatureFlagCollapsedThreads');
+    const version = observeConfigValue(database, 'Version');
     const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observeWithColumns(['value']);
-    return combineLatest([cfgValue, featureFlag, preferences]).pipe(
+    return combineLatest([cfgValue, featureFlag, preferences, version]).pipe(
         map(
-            ([cfgV, ff, prefs]) => processIsCRTEnabled(prefs, cfgV, ff),
+            ([cfgV, ff, prefs, ver]) => processIsCRTEnabled(prefs, cfgV, ff, ver),
         ),
         distinctUntilChanged(),
     );

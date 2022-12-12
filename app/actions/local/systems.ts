@@ -89,6 +89,21 @@ export async function setLastServerVersionCheck(serverUrl: string, reset = false
     }
 }
 
+export async function setGlobalThreadsTab(serverUrl: string, globalThreadsTab: GlobalThreadsTab) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        await operator.handleSystem({
+            systems: [{
+                id: SYSTEM_IDENTIFIERS.GLOBAL_THREADS_TAB,
+                value: globalThreadsTab,
+            }],
+            prepareRecordsOnly: false,
+        });
+    } catch (error) {
+        logError('setGlobalThreadsTab', error);
+    }
+}
+
 export async function dismissAnnouncement(serverUrl: string, announcementText: string) {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

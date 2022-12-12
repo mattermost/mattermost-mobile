@@ -14,6 +14,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {getMarkdownTextStyles} from '@utils/markdown';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -125,6 +126,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const textStyles = getMarkdownTextStyles(theme);
     const serverUrl = useServerUrl();
 
     const showThread = useCallback(preventDoubleTap(() => {
@@ -197,10 +199,12 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
             postBody = (
                 <Text numberOfLines={2}>
                     <RemoveMarkdown
+                        enableCodeSpan={true}
                         enableEmoji={true}
                         enableHardBreak={true}
                         enableSoftBreak={true}
-                        textStyle={styles.message}
+                        textStyle={textStyles}
+                        baseStyle={styles.message}
                         value={post.message}
                     />
                 </Text>

@@ -1,89 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
 
-import NavigationHeader from '@components/navigation_header';
-import RoundedHeaderContext from '@components/rounded_header_context';
-import {useAppState, useIsTablet} from '@hooks/device';
-import {useDefaultHeaderHeight} from '@hooks/header';
-import {useTeamSwitch} from '@hooks/team_switch';
-import {popTopScreen} from '@screens/navigation';
+import {observeGlobalThreadsTab} from '@queries/servers/system';
 
-import ThreadsList from './threads_list';
+import GlobalThreads from './global_threads';
 
-type Props = {
-    componentId?: string;
-};
+import type {WithDatabaseArgs} from '@typings/database/database';
 
-const edges: Edge[] = ['left', 'right'];
-
-const styles = StyleSheet.create({
-    flex: {
-        flex: 1,
-    },
+const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+    return {
+        globalThreadsTab: observeGlobalThreadsTab(database),
+    };
 });
 
-const GlobalThreads = ({componentId}: Props) => {
-    const appState = useAppState();
-    const intl = useIntl();
-    const switchingTeam = useTeamSwitch();
-    const isTablet = useIsTablet();
-
-    const defaultHeight = useDefaultHeaderHeight();
-
-    const [tab, setTab] = useState<GlobalThreadsTab>('all');
-
-    const containerStyle = useMemo(() => {
-        const marginTop = defaultHeight;
-        return {flex: 1, marginTop};
-    }, [defaultHeight]);
-
-    const contextStyle = useMemo(() => ({
-        top: defaultHeight,
-    }), [defaultHeight]);
-
-    const onBackPress = useCallback(() => {
-        Keyboard.dismiss();
-        popTopScreen(componentId);
-    }, [componentId]);
-
-    return (
-        <SafeAreaView
-            edges={edges}
-            mode='margin'
-            style={styles.flex}
-            testID='global_threads.screen'
-        >
-            <NavigationHeader
-                showBackButton={!isTablet}
-                isLargeTitle={false}
-                onBackPress={onBackPress}
-                title={
-                    intl.formatMessage({
-                        id: 'threads',
-                        defaultMessage: 'Threads',
-                    })
-                }
-            />
-            <View style={contextStyle}>
-                <RoundedHeaderContext/>
-            </View>
-            {!switchingTeam &&
-            <View style={containerStyle}>
-                <ThreadsList
-                    forceQueryAfterAppState={appState}
-                    setTab={setTab}
-                    tab={tab}
-                    testID={'global_threads.threads_list'}
-                />
-            </View>
-            }
-        </SafeAreaView>
-    );
-};
-
-export default GlobalThreads;
+export default withDatabase(enhanced(GlobalThreads));
