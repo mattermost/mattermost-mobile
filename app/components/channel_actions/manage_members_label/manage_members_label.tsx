@@ -14,13 +14,22 @@ import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 const messages = defineMessages({
-    remove_title: {id: t('mobile.manage_members.remove_member'), defaultMessage: 'Remove Member'},
+    remove_title: {
+        id: t('mobile.manage_members.remove_member'),
+        defaultMessage: 'Remove Member',
+    },
     remove_message: {
         id: t('mobile.manage_members.message.'),
         defaultMessage: 'Are you sure you want to remove the selected member from the channel?',
     },
-    remove_cancel: {id: t('mobile.manage_members.cancel'), defaultMessage: 'Cancel'},
-    remove_confirm: {id: t('mobile.manage_members.remove'), defaultMessage: 'Remove'},
+    remove_cancel: {
+        id: t('mobile.manage_members.cancel'),
+        defaultMessage: 'Cancel',
+    },
+    remove_confirm: {
+        id: t('mobile.manage_members.remove'),
+        defaultMessage: 'Remove',
+    },
 });
 
 type Props = {
