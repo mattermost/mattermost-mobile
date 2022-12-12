@@ -97,7 +97,6 @@ const ChannelListHeader = ({
     canJoinChannels,
     canInvitePeople,
     displayName,
-    inviteId,
     iconPad,
     onHeaderPress,
     pushProxyStatus,
@@ -124,8 +123,6 @@ const ChannelListHeader = ({
                     canCreateChannels={canCreateChannels}
                     canJoinChannels={canJoinChannels}
                     canInvitePeople={canInvitePeople}
-                    displayName={displayName}
-                    inviteId={inviteId}
                 />
             );
         };

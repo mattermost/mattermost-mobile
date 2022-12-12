@@ -100,7 +100,7 @@ type FloatingTextInputProps = TextInputProps & {
     error?: string;
     errorIcon?: string;
     isKeyboardInput?: boolean;
-    label: string;
+    label?: string;
     labelTextStyle?: TextStyle;
     multiline?: boolean;
     onBlur?: (event: NativeSyntheticEvent<TargetedEvent>) => void;
@@ -245,14 +245,16 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
             onLayout={onLayout}
         >
             <View style={combinedContainerStyle}>
-                <Animated.Text
-                    onPress={onAnimatedTextPress}
-                    style={[styles.label, labelTextStyle, textAnimatedTextStyle]}
-                    suppressHighlighting={true}
-                    numberOfLines={1}
-                >
-                    {label}
-                </Animated.Text>
+                {label && (
+                    <Animated.Text
+                        onPress={onAnimatedTextPress}
+                        style={[styles.label, labelTextStyle, textAnimatedTextStyle]}
+                        suppressHighlighting={true}
+                        numberOfLines={1}
+                    >
+                        {label}
+                    </Animated.Text>
+                )}
                 <TextInput
                     {...props}
                     editable={isKeyboardInput && editable}

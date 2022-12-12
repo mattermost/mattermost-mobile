@@ -98,6 +98,46 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
     }
 }
 
+export async function addUsersToTeam(serverUrl: string, teamId: string, userIds: string[]) {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        EphemeralStore.startAddingToTeam(teamId);
+
+        const members = await client.addUsersToTeamGracefully(teamId, userIds);
+
+        EphemeralStore.finishAddingToTeam(teamId);
+        return {members};
+    } catch (error) {
+        EphemeralStore.finishAddingToTeam(teamId);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+}
+
+export async function sendEmailInvitesToTeam(serverUrl: string, teamId: string, emails: string[]) {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const members = await client.sendEmailInvitesToTeamGracefully(teamId, emails);
+
+        return {members};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+}
+
 export async function fetchMyTeams(serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> {
     let client;
     try {
@@ -353,5 +393,23 @@ export async function handleKickFromTeam(serverUrl: string, teamId: string) {
         }
     } catch (error) {
         logDebug('Failed to kick user from team', error);
+    }
+}
+
+export async function getTeamMembersByIds(serverUrl: string, teamId: string, userIds: string[]) {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const members = await client.getTeamMembersByIds(teamId, userIds);
+
+        return {members};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
     }
 }
