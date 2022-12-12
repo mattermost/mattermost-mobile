@@ -22,16 +22,16 @@ const Members = ({displayName, channelId, count}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const title = formatMessage({id: 'channel_info.members', defaultMessage: 'Members'});
-    const options = {
-        topBar: {
-            subtitle: {
-                color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
-                text: displayName,
-            },
-        },
-    };
-
     const goToChannelMembers = preventDoubleTap(() => {
+        const options = {
+            topBar: {
+                subtitle: {
+                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
+                    text: displayName,
+                },
+            },
+        };
+
         goToScreen(Screens.MANAGE_CHANNEL_MEMBERS, title, {channelId}, options);
     });
 
