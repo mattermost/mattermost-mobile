@@ -11,6 +11,7 @@ import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     onEndReached: () => void;
@@ -39,6 +40,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             flexGrow: 1,
             alignItems: 'center' as const,
             justifyContent: 'center' as const,
+        },
+        noResultText: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 600, 'Regular'),
         },
         separator: {
             height: 1,

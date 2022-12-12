@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-elements/dist/searchbar/SearchBar-android.js b/node_modules/react-native-elements/dist/searchbar/SearchBar-android.js
-index 1bfd2b4..436e870 100644
+index 1bfd2b4..a4f6f77 100644
 --- a/node_modules/react-native-elements/dist/searchbar/SearchBar-android.js
 +++ b/node_modules/react-native-elements/dist/searchbar/SearchBar-android.js
 @@ -10,7 +10,7 @@ var __rest = (this && this.__rest) || function (s, e) {
@@ -11,7 +11,7 @@ index 1bfd2b4..436e870 100644
  import { renderNode } from '../helpers';
  import Input from '../input/Input';
  import Icon from '../icons/Icon';
-@@ -68,24 +68,17 @@ class SearchBar extends Component {
+@@ -68,24 +68,20 @@ class SearchBar extends Component {
          };
          this.onBlur = (event) => {
              this.props.onBlur(event);
@@ -24,7 +24,9 @@ index 1bfd2b4..436e870 100644
          };
 -        this._keyboardDidHide = () => {
 -            this.cancel();
--        };
++        this.setNativeProps = (nativeProps: object) => {
++            this.input.setNativeProps && this.input.setNativeProps(nativeProps);
+         };
          const { value = '' } = props;
          this.state = {
              hasFocus: false,
@@ -38,10 +40,20 @@ index 1bfd2b4..436e870 100644
      render() {
          var _a;
 diff --git a/node_modules/react-native-elements/dist/searchbar/SearchBar-ios.js b/node_modules/react-native-elements/dist/searchbar/SearchBar-ios.js
-index 8fe90be..3daf517 100644
+index 8fe90be..69ab1ff 100644
 --- a/node_modules/react-native-elements/dist/searchbar/SearchBar-ios.js
 +++ b/node_modules/react-native-elements/dist/searchbar/SearchBar-ios.js
-@@ -85,6 +85,11 @@ class SearchBar extends Component {
+@@ -78,6 +78,9 @@ class SearchBar extends Component {
+             this.props.onChangeText(text);
+             this.setState({ isEmpty: text === '' });
+         };
++        this.setNativeProps = (nativeProps: object) => {
++            this.input.setNativeProps && this.input.setNativeProps(nativeProps);
++        };
+         const { value } = props;
+         this.state = {
+             hasFocus: false,
+@@ -85,6 +88,11 @@ class SearchBar extends Component {
              cancelButtonWidth: null,
          };
      }
@@ -53,3 +65,29 @@ index 8fe90be..3daf517 100644
      render() {
          var _a, _b, _c, _d, _e, _f, _g;
          const _h = this.props, { theme, cancelButtonProps, cancelButtonTitle, clearIcon, containerStyle, leftIconContainerStyle, rightIconContainerStyle, inputContainerStyle, inputStyle, placeholderTextColor, showLoading, loadingProps, searchIcon, showCancel } = _h, attributes = __rest(_h, ["theme", "cancelButtonProps", "cancelButtonTitle", "clearIcon", "containerStyle", "leftIconContainerStyle", "rightIconContainerStyle", "inputContainerStyle", "inputStyle", "placeholderTextColor", "showLoading", "loadingProps", "searchIcon", "showCancel"]);
+diff --git a/node_modules/react-native-elements/dist/searchbar/SearchBar.d.ts b/node_modules/react-native-elements/dist/searchbar/SearchBar.d.ts
+index 61844a8..a22a37c 100644
+--- a/node_modules/react-native-elements/dist/searchbar/SearchBar.d.ts
++++ b/node_modules/react-native-elements/dist/searchbar/SearchBar.d.ts
+@@ -21,6 +21,7 @@ export declare type SearchBarBaseProps = React.ComponentPropsWithRef<typeof Text
+     onBlur?(): void;
+     onChangeText?(text: string): void;
+     onCancel?(): void;
++    setNativeProps: (nativeProps: object) => void;
+ };
+ export declare type SearchBarProps = SearchBarBaseProps & SearchBarDefaultProps & SearchBarAndroidProps & SearchBarIosProps;
+ declare class SearchBar extends React.Component<SearchBarProps & Partial<ThemeProps<SearchBarProps>>> {
+diff --git a/node_modules/react-native-elements/dist/searchbar/SearchBar.js b/node_modules/react-native-elements/dist/searchbar/SearchBar.js
+index 43db650..6e8ebf5 100644
+--- a/node_modules/react-native-elements/dist/searchbar/SearchBar.js
++++ b/node_modules/react-native-elements/dist/searchbar/SearchBar.js
+@@ -23,6 +23,9 @@ class SearchBar extends React.Component {
+         this.cancel = () => {
+             this.searchbar.cancel && this.searchbar.cancel();
+         };
++        this.setNativeProps = (nativeProps: object) => {
++            this.searchbar.setNativeProps && this.searchbar.setNativeProps(nativeProps);
++        };
+     }
+     render() {
+         const Component = SEARCHBAR_COMPONENTS[this.props.platform] || DefaultSearchBar;

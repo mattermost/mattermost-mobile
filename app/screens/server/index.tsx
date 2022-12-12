@@ -16,10 +16,10 @@ import LocalConfig from '@assets/config.json';
 import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
 import {Screens, Launch} from '@constants';
-import DatabaseManager from '@database/manager';
 import {t} from '@i18n';
+import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
-import {queryServerByDisplayName, queryServerByIdentifier} from '@queries/app/servers';
+import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
 import {getErrorMessage} from '@utils/client_error';
@@ -34,8 +34,10 @@ import ServerHeader from './header';
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 interface ServerProps extends LaunchProps {
+    animated?: boolean;
     closeButtonId?: string;
     componentId: string;
+    isModal?: boolean;
     theme: Theme;
 }
 
@@ -46,13 +48,29 @@ const defaultServerUrlMessage = {
     defaultMessage: 'Please enter a valid server URL',
 };
 
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    appInfo: {
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+    },
+    flex: {
+        flex: 1,
+    },
+    scrollContainer: {
+        alignItems: 'center',
+        height: '90%',
+        justifyContent: 'center',
+    },
+}));
+
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const Server = ({
+    animated,
     closeButtonId,
     componentId,
     displayName: defaultDisplayName,
     extra,
+    isModal,
     launchType,
     launchError,
     serverUrl: defaultServerUrl,
@@ -61,7 +79,7 @@ const Server = ({
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const dimensions = useWindowDimensions();
-    const translateX = useSharedValue(0);
+    const translateX = useSharedValue(animated ? dimensions.width : 0);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const [connecting, setConnecting] = useState(false);
     const [displayName, setDisplayName] = useState<string>('');
@@ -145,6 +163,8 @@ const Server = ({
             }
         });
 
+        PushNotifications.registerIfNeeded();
+
         return () => navigationEvents.remove();
     }, []);
 
@@ -204,7 +224,7 @@ const Server = ({
             setUrlError(undefined);
         }
 
-        const server = await queryServerByDisplayName(DatabaseManager.appDatabase!.database, displayName);
+        const server = await getServerByDisplayName(displayName);
         if (server && server.lastActiveAt > 0) {
             setButtonDisabled(true);
             setDisplayNameError(formatMessage({
@@ -277,7 +297,7 @@ const Server = ({
             return;
         }
 
-        const server = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
+        const server = await getServerByIdentifier(data.config!.DiagnosticId);
         setConnecting(false);
 
         if (server && server.lastActiveAt > 0) {
@@ -336,6 +356,7 @@ const Server = ({
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}
+                        isModal={isModal}
                         keyboardAwareRef={keyboardAwareRef}
                         theme={theme}
                         url={url}
@@ -347,19 +368,5 @@ const Server = ({
         </View>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    appInfo: {
-        color: changeOpacity(theme.centerChannelColor, 0.56),
-    },
-    flex: {
-        flex: 1,
-    },
-    scrollContainer: {
-        alignItems: 'center',
-        height: '100%',
-        justifyContent: 'center',
-    },
-}));
 
 export default Server;

@@ -76,7 +76,7 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
         leaveChannelName,
         joinChannelName,
         joinChannelIsDMorGM,
-        limitRestrictedInfo: observeIsCallLimitRestricted(serverUrl, post.channelId),
+        limitRestrictedInfo: observeIsCallLimitRestricted(database, serverUrl, post.channelId),
     };
 });
 

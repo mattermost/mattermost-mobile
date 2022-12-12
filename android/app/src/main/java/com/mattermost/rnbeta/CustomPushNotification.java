@@ -18,6 +18,7 @@ import com.mattermost.helpers.Network;
 import com.mattermost.helpers.NotificationHelper;
 import com.mattermost.helpers.PushNotificationDataHelper;
 import com.mattermost.helpers.ResolvePromise;
+import com.mattermost.share.ShareModule;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
@@ -80,7 +81,10 @@ public class CustomPushNotification extends PushNotification {
         switch (type) {
             case CustomPushNotificationHelper.PUSH_TYPE_MESSAGE:
             case CustomPushNotificationHelper.PUSH_TYPE_SESSION:
-                if (!mAppLifecycleFacade.isAppVisible()) {
+                ShareModule shareModule = ShareModule.getInstance();
+                String currentActivityName = shareModule != null ? shareModule.getCurrentActivityName() : "";
+                Log.i("ReactNative", currentActivityName);
+                if (!mAppLifecycleFacade.isAppVisible() || !currentActivityName.equals("MainActivity")) {
                     boolean createSummary = type.equals(CustomPushNotificationHelper.PUSH_TYPE_MESSAGE);
                     if (type.equals(CustomPushNotificationHelper.PUSH_TYPE_MESSAGE)) {
                         if (channelId != null) {

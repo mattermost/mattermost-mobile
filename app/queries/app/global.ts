@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
+import {Q} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -12,9 +12,10 @@ import type GlobalModel from '@typings/database/models/app/global';
 
 const {APP: {GLOBAL}} = MM_TABLES;
 
-export const getDeviceToken = async (appDatabase: Database): Promise<string> => {
+export const getDeviceToken = async (): Promise<string> => {
     try {
-        const tokens = await appDatabase.get<GlobalModel>(GLOBAL).find(GLOBAL_IDENTIFIERS.DEVICE_TOKEN);
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        const tokens = await database.get<GlobalModel>(GLOBAL).find(GLOBAL_IDENTIFIERS.DEVICE_TOKEN);
         return tokens?.value || '';
     } catch {
         return '';
@@ -39,6 +40,16 @@ export const observeMultiServerTutorial = () => {
         switchMap((result) => (result.length ? result[0].observe() : of$(false))),
         switchMap((v) => of$(Boolean(v))),
     );
+};
+
+export const getOnboardingViewed = async (): Promise<boolean> => {
+    try {
+        const {database} = DatabaseManager.getAppDatabaseAndOperator();
+        const onboardingVal = await database.get<GlobalModel>(GLOBAL).find(GLOBAL_IDENTIFIERS.ONBOARDING);
+        return onboardingVal?.value ?? false;
+    } catch {
+        return false;
+    }
 };
 
 export const observeProfileLongPresTutorial = () => {

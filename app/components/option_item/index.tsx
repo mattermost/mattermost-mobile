@@ -10,6 +10,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import OptionIcon from './option_icon';
 import RadioItem, {RadioItemProps} from './radio_item';
 
 const TouchableOptionTypes = {
@@ -238,10 +239,10 @@ const OptionItem = ({
                 <View style={styles.labelContainer}>
                     {Boolean(icon) && (
                         <View style={styles.iconContainer}>
-                            <CompassIcon
-                                name={icon!}
-                                size={24}
-                                color={iconColor || (destructive ? theme.dndIndicator : changeOpacity(theme.centerChannelColor, 0.64))}
+                            <OptionIcon
+                                icon={icon!}
+                                iconColor={iconColor}
+                                destructive={destructive}
                             />
                         </View>
                     )}
@@ -270,7 +271,7 @@ const OptionItem = ({
                     Boolean(info) &&
                     <View style={styles.infoContainer}>
                         <Text
-                            style={[styles.info, destructive && {color: theme.dndIndicator}]}
+                            style={[styles.info, !actionComponent && styles.iconContainer, destructive && {color: theme.dndIndicator}]}
                             testID={`${testID}.info`}
                         >
                             {info}

@@ -66,6 +66,12 @@ export const SettingOptionConfig: Record<string, SettingConfigDetails> = {
         i18nId: t('general_settings.help'),
         testID: 'general_settings.help',
     },
+    report_problem: {
+        defaultMessage: 'Report a Problem',
+        i18nId: t('general_settings.report_problem'),
+        testID: 'general_settings.report_problem',
+    },
+
 };
 
 export const NotificationsOptionConfig: Record<string, SettingConfigDetails> = {

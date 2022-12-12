@@ -14,15 +14,16 @@ import {getConfig, observeConfigValue} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
 import type Model from '@nozbe/watermelondb/Model';
+import type TeamThreadsSyncModel from '@typings/database/models/servers/team_threads_sync';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type UserModel from '@typings/database/models/servers/user';
 
-const {SERVER: {CHANNEL, POST, THREAD, THREADS_IN_TEAM, THREAD_PARTICIPANT, USER}} = MM_TABLES;
+const {SERVER: {CHANNEL, POST, THREAD, THREADS_IN_TEAM, THREAD_PARTICIPANT, TEAM_THREADS_SYNC, USER}} = MM_TABLES;
 
 export const getIsCRTEnabled = async (database: Database): Promise<boolean> => {
     const config = await getConfig(database);
     const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).fetch();
-    return processIsCRTEnabled(preferences, config?.CollapsedThreads, config?.FeatureFlagCollapsedThreads);
+    return processIsCRTEnabled(preferences, config?.CollapsedThreads, config?.FeatureFlagCollapsedThreads, config?.Version);
 };
 
 export const getThreadById = async (database: Database, threadId: string) => {
@@ -34,13 +35,19 @@ export const getThreadById = async (database: Database, threadId: string) => {
     }
 };
 
+export const getTeamThreadsSyncData = async (database: Database, teamId: string): Promise<TeamThreadsSyncModel | undefined> => {
+    const result = await queryTeamThreadsSync(database, teamId).fetch();
+    return result?.[0];
+};
+
 export const observeIsCRTEnabled = (database: Database) => {
     const cfgValue = observeConfigValue(database, 'CollapsedThreads');
     const featureFlag = observeConfigValue(database, 'FeatureFlagCollapsedThreads');
+    const version = observeConfigValue(database, 'Version');
     const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observeWithColumns(['value']);
-    return combineLatest([cfgValue, featureFlag, preferences]).pipe(
+    return combineLatest([cfgValue, featureFlag, preferences, version]).pipe(
         map(
-            ([cfgV, ff, prefs]) => processIsCRTEnabled(prefs, cfgV, ff),
+            ([cfgV, ff, prefs, ver]) => processIsCRTEnabled(prefs, cfgV, ff, ver),
         ),
         distinctUntilChanged(),
     );
@@ -133,7 +140,7 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
     return models;
 };
 
-export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing?: boolean, sort?: boolean, limit?: number): Query<ThreadModel> => {
+export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing?: boolean, sort?: boolean, earliest?: number): Query<ThreadModel> => {
     const query: Q.Clause[] = [];
 
     if (isFollowing) {
@@ -152,38 +159,22 @@ export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnrea
         query.push(Q.sortBy('last_reply_at', Q.desc));
     }
 
-    let joinCondition: Q.Condition = Q.where('team_id', teamId);
-
-    if (!onlyUnreads) {
-        joinCondition = Q.and(
-            Q.where('team_id', teamId),
-            Q.where('loaded_in_global_threads', true),
-        );
-    }
-
     query.push(
-        Q.on(THREADS_IN_TEAM, joinCondition),
+        Q.on(THREADS_IN_TEAM, Q.where('team_id', teamId)),
     );
 
-    if (limit) {
-        query.push(Q.take(limit));
+    if (earliest) {
+        query.push(Q.where('last_reply_at', Q.gte(earliest)));
     }
 
     return database.get<ThreadModel>(THREAD).query(...query);
 };
 
-export async function getNewestThreadInTeam(
-    database: Database,
-    teamId: string,
-    unread: boolean,
-): Promise<ThreadModel | undefined> {
-    try {
-        const threads = await queryThreadsInTeam(database, teamId, unread, true, true, true, 1).fetch();
-        return threads?.[0] || undefined;
-    } catch (e) {
-        return undefined;
-    }
-}
+export const queryTeamThreadsSync = (database: Database, teamId: string) => {
+    return database.get<TeamThreadsSyncModel>(TEAM_THREADS_SYNC).query(
+        Q.where('id', teamId),
+    );
+};
 
 export function observeThreadMentionCount(database: Database, teamId?: string, includeDmGm?: boolean): Observable<number> {
     return observeUnreadsAndMentionsInTeam(database, teamId, includeDmGm).pipe(

@@ -107,14 +107,14 @@ const ChannelListHeader = ({
     const intl = useIntl();
     const insets = useSafeAreaInsets();
     const serverDisplayName = useServerDisplayName();
-    const marginLeft = useSharedValue(iconPad ? 44 : 0);
+    const marginLeft = useSharedValue(iconPad ? 50 : 0);
     const styles = getStyles(theme);
     const animatedStyle = useAnimatedStyle(() => ({
         marginLeft: withTiming(marginLeft.value, {duration: 350}),
     }), []);
     const serverUrl = useServerUrl();
     useEffect(() => {
-        marginLeft.value = iconPad ? 44 : 0;
+        marginLeft.value = iconPad ? 50 : 0;
     }, [iconPad]);
 
     const onPress = useCallback(() => {

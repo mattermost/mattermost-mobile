@@ -37,6 +37,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         text: {
             color: theme.centerChannelColor,
             marginLeft: 16,
+            flex: 1,
             ...typography('Body', 200),
         },
         icon_container: {
@@ -44,7 +45,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 40,
         },
         compassContainer: {
-            flex: 1,
             alignItems: 'flex-end',
         },
     };

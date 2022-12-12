@@ -9,8 +9,7 @@ import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {setLastServerVersionCheck} from '@actions/local/systems';
 import {useServerUrl} from '@context/server';
-import DatabaseManager from '@database/manager';
-import {queryServer} from '@queries/app/servers';
+import {getServer} from '@queries/app/servers';
 import {observeConfigValue, observeLastServerVersionCheck} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {isSupportedServer, unsupportedServer} from '@utils/server';
@@ -27,12 +26,9 @@ type ServerVersionProps = {
 const VALIDATE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
 
 const handleUnsupportedServer = async (serverUrl: string, isAdmin: boolean, intl: IntlShape) => {
-    const appDatabase = DatabaseManager.appDatabase?.database;
-    if (appDatabase) {
-        const serverModel = await queryServer(appDatabase, serverUrl);
-        unsupportedServer(serverModel?.displayName || '', isAdmin, intl);
-        setLastServerVersionCheck(serverUrl);
-    }
+    const serverModel = await getServer(serverUrl);
+    unsupportedServer(serverModel?.displayName || '', isAdmin, intl);
+    setLastServerVersionCheck(serverUrl);
 };
 
 const ServerVersion = ({isAdmin, lastChecked, version}: ServerVersionProps) => {

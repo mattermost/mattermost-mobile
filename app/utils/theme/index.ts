@@ -118,7 +118,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
 }
 
 export function setNavigationStackStyles(theme: Theme) {
-    NavigationStore.allNavigationComponentIds.forEach((componentId) => {
+    NavigationStore.getScreensInStack().forEach((componentId) => {
         if (!appearanceControlledScreens.has(componentId)) {
             setNavigatorStyles(componentId, theme);
         }

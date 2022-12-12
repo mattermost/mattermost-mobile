@@ -23,7 +23,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
-import {queryServerByIdentifier} from '@queries/app/servers';
+import {getServerByIdentifier} from '@queries/app/servers';
 import {dismissBottomSheet} from '@screens/navigation';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {alertServerAlreadyConnected, alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
@@ -101,7 +101,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderWidth: 1,
         height: 72,
         justifyContent: 'center',
-        width: 45,
+        width: 50,
     },
     unread: {
         top: -2,
@@ -157,7 +157,7 @@ const ServerItem = ({
     const viewRef = useRef<View>(null);
     const [showTutorial, setShowTutorial] = useState(false);
     const [itemBounds, setItemBounds] = useState<TutorialItemBounds>({startX: 0, startY: 0, endX: 0, endY: 0});
-    const database = DatabaseManager.serverDatabases[server.url]?.database;
+
     let displayName = server.displayName;
 
     if (server.url === server.displayName) {
@@ -243,7 +243,7 @@ const ServerItem = ({
             setSwitching(false);
             return;
         }
-        const existingServer = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
+        const existingServer = await getServerByIdentifier(data.config!.DiagnosticId);
         if (existingServer && existingServer.lastActiveAt > 0) {
             alertServerAlreadyConnected(intl);
             setSwitching(false);
@@ -451,9 +451,9 @@ const ServerItem = ({
                 </Text>
             )}
 
-            {Boolean(database) && server.lastActiveAt > 0 &&
+            {server.lastActiveAt > 0 &&
             <WebSocket
-                database={database!}
+                serverUrl={server.url}
             />
             }
             {showTutorial &&

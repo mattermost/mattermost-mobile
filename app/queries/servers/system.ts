@@ -77,6 +77,13 @@ export const observeCurrentUserId = (database: Database): Observable<string> => 
     );
 };
 
+export const observeGlobalThreadsTab = (database: Database): Observable<string> => {
+    return querySystemValue(database, SYSTEM_IDENTIFIERS.GLOBAL_THREADS_TAB).observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$({value: 'all'}))),
+        switchMap((model) => of$(model.value)),
+    );
+};
+
 export const getPushVerificationStatus = async (serverDatabase: Database): Promise<string> => {
     try {
         const status = await serverDatabase.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS);
@@ -277,7 +284,7 @@ export const getWebSocketLastDisconnected = async (serverDatabase: Database) => 
     }
 };
 
-export const observeWebsocket = (database: Database) => {
+export const observeWebsocketLastDisconnected = (database: Database) => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.WEBSOCKET).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: '0'}))),
         switchMap((model) => of$(parseInt(model.value || 0, 10) || 0)),

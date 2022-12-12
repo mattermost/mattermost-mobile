@@ -5,6 +5,7 @@ import InCallManager from 'react-native-incall-manager';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchUsersByIds} from '@actions/remote/user';
+import {needsRecordingWillBePostedAlert} from '@calls/alerts';
 import {
     getCallsConfig,
     getCallsState,
@@ -27,6 +28,7 @@ import {getChannelById} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
+import {logWarning} from '@utils/log';
 import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
 
 import {newConnection} from '../connection/connection';
@@ -37,6 +39,7 @@ import type {
     CallParticipant,
     CallReactionEmoji,
     CallsConnection,
+    RecordingState,
     ServerCallState,
     ServerChannelState,
 } from '@calls/types/calls';
@@ -101,7 +104,10 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
         if (channel.call) {
             callsResults[channel.channel_id] = createCallAndAddToIds(channel.channel_id, channel.call, ids);
         }
-        enabledChannels[channel.channel_id] = channel.enabled;
+
+        if (typeof channel.enabled !== 'undefined') {
+            enabledChannels[channel.channel_id] = channel.enabled;
+        }
     }
 
     // Batch load user models async because we'll need them later
@@ -163,6 +169,8 @@ const createCallAndAddToIds = (channelId: string, call: ServerCallState, ids: Se
         screenOn: call.screen_sharing_id,
         threadId: call.thread_id,
         ownerId: call.owner_id,
+        hostId: call.host_id,
+        recState: call.recording,
     } as Call;
 };
 
@@ -375,6 +383,38 @@ export const endCall = async (serverUrl: string, channelId: string) => {
     } catch (error) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         throw error;
+    }
+
+    return data;
+};
+
+export const startCallRecording = async (serverUrl: string, callId: string) => {
+    const client = NetworkManager.getClient(serverUrl);
+
+    let data: ApiResp | RecordingState;
+    try {
+        data = await client.startCallRecording(callId);
+    } catch (error) {
+        await forceLogoutIfNecessary(serverUrl, error as ClientError);
+        logWarning('start call recording returned:', error);
+        return error;
+    }
+
+    return data;
+};
+
+export const stopCallRecording = async (serverUrl: string, callId: string) => {
+    needsRecordingWillBePostedAlert();
+
+    const client = NetworkManager.getClient(serverUrl);
+
+    let data: ApiResp | RecordingState;
+    try {
+        data = await client.stopCallRecording(callId);
+    } catch (error) {
+        await forceLogoutIfNecessary(serverUrl, error as ClientError);
+        logWarning('stop call recording returned:', error);
+        return error;
     }
 
     return data;

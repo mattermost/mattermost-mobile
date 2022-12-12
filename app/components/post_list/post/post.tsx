@@ -182,7 +182,7 @@ const Post = ({
         }
 
         Keyboard.dismiss();
-        const passProps = {sourceScreen: location, post, showAddReaction};
+        const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         if (isTablet) {

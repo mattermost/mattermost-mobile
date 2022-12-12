@@ -112,7 +112,7 @@ type FloatingTextInputProps = TextInputProps & {
     testID?: string;
     textInputStyle?: TextStyle;
     theme: Theme;
-    value: string;
+    value?: string;
 }
 
 const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProps>(({
@@ -133,7 +133,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     testID,
     textInputStyle,
     theme,
-    value = '',
+    value,
     ...props
 }: FloatingTextInputProps, ref) => {
     const [focused, setIsFocused] = useState(false);
@@ -153,11 +153,11 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
 
     useEffect(
         () => {
-            if (!focusedLabel && value) {
+            if (!focusedLabel && (value || props.defaultValue)) {
                 debouncedOnFocusTextInput(true);
             }
         },
-        [value],
+        [value, props.defaultValue],
     );
 
     const onTextInputBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
@@ -218,7 +218,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
 
     const textAnimatedTextStyle = useAnimatedStyle(() => {
-        const inputText = placeholder || value;
+        const inputText = placeholder || value || props.defaultValue;
         const index = inputText || focusedLabel ? 1 : 0;
         const toValue = positions[index];
         const toSize = size[index];

@@ -49,7 +49,6 @@ const EditProfile = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const changedProfilePicture = useRef<NewProfileImage | undefined>(undefined);
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
     const hasUpdateUserInfo = useRef<boolean>(false);
@@ -204,14 +203,13 @@ const EditProfile = ({
             >
                 <KeyboardAwareScrollView
                     bounces={false}
-                    enableAutomaticScroll={true}
+                    enableAutomaticScroll={Platform.select({ios: true, default: false})}
                     enableOnAndroid={true}
                     enableResetScrollToCoords={true}
                     extraScrollHeight={Platform.select({ios: 45})}
                     keyboardOpeningTime={0}
-                    keyboardDismissMode='on-drag'
+                    keyboardDismissMode='none'
                     keyboardShouldPersistTaps='handled'
-                    ref={keyboardAwareRef}
                     scrollToOverflowEnabled={true}
                     testID='edit_profile.scroll_view'
                     style={styles.flex}
