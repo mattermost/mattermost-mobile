@@ -373,7 +373,6 @@
     "user.settings.general.username": "Nombre de usuario",
     "alert.channel_deleted.title": "Canal archivado",
     "alert.channel_deleted.description": "El canal {displayName} se ha archivado.",
-    "advanced_settings.delete_data": "Borrar Documentos y Datos",
     "account.your_profile": "Tu Perfil",
     "account.settings": "Ajustes",
     "account.logout_from": "Desconectar de {serverName}",
@@ -680,9 +679,6 @@
     "mobile.create_post.read_only": "Este canal es de sólo lectura.",
     "mobile.create_direct_message.you": "@{username} - tú",
     "mobile.create_direct_message.start": "Comenzar",
-    "mobile.create_direct_message.one_more": "Puedes añadir 1 usuario más",
-    "mobile.create_direct_message.cannot_add_more": "No puedes añadir más usuarios",
-    "mobile.create_direct_message.add_more": "Puedes añadir {remaining, number} más usuarios",
     "mobile.create_channel.title": "Nuevo canal",
     "mobile.components.select_server_view.msg_welcome": "Bienvenido",
     "mobile.components.select_server_view.msg_connect": "Conectémonos a un Servidor",
@@ -698,7 +694,6 @@
     "mobile.calls_speaker": "Altavoz",
     "mobile.calls_see_logs": "Ver logs del servidor",
     "mobile.calls_raise_hand": "Levantar mano",
-    "mobile.calls_participant_limit_title": "Límite de participantes alcanzado",
     "mobile.calls_ok": "OK",
     "mobile.calls_not_available_title": "Las llamadas no están habilitadas",
     "mobile.calls_not_available_option": "(No disponible)",
@@ -726,7 +721,6 @@
     "mobile.calls_enable": "Habilitar llamadas",
     "mobile.calls_disable": "Deshabilitar llamadas",
     "mobile.calls_current_call": "Llamada actual",
-    "mobile.calls_chat_thread": "Hilo del Chat",
     "mobile.calls_call_screen": "Llamada",
     "mobile.calls_call_ended": "La llamada terminó",
     "mobile.android.photos_permission_denied_description": "Sube fotos a tu servidor o guárdalas en tu dispositivo. Abre Ajustes para conceder a {applicationName} permisos de Lectura y Escritura a tu biblioteca de fotos.",
@@ -849,6 +843,5 @@
     "post_priority.picker.label.important": "Importante",
     "post_priority.picker.beta": "BETA",
     "mobile.integration_selector.loading_options": "Cargando opciones...",
-    "mobile.integration_selector.loading_channels": "Cargando canales...",
-    "mobile.integration_selector.loading_users": "Cargando usuarios..."
+    "mobile.integration_selector.loading_channels": "Cargando canales..."
 }

@@ -226,7 +226,7 @@ export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
 
                 // Need to pop the call screen, if it's somewhere in the stack.
                 await dismissAllModals();
-                if (NavigationStore.getNavigationComponents().includes(Screens.CALL)) {
+                if (NavigationStore.getScreensInStack().includes(Screens.CALL)) {
                     await dismissAllModalsAndPopToScreen(Screens.CALL, 'Call');
                     Navigation.pop(Screens.CALL).catch(() => null);
                 }

@@ -118,7 +118,7 @@ const Header = ({
             theme,
             title,
         });
-    }, [selectedFilter]);
+    }, [onFilterChanged, selectedFilter]);
 
     const filterStyle = useMemo(() => ({marginRight: teams.length > 1 ? 0 : 10}), [teams.length > 1]);
 

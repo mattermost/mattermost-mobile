@@ -113,7 +113,7 @@ class ClearAfterModal extends NavigationComponent<Props, State> {
 
     onBackPress = () => {
         const {componentId} = this.props;
-        if (NavigationStore.getNavigationTopComponentId() === componentId) {
+        if (NavigationStore.getVisibleScreen() === componentId) {
             if (this.props.isModal) {
                 dismissModal({componentId});
             } else {

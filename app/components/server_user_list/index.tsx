@@ -17,19 +17,7 @@ type Props = {
     tutorialWatched: boolean;
     handleSelectProfile: (user: UserProfile) => void;
     term: string;
-}
-
-function handleIdSelection(currentIds: {[id: string]: UserProfile}, user: UserProfile) {
-    const newSelectedIds = {...currentIds};
-    const wasSelected = currentIds[user.id];
-
-    if (wasSelected) {
-        Reflect.deleteProperty(newSelectedIds, user.id);
-    } else {
-        newSelectedIds[user.id] = user;
-    }
-
-    return newSelectedIds;
+    selectedIds: {[id: string]: UserProfile};
 }
 
 export default function ServerUserList({
@@ -39,6 +27,7 @@ export default function ServerUserList({
     tutorialWatched,
     handleSelectProfile,
     term,
+    selectedIds,
 }: Props) {
     const serverUrl = useServerUrl();
 
@@ -49,7 +38,6 @@ export default function ServerUserList({
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const selectedCount = Object.keys(selectedIds).length;
 
     const isSearch = Boolean(term);
@@ -81,7 +69,6 @@ export default function ServerUserList({
 
     const onHandleSelectProfile = useCallback((user: UserProfile) => {
         handleSelectProfile(user);
-        setSelectedIds((current) => handleIdSelection(current, user));
     }, [handleSelectProfile]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
