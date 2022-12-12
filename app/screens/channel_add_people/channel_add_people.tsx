@@ -41,7 +41,10 @@ const styles = StyleSheet.create({
 });
 
 const messages = defineMessages({
-    cancel: {id: t('mobile.post.cancel'), defaultMessage: 'Cancel'},
+    cancel: {
+        id: t('mobile.post.cancel'),
+        defaultMessage: 'Cancel',
+    },
     error: {
         id: t('mobile.channel_add_people.error'),
         defaultMessage: 'We could not add those users to the channel. Please check your connection and try again.',
@@ -50,7 +53,10 @@ const messages = defineMessages({
         id: t('mobile.channel_add_people.title'),
         defaultMessage: 'Add Members',
     },
-    search: {id: t('search_bar.search'), defaultMessage: 'Search'},
+    search: {
+        id: t('search_bar.search'),
+        defaultMessage: 'Search',
+    },
     toastMessage: {
         id: t('mobile.channel_add_people.max_limit_reached'),
         defaultMessage: 'Max selected users are limited to {maxCount} members',
