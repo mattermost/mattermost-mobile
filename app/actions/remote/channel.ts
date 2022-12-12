@@ -57,7 +57,6 @@ export async function removeMemberFromChannel(serverUrl: string, channelId: stri
         await client.removeFromChannel(userId, channelId);
         await deleteChannelMembership(operator, userId, channelId);
 
-        fetchChannelStats(serverUrl, channelId, false);
         return {error: undefined};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
