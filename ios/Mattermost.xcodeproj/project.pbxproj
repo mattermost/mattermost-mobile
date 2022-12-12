@@ -11,9 +11,6 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
-		276DA1F7293E74550003505A /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 276DA1F6293E74550003505A /* Sentry */; };
-		276DA1F9293E74680003505A /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 276DA1F8293E74680003505A /* Sentry */; };
-		276DA1FB293E746D0003505A /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 276DA1FA293E746D0003505A /* Sentry */; };
 		49AE370126D4455D00EF4E52 /* Gekidou in Frameworks */ = {isa = PBXBuildFile; productRef = 49AE370026D4455D00EF4E52 /* Gekidou */; };
 		536CC6C323E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */; };
 		58495E36BF1A4EAB93609E57 /* Metropolis-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 54956DEFEBB74EF78C3A6AE5 /* Metropolis-SemiBold.ttf */; };
@@ -274,7 +271,6 @@
 			files = (
 				7F98836227FD46A9001C9BFC /* Gekidou in Frameworks */,
 				6C9B1EFD6561083917AF06CF /* libPods-Mattermost.a in Frameworks */,
-				276DA1F7293E74550003505A /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -283,7 +279,6 @@
 			buildActionMask = 2147483647;
 			files = (
 				49AE370126D4455D00EF4E52 /* Gekidou in Frameworks */,
-				276DA1F9293E74680003505A /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -293,7 +288,6 @@
 			files = (
 				7FD4822C2864D73300A5B18B /* OpenGraph in Frameworks */,
 				7F4288042865D340006B48E1 /* Gekidou in Frameworks */,
-				276DA1FB293E746D0003505A /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -684,7 +678,6 @@
 			name = Mattermost;
 			packageProductDependencies = (
 				7F98836127FD46A9001C9BFC /* Gekidou */,
-				276DA1F6293E74550003505A /* Sentry */,
 			);
 			productName = "Hello World";
 			productReference = 13B07F961A680F5B00A75B9A /* Mattermost.app */;
@@ -705,7 +698,6 @@
 			name = NotificationService;
 			packageProductDependencies = (
 				49AE370026D4455D00EF4E52 /* Gekidou */,
-				276DA1F8293E74680003505A /* Sentry */,
 			);
 			productName = NotificationService;
 			productReference = 7F581D32221ED5C60099E66B /* NotificationService.appex */;
@@ -727,7 +719,6 @@
 			packageProductDependencies = (
 				7FD4822B2864D73300A5B18B /* OpenGraph */,
 				7F4288032865D340006B48E1 /* Gekidou */,
-				276DA1FA293E746D0003505A /* Sentry */,
 			);
 			productName = MattermostShare;
 			productReference = 7FC5698628563FDB000B0905 /* MattermostShare.appex */;
@@ -791,8 +782,7 @@
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
-				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */,
-				276DA1F5293E74550003505A /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -1512,15 +1502,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		276DA1F5293E74550003505A /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
-			requirement = {
-				branch = 8.0.0;
-				kind = branch;
-			};
-		};
-		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */ = {
+		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/satoshi-takano/OpenGraph.git";
 			requirement = {
@@ -1531,21 +1513,6 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
-		276DA1F6293E74550003505A /* Sentry */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 276DA1F5293E74550003505A /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
-			productName = Sentry;
-		};
-		276DA1F8293E74680003505A /* Sentry */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 276DA1F5293E74550003505A /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
-			productName = Sentry;
-		};
-		276DA1FA293E746D0003505A /* Sentry */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = 276DA1F5293E74550003505A /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
-			productName = Sentry;
-		};
 		49AE370026D4455D00EF4E52 /* Gekidou */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Gekidou;
@@ -1560,7 +1527,7 @@
 		};
 		7FD4822B2864D73300A5B18B /* OpenGraph */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */;
+			package = 7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */;
 			productName = OpenGraph;
 		};
 /* End XCSwiftPackageProductDependency section */
