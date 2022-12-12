@@ -6,7 +6,6 @@ import Button from 'react-native-button';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {switchToPenultimateChannel} from '@actions/remote/channel';
-import {typography} from '@app/utils/typography';
 import FormattedMarkdownText from '@components/formatted_markdown_text';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
@@ -15,6 +14,7 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import {popToRoot} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     testID?: string;
