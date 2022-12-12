@@ -82,7 +82,6 @@ const LastUsers = ({actor, channelId, location, postType, theme, usernames}: Las
                 values={{firstUser}}
                 baseTextStyle={style.baseText}
                 style={style.baseText}
-                textStyles={textStyles}
             />
             <Text>{' '}</Text>
             <Text
@@ -103,7 +102,6 @@ const LastUsers = ({actor, channelId, location, postType, theme, usernames}: Las
                 values={{actor}}
                 baseTextStyle={style.baseText}
                 style={style.baseText}
-                textStyles={textStyles}
             />
         </Text>
     );

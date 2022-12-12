@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Animated, DeviceEventEmitter, Platform, Text, View} from 'react-native';
+import {Animated, DeviceEventEmitter, Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 
@@ -210,7 +210,7 @@ const ServerItem = ({
     };
 
     const containerStyle = useMemo(() => {
-        const style = [styles.container];
+        const style: StyleProp<ViewStyle> = [styles.container];
         if (isActive) {
             style.push(styles.active);
         }
@@ -219,7 +219,7 @@ const ServerItem = ({
     }, [isActive]);
 
     const serverStyle = useMemo(() => {
-        const style = [styles.row];
+        const style: StyleProp<ViewStyle> = [styles.row];
         if (!server.lastActiveAt) {
             style.push(styles.offline);
         }

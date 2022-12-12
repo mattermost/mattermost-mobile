@@ -112,11 +112,10 @@ const Filter = ({initialFilter, setFilter, title}: FilterProps) => {
             title={title}
             titleSeparator={true}
         >
-            <View style={style.container}>
+            <View>
                 <FlatList
                     data={data}
                     renderItem={renderFilterItem}
-                    contentContainerStyle={style.contentContainer}
                     ItemSeparatorComponent={separator}
                 />
             </View>

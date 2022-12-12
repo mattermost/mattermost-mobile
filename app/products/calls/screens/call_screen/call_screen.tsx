@@ -376,7 +376,7 @@ const CallScreen = ({
     const showOtherActions = useCallback(async () => {
         const renderContent = () => {
             return (
-                <View style={style.bottomSheet}>
+                <View>
                     {
                         isHost && EnableRecordings && !(waitingForRecording || recording) &&
                         <SlideUpPanelItem
@@ -389,7 +389,6 @@ const CallScreen = ({
                         isHost && EnableRecordings && (waitingForRecording || recording) &&
                         <SlideUpPanelItem
                             icon={'record-square-outline'}
-                            imageStyles={style.denimDND}
                             onPress={stopRecording}
                             text={stopRecordingOptionTitle}
                             textStyles={style.denimDND}
@@ -466,7 +465,7 @@ const CallScreen = ({
             <ScrollView
                 alwaysBounceVertical={false}
                 horizontal={currentCall.screenOn !== ''}
-                contentContainerStyle={[isLandscape && currentCall.screenOn && style.usersScrollLandscapeScreenOn]}
+                contentContainerStyle={[isLandscape && Boolean(currentCall.screenOn) && style.usersScrollLandscapeScreenOn]}
             >
                 <Pressable
                     testID='users-list'
@@ -476,7 +475,7 @@ const CallScreen = ({
                     {participants.map((user) => {
                         return (
                             <View
-                                style={[style.user, currentCall.screenOn && style.userScreenOn]}
+                                style={[style.user, Boolean(currentCall.screenOn) && style.userScreenOn]}
                                 key={user.id}
                             >
                                 <CallAvatar

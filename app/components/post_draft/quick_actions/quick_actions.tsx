@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import CameraAction from './camera_quick_action';
 import FileAction from './file_quick_action';
@@ -28,16 +28,6 @@ type Props = {
 }
 
 const style = StyleSheet.create({
-    container: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingBottom: Platform.select({
-            ios: 1,
-            android: 2,
-        }),
-    },
     quickActionsContainer: {
         display: 'flex',
         flexDirection: 'row',

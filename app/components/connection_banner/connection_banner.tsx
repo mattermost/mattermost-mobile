@@ -27,9 +27,9 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => {
     const bannerContainer = {
         flex: 1,
         paddingHorizontal: 10,
-        overflow: 'hidden',
-        flexDirection: 'row',
-        alignItems: 'center',
+        overflow: 'hidden' as const,
+        flexDirection: 'row' as const,
+        alignItems: 'center' as const,
         marginHorizontal: 8,
         borderRadius: 7,
     };
