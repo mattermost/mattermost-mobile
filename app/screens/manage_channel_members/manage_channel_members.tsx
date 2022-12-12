@@ -24,7 +24,7 @@ import {filterProfilesMatchingTerm} from '@utils/user';
 const MANAGE_BUTTON = 'manage-button';
 
 type Props = {
-    canManage: boolean;
+    canManageMembers: boolean;
     channelId: string;
     componentId: string;
     currentTeamId: string;
@@ -65,7 +65,7 @@ const {USER_PROFILE} = Screens;
 const CLOSE_BUTTON_ID = 'close-user-profile';
 
 export default function ManageChannelMembers({
-    canManage,
+    canManageMembers,
     channelId,
     componentId,
     currentTeamId,
@@ -200,14 +200,14 @@ export default function ManageChannelMembers({
 
     useEffect(() => {
         mounted.current = true;
-        if (canManage) {
+        if (canManageMembers) {
             updateNavigationButtons(false);
         }
         getProfiles();
         return () => {
             mounted.current = false;
         };
-    }, [canManage]);
+    }, [canManageMembers]);
 
     useEffect(() => {
         const removeUserListener = DeviceEventEmitter.addListener(Events.REMOVE_USER_FROM_CHANNEL, handleRemoveUser);
@@ -245,7 +245,7 @@ export default function ManageChannelMembers({
                 manageMode={true} // default true to change row select icon to a dropdown
                 profiles={data}
                 selectedIds={EMPTY_IDS}
-                showManageMode={canManage && isManageMode}
+                showManageMode={canManageMembers && isManageMode}
                 showNoResults={!loading}
                 teammateNameDisplay={teammateNameDisplay}
                 term={term}
