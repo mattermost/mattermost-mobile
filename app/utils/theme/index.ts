@@ -9,6 +9,7 @@ import {Preferences} from '@constants';
 import {MODAL_SCREENS_WITHOUT_BACK, SCREENS_WITH_TRANSPARENT_BACKGROUND} from '@constants/screens';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import {NamedStyles} from '@typings/global/styles';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 
 import type {Options} from 'react-native-navigation';
@@ -51,10 +52,10 @@ export function getComponents(inColor: string): {red: number; green: number; blu
     };
 }
 
-export function makeStyleSheetFromTheme(getStyleFromTheme: (a: any) => any): (a: any) => any {
-    let lastTheme: any;
-    let style: any;
-    return (theme: any) => {
+export function makeStyleSheetFromTheme<T extends NamedStyles<T>>(getStyleFromTheme: (a: Theme) => T): (a: Theme) => T {
+    let lastTheme: Theme;
+    let style: T;
+    return (theme: Theme) => {
         if (!style || theme !== lastTheme) {
             style = StyleSheet.create(getStyleFromTheme(theme));
             lastTheme = theme;

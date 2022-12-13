@@ -14,6 +14,7 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import {popToRoot} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     testID?: string;
@@ -27,6 +28,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
         borderTopWidth: 1,
         backgroundColor: theme.centerChannelBg,
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.20),
+    },
+    baseTextStyle: {
+        ...typography('Body', 200, 'Regular'),
+        color: theme.centerChannelColor,
     },
     archivedText: {
         textAlign: 'center',
@@ -89,7 +94,6 @@ export default function Archived({
                 {...message}
                 style={style.archivedText}
                 baseTextStyle={style.baseTextStyle}
-                textStyles={style.textStyles}
                 location=''
             />
             <Button

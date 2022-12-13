@@ -184,7 +184,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
 
     const combinedContainerStyle = useMemo(() => {
-        const res = [styles.container];
+        const res: StyleProp<ViewStyle> = [styles.container];
         if (multiline) {
             res.push({height: 100 + (2 * BORDER_DEFAULT_WIDTH)});
         }

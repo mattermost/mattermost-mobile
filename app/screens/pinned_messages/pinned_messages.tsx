@@ -44,11 +44,6 @@ const styles = StyleSheet.create({
     list: {
         paddingVertical: 8,
     },
-    loading: {
-        height: 40,
-        width: 40,
-        justifyContent: 'center' as const,
-    },
 });
 
 function SavedMessages({

@@ -551,7 +551,7 @@
     "mobile.custom_status.clear_after.title": "Wyczyść stan niestandardowy po",
     "mobile.create_post.read_only": "Ten kanał jest tylko-do-odczytu.",
     "mobile.create_direct_message.you": "@{username} - ty",
-    "mobile.create_direct_message.start": "Start",
+    "mobile.create_direct_message.start": "Rozpocznij Rozmowę",
     "mobile.create_channel.title": "Nowy kanał",
     "mobile.components.select_server_view.msg_welcome": "Witamy",
     "mobile.components.select_server_view.msg_description": "Serwer jest węzłem komunikacyjnym Twojego zespołu, do którego dostęp uzyskuje się poprzez unikalny adres URL",
@@ -919,5 +919,15 @@
     "share_extension.channel_error": "Nie jesteś członkiem zespołu na wybranym serwerze. Wybierz inny serwer lub otwórz Mattermost, aby dołączyć do zespołu.",
     "settings.advanced.delete_message.confirmation": "\nSpowoduje to usunięcie wszystkich plików pobranych za pośrednictwem aplikacji dla tego serwera. Proszę potwierdzić, aby kontynuować.\n",
     "settings.advanced.delete_data": "Usuń pliki lokalne",
-    "onboarding.calls_description": "Gdy pisanie nie jest wystarczająco szybkie, jednym stuknięciem przełącz się z czatu opartego na kanale na bezpieczne połączenia audio."
+    "onboarding.calls_description": "Gdy pisanie nie jest wystarczająco szybkie, jednym stuknięciem przełącz się z czatu opartego na kanale na bezpieczne połączenia audio.",
+    "mobile.open_dm.error": "Nie można otworzyć bezpośredniej wiadomości z {displayName}. Sprawdź swoje połączenie i spróbuj ponownie.",
+    "mobile.create_direct_message.max_limit_reached": "Wiadomości grupowe są ograniczone do {maxCount} członków",
+    "mobile.calls_request_title": "Połączenia nie są obecnie włączone",
+    "mobile.calls_request_message": "Połączenia działają obecnie w trybie testowym i tylko administratorzy systemu mogą je uruchamiać. Skontaktuj się bezpośrednio z administratorem systemu, aby uzyskać pomoc",
+    "mobile.calls_participant_limit_title_GA": "To połączenie jest na wyczerpaniu",
+    "mobile.calls_limit_msg_GA": "Uaktualnienie do wersji Cloud Professional lub Cloud Enterprise umożliwia prowadzenie rozmów grupowych z więcej niż {maxParticipants} uczestnikami.",
+    "general_settings.report_problem": "Zgłoś problem",
+    "connection_banner.not_reachable": "Serwer jest nieosiągalny",
+    "connection_banner.not_connected": "Brak połączenia z internetem",
+    "connection_banner.connected": "Połączenie przywrócone"
 }

@@ -610,7 +610,7 @@
     "mobile.custom_status.clear_after.title": "Clear Custom Status after",
     "mobile.create_post.read_only": "This channel is read-only.",
     "mobile.create_direct_message.you": "@{username} - you",
-    "mobile.create_direct_message.start": "Start",
+    "mobile.create_direct_message.start": "Start Conversation",
     "mobile.create_channel.title": "New channel",
     "mobile.components.select_server_view.msg_welcome": "Welcome",
     "mobile.components.select_server_view.msg_description": "A Server is your team's communication hub which is accessed through a unique URL.",
@@ -917,5 +917,15 @@
     "extension.no_servers.title": "Not connected to any servers",
     "extension.no_servers.description": "To share content, you'll need to be logged in to a Mattermost server.",
     "extension.no_memberships.title": "Not a member of any team yet",
-    "extension.no_memberships.description": "To share content, you'll need to be a member of a team on a Mattermost server."
+    "extension.no_memberships.description": "To share content, you'll need to be a member of a team on a Mattermost server.",
+    "mobile.open_dm.error": "A direct message with {displayName} couldn't be opened. Please check your connection and try again.",
+    "mobile.create_direct_message.max_limit_reached": "Group messages are limited to {maxCount} members",
+    "mobile.calls_request_title": "Calls are not currently enabled",
+    "mobile.calls_request_message": "Calls are currently running in test mode and only system admins can start them. Contact your system admin for assistance.",
+    "mobile.calls_participant_limit_title_GA": "This call is at capacity",
+    "mobile.calls_limit_msg_GA": "Upgrade to Cloud Professional or Cloud Enterprise to enable group calls with more than {maxParticipants} participants.",
+    "general_settings.report_problem": "Report a problem",
+    "connection_banner.not_reachable": "The server is unreachable",
+    "connection_banner.not_connected": "No internet connection",
+    "connection_banner.connected": "Connection restored"
 }

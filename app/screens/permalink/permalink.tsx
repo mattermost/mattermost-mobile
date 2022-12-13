@@ -390,7 +390,7 @@ function Permalink({
                     </View>
                 </View>
                 {showHeaderDivider && (
-                    <View style={style.dividerContainer}>
+                    <View>
                         <View style={style.divider}/>
                     </View>
                 )}
