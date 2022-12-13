@@ -18,12 +18,21 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
-import ManageUserOptions from './manage_user_options';
+import ManageUserOptions, {DIVIDER_MARGIN} from './manage_user_options';
 import UserProfileOptions, {OptionsType} from './options';
 import UserProfileTitle from './title';
 import UserInfo from './user_info';
 
 import type UserModel from '@typings/database/models/servers/user';
+
+const TITLE_HEIGHT = 118;
+const OPTIONS_HEIGHT = 82;
+const SINGLE_OPTION_HEIGHT = 68;
+const LABEL_HEIGHT = 58;
+const EXTRA_HEIGHT = 60;
+const MANAGE_TITLE_MARGIN = 22;
+const MANAGE_TITLE_HEIGHT = 30;
+const MANAGE_ICON_HEIGHT = 72;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -37,7 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         title: {
             color: theme.centerChannelColor,
-            paddingBottom: 22,
+            marginBottom: MANAGE_TITLE_MARGIN,
             ...typography('Heading', 600, 'SemiBold'),
         },
     };
@@ -64,12 +73,6 @@ type Props = {
     userIconOverride?: string;
     usernameOverride?: string;
 }
-
-const TITLE_HEIGHT = 118;
-const OPTIONS_HEIGHT = 82;
-const SINGLE_OPTION_HEIGHT = 68;
-const LABEL_HEIGHT = 58;
-const EXTRA_HEIGHT = 60;
 
 const UserProfile = ({
     channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
@@ -101,12 +104,12 @@ const UserProfile = ({
 
     const snapPoints = useMemo(() => {
         let initial = TITLE_HEIGHT;
-        if ((!isDirectMessage || !channelContext) && !override) {
+        if ((!isDirectMessage || !channelContext) && !override && !manageMode) {
             initial += showOptions === 'all' ? OPTIONS_HEIGHT : SINGLE_OPTION_HEIGHT;
         }
 
         let labels = 0;
-        if (!override && !user.isBot) {
+        if (!override && !user.isBot && !manageMode) {
             if (showCustomStatus) {
                 labels += 1;
             }
@@ -125,7 +128,17 @@ const UserProfile = ({
             initial += (labels * LABEL_HEIGHT);
         }
 
-        return [initial + insets.bottom + EXTRA_HEIGHT, 10];
+        if (manageMode) {
+            initial += MANAGE_TITLE_HEIGHT + MANAGE_TITLE_MARGIN;
+            initial += SINGLE_OPTION_HEIGHT; // remove button
+            initial += DIVIDER_MARGIN * 2;
+            if (isSystemAdmin || isChannelAdmin) {
+                initial += SINGLE_OPTION_HEIGHT; // roles button
+            }
+        }
+
+        const extraHeight = manageMode ? 0 : EXTRA_HEIGHT;
+        return [initial + insets.bottom + extraHeight, 10];
     }, [
         isChannelAdmin, isDirectMessage, isSystemAdmin,
         isTeamAdmin, user, localTime, insets.bottom, override,
@@ -154,7 +167,7 @@ const UserProfile = ({
                     isChannelAdmin={isChannelAdmin}
                     isSystemAdmin={isSystemAdmin}
                     isTeamAdmin={isTeamAdmin}
-                    imageSize={manageMode ? 72 : undefined}
+                    imageSize={manageMode ? MANAGE_ICON_HEIGHT : undefined}
                     teammateDisplayName={teammateDisplayName}
                     user={user}
                     userIconOverride={userIconOverride}

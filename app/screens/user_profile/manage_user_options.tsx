@@ -8,13 +8,15 @@ import {Members} from '@constants';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+export const DIVIDER_MARGIN = 8;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         divider: {
             alignSelf: 'center',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
             height: 1,
-            marginVertical: 8,
+            marginVertical: DIVIDER_MARGIN,
             paddingHorizontal: 20,
             width: '100%',
         },
