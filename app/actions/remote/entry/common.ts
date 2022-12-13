@@ -10,7 +10,7 @@ import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, handleKickFromTeam, MyTeamsRequest} from '@actions/remote/team';
+import {fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, handleKickFromTeam, MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
@@ -346,7 +346,7 @@ export async function restDeferredAppEntryActions(
         }
     }
 
-    await fetchAllTeams(serverUrl);
+    updateCanJoinTeams(serverUrl);
     await updateAllUsersSince(serverUrl, since);
 
     // Fetch groups for current user

@@ -4,12 +4,11 @@ import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
-import {handleTeamChange} from '@actions/remote/team';
-import TeamFlatList from '@components/team_sidebar/add_team/team_list';
+import {addCurrentUserToTeam} from '@actions/remote/team';
+import TeamFlatList from '@components/team_list';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {resetToHome} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -39,9 +38,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     teams: Team[];
+    onEndReached: () => void;
+    loading: boolean;
 };
 function TeamList({
     teams,
+    onEndReached,
+    loading,
 }: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -50,8 +53,8 @@ function TeamList({
     const isTablet = useIsTablet();
 
     const onTeamAdded = async (id: string) => {
-        await handleTeamChange(serverUrl, id);
-        resetToHome();
+        // Back to home handled in SelectTeam effect
+        await addCurrentUserToTeam(serverUrl, id);
     };
 
     const containerStyle = useMemo(() => {
@@ -76,6 +79,8 @@ function TeamList({
                 iconBackgroundColor={changeOpacity(theme.sidebarText, 0.16)}
                 iconTextColor={theme.sidebarText}
                 onPress={onTeamAdded}
+                onEndReached={onEndReached}
+                loading={loading}
             />
         </View>
     );

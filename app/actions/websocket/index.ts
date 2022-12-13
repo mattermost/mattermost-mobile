@@ -70,7 +70,7 @@ import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePrefe
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
-import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
+import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent, handleTeamArchived, handleTeamRestored} from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
 import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
@@ -316,6 +316,14 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         case WebsocketEvents.OPEN_DIALOG:
             handleOpenDialogEvent(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.DELETE_TEAM:
+            handleTeamArchived(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.RESTORE_TEAM:
+            handleTeamRestored(serverUrl, msg);
             break;
 
         case WebsocketEvents.THREAD_UPDATED:

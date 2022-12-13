@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {View} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchAllTeams} from '@actions/remote/team';
+import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -31,6 +32,8 @@ type Props = {
 const safeAreaEdges = ['left' as const, 'right' as const];
 const safeAreaStyle = {flex: 1};
 
+const LOAD_MORE_THRESHOLD = 10;
+
 const SelectTeam = ({
     nTeams,
 }: Props) => {
@@ -43,9 +46,53 @@ const SelectTeam = ({
         return {height: insets.top, backgroundColor: theme.sidebarBg};
     });
 
+    const page = useRef(0);
+    const hasMore = useRef(true);
+
     const mounted = useRef(false);
 
-    const [otherTeams, setOtherTeams] = useState<Team[]>();
+    const [otherTeams, setOtherTeams] = useState<Team[]>([]);
+
+    const loadTeams = useCallback(async (alreadyLoaded = 0) => {
+        const {teams, error} = await fetchAllTeams(serverUrl, page.current, PER_PAGE_DEFAULT);
+        if (!mounted.current) {
+            return;
+        }
+
+        page.current += 1;
+        if (error || !teams || teams.length < PER_PAGE_DEFAULT) {
+            hasMore.current = false;
+        }
+
+        if (error) {
+            setLoading(false);
+            return;
+        }
+
+        if (teams?.length) {
+            setOtherTeams((prev) => [...prev, ...teams]);
+
+            if (teams.length < PER_PAGE_DEFAULT) {
+                hasMore.current = false;
+            }
+
+            if (
+                hasMore.current &&
+                (teams.length + alreadyLoaded > LOAD_MORE_THRESHOLD)
+            ) {
+                loadTeams(teams.length);
+                return;
+            }
+        }
+
+        setLoading(false);
+    }, [serverUrl]);
+
+    const onEndReached = useCallback(() => {
+        if (hasMore.current && !loading) {
+            loadTeams();
+        }
+    }, [loadTeams, loading]);
 
     useEffect(() => {
         mounted.current = true;
@@ -61,26 +108,18 @@ const SelectTeam = ({
     }, [nTeams > 0]);
 
     useEffect(() => {
-        // eslint-disable-next-line max-nested-callbacks
-        fetchAllTeams(serverUrl, false).then((r) => {
-            if (mounted.current) {
-                setOtherTeams(r.teams || []);
-            }
-        // eslint-disable-next-line max-nested-callbacks
-        }).finally(() => {
-            if (mounted.current) {
-                setLoading(false);
-            }
-        });
+        loadTeams();
     }, []);
 
     let body;
-    if (loading) {
+    if (loading && !otherTeams.length) {
         body = null;
-    } else if (otherTeams?.length) {
+    } else if (otherTeams.length) {
         body = (
             <TeamList
                 teams={otherTeams}
+                onEndReached={onEndReached}
+                loading={loading}
             />
         );
     } else {

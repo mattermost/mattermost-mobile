@@ -8,7 +8,7 @@ import {storeConfigAndLicense} from '@actions/local/systems';
 import {MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
-import {MyTeamsRequest} from '@actions/remote/team';
+import {MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
@@ -98,6 +98,7 @@ export async function deferredAppEntryGraphQLActions(
     // Fetch groups for current user
     fetchGroupsForMember(serverUrl, currentUserId);
 
+    updateCanJoinTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
 
     return {error: undefined};
@@ -183,9 +184,22 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
         user: gqlToClientUser(fetchedData.user!),
     };
 
+    const allTeams = getMemberTeamsFromGQLQuery(fetchedData);
+    const allTeamMemberships = fetchedData.teamMembers.map((m) => gqlToClientTeamMembership(m, meData.user.id));
+
+    const [nonArchivedTeams, archivedTeamIds] = allTeams.reduce((acc, t) => {
+        if (t.delete_at) {
+            acc[1].add(t.id);
+            return acc;
+        }
+        return [[...acc[0], t], acc[1]];
+    }, [[], new Set<string>()]);
+
+    const nonArchivedTeamMemberships = allTeamMemberships.filter((m) => !archivedTeamIds.has(m.team_id));
+
     const teamData = {
-        teams: getMemberTeamsFromGQLQuery(fetchedData),
-        memberships: fetchedData.teamMembers.map((m) => gqlToClientTeamMembership(m, meData.user.id)),
+        teams: nonArchivedTeams,
+        memberships: nonArchivedTeamMemberships,
     };
 
     const prefData = {
@@ -205,7 +219,7 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
     let initialTeamId = currentTeamId;
     if (!teamData.teams.length) {
         initialTeamId = '';
-    } else if (!initialTeamId || !teamData.teams.find((t) => t.id === currentTeamId)) {
+    } else if (!initialTeamId || !teamData.teams.find((t) => t.id === currentTeamId && t.delete_at === 0)) {
         const teamOrderPreference = getPreferenceValue(prefData.preferences || [], Preferences.TEAMS_ORDER, '', '') as string;
         initialTeamId = selectDefaultTeam(teamData.teams, meData.user.locale, teamOrderPreference, config.ExperimentalPrimaryTeam)?.id || '';
     }

@@ -137,6 +137,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             );
             return;
         }
+        case Screens.JOIN_TEAM:
+            screen = withServerDatabase(require('@screens/join_team').default);
+            break;
         case Screens.LATEX:
             screen = withServerDatabase(require('@screens/latex').default);
             break;
