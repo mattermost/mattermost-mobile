@@ -595,7 +595,8 @@ platform :ios do
         export_options: {
             signingStyle: 'manual',
             iCloudContainerEnvironment: 'Production'
-        }
+        },
+        xcargs:"SENTRY_DSN_IOS='#{ENV['SENTRY_DSN_IOS']}'"
     )
   end
 
