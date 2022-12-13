@@ -5,23 +5,23 @@ import moment from 'moment';
 import mtz from 'moment-timezone';
 import React, {useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
-import ManageMembersLabel from '@components/channel_actions/manage_members_label';
-import {Members, Screens} from '@constants';
+import FormattedText from '@components/formatted_text';
+import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
-import UserProfileCustomStatus from './custom_status';
-import UserProfileLabel from './label';
+import ManageUserOptions from './manage_user_options';
 import UserProfileOptions, {OptionsType} from './options';
 import UserProfileTitle from './title';
+import UserInfo from './user_info';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -34,6 +34,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginVertical: 8,
             paddingHorizontal: 20,
             width: '100%',
+        },
+        title: {
+            color: theme.centerChannelColor,
+            paddingBottom: 22,
+            ...typography('Heading', 600, 'SemiBold'),
         },
     };
 });
@@ -72,7 +77,7 @@ const UserProfile = ({
     isSystemAdmin, isTeamAdmin, location, manageMode = false, teamId, teammateDisplayName,
     user, userIconOverride, usernameOverride,
 }: Props) => {
-    const {formatMessage, locale} = useIntl();
+    const {locale} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
@@ -135,12 +140,21 @@ const UserProfile = ({
     const renderContent = () => {
         return (
             <>
+                {manageMode &&
+                    <FormattedText
+                        id={'mobile.manage_members.manage_members'}
+                        defaultMessage={'Manage member'}
+                        style={styles.title}
+                        testID='user_profile.manage_title'
+                    />
+                }
                 <UserProfileTitle
                     enablePostIconOverride={enablePostIconOverride}
                     enablePostUsernameOverride={enablePostUsernameOverride}
                     isChannelAdmin={isChannelAdmin}
                     isSystemAdmin={isSystemAdmin}
                     isTeamAdmin={isTeamAdmin}
+                    imageSize={manageMode ? 72 : undefined}
                     teammateDisplayName={teammateDisplayName}
                     user={user}
                     userIconOverride={userIconOverride}
@@ -154,40 +168,22 @@ const UserProfile = ({
                         userId={user.id}
                     />
                 }
-                {showCustomStatus && <UserProfileCustomStatus customStatus={customStatus!}/>}
-                {Boolean(user.nickname) && !override && !user.isBot &&
-                <UserProfileLabel
-                    description={user.nickname}
-                    testID='user_profile.nickname'
-                    title={formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'})}
+                {!manageMode &&
+                <UserInfo
+                    localTime={localTime}
+                    override={override}
+                    showCustomStatus={showCustomStatus}
+                    user={user}
                 />
-                }
-                {Boolean(user.position) && !override && !user.isBot &&
-                <UserProfileLabel
-                    description={user.position}
-                    testID='user_profile.position'
-                    title={formatMessage({id: 'channel_info.position', defaultMessage: 'Position'})}
-                />
-                }
-                {Boolean(localTime) && !override && !user.isBot &&
-                <UserProfileLabel
-                    description={localTime!}
-                    testID='user_profile.local_time'
-                    title={formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'})}
-                />
+
                 }
                 {manageMode && channelId &&
-                    <>
-                        <View style={styles.divider}/>
-                        <ManageMembersLabel
-                            channelId={channelId}
-                            isDefaultChannel={isDefaultChannel}
-                            isOptionItem={true}
-                            manageOption={Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER}
-                            testID='channel.remove_member'
-                            userId={user.id}
-                        />
-                    </>
+                    <ManageUserOptions
+                        channelId={channelId}
+                        isDefaultChannel={isDefaultChannel}
+                        isAdmin={isSystemAdmin || isChannelAdmin}
+                        userId={user.id}
+                    />
                 }
             </>
         );

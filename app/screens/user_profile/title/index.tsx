@@ -28,6 +28,7 @@ type Props = {
     isChannelAdmin: boolean;
     isSystemAdmin: boolean;
     isTeamAdmin: boolean;
+    imageSize?: number;
     teammateDisplayName: string;
     user: UserModel;
     userIconOverride?: string;
@@ -59,7 +60,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const UserProfileTitle = ({
     enablePostIconOverride, enablePostUsernameOverride,
-    isChannelAdmin, isSystemAdmin, isTeamAdmin,
+    imageSize, isChannelAdmin, isSystemAdmin, isTeamAdmin,
     teammateDisplayName, user, userIconOverride, usernameOverride,
 }: Props) => {
     const galleryIdentifier = `${user.id}-avatarPreview`;
@@ -124,6 +125,7 @@ const UserProfileTitle = ({
                         <UserProfileAvatar
                             forwardRef={ref}
                             enablePostIconOverride={enablePostIconOverride}
+                            imageSize={imageSize}
                             user={user}
                             userIconOverride={userIconOverride}
                         />

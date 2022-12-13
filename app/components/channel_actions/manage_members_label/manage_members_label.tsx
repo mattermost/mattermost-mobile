@@ -14,9 +14,17 @@ import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 const messages = defineMessages({
+    make_channel_admin: {
+        id: t('mobile.manage_members.make_channel_admin'),
+        defaultMessage: 'Make Channel Admin',
+    },
+    make_channel_member: {
+        id: t('mobile.manage_members.make_channel_member'),
+        defaultMessage: 'Make Channel Member',
+    },
     remove_title: {
         id: t('mobile.manage_members.remove_member'),
-        defaultMessage: 'Remove Member',
+        defaultMessage: 'Remove From Channel',
     },
     remove_message: {
         id: t('mobile.manage_members.message.'),
@@ -42,7 +50,7 @@ type Props = {
 }
 
 const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOption, testID, userId}: Props) => {
-    const intl = useIntl();
+    const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
 
     const handleRemoveUser = useCallback(async () => {
@@ -54,13 +62,13 @@ const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOptio
 
     const removeFromChannel = () => {
         Alert.alert(
-            intl.formatMessage(messages.remove_title),
-            intl.formatMessage(messages.remove_message),
+            formatMessage(messages.remove_title),
+            formatMessage(messages.remove_message),
             [{
-                text: intl.formatMessage(messages.remove_cancel),
+                text: formatMessage(messages.remove_cancel),
                 style: 'cancel',
             }, {
-                text: intl.formatMessage(messages.remove_confirm),
+                text: formatMessage(messages.remove_confirm),
                 style: 'destructive',
                 onPress: handleRemoveUser,
             }], {cancelable: false},
@@ -82,13 +90,16 @@ const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOptio
 
     let actionText;
     let icon;
+    let isDestructive = false;
     switch (manageOption) {
         case Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER:
-            actionText = intl.formatMessage(messages.remove_title);
+            actionText = formatMessage(messages.remove_title);
             icon = 'trash-can-outline';
+            isDestructive = true;
+            break;
             break;
         default:
-            actionText = intl.formatMessage(messages.remove_title);
+            actionText = formatMessage(messages.remove_title);
             icon = 'trash-can-outline';
             break;
     }
@@ -97,7 +108,7 @@ const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOptio
         return (
             <OptionItem
                 action={onAction}
-                destructive={true}
+                destructive={isDestructive}
                 icon={icon}
                 label={actionText}
                 testID={testID}

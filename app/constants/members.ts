@@ -4,5 +4,7 @@
 export default {
     MANAGE_MEMBERS_OPTIONS: {
         REMOVE_USER: 'remove',
+        MAKE_CHANNEL_ADMIN: 'make_channel_admin',
+        MAKE_CHANNEL_MEMBER: 'make_channel_member',
     },
 };
