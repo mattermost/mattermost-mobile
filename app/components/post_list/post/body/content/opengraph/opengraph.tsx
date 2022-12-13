@@ -111,7 +111,7 @@ const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLi
     let siteTitle;
     if (title) {
         siteTitle = (
-            <View style={style.wrapper}>
+            <View>
                 <TouchableOpacity
                     style={style.flex}
                     onPress={goToLink}

@@ -80,7 +80,7 @@ export default function TeamListItem({team, textColor, iconTextColor, iconBackgr
                 />
             </View>
             <Text
-                style={[styles.text, textColor && {color: textColor}]}
+                style={[styles.text, Boolean(textColor) && {color: textColor}]}
                 numberOfLines={1}
                 testID={`${teamListItemTestId}.team_display_name`}
             >

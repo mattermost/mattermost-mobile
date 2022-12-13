@@ -67,7 +67,6 @@ export default function UploadRemove({
                     name='close-circle'
                     color={changeOpacity(theme.centerChannelColor, 0.64)}
                     size={24}
-                    style={style.removeIcon}
                 />
             </View>
         </TouchableWithFeedback>

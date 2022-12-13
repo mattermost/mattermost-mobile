@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useMemo} from 'react';
-import {Platform, StyleProp, View, ViewProps} from 'react-native';
+import {Platform, StyleProp, View, ViewStyle} from 'react-native';
 
 import {fetchStatusInBatch} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
@@ -27,7 +27,7 @@ type ProfilePictureProps = {
     showStatus?: boolean;
     size: number;
     statusSize?: number;
-    statusStyle?: StyleProp<ViewProps>;
+    statusStyle?: StyleProp<ViewStyle>;
     testID?: string;
     source?: Source | string;
     url?: string;

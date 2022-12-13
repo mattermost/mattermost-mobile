@@ -44,7 +44,7 @@ export default function DropdownSlideup({
 
     const commonProps = {
         rightIcon: true,
-        imageStyles: style.checkIcon,
+        iconStyles: style.checkIcon,
     };
 
     const handlePublicPress = useCallback(() => {

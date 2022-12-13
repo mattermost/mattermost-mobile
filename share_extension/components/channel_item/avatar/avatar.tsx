@@ -5,8 +5,8 @@ import React from 'react';
 import {View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
-import {ACCOUNT_OUTLINE_IMAGE} from '@app/constants/profile';
 import CompassIcon from '@components/compass_icon';
+import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import NetworkManager from '@managers/network_manager';
 import {useShareExtensionServerUrl} from '@share/state';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

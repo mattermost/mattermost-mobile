@@ -14,7 +14,7 @@ import CustomListRow, {Props as CustomListRowProps} from '../custom_list_row';
 
 type OptionListRowProps = {
     id: string;
-    theme: object;
+    theme: Theme;
     item: { text: string; value: string };
     onPress: (item: DialogOption) => void;
 }
