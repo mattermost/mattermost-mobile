@@ -7,20 +7,20 @@ import {Notifications} from 'react-native-notifications';
 
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
 import LocalConfig from '@assets/config.json';
-import {Screens, DeepLink, Events, Launch, PushNotification} from '@constants';
+import {DeepLink, Events, Launch, PushNotification} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getActiveServerUrl, getServerCredentials, removeServerCredentials} from '@init/credentials';
 import {getOnboardingViewed} from '@queries/app/global';
 import {getThemeForCurrentTeam} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
-import {goToScreen, resetToHome, resetToSelectServer, resetToTeams, resetToOnboarding} from '@screens/navigation';
+import {resetToHome, resetToSelectServer, resetToTeams, resetToOnboarding} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {getLaunchPropsFromDeepLink} from '@utils/deep_link';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
-import {parseDeepLink} from '@utils/url';
 
-import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
+import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, PushNotification.NOTIFICATION_TYPE.SESSION];
 
@@ -67,13 +67,18 @@ const launchAppFromNotification = async (notification: NotificationWithData, col
 
  * @returns a redirection to a screen, either onboarding, add_server, login or home depending on the scenario
  */
-const launchApp = async (props: LaunchProps, resetNavigation = true) => {
+const launchApp = async (props: LaunchProps) => {
     let serverUrl: string | undefined;
     switch (props?.launchType) {
         case Launch.DeepLink:
             if (props.extra?.type !== DeepLink.Invalid) {
                 const extra = props.extra as DeepLinkWithData;
-                serverUrl = extra.data?.serverUrl;
+                const existingServer = DatabaseManager.searchUrl(extra.data!.serverUrl);
+                serverUrl = existingServer;
+                props.serverUrl = serverUrl || extra.data?.serverUrl;
+                if (!serverUrl) {
+                    props.launchError = true;
+                }
             }
             break;
         case Launch.Notification: {
@@ -142,17 +147,17 @@ const launchApp = async (props: LaunchProps, resetNavigation = true) => {
         return resetToOnboarding(props);
     }
 
-    return launchToServer(props, resetNavigation);
+    return resetToSelectServer(props);
 };
 
 const launchToHome = async (props: LaunchProps) => {
     let openPushNotification = false;
 
     switch (props.launchType) {
-        case Launch.DeepLink:
-            // TODO:
-            // deepLinkEntry({props.serverUrl, props.extra});
+        case Launch.DeepLink: {
+            appEntry(props.serverUrl!);
             break;
+        }
         case Launch.Notification: {
             const extra = props.extra as NotificationWithData;
             openPushNotification = Boolean(props.serverUrl && !props.launchError && extra.userInteraction && extra.payload?.channel_id && !extra.payload?.userInfo?.local);
@@ -185,55 +190,8 @@ const launchToHome = async (props: LaunchProps) => {
     return resetToTeams();
 };
 
-const launchToServer = (props: LaunchProps, resetNavigation: Boolean) => {
-    if (resetNavigation) {
-        return resetToSelectServer(props);
-    }
-
-    // This is being called for Deeplinks, but needs to be revisited when
-    // the implementation of deep links is complete
-    const title = '';
-    return goToScreen(Screens.SERVER, title, {...props});
-};
-
-export const relaunchApp = (props: LaunchProps, resetNavigation = false) => {
-    return launchApp(props, resetNavigation);
-};
-
-export const getLaunchPropsFromDeepLink = (deepLinkUrl: string, coldStart = false): LaunchProps => {
-    const parsed = parseDeepLink(deepLinkUrl);
-    const launchProps: LaunchProps = {
-        launchType: Launch.DeepLink,
-        coldStart,
-    };
-
-    switch (parsed.type) {
-        case DeepLink.Invalid:
-            launchProps.launchError = true;
-            break;
-        case DeepLink.Channel: {
-            const parsedData = parsed.data as DeepLinkChannel;
-            (launchProps.extra as DeepLinkWithData).data = parsedData;
-            break;
-        }
-        case DeepLink.DirectMessage: {
-            const parsedData = parsed.data as DeepLinkDM;
-            (launchProps.extra as DeepLinkWithData).data = parsedData;
-            break;
-        }
-        case DeepLink.GroupMessage: {
-            const parsedData = parsed.data as DeepLinkGM;
-            (launchProps.extra as DeepLinkWithData).data = parsedData;
-            break;
-        }
-        case DeepLink.Permalink: {
-            const parsedData = parsed.data as DeepLinkPermalink;
-            (launchProps.extra as DeepLinkWithData).data = parsedData;
-            break;
-        }
-    }
-
-    return launchProps;
+export const relaunchApp = (props: LaunchProps) => {
+    return launchApp(props);
 };
 
 export const getLaunchPropsFromNotification = async (notification: NotificationWithData, coldStart = false): Promise<LaunchProps> => {

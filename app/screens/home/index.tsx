@@ -14,6 +14,7 @@ import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import {handleDeepLink} from '@utils/deep_link';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
 
@@ -24,7 +25,7 @@ import SavedMessages from './saved_messages';
 import Search from './search';
 import TabBar from './tab_bar';
 
-import type {LaunchProps} from '@typings/launch';
+import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 if (Platform.OS === 'ios') {
     // We do this on iOS to avoid conflicts betwen ReactNavigation & Wix ReactNativeNavigation
@@ -95,6 +96,15 @@ export default function HomeScreen(props: HomeProps) {
         };
     }, [intl.locale]);
 
+    useEffect(() => {
+        if (props.launchType === 'deeplink') {
+            const deepLink = props.extra as DeepLinkWithData;
+            if (deepLink?.url) {
+                handleDeepLink(deepLink.url);
+            }
+        }
+    }, []);
+
     return (
         <>
             <NavigationContainer
@@ -133,17 +143,17 @@ export default function HomeScreen(props: HomeProps) {
                     <Tab.Screen
                         name={Screens.MENTIONS}
                         component={RecentMentions}
-                        options={{tabBarTestID: 'tab_bar.mentions.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
+                        options={{tabBarTestID: 'tab_bar.mentions.tab', lazy: true, freezeOnBlur: true}}
                     />
                     <Tab.Screen
                         name={Screens.SAVED_MESSAGES}
                         component={SavedMessages}
-                        options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.saved_messages.tab', freezeOnBlur: true}}
+                        options={{freezeOnBlur: true, lazy: true, tabBarTestID: 'tab_bar.saved_messages.tab'}}
                     />
                     <Tab.Screen
                         name={Screens.ACCOUNT}
                         component={Account}
-                        options={{tabBarTestID: 'tab_bar.account.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
+                        options={{tabBarTestID: 'tab_bar.account.tab', lazy: true, freezeOnBlur: true}}
                     />
                 </Tab.Navigator>
             </NavigationContainer>
