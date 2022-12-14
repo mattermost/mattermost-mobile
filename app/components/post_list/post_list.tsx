@@ -45,6 +45,7 @@ type Props = {
     showMoreMessages?: boolean;
     showNewMessageLine?: boolean;
     footer?: ReactElement;
+    header?: ReactElement;
     testID: string;
     currentCallBarVisible?: boolean;
     joinCallBannerVisible?: boolean;
@@ -85,6 +86,7 @@ const PostList = ({
     currentUserId,
     currentUsername,
     footer,
+    header,
     highlightedId,
     highlightPinnedOrSaved = true,
     isCRTEnabled,
@@ -377,6 +379,7 @@ const PostList = ({
                     keyboardShouldPersistTaps='handled'
                     keyExtractor={keyExtractor}
                     initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
+                    ListHeaderComponent={header}
                     ListFooterComponent={footer}
                     maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                     maxToRenderPerBatch={10}
