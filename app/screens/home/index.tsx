@@ -121,7 +121,7 @@ export default function HomeScreen(props: HomeProps) {
                 }}
             >
                 <Tab.Navigator
-                    screenOptions={{headerShown: false, lazy: true, unmountOnBlur: false}}
+                    screenOptions={{headerShown: false, unmountOnBlur: false, lazy: true}}
                     backBehavior='none'
                     tabBar={(tabProps: BottomTabBarProps) => (
                         <TabBar
@@ -131,29 +131,29 @@ export default function HomeScreen(props: HomeProps) {
                 >
                     <Tab.Screen
                         name={Screens.HOME}
-                        options={{title: 'Channel', unmountOnBlur: false, tabBarTestID: 'tab_bar.home.tab', freezeOnBlur: true}}
+                        options={{tabBarTestID: 'tab_bar.home.tab', unmountOnBlur: false, freezeOnBlur: true}}
                     >
                         {() => <ChannelList {...props}/>}
                     </Tab.Screen>
                     <Tab.Screen
                         name={Screens.SEARCH}
                         component={Search}
-                        options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.search.tab', freezeOnBlur: true}}
+                        options={{tabBarTestID: 'tab_bar.search.tab', unmountOnBlur: false, freezeOnBlur: true, lazy: true}}
                     />
                     <Tab.Screen
                         name={Screens.MENTIONS}
                         component={RecentMentions}
-                        options={{tabBarTestID: 'tab_bar.mentions.tab', lazy: true, freezeOnBlur: true}}
+                        options={{tabBarTestID: 'tab_bar.mentions.tab', freezeOnBlur: true, lazy: true}}
                     />
                     <Tab.Screen
                         name={Screens.SAVED_MESSAGES}
                         component={SavedMessages}
-                        options={{freezeOnBlur: true, lazy: true, tabBarTestID: 'tab_bar.saved_messages.tab'}}
+                        options={{tabBarTestID: 'tab_bar.saved_messages.tab', freezeOnBlur: true, lazy: true}}
                     />
                     <Tab.Screen
                         name={Screens.ACCOUNT}
                         component={Account}
-                        options={{tabBarTestID: 'tab_bar.account.tab', lazy: true, freezeOnBlur: true}}
+                        options={{tabBarTestID: 'tab_bar.account.tab', freezeOnBlur: true, lazy: true}}
                     />
                 </Tab.Navigator>
             </NavigationContainer>

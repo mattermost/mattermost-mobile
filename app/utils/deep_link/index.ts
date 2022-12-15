@@ -33,10 +33,6 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
         }
 
         const currentServerUrl = await getActiveServerUrl();
-        if (!currentServerUrl) {
-            return {error: true};
-        }
-
         const existingServerUrl = DatabaseManager.searchUrl(parsed.data.serverUrl);
 
         // After checking the server for http & https then we add it
