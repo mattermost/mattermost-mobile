@@ -85,7 +85,6 @@
     "react-native-shadow-2": "7.0.6",
     "react-native-share": "8.0.0",
     "react-native-svg": "13.6.0",
-    "react-native-user-agent": "2.3.1",
     "react-native-vector-icons": "9.2.0",
     "react-native-video": "5.2.1",
     "react-native-webrtc": "github:mattermost/react-native-webrtc",
