@@ -30,6 +30,7 @@ type Props = {
     currentTimezone: string | null;
     currentUserId: string;
     currentUsername: string;
+    disablePullToRefresh?: boolean;
     highlightedId?: PostModel['id'];
     highlightPinnedOrSaved?: boolean;
     isCRTEnabled?: boolean;
@@ -85,6 +86,7 @@ const PostList = ({
     currentTimezone,
     currentUserId,
     currentUsername,
+    disablePullToRefresh,
     footer,
     header,
     highlightedId,
@@ -147,6 +149,9 @@ const PostList = ({
     }, []);
 
     const onRefresh = useCallback(async () => {
+        if (disablePullToRefresh) {
+            return;
+        }
         setRefreshing(true);
         if (location === Screens.CHANNEL && channelId) {
             await fetchPosts(serverUrl, channelId);
@@ -161,7 +166,7 @@ const PostList = ({
             await fetchPostThread(serverUrl, rootId, options);
         }
         setRefreshing(false);
-    }, [channelId, location, posts, rootId]);
+    }, [channelId, disablePullToRefresh, location, posts, rootId]);
 
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (Platform.OS === 'android') {

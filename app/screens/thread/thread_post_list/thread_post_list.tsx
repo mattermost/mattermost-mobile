@@ -99,6 +99,7 @@ const ThreadPostList = ({
         <PostList
             channelId={rootPost.channelId}
             contentContainerStyle={styles.container}
+            disablePullToRefresh={isFetchingThread}
             isCRTEnabled={isCRTEnabled}
             lastViewedAt={lastViewedAt}
             location={Screens.THREAD}
