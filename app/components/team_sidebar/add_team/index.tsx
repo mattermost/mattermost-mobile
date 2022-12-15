@@ -9,7 +9,7 @@ import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {goToScreen} from '@screens/navigation';
+import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -42,7 +42,18 @@ export default function AddTeam() {
 
     const onPress = useCallback(preventDoubleTap(() => {
         const title = intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'});
-        goToScreen(Screens.JOIN_TEAM, title);
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        const closeButtonId = 'close-join-team';
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: closeButtonId,
+                    icon: closeButton,
+                    testID: 'close.join_team.button',
+                }],
+            },
+        };
+        showModal(Screens.JOIN_TEAM, title, {closeButtonId}, options);
     }), [intl]);
 
     return (

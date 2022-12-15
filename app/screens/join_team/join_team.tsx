@@ -12,11 +12,16 @@ import Loading from '@components/loading';
 import TeamList from '@components/team_list';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {popTopScreen} from '@screens/navigation';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {dismissModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type Props = {joinedIds: Set<string>}
+type Props = {
+    joinedIds: Set<string>;
+    componentId: string;
+    closeButtonId: string;
+}
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         paddingHorizontal: 10,
@@ -44,17 +49,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const LOAD_MORE_THRESHOLD = 10;
 
-export default function JoinTeam({joinedIds}: Props) {
+export default function JoinTeam({
+    joinedIds,
+    componentId,
+    closeButtonId,
+}: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const page = useRef(0);
     const hasMore = useRef(true);
+    const mounted = useRef(true);
     const [loading, setLoading] = useState(true);
     const [otherTeams, setOtherTeams] = useState<Team[]>([]);
 
     const loadTeams = useCallback(async (alreadyLoaded = 0) => {
         const {teams, error} = await fetchAllTeams(serverUrl, page.current, PER_PAGE_DEFAULT);
+        if (!mounted.current) {
+            return;
+        }
         page.current += 1;
         if (error || !teams || teams.length < PER_PAGE_DEFAULT) {
             hasMore.current = false;
@@ -95,13 +108,22 @@ export default function JoinTeam({joinedIds}: Props) {
         const {error} = await addCurrentUserToTeam(serverUrl, teamId);
         if (!error) {
             handleTeamChange(serverUrl, teamId);
-            popTopScreen();
+            dismissModal({componentId});
         }
-    }, [serverUrl]);
+    }, [serverUrl, componentId]);
 
     useEffect(() => {
         loadTeams();
+        return () => {
+            mounted.current = false;
+        };
     }, []);
+
+    const onClosePressed = useCallback(() => {
+        return dismissModal({componentId});
+    }, [componentId]);
+
+    useNavButtonPressed(closeButtonId, componentId, onClosePressed, []);
 
     const hasOtherTeams = Boolean(otherTeams.length);
 
