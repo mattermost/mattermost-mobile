@@ -105,8 +105,8 @@ const DocumentRenderer = ({canDownloadFiles, item, onShouldHideControls}: Props)
                             onPress={handleOpenFile}
                             rippleColor={changeOpacity('#fff', 0.16)}
                         >
-                            <View style={buttonBackgroundStyle(Preferences.THEMES.denim, 'lg', 'primary', enabled ? 'default' : 'disabled')}>
-                                <Text style={buttonTextStyle(Preferences.THEMES.denim, 'lg', 'primary', enabled ? 'default' : 'disabled')} >{optionText}</Text>
+                            <View style={buttonBackgroundStyle(Preferences.THEMES.onyx, 'lg', 'primary', enabled ? 'default' : 'disabled')}>
+                                <Text style={buttonTextStyle(Preferences.THEMES.onyx, 'lg', 'primary', enabled ? 'default' : 'disabled')} >{optionText}</Text>
                             </View>
                         </RectButton>
                     </View>
