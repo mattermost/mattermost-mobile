@@ -175,7 +175,6 @@
   },
   "scripts": {
     "android": "react-native run-android",
-    "build-storybook": "build-storybook",
     "build:android": "./scripts/build.sh apk",
     "build:android-unsigned": "./scripts/build.sh apk unsigned",
     "build:ios": "./scripts/build.sh ipa",
@@ -196,9 +195,7 @@
     "pod-install": "cd ios && bundle exec pod install",
     "postinstall": "patch-package && ./scripts/postinstall.sh",
     "preinstall": "npx solidarity",
-    "prestorybook": "rnstl",
     "start": "react-native start",
-    "storybook": "start-storybook -p 7007",
     "test": "jest --forceExit --runInBand",
     "test:coverage": "jest --coverage",
     "test:watch": "npm test -- --watch",
