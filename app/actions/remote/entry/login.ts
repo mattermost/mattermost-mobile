@@ -1,14 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
-
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {setCurrentTeamAndChannelId} from '@queries/servers/system';
+import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 
 import {deferredAppEntryActions, entry} from './gql_common';
@@ -50,11 +48,11 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
             return {error: clData.error};
         }
 
-        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: true});
+        EphemeralStore.setTeamLoading(serverUrl, true);
         const entryData = await entry(serverUrl, '', '');
 
         if ('error' in entryData) {
-            DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+            EphemeralStore.setTeamLoading(serverUrl, false);
             return {error: entryData.error};
         }
 
@@ -71,7 +69,7 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
         }
 
         await operator.batchRecords(models);
-        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+        EphemeralStore.setTeamLoading(serverUrl, false);
 
         const config = clData.config || {} as ClientConfig;
         const license = clData.license || {} as ClientLicense;

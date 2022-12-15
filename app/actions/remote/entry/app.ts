@@ -1,14 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
-
 import {setLastServerVersionCheck} from '@actions/local/systems';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, getCurrentChannelId, getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {deleteV1Data} from '@utils/file';
 import {logInfo} from '@utils/log';
 
@@ -40,10 +38,10 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     const currentChannelId = await getCurrentChannelId(database);
     const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || since;
 
-    DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: true});
+    EphemeralStore.setTeamLoading(serverUrl, true);
     const entryData = await entry(serverUrl, currentTeamId, currentChannelId, since);
     if ('error' in entryData) {
-        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+        EphemeralStore.setTeamLoading(serverUrl, false);
         return {error: entryData.error};
     }
 
@@ -60,7 +58,7 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     const dt = Date.now();
     await operator.batchRecords(models);
     logInfo('ENTRY MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
-    DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+    EphemeralStore.setTeamLoading(serverUrl, false);
 
     const {id: currentUserId, locale: currentUserLocale} = meData?.user || (await getCurrentUser(database))!;
     const config = await getConfig(database);

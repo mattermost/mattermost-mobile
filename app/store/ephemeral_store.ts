@@ -1,11 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
 import {BehaviorSubject, of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
-
-import {Events} from '@constants';
 
 class EphemeralStore {
     theme: Theme | undefined;
@@ -35,14 +32,10 @@ class EphemeralStore {
         return this.loadingTeamChannels[serverUrl];
     }
 
-    constructor() {
-        DeviceEventEmitter.addListener(Events.FETCHING_TEAM_CHANNELS, (event) => this.onLoadingTeam(event));
-    }
-
-    private onLoadingTeam(event: {serverUrl: string; value: boolean}) {
-        const subject = this.getLoadingTeamChannelsSubject(event.serverUrl);
-        subject.next(subject.value + (event.value ? 1 : -1));
-    }
+    setTeamLoading = (serverUrl: string, loading: boolean) => {
+        const subject = this.getLoadingTeamChannelsSubject(serverUrl);
+        subject.next(subject.value + (loading ? 1 : -1));
+    };
 
     observeLoadingTeamChannels = (serverUrl: string) => {
         return this.getLoadingTeamChannelsSubject(serverUrl).pipe(

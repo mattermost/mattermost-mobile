@@ -2,14 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {Model} from '@nozbe/watermelondb';
-import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam} from '@actions/local/team';
 import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchAllTeams, fetchMyTeam, handleKickFromTeam} from '@actions/remote/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
-import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
@@ -73,7 +71,7 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     EphemeralStore.startAddingToTeam(teamId);
 
     try {
-        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: true});
+        EphemeralStore.setTeamLoading(serverUrl, true);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
 
@@ -93,10 +91,10 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
 
         const models = await Promise.all(modelPromises);
         await operator.batchRecords(models.flat());
-        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+        EphemeralStore.setTeamLoading(serverUrl, false);
     } catch (error) {
         logDebug('could not handle user added to team websocket event');
-        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+        EphemeralStore.setTeamLoading(serverUrl, false);
     }
 
     EphemeralStore.finishAddingToTeam(teamId);

@@ -361,7 +361,7 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
 
     try {
         if (!fetchOnly) {
-            DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: true});
+            EphemeralStore.setTeamLoading(serverUrl, true);
         }
         const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
@@ -391,13 +391,13 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
             if (models.length) {
                 await operator.batchRecords(models);
             }
-            DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+            EphemeralStore.setTeamLoading(serverUrl, false);
         }
 
         return {channels, memberships, categories};
     } catch (error) {
         if (!fetchOnly) {
-            DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+            EphemeralStore.setTeamLoading(serverUrl, false);
         }
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

@@ -3,12 +3,11 @@
 
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter} from 'react-native';
 
 import {retryInitialChannel} from '@actions/remote/retry';
 import LoadingError from '@components/loading_error';
-import {Events} from '@constants';
 import {useServerUrl} from '@context/server';
+import EphemeralStore from '@store/ephemeral_store';
 
 import LoadTeamsError from '../load_teams_error';
 
@@ -25,9 +24,9 @@ const LoadChannelsError = ({teamDisplayName, teamId}: Props) => {
     const onRetryTeams = useCallback(async () => {
         setLoading(true);
 
-        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: true});
+        EphemeralStore.setTeamLoading(serverUrl, true);
         const {error} = await retryInitialChannel(serverUrl, teamId);
-        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+        EphemeralStore.setTeamLoading(serverUrl, false);
 
         if (error) {
             setLoading(false);
