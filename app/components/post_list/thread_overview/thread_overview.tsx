@@ -13,10 +13,10 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {useFetchingThreadState} from '@hooks/fetching_thread';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {useFetchThreadState} from '@utils/thread/fetch_thread_state';
 import {typography} from '@utils/typography';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -24,6 +24,7 @@ import type PostModel from '@typings/database/models/servers/post';
 type Props = {
     isSaved: boolean;
     repliesCount: number;
+    rootId: string;
     rootPost?: PostModel;
     testID: string;
     style?: StyleProp<ViewStyle>;
@@ -57,14 +58,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props) => {
+const ThreadOverview = ({isSaved, repliesCount, rootId, rootPost, style, testID}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const intl = useIntl();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
-    const fetchThreadState = useFetchThreadState();
+    const isFetchingThread = useFetchingThreadState(rootId);
 
     const onHandleSavePress = useCallback(preventDoubleTap(() => {
         if (rootPost?.id) {
@@ -111,7 +112,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
                 values={{repliesCount}}
             />
         );
-    } else if (rootPost?.id && fetchThreadState[rootPost.id]) {
+    } else if (isFetchingThread) {
         repliesCountElement = (
             <FormattedText
                 style={styles.repliesCount}

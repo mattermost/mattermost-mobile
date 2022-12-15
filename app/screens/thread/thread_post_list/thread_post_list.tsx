@@ -14,8 +14,8 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import {useIsTablet} from '@hooks/device';
+import {useFetchingThreadState} from '@hooks/fetching_thread';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {useFetchThreadState} from '@utils/thread/fetch_thread_state';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
@@ -46,13 +46,11 @@ const ThreadPostList = ({
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const theme = useTheme();
-    const fetchThreadState = useFetchThreadState();
+    const isFetchingThread = useFetchingThreadState(rootPost.id);
 
     const canLoadMorePosts = useRef(true);
-    const fetchingPosts = useRef(false);
     const onEndReached = useCallback(debounce(async () => {
-        if (isMinimumServerVersion(version || '', 6, 7) && !fetchingPosts.current && canLoadMorePosts.current && posts.length) {
-            fetchingPosts.current = true;
+        if (isMinimumServerVersion(version || '', 6, 7) && !isFetchingThread && canLoadMorePosts.current && posts.length) {
             const options: FetchPaginatedThreadOptions = {
                 perPage: PER_PAGE_DEFAULT,
             };
@@ -62,14 +60,13 @@ const ThreadPostList = ({
                 options.fromCreateAt = lastPost.createAt;
             }
             const result = await fetchPostThread(serverUrl, rootPost.id, options);
-            fetchingPosts.current = false;
 
             // Root post is always fetched, so the result would include +1
             canLoadMorePosts.current = (result?.posts?.length || 0) >= PER_PAGE_DEFAULT;
         } else {
             canLoadMorePosts.current = false;
         }
-    }, 500), [rootPost, posts, version]);
+    }, 500), [isFetchingThread, rootPost, posts, version]);
 
     const threadPosts = useMemo(() => {
         return [...posts, rootPost];
@@ -94,7 +91,7 @@ const ThreadPostList = ({
     const lastViewedAt = isCRTEnabled ? (thread?.viewedAt ?? 0) : channelLastViewedAt;
 
     let header;
-    if (fetchThreadState[rootPost.id] && threadPosts.length === 1) {
+    if (isFetchingThread && threadPosts.length === 1) {
         header = <ActivityIndicator color={theme.centerChannelColor}/>;
     }
 

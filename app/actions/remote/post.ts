@@ -23,11 +23,11 @@ import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
+import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {logError} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
-import {setFetchThreadState} from '@utils/thread/fetch_thread_state';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -584,7 +584,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
         return {error};
     }
 
-    setFetchThreadState(postId, true);
+    setFetchingThreadState(postId, true);
 
     try {
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
@@ -623,11 +623,11 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
             }
             await operator.batchRecords(models);
         }
-        setFetchThreadState(postId, false);
+        setFetchingThreadState(postId, false);
         return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        setFetchThreadState(postId, false);
+        setFetchingThreadState(postId, false);
         return {error};
     }
 }
