@@ -34,6 +34,9 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
     /** last_viewed_at : The timestamp showing the user's last viewed post on this channel */
     @field('last_viewed_at') lastViewedAt!: number;
 
+    /** last_update_at : The timestamp showing the last time it was updated on the server */
+    @field('last_update_at') lastUpdateAt!: number;
+
     /** manually_unread : Determine if the user marked a post as unread */
     @field('manually_unread') manuallyUnread!: boolean;
 

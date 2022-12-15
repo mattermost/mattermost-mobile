@@ -226,6 +226,7 @@ query ${QueryNames.QUERY_CHANNELS}($teamId: String!, $perPage: Int!, $exclude: B
         mentionCountRoot
         schemeAdmin
         lastViewedAt
+        lastUpdateAt
         notifyProps
         roles {
             id
@@ -279,6 +280,7 @@ query ${QueryNames.QUERY_CHANNELS_NEXT}($teamId: String!, $perPage: Int!, $exclu
         mentionCountRoot
         schemeAdmin
         lastViewedAt
+        lastUpdateAt
         notifyProps
         roles {
             id
@@ -321,6 +323,7 @@ query ${QueryNames.QUERY_ALL_CHANNELS}($perPage: Int!){
         mentionCountRoot
         schemeAdmin
         lastViewedAt
+        lastUpdateAt
         notifyProps
         roles {
             id
@@ -363,6 +366,7 @@ query ${QueryNames.QUERY_ALL_CHANNELS_NEXT}($perPage: Int!, $cursor: String!) {
         mentionCountRoot
         schemeAdmin
         lastViewedAt
+        lastUpdateAt
         notifyProps
         roles {
             id

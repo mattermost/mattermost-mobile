@@ -25,6 +25,17 @@ const {SERVER: {
 
 export default schemaMigrations({migrations: [
     {
+        toVersion: 8,
+        steps: [
+            addColumns({
+                table: MY_CHANNEL,
+                columns: [
+                    {name: 'last_update_at', type: 'number'},
+                ],
+            }),
+        ],
+    },
+    {
         toVersion: 7,
         steps: [
 

@@ -133,6 +133,7 @@ export const transformMyChannelRecord = async ({action, database, value}: Transf
         myChannel.messageCount = raw.msg_count;
         myChannel.mentionsCount = raw.mention_count;
         myChannel.lastPostAt = raw.last_post_at || 0;
+        myChannel.lastUpdateAt = raw.last_update_at || record.lastUpdateAt;
 
         myChannel.isUnread = Boolean(raw.is_unread);
         myChannel.lastViewedAt = raw.last_viewed_at;

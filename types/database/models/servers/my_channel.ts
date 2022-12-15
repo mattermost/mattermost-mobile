@@ -21,6 +21,9 @@ declare class MyChannelModel extends Model {
     /** last_viewed_at : The timestamp showing the user's last viewed post on this channel */
     lastViewedAt: number;
 
+    /** last_update_at : The timestamp showing the last time it was updated on the server */
+    lastUpdateAt: number;
+
     /** manually_unread : Determine if the user marked a post as unread */
     manuallyUnread: boolean;
 

@@ -270,11 +270,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             }
 
             const chan = channelMap[my.channel_id];
-            const lastPostAt = (isCRT ? chan.last_root_post_at : chan.last_post_at) || 0;
-            if ((chan && e.lastPostAt < lastPostAt) ||
-                e.isUnread !== my.is_unread || e.lastViewedAt < my.last_viewed_at ||
-                e.roles !== my.roles
-            ) {
+            if (chan && (e.lastUpdateAt < my.last_update_at)) {
                 res.push(my);
             }
 

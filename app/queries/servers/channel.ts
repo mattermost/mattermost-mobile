@@ -26,9 +26,7 @@ const {SERVER: {CHANNEL, MY_CHANNEL, CHANNEL_MEMBERSHIP, MY_CHANNEL_SETTINGS, CH
 
 export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, channels: Channel[], channelMembers: ChannelMembership[], isCRTEnabled?: boolean): Array<Promise<Model[]>> {
     const channelInfos: ChannelInfo[] = [];
-    const channelMap: Record<string, Channel> = {};
     for (const c of channels) {
-        channelMap[c.id] = c;
         channelInfos.push({
             id: c.id,
             header: c.header,
@@ -40,12 +38,9 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
     }
 
     const memberships = channelMembers.map((cm) => {
-        const channel = channelMap[cm.channel_id];
         return {
             ...cm,
             id: cm.channel_id,
-            last_post_at: channel.last_post_at,
-            last_root_post_at: channel.last_root_post_at,
         };
     });
 
