@@ -34,7 +34,6 @@ import {Events, Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
-import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
@@ -141,15 +140,10 @@ async function doReconnect(serverUrl: string) {
     const currentTeam = await getCurrentTeam(database);
     const currentChannel = await getCurrentChannel(database);
 
-    const currentActiveServerUrl = await getActiveServerUrl();
-    if (serverUrl === currentActiveServerUrl) {
-        DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
-    }
+    DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: true});
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
-        if (serverUrl === currentActiveServerUrl) {
-            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
-        }
+        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
         return;
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
@@ -159,6 +153,7 @@ async function doReconnect(serverUrl: string) {
     const dt = Date.now();
     await operator.batchRecords(models);
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
+    DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
 
     await fetchPostDataIfNeeded(serverUrl);
 

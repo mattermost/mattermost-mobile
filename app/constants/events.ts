@@ -9,7 +9,7 @@ export default keyMirror({
     CHANNEL_SWITCH: null,
     CLOSE_BOTTOM_SHEET: null,
     CONFIG_CHANGED: null,
-    FETCHING_POSTS: null,
+    FETCHING_TEAM_CHANNELS: null,
     FREEZE_SCREEN: null,
     GALLERY_ACTIONS: null,
     LEAVE_CHANNEL: null,

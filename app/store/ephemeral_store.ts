@@ -1,6 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+import {BehaviorSubject, of as of$} from 'rxjs';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
+
+import {Events} from '@constants';
+
 class EphemeralStore {
     theme: Theme | undefined;
     creatingChannel = false;
@@ -19,6 +25,31 @@ class EphemeralStore {
     private convertingChannels = new Set<string>();
     private switchingToChannel = new Set<string>();
     private currentThreadId = '';
+
+    private loadingTeamChannels: {[serverUrl: string]: BehaviorSubject<number>} = {};
+
+    private getLoadingTeamChannelsSubject(serverUrl: string) {
+        if (!this.loadingTeamChannels[serverUrl]) {
+            this.loadingTeamChannels[serverUrl] = new BehaviorSubject(0);
+        }
+        return this.loadingTeamChannels[serverUrl];
+    }
+
+    constructor() {
+        DeviceEventEmitter.addListener(Events.FETCHING_TEAM_CHANNELS, (event) => this.onLoadingTeam(event));
+    }
+
+    private onLoadingTeam(event: {serverUrl: string; value: boolean}) {
+        const subject = this.getLoadingTeamChannelsSubject(event.serverUrl);
+        subject.next(subject.value + (event.value ? 1 : -1));
+    }
+
+    observeLoadingTeamChannels = (serverUrl: string) => {
+        return this.getLoadingTeamChannelsSubject(serverUrl).pipe(
+            switchMap((v) => of$(v !== 0)),
+            distinctUntilChanged(),
+        );
+    };
 
     // Ephemeral control when (un)archiving a channel locally
     addArchivingChannel = (channelId: string) => {

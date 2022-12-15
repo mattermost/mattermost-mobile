@@ -3,9 +3,11 @@
 
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
+import {DeviceEventEmitter} from 'react-native';
 
 import {retryInitialTeamAndChannel} from '@actions/remote/retry';
 import LoadingError from '@components/loading_error';
+import {Events} from '@constants';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 
 const LoadTeamsError = () => {
@@ -16,7 +18,10 @@ const LoadTeamsError = () => {
 
     const onRetryTeams = useCallback(async () => {
         setLoading(true);
+
+        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: true});
         const {error} = await retryInitialTeamAndChannel(serverUrl);
+        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
 
         if (error) {
             setLoading(false);

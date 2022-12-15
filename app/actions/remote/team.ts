@@ -56,12 +56,16 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
         return {error};
     }
 
+    let loadEventSent = false;
     try {
         EphemeralStore.startAddingToTeam(teamId);
         const team = await client.getTeam(teamId);
         const member = await client.addToTeam(teamId, userId);
 
         if (!fetchOnly) {
+            DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: true});
+            loadEventSent = true;
+
             fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
             const {channels, memberships: channelMembers, categories} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -80,6 +84,8 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                 ])).flat();
 
                 await operator.batchRecords(models);
+                DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+                loadEventSent = false;
 
                 if (await isTablet()) {
                     const channel = await getDefaultChannelForTeam(operator.database, teamId);
@@ -87,11 +93,17 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                         fetchPostsForChannel(serverUrl, channel.id);
                     }
                 }
+            } else {
+                DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+                loadEventSent = false;
             }
         }
         EphemeralStore.finishAddingToTeam(teamId);
         return {member};
     } catch (error) {
+        if (loadEventSent) {
+            DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+        }
         EphemeralStore.finishAddingToTeam(teamId);
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};

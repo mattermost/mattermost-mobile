@@ -360,6 +360,9 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
     }
 
     try {
+        if (!fetchOnly) {
+            DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: true});
+        }
         const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
@@ -388,10 +391,14 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
             if (models.length) {
                 await operator.batchRecords(models);
             }
+            DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
         }
 
         return {channels, memberships, categories};
     } catch (error) {
+        if (!fetchOnly) {
+            DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
+        }
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }

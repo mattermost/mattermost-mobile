@@ -325,12 +325,9 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
     }
 }
 
-export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string, emitEvent = false) => {
+export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string) => {
     try {
         const promises = [];
-        if (emitEvent) {
-            DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
-        }
         for (const member of memberships) {
             const channel = channels.find((c) => c.id === member.channel_id);
             if (channel && (channel.total_msg_count - member.msg_count) > 0 && channel.id !== excludeChannelId) {
@@ -338,13 +335,7 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
             }
         }
         await Promise.all(promises);
-        if (emitEvent) {
-            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
-        }
     } catch (error) {
-        if (emitEvent) {
-            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
-        }
         return {error};
     }
 

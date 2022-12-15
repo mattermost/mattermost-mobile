@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
+
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
-import {Preferences, Screens} from '@constants';
+import {Events, Preferences, Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
@@ -81,8 +83,10 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         switchedToScreen = true;
     }
 
+    DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: true});
     const entryData = await entry(serverUrl, teamId, channelId);
     if ('error' in entryData) {
+        DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
         return {error: entryData.error};
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
@@ -134,6 +138,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     }
 
     await operator.batchRecords(models);
+    DeviceEventEmitter.emit(Events.FETCHING_TEAM_CHANNELS, {serverUrl, value: false});
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(operator.database))!;
     const config = await getConfig(database);
