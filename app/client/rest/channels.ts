@@ -40,6 +40,8 @@ export interface ClientChannelsMix {
     searchChannels: (teamId: string, term: string) => Promise<Channel[]>;
     searchArchivedChannels: (teamId: string, term: string) => Promise<Channel[]>;
     searchAllChannels: (term: string, teamIds: string[], archivedOnly?: boolean) => Promise<Channel[]>;
+    updateChannelMemberSchemeRoles: (channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean) => Promise<any>;
+    getMemberInChannel: (channelId: string, userId: string) => Promise<any>;
 }
 
 const ClientChannels = (superclass: any) => class extends superclass {
@@ -325,6 +327,25 @@ const ClientChannels = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getChannelsRoute()}/search${buildQueryString(queryParams)}`,
             {method: 'post', body},
+        );
+    };
+
+    // TODO: Update a channel member's scheme_admin/scheme_user properties. Typically
+    // this should either be scheme_admin=false, scheme_user=true for ordinary
+    // channel member, or scheme_admin=true, scheme_user=true for a channel
+    // admin.
+    updateChannelMemberSchemeRoles = (channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean) => {
+        const body = {scheme_user: isSchemeUser, scheme_admin: isSchemeAdmin};
+        return this.doFetch(
+            `${this.getChannelMembersRoute(channelId)}/${userId}/schemeRoles`,
+            {method: 'put', body},
+        );
+    };
+
+    getMemberInChannel = (channelId: string, userId: string) => {
+        return this.doFetch(
+            `${this.getChannelMembersRoute(channelId)}/${userId}`,
+            {method: 'get'},
         );
     };
 };

@@ -6,7 +6,8 @@ import {defineMessages, useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {fetchProfilesInChannel, searchProfiles} from '@actions/remote/user';
+import {fetchChannelMemberships, getMemberInChannel} from '@actions/remote/channel';
+import {searchProfiles} from '@actions/remote/user';
 import Search from '@components/search';
 import UserList from '@components/user_list';
 import {Events, General, Screens} from '@constants';
@@ -45,10 +46,6 @@ const styles = StyleSheet.create({
 });
 
 const messages = defineMessages({
-    add_people: {
-        id: t('mobile.add_people.error'),
-        defaultMessage: "We couldn't add those users to the channel. Please check your connection and try again.",
-    },
     button_manage: {
         id: t('mobile.manage_members.manage'),
         defaultMessage: 'Manage',
@@ -60,6 +57,7 @@ const messages = defineMessages({
 });
 
 const EMPTY: UserProfile[] = [];
+const EMPTY_MEMBERS: ChannelMembership[] = [];
 const EMPTY_IDS = {};
 const {USER_PROFILE} = Screens;
 const CLOSE_BUTTON_ID = 'close-user-profile';
@@ -82,14 +80,16 @@ export default function ManageChannelMembers({
 
     const [isManageMode, setIsManageMode] = useState(false);
     const [profiles, setProfiles] = useState<UserProfile[]>(EMPTY);
+    const [channelMembers, setChannelMembers] = useState<ChannelMembership[]>(EMPTY_MEMBERS);
     const [searchResults, setSearchResults] = useState<UserProfile[]>(EMPTY);
     const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
 
-    const loadedProfiles = (users: UserProfile[]) => {
+    const loadedProfiles = (users: UserProfile[], members: ChannelMembership[]) => {
         if (mounted.current) {
             setLoading(false);
             setProfiles(users);
+            setChannelMembers(members);
         }
     };
 
@@ -102,9 +102,9 @@ export default function ManageChannelMembers({
         const hasTerm = Boolean(term);
         if (!loading && !hasTerm && mounted.current) {
             setLoading(true);
-            const {users = EMPTY} = await fetchProfilesInChannel(serverUrl, channelId);
+            const {users, members} = await fetchChannelMemberships(serverUrl, channelId, true);
             if (users.length) {
-                loadedProfiles(users);
+                loadedProfiles(users, members);
             }
         }
     }, 100), [channelId, loading, serverUrl, term]);
@@ -113,6 +113,7 @@ export default function ManageChannelMembers({
         if (!isManageMode) {
             return;
         }
+
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const props = {
             channelId,
@@ -120,11 +121,12 @@ export default function ManageChannelMembers({
             location: USER_PROFILE,
             manageMode: true,
             userId: profile.id,
+            canManageMembers,
         };
 
         Keyboard.dismiss();
         openAsBottomSheet({screen: USER_PROFILE, title, theme, closeButtonId: CLOSE_BUTTON_ID, props});
-    }, [isManageMode]);
+    }, [canManageMembers, isManageMode]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
@@ -188,6 +190,19 @@ export default function ManageChannelMembers({
         }
     }, [profiles]);
 
+    const handleUserChangeRole = useCallback(async (userId: string) => {
+        const updatedUser = await getMemberInChannel(serverUrl, channelId, userId);
+        const clone = profiles.map((p) => {
+            if (p.id === userId) {
+                p.roles = updatedUser?.member.roles;
+                return p;
+            }
+            return p;
+        });
+
+        setProfiles(clone);
+    }, [getProfiles, profiles]);
+
     const data = useMemo(() => {
         const isSearch = Boolean(term);
         if (isSearch) {
@@ -200,6 +215,8 @@ export default function ManageChannelMembers({
 
     useEffect(() => {
         mounted.current = true;
+
+        // TODO: remove if all users should be allowed to remove a user from channel
         if (canManageMembers) {
             updateNavigationButtons(false);
         }
@@ -211,10 +228,12 @@ export default function ManageChannelMembers({
 
     useEffect(() => {
         const removeUserListener = DeviceEventEmitter.addListener(Events.REMOVE_USER_FROM_CHANNEL, handleRemoveUser);
+        const changeUserRoleListener = DeviceEventEmitter.addListener(Events.MANAGE_USER_CHANGE_ROLE, handleUserChangeRole);
         return (() => {
             removeUserListener?.remove();
+            changeUserRoleListener?.remove();
         });
-    }, [handleRemoveUser]);
+    }, [handleRemoveUser, handleUserChangeRole]);
 
     return (
         <SafeAreaView
@@ -244,8 +263,10 @@ export default function ManageChannelMembers({
                 loading={loading}
                 manageMode={true} // default true to change row select icon to a dropdown
                 profiles={data}
+                channelMembers={channelMembers}
                 selectedIds={EMPTY_IDS}
                 showManageMode={canManageMembers && isManageMode}
+                canManageMembers={canManageMembers}
                 showNoResults={!loading}
                 teammateNameDisplay={teammateNameDisplay}
                 term={term}

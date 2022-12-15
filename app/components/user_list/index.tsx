@@ -19,7 +19,6 @@ import {
     makeStyleSheetFromTheme,
 } from '@utils/theme';
 import {typography} from '@utils/typography';
-import {isChannelAdmin, isSystemAdmin} from '@utils/user';
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
@@ -45,18 +44,23 @@ const sectionKeyExtractor = (profile: UserProfile) => {
     return profile.username[0].toUpperCase();
 };
 
-const sectionRoleKeyExtractor = (profile: UserProfile) => {
-    if (isSystemAdmin(profile.roles) || isChannelAdmin(profile.roles)) {
-        return SECTION_TITLE_ADMINS;
-    }
-    return SECTION_TITLE_MEMBERS;
+const sectionRoleKeyExtractor = (cAdmin: boolean) => {
+    return cAdmin ? SECTION_TITLE_ADMINS : SECTION_TITLE_MEMBERS;
 };
 
-export function createProfilesSections(manageMode: boolean, profiles: UserProfile[]) {
+const isChannelAdmin = (members: ChannelMember[], profile: UserProfile) => {
+    return members?.find((m: ChannelMember) => (m.user_id === profile.id) && m.scheme_admin);
+};
+
+export function createProfilesSections(manageMode: boolean, profiles: UserProfile[], members?: ChannelMember[]) {
     const sections: {[key: string]: UserProfile[]} = {};
     const sectionKeys: string[] = [];
     for (const profile of profiles) {
-        const sectionKey = manageMode ? sectionRoleKeyExtractor(profile) : sectionKeyExtractor(profile);
+        let chAdmin;
+        if (members?.length) {
+            chAdmin = isChannelAdmin(members, profile);
+        }
+        const sectionKey = manageMode ? sectionRoleKeyExtractor(Boolean(chAdmin)) : sectionKeyExtractor(profile);
 
         if (!sections[sectionKey]) {
             sections[sectionKey] = [];
@@ -114,6 +118,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 type Props = {
     profiles: UserProfile[];
+    canManageMembers?: boolean;
+    channelMembers?: ChannelMember[];
     currentUserId: string;
     teammateNameDisplay: string;
     handleSelectProfile: (user: UserProfile) => void;
@@ -130,6 +136,8 @@ type Props = {
 
 export default function UserList({
     profiles,
+    channelMembers,
+    canManageMembers,
     selectedIds,
     currentUserId,
     teammateNameDisplay,
@@ -157,8 +165,8 @@ export default function UserList({
         if (term) {
             return profiles;
         }
-        return createProfilesSections(manageMode, profiles);
-    }, [term, profiles]);
+        return createProfilesSections(manageMode, profiles, channelMembers);
+    }, [term, profiles, channelMembers]);
 
     const openUserProfile = useCallback(async (profile: UserProfile) => {
         const {user} = await storeProfile(serverUrl, profile);
@@ -201,7 +209,7 @@ export default function UserList({
                 user={item}
             />
         );
-    }, [selectedIds, currentUserId, handleSelectProfile, manageMode, teammateNameDisplay, tutorialWatched, showManageMode]);
+    }, [selectedIds, canManageMembers, handleSelectProfile, showManageMode, manageMode, teammateNameDisplay, tutorialWatched]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {

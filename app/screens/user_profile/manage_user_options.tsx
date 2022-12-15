@@ -26,27 +26,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 type Props = {
     channelId: string;
     isDefaultChannel: boolean;
-    isAdmin: boolean;
+    isChannelAdmin: boolean;
     userId: string;
 }
 
-const ManageUserOptions = ({channelId, isDefaultChannel, isAdmin, userId}: Props) => {
+const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const manageOption = isChannelAdmin ? Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_MEMBER : Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_ADMIN;
 
     return (
         <>
             <View style={styles.divider}/>
-            {isAdmin &&
-                <ManageMembersLabel
-                    channelId={channelId}
-                    isDefaultChannel={isDefaultChannel}
-                    isOptionItem={true}
-                    manageOption={Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_ADMIN}
-                    testID='channel.make_channel_admin'
-                    userId={userId}
-                />
-            }
+            <ManageMembersLabel
+                channelId={channelId}
+                isDefaultChannel={isDefaultChannel}
+                isOptionItem={true}
+                manageOption={manageOption}
+                testID='channel.make_channel_admin'
+                userId={userId}
+            />
             <ManageMembersLabel
                 channelId={channelId}
                 isDefaultChannel={isDefaultChannel}

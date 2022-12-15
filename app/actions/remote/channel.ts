@@ -9,6 +9,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
 import {removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
+import {updateLocalUser} from '@actions/local/user';
 import {loadCallForChannel} from '@calls/actions/calls';
 import {Events, General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -37,15 +38,21 @@ import {setDirectChannelVisible} from './preference';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 import {addCurrentUserToTeam, fetchTeamByName, removeCurrentUserFromTeam} from './team';
-import {fetchProfilesInGroupChannels, fetchProfilesPerChannels, fetchUsersByIds, updateUsersNoLongerVisible} from './user';
+import {fetchProfilesInChannel, fetchProfilesInGroupChannels, fetchProfilesPerChannels, fetchUsersByIds, updateUsersNoLongerVisible} from './user';
 
 import type {Client} from '@client/rest';
+import type ClientError from '@client/rest/error';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 export type MyChannelsRequest = {
     categories?: CategoryWithChannels[];
     channels?: Channel[];
     memberships?: ChannelMembership[];
+    error?: unknown;
+}
+
+export type ChannelMembersRequest = {
+    members?: ChannelMembership[];
     error?: unknown;
 }
 
@@ -62,6 +69,76 @@ export async function removeMemberFromChannel(serverUrl: string, channelId: stri
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
+}
+
+export async function fetchChannelMembersByIds(serverUrl: string, channelId: string, userIds: string[], fetchOnly = false): Promise<ChannelMembersRequest> {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const members = await client.getChannelMembersByIds(channelId, userIds);
+
+        if (!fetchOnly) {
+            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+            if (operator && members.length) {
+                const modelPromises: Array<Promise<Model[]>> = [];
+                const membership = members.map((u) => ({
+                    channel_id: channelId,
+                    user_id: u.user_id,
+                    scheme_admin: u.scheme_admin,
+                }));
+                modelPromises.push(operator.handleChannelMembership({
+                    channelMemberships: membership,
+                    prepareRecordsOnly: true,
+                }));
+
+                const models = await Promise.all(modelPromises);
+                await operator.batchRecords(models.flat());
+            }
+        }
+
+        return {members};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+}
+export async function updateChannelMemberSchemeRoles(serverUrl: string, channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+
+        await client.updateChannelMemberSchemeRoles(channelId, userId, isSchemeUser, isSchemeAdmin);
+        await client.getMemberInChannel(channelId, userId);
+
+        return {error: undefined};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
+
+export async function getMemberInChannel(serverUrl: string, channelId: string, userId: string) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const member = await client.getMemberInChannel(channelId, userId);
+
+        // TODO: confirm with Elias if this is right way to do this since this
+        // is happening on webapp
+        updateLocalUser(serverUrl, member, userId);
+        return {member, error: undefined};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
+
+export async function fetchChannelMemberships(serverUrl: string, channelId: string, fetchOnly = false) {
+    const {users = []} = await fetchProfilesInChannel(serverUrl, channelId, undefined, fetchOnly);
+    const userIds = users.map((u) => u.id);
+
+    // We are sure the getChannelMembers API returns the same members
+    // from getProfilesInChannel.  This guarantees a 1:1 match of the
+    // user IDs
+    const {members = []} = await fetchChannelMembersByIds(serverUrl, channelId, userIds, true);
+    return {users, members};
 }
 
 export async function addMembersToChannel(serverUrl: string, channelId: string, userIds: string[], postRootId = '', fetchOnly = false) {

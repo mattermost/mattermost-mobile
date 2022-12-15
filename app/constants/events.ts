@@ -18,6 +18,7 @@ export default keyMirror({
     NOTIFICATION_ERROR: null,
     PAUSE_KEYBOARD_TRACKING_VIEW: null,
     REMOVE_USER_FROM_CHANNEL: null,
+    MANAGE_USER_CHANGE_ROLE: null,
     SERVER_LOGOUT: null,
     SERVER_VERSION_CHANGED: null,
     SESSION_EXPIRED: null,

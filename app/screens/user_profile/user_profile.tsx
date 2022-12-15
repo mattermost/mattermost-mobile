@@ -59,6 +59,7 @@ type Props = {
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
     isChannelAdmin: boolean;
+    canManageMembers?: boolean;
     isCustomStatusEnabled: boolean;
     isDirectMessage: boolean;
     isDefaultChannel: boolean;
@@ -76,7 +77,7 @@ type Props = {
 
 const UserProfile = ({
     channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
-    isChannelAdmin, isCustomStatusEnabled, isDirectMessage, isDefaultChannel, isMilitaryTime,
+    isChannelAdmin, canManageMembers, isCustomStatusEnabled, isDirectMessage, isDefaultChannel, isMilitaryTime,
     isSystemAdmin, isTeamAdmin, location, manageMode = false, teamId, teammateDisplayName,
     user, userIconOverride, usernameOverride,
 }: Props) => {
@@ -132,7 +133,7 @@ const UserProfile = ({
             initial += MANAGE_TITLE_HEIGHT + MANAGE_TITLE_MARGIN;
             initial += SINGLE_OPTION_HEIGHT; // remove button
             initial += DIVIDER_MARGIN * 2;
-            if (isSystemAdmin || isChannelAdmin) {
+            if (canManageMembers) {
                 initial += SINGLE_OPTION_HEIGHT; // roles button
             }
         }
@@ -190,11 +191,11 @@ const UserProfile = ({
                 />
 
                 }
-                {manageMode && channelId &&
+                {manageMode && channelId && canManageMembers &&
                     <ManageUserOptions
                         channelId={channelId}
                         isDefaultChannel={isDefaultChannel}
-                        isAdmin={isSystemAdmin || isChannelAdmin}
+                        isChannelAdmin={isChannelAdmin}
                         userId={user.id}
                     />
                 }

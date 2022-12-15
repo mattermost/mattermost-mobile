@@ -5,15 +5,20 @@ import React, {useCallback} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 
-import {fetchChannelStats, removeMemberFromChannel} from '@actions/remote/channel';
+import {fetchChannelStats, removeMemberFromChannel, updateChannelMemberSchemeRoles} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {Events, Members} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
+import {alertErrorWithFallback} from '@utils/draft';
 
 const messages = defineMessages({
+    role_change_error: {
+        id: t('mobile.manage_members.change_role.error'),
+        defaultMessage: 'An error occurred while trying to update the role. Please check your connection and try again.',
+    },
     make_channel_admin: {
         id: t('mobile.manage_members.make_channel_admin'),
         defaultMessage: 'Make Channel Admin',
@@ -27,7 +32,7 @@ const messages = defineMessages({
         defaultMessage: 'Remove From Channel',
     },
     remove_message: {
-        id: t('mobile.manage_members.message.'),
+        id: t('mobile.manage_members.message'),
         defaultMessage: 'Are you sure you want to remove the selected member from the channel?',
     },
     remove_cancel: {
@@ -50,7 +55,8 @@ type Props = {
 }
 
 const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOption, testID, userId}: Props) => {
-    const {formatMessage} = useIntl();
+    const intl = useIntl();
+    const {formatMessage} = intl;
     const serverUrl = useServerUrl();
 
     const handleRemoveUser = useCallback(async () => {
@@ -75,11 +81,34 @@ const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOptio
         );
     };
 
+    const makeChannelAdmin = () => {
+        updateChannelMemberSchemeRole(true);
+    };
+
+    const makeChannelMember = () => {
+        updateChannelMemberSchemeRole(false);
+    };
+
+    const updateChannelMemberSchemeRole = async (schemeAdmin: boolean) => {
+        const result = await updateChannelMemberSchemeRoles(serverUrl, channelId, userId, true, schemeAdmin);
+        if (result.error) {
+            alertErrorWithFallback(intl, result.error, messages.role_change_error);
+        }
+        await dismissBottomSheet();
+        DeviceEventEmitter.emit(Events.MANAGE_USER_CHANGE_ROLE, userId);
+    };
+
     const onAction = () => {
         // In the future this switch / case will accomodate more user cases
         switch (manageOption) {
             case Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER:
                 removeFromChannel();
+                break;
+            case Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_ADMIN:
+                makeChannelAdmin();
+                break;
+            case Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_MEMBER:
+                makeChannelMember();
                 break;
         }
     };
@@ -97,6 +126,13 @@ const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOptio
             icon = 'trash-can-outline';
             isDestructive = true;
             break;
+        case Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_ADMIN:
+            actionText = formatMessage(messages.make_channel_admin);
+            icon = 'account-outline';
+            break;
+        case Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_MEMBER:
+            actionText = formatMessage(messages.make_channel_member);
+            icon = 'account-outline';
             break;
         default:
             actionText = formatMessage(messages.remove_title);
