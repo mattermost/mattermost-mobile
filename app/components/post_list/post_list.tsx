@@ -149,9 +149,6 @@ const PostList = ({
     }, []);
 
     const onRefresh = useCallback(async () => {
-        if (disablePullToRefresh) {
-            return;
-        }
         setRefreshing(true);
         if (location === Screens.CHANNEL && channelId) {
             await fetchPosts(serverUrl, channelId);
@@ -166,7 +163,7 @@ const PostList = ({
             await fetchPostThread(serverUrl, rootId, options);
         }
         setRefreshing(false);
-    }, [channelId, disablePullToRefresh, location, posts, rootId]);
+    }, [channelId, location, posts, rootId]);
 
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
         if (Platform.OS === 'android') {
@@ -372,7 +369,7 @@ const PostList = ({
     return (
         <>
             <PostListRefreshControl
-                enabled={enableRefreshControl}
+                enabled={!disablePullToRefresh && enableRefreshControl}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
                 style={styles.container}

@@ -62,7 +62,7 @@ const ThreadPostList = ({
             const result = await fetchPostThread(serverUrl, rootPost.id, options);
 
             // Root post is always fetched, so the result would include +1
-            canLoadMorePosts.current = (result?.posts?.length || 0) >= PER_PAGE_DEFAULT;
+            canLoadMorePosts.current = (result?.posts?.length || 0) > PER_PAGE_DEFAULT;
         } else {
             canLoadMorePosts.current = false;
         }

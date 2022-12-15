@@ -12,4 +12,4 @@ export const HEADER_X_CSRF_TOKEN = 'X-CSRF-Token';
 export const HEADER_X_VERSION_ID = 'X-Version-Id';
 export const DEFAULT_LIMIT_BEFORE = 30;
 export const DEFAULT_LIMIT_AFTER = 30;
-export const PER_PAGE_DEFAULT = 30;
+export const PER_PAGE_DEFAULT = 60;
