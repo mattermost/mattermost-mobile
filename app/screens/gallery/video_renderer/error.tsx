@@ -8,6 +8,7 @@ import {RectButton, TouchableWithoutFeedback} from 'react-native-gesture-handler
 import Animated from 'react-native-reanimated';
 
 import {typography} from '@app/utils/typography';
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@constants';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -36,6 +37,9 @@ const styles = StyleSheet.create({
         opacity: 0.64,
         textAlign: 'center',
     },
+    marginBottom: {
+        marginBottom: 16,
+    },
     marginTop: {
         marginTop: 16,
     },
@@ -54,6 +58,8 @@ type Props = {
 
 const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideControls, posterUri, setDownloading, width}: Props) => {
     const [hasPoster, setHasPoster] = useState(false);
+    const [loadPosterError, setLoadPosterError] = useState(false);
+
     const handleDownload = useCallback(() => {
         setDownloading(true);
     }, []);
@@ -62,19 +68,37 @@ const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideCont
         setHasPoster(true);
     }, []);
 
+    const handlePosterError = useCallback(() => {
+        setLoadPosterError(true);
+    }, []);
+
     const dimensions = useWindowDimensions();
     const imageDimensions = calculateDimensions(height, width, dimensions.width);
+
+    let poster;
+    if (posterUri && !loadPosterError) {
+        poster = (
+            <FastImage
+                source={{uri: posterUri}}
+                style={hasPoster && imageDimensions}
+                onLoad={handlePosterSet}
+                onError={handlePosterError}
+            />
+        );
+    } else {
+        poster = (
+            <CompassIcon
+                color='#338AFF' // yes this is hardcoded
+                name='file-video-outline-large'
+                size={120}
+            />
+        );
+    }
 
     return (
         <TouchableWithoutFeedback onPress={onShouldHideControls}>
             <Animated.View style={styles.container}>
-                {Boolean(posterUri) &&
-                <FastImage
-                    source={{uri: posterUri}}
-                    style={hasPoster && imageDimensions}
-                    onLoad={handlePosterSet}
-                />
-                }
+                {poster}
                 <Text
                     numberOfLines={2}
                     style={styles.filename}
@@ -83,6 +107,13 @@ const VideoError = ({filename, height, isDownloading, isRemote, onShouldHideCont
                 </Text>
                 {isRemote &&
                 <View style={styles.marginTop}>
+                    <View style={styles.marginBottom}>
+                        <FormattedText
+                            defaultMessage='This video must be downloaded to play it.'
+                            id='video.download_description'
+                            style={styles.unsupported}
+                        />
+                    </View>
                     <RectButton
                         enabled={!isDownloading}
                         exclusive={true}

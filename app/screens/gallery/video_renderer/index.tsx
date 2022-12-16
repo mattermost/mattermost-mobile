@@ -72,6 +72,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
 
     const onDownloadSuccess = (path: string) => {
         setVideoUri(path);
+        setHasError(false);
         updateLocalFilePath(serverUrl, item.id, path);
     };
 
