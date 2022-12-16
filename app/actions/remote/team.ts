@@ -15,6 +15,7 @@ import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@qu
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, syncTeamTable, getLastTeam, getTeamById, removeTeamFromTeamHistory} from '@queries/servers/team';
 import {dismissAllModals, popToRoot, resetToTeams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
@@ -63,7 +64,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
         const member = await client.addToTeam(teamId, userId);
 
         if (!fetchOnly) {
-            EphemeralStore.setTeamLoading(serverUrl, true);
+            setTeamLoading(serverUrl, true);
             loadEventSent = true;
 
             fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
@@ -84,7 +85,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                 ])).flat();
 
                 await operator.batchRecords(models);
-                EphemeralStore.setTeamLoading(serverUrl, false);
+                setTeamLoading(serverUrl, false);
                 loadEventSent = false;
 
                 if (await isTablet()) {
@@ -94,7 +95,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                     }
                 }
             } else {
-                EphemeralStore.setTeamLoading(serverUrl, false);
+                setTeamLoading(serverUrl, false);
                 loadEventSent = false;
             }
         }
@@ -102,7 +103,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
         return {member};
     } catch (error) {
         if (loadEventSent) {
-            EphemeralStore.setTeamLoading(serverUrl, false);
+            setTeamLoading(serverUrl, false);
         }
         EphemeralStore.finishAddingToTeam(teamId);
         forceLogoutIfNecessary(serverUrl, error as ClientError);

@@ -6,7 +6,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {setCurrentTeamAndChannelId} from '@queries/servers/system';
-import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 
 import {deferredAppEntryActions, entry} from './gql_common';
@@ -48,11 +48,11 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
             return {error: clData.error};
         }
 
-        EphemeralStore.setTeamLoading(serverUrl, true);
+        setTeamLoading(serverUrl, true);
         const entryData = await entry(serverUrl, '', '');
 
         if ('error' in entryData) {
-            EphemeralStore.setTeamLoading(serverUrl, false);
+            setTeamLoading(serverUrl, false);
             return {error: entryData.error};
         }
 
@@ -69,7 +69,7 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
         }
 
         await operator.batchRecords(models);
-        EphemeralStore.setTeamLoading(serverUrl, false);
+        setTeamLoading(serverUrl, false);
 
         const config = clData.config || {} as ClientConfig;
         const license = clData.license || {} as ClientLicense;

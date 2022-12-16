@@ -6,7 +6,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, getCurrentChannelId, getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
-import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {deleteV1Data} from '@utils/file';
 import {logInfo} from '@utils/log';
 
@@ -38,10 +38,10 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     const currentChannelId = await getCurrentChannelId(database);
     const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || since;
 
-    EphemeralStore.setTeamLoading(serverUrl, true);
+    setTeamLoading(serverUrl, true);
     const entryData = await entry(serverUrl, currentTeamId, currentChannelId, since);
     if ('error' in entryData) {
-        EphemeralStore.setTeamLoading(serverUrl, false);
+        setTeamLoading(serverUrl, false);
         return {error: entryData.error};
     }
 
@@ -58,7 +58,7 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     const dt = Date.now();
     await operator.batchRecords(models);
     logInfo('ENTRY MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
-    EphemeralStore.setTeamLoading(serverUrl, false);
+    setTeamLoading(serverUrl, false);
 
     const {id: currentUserId, locale: currentUserLocale} = meData?.user || (await getCurrentUser(database))!;
     const config = await getConfig(database);

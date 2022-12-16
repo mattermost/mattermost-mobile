@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import withObservables from '@nozbe/with-observables';
 import React, {useEffect} from 'react';
 import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
-import {withServerUrl} from '@context/server';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import EphemeralStore from '@store/ephemeral_store';
+import {useTeamsLoading} from '@hooks/teams_loading';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -24,15 +23,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-type Props = {
-    loading: boolean;
-}
-
-const LoadingUnreads = ({loading}: Props) => {
+const LoadingUnreads = () => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const opacity = useSharedValue(1);
     const rotation = useSharedValue(0);
+    const serverUrl = useServerUrl();
+    const loading = useTeamsLoading(serverUrl);
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
@@ -63,8 +60,4 @@ const LoadingUnreads = ({loading}: Props) => {
     return <Animated.View style={[style.container, animatedStyle]}/>;
 };
 
-const enhanced = withObservables(['serverUrl'], ({serverUrl}: {serverUrl: string}) => ({
-    loading: EphemeralStore.observeLoadingTeamChannels(serverUrl),
-}));
-
-export default withServerUrl(enhanced(LoadingUnreads));
+export default LoadingUnreads;

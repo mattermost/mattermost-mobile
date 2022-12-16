@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BehaviorSubject, of as of$} from 'rxjs';
-import {switchMap, distinctUntilChanged} from 'rxjs/operators';
-
 class EphemeralStore {
     theme: Theme | undefined;
     creatingChannel = false;
@@ -22,27 +19,6 @@ class EphemeralStore {
     private convertingChannels = new Set<string>();
     private switchingToChannel = new Set<string>();
     private currentThreadId = '';
-
-    private loadingTeamChannels: {[serverUrl: string]: BehaviorSubject<number>} = {};
-
-    private getLoadingTeamChannelsSubject(serverUrl: string) {
-        if (!this.loadingTeamChannels[serverUrl]) {
-            this.loadingTeamChannels[serverUrl] = new BehaviorSubject(0);
-        }
-        return this.loadingTeamChannels[serverUrl];
-    }
-
-    setTeamLoading = (serverUrl: string, loading: boolean) => {
-        const subject = this.getLoadingTeamChannelsSubject(serverUrl);
-        subject.next(subject.value + (loading ? 1 : -1));
-    };
-
-    observeLoadingTeamChannels = (serverUrl: string) => {
-        return this.getLoadingTeamChannelsSubject(serverUrl).pipe(
-            switchMap((v) => of$(v !== 0)),
-            distinctUntilChanged(),
-        );
-    };
 
     // Ephemeral control when (un)archiving a channel locally
     addArchivingChannel = (channelId: string) => {

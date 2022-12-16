@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {retryInitialTeamAndChannel} from '@actions/remote/retry';
 import LoadingError from '@components/loading_error';
 import {useServerDisplayName, useServerUrl} from '@context/server';
-import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
 
 const LoadTeamsError = () => {
     const {formatMessage} = useIntl();
@@ -18,9 +18,9 @@ const LoadTeamsError = () => {
     const onRetryTeams = useCallback(async () => {
         setLoading(true);
 
-        EphemeralStore.setTeamLoading(serverUrl, true);
+        setTeamLoading(serverUrl, true);
         const {error} = await retryInitialTeamAndChannel(serverUrl);
-        EphemeralStore.setTeamLoading(serverUrl, false);
+        setTeamLoading(serverUrl, false);
 
         if (error) {
             setLoading(false);

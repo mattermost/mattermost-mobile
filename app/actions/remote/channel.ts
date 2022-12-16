@@ -24,6 +24,7 @@ import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams, r
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
@@ -361,7 +362,7 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
 
     try {
         if (!fetchOnly) {
-            EphemeralStore.setTeamLoading(serverUrl, true);
+            setTeamLoading(serverUrl, true);
         }
         const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
@@ -391,13 +392,13 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
             if (models.length) {
                 await operator.batchRecords(models);
             }
-            EphemeralStore.setTeamLoading(serverUrl, false);
+            setTeamLoading(serverUrl, false);
         }
 
         return {channels, memberships, categories};
     } catch (error) {
         if (!fetchOnly) {
-            EphemeralStore.setTeamLoading(serverUrl, false);
+            setTeamLoading(serverUrl, false);
         }
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};

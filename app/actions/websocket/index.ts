@@ -47,6 +47,7 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 
@@ -138,10 +139,10 @@ async function doReconnect(serverUrl: string) {
     const currentTeam = await getCurrentTeam(database);
     const currentChannel = await getCurrentChannel(database);
 
-    EphemeralStore.setTeamLoading(serverUrl, true);
+    setTeamLoading(serverUrl, true);
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
-        EphemeralStore.setTeamLoading(serverUrl, false);
+        setTeamLoading(serverUrl, false);
         return;
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
@@ -151,7 +152,7 @@ async function doReconnect(serverUrl: string) {
     const dt = Date.now();
     await operator.batchRecords(models);
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
-    EphemeralStore.setTeamLoading(serverUrl, false);
+    setTeamLoading(serverUrl, false);
 
     await fetchPostDataIfNeeded(serverUrl);
 

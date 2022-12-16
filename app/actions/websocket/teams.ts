@@ -14,6 +14,7 @@ import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeam, prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {logDebug} from '@utils/log';
 
 export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMessage) {
@@ -71,7 +72,7 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     EphemeralStore.startAddingToTeam(teamId);
 
     try {
-        EphemeralStore.setTeamLoading(serverUrl, true);
+        setTeamLoading(serverUrl, true);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
 
@@ -91,10 +92,10 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
 
         const models = await Promise.all(modelPromises);
         await operator.batchRecords(models.flat());
-        EphemeralStore.setTeamLoading(serverUrl, false);
+        setTeamLoading(serverUrl, false);
     } catch (error) {
         logDebug('could not handle user added to team websocket event');
-        EphemeralStore.setTeamLoading(serverUrl, false);
+        setTeamLoading(serverUrl, false);
     }
 
     EphemeralStore.finishAddingToTeam(teamId);
