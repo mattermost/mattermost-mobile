@@ -20,7 +20,7 @@ const OpenInChannelOption = ({threadId}: Props) => {
 
     const onHandlePress = useCallback(async () => {
         await dismissBottomSheet(Screens.THREAD_OPTIONS);
-        showPermalink(serverUrl, '', threadId, intl);
+        showPermalink(serverUrl, '', threadId);
     }, [intl, serverUrl, threadId]);
 
     return (

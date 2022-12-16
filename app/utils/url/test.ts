@@ -5,6 +5,7 @@ import {Linking} from 'react-native';
 
 import DeepLinkType from '@constants/deep_linking';
 import TestHelper from '@test/test_helper';
+import {matchDeepLink, parseDeepLink} from '@utils/deep_link';
 import * as UrlUtils from '@utils/url';
 
 /* eslint-disable max-nested-callbacks */
@@ -136,22 +137,22 @@ describe('UrlUtils', () => {
             {
                 name: 'should return null if all inputs are empty',
                 input: {url: '', serverURL: '', siteURL: ''},
-                expected: null,
+                expected: {type: 'invalid'},
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: '', serverURL: '', siteURL: null},
-                expected: null,
+                expected: {type: 'invalid'},
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: '', serverURL: null, siteURL: ''},
-                expected: null,
+                expected: {type: 'invalid'},
             },
             {
                 name: 'should return null if any of the input is null',
                 input: {url: null, serverURL: '', siteURL: ''},
-                expected: null,
+                expected: {type: 'invalid'},
             },
             {
                 name: 'should return null for not supported link',
@@ -160,12 +161,12 @@ describe('UrlUtils', () => {
                     serverURL: SERVER_URL,
                     siteURL: SITE_URL,
                 },
-                expected: null,
+                expected: {type: 'invalid'},
             },
             {
                 name: 'should return null despite url subset match',
                 input: {url: 'http://myserver.com', serverURL: 'http://myserver.co'},
-                expected: null,
+                expected: {type: 'invalid'},
             },
             {
                 name: 'should match despite no server URL in input link',
@@ -253,7 +254,10 @@ describe('UrlUtils', () => {
             const {name, input, expected} = test;
 
             it(name, () => {
-                expect(UrlUtils.matchDeepLink(input.url!, input.serverURL!, input.siteURL!)).toEqual(expected);
+                const match = matchDeepLink(input.url!, input.serverURL!, input.siteURL!);
+                const parsed = parseDeepLink(match);
+                Reflect.deleteProperty(parsed, 'url');
+                expect(parsed).toEqual(expected);
             });
         }
     });

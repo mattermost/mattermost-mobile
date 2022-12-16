@@ -3,6 +3,7 @@
 
 const LaunchType = {
     AddServer: 'add-server',
+    AddServerFromDeepLink: 'add-server-deeplink',
     Normal: 'normal',
     DeepLink: 'deeplink',
     Notification: 'notification',
