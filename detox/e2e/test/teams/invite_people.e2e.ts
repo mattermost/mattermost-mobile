@@ -69,7 +69,7 @@ describe('Teams - Invite', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T - should open the invite screen', async () => {
+    it('MM-T5360 - should open the invite screen', async () => {
         // * Verify invite screen Header buttons
         await expect(Invite.closeButton).toBeVisible();
         await expect(Invite.sendButton).toBeVisible();
@@ -107,7 +107,7 @@ describe('Teams - Invite', () => {
         }
     });
 
-    it('MM-T - should show no results item in search list', async () => {
+    it('MM-T5361 - should show no results item in search list', async () => {
         const noUser = 'qwertyuiop';
 
         // # Search for a non existent user
@@ -118,7 +118,7 @@ describe('Teams - Invite', () => {
         await expect(Invite.getSearchListNoResultsText(noUser)).toHaveText(noUser);
     });
 
-    it('MM-T - should be able to send email invite', async () => {
+    it('MM-T5362 - should be able to send email invite', async () => {
         const noUserEmailFormat = 'qwerty@ui.op';
 
         // # Search for a non existent user with email format
@@ -146,7 +146,7 @@ describe('Teams - Invite', () => {
         await expect(Invite.getSummaryReportTextItemText(noUserEmailFormat)).toHaveText(noUserEmailFormat);
     });
 
-    it('MM-T - should be able to send user invite', async () => {
+    it('MM-T5363 - should be able to send user invite', async () => {
         const username = ` @${testUser1.username}`;
 
         // # Search for a existent user
@@ -174,7 +174,7 @@ describe('Teams - Invite', () => {
         await expect(Invite.getSummaryReportUserItemText(testUser1.id)).toHaveText(username);
     });
 
-    it('MM-T - should not be able to send user invite to user already in team', async () => {
+    it('MM-T5364 - should not be able to send user invite to user already in team', async () => {
         const username = ` @${testUser1.username}`;
 
         // # Search for a existent user already in team
@@ -200,7 +200,7 @@ describe('Teams - Invite', () => {
         await expect(Invite.getSummaryReportUserItemText(testUser1.id)).toHaveText(username);
     });
 
-    it('MM-T - should handle both sent and not sent invites', async () => {
+    it('MM-T5365 - should handle both sent and not sent invites', async () => {
         const {user: testUser2} = await User.apiCreateUser(siteOneUrl, {prefix: 'i'});
 
         const username1 = ` @${testUser1.username}`;
