@@ -9,7 +9,7 @@ import {
     RetryTypes,
 } from '@mattermost/react-native-network-client';
 import {DeviceEventEmitter} from 'react-native';
-import UserAgent from 'react-native-user-agent';
+import DeviceInfo from 'react-native-device-info';
 
 import LocalConfig from '@assets/config.json';
 import {Client} from '@client/rest';
@@ -95,11 +95,11 @@ class NetworkManager {
     };
 
     private buildConfig = async () => {
-        const userAgent = UserAgent.getUserAgent();
+        const userAgent = `Mattermost Mobile/${DeviceInfo.getVersion()}+${DeviceInfo.getBuildNumber()} (${DeviceInfo.getSystemName()}; ${DeviceInfo.getSystemVersion()}; ${DeviceInfo.getModel()})`;
         const managedConfig = ManagedApp.enabled ? Emm.getManagedConfig<ManagedConfig>() : undefined;
         const headers: Record<string, string> = {
-            ...this.DEFAULT_CONFIG.headers,
             [ClientConstants.HEADER_USER_AGENT]: userAgent,
+            ...this.DEFAULT_CONFIG.headers,
         };
 
         const config = {
