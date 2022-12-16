@@ -13,6 +13,8 @@
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
 		27F29C7829470CAF0024A303 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 27F29C7729470CAF0024A303 /* Sentry */; };
 		27F29C7A29470CB70024A303 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 27F29C7929470CB70024A303 /* Sentry */; };
+		27F29C82294C94790024A303 /* Sentry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F29C81294C94790024A303 /* Sentry.swift */; };
+		27F29C83294C94790024A303 /* Sentry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27F29C81294C94790024A303 /* Sentry.swift */; };
 		49AE370126D4455D00EF4E52 /* Gekidou in Frameworks */ = {isa = PBXBuildFile; productRef = 49AE370026D4455D00EF4E52 /* Gekidou */; };
 		536CC6C323E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */; };
 		58495E36BF1A4EAB93609E57 /* Metropolis-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 54956DEFEBB74EF78C3A6AE5 /* Metropolis-SemiBold.ttf */; };
@@ -160,6 +162,7 @@
 		25BF2BACE89201DE6E585B7E /* Pods-Mattermost.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mattermost.release.xcconfig"; path = "Target Support Files/Pods-Mattermost/Pods-Mattermost.release.xcconfig"; sourceTree = "<group>"; };
 		27F29C7029470BFF0024A303 /* libSentry.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libSentry.a; sourceTree = BUILT_PRODUCTS_DIR; };
 		27F29C7229470C0D0024A303 /* libSentry.a */ = {isa = PBXFileReference; explicitFileType = archive.ar; path = libSentry.a; sourceTree = BUILT_PRODUCTS_DIR; };
+		27F29C81294C94790024A303 /* Sentry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sentry.swift; sourceTree = "<group>"; };
 		297AAFCCF0BD99FC109DA2BC /* Pods-MattermostTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MattermostTests.release.xcconfig"; path = "Target Support Files/Pods-MattermostTests/Pods-MattermostTests.release.xcconfig"; sourceTree = "<group>"; };
 		32AC3D4EA79E44738A6E9766 /* OpenSans-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-BoldItalic.ttf"; path = "../assets/fonts/OpenSans-BoldItalic.ttf"; sourceTree = "<group>"; };
 		3647DF63D6764CF093375861 /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBold.ttf"; path = "../assets/fonts/OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
@@ -633,6 +636,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				27F29C81294C94790024A303 /* Sentry.swift */,
 				13B07FAE1A68108700A75B9A /* Mattermost */,
 				7F581D33221ED5C60099E66B /* NotificationService */,
 				7F292A701E8AB73400A450A3 /* SplashScreenResource */,
@@ -1015,6 +1019,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				27F29C82294C94790024A303 /* Sentry.swift in Sources */,
 				7F581D35221ED5C60099E66B /* NotificationService.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -1051,6 +1056,7 @@
 				7F7E9F6A2864E79E0064BFAF /* CustomAsyncImage.swift in Sources */,
 				7F93AAA628761F2E0047B89F /* NoServersView.swift in Sources */,
 				7F7E9F602864E76D0064BFAF /* AttachmentsView.swift in Sources */,
+				27F29C83294C94790024A303 /* Sentry.swift in Sources */,
 				7F93AAB4287753FC0047B89F /* ImageThumbnail.swift in Sources */,
 				7FA9A98E28673EC200AB35A1 /* ShareViewModel.swift in Sources */,
 				7F93AAB2287750690047B89F /* AttachmentWrapperView.swift in Sources */,

@@ -1,6 +1,6 @@
 import Gekidou
 import UserNotifications
-
+import Sentry
 class NotificationService: UNNotificationServiceExtension {
   let preferences = Gekidou.Preferences.default
   let fibonacciBackoffsInSeconds = [1.0, 2.0, 3.0, 5.0, 8.0]
@@ -8,6 +8,11 @@ class NotificationService: UNNotificationServiceExtension {
   var bestAttemptContent: UNMutableNotificationContent?
 
   var retryIndex = 0
+  
+  override init() {
+    super.init()
+    initSentryAppExt()
+  }
   
   override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
     self.contentHandler = contentHandler
@@ -24,7 +29,8 @@ class NotificationService: UNNotificationServiceExtension {
 
   func processResponse(serverUrl: String, data: Data, bestAttemptContent: UNMutableNotificationContent, contentHandler: ((UNNotificationContent) -> Void)?) {
     bestAttemptContent.userInfo["server_url"] = serverUrl
-    
+    let error = NSError(domain: "Test From Notification Extension", code: 0, userInfo: nil)
+    SentrySDK.capture(error: error)
     let json = try? JSONSerialization.jsonObject(with: data) as! [String: Any]
     if let json = json {
       if let message = json["message"] as? String {
