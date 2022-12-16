@@ -872,5 +872,13 @@
     "invite_people_to_team.message": "Mattermostでコラボレーションやコミュニケーションを行うためのリンクはこちらです。",
     "integration_selector.multiselect.submit": "完了",
     "announcment_banner.okay": "OK",
-    "announcment_banner.dismiss": "アナウンスを閉じる"
+    "announcment_banner.dismiss": "アナウンスを閉じる",
+    "general_settings.report_problem": "問題を報告する",
+    "extension.no_servers.title": "どのサーバーにも接続していません",
+    "extension.no_servers.description": "コンテンツを共有するには、Mattermostサーバーにログインする必要があります。",
+    "extension.no_memberships.title": "まだどのチームにも所属していません",
+    "extension.no_memberships.description": "コンテンツを共有するには、Mattermostサーバー上のメンバになる必要があります。",
+    "connection_banner.not_reachable": "サーバーに到達できません",
+    "connection_banner.not_connected": "インターネットに接続していません",
+    "connection_banner.connected": "接続が回復しました"
 }
