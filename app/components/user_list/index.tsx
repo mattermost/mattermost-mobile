@@ -79,60 +79,37 @@ const addProfileToSection = (sectionKey: string, sections: sectionType, sectionK
 };
 
 export function createProfilesSections(manageMode: boolean, profiles: UserProfile[], members?: ChannelMember[]) {
-    // const sections: {[key: string]: UserProfile[]} = {};
-    // const sectionKeys: string[] = [];
-    //
-    // const map = new Map();
-    // profiles.forEach((p) => map.set(p.id, p));
-    //
-    // members?.forEach((m) => {
-    //     const sectionKey = sectionRoleKeyExtractor(Boolean(m.scheme_admin));
-    //     addProfileToSection(sectionKey, sections, sectionKeys);
-    //     return sections[sectionKey].push({...map.get(m.user_id), isChannelAdmin: m.scheme_admin});
-    // });
-
-    // if (!sections[sectionKey]) {
-    //     sections[sectionKey] = [];
-    //     sectionKeys.push(sectionKey);
-    // }
-    // return {sections, sectionKeys};
-
     const userDictionary = new Map();
     const channelAdminDictionary = new Map();
+    const sections = new Map();
+    if (!profiles.length) {
+        return [];
+    }
 
     profiles.forEach((p) => userDictionary.set(p.id, p));
-    members?.forEach((m) => {
-        if (m.scheme_admin) {
-            return channelAdminDictionary.set(m.user_id,
-                {...userDictionary.get(m.user_id), ...m});
-        }
-        return undefined;
-    });
+    sections.set('ChannelMembers', Array.from(userDictionary.values()));
 
-    const sections = new Map();
-    sections.set('ChannelAdmin', channelAdminDictionary.values());
-    sections.set('ChannelMembers', userDictionary.values());
+    if (members?.length) {
+        members.forEach((m) => {
+            if (m.scheme_admin) {
+                channelAdminDictionary.set(m.user_id, {...userDictionary.get(m.user_id), ...m});
+            }
+        });
+        const channelAdmins = Array.from(channelAdminDictionary.values());
+        if (channelAdmins.length) {
+            sections.set('ChannelAdmin', Array.from(channelAdminDictionary.values()));
+        }
+    }
 
     const results = [];
     for (const [k, v] of sections) {
         results.push({
             id: k,
-            data: sections[k],
+            data: v,
         });
     }
-    console.log('results', results);
 
     return results;
-
-    sectionKeys.sort();
-
-    return sectionKeys.map((sectionKey, index) => {
-        return {
-            id: sectionKey,
-            first: index === 0,
-            data: sections[sectionKey],
-        };
-    });
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -218,9 +195,14 @@ export default function UserList({
     ], [style, keyboardHeight]);
 
     const data = useMemo(() => {
+        if (profiles.length === 0 && !loading) {
+            return [];
+        }
+
         if (term) {
             return profiles;
         }
+
         return createProfilesSections(manageMode, profiles, channelMembers);
     }, [term, profiles, channelMembers]);
 
