@@ -15,7 +15,7 @@ import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categorie
 import {prepareMyChannelsForTeam, getDefaultChannelForTeam} from '@queries/servers/channel';
 import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, getLastTeam, getTeamById, removeTeamFromTeamHistory, queryMyTeams} from '@queries/servers/team';
-import {dismissAllModals, popToRoot, resetToTeams} from '@screens/navigation';
+import {dismissAllModals, popToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
@@ -370,9 +370,9 @@ export async function handleKickFromTeam(serverUrl: string, teamId: string) {
         const teamToJumpTo = await getLastTeam(database, teamId);
         if (teamToJumpTo) {
             await handleTeamChange(serverUrl, teamToJumpTo);
-        } else if (currentServer === serverUrl) {
-            await resetToTeams();
         }
+
+        // Resetting to team select handled by the home screen
     } catch (error) {
         logDebug('Failed to kick user from team', error);
     }

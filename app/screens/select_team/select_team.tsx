@@ -2,14 +2,17 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {Alert, View} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {fetchAllTeams} from '@actions/remote/team';
+import {addCurrentUserToTeam, fetchAllTeams, handleTeamChange} from '@actions/remote/team';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
+import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {resetToHome} from '../navigation';
@@ -23,10 +26,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         backgroundColor: theme.sidebarBg,
     },
+    loading: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 }));
 
 type Props = {
     nTeams: number;
+    firstTeamId?: string;
 }
 
 const safeAreaEdges = ['left' as const, 'right' as const];
@@ -36,12 +45,16 @@ const LOAD_MORE_THRESHOLD = 10;
 
 const SelectTeam = ({
     nTeams,
+    firstTeamId,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
-    const [loading, setLoading] = useState(true);
+    const intl = useIntl();
     const insets = useSafeAreaInsets();
+    const resettingToHome = useRef(false);
+    const [loading, setLoading] = useState(true);
+    const [joining, setJoining] = useState(false);
     const top = useAnimatedStyle(() => {
         return {height: insets.top, backgroundColor: theme.sidebarBg};
     });
@@ -94,6 +107,21 @@ const SelectTeam = ({
         }
     }, [loadTeams, loading]);
 
+    const onTeamPressed = async (teamId: string) => {
+        setJoining(true);
+        const {error} = await addCurrentUserToTeam(serverUrl, teamId);
+        if (error) {
+            Alert.alert(
+                intl.formatMessage({id: 'join_team.error.title', defaultMessage: 'Error joining a team'}),
+                intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team'}),
+            );
+            logDebug('error joining a team:', error);
+            setJoining(false);
+        }
+
+        // Back to home handled in an effect
+    };
+
     useEffect(() => {
         mounted.current = true;
         return () => {
@@ -102,23 +130,31 @@ const SelectTeam = ({
     }, []);
 
     useEffect(() => {
-        if (nTeams > 0) {
-            resetToHome();
+        if (resettingToHome.current) {
+            return;
         }
-    }, [nTeams > 0]);
+
+        if ((nTeams > 0) && firstTeamId) {
+            resettingToHome.current = true;
+            handleTeamChange(serverUrl, firstTeamId).then(() => {
+                resetToHome();
+            });
+        }
+    }, [(nTeams > 0) && firstTeamId]);
 
     useEffect(() => {
         loadTeams();
     }, []);
 
     let body;
-    if (loading && !otherTeams.length) {
-        body = null;
+    if (joining || (loading && !otherTeams.length)) {
+        body = <Loading containerStyle={styles.loading}/>;
     } else if (otherTeams.length) {
         body = (
             <TeamList
                 teams={otherTeams}
                 onEndReached={onEndReached}
+                onPress={onTeamPressed}
                 loading={loading}
             />
         );

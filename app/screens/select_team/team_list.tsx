@@ -4,9 +4,7 @@ import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
-import {addCurrentUserToTeam} from '@actions/remote/team';
 import TeamFlatList from '@components/team_list';
-import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -39,23 +37,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     teams: Team[];
     onEndReached: () => void;
+    onPress: (id: string) => void;
     loading: boolean;
 };
 function TeamList({
     teams,
     onEndReached,
+    onPress,
     loading,
 }: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
-    const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
-
-    const onTeamAdded = async (id: string) => {
-        // Back to home handled in SelectTeam effect
-        await addCurrentUserToTeam(serverUrl, id);
-    };
 
     const containerStyle = useMemo(() => {
         return isTablet ? [styles.container, {maxWidth: 600, alignItems: 'center' as const}] : styles.container;
@@ -78,7 +72,7 @@ function TeamList({
                 textColor={theme.sidebarText}
                 iconBackgroundColor={changeOpacity(theme.sidebarText, 0.16)}
                 iconTextColor={theme.sidebarText}
-                onPress={onTeamAdded}
+                onPress={onPress}
                 onEndReached={onEndReached}
                 loading={loading}
             />

@@ -2,7 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {Alert, View} from 'react-native';
 
 import {addCurrentUserToTeam, fetchAllTeams, handleTeamChange} from '@actions/remote/team';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
@@ -14,6 +15,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal} from '@screens/navigation';
+import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -29,6 +31,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
     },
     empty: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
+    loading: {
         flex: 1,
         alignItems: 'center',
         justifyContent: 'center',
@@ -57,10 +64,12 @@ export default function JoinTeam({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const intl = useIntl();
     const page = useRef(0);
     const hasMore = useRef(true);
     const mounted = useRef(true);
     const [loading, setLoading] = useState(true);
+    const [joining, setJoining] = useState(false);
     const [otherTeams, setOtherTeams] = useState<Team[]>([]);
 
     const loadTeams = useCallback(async (alreadyLoaded = 0) => {
@@ -105,8 +114,16 @@ export default function JoinTeam({
     }, [loadTeams, loading]);
 
     const onPress = useCallback(async (teamId: string) => {
+        setJoining(true);
         const {error} = await addCurrentUserToTeam(serverUrl, teamId);
-        if (!error) {
+        if (error) {
+            Alert.alert(
+                intl.formatMessage({id: 'join_team.error.title', defaultMessage: 'Error joining a team'}),
+                intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team'}),
+            );
+            logDebug('error joining a team:', error);
+            setJoining(false);
+        } else {
             handleTeamChange(serverUrl, teamId);
             dismissModal({componentId});
         }
@@ -128,8 +145,8 @@ export default function JoinTeam({
     const hasOtherTeams = Boolean(otherTeams.length);
 
     let body;
-    if (loading && !hasOtherTeams) {
-        body = (<Loading/>);
+    if ((loading && !hasOtherTeams) || joining) {
+        body = (<Loading containerStyle={styles.loading}/>);
     } else if (hasOtherTeams) {
         body = (
             <TeamList
