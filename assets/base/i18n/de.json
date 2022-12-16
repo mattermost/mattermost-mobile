@@ -896,7 +896,7 @@
     "mobile.calls_host": "Gastgeber",
     "mobile.calls_host_rec": "Du zeichnest diese Besprechung auf. Bitte informiere alle Teilnehmer darüber, dass diese Sitzung aufgezeichnet wird.",
     "mobile.calls_dismiss": "Verwerfen",
-    "mobile.calls_call_thread": "Kanal öffnen",
+    "mobile.calls_call_thread": "Call Unterhaltung",
     "mobile.calls_stop_recording": "Aufnahme stoppen",
     "mobile.calls_record": "Aufnehmen",
     "mobile.calls_host_rec_title": "Sie zeichnest gerade auf",
@@ -929,5 +929,7 @@
     "mobile.calls_request_message": "Die Anrufe laufen derzeit im Testmodus, und nur Systemadministratoren können sie starten. Wende dich für Hilfe direkt an deinen Systemadministrator",
     "mobile.calls_participant_limit_title_GA": "Dieser Aufruf ist ausgelastet",
     "mobile.calls_limit_msg_GA": "Upgrade auf Cloud Professional oder Cloud Enterprise, um Gruppenanrufe mit mehr als {maxParticipants} Teilnehmern zu ermöglichen.",
-    "general_settings.report_problem": "Fehler melden"
+    "general_settings.report_problem": "Fehler melden",
+    "thread.loadingReplies": "Lade Antworten...",
+    "mobile.calls_open_channel": "Kanal öffnen"
 }
