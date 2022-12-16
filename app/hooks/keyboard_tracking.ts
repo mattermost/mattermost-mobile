@@ -11,6 +11,10 @@ export const useKeyboardTrackingPaused = (keyboardTrackingRef: RefObject<Keyboar
     const isPostDraftPaused = useRef(false);
 
     useEffect(() => {
+        keyboardTrackingRef.current?.resumeTracking(trackerId);
+    }, []);
+
+    useEffect(() => {
         const onCommandComplete = () => {
             const id = NavigationStore.getVisibleScreen();
             if (screens.includes(id) && isPostDraftPaused.current) {
