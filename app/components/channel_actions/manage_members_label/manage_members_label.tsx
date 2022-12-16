@@ -95,7 +95,7 @@ const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOptio
             alertErrorWithFallback(intl, result.error, messages.role_change_error);
         }
         await dismissBottomSheet();
-        DeviceEventEmitter.emit(Events.MANAGE_USER_CHANGE_ROLE, userId);
+        DeviceEventEmitter.emit(Events.MANAGE_USER_CHANGE_ROLE, userId, schemeAdmin);
     };
 
     const onAction = () => {

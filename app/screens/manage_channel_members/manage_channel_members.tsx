@@ -190,7 +190,8 @@ export default function ManageChannelMembers({
         }
     }, [profiles]);
 
-    const handleUserChangeRole = useCallback(async (userId: string) => {
+    const handleUserChangeRole = useCallback(async (userId: string, schemeAdmin: boolean) => {
+        console.log('schemeAdmin', schemeAdmin);
         const updatedUser = await getMemberInChannel(serverUrl, channelId, userId);
         const clone = profiles.map((p) => {
             if (p.id === userId) {
@@ -210,6 +211,35 @@ export default function ManageChannelMembers({
         }
         return profiles;
     }, [term, searchResults, profiles]);
+
+    // test users on community to check role permissions
+    // we only want channel_admins to show in the channel_admins section
+    // useEffect(() => {
+    //     console.log('\n');
+    //     const users = ['jason.frerich', 'avinash.lingaloo', 'christopher'];
+    //     profiles.map((p) => {
+    //         if (users.includes(p.username)) {
+    //             console.log(p.id, p.username, p.roles);
+    //         }
+    //     });
+    //
+    //     const userIds = [
+    //         '9ciscaqbrpd6d8s68k76xb9bte', // avinash lingaloo
+    //         'yp7cfozunfd83r4zxmq6jycdxe', // chris speller
+    //         'zmaiho88ut84prw4w4q74f6kyy', // jason frerich
+    //     ];
+    //
+    //     // if (members) {
+    //     members.map((m) => {
+    //         // console.log('m', m);
+    //         if (userIds.includes(m.userId)) {
+    //             console.log(m.userId);
+    //             console.log(m.schemeAdmin);
+    //         }
+    //     });
+    //
+    //     // }
+    // }, [profiles, members]);
 
     useNavButtonPressed(MANAGE_BUTTON, componentId, toggleManageEnabled, [toggleManageEnabled]);
 

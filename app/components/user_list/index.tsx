@@ -48,27 +48,81 @@ const sectionRoleKeyExtractor = (cAdmin: boolean) => {
     return cAdmin ? SECTION_TITLE_ADMINS : SECTION_TITLE_MEMBERS;
 };
 
-const isChannelAdmin = (members: ChannelMember[], profile: UserProfile) => {
-    return members?.find((m: ChannelMember) => (m.user_id === profile.id) && m.scheme_admin);
+//
+// console.log('\n');
+
+// const users = ['jason.frerich', 'avinash.lingaloo', 'christopher'];
+//
+// const userIds = [
+//     '9ciscaqbrpd6d8s68k76xb9bte', // avinash lingaloo
+//     'yp7cfozunfd83r4zxmq6jycdxe', // chris speller
+//     'zmaiho88ut84prw4w4q74f6kyy', // jason frerich
+// ];
+
+// if (members) {
+//     console.log('. IN HERE!');
+//     members.map((m) => {
+//         if (userIds.includes(m.user_id)) {
+//             console.log(m.user_id, m.scheme_admin);
+//         }
+//     });
+// }
+
+type sectionType = {[key: string]: UserProfile[]};
+
+const addProfileToSection = (sectionKey: string, sections: sectionType, sectionKeys: string[]) => {
+    if (!sections[sectionKey]) {
+        sections[sectionKey] = [];
+        sectionKeys.push(sectionKey);
+    }
+    return {sections, sectionKeys};
 };
 
 export function createProfilesSections(manageMode: boolean, profiles: UserProfile[], members?: ChannelMember[]) {
-    const sections: {[key: string]: UserProfile[]} = {};
-    const sectionKeys: string[] = [];
-    for (const profile of profiles) {
-        let chAdmin;
-        if (members?.length) {
-            chAdmin = isChannelAdmin(members, profile);
-        }
-        const sectionKey = manageMode ? sectionRoleKeyExtractor(Boolean(chAdmin)) : sectionKeyExtractor(profile);
+    // const sections: {[key: string]: UserProfile[]} = {};
+    // const sectionKeys: string[] = [];
+    //
+    // const map = new Map();
+    // profiles.forEach((p) => map.set(p.id, p));
+    //
+    // members?.forEach((m) => {
+    //     const sectionKey = sectionRoleKeyExtractor(Boolean(m.scheme_admin));
+    //     addProfileToSection(sectionKey, sections, sectionKeys);
+    //     return sections[sectionKey].push({...map.get(m.user_id), isChannelAdmin: m.scheme_admin});
+    // });
 
-        if (!sections[sectionKey]) {
-            sections[sectionKey] = [];
-            sectionKeys.push(sectionKey);
-        }
+    // if (!sections[sectionKey]) {
+    //     sections[sectionKey] = [];
+    //     sectionKeys.push(sectionKey);
+    // }
+    // return {sections, sectionKeys};
 
-        sections[sectionKey].push(profile);
+    const userDictionary = new Map();
+    const channelAdminDictionary = new Map();
+
+    profiles.forEach((p) => userDictionary.set(p.id, p));
+    members?.forEach((m) => {
+        if (m.scheme_admin) {
+            return channelAdminDictionary.set(m.user_id,
+                {...userDictionary.get(m.user_id), ...m});
+        }
+        return undefined;
+    });
+
+    const sections = new Map();
+    sections.set('ChannelAdmin', channelAdminDictionary.values());
+    sections.set('ChannelMembers', userDictionary.values());
+
+    const results = [];
+    for (const [k, v] of sections) {
+        results.push({
+            id: k,
+            data: sections[k],
+        });
     }
+    console.log('results', results);
+
+    return results;
 
     sectionKeys.sort();
 
@@ -115,6 +169,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
+
+type UserProfileWithChannelAdmin = UserProfile & {isChannelAdmin?: boolean}
 
 type Props = {
     profiles: UserProfile[];
@@ -185,16 +241,19 @@ export default function UserList({
         }
     }, []);
 
-    const renderItem = useCallback(({item, index, section}: ListRenderItemInfo<UserProfile> & {section?: SectionListData<UserProfile>}) => {
+    const renderItem = useCallback(({item, index, section}: ListRenderItemInfo<UserProfileWithChannelAdmin> & {section?: SectionListData<UserProfileWithChannelAdmin>}) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = Boolean(selectedIds[item.id]);
         const canAdd = Object.keys(selectedIds).length < General.MAX_USERS_IN_GM;
+
+        const isChAdmin = item.isChannelAdmin || false;
 
         return (
             <UserListRow
                 key={item.id}
                 highlight={section?.first && index === 0}
                 id={item.id}
+                isChannelAdmin={isChAdmin}
                 isMyUser={currentUserId === item.id}
                 manageMode={manageMode}
                 onPress={handleSelectProfile}
