@@ -895,6 +895,7 @@
   "terms_of_service.title": "Terms of Service",
   "thread.header.thread": "Thread",
   "thread.header.thread_in": "in {channelName}",
+  "thread.loadingReplies": "Loading replies...",
   "thread.noReplies": "No replies yet",
   "thread.options.title": "Thread Actions",
   "thread.repliesCount": "{repliesCount, number} {repliesCount, plural, one {reply} other {replies}}",
