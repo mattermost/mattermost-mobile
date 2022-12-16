@@ -327,6 +327,7 @@
   "intro.welcome.public": "Add some more team members to the channel or start a conversation below.",
   "invite_people_to_team.message": "Here’s a link to collaborate and communicate with us on Mattermost.",
   "invite_people_to_team.title": "Join the {team} team",
+  "join_team.error.group_error": "You need to be a member of a linked group to join this team.",
   "join_team.error.message": "There has been an error joining the team",
   "join_team.error.title": "Error joining a team",
   "last_users_message.added_to_channel.type": "were **added to the channel** by {actor}.",

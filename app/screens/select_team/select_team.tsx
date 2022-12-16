@@ -10,8 +10,10 @@ import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 import {addCurrentUserToTeam, fetchAllTeams, handleTeamChange} from '@actions/remote/team';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import Loading from '@components/loading';
+import {ServerErrors} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {isServerError} from '@utils/errors';
 import {logDebug} from '@utils/log';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -111,11 +113,22 @@ const SelectTeam = ({
         setJoining(true);
         const {error} = await addCurrentUserToTeam(serverUrl, teamId);
         if (error) {
+            let errMsg;
+            if (isServerError(error) && error.server_error_id === ServerErrors.TEAM_MEMBERSHIP_DENIAL_ERROR_ID) {
+                errMsg = intl.formatMessage({
+                    id: 'join_team.error.group_error',
+                    defaultMessage: 'You need to be a member of a linked group to join this team.',
+                });
+            } else {
+                errMsg = intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team'});
+            }
+
             Alert.alert(
                 intl.formatMessage({id: 'join_team.error.title', defaultMessage: 'Error joining a team'}),
-                intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team'}),
+                errMsg,
             );
             logDebug('error joining a team:', error);
+
             setJoining(false);
         }
 
