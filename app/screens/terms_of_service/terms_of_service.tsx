@@ -28,6 +28,7 @@ import {typography} from '@utils/typography';
 
 type Props = {
     siteName?: string;
+    showToS: boolean;
     componentId: string;
 }
 
@@ -91,6 +92,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
 const TermsOfService = ({
     siteName = 'Mattermost',
+    showToS,
     componentId,
 }: Props) => {
     const theme = useTheme();
@@ -161,21 +163,19 @@ const TermsOfService = ({
 
     const acceptTerms = useCallback(async () => {
         setLoading(true);
-        const {resp} = await updateTermsOfServiceStatus(serverUrl, termsId, true);
-        if (resp?.status === 'OK') {
-            dismissOverlay(componentId);
-        } else {
+        const {error} = await updateTermsOfServiceStatus(serverUrl, termsId, true);
+        if (error) {
             alertError(acceptTerms);
         }
     }, [alertError, alertDecline, termsId, serverUrl, componentId]);
 
     const declineTerms = useCallback(async () => {
         setLoading(true);
-        const {resp} = await updateTermsOfServiceStatus(serverUrl, termsId, false);
-        if (resp?.status === 'OK') {
-            alertDecline();
-        } else {
+        const {error} = await updateTermsOfServiceStatus(serverUrl, termsId, false);
+        if (error) {
             alertError(declineTerms);
+        } else {
+            alertDecline();
         }
     }, [serverUrl, termsId, closeTermsAndLogout]);
 
@@ -196,6 +196,12 @@ const TermsOfService = ({
             NavigationStore.setToSOpen(false);
         };
     }, []);
+
+    useEffect(() => {
+        if (!showToS) {
+            dismissOverlay(componentId);
+        }
+    }, [showToS, componentId]);
 
     useAndroidHardwareBackHandler(componentId, onPressClose);
 
