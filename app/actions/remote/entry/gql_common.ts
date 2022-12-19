@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import {DeviceEventEmitter} from 'react-native';
 
 import {storeConfigAndLicense} from '@actions/local/systems';
 import {MyChannelsRequest} from '@actions/remote/channel';
@@ -12,7 +11,7 @@ import {MyTeamsRequest} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
-import {Events, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
@@ -49,9 +48,7 @@ export async function deferredAppEntryGraphQLActions(
     setTimeout(() => {
         if (chData?.channels?.length && chData.memberships?.length) {
             // defer fetching posts for unread channels on initial team
-            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, true);
-        } else {
-            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
+            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
         }
     }, FETCH_UNREADS_TIMEOUT);
 
