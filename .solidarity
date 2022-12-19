@@ -57,8 +57,8 @@
       {
         "rule": "cli",
         "binary": "bundler",
-        "semver": "2.1.4",
-        "error": "install watchman `gem install bundler --version 2.1.4`",
+        "semver": "2.3.26",
+        "error": "install bundler `gem install bundler --version 2.3.26`",
         "platform": "darwin"
       },
       {
