@@ -209,6 +209,7 @@ export const queryPinnedPostsInChannel = (database: Database, channelId: string)
             Q.where('channel_id', channelId),
             Q.where('is_pinned', Q.eq(true)),
         ),
+        Q.sortBy('create_at', Q.asc),
     );
 };
 
