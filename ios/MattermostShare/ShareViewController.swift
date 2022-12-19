@@ -20,9 +20,8 @@ class ShareViewController: UIViewController {
   
   override func viewDidLoad() {
     super.viewDidLoad()
-    initSentryAppExt()
     self.isModalInPresentation = true
-    
+    initSentryAppExt()
     self.addObservers()
     fileManager = LocalFileManager()
     if let inputItems = extensionContext?.inputItems {
@@ -36,6 +35,7 @@ class ShareViewController: UIViewController {
           )
         })
     }
+   
   }
   
   override func viewDidAppear(_ animated: Bool) {
@@ -96,8 +96,7 @@ class ShareViewController: UIViewController {
       let fileCount = attachments.count
       let files: [String] = attachments.map{ $0.fileUrl.absoluteString }
       
-      let error = NSError(domain: "Test From Share Extension", code: 0, userInfo: nil)
-      SentrySDK.capture(error: error)
+     
      
       var message = text
       if linkPreviewUrl != nil && !linkPreviewUrl!.isEmpty {
