@@ -34,7 +34,8 @@ const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId}
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const manageOption = isChannelAdmin ? Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_MEMBER : Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_ADMIN;
+    const {MAKE_CHANNEL_ADMIN, MAKE_CHANNEL_MEMBER} = Members.MANAGE_MEMBERS_OPTIONS;
+    const manageOption = isChannelAdmin ? MAKE_CHANNEL_MEMBER : MAKE_CHANNEL_ADMIN;
 
     return (
         <>
