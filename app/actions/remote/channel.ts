@@ -10,7 +10,7 @@ import {addChannelToDefaultCategory, storeCategories} from '@actions/local/categ
 import {removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
-import {Events, General, Preferences, Screens} from '@constants';
+import {DeepLink, Events, General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -29,7 +29,6 @@ import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
-import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import {fetchGroupsForChannelIfConstrained} from './groups';
@@ -663,7 +662,7 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
     let joinedTeam = false;
     let teamId = '';
     try {
-        if (teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT) {
+        if (teamName === DeepLink.Redirect) {
             teamId = await getCurrentTeamId(database);
         } else {
             const team = await getTeamByName(database, teamName);

@@ -406,7 +406,8 @@ function Permalink({
 function processThreadPosts(posts: PostModel[], postId: string) {
     posts.sort((a, b) => b.createAt - a.createAt);
     const postIndex = posts.findIndex((p) => p.id === postId);
-    return posts.slice(postIndex - POSTS_LIMIT, postIndex + POSTS_LIMIT + 1);
+    const start = postIndex - POSTS_LIMIT;
+    return posts.slice(start < 0 ? postIndex : start, postIndex + POSTS_LIMIT + 1);
 }
 
 export default Permalink;
