@@ -649,7 +649,6 @@
     "server_upgrade.dismiss": "Yok say",
     "server_upgrade.alert_description": "{serverDisplayName} sunucunuz desteklenmeyen bir sunucu sürümü kullanıyor. Kullanıcılar uyumluluk sorunlarından kaynaklanan çökmeler ya da uygulamanın temel işlevselliğini bozan ciddi sorunlar ile karşılaşacak. Sunucu sürümünün {supportedServerVersion} ya da üzerindeki bir sürüme güncellenmesi gerekli.",
     "your.servers": "Sunucularınız",
-    "video.failed_title": "Görüntü oynatılamadı",
     "video.failed_description": "Görüntü oynatılmaya çalışılırken bir sorun çıktı.\n",
     "video.download": "Görüntüyü indir",
     "user.tutorial.long_press": "Bir kullanıcının profilini görüntülemek için bir ögeye uzun dokunun",

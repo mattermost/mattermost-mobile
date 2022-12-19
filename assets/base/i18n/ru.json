@@ -821,7 +821,6 @@
     "announcment_banner.dismiss": "Закрыть объявление",
     "account.user_status.title": "Присутствие пользователя",
     "your.servers": "Ваши серверы",
-    "video.failed_title": "Ошибка воспроизведения видео",
     "user.settings.notifications.email_threads.description": "Уведомлять меня обо всех ответах в беседах, за которыми я слежу",
     "user.edit_profile.email.web_client": "Адрес электронной почты должен изменяться с помощью веб-клиента или настольного приложения.",
     "user.edit_profile.email.auth_service": "Вход осуществлен через {service}. Адрес электронной почты не может быть обновлен. Адрес электронной почты используемый для уведомлений {email}.",

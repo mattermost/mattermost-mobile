@@ -388,7 +388,6 @@
     "channel_modal.headerHelp": "チャンネル名近くのチャンネルヘッダーに表示されるテキストを指定してください。例えば、よく利用されるリンクを [リンクのタイトル](http://example.com) と入力してください。",
     "channel_info.notification.none": "しない",
     "your.servers": "あなたのサーバー",
-    "video.failed_title": "動画を再生できませんでした",
     "video.failed_description": "動画を再生する際にエラーが発生しました。\n",
     "video.download": "動画をダウンロード",
     "user.tutorial.long_press": "ユーザーのプロフィールを表示するために、アイテムを長押ししてください",
