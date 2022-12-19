@@ -189,7 +189,7 @@ export default function UserList({
         }
 
         return createProfilesSections(profiles, channelMembers);
-    }, [term, profiles, channelMembers]);
+    }, [channelMembers, loading, profiles, term]);
 
     const openUserProfile = useCallback(async (profile: UserProfile) => {
         const {user} = await storeProfile(serverUrl, profile);
