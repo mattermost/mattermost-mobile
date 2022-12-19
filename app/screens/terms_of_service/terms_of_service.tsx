@@ -195,7 +195,7 @@ const TermsOfService = ({
         return () => {
             NavigationStore.setToSOpen(false);
         };
-    });
+    }, []);
 
     useAndroidHardwareBackHandler(componentId, onPressClose);
 
