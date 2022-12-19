@@ -190,19 +190,18 @@ export default function ManageChannelMembers({
         }
     }, [profiles]);
 
-    const handleUserChangeRole = useCallback(async (userId: string, schemeAdmin: boolean) => {
-        console.log('schemeAdmin', schemeAdmin);
-        const updatedUser = await getMemberInChannel(serverUrl, channelId, userId);
-        const clone = profiles.map((p) => {
-            if (p.id === userId) {
-                p.roles = updatedUser?.member.roles;
-                return p;
+    const handleUserChangeRole = useCallback(async ({userId, schemeAdmin}: {userId: string; schemeAdmin: boolean}) => {
+        await getMemberInChannel(serverUrl, channelId, userId);
+        const clone = channelMembers.map((m) => {
+            if (m.user_id === userId) {
+                m.scheme_admin = schemeAdmin;
+                return m;
             }
-            return p;
+            return m;
         });
 
-        setProfiles(clone);
-    }, [getProfiles, profiles]);
+        setChannelMembers(clone);
+    }, [channelMembers]);
 
     const data = useMemo(() => {
         const isSearch = Boolean(term);

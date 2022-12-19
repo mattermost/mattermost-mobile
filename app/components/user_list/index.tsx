@@ -20,6 +20,9 @@ import {
 } from '@utils/theme';
 import {typography} from '@utils/typography';
 
+type sectionType = {[key: string]: UserProfile[]};
+type UserProfileWithChannelAdmin = UserProfile & {isChannelAdmin?: boolean}
+
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
 
@@ -45,30 +48,9 @@ const sectionKeyExtractor = (profile: UserProfile) => {
 };
 
 const sectionRoleKeyExtractor = (cAdmin: boolean) => {
+    // Group items by channel admin or channel member
     return cAdmin ? SECTION_TITLE_ADMINS : SECTION_TITLE_MEMBERS;
 };
-
-//
-// console.log('\n');
-
-// const users = ['jason.frerich', 'avinash.lingaloo', 'christopher'];
-//
-// const userIds = [
-//     '9ciscaqbrpd6d8s68k76xb9bte', // avinash lingaloo
-//     'yp7cfozunfd83r4zxmq6jycdxe', // chris speller
-//     'zmaiho88ut84prw4w4q74f6kyy', // jason frerich
-// ];
-
-// if (members) {
-//     console.log('. IN HERE!');
-//     members.map((m) => {
-//         if (userIds.includes(m.user_id)) {
-//             console.log(m.user_id, m.scheme_admin);
-//         }
-//     });
-// }
-
-type sectionType = {[key: string]: UserProfile[]};
 
 const addProfileToSection = (sectionKey: string, sections: sectionType, sectionKeys: string[]) => {
     if (!sections[sectionKey]) {
@@ -78,38 +60,43 @@ const addProfileToSection = (sectionKey: string, sections: sectionType, sectionK
     return {sections, sectionKeys};
 };
 
-export function createProfilesSections(manageMode: boolean, profiles: UserProfile[], members?: ChannelMember[]) {
-    const userDictionary = new Map();
-    const channelAdminDictionary = new Map();
-    const sections = new Map();
-    if (!profiles.length) {
-        return [];
-    }
+export function createProfilesSections(profiles: UserProfile[], members?: ChannelMember[]) {
+    const sections: {[key: string]: UserProfile[]} = {};
+    const sectionKeys: string[] = [];
 
-    profiles.forEach((p) => userDictionary.set(p.id, p));
-    sections.set('ChannelMembers', Array.from(userDictionary.values()));
+    const map = new Map();
 
+    // when channel members are included, build a new map that includes
+    // whether the user is a channel admin, using the isChannelAdmin field
     if (members?.length) {
-        members.forEach((m) => {
-            if (m.scheme_admin) {
-                channelAdminDictionary.set(m.user_id, {...userDictionary.get(m.user_id), ...m});
-            }
-        });
-        const channelAdmins = Array.from(channelAdminDictionary.values());
-        if (channelAdmins.length) {
-            sections.set('ChannelAdmin', Array.from(channelAdminDictionary.values()));
-        }
-    }
+        profiles.forEach((p) => map.set(p.id, p));
+        members?.forEach((m) => {
+            const sectionKey = sectionRoleKeyExtractor(Boolean(m.scheme_admin));
+            addProfileToSection(sectionKey, sections, sectionKeys);
 
-    const results = [];
-    for (const [k, v] of sections) {
-        results.push({
-            id: k,
-            data: v,
+            // add isChannelAdmin field to the user profile if grouping members
+            // by channel admin permission
+            return sections[sectionKey].push({...map.get(m.user_id), isChannelAdmin: m.scheme_admin});
+        });
+    } else {
+        profiles.forEach((p) => {
+            const sectionKey = sectionKeyExtractor(p);
+            addProfileToSection(sectionKey, sections, sectionKeys);
+            return sections[sectionKey].push(p);
         });
     }
 
-    return results;
+    // sort keys alphabetically. This works for user name sections and channel
+    // admin / channel member sections
+    sectionKeys.sort();
+
+    return sectionKeys.map((sectionKey, index) => {
+        return {
+            id: sectionKey,
+            first: index === 0,
+            data: sections[sectionKey],
+        };
+    });
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -146,8 +133,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
     };
 });
-
-type UserProfileWithChannelAdmin = UserProfile & {isChannelAdmin?: boolean}
 
 type Props = {
     profiles: UserProfile[];
@@ -203,7 +188,7 @@ export default function UserList({
             return profiles;
         }
 
-        return createProfilesSections(manageMode, profiles, channelMembers);
+        return createProfilesSections(profiles, channelMembers);
     }, [term, profiles, channelMembers]);
 
     const openUserProfile = useCallback(async (profile: UserProfile) => {
