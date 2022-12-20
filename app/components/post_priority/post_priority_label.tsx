@@ -35,7 +35,7 @@ const style = StyleSheet.create({
 });
 
 type Props = {
-    label: PostPriorityType;
+    label: PostPriorityData['priority'];
 };
 
 const PostPriorityLabel = ({label}: Props) => {
@@ -48,7 +48,7 @@ const PostPriorityLabel = ({label}: Props) => {
         containerStyle.push(style.urgent);
         iconName = 'alert-outline';
         labelText = intl.formatMessage({id: 'post_priority.label.urgent', defaultMessage: 'URGENT'});
-    } else {
+    } else if (label === PostPriorityType.IMPORTANT) {
         containerStyle.push(style.important);
         iconName = 'alert-circle-outline';
         labelText = intl.formatMessage({id: 'post_priority.label.important', defaultMessage: 'IMPORTANT'});
