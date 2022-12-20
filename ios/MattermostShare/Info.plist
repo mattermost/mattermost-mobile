@@ -73,9 +73,9 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.share-services</string>
 	</dict>
-  <key>SENTRY_DSN</key>
-  <string>$(SENTRY_DSN)</string>
-  <key>SENTRY_ENABLED</key>
-  <string>$(SENTRY_ENABLED)</string>
+	<key>SENTRY_DSN_IOS</key>
+	<string>$(SENTRY_DSN)</string>
+	<key>SENTRY_ENABLED</key>
+	<string>$(SENTRY_ENABLED)</string>
 </dict>
 </plist>
