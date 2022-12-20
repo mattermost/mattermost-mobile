@@ -11,6 +11,7 @@ import {
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {dismissAllModals} from '@screens/navigation';
 import {ClientError} from '@utils/client_error';
+import {isBetaApp} from '@utils/general';
 import {
     captureException,
     captureJSException,
@@ -42,7 +43,10 @@ class JavascriptAndNativeErrorHandler {
         }
 
         logWarning('Handling Javascript error', e, isFatal);
-        captureJSException(e, isFatal);
+
+        if (isBetaApp || (!isBetaApp && isFatal)) {
+            captureJSException(e, isFatal);
+        }
 
         if (isFatal && e instanceof Error) {
             const translations = getTranslations(DEFAULT_LOCALE);

@@ -4,13 +4,13 @@
 import {Database} from '@nozbe/watermelondb';
 import {Breadcrumb} from '@sentry/types';
 import {Platform} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import {Navigation} from 'react-native-navigation';
 
 import Config from '@assets/config.json';
 import DatabaseManager from '@database/manager';
 import {getConfig} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import {isBetaApp} from '@utils/general';
 
 import {ClientError} from './client_error';
 import {logError, logWarning} from './log';
@@ -40,7 +40,6 @@ export function initializeSentry() {
         return;
     }
 
-    const isBetaApp = DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta');
     const mmConfig = {
         environment: isBetaApp ? 'beta' : 'production',
         tracesSampleRate: isBetaApp ? 1.0 : 0.2,
