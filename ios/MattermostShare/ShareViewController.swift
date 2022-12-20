@@ -21,7 +21,6 @@ class ShareViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     self.isModalInPresentation = true
-    initSentryAppExt()
     self.addObservers()
     fileManager = LocalFileManager()
     if let inputItems = extensionContext?.inputItems {
@@ -35,7 +34,9 @@ class ShareViewController: UIViewController {
           )
         })
     }
-   
+    
+    // Initialize Sentry
+    initSentryAppExt()
   }
   
   override func viewDidAppear(_ animated: Bool) {
