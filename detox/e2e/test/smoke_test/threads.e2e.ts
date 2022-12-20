@@ -133,6 +133,7 @@ describe('Smoke Test - Threads', () => {
         // # Go back to global threads screen, open thread options for thread, tap on save option, and tap on thread
         await ThreadScreen.back();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
+        await wait(timeouts.ONE_SEC);
         await ThreadOptionsScreen.unsaveThreadOption.tap();
         await wait(timeouts.ONE_SEC);
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
