@@ -20,7 +20,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    isConnected: boolean;
+    websocketState: WebsocketConnectedState;
 }
 
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => {
@@ -74,7 +74,7 @@ const TIME_TO_OPEN = toMilliseconds({seconds: 3});
 const TIME_TO_CLOSE = toMilliseconds({seconds: 1});
 
 const ConnectionBanner = ({
-    isConnected,
+    websocketState,
 }: Props) => {
     const intl = useIntl();
     const closeTimeout = useRef<NodeJS.Timeout | null>();
@@ -85,6 +85,8 @@ const ConnectionBanner = ({
     const style = getStyle(theme);
     const appState = useAppState();
     const netInfo = useNetInfo();
+
+    const isConnected = websocketState === 'connected';
 
     const openCallback = useCallback(() => {
         setVisible(true);
@@ -97,7 +99,9 @@ const ConnectionBanner = ({
     }, []);
 
     useEffect(() => {
-        if (!isConnected) {
+        if (websocketState === 'connecting') {
+            openCallback();
+        } else if (!isConnected) {
             openTimeout.current = setTimeout(openCallback, TIME_TO_OPEN);
         }
         return () => {
@@ -158,6 +162,8 @@ const ConnectionBanner = ({
     let text;
     if (isConnected) {
         text = intl.formatMessage({id: 'connection_banner.connected', defaultMessage: 'Connection restored'});
+    } else if (websocketState === 'connecting') {
+        text = intl.formatMessage({id: 'connection_banner.connecting', defaultMessage: 'Connecting...'});
     } else if (netInfo.isInternetReachable) {
         text = intl.formatMessage({id: 'connection_banner.not_reachable', defaultMessage: 'The server is not reachable'});
     } else {
