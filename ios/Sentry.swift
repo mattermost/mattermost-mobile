@@ -12,7 +12,7 @@ import Sentry
 
 func initSentryAppExt(){
 if let SENTRY_ENABLED = Bundle.main.infoDictionary?["SENTRY_ENABLED"] as? String,
-   let SENTRY_DSN = Bundle.main.infoDictionary?["SENTRY_DSN"] as? String {
+   let SENTRY_DSN = Bundle.main.infoDictionary?["SENTRY_DSN_IOS"] as? String {
     if(SENTRY_ENABLED=="true"){
       SentrySDK.start { options in
         options.dsn = SENTRY_DSN
