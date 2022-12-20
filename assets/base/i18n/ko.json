@@ -1,5 +1,5 @@
 {
-    "about.date": "빌드 일자:",
+    "about.date": "빌드 날짜:",
     "about.enterpriseEditione1": "엔터프라이즈 에디션",
     "about.enterpriseEditionLearn": "엔터프라이즈 에디션에 대한 자세한 정보 ",
     "about.enterpriseEditionSt": "보안 네트워크에 구축하는 현대적인 커뮤니케이션 플랫폼.",
@@ -378,5 +378,9 @@
     "alert.channel_deleted.description": "{displayName} 채널이 보관처리됨.",
     "account.settings": "설정",
     "account.logout_from": "{serverName}에서 로그아웃",
-    "account.logout": "로그아웃"
+    "account.logout": "로그아웃",
+    "mobile.announcement_banner.title": "공지",
+    "alert.removed_from_team.title": "팀에서 삭제되었습니다",
+    "alert.removed_from_team.description": "귀하는 {displayName} 팀에서 삭제되었습니다.",
+    "alert.removed_from_channel.title": "채널에서 삭제되었습니다"
 }
