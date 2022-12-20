@@ -669,7 +669,7 @@
     "user.settings.notifications.email_threads.description": "Benachrichtige mich über alle Antworten auf Unterhaltungen, die ich verfolge",
     "user.tutorial.long_press": "Langes Drücken auf ein Element, um das Profil eines Benutzers anzuzeigen",
     "video.download": "Video herunterladen",
-    "video.failed_description": "Beim Abspielen des Videos ist ein Fehler aufgetreten.\n",
+    "video.failed_description": "Beim Abspielen des Videos ist ein Fehler aufgetreten.",
     "your.servers": "Deine Server",
     "user.settings.general.field_handled_externally": "Einige der folgenden Felder werden von deinem Login-Anbieter verwaltet. Wenn du sie ändern möchtest, musst du dies über deinen Login-Anbieter tun.",
     "user.edit_profile.email.auth_service": "Anmeldung erfolgt durch {service}. E-Mail-Adresse kann nicht aktualisiert werden. Die E-Mail-Adresse zum Versand von Benachrichtigungen lautet {email}.",
