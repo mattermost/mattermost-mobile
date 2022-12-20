@@ -14,6 +14,7 @@ import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeam, prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {logDebug} from '@utils/log';
 
 export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMessage) {
@@ -62,10 +63,6 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
 }
 
 export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSocketMessage) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
     const {team_id: teamId} = msg.data;
 
     // Ignore duplicated team join events sent by the server
@@ -74,24 +71,32 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     }
     EphemeralStore.startAddingToTeam(teamId);
 
-    const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
+    try {
+        setTeamLoading(serverUrl, true);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
 
-    const modelPromises: Array<Promise<Model[]>> = [];
-    if (teams?.length && teamMemberships?.length) {
-        const {channels, memberships, categories} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
-        modelPromises.push(prepareCategoriesAndCategoriesChannels(operator, categories || [], true));
-        modelPromises.push(...await prepareMyChannelsForTeam(operator, teamId, channels || [], memberships || []));
+        const modelPromises: Array<Promise<Model[]>> = [];
+        if (teams?.length && teamMemberships?.length) {
+            const {channels, memberships, categories} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
+            modelPromises.push(prepareCategoriesAndCategoriesChannels(operator, categories || [], true));
+            modelPromises.push(...await prepareMyChannelsForTeam(operator, teamId, channels || [], memberships || []));
 
-        const {roles} = await fetchRoles(serverUrl, teamMemberships, memberships, undefined, true);
-        modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
+            const {roles} = await fetchRoles(serverUrl, teamMemberships, memberships, undefined, true);
+            modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
+        }
+
+        if (teams && teamMemberships) {
+            modelPromises.push(...prepareMyTeams(operator, teams, teamMemberships));
+        }
+
+        const models = await Promise.all(modelPromises);
+        await operator.batchRecords(models.flat());
+        setTeamLoading(serverUrl, false);
+    } catch (error) {
+        logDebug('could not handle user added to team websocket event');
+        setTeamLoading(serverUrl, false);
     }
-
-    if (teams && teamMemberships) {
-        modelPromises.push(...prepareMyTeams(operator, teams, teamMemberships));
-    }
-
-    const models = await Promise.all(modelPromises);
-    await operator.batchRecords(models.flat());
 
     EphemeralStore.finishAddingToTeam(teamId);
 }

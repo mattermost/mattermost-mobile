@@ -929,7 +929,6 @@
   "user.settings.notifications.email_threads.description": "Notify me about all replies to threads I'm following",
   "user.tutorial.long_press": "Long-press on an item to view a user's profile",
   "video.download": "Download video",
-  "video.failed_description": "An error occurred while trying to play the video.\n",
-  "video.failed_title": "Video playback failed",
+  "video.failed_description": "An error occurred while trying to play the video.",
   "your.servers": "Your servers"
 }

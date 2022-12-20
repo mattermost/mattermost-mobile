@@ -2,8 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {Alert, DeviceEventEmitter, Platform, StyleSheet, useWindowDimensions} from 'react-native';
+import {DeviceEventEmitter, Platform, StyleSheet, useWindowDimensions} from 'react-native';
 import Animated, {Easing, useAnimatedRef, useAnimatedStyle, useSharedValue, withTiming, WithTimingConfig} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Video, {OnPlaybackRateData} from 'react-native-video';
@@ -16,6 +15,8 @@ import {useServerUrl} from '@context/server';
 import {changeOpacity} from '@utils/theme';
 
 import DownloadWithAction from '../footer/download_with_action';
+
+import VideoError from './error';
 
 import type {ImageRendererProps} from '../image_renderer';
 import type {GalleryAction} from '@typings/screens/gallery';
@@ -55,7 +56,6 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const dimensions = useWindowDimensions();
     const fullscreen = useSharedValue(false);
     const {bottom} = useSafeAreaInsets();
-    const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
     const videoRef = useAnimatedRef<Video>();
     const showControls = useRef(!(initialIndex === index));
@@ -63,6 +63,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     const [videoReady, setVideoReady] = useState(false);
     const [videoUri, setVideoUri] = useState(item.uri);
     const [downloading, setDownloading] = useState(false);
+    const [hasError, setHasError] = useState(false);
     const source = useMemo(() => ({uri: videoUri}), [videoUri]);
 
     const setFullscreen = (value: boolean) => {
@@ -71,6 +72,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
 
     const onDownloadSuccess = (path: string) => {
         setVideoUri(path);
+        setHasError(false);
         updateLocalFilePath(serverUrl, item.id, path);
     };
 
@@ -83,18 +85,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
     }, [onShouldHideControls]);
 
     const onError = useCallback(() => {
-        Alert.alert(
-            formatMessage({id: 'video.failed_title', defaultMessage: 'Video playback failed'}),
-            formatMessage({id: 'video.failed_description', defaultMessage: 'An error occurred while trying to play the video.\n'}),
-            [{
-                text: formatMessage({id: 'video.download', defaultMessage: 'Download video'}),
-                onPress: () => {
-                    setDownloading(true);
-                },
-            }, {
-                text: formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
-            }],
-        );
+        setHasError(true);
     }, []);
 
     const onFullscreenPlayerWillDismiss = useCallback(() => {
@@ -124,6 +115,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
 
     const onReadyForDisplay = useCallback(() => {
         setVideoReady(true);
+        setHasError(false);
     }, []);
 
     const handleTouchStart = useCallback(() => {
@@ -142,6 +134,10 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
         let w = width;
         let h = height - (VIDEO_INSET + GALLERY_FOOTER_HEIGHT + bottom);
 
+        if (hasError) {
+            return {height: 0};
+        }
+
         if (fullscreen.value) {
             w = dimensions.width;
             h = dimensions.height;
@@ -154,7 +150,7 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
             width: withTiming(w, timingConfig),
             height: withTiming(h, timingConfig),
         };
-    }, [dimensions]);
+    }, [dimensions, hasError]);
 
     useEffect(() => {
         if (initialIndex === index && videoReady) {
@@ -198,6 +194,18 @@ const VideoRenderer = ({height, index, initialIndex, item, isPageActive, onShoul
                     size={80}
                 />
             </Animated.View>
+            }
+            {hasError &&
+            <VideoError
+                filename={item.name}
+                isDownloading={downloading}
+                isRemote={videoUri.startsWith('http')}
+                onShouldHideControls={handleTouchStart}
+                posterUri={item.posterUri}
+                setDownloading={setDownloading}
+                height={item.height}
+                width={item.width}
+            />
             }
             {downloading &&
             <DownloadWithAction

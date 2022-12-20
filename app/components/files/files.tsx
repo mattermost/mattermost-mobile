@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
 import Animated, {useDerivedValue} from 'react-native-reanimated';
 
@@ -69,10 +69,9 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
         filesForGallery.value[idx] = file;
     };
 
-    const isSingleImage = () => (filesInfo.length === 1 && (isImage(filesInfo[0]) || isVideo(filesInfo[0])));
+    const isSingleImage = useMemo(() => filesInfo.filter((f) => isImage(f) || isVideo(f)).length === 1, [filesInfo]);
 
     const renderItems = (items: FileInfo[], moreImagesCount = 0, includeGutter = false) => {
-        const singleImage = isSingleImage();
         let nonVisibleImagesCount: number;
         let container: StyleProp<ViewStyle> = items.length > 1 ? styles.container : undefined;
         const containerWithGutter = [container, styles.gutter];
@@ -97,7 +96,7 @@ const Files = ({canDownloadFiles, failed, filesInfo, isReplyPost, layoutWidth, l
                         file={file}
                         index={attachmentIndex(file.id!)}
                         onPress={handlePreviewPress}
-                        isSingleImage={singleImage}
+                        isSingleImage={isSingleImage}
                         nonVisibleImagesCount={nonVisibleImagesCount}
                         publicLinkEnabled={publicLinkEnabled}
                         updateFileForGallery={updateFileForGallery}

@@ -141,7 +141,10 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
 };
 
 export const queryThreadsInTeam = (database: Database, teamId: string, onlyUnreads?: boolean, hasReplies?: boolean, isFollowing?: boolean, sort?: boolean, earliest?: number): Query<ThreadModel> => {
-    const query: Q.Clause[] = [];
+    const query: Q.Clause[] = [
+        Q.experimentalNestedJoin(POST, CHANNEL),
+        Q.on(POST, Q.on(CHANNEL, Q.where('delete_at', 0))),
+    ];
 
     if (isFollowing) {
         query.push(Q.where('is_following', true));
@@ -189,29 +192,33 @@ export const queryThreads = (database: Database, teamId?: string, onlyUnreads = 
         Q.where('reply_count', Q.gt(0)),
     ];
 
+    // Only get threads from available channel
+    const channelCondition: Q.Condition[] = [
+        Q.where('delete_at', 0),
+    ];
+
     // If teamId is specified, only get threads in that team
     if (teamId) {
-        let condition: Q.Condition = Q.where('team_id', teamId);
-
         if (includeDmGm) {
-            condition = Q.or(
-                Q.where('team_id', teamId),
-                Q.where('team_id', ''),
+            channelCondition.push(
+                Q.or(
+                    Q.where('team_id', teamId),
+                    Q.where('team_id', ''),
+                ),
             );
+        } else {
+            channelCondition.push(Q.where('team_id', teamId));
         }
-
-        query.push(
-            Q.experimentalNestedJoin(POST, CHANNEL),
-            Q.on(POST, Q.on(CHANNEL, condition)),
-        );
     } else if (!includeDmGm) {
         // fetching all threads from all teams
         // excluding DM/GM channels
-        query.push(
-            Q.experimentalNestedJoin(POST, CHANNEL),
-            Q.on(POST, Q.on(CHANNEL, Q.where('team_id', Q.notEq('')))),
-        );
+        channelCondition.push(Q.where('team_id', Q.notEq('')));
     }
+
+    query.push(
+        Q.experimentalNestedJoin(POST, CHANNEL),
+        Q.on(POST, Q.on(CHANNEL, Q.and(...channelCondition))),
+    );
 
     if (onlyUnreads) {
         query.push(Q.where('unread_replies', Q.gt(0)));
