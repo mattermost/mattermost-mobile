@@ -181,8 +181,9 @@ extension Database {
     public func handlePostData(_ db: Connection, _ postData: PostData, _ channelId: String, _ usedSince: Bool = false, _ receivingThreads: Bool = false) throws {
         let sortedChainedPosts = chainAndSortPosts(postData)
         try insertOrUpdatePosts(db, sortedChainedPosts, channelId)
-        let earliest = sortedChainedPosts.first!.create_at
-        let latest = sortedChainedPosts.last!.create_at
+        let sortedAndNotDeletedPosts = sortedChainedPosts.filter({$0.delete_at == 0})
+        let earliest = sortedAndNotDeletedPosts.first!.create_at
+        let latest = sortedAndNotDeletedPosts.last!.create_at
         if (!receivingThreads) {
             try handlePostsInChannel(db, channelId, earliest, latest, usedSince)
 
@@ -564,7 +565,7 @@ extension Database {
         var postsInThread = [String: [Post]]()
         
         for post in posts {
-            if !post.root_id.isEmpty {
+            if !post.root_id.isEmpty && post.delete_at == 0 {
                 var threadPosts = postsInThread[post.root_id] ?? [Post]()
                 threadPosts.append(post)
                 
