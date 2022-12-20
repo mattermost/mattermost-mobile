@@ -782,7 +782,7 @@
     "server_list.push_proxy_unknown": "Powiadomienia nie mogły być odebrane z tego serwera z powodu jego konfiguracji. Wyloguj się i zaloguj ponownie, aby ponowić próbę.",
     "server_list.push_proxy_error": "Powiadomienia nie mogą być odbierane z tego serwera z powodu jego konfiguracji. Skontaktuj się z administratorem systemu.",
     "your.servers": "Twoje serwery",
-    "video.failed_description": "Wystąpił błąd podczas próby odtworzenia filmu.\n",
+    "video.failed_description": "Wystąpił błąd podczas próby odtworzenia filmu.",
     "video.download": "Pobierz wideo",
     "user.tutorial.long_press": "Długie naciśnięcie na element umożliwia wyświetlenie profilu użytkownika",
     "user.settings.notifications.email_threads.description": "Powiadamiaj mnie o wszystkich odpowiedziach na wątki, które śledzę",
