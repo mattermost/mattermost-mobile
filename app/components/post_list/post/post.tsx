@@ -139,7 +139,7 @@ const Post = ({
 
     const handlePostPress = () => {
         if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
-            showPermalink(serverUrl, '', post.id, intl);
+            showPermalink(serverUrl, '', post.id);
             return;
         }
 

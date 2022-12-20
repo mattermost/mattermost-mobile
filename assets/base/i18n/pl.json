@@ -900,7 +900,7 @@
     "mobile.calls_host_rec": "Nagrywasz to spotkanie. Rozważ poinformowanie wszystkich o tym, że to spotkanie jest nagrywane.",
     "mobile.calls_host": "host",
     "mobile.calls_dismiss": "Odrzuć",
-    "mobile.calls_call_thread": "Kanał otwarty",
+    "mobile.calls_call_thread": "Wątek połączeń",
     "extension.no_servers.title": "Nie podłączony do żadnych serwerów",
     "extension.no_servers.description": "Aby udostępniać treści, musisz być zalogowany na serwerze Mattermost.",
     "extension.no_memberships.title": "Nie jest jeszcze członkiem żadnego zespołu",
@@ -929,5 +929,7 @@
     "general_settings.report_problem": "Zgłoś problem",
     "connection_banner.not_reachable": "Serwer jest nieosiągalny",
     "connection_banner.not_connected": "Brak połączenia z internetem",
-    "connection_banner.connected": "Połączenie przywrócone"
+    "connection_banner.connected": "Połączenie przywrócone",
+    "thread.loadingReplies": "Ładowanie odpowiedzi...",
+    "mobile.calls_open_channel": "Otwórz kanał"
 }

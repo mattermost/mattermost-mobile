@@ -3,9 +3,11 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
+import {Navigation} from 'react-native-navigation';
 
 import {logout} from '@actions/remote/session';
 import OptionItem from '@components/option_item';
+import {Screens} from '@constants';
 import {useServerDisplayName, useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {alertServerLogout} from '@utils/server';
@@ -30,6 +32,7 @@ const LogOut = () => {
     const serverDisplayName = useServerDisplayName();
 
     const onLogout = useCallback(preventDoubleTap(() => {
+        Navigation.updateProps(Screens.HOME, {extra: undefined});
         alertServerLogout(serverDisplayName, () => logout(serverUrl), intl);
     }), [serverDisplayName, serverUrl, intl]);
 

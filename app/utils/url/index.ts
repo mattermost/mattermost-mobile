@@ -5,13 +5,10 @@ import GenericClient from '@mattermost/react-native-network-client';
 import {Linking} from 'react-native';
 import urlParse from 'url-parse';
 
-import {Files, DeepLink} from '@constants';
+import {Files} from '@constants';
 import {emptyFunction} from '@utils/general';
-import {escapeRegex} from '@utils/markdown';
 
 import {latinise} from './latinise';
-
-import type {DeepLinkWithData} from '@typings/launch';
 
 const ytRegex = /(?:http|https):\/\/(?:www\.|m\.)?(?:(?:youtube\.com\/(?:(?:v\/)|(?:(?:watch|embed\/watch)(?:\/|.*v=))|(?:embed\/)|(?:user\/[^/]+\/u\/[0-9]\/)))|(?:youtu\.be\/))([^#&?]*)/;
 
@@ -151,66 +148,6 @@ export function getScheme(url: string) {
     const match = (/([a-z0-9+.-]+):/i).exec(url);
 
     return match && match[1];
-}
-
-export const PERMALINK_GENERIC_TEAM_NAME_REDIRECT = '_redirect';
-
-export function parseDeepLink(deepLinkUrl: string): DeepLinkWithData {
-    const url = removeProtocol(deepLinkUrl);
-
-    let match = new RegExp('(.*)\\/([^\\/]+)\\/channels\\/(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.Channel, data: {serverUrl: match[1], teamName: match[2], channelName: match[3]}};
-    }
-
-    match = new RegExp('(.*)\\/([^\\/]+)\\/pl\\/(\\w+)').exec(url);
-    if (match) {
-        return {type: DeepLink.Permalink, data: {serverUrl: match[1], teamName: match[2], postId: match[3]}};
-    }
-
-    match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/@(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.DirectMessage, data: {serverUrl: match[1], teamName: match[2], userName: match[3]}};
-    }
-
-    match = new RegExp('(.*)\\/([^\\/]+)\\/messages\\/(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.GroupMessage, data: {serverUrl: match[1], teamName: match[2], channelId: match[3]}};
-    }
-
-    match = new RegExp('(.*)\\/plugins\\/([^\\/]+)\\/(\\S+)').exec(url);
-    if (match) {
-        return {type: DeepLink.Plugin, data: {serverUrl: match[1], id: match[2], teamName: ''}};
-    }
-
-    return {type: DeepLink.Invalid};
-}
-
-export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string) {
-    if (!url || (!serverURL && !siteURL)) {
-        return null;
-    }
-
-    let urlToMatch = url;
-    const urlBase = serverURL || siteURL || '';
-
-    if (!url.startsWith('mattermost://')) {
-        // If url doesn't contain site or server URL, tack it on.
-        // e.g. <jump to convo> URLs from autolink plugin.
-        const match = new RegExp(escapeRegex(urlBase)).exec(url);
-        if (!match) {
-            urlToMatch = urlBase + url;
-        }
-    }
-
-    if (urlParse(urlToMatch).hostname === urlParse(urlBase).hostname) {
-        const parsedDeepLink = parseDeepLink(urlToMatch);
-        if (parsedDeepLink.type !== DeepLink.Invalid) {
-            return parsedDeepLink;
-        }
-    }
-
-    return null;
 }
 
 export function getYouTubeVideoId(link: string) {

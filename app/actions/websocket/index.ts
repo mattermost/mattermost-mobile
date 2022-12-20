@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DeviceEventEmitter} from 'react-native';
-
 import {markChannelAsViewed} from '@actions/local/channel';
 import {markChannelAsRead} from '@actions/remote/channel';
 import {handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
@@ -30,11 +28,10 @@ import {
     handleCallUserVoiceOn,
 } from '@calls/connection/websocket_event_handlers';
 import {isSupportedServerCalls} from '@calls/utils';
-import {Events, Screens, WebsocketEvents} from '@constants';
+import {Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
-import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentChannel} from '@queries/servers/channel';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
@@ -50,6 +47,7 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logInfo} from '@utils/log';
 
@@ -141,15 +139,10 @@ async function doReconnect(serverUrl: string) {
     const currentTeam = await getCurrentTeam(database);
     const currentChannel = await getCurrentChannel(database);
 
-    const currentActiveServerUrl = await getActiveServerUrl();
-    if (serverUrl === currentActiveServerUrl) {
-        DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
-    }
+    setTeamLoading(serverUrl, true);
     const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
     if ('error' in entryData) {
-        if (serverUrl === currentActiveServerUrl) {
-            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
-        }
+        setTeamLoading(serverUrl, false);
         return;
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
@@ -159,6 +152,7 @@ async function doReconnect(serverUrl: string) {
     const dt = Date.now();
     await operator.batchRecords(models);
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
+    setTeamLoading(serverUrl, false);
 
     await fetchPostDataIfNeeded(serverUrl);
 

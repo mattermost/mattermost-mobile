@@ -745,7 +745,7 @@
     "mobile.calls_react": "Реакции",
     "mobile.calls_not_available_option": "(Недоступно)",
     "mobile.calls_lower_hand": "Опустить руку",
-    "mobile.calls_call_thread": "Открытый канал",
+    "mobile.calls_call_thread": "Обсуждение звонка",
     "channel_modal.nameEx": "Ошибки, Маркетинг",
     "video.failed_description": "Возникла ошибка при воспроизведении видео.\n",
     "video.download": "Скачать видео",
@@ -929,5 +929,7 @@
     "general_settings.report_problem": "Сообщить о проблеме",
     "connection_banner.not_reachable": "Сервер недоступен",
     "connection_banner.not_connected": "Нет соединения с интернетом",
-    "connection_banner.connected": "Соединение восстановлено"
+    "connection_banner.connected": "Соединение восстановлено",
+    "thread.loadingReplies": "Загрузка ответов...",
+    "mobile.calls_open_channel": "Открыть канал"
 }

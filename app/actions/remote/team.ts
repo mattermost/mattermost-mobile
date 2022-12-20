@@ -17,6 +17,7 @@ import {prepareCommonSystemValues, getCurrentTeamId, getCurrentUserId} from '@qu
 import {addTeamToTeamHistory, prepareDeleteTeam, prepareMyTeams, getNthLastChannelFromTeam, queryTeamsById, getLastTeam, getTeamById, removeTeamFromTeamHistory, queryMyTeams} from '@queries/servers/team';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 
@@ -58,12 +59,16 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
         return {error};
     }
 
+    let loadEventSent = false;
     try {
         EphemeralStore.startAddingToTeam(teamId);
         const team = await client.getTeam(teamId);
         const member = await client.addToTeam(teamId, userId);
 
         if (!fetchOnly) {
+            setTeamLoading(serverUrl, true);
+            loadEventSent = true;
+
             fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
             const {channels, memberships: channelMembers, categories} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -82,6 +87,8 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                 ])).flat();
 
                 await operator.batchRecords(models);
+                setTeamLoading(serverUrl, false);
+                loadEventSent = false;
 
                 if (await isTablet()) {
                     const channel = await getDefaultChannelForTeam(operator.database, teamId);
@@ -89,12 +96,18 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                         fetchPostsForChannel(serverUrl, channel.id);
                     }
                 }
+            } else {
+                setTeamLoading(serverUrl, false);
+                loadEventSent = false;
             }
         }
         EphemeralStore.finishAddingToTeam(teamId);
         updateCanJoinTeams(serverUrl);
         return {member};
     } catch (error) {
+        if (loadEventSent) {
+            setTeamLoading(serverUrl, false);
+        }
         EphemeralStore.finishAddingToTeam(teamId);
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};

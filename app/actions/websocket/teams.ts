@@ -16,6 +16,7 @@ import {prepareMyChannelsForTeam} from '@queries/servers/channel';
 import {getCurrentTeam, prepareMyTeams, queryMyTeamsByIds} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {logDebug} from '@utils/log';
 
 export async function handleTeamArchived(serverUrl: string, msg: WebSocketMessage) {
@@ -44,6 +45,7 @@ export async function handleTeamArchived(serverUrl: string, msg: WebSocketMessag
 }
 
 export async function handleTeamRestored(serverUrl: string, msg: WebSocketMessage) {
+    let markedAsLoading = false;
     try {
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -57,13 +59,20 @@ export async function handleTeamRestored(serverUrl: string, msg: WebSocketMessag
             }
             EphemeralStore.startAddingToTeam(team.id);
 
+            setTeamLoading(serverUrl, true);
+            markedAsLoading = true;
             await fetchAndStoreJoinedTeamInfo(serverUrl, operator, team.id, [team], [teamMembership]);
+            setTeamLoading(serverUrl, false);
+            markedAsLoading = false;
 
             EphemeralStore.finishAddingToTeam(team.id);
         }
 
         updateCanJoinTeams(serverUrl);
     } catch (error) {
+        if (markedAsLoading) {
+            setTeamLoading(serverUrl, false);
+        }
         logDebug('cannot handle restore team websocket event', error);
     }
 }
@@ -114,10 +123,6 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
 }
 
 export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSocketMessage) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
     const {team_id: teamId} = msg.data;
 
     // Ignore duplicated team join events sent by the server
@@ -126,10 +131,16 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     }
     EphemeralStore.startAddingToTeam(teamId);
 
-    const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
+    try {
+        setTeamLoading(serverUrl, true);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
 
-    await fetchAndStoreJoinedTeamInfo(serverUrl, operator, teamId, teams, teamMemberships);
-
+        await fetchAndStoreJoinedTeamInfo(serverUrl, operator, teamId, teams, teamMemberships);
+    } catch (error) {
+        logDebug('could not handle user added to team websocket event');
+    }
+    setTeamLoading(serverUrl, false);
     EphemeralStore.finishAddingToTeam(teamId);
 }
 

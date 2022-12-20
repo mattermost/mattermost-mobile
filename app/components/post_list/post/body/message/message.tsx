@@ -44,6 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         message: {
             color: theme.centerChannelColor,
             ...typography('Body', 200),
+            lineHeight: undefined, // remove line height, not needed and causes problems with md images
         },
         pendingPost: {
             opacity: 0.5,
