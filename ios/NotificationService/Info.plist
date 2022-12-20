@@ -28,10 +28,10 @@
 		<string>com.apple.usernotifications.service</string>
 		<key>NSExtensionPrincipalClass</key>
 		<string>$(PRODUCT_MODULE_NAME).NotificationService</string>
-		<key>SENTRY_DSN</key>
-		<string>$(SENTRY_DSN)</string>
-		<key>SENTRY_ENABLED</key>
-		<string>$(SENTRY_ENABLED)</string>
 	</dict>
+  <key>SENTRY_DSN</key>
+  <string>$(SENTRY_DSN)</string>
+  <key>SENTRY_ENABLED</key>
+  <string>$(SENTRY_ENABLED)</string>
 </dict>
 </plist>
