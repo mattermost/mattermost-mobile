@@ -13,6 +13,7 @@ describe('getICEServersConfigs', () => {
         const config: CallsConfig = {
             pluginEnabled: true,
             ICEServers: ['stun:stun.example.com:3478'],
+            ICEServersConfigs: [],
             AllowEnableCalls: true,
             DefaultEnabled: true,
             NeedsTURNCredentials: false,

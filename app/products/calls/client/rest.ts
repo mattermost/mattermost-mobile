@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {RTCIceServer} from 'react-native-webrtc';
+
 import type {
     ServerChannelState,
     ServerCallsConfig,
     ApiResp,
-    ICEServersConfigs,
     RecordingState,
 } from '@calls/types/calls';
 
@@ -16,7 +17,7 @@ export interface ClientCallsMix {
     getCallsConfig: () => Promise<ServerCallsConfig>;
     enableChannelCalls: (channelId: string, enable: boolean) => Promise<ServerChannelState>;
     endCall: (channelId: string) => Promise<ApiResp>;
-    genTURNCredentials: () => Promise<ICEServersConfigs>;
+    genTURNCredentials: () => Promise<RTCIceServer[]>;
     startCallRecording: (callId: string) => Promise<ApiResp | RecordingState>;
     stopCallRecording: (callId: string) => Promise<ApiResp | RecordingState>;
 }
