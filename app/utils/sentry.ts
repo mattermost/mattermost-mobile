@@ -45,7 +45,6 @@ export function initializeSentry() {
         tracesSampleRate: isBetaApp ? 1.0 : 0.2,
         sampleRate: isBetaApp ? 1.0 : 0.2,
         attachStacktrace: isBetaApp, // For Beta, stack traces are automatically attached to all messages logged
-        logLevel: isBetaApp ? Sentry.LogLevel.Debug : Sentry.LogLevel.Error,
     };
 
     Sentry.init({
