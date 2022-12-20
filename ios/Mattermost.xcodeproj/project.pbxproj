@@ -361,6 +361,14 @@
 			name = Mattermost;
 			sourceTree = "<group>";
 		};
+		27C667A0295236CF00E590D5 /* Sentry */ = {
+			isa = PBXGroup;
+			children = (
+				27F29C81294C94790024A303 /* Sentry.swift */,
+			);
+			path = Sentry;
+			sourceTree = "<group>";
+		};
 		33E107B4DC21A5C48B09F800 /* Pods */ = {
 			isa = PBXGroup;
 			children = (
@@ -636,7 +644,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
-				27F29C81294C94790024A303 /* Sentry.swift */,
+				27C667A0295236CF00E590D5 /* Sentry */,
 				13B07FAE1A68108700A75B9A /* Mattermost */,
 				7F581D33221ED5C60099E66B /* NotificationService */,
 				7F292A701E8AB73400A450A3 /* SplashScreenResource */,
