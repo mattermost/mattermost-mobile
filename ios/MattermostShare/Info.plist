@@ -74,7 +74,7 @@
 		<string>com.apple.share-services</string>
 	</dict>
 	<key>SENTRY_DSN_IOS</key>
-	<string>$(SENTRY_DSN)</string>
+	<string>$(SENTRY_DSN_IOS)</string>
 	<key>SENTRY_ENABLED</key>
 	<string>$(SENTRY_ENABLED)</string>
 </dict>
