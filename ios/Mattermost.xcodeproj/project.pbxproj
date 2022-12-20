@@ -796,8 +796,8 @@
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
-				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */,
-				27F29C7429470C9F0024A303 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
+				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */,
+				27F29C7429470C9F0024A303 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -1225,6 +1225,8 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SENTRY_DSN = "https://8166acfeeced43de98bc11f217d871c5@o1347733.ingest.sentry.io/6734065";
+				SENTRY_ENABLED = true;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
@@ -1269,6 +1271,8 @@
 				OTHER_CFLAGS = "$(inherited)";
 				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.NotificationService;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SENTRY_DSN = "https://8166acfeeced43de98bc11f217d871c5@o1347733.ingest.sentry.io/6734065";
+				SENTRY_ENABLED = true;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_OPTIMIZATION_LEVEL = "-O";
@@ -1318,6 +1322,8 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.MattermostShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SENTRY_DSN = "https://8166acfeeced43de98bc11f217d871c5@o1347733.ingest.sentry.io/6734065";
+				SENTRY_ENABLED = true;
 				SKIP_INSTALL = YES;
 				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1368,6 +1374,8 @@
 				MTL_FAST_MATH = YES;
 				PRODUCT_BUNDLE_IDENTIFIER = com.mattermost.rnbeta.MattermostShare;
 				PRODUCT_NAME = "$(TARGET_NAME)";
+				SENTRY_DSN = "https://8166acfeeced43de98bc11f217d871c5@o1347733.ingest.sentry.io/6734065";
+				SENTRY_ENABLED = true;
 				SKIP_INSTALL = YES;
 				SWIFT_COMPILATION_MODE = wholemodule;
 				SWIFT_EMIT_LOC_STRINGS = YES;
@@ -1540,7 +1548,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		27F29C7429470C9F0024A303 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
+		27F29C7429470C9F0024A303 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
 			requirement = {
@@ -1548,7 +1556,7 @@
 				minimumVersion = 7.0.0;
 			};
 		};
-		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */ = {
+		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/satoshi-takano/OpenGraph.git";
 			requirement = {
@@ -1561,12 +1569,12 @@
 /* Begin XCSwiftPackageProductDependency section */
 		27F29C7729470CAF0024A303 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 27F29C7429470C9F0024A303 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			package = 27F29C7429470C9F0024A303 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */;
 			productName = Sentry;
 		};
 		27F29C7929470CB70024A303 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 27F29C7429470C9F0024A303 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
+			package = 27F29C7429470C9F0024A303 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */;
 			productName = Sentry;
 		};
 		49AE370026D4455D00EF4E52 /* Gekidou */ = {
@@ -1583,7 +1591,7 @@
 		};
 		7FD4822B2864D73300A5B18B /* OpenGraph */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */;
+			package = 7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */;
 			productName = OpenGraph;
 		};
 /* End XCSwiftPackageProductDependency section */
