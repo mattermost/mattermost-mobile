@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import {
     Notification,
     NotificationAction,
@@ -29,6 +28,7 @@ import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import {dismissOverlay, showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import {isBetaApp} from '@utils/general';
 import {isMainActivity, isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
@@ -248,7 +248,7 @@ class PushNotifications {
 
             if (Platform.OS === 'ios') {
                 prefix = Device.PUSH_NOTIFY_APPLE_REACT_NATIVE;
-                if (DeviceInfo.getBundleId().includes('rnbeta')) {
+                if (isBetaApp) {
                     prefix = `${prefix}beta`;
                 }
             } else {

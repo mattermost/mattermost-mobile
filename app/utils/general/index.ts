@@ -53,4 +53,4 @@ export const sortByNewest = (a: SortByCreatAt, b: SortByCreatAt) => {
     return 1;
 };
 
-export const isBetaApp = DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta');
+export const isBetaApp = DeviceInfo.getBundleId().includes('rnbeta');
