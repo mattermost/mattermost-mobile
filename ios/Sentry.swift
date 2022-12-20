@@ -12,11 +12,10 @@ import Sentry
 
 func initSentryAppExt(){
 if let SENTRY_ENABLED = Bundle.main.infoDictionary?["SENTRY_ENABLED"] as? String,
-   let SENTRY_DSN = Bundle.main.infoDictionary?["SENTRY_DSN_IOS"] as? String {
+   let SENTRY_DSN_IOS = Bundle.main.infoDictionary?["SENTRY_DSN_IOS"] as? String {
     if(SENTRY_ENABLED=="true"){
       SentrySDK.start { options in
-        options.dsn = SENTRY_DSN
-        options.debug = true // Enabled debug when first installing is always helpful
+        options.dsn = SENTRY_DSN_IOS
 
         // Features turned off by default, but worth checking out
         options.enableAppHangTracking = true
