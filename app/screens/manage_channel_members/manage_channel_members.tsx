@@ -179,16 +179,21 @@ export default function ManageChannelMembers({
     }, [isManageMode, updateNavigationButtons]);
 
     const handleRemoveUser = useCallback(async (userId: string) => {
-        const index = profiles.findIndex((user) => user.id === userId);
-        if (index !== -1) {
+        const pIndex = profiles.findIndex((user) => user.id === userId);
+        const mIndex = channelMembers.findIndex((m) => m.user_id === userId);
+        if (pIndex !== -1) {
             const newProfiles = [...profiles];
-            newProfiles.splice(index, 1);
+            newProfiles.splice(pIndex, 1);
             setProfiles(newProfiles);
+
+            const newMembers = [...channelMembers];
+            newMembers.splice(mIndex, 1);
+            setChannelMembers(newMembers);
 
             await NavigationStore.waitUntilScreensIsRemoved(USER_PROFILE);
             showRemoveChannelUserSnackbar();
         }
-    }, [profiles]);
+    }, [profiles, channelMembers]);
 
     const handleUserChangeRole = useCallback(async ({userId, schemeAdmin}: {userId: string; schemeAdmin: boolean}) => {
         await getMemberInChannel(serverUrl, channelId, userId);

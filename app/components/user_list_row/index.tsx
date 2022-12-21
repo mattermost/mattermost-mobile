@@ -22,7 +22,7 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {displayUsername, isChannelAdmin, isGuest, isSystemAdmin} from '@utils/user';
+import {displayUsername, isGuest} from '@utils/user';
 
 type Props = {
     highlight?: boolean;
@@ -191,7 +191,7 @@ function UserListRow({
         }
 
         return (
-            <View style={[style.selectorManage, color]}>
+            <View style={style.selectorManage}>
                 <FormattedText
                     id={i18nId}
                     style={style.manageText}

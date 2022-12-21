@@ -20,7 +20,6 @@ import {
 } from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type sectionType = {[key: string]: UserProfile[]};
 type UserProfileWithChannelAdmin = UserProfile & {isChannelAdmin?: boolean}
 
 const INITIAL_BATCH_TO_RENDER = 15;
@@ -52,51 +51,45 @@ const sectionRoleKeyExtractor = (cAdmin: boolean) => {
     return cAdmin ? SECTION_TITLE_ADMINS : SECTION_TITLE_MEMBERS;
 };
 
-const addProfileToSection = (sectionKey: string, sections: sectionType, sectionKeys: string[]) => {
-    if (!sections[sectionKey]) {
-        sections[sectionKey] = [];
-        sectionKeys.push(sectionKey);
-    }
-    return {sections, sectionKeys};
-};
-
 export function createProfilesSections(profiles: UserProfile[], members?: ChannelMember[]) {
-    const sections: {[key: string]: UserProfile[]} = {};
-    const sectionKeys: string[] = [];
+    if (!profiles.length) {
+        return [];
+    }
 
-    const map = new Map();
+    const userDictionary = new Map();
+    const channelAdminSections = new Map();
+    const sections = new Map();
 
-    // when channel members are included, build a new map that includes
-    // whether the user is a channel admin, using the isChannelAdmin field
     if (members?.length) {
-        profiles.forEach((p) => map.set(p.id, p));
-        members?.forEach((m) => {
-            const sectionKey = sectionRoleKeyExtractor(Boolean(m.scheme_admin));
-            addProfileToSection(sectionKey, sections, sectionKeys);
-
-            // add isChannelAdmin field to the user profile if grouping members
-            // by channel admin permission
-            return sections[sectionKey].push({...map.get(m.user_id), isChannelAdmin: m.scheme_admin});
+        profiles.forEach((p) => userDictionary.set(p.id, p));
+        members.forEach((m) => {
+            const sectionKey = sectionRoleKeyExtractor(m.scheme_admin!);
+            const keyExists = channelAdminSections.get(sectionKey);
+            const newProfileEntry = {...userDictionary.get(m.user_id), ...m};
+            const section = keyExists ? [...channelAdminSections.get(sectionKey), newProfileEntry] : [newProfileEntry];
+            channelAdminSections.set(sectionKey, section);
         });
+        sections.set(SECTION_TITLE_ADMINS, channelAdminSections.get(SECTION_TITLE_ADMINS));
+        sections.set(SECTION_TITLE_MEMBERS, channelAdminSections.get(SECTION_TITLE_MEMBERS));
     } else {
         profiles.forEach((p) => {
             const sectionKey = sectionKeyExtractor(p);
-            addProfileToSection(sectionKey, sections, sectionKeys);
-            return sections[sectionKey].push(p);
+            const keyExists = sections.get(sectionKey);
+            const section = keyExists ? [...sections.get(sectionKey), p] : [p];
+            sections.set(sectionKey, section);
         });
     }
 
-    // sort keys alphabetically. This works for user name sections and channel
-    // admin / channel member sections
-    sectionKeys.sort();
-
-    return sectionKeys.map((sectionKey, index) => {
-        return {
-            id: sectionKey,
-            first: index === 0,
-            data: sections[sectionKey],
-        };
-    });
+    const results = [];
+    for (const [k, v] of sections) {
+        if (v) {
+            results.push({
+                id: k,
+                data: v,
+            });
+        }
+    }
+    return results;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
