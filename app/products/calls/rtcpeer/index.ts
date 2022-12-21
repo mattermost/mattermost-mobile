@@ -23,7 +23,6 @@ export default class RTCPeer extends EventEmitter {
     private readonly senders: { [key: string]: RTCRtpSender };
     private destroyCb?: () => void;
 
-    private screenTrackSenderId?: string;
     public connected: boolean;
 
     private readonly sessionConstraints = {
@@ -113,29 +112,24 @@ export default class RTCPeer extends EventEmitter {
 
         const msg = JSON.parse(data);
 
-        switch (msg.type) {
-            case 'candidate':
-                await this.pc.addIceCandidate(msg.candidate);
-                break;
-            case 'offer':
-                try {
+        try {
+            switch (msg.type) {
+                case 'candidate':
+                    await this.pc.addIceCandidate(msg.candidate);
+                    break;
+                case 'offer':
                     await this.pc.setRemoteDescription(new RTCSessionDescription(msg));
-                    const answer = await this.pc.createAnswer() as RTCSessionDescription;
-                    await this.pc.setLocalDescription(answer);
+                    await this.pc.setLocalDescription(await this.pc.createAnswer() as RTCSessionDescription);
                     this.emit('answer', this.pc.localDescription);
-                } catch (err) {
-                    this.emit('error', err);
-                }
-                break;
-            case 'answer':
-                try {
+                    break;
+                case 'answer':
                     await this.pc.setRemoteDescription(msg);
-                } catch (err) {
-                    this.emit('error', err);
-                }
-                break;
-            default:
-                throw new Error('invalid signaling data received');
+                    break;
+                default:
+                    this.emit('error', Error('invalid signaling data received'));
+            }
+        } catch (err) {
+            this.emit('error', err);
         }
     }
 
@@ -179,7 +173,6 @@ export default class RTCPeer extends EventEmitter {
             throw new Error('peer has been destroyed already');
         }
 
-        this.connected = false;
         this.removeAllListeners('candidate');
         this.removeAllListeners('connect');
         this.removeAllListeners('error');
@@ -187,13 +180,14 @@ export default class RTCPeer extends EventEmitter {
         this.removeAllListeners('offer');
         this.removeAllListeners('answer');
         this.removeAllListeners('stream');
-        this.pc.onnegotiationneeded = undefined;
-        this.pc.onicecandidate = undefined;
-        this.pc.oniceconnectionstatechange = undefined;
-        this.pc.onconnectionstatechange = undefined;
-        this.pc.ontrack = undefined;
+        this.pc.onnegotiationneeded = null;
+        this.pc.onicecandidate = null;
+        this.pc.oniceconnectionstatechange = null;
+        this.pc.onconnectionstatechange = null;
+        this.pc.ontrack = null;
         this.pc.close();
         this.pc = null;
+        this.connected = false;
         this.destroyCb?.();
     }
 }

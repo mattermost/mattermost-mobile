@@ -20,10 +20,10 @@ declare module 'react-native-webrtc' {
     }
 
     export class RTCPeerConnection {
-        onconnectionstatechange?: (event: Event) => void | undefined;
-        onnegotiationneeded?: () => void | Promise<void> | undefined;
-        onicecandidate?: (event: EventOnCandidate) => void | undefined;
-        oniceconnectionstatechange?: (event: EventOnConnectionStateChange) => void | undefined;
-        ontrack?: (event: RTCTrackEvent) => void | undefined;
+        onconnectionstatechange?: ((event: Event) => void) | null;
+        onnegotiationneeded?: (() => void | Promise<void>) | null;
+        onicecandidate?: ((event: EventOnCandidate) => void) | null;
+        oniceconnectionstatechange?: ((event: EventOnConnectionStateChange) => void) | null;
+        ontrack?: ((event: RTCTrackEvent) => void) | null;
     }
 }
