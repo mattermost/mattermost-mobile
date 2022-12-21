@@ -222,6 +222,47 @@ const recCanJoinTeams = async (client: Client, myTeamsIds: Set<string>, page: nu
     return false;
 };
 
+const LOAD_MORE_THRESHOLD = 10;
+export const fetchTeamsForComponent = async (
+    serverUrl: string,
+    page: React.MutableRefObject<number>,
+    hasMore: React.MutableRefObject<boolean>,
+    mounted: React.MutableRefObject<boolean>,
+    setTeams: React.Dispatch<React.SetStateAction<Team[]>>,
+    joinedIds?: Set<string>,
+    alreadyLoaded = 0,
+) => {
+    const {teams, error} = await fetchAllTeams(serverUrl, page.current, PER_PAGE_DEFAULT);
+    if (!mounted.current) {
+        return;
+    }
+
+    page.current += 1;
+    if (error || !teams || teams.length < PER_PAGE_DEFAULT) {
+        hasMore.current = false;
+    }
+
+    if (error) {
+        return;
+    }
+
+    if (teams?.length) {
+        const notJoinedTeams = joinedIds ? teams.filter((t) => !joinedIds.has(t.id)) : teams;
+        setTeams((prev) => [...prev, ...notJoinedTeams]);
+
+        if (teams.length < PER_PAGE_DEFAULT) {
+            hasMore.current = false;
+        }
+
+        if (
+            hasMore.current &&
+            (notJoinedTeams.length + alreadyLoaded > LOAD_MORE_THRESHOLD)
+        ) {
+            await fetchTeamsForComponent(serverUrl, page, hasMore, mounted, setTeams, joinedIds, notJoinedTeams.length);
+        }
+    }
+};
+
 export const updateCanJoinTeams = async (serverUrl: string) => {
     try {
         const client = NetworkManager.getClient(serverUrl);

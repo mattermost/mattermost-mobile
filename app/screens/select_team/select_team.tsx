@@ -3,18 +3,16 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, View} from 'react-native';
+import {View} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {addCurrentUserToTeam, fetchAllTeams, handleTeamChange} from '@actions/remote/team';
-import {PER_PAGE_DEFAULT} from '@client/rest/constants';
+import {addCurrentUserToTeam, fetchTeamsForComponent, handleTeamChange} from '@actions/remote/team';
 import Loading from '@components/loading';
-import {ServerErrors} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {isServerError} from '@utils/errors';
 import {logDebug} from '@utils/log';
+import {alertTeamAddError} from '@utils/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {resetToHome} from '../navigation';
@@ -43,8 +41,6 @@ type Props = {
 const safeAreaEdges = ['left' as const, 'right' as const];
 const safeAreaStyle = {flex: 1};
 
-const LOAD_MORE_THRESHOLD = 10;
-
 const SelectTeam = ({
     nTeams,
     firstTeamId,
@@ -68,38 +64,9 @@ const SelectTeam = ({
 
     const [otherTeams, setOtherTeams] = useState<Team[]>([]);
 
-    const loadTeams = useCallback(async (alreadyLoaded = 0) => {
-        const {teams, error} = await fetchAllTeams(serverUrl, page.current, PER_PAGE_DEFAULT);
-        if (!mounted.current) {
-            return;
-        }
-
-        page.current += 1;
-        if (error || !teams || teams.length < PER_PAGE_DEFAULT) {
-            hasMore.current = false;
-        }
-
-        if (error) {
-            setLoading(false);
-            return;
-        }
-
-        if (teams?.length) {
-            setOtherTeams((prev) => [...prev, ...teams]);
-
-            if (teams.length < PER_PAGE_DEFAULT) {
-                hasMore.current = false;
-            }
-
-            if (
-                hasMore.current &&
-                (teams.length + alreadyLoaded > LOAD_MORE_THRESHOLD)
-            ) {
-                loadTeams(teams.length);
-                return;
-            }
-        }
-
+    const loadTeams = useCallback(async () => {
+        setLoading(true);
+        await fetchTeamsForComponent(serverUrl, page, hasMore, mounted, setOtherTeams);
         setLoading(false);
     }, [serverUrl]);
 
@@ -109,31 +76,18 @@ const SelectTeam = ({
         }
     }, [loadTeams, loading]);
 
-    const onTeamPressed = async (teamId: string) => {
+    const onTeamPressed = useCallback(async (teamId: string) => {
         setJoining(true);
         const {error} = await addCurrentUserToTeam(serverUrl, teamId);
         if (error) {
-            let errMsg;
-            if (isServerError(error) && error.server_error_id === ServerErrors.TEAM_MEMBERSHIP_DENIAL_ERROR_ID) {
-                errMsg = intl.formatMessage({
-                    id: 'join_team.error.group_error',
-                    defaultMessage: 'You need to be a member of a linked group to join this team.',
-                });
-            } else {
-                errMsg = intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team'});
-            }
-
-            Alert.alert(
-                intl.formatMessage({id: 'join_team.error.title', defaultMessage: 'Error joining a team'}),
-                errMsg,
-            );
+            alertTeamAddError(error, intl);
             logDebug('error joining a team:', error);
 
             setJoining(false);
         }
 
         // Back to home handled in an effect
-    };
+    }, [serverUrl, intl]);
 
     useEffect(() => {
         mounted.current = true;
