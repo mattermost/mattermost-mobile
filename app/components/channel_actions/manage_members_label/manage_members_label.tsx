@@ -14,6 +14,8 @@ import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 
+const {MAKE_CHANNEL_ADMIN, MAKE_CHANNEL_MEMBER, REMOVE_USER} = Members.MANAGE_OPTIONS;
+
 const messages = defineMessages({
     role_change_error: {
         id: t('mobile.manage_members.change_role.error'),
@@ -49,7 +51,7 @@ type Props = {
     canRemoveUser: boolean;
     channelId: string;
     isOptionItem?: boolean;
-    manageOption?: string;
+    manageOption: string;
     testID?: string;
     userId: string;
 }
@@ -101,19 +103,19 @@ const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOptio
     const onAction = () => {
         // In the future this switch / case will accomodate more user cases
         switch (manageOption) {
-            case Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER:
+            case REMOVE_USER:
                 removeFromChannel();
                 break;
-            case Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_ADMIN:
+            case MAKE_CHANNEL_ADMIN:
                 makeChannelAdmin();
                 break;
-            case Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_MEMBER:
+            case MAKE_CHANNEL_MEMBER:
                 makeChannelMember();
                 break;
         }
     };
 
-    if (manageOption === Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER && !canRemoveUser) {
+    if (manageOption === REMOVE_USER && !canRemoveUser) {
         return null;
     }
 
@@ -121,23 +123,25 @@ const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOptio
     let icon;
     let isDestructive = false;
     switch (manageOption) {
-        case Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER:
+        case REMOVE_USER:
             actionText = formatMessage(messages.remove_title);
             icon = 'trash-can-outline';
             isDestructive = true;
             break;
-        case Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_ADMIN:
+        case MAKE_CHANNEL_ADMIN:
             actionText = formatMessage(messages.make_channel_admin);
             icon = 'account-outline';
             break;
-        case Members.MANAGE_MEMBERS_OPTIONS.MAKE_CHANNEL_MEMBER:
+        case MAKE_CHANNEL_MEMBER:
             actionText = formatMessage(messages.make_channel_member);
             icon = 'account-outline';
             break;
         default:
-            actionText = formatMessage(messages.remove_title);
-            icon = 'trash-can-outline';
             break;
+    }
+
+    if (!actionText) {
+        return null;
     }
 
     if (isOptionItem) {

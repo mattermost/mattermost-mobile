@@ -9,6 +9,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 export const DIVIDER_MARGIN = 8;
+const {MAKE_CHANNEL_ADMIN, MAKE_CHANNEL_MEMBER, REMOVE_USER} = Members.MANAGE_OPTIONS;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -34,7 +35,6 @@ const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId}
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const {MAKE_CHANNEL_ADMIN, MAKE_CHANNEL_MEMBER} = Members.MANAGE_MEMBERS_OPTIONS;
     const manageOption = isChannelAdmin ? MAKE_CHANNEL_MEMBER : MAKE_CHANNEL_ADMIN;
 
     return (
@@ -52,7 +52,7 @@ const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId}
                 channelId={channelId}
                 isDefaultChannel={isDefaultChannel}
                 isOptionItem={true}
-                manageOption={Members.MANAGE_MEMBERS_OPTIONS.REMOVE_USER}
+                manageOption={REMOVE_USER}
                 testID='channel.remove_member'
                 userId={userId}
             />
