@@ -5,7 +5,7 @@
 
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
-import {ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton, ScreenPoppedEvent} from 'react-native-navigation';
+import {ComponentWillAppearEvent, ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton, ScreenPoppedEvent} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -32,6 +32,7 @@ const alpha = {
 export function registerNavigationListeners() {
     Navigation.events().registerScreenPoppedListener(onPoppedListener);
     Navigation.events().registerCommandListener(onCommandListener);
+    Navigation.events().registerComponentWillAppearListener(onScreenWillAppear);
 }
 
 function onCommandListener(name: string, params: any) {
@@ -66,7 +67,10 @@ function onCommandListener(name: string, params: any) {
 function onPoppedListener({componentId}: ScreenPoppedEvent) {
     // screen pop does not trigger registerCommandListener, but does trigger screenPoppedListener
     NavigationStore.removeScreenFromStack(componentId);
-    if (NavigationStore.getVisibleScreen() === Screens.HOME) {
+}
+
+function onScreenWillAppear(event: ComponentWillAppearEvent) {
+    if (event.componentId === Screens.HOME) {
         DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
     }
 }

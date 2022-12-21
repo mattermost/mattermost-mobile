@@ -132,10 +132,10 @@ const Header = (props: HeaderProps) => {
                         style={style.time}
                         testID='post_header.date_time'
                     />
-                    {showPostPriority && (
+                    {showPostPriority && post.metadata?.priority?.priority && (
                         <View style={style.postPriority}>
                             <PostPriorityLabel
-                                label={post.props?.priority}
+                                label={post.metadata.priority.priority}
                             />
                         </View>
                     )}

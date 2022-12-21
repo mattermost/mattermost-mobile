@@ -8,7 +8,7 @@ import WebsocketManager from '@managers/websocket_manager';
 import WebSocket from './websocket';
 
 const enhanced = withObservables(['serverUrl'], ({serverUrl}: {serverUrl: string}) => ({
-    isConnected: WebsocketManager.observeConnected(serverUrl),
+    websocketState: WebsocketManager.observeWebsocketState(serverUrl),
 }));
 
 export default enhanced(WebSocket);
