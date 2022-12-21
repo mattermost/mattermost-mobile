@@ -8,26 +8,20 @@ import {Navigation, Screens} from '@constants';
 import {popToRoot, dismissAllModals} from '@screens/navigation';
 
 type HashtagProps = {
-    inChannel: string;
     hashtag: string;
     linkStyle: StyleProp<TextStyle>;
 };
 
-const Hashtag = ({hashtag, inChannel, linkStyle}: HashtagProps) => {
+const Hashtag = ({hashtag, linkStyle}: HashtagProps) => {
     const handlePress = async () => {
         // Close thread view, permalink view, etc
         await dismissAllModals();
         await popToRoot();
 
-        let searchTerm = hashtag;
-        if (inChannel) {
-            searchTerm = `in: ${inChannel} #${hashtag}`;
-        }
-
         DeviceEventEmitter.emit(Navigation.NAVIGATE_TO_TAB, {
             screen: Screens.SEARCH,
             params: {
-                searchTerm,
+                searchTerm: hashtag,
             },
         });
     };

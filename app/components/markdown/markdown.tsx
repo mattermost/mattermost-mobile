@@ -288,7 +288,6 @@ const Markdown = ({
 
         return (
             <Hashtag
-                channelId={channelId}
                 hashtag={hashtag}
                 linkStyle={linkStyle}
             />
