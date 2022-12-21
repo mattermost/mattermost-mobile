@@ -20,7 +20,7 @@ import {
 } from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type UserProfileWithChannelAdmin = UserProfile & {isChannelAdmin?: boolean}
+type UserProfileWithChannelAdmin = UserProfile & {scheme_admin?: boolean}
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
@@ -206,7 +206,7 @@ export default function UserList({
         const selected = Boolean(selectedIds[item.id]);
         const canAdd = Object.keys(selectedIds).length < General.MAX_USERS_IN_GM;
 
-        const isChAdmin = item.isChannelAdmin || false;
+        const isChAdmin = item.scheme_admin || false;
 
         return (
             <UserListRow

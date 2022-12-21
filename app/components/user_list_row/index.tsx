@@ -181,14 +181,8 @@ function UserListRow({
         }
 
         const color = changeOpacity(theme.centerChannelColor, 0.64);
-        let i18nId = t('mobile.manage_members.member');
-        let defaultMessage = 'Member';
-
-        // if (isSystemAdmin(user.roles) || isChannelAdmin(user.roles)) {
-        if (isChannelAdmin) {
-            i18nId = t('mobile.manage_members.admin');
-            defaultMessage = 'Admin';
-        }
+        const i18nId = isChannelAdmin ? t('mobile.manage_members.admin') : ('mobile.manage_members.member');
+        const defaultMessage = isChannelAdmin ? 'Admin' : 'Member';
 
         return (
             <View style={style.selectorManage}>
@@ -204,7 +198,7 @@ function UserListRow({
                 />
             </View>
         );
-    }, [showManageMode, theme]);
+    }, [isChannelAdmin, showManageMode, theme]);
 
     const icon = useMemo(() => {
         if (!selectable) {
