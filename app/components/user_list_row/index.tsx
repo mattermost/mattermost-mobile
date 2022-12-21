@@ -127,13 +127,12 @@ function UserListRow({
     user,
 }: Props) {
     const theme = useTheme();
-    const intl = useIntl();
     const isTablet = useIsTablet();
     const [showTutorial, setShowTutorial] = useState(false);
     const [itemBounds, setItemBounds] = useState<TutorialItemBounds>({startX: 0, startY: 0, endX: 0, endY: 0});
     const viewRef = useRef<View>(null);
     const style = getStyleFromTheme(theme);
-    const {formatMessage} = intl;
+    const {formatMessage, locale} = useIntl();
     const {username} = user;
 
     const startTutorial = () => {
@@ -226,7 +225,7 @@ function UserListRow({
         }, {username});
     }
 
-    const teammateDisplay = displayUsername(user, intl.locale, teammateNameDisplay);
+    const teammateDisplay = displayUsername(user, locale, teammateNameDisplay);
     const showTeammateDisplay = teammateDisplay !== username;
 
     const userItemTestID = `${testID}.${id}`;
@@ -303,7 +302,7 @@ function UserListRow({
                 onDismiss={handleDismissTutorial}
             >
                 <TutorialLongPress
-                    message={intl.formatMessage({id: 'user.tutorial.long_press', defaultMessage: "Long-press on an item to view a user's profile"})}
+                    message={formatMessage({id: 'user.tutorial.long_press', defaultMessage: "Long-press on an item to view a user's profile"})}
                     style={isTablet ? style.tutorialTablet : style.tutorial}
                 />
             </TutorialHighlight>
