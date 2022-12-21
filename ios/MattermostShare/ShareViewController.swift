@@ -10,6 +10,7 @@ import Gekidou
 import SwiftUI
 import UIKit
 import os.log
+import Sentry
 
 class ShareViewController: UIViewController {
   private var fileManager: LocalFileManager?
@@ -20,7 +21,6 @@ class ShareViewController: UIViewController {
   override func viewDidLoad() {
     super.viewDidLoad()
     self.isModalInPresentation = true
-    
     self.addObservers()
     fileManager = LocalFileManager()
     if let inputItems = extensionContext?.inputItems {
@@ -34,6 +34,9 @@ class ShareViewController: UIViewController {
           )
         })
     }
+    
+    // Initialize Sentry
+    initSentryAppExt()
   }
   
   override func viewDidAppear(_ animated: Bool) {
@@ -94,6 +97,8 @@ class ShareViewController: UIViewController {
       let fileCount = attachments.count
       let files: [String] = attachments.map{ $0.fileUrl.absoluteString }
       
+     
+     
       var message = text
       if linkPreviewUrl != nil && !linkPreviewUrl!.isEmpty {
         if text.isEmpty {

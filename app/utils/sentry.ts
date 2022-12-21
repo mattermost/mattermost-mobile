@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import {Breadcrumb} from '@sentry/types';
+import {Breadcrumb, Event} from '@sentry/types';
 import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
@@ -10,6 +10,7 @@ import Config from '@assets/config.json';
 import DatabaseManager from '@database/manager';
 import {getConfig} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import {isBetaApp} from '@utils/general';
 
 import {ClientError} from './client_error';
 import {logError, logWarning} from './log';
@@ -39,9 +40,18 @@ export function initializeSentry() {
         return;
     }
 
+    const mmConfig = {
+        environment: isBetaApp ? 'beta' : 'production',
+        tracesSampleRate: isBetaApp ? 1.0 : 0.2,
+        sampleRate: isBetaApp ? 1.0 : 0.2,
+        attachStacktrace: isBetaApp, // For Beta, stack traces are automatically attached to all messages logged
+    };
+
     Sentry.init({
         dsn,
-        tracesSampleRate: 0.2,
+        sendDefaultPii: false,
+        ...mmConfig,
+        ...Config.SentryOptions,
         integrations: [
             new Sentry.ReactNativeTracing({
 
@@ -51,8 +61,13 @@ export function initializeSentry() {
                 ),
             }),
         ],
-        sendDefaultPii: false,
-        ...Config.SentryOptions,
+        beforeSend: (event: Event) => {
+            if (isBetaApp || event?.level === 'fatal') {
+                return event;
+            }
+
+            return null;
+        },
     });
 }
 

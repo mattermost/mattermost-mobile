@@ -22,8 +22,8 @@ type Props = {
     value: string;
     updateValue: (value: string) => void;
     addFiles: (file: FileInfo[]) => void;
-    postProps: Post['props'];
-    updatePostProps: (postProps: Post['props']) => void;
+    postPriority: PostPriorityData;
+    updatePostPriority: (postPriority: PostPriorityData) => void;
     focus: () => void;
 }
 
@@ -45,8 +45,8 @@ export default function QuickActions({
     maxFileCount,
     updateValue,
     addFiles,
-    postProps,
-    updatePostProps,
+    postPriority,
+    updatePostPriority,
     focus,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
@@ -101,8 +101,8 @@ export default function QuickActions({
             {isPostPriorityEnabled && canShowPostPriority && (
                 <PostPriorityAction
                     testID={postPriorityActionTestID}
-                    postProps={postProps}
-                    updatePostProps={updatePostProps}
+                    postPriority={postPriority}
+                    updatePostPriority={updatePostPriority}
                 />
             )}
         </View>

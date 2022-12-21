@@ -86,7 +86,7 @@ export async function handleFirstConnect(serverUrl: string) {
 
     // ESR: 5.37
     if (lastDisconnect && config?.EnableReliableWebSockets !== 'true' && alreadyConnected.has(serverUrl)) {
-        handleReconnect(serverUrl);
+        await handleReconnect(serverUrl);
         return;
     }
 
@@ -100,8 +100,8 @@ export async function handleFirstConnect(serverUrl: string) {
     }
 }
 
-export function handleReconnect(serverUrl: string) {
-    doReconnect(serverUrl);
+export async function handleReconnect(serverUrl: string) {
+    await doReconnect(serverUrl);
 }
 
 export async function handleClose(serverUrl: string, lastDisconnect: number) {

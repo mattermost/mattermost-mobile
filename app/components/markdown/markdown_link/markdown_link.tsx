@@ -76,9 +76,9 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
         const match = matchDeepLink(url, serverUrl, siteURL);
 
         if (match) {
-            const {error} = await handleDeepLink(url, intl);
+            const {error} = await handleDeepLink(match, intl);
             if (error) {
-                tryOpenURL(url, onError);
+                tryOpenURL(match, onError);
             }
         } else {
             tryOpenURL(url, onError);
