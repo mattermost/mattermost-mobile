@@ -345,7 +345,7 @@ PODS:
     - React-Core
   - react-native-hw-keyboard-event (0.0.4):
     - React
-  - react-native-image-picker (4.10.2):
+  - react-native-image-picker (4.10.3):
     - React-Core
   - react-native-in-app-review (4.2.1):
     - React-Core
@@ -915,7 +915,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: 958e2bc82e128be69055be261aeac8d872c8d34c
   react-native-emm: c5b7dcffde34ce345fd0c16d66b587e611a3d31f
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
-  react-native-image-picker: bf34f3f516d139ed3e24c5f5a381a91819e349ea
+  react-native-image-picker: 60f4246eb5bb7187fc15638a8c1f13abd3820695
   react-native-in-app-review: a073f67c5f3392af6ea7fb383217cdb1aa2aa726
   react-native-netinfo: 2517ad504b3d303e90d7a431b0fcaef76d207983
   react-native-network-client: ce464b9d413872f1b0c36852a44d66b1a45a9dce
