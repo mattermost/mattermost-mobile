@@ -109,6 +109,14 @@ const SearchScreen = ({teamId, teams}: Props) => {
         setSearchTeamId(teamId);
     }, [teamId]);
 
+    useEffect(() => {
+        if (searchTerm) {
+            resetToInitial();
+            setSearchValue(searchTerm);
+            handleSearch(searchTeamId, searchTerm);
+        }
+    }, [searchTerm]);
+
     const onSnap = (offset: number, animated = true) => {
         scrollRef.current?.scrollToOffset({offset, animated});
     };
