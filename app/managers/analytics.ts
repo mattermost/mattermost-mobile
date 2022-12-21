@@ -6,11 +6,7 @@ import DeviceInfo from 'react-native-device-info';
 
 import LocalConfig from '@assets/config.json';
 import {Device} from '@constants';
-
-const isSystemAdmin = (roles: string) => {
-    // TODO: Replace this function with an utility function based on previous code
-    return roles === 'system_admin';
-};
+import {isSystemAdmin} from '@utils/user';
 
 const clientMap: Record<string, Analytics> = {};
 
