@@ -223,45 +223,42 @@ const recCanJoinTeams = async (client: Client, myTeamsIds: Set<string>, page: nu
 };
 
 const LOAD_MORE_THRESHOLD = 10;
-export const fetchTeamsForComponent = async (
+export async function fetchTeamsForComponent(
     serverUrl: string,
-    page: React.MutableRefObject<number>,
-    hasMore: React.MutableRefObject<boolean>,
-    mounted: React.MutableRefObject<boolean>,
-    setTeams: React.Dispatch<React.SetStateAction<Team[]>>,
+    page: number,
     joinedIds?: Set<string>,
-    alreadyLoaded = 0,
-) => {
-    const {teams, error} = await fetchAllTeams(serverUrl, page.current, PER_PAGE_DEFAULT);
-    if (!mounted.current) {
-        return;
-    }
-
-    page.current += 1;
+    alreadyLoaded: Team[] = [],
+): Promise<{teams: Team[]; hasMore: boolean; page: number}> {
+    let hasMore = true;
+    const {teams, error} = await fetchAllTeams(serverUrl, page, PER_PAGE_DEFAULT);
     if (error || !teams || teams.length < PER_PAGE_DEFAULT) {
-        hasMore.current = false;
+        hasMore = false;
     }
 
     if (error) {
-        return;
+        return {teams: alreadyLoaded, hasMore, page};
     }
 
     if (teams?.length) {
         const notJoinedTeams = joinedIds ? teams.filter((t) => !joinedIds.has(t.id)) : teams;
-        setTeams((prev) => [...prev, ...notJoinedTeams]);
+        alreadyLoaded.push(...notJoinedTeams);
 
         if (teams.length < PER_PAGE_DEFAULT) {
-            hasMore.current = false;
+            hasMore = false;
         }
 
         if (
-            hasMore.current &&
-            (notJoinedTeams.length + alreadyLoaded > LOAD_MORE_THRESHOLD)
+            hasMore &&
+            (alreadyLoaded.length > LOAD_MORE_THRESHOLD)
         ) {
-            await fetchTeamsForComponent(serverUrl, page, hasMore, mounted, setTeams, joinedIds, notJoinedTeams.length);
+            return fetchTeamsForComponent(serverUrl, page + 1, joinedIds, alreadyLoaded);
         }
+
+        return {teams: alreadyLoaded, hasMore, page: page + 1};
     }
-};
+
+    return {teams: alreadyLoaded, hasMore: false, page};
+}
 
 export const updateCanJoinTeams = async (serverUrl: string) => {
     try {

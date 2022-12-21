@@ -66,7 +66,12 @@ const SelectTeam = ({
 
     const loadTeams = useCallback(async () => {
         setLoading(true);
-        await fetchTeamsForComponent(serverUrl, page, hasMore, mounted, setOtherTeams);
+        const resp = await fetchTeamsForComponent(serverUrl, page.current);
+        page.current = resp.page;
+        hasMore.current = resp.hasMore;
+        if (resp.teams.length && mounted.current) {
+            setOtherTeams((cur) => [...cur, ...resp.teams]);
+        }
         setLoading(false);
     }, [serverUrl]);
 

@@ -71,7 +71,12 @@ export default function JoinTeam({
 
     const loadTeams = useCallback(async () => {
         setLoading(true);
-        fetchTeamsForComponent(serverUrl, page, hasMore, mounted, setOtherTeams, joinedIds);
+        const resp = await fetchTeamsForComponent(serverUrl, page.current, joinedIds);
+        page.current = resp.page;
+        hasMore.current = resp.hasMore;
+        if (resp.teams.length && mounted.current) {
+            setOtherTeams((cur) => [...cur, ...resp.teams]);
+        }
         setLoading(false);
     }, [joinedIds, serverUrl]);
 
