@@ -44,7 +44,7 @@ class JavascriptAndNativeErrorHandler {
 
         logWarning('Handling Javascript error', e, isFatal);
 
-        if (isBetaApp || (!isBetaApp && isFatal)) {
+        if (isBetaApp || isFatal) {
             captureJSException(e, isFatal);
         }
 

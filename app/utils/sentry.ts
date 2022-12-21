@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import {Breadcrumb} from '@sentry/types';
+import {Breadcrumb, Event} from '@sentry/types';
 import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
@@ -61,6 +61,13 @@ export function initializeSentry() {
                 ),
             }),
         ],
+        beforeSend: (event: Event) => {
+            if (isBetaApp || event?.level === 'fatal') {
+                return event;
+            }
+
+            return null;
+        },
     });
 }
 
