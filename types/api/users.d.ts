@@ -98,3 +98,15 @@ type UserCustomStatus = {
 };
 
 type CustomStatusDuration = '' | 'thirty_minutes' | 'one_hour' | 'four_hours' | 'today' | 'this_week' | 'date_and_time';
+
+type SearchUserOptions = {
+	team_id?: string;
+	not_in_team?: string;
+	in_channel_id?: string;
+	in_group_id?: string;
+	group_constrained?: boolean;
+	allow_inactive?: boolean;
+	without_team?: string;
+	limit?: string;
+};
+

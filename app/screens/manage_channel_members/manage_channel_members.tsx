@@ -133,7 +133,8 @@ export default function ManageChannelMembers({
         setLoading(true);
 
         // TODO search through profiles state instead of server call
-        const {data = EMPTY} = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, channel_id: channelId, allow_inactive: true});
+        const options: SearchUserOptions = {team_id: currentTeamId, in_channel_id: channelId, allow_inactive: true};
+        const {data = EMPTY} = await searchProfiles(serverUrl, lowerCasedTerm, options);
 
         setSearchResults(data);
         setLoading(false);

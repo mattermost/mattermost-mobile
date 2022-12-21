@@ -530,7 +530,7 @@ export const fetchProfilesInTeam = async (serverUrl: string, teamId: string, pag
     }
 };
 
-export const searchProfiles = async (serverUrl: string, term: string, options: any = {}, fetchOnly = false) => {
+export const searchProfiles = async (serverUrl: string, term: string, options: SearchUserOptions, fetchOnly = false) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
