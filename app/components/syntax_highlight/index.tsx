@@ -4,7 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import {github, monokai, solarizedDark, solarizedLight} from 'react-syntax-highlighter/dist/cjs/styles/hljs';
+import {githubGist as github, monokai, solarizedDark, solarizedLight} from 'react-syntax-highlighter/dist/cjs/styles/hljs';
 
 import {useTheme} from '@context/theme';
 
