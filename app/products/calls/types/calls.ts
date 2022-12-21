@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type {CallRecordingState, CallsConfig, EmojiData, UserReactionData} from '@mmcalls/common/lib/types';
 import type UserModel from '@typings/database/models/servers/user';
-import type {RTCIceServer} from 'react-native-webrtc';
 
 export type GlobalCallsState = {
     micPermissionsGranted: boolean;
@@ -31,7 +31,7 @@ export type Call = {
     screenOn: string;
     threadId: string;
     ownerId: string;
-    recState?: RecordingState;
+    recState?: CallRecordingState;
     hostId: string;
 }
 
@@ -75,7 +75,7 @@ export type CallParticipant = {
     muted: boolean;
     raisedHand: number;
     userModel?: UserModel;
-    reaction?: CallReaction;
+    reaction?: UserReactionData;
 }
 
 export type ChannelsWithCalls = Dictionary<boolean>;
@@ -100,7 +100,7 @@ export type ServerCallState = {
     screen_sharing_id: string;
     owner_id: string;
     host_id: string;
-    recording: RecordingState;
+    recording: CallRecordingState;
 }
 
 export type CallsConnection = {
@@ -111,26 +111,16 @@ export type CallsConnection = {
     raiseHand: () => void;
     unraiseHand: () => void;
     initializeVoiceTrack: () => void;
-    sendReaction: (emoji: CallReactionEmoji) => void;
+    sendReaction: (emoji: EmojiData) => void;
 }
 
-export type ServerCallsConfig = {
-    ICEServers?: string[]; // deprecated
-    ICEServersConfigs: RTCIceServer[];
+export type CallsConfigState = CallsConfig & {
     AllowEnableCalls: boolean;
-    DefaultEnabled: boolean;
-    NeedsTURNCredentials: boolean;
-    sku_short_name: string;
-    MaxCallParticipants: number;
-    EnableRecordings: boolean;
-}
-
-export type CallsConfig = ServerCallsConfig & {
     pluginEnabled: boolean;
     last_retrieved_at: number;
 }
 
-export const DefaultCallsConfig: CallsConfig = {
+export const DefaultCallsConfig: CallsConfigState = {
     pluginEnabled: false,
     ICEServers: [], // deprecated
     ICEServersConfigs: [],
@@ -141,25 +131,14 @@ export const DefaultCallsConfig: CallsConfig = {
     sku_short_name: '',
     MaxCallParticipants: 0,
     EnableRecordings: false,
+    MaxRecordingDuration: 60,
+    AllowScreenSharing: true,
 };
 
 export type ApiResp = {
     message?: string;
     detailed_error?: string;
     status_code: number;
-}
-
-export type CallReactionEmoji = {
-    name: string;
-    skin?: string;
-    unified: string;
-    literal?: string;
-}
-
-export type CallReaction = {
-    user_id: string;
-    emoji: CallReactionEmoji;
-    timestamp: number;
 }
 
 export type ReactionStreamEmoji = {

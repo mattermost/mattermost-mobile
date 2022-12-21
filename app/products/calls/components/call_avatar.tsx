@@ -8,7 +8,7 @@ import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import ProfilePicture from '@components/profile_picture';
 
-import type {CallReactionEmoji} from '@calls/types/calls';
+import type {EmojiData} from '@mmcalls/common/lib/types';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
@@ -18,7 +18,7 @@ type Props = {
     muted?: boolean;
     sharingScreen?: boolean;
     raisedHand?: boolean;
-    reaction?: CallReactionEmoji;
+    reaction?: EmojiData;
     size?: 'm' | 'l';
 }
 

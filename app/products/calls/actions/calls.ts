@@ -43,14 +43,13 @@ import type {
     ApiResp,
     Call,
     CallParticipant,
-    CallReactionEmoji,
     CallsConnection,
-    RecordingState,
     ServerCallState,
     ServerChannelState,
 } from '@calls/types/calls';
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
+import type {CallRecordingState, EmojiData} from '@mmcalls/common/lib/types';
 import type {IntlShape} from 'react-intl';
 
 let connection: CallsConnection | null = null;
@@ -322,7 +321,7 @@ export const unraiseHand = () => {
     }
 };
 
-export const sendReaction = (emoji: CallReactionEmoji) => {
+export const sendReaction = (emoji: EmojiData) => {
     if (connection) {
         connection.sendReaction(emoji);
     }
@@ -415,7 +414,7 @@ export const startCallRecording = async (serverUrl: string, callId: string) => {
 
     const client = NetworkManager.getClient(serverUrl);
 
-    let data: ApiResp | RecordingState;
+    let data: ApiResp | CallRecordingState;
     try {
         data = await client.startCallRecording(callId);
     } catch (error) {
@@ -433,7 +432,7 @@ export const stopCallRecording = async (serverUrl: string, callId: string) => {
 
     const client = NetworkManager.getClient(serverUrl);
 
-    let data: ApiResp | RecordingState;
+    let data: ApiResp | CallRecordingState;
     try {
         data = await client.stopCallRecording(callId);
     } catch (error) {

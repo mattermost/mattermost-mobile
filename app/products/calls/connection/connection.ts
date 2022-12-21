@@ -1,18 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import {deflate} from 'pako/lib/deflate.js';
+import {RTCPeer} from '@mmcalls/common/lib';
+import {deflate} from 'pako';
 import {DeviceEventEmitter, EmitterSubscription} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import {
     MediaStream,
     MediaStreamTrack,
     mediaDevices,
+    RTCPeerConnection,
 } from 'react-native-webrtc';
 
-import RTCPeer from '@calls/rtcpeer';
 import {setSpeakerPhone} from '@calls/state';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
@@ -22,7 +21,9 @@ import {logError, logDebug, logWarning} from '@utils/log';
 
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
-import type {CallReactionEmoji, CallsConnection} from '@calls/types/calls';
+import type {CallsConnection} from '@calls/types/calls';
+import type {RTCPeerOpts} from '@mmcalls/common/lib/rtc_peer';
+import type {EmojiData} from '@mmcalls/common/lib/types';
 
 const peerConnectTimeout = 5000;
 
@@ -164,7 +165,7 @@ export async function newConnection(
         }
     };
 
-    const sendReaction = (emoji: CallReactionEmoji) => {
+    const sendReaction = (emoji: EmojiData) => {
         if (ws) {
             ws.send('react', {
                 data: JSON.stringify(emoji),
@@ -204,7 +205,14 @@ export async function newConnection(
         InCallManager.start({media: 'video'});
         setSpeakerPhone(true);
 
-        peer = new RTCPeer({iceServers: iceConfigs || []});
+        const opts: RTCPeerOpts = {
+            logDebug,
+            webrtc: {
+                MediaStream,
+                RTCPeerConnection,
+            },
+        };
+        peer = new RTCPeer({iceServers: iceConfigs || []}, opts);
 
         peer.on('offer', (sdp) => {
             logDebug(`local offer, sending: ${JSON.stringify(sdp)}`);
