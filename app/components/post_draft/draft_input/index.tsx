@@ -24,8 +24,8 @@ type Props = {
     canShowPostPriority?: boolean;
 
     // Post Props
-    postProps: Post['props'];
-    updatePostProps: (postProps: Post['props']) => void;
+    postPriority: PostPriorityData;
+    updatePostPriority: (postPriority: PostPriorityData) => void;
 
     // Cursor Position Handler
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
@@ -110,8 +110,8 @@ export default function DraftInput({
     updateCursorPosition,
     cursorPosition,
     updatePostInputTop,
-    postProps,
-    updatePostProps,
+    postPriority,
+    updatePostPriority,
     setIsFocused,
 }: Props) {
     const theme = useTheme();
@@ -155,9 +155,9 @@ export default function DraftInput({
                     overScrollMode={'never'}
                     disableScrollViewPanResponder={true}
                 >
-                    {Boolean(postProps.priority) && (
+                    {Boolean(postPriority?.priority) && (
                         <View style={style.postPriorityLabel}>
-                            <PostPriorityLabel label={postProps.priority}/>
+                            <PostPriorityLabel label={postPriority!.priority}/>
                         </View>
                     )}
                     <PostInput
@@ -188,8 +188,8 @@ export default function DraftInput({
                             addFiles={addFiles}
                             updateValue={updateValue}
                             value={value}
-                            postProps={postProps}
-                            updatePostProps={updatePostProps}
+                            postPriority={postPriority}
+                            updatePostPriority={updatePostPriority}
                             canShowPostPriority={canShowPostPriority}
                             focus={focus}
                         />

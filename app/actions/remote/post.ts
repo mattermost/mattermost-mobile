@@ -23,6 +23,7 @@ import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
+import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {logError} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
@@ -325,12 +326,9 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
     }
 }
 
-export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string, emitEvent = false) => {
+export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string) => {
     try {
         const promises = [];
-        if (emitEvent) {
-            DeviceEventEmitter.emit(Events.FETCHING_POSTS, true);
-        }
         for (const member of memberships) {
             const channel = channels.find((c) => c.id === member.channel_id);
             if (channel && (channel.total_msg_count - member.msg_count) > 0 && channel.id !== excludeChannelId) {
@@ -338,13 +336,7 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
             }
         }
         await Promise.all(promises);
-        if (emitEvent) {
-            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
-        }
     } catch (error) {
-        if (emitEvent) {
-            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
-        }
         return {error};
     }
 
@@ -583,6 +575,8 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
         return {error};
     }
 
+    setFetchingThreadState(postId, true);
+
     try {
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
 
@@ -620,9 +614,11 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
             }
             await operator.batchRecords(models);
         }
+        setFetchingThreadState(postId, false);
         return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        setFetchingThreadState(postId, false);
         return {error};
     }
 }

@@ -3,9 +3,10 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Animated, DeviceEventEmitter, Platform, Text, View} from 'react-native';
+import {Animated, DeviceEventEmitter, Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
+import {Navigation} from 'react-native-navigation';
 
 import {storeMultiServerTutorial} from '@actions/app/global';
 import {appEntry} from '@actions/remote/entry';
@@ -17,7 +18,7 @@ import Loading from '@components/loading';
 import ServerIcon from '@components/server_icon';
 import TutorialHighlight from '@components/tutorial_highlight';
 import TutorialSwipeLeft from '@components/tutorial_highlight/swipe_left';
-import {Events} from '@constants';
+import {Events, Screens} from '@constants';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
@@ -178,6 +179,7 @@ const ServerItem = ({
     };
 
     const logoutServer = async () => {
+        Navigation.updateProps(Screens.HOME, {extra: undefined});
         await logout(server.url);
 
         if (isActive) {
@@ -190,6 +192,7 @@ const ServerItem = ({
     const removeServer = async () => {
         const skipLogoutFromServer = server.lastActiveAt === 0;
         await dismissBottomSheet();
+        Navigation.updateProps(Screens.HOME, {extra: undefined});
         await logout(server.url, skipLogoutFromServer, true);
     };
 
@@ -210,7 +213,7 @@ const ServerItem = ({
     };
 
     const containerStyle = useMemo(() => {
-        const style = [styles.container];
+        const style: StyleProp<ViewStyle> = [styles.container];
         if (isActive) {
             style.push(styles.active);
         }
@@ -219,7 +222,7 @@ const ServerItem = ({
     }, [isActive]);
 
     const serverStyle = useMemo(() => {
-        const style = [styles.row];
+        const style: StyleProp<ViewStyle> = [styles.row];
         if (!server.lastActiveAt) {
             style.push(styles.offline);
         }
@@ -286,6 +289,7 @@ const ServerItem = ({
         if (server.lastActiveAt) {
             setSwitching(true);
             await dismissBottomSheet();
+            Navigation.updateProps(Screens.HOME, {extra: undefined});
             DatabaseManager.setActiveServerDatabase(server.url);
             await appEntry(server.url, Date.now());
             return;

@@ -4,18 +4,18 @@
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useMemo, useRef} from 'react';
-import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View} from 'react-native';
+import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
-import Hashtag from '@components/markdown/hashtag';
 import {computeTextStyle} from '@utils/markdown';
 import {blendColors, changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
 import AtMention from './at_mention';
 import ChannelMention, {ChannelMentions} from './channel_mention';
+import Hashtag from './hashtag';
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
 import MarkdownImage from './markdown_image';
@@ -431,7 +431,7 @@ const Markdown = ({
             return null;
         }
 
-        const blockStyle = [style.block];
+        const blockStyle: StyleProp<ViewStyle> = [style.block];
         if (!first) {
             blockStyle.push(blockStyles?.adjacentParagraph);
         }

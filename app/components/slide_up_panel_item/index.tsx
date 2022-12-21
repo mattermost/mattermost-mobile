@@ -16,7 +16,8 @@ type SlideUpPanelProps = {
     destructive?: boolean;
     icon?: string | Source;
     rightIcon?: boolean;
-    imageStyles?: StyleProp<TextStyle>;
+    imageStyles?: StyleProp<ImageStyle>;
+    iconStyles?: StyleProp<TextStyle>;
     onPress: () => void;
     textStyles?: TextStyle;
     testID?: string;
@@ -64,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text, textStyles, rightIcon = false}: SlideUpPanelProps) => {
+const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text, textStyles, iconStyles, rightIcon = false}: SlideUpPanelProps) => {
     const theme = useTheme();
     const handleOnPress = useCallback(preventDoubleTap(onPress, 500), []);
     const style = getStyleSheet(theme);
@@ -72,12 +73,9 @@ const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text
     let image;
     let iconStyle: StyleProp<ViewStyle> = [style.iconContainer];
     if (icon) {
-        const imageStyle: StyleProp<ImageStyle> = [style.icon, imageStyles];
-        if (destructive) {
-            imageStyle.push(style.destructive);
-        }
         if (typeof icon === 'object') {
             if (icon.uri && isValidUrl(icon.uri)) {
+                const imageStyle: StyleProp<ImageStyle> = [imageStyles];
                 imageStyle.push({width: 24, height: 24});
                 image = (
                     <FastImage
@@ -89,11 +87,15 @@ const SlideUpPanelItem = ({destructive, icon, imageStyles, onPress, testID, text
                 iconStyle = [style.noIconContainer];
             }
         } else {
+            const compassIconStyle = [style.icon, iconStyles];
+            if (destructive) {
+                compassIconStyle.push(style.destructive);
+            }
             image = (
                 <CompassIcon
                     name={icon}
                     size={24}
-                    style={imageStyle}
+                    style={compassIconStyle}
                 />
             );
         }

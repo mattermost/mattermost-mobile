@@ -304,7 +304,7 @@ const About = ({config, license}: AboutProps) => {
                     />
                 </View>
                 <View style={styles.hashContainer}>
-                    <View style={styles.footerGroup}>
+                    <View>
                         <FormattedText
                             defaultMessage='Build Hash:'
                             id={t('about.hash')}
@@ -318,7 +318,7 @@ const About = ({config, license}: AboutProps) => {
                             {config.BuildHash}
                         </Text>
                     </View>
-                    <View style={styles.footerGroup}>
+                    <View>
                         <FormattedText
                             defaultMessage='EE Build Hash:'
                             id={t('about.hashee')}
@@ -333,7 +333,7 @@ const About = ({config, license}: AboutProps) => {
                         </Text>
                     </View>
                 </View>
-                <View style={[styles.footerGroup, {marginBottom: 20}]}>
+                <View style={{marginBottom: 20}}>
                     <FormattedText
                         defaultMessage='Build Date:'
                         id={t('about.date')}

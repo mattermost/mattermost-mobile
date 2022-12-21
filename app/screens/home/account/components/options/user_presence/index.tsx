@@ -58,7 +58,7 @@ const UserStatus = ({currentUser}: Props) => {
                 <>
                     <SlideUpPanelItem
                         icon='check-circle'
-                        imageStyles={{color: theme.onlineIndicator}}
+                        iconStyles={{color: theme.onlineIndicator}}
                         onPress={() => setUserStatus(ONLINE)}
                         testID='user_status.online.option'
                         text={intl.formatMessage({
@@ -69,7 +69,7 @@ const UserStatus = ({currentUser}: Props) => {
                     />
                     <SlideUpPanelItem
                         icon='clock'
-                        imageStyles={{color: theme.awayIndicator}}
+                        iconStyles={{color: theme.awayIndicator}}
                         onPress={() => setUserStatus(AWAY)}
                         testID='user_status.away.option'
                         text={intl.formatMessage({
@@ -80,7 +80,7 @@ const UserStatus = ({currentUser}: Props) => {
                     />
                     <SlideUpPanelItem
                         icon='minus-circle'
-                        imageStyles={{color: theme.dndIndicator}}
+                        iconStyles={{color: theme.dndIndicator}}
                         onPress={() => setUserStatus(DND)}
                         testID='user_status.dnd.option'
                         text={intl.formatMessage({
@@ -91,7 +91,7 @@ const UserStatus = ({currentUser}: Props) => {
                     />
                     <SlideUpPanelItem
                         icon='circle-outline'
-                        imageStyles={{color: changeOpacity('#B8B8B8', 0.64)}}
+                        iconStyles={{color: changeOpacity('#B8B8B8', 0.64)}}
                         onPress={() => setUserStatus(OFFLINE)}
                         testID='user_status.offline.option'
                         text={intl.formatMessage({
