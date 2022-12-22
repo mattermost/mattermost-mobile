@@ -12,7 +12,7 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
     style={
       [
         {
-          "alignItems": "flex-start",
+          "alignItems": "center",
           "flexDirection": "row",
           "flexWrap": "wrap",
         },
@@ -20,43 +20,41 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
     }
     testID="markdown_paragraph"
   >
-    <Text>
-      <Text
-        style={
-          [
-            {
-              "color": "rgba(63,67,80,0.6)",
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "opacity": 1,
-            },
-          ]
-        }
-      >
-        <Text
-          style={[]}
-        >
-          @username
-        </Text>
-      </Text>
-      <Text
-        style={
+    <Text
+      style={
+        [
           {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          }
-        }
-        testID="markdown_text"
+          },
+          {
+            "opacity": 1,
+          },
+        ]
+      }
+    >
+      <Text
+        style={[]}
       >
-         updated the channel display name from: old displayname to: new displayname
+        @username
       </Text>
+    </Text>
+    <Text
+      style={
+        {
+          "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "lineHeight": 24,
+        }
+      }
+      testID="markdown_text"
+    >
+       updated the channel display name from: old displayname to: new displayname
     </Text>
   </View>
 </View>
@@ -74,7 +72,7 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
     style={
       [
         {
-          "alignItems": "flex-start",
+          "alignItems": "center",
           "flexDirection": "row",
           "flexWrap": "wrap",
         },
@@ -82,43 +80,41 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
     }
     testID="markdown_paragraph"
   >
-    <Text>
-      <Text
-        style={
-          [
-            {
-              "color": "rgba(63,67,80,0.6)",
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "opacity": 1,
-            },
-          ]
-        }
-      >
-        <Text
-          style={[]}
-        >
-          @username
-        </Text>
-      </Text>
-      <Text
-        style={
+    <Text
+      style={
+        [
           {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          }
-        }
-        testID="markdown_text"
+          },
+          {
+            "opacity": 1,
+          },
+        ]
+      }
+    >
+      <Text
+        style={[]}
       >
-         updated the channel header from: old header to: new header
+        @username
       </Text>
+    </Text>
+    <Text
+      style={
+        {
+          "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "lineHeight": 24,
+        }
+      }
+      testID="markdown_text"
+    >
+       updated the channel header from: old header to: new header
     </Text>
   </View>
 </View>
@@ -152,7 +148,7 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
     style={
       [
         {
-          "alignItems": "flex-start",
+          "alignItems": "center",
           "flexDirection": "row",
           "flexWrap": "wrap",
         },
@@ -160,43 +156,41 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
     }
     testID="markdown_paragraph"
   >
-    <Text>
-      <Text
-        style={
-          [
-            {
-              "color": "rgba(63,67,80,0.6)",
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "opacity": 1,
-            },
-          ]
-        }
-      >
-        <Text
-          style={[]}
-        >
-          @username
-        </Text>
-      </Text>
-      <Text
-        style={
+    <Text
+      style={
+        [
           {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          }
-        }
-        testID="markdown_text"
+          },
+          {
+            "opacity": 1,
+          },
+        ]
+      }
+    >
+      <Text
+        style={[]}
       >
-         joined the channel as a guest.
+        @username
       </Text>
+    </Text>
+    <Text
+      style={
+        {
+          "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "lineHeight": 24,
+        }
+      }
+      testID="markdown_text"
+    >
+       joined the channel as a guest.
     </Text>
   </View>
 </View>
@@ -214,7 +208,7 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
     style={
       [
         {
-          "alignItems": "flex-start",
+          "alignItems": "center",
           "flexDirection": "row",
           "flexWrap": "wrap",
         },
@@ -222,64 +216,62 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
     }
     testID="markdown_paragraph"
   >
-    <Text>
-      <Text
-        style={
-          [
-            {
-              "color": "rgba(63,67,80,0.6)",
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "opacity": 1,
-            },
-          ]
-        }
-      >
-        <Text
-          style={[]}
-        >
-          @other.user
-        </Text>
-      </Text>
-      <Text
-        style={
+    <Text
+      style={
+        [
           {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          }
-        }
-        testID="markdown_text"
-      >
-         added to the channel as a guest by 
-      </Text>
+          },
+          {
+            "opacity": 1,
+          },
+        ]
+      }
+    >
       <Text
-        style={
-          [
-            {
-              "color": "rgba(63,67,80,0.6)",
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "opacity": 1,
-            },
-          ]
-        }
+        style={[]}
       >
-        <Text
-          style={[]}
-        >
-          @username.
-        </Text>
+        @other.user
+      </Text>
+    </Text>
+    <Text
+      style={
+        {
+          "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "lineHeight": 24,
+        }
+      }
+      testID="markdown_text"
+    >
+       added to the channel as a guest by 
+    </Text>
+    <Text
+      style={
+        [
+          {
+            "color": "rgba(63,67,80,0.6)",
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          {
+            "opacity": 1,
+          },
+        ]
+      }
+    >
+      <Text
+        style={[]}
+      >
+        @username.
       </Text>
     </Text>
   </View>
@@ -298,7 +290,7 @@ exports[`renderSystemMessage uses renderer for OLD archived channel without a us
     style={
       [
         {
-          "alignItems": "flex-start",
+          "alignItems": "center",
           "flexDirection": "row",
           "flexWrap": "wrap",
         },
@@ -306,21 +298,19 @@ exports[`renderSystemMessage uses renderer for OLD archived channel without a us
     }
     testID="markdown_paragraph"
   >
-    <Text>
-      <Text
-        style={
-          {
-            "color": "rgba(63,67,80,0.6)",
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          }
+    <Text
+      style={
+        {
+          "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "lineHeight": 24,
         }
-        testID="markdown_text"
-      >
-        archived the channel
-      </Text>
+      }
+      testID="markdown_text"
+    >
+      archived the channel
     </Text>
   </View>
 </View>
@@ -338,7 +328,7 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
     style={
       [
         {
-          "alignItems": "flex-start",
+          "alignItems": "center",
           "flexDirection": "row",
           "flexWrap": "wrap",
         },
@@ -346,43 +336,41 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
     }
     testID="markdown_paragraph"
   >
-    <Text>
-      <Text
-        style={
-          [
-            {
-              "color": "rgba(63,67,80,0.6)",
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "opacity": 1,
-            },
-          ]
-        }
-      >
-        <Text
-          style={[]}
-        >
-          @username
-        </Text>
-      </Text>
-      <Text
-        style={
+    <Text
+      style={
+        [
           {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          }
-        }
-        testID="markdown_text"
+          },
+          {
+            "opacity": 1,
+          },
+        ]
+      }
+    >
+      <Text
+        style={[]}
       >
-         archived the channel
+        @username
       </Text>
+    </Text>
+    <Text
+      style={
+        {
+          "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "lineHeight": 24,
+        }
+      }
+      testID="markdown_text"
+    >
+       archived the channel
     </Text>
   </View>
 </View>
@@ -400,7 +388,7 @@ exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
     style={
       [
         {
-          "alignItems": "flex-start",
+          "alignItems": "center",
           "flexDirection": "row",
           "flexWrap": "wrap",
         },
@@ -408,43 +396,41 @@ exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
     }
     testID="markdown_paragraph"
   >
-    <Text>
-      <Text
-        style={
-          [
-            {
-              "color": "rgba(63,67,80,0.6)",
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "opacity": 1,
-            },
-          ]
-        }
-      >
-        <Text
-          style={[]}
-        >
-          @username
-        </Text>
-      </Text>
-      <Text
-        style={
+    <Text
+      style={
+        [
           {
             "color": "rgba(63,67,80,0.6)",
             "fontFamily": "OpenSans",
             "fontSize": 16,
             "fontWeight": "400",
             "lineHeight": 24,
-          }
-        }
-        testID="markdown_text"
+          },
+          {
+            "opacity": 1,
+          },
+        ]
+      }
+    >
+      <Text
+        style={[]}
       >
-         unarchived the channel
+        @username
       </Text>
+    </Text>
+    <Text
+      style={
+        {
+          "color": "rgba(63,67,80,0.6)",
+          "fontFamily": "OpenSans",
+          "fontSize": 16,
+          "fontWeight": "400",
+          "lineHeight": 24,
+        }
+      }
+      testID="markdown_text"
+    >
+       unarchived the channel
     </Text>
   </View>
 </View>
