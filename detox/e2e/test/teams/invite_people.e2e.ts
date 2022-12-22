@@ -18,7 +18,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isIos} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 function systemDialog(label: string) {
@@ -51,9 +51,6 @@ describe('Teams - Invite people', () => {
     });
 
     afterAll(async () => {
-        // # Close share dialog
-        await ChannelListScreen.headerTeamDisplayName.tap();
-
         // # Log out
         await HomeScreen.logout();
     });
@@ -63,6 +60,7 @@ describe('Teams - Invite people', () => {
         await ChannelListScreen.headerPlusButton.tap();
 
         // * Verify invite people to team item is available
+        await wait(timeouts.ONE_SEC);
         await expect(ChannelListScreen.invitePeopleToTeamItem).toExist();
 
         // # Tap on invite people to team item
@@ -71,6 +69,9 @@ describe('Teams - Invite people', () => {
         if (isIos()) {
             // * Verify share dialog is open
             await expect(systemDialog(`Join the ${testTeam.display_name} team`)).toExist();
+
+            // # Close share dialog
+            await device.reloadReactNative();
         }
     });
 });
