@@ -75,14 +75,17 @@ export function alertChannelArchived(displayName: string, intl: IntlShape) {
 }
 
 export function alertTeamAddError(error: unknown, intl: IntlShape) {
-    let errMsg;
-    if (isServerError(error) && error.server_error_id === ServerErrors.TEAM_MEMBERSHIP_DENIAL_ERROR_ID) {
-        errMsg = intl.formatMessage({
-            id: 'join_team.error.group_error',
-            defaultMessage: 'You need to be a member of a linked group to join this team.',
-        });
-    } else {
-        errMsg = intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team'});
+    let errMsg = intl.formatMessage({id: 'join_team.error.message', defaultMessage: 'There has been an error joining the team.'});
+
+    if (isServerError(error)) {
+        if (error.server_error_id === ServerErrors.TEAM_MEMBERSHIP_DENIAL_ERROR_ID) {
+            errMsg = intl.formatMessage({
+                id: 'join_team.error.group_error',
+                defaultMessage: 'You need to be a member of a linked group to join this team.',
+            });
+        } else if (error.message) {
+            errMsg = error.message;
+        }
     }
 
     Alert.alert(
