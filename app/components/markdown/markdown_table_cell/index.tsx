@@ -57,7 +57,9 @@ const MarkdownTableCell = ({isLastCell, align, children}: MarkdownTableCellProps
             style={[cellStyle, textStyle]}
             testID='markdown_table_cell'
         >
-            {children}
+            <View style={{flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap'}}>
+                {children}
+            </View>
         </View>
     );
 };

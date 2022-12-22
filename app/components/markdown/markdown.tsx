@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useMemo, useRef} from 'react';
@@ -131,6 +132,7 @@ const Markdown = ({
     textStyles = {}, theme, value = '', baseParagraphStyle,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
+    const managedConfig = useManagedConfig<ManagedConfig>();
 
     const urlFilter = (url: string) => {
         const scheme = getScheme(url);
@@ -471,10 +473,14 @@ const Markdown = ({
     };
 
     const renderText = ({context, literal}: MarkdownBaseRenderer) => {
+        const selectable = (managedConfig.copyAndPasteProtection !== 'false') && context.includes('table_cell');
         if (context.indexOf('image') !== -1) {
             // If this text is displayed, it will be styled by the image component
             return (
-                <Text testID='markdown_text'>
+                <Text
+                    testID='markdown_text'
+                    selectable={selectable}
+                >
                     {literal}
                 </Text>
             );
@@ -496,6 +502,7 @@ const Markdown = ({
             <Text
                 testID='markdown_text'
                 style={styles}
+                selectable={selectable}
             >
                 {literal}
             </Text>
