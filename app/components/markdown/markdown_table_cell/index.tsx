@@ -24,6 +24,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'flex-start',
             padding: 8,
         },
+        textContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+        },
         cellRightBorder: {
             borderRightWidth: 1,
         },
@@ -57,7 +62,7 @@ const MarkdownTableCell = ({isLastCell, align, children}: MarkdownTableCellProps
             style={[cellStyle, textStyle]}
             testID='markdown_table_cell'
         >
-            <View style={{flexDirection: 'row', alignItems: 'center', flexWrap: 'wrap'}}>
+            <View style={style.textContainer}>
                 {children}
             </View>
         </View>
