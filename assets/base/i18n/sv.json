@@ -838,7 +838,7 @@
     "announcment_banner.dismiss": "Avvisa meddelandet",
     "unsupported_server.message": "Din server, {serverDisplayName}, kör en serverversion som inte stöds. Det innebär kompatibilitetsproblem som gör att användarna kan uppleva app-krascher eller allvarliga fel som gör att appen inte fungerar som den ska. Be din systemadministratör att uppgradera Mattermost-servern.",
     "your.servers": "Dina servrar",
-    "video.failed_description": "Ett fel uppstod när videon skulle spelas upp.\n",
+    "video.failed_description": "Ett fel uppstod när videon skulle spelas upp.",
     "user.settings.notifications.email_threads.description": "Notifiera mig om alla svar i trådar som jag följer",
     "user.settings.general.field_handled_externally": "Vissa fält nedan kommer från din inloggningstjänst. Om du vill ändra dem får du göra det i din inloggningstjänst.",
     "user.edit_profile.email.web_client": "Mejladress kan bara uppdateras via webben eller desktop-applikationen.",
@@ -920,7 +920,7 @@
     "mobile.calls_host_rec": "Du spelar in det här mötet. Tänk på att informera alla om att mötet spelas in.",
     "mobile.calls_host": "värd",
     "mobile.calls_dismiss": "Avvisa",
-    "mobile.calls_call_thread": "Öppen kanal",
+    "mobile.calls_call_thread": "Samtalstråd",
     "general_settings.report_problem": "Rapportera ett problem",
     "extension.no_servers.title": "Inte ansluten till någon server",
     "extension.no_servers.description": "För att dela innehåll måste du vara inloggad på en Mattermost-server.",
@@ -928,5 +928,7 @@
     "extension.no_memberships.description": "För att kunna dela innehåll måste du vara medlem i ett team på en Mattermost-server.",
     "connection_banner.not_reachable": "Servern kan inte nås",
     "connection_banner.not_connected": "Ingen internetåtkomst",
-    "connection_banner.connected": "Anslutningen är återställd"
+    "connection_banner.connected": "Anslutningen är återställd",
+    "thread.loadingReplies": "Laddar svar..",
+    "mobile.calls_open_channel": "Öppen kanal"
 }
