@@ -90,7 +90,7 @@
     "react-native-webrtc": "github:mattermost/react-native-webrtc",
     "react-native-webview": "11.26.0",
     "react-syntax-highlighter": "15.5.0",
-    "readable-stream": "4.2.0",
+    "readable-stream": "3.6.0",
     "reanimated-bottom-sheet": "1.0.0-alpha.22",
     "semver": "7.3.8",
     "serialize-error": "11.0.0",
