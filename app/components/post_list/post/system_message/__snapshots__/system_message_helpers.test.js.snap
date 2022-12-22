@@ -44,6 +44,7 @@ exports[`renderSystemMessage uses renderer for Channel Display Name update 1`] =
         </Text>
       </Text>
       <Text
+        selectable={false}
         style={
           {
             "color": "rgba(63,67,80,0.6)",
@@ -106,6 +107,7 @@ exports[`renderSystemMessage uses renderer for Channel Header update 1`] = `
         </Text>
       </Text>
       <Text
+        selectable={false}
         style={
           {
             "color": "rgba(63,67,80,0.6)",
@@ -184,6 +186,7 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 1
         </Text>
       </Text>
       <Text
+        selectable={false}
         style={
           {
             "color": "rgba(63,67,80,0.6)",
@@ -246,6 +249,7 @@ exports[`renderSystemMessage uses renderer for Guest added and join to channel 2
         </Text>
       </Text>
       <Text
+        selectable={false}
         style={
           {
             "color": "rgba(63,67,80,0.6)",
@@ -308,6 +312,7 @@ exports[`renderSystemMessage uses renderer for OLD archived channel without a us
   >
     <Text>
       <Text
+        selectable={false}
         style={
           {
             "color": "rgba(63,67,80,0.6)",
@@ -370,6 +375,7 @@ exports[`renderSystemMessage uses renderer for archived channel 1`] = `
         </Text>
       </Text>
       <Text
+        selectable={false}
         style={
           {
             "color": "rgba(63,67,80,0.6)",
@@ -432,6 +438,7 @@ exports[`renderSystemMessage uses renderer for unarchived channel 1`] = `
         </Text>
       </Text>
       <Text
+        selectable={false}
         style={
           {
             "color": "rgba(63,67,80,0.6)",

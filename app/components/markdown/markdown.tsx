@@ -473,7 +473,7 @@ const Markdown = ({
     };
 
     const renderText = ({context, literal}: MarkdownBaseRenderer) => {
-        const selectable = (managedConfig.copyAndPasteProtection !== 'false') && context.includes('table_cell');
+        const selectable = (managedConfig.copyAndPasteProtection !== 'true') && context.includes('table_cell');
         if (context.indexOf('image') !== -1) {
             // If this text is displayed, it will be styled by the image component
             return (
