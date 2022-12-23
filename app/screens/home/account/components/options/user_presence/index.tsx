@@ -7,12 +7,15 @@ import {TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {setStatus} from '@actions/remote/user';
+import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import StatusLabel from '@components/status_label';
 import UserStatusIndicator from '@components/user_status';
 import General from '@constants/general';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet, dismissBottomSheet, dismissModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
@@ -37,6 +40,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         spacer: {
             marginLeft: 16,
         },
+        listHeader: {
+            marginBottom: 12,
+        },
+        listHeaderText: {
+            color: theme.centerChannelColor,
+            ...typography('Heading', 600, 'SemiBold'),
+        },
     };
 });
 
@@ -47,22 +57,33 @@ type Props = {
 };
 const UserStatus = ({currentUser}: Props) => {
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const isTablet = useIsTablet();
 
     const handleSetStatus = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
             return (
                 <>
+                    {!isTablet && (
+                        <View style={styles.listHeader}>
+                            <FormattedText
+                                id='user_status.title'
+                                defaultMessage={'Status'}
+                                style={styles.listHeaderText}
+                            />
+                        </View>
+                    )}
                     <SlideUpPanelItem
                         icon='check-circle'
                         iconStyles={{color: theme.onlineIndicator}}
                         onPress={() => setUserStatus(ONLINE)}
                         testID='user_status.online.option'
                         text={intl.formatMessage({
-                            id: 'mobile.set_status.online',
+                            id: 'user_status.online',
                             defaultMessage: 'Online',
                         })}
                         textStyles={styles.label}
@@ -73,7 +94,7 @@ const UserStatus = ({currentUser}: Props) => {
                         onPress={() => setUserStatus(AWAY)}
                         testID='user_status.away.option'
                         text={intl.formatMessage({
-                            id: 'mobile.set_status.away',
+                            id: 'user_status.away',
                             defaultMessage: 'Away',
                         })}
                         textStyles={styles.label}
@@ -84,7 +105,7 @@ const UserStatus = ({currentUser}: Props) => {
                         onPress={() => setUserStatus(DND)}
                         testID='user_status.dnd.option'
                         text={intl.formatMessage({
-                            id: 'mobile.set_status.dnd',
+                            id: 'user_status.dnd',
                             defaultMessage: 'Do Not Disturb',
                         })}
                         textStyles={styles.label}
@@ -95,7 +116,7 @@ const UserStatus = ({currentUser}: Props) => {
                         onPress={() => setUserStatus(OFFLINE)}
                         testID='user_status.offline.option'
                         text={intl.formatMessage({
-                            id: 'mobile.set_status.offline',
+                            id: 'user_status.offline',
                             defaultMessage: 'Offline',
                         })}
                         textStyles={styles.label}
@@ -104,15 +125,15 @@ const UserStatus = ({currentUser}: Props) => {
             );
         };
 
-        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT, insets.bottom);
+        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT, bottom);
         bottomSheet({
             closeButtonId: 'close-set-user-status',
             renderContent,
-            snapPoints: [snapPoint, 10],
-            title: intl.formatMessage({id: 'account.user_status.title', defaultMessage: 'User Presence'}),
+            snapPoints: [(snapPoint + TITLE_HEIGHT), 10],
+            title: intl.formatMessage({id: 'user_status.title', defaultMessage: 'Status'}),
             theme,
         });
-    }), [theme, insets]);
+    }), [theme, bottom]);
 
     const updateStatus = useCallback((status: string) => {
         const userStatus = {

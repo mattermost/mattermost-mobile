@@ -59,6 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     badge: {
         left: 18,
         top: -5,
+        borderColor: theme.centerChannelBg,
     },
     button: {
         borderRadius: 8,

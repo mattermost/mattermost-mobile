@@ -37,6 +37,20 @@ import RecentCustomStatuses from './components/recent_custom_statuses';
 
 import type UserModel from '@typings/database/models/servers/user';
 
+type NewStatusType = {
+    emoji?: string;
+    text?: string;
+    duration: CustomStatusDuration;
+    expiresAt: moment.Moment;
+}
+
+type Props = {
+    customStatusExpirySupported: boolean;
+    currentUser: UserModel;
+    recentCustomStatuses: UserCustomStatus[];
+    componentId: string;
+}
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
@@ -89,13 +103,6 @@ const calculateExpiryTime = (duration: CustomStatusDuration, currentUser: UserMo
     }
 };
 
-type NewStatusType = {
-    emoji?: string;
-    text?: string;
-    duration: CustomStatusDuration;
-    expiresAt: moment.Moment;
-}
-
 function reducer(state: NewStatusType, action: {
     type: 'clear' | 'fromUserCustomStatus' | 'fromUserCustomStatusIgnoringExpire' | 'text' | 'emoji' | 'duration';
     status?: UserCustomStatus;
@@ -136,13 +143,6 @@ function reducer(state: NewStatusType, action: {
         default:
             return state;
     }
-}
-
-type Props = {
-    customStatusExpirySupported: boolean;
-    currentUser: UserModel;
-    recentCustomStatuses: UserCustomStatus[];
-    componentId: string;
 }
 
 const CustomStatus = ({
@@ -329,7 +329,7 @@ const CustomStatus = ({
                     action={intl.formatMessage({id: 'mobile.custom_status.modal_confirm', defaultMessage: 'Done'})}
                     onPress={handleSetStatus}
                     testID='custom_status'
-                    title={intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a Status'})}
+                    title={intl.formatMessage({id: 'mobile.routes.custom_status', defaultMessage: 'Set a custom status'})}
                 />
             }
             <SafeAreaView

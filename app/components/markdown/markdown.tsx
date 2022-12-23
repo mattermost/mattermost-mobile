@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useMemo, useRef} from 'react';
@@ -38,7 +39,6 @@ import type {
 type MarkdownProps = {
     autolinkedUrlSchemes?: string[];
     baseTextStyle: StyleProp<TextStyle>;
-    baseParagraphStyle?: StyleProp<TextStyle>;
     blockStyles?: MarkdownBlockStyles;
     channelId?: string;
     channelMentions?: ChannelMentions;
@@ -85,7 +85,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
     return {
         block: {
-            alignItems: 'flex-start',
+            alignItems: 'center',
             flexDirection: 'row',
             flexWrap: 'wrap',
         },
@@ -128,9 +128,10 @@ const Markdown = ({
     enableInlineLatex, enableLatex,
     imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutHeight, layoutWidth,
     location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
-    textStyles = {}, theme, value = '', baseParagraphStyle,
+    textStyles = {}, theme, value = '',
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
+    const managedConfig = useManagedConfig<ManagedConfig>();
 
     const urlFilter = (url: string) => {
         const scheme = getScheme(url);
@@ -382,13 +383,11 @@ const Markdown = ({
         }
 
         return (
-            <Text>
-                <MarkdownLatexInline
-                    content={latexCode}
-                    maxMathWidth={Dimensions.get('window').width * 0.75}
-                    theme={theme}
-                />
-            </Text>
+            <MarkdownLatexInline
+                content={latexCode}
+                maxMathWidth={Dimensions.get('window').width * 0.75}
+                theme={theme}
+            />
         );
     };
 
@@ -441,9 +440,7 @@ const Markdown = ({
                 style={blockStyle}
                 testID='markdown_paragraph'
             >
-                <Text style={baseParagraphStyle}>
-                    {children}
-                </Text>
+                {children}
             </View>
         );
     };
@@ -471,10 +468,14 @@ const Markdown = ({
     };
 
     const renderText = ({context, literal}: MarkdownBaseRenderer) => {
+        const selectable = (managedConfig.copyAndPasteProtection !== 'true') && context.includes('table_cell');
         if (context.indexOf('image') !== -1) {
             // If this text is displayed, it will be styled by the image component
             return (
-                <Text testID='markdown_text'>
+                <Text
+                    testID='markdown_text'
+                    selectable={selectable}
+                >
                     {literal}
                 </Text>
             );
@@ -496,6 +497,7 @@ const Markdown = ({
             <Text
                 testID='markdown_text'
                 style={styles}
+                selectable={selectable}
             >
                 {literal}
             </Text>

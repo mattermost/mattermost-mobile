@@ -29,5 +29,9 @@
 		<key>NSExtensionPrincipalClass</key>
 		<string>$(PRODUCT_MODULE_NAME).NotificationService</string>
 	</dict>
+	<key>SENTRY_DSN_IOS</key>
+	<string>$(SENTRY_DSN_IOS)</string>
+	<key>SENTRY_ENABLED</key>
+	<string>$(SENTRY_ENABLED)</string>
 </dict>
 </plist>
