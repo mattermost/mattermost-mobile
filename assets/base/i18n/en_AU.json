@@ -372,7 +372,7 @@
     "user.settings.general.position": "Position",
     "user.settings.general.username": "Username",
     "your.servers": "Your servers",
-    "video.failed_description": "An error occurred while trying to play the video.\n",
+    "video.failed_description": "An error occurred while trying to play the video.",
     "video.download": "Download video",
     "user.tutorial.long_press": "Long-press on an item to view a user's profile",
     "user.settings.notifications.email_threads.description": "Notify me about all replies to threads I'm following",
@@ -912,7 +912,7 @@
     "mobile.calls_host_rec_stopped": "You can find the recording in this call's chat thread once it's finished processing.",
     "mobile.calls_host_rec": "You are recording this meeting. You may wish to consider letting everyone know that this meeting is being recorded.",
     "mobile.calls_dismiss": "Dismiss",
-    "mobile.calls_call_thread": "Open Channel",
+    "mobile.calls_call_thread": "Call Thread",
     "extension.no_servers.title": "Not connected to any servers",
     "extension.no_servers.description": "To share content, you'll need to be logged in to a Mattermost server.",
     "extension.no_memberships.title": "Not a member of any team yet",
@@ -926,5 +926,7 @@
     "general_settings.report_problem": "Report a problem",
     "connection_banner.not_reachable": "The server is unreachable",
     "connection_banner.not_connected": "No internet connection",
-    "connection_banner.connected": "Connection restored"
+    "connection_banner.connected": "Connection restored",
+    "thread.loadingReplies": "Loading replies...",
+    "mobile.calls_open_channel": "Open Channel"
 }
