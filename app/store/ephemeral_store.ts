@@ -22,6 +22,7 @@ class EphemeralStore {
     private convertingChannels = new Set<string>();
     private switchingToChannel = new Set<string>();
     private currentThreadId = '';
+    private notificationTapped = false;
 
     // Ephemeral control when (un)archiving a channel locally
     addArchivingChannel = (channelId: string) => {
@@ -133,6 +134,14 @@ class EphemeralStore {
 
     setCanJoinOtherTeams = (serverUrl: string, value: boolean) => {
         this.getCanJoinOtherTeamsSubject(serverUrl).next(value);
+    };
+
+    setNotificationTapped = (value: boolean) => {
+        this.notificationTapped = value;
+    };
+
+    wasNotificationTapped = () => {
+        return this.notificationTapped;
     };
 }
 

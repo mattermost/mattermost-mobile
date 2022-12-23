@@ -443,7 +443,10 @@ async function fetchPostDataIfNeeded(serverUrl: string) {
         if (currentChannelId && (isChannelScreenMounted || tabletDevice)) {
             await fetchPostsForChannel(serverUrl, currentChannelId);
             markChannelAsRead(serverUrl, currentChannelId);
-            markChannelAsViewed(serverUrl, currentChannelId);
+            if (!EphemeralStore.wasNotificationTapped()) {
+                markChannelAsViewed(serverUrl, currentChannelId);
+            }
+            EphemeralStore.setNotificationTapped(false);
         }
     } catch (error) {
         logDebug('could not fetch needed post after WS reconnect', error);
