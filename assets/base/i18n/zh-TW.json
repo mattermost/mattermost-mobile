@@ -170,7 +170,6 @@
     "mobile.server_upgrade.title": "需要伺服器更新",
     "mobile.server_url.invalid_format": "網址開頭必須是 http:// 或 https://",
     "mobile.set_status.dnd": "請勿打擾",
-    "mobile.set_status.online": "上線",
     "mobile.storage_permission_denied_title": "{applicationName}想要存取您的檔案",
     "mobile.suggestion.members": "成員",
     "mobile.system_message.channel_archived_message": "{username} 已封存頻道。",

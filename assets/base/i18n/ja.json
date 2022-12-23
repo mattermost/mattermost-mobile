@@ -293,7 +293,6 @@
     "mobile.server_url.empty": "有効なサーバーURLを入力してください",
     "mobile.server_url.invalid_format": "URLはhttp://またはhttps://から始まらなくてはいけません",
     "mobile.set_status.dnd": "取り込み中",
-    "mobile.set_status.online": "オンライン",
     "mobile.storage_permission_denied_title": "{applicationName} があなたのファイルへアクセスしようとしています",
     "mobile.suggestion.members": "メンバー",
     "mobile.system_message.channel_archived_message": "{username} がチャンネルをアーカイブしました",

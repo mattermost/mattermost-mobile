@@ -293,7 +293,6 @@
     "mobile.server_url.empty": "Kérem adjon meg érvényes szerver URL-t",
     "mobile.server_url.invalid_format": "Az URL-nek http:// vagy https:// -el kell kezdődnie",
     "mobile.set_status.dnd": "Ne zavarj",
-    "mobile.set_status.online": "Elérhető",
     "mobile.storage_permission_denied_title": "{applicationName} szeretne hozzáférni a fájljaihoz",
     "mobile.suggestion.members": "Tagok",
     "mobile.system_message.channel_archived_message": "{username} archiválta a beszélgetést",

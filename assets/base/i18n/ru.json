@@ -293,7 +293,6 @@
     "mobile.server_url.empty": "Пожалуйста, введите действительный URL-адрес сервера",
     "mobile.server_url.invalid_format": "Адрес должен начинаться с http:// или https://",
     "mobile.set_status.dnd": "Не беспокоить",
-    "mobile.set_status.online": "В сети",
     "mobile.storage_permission_denied_title": "{applicationName} хотело бы получить доступ к вашим файлам",
     "mobile.suggestion.members": "Участники",
     "mobile.system_message.channel_archived_message": "{username} архивировал канал",

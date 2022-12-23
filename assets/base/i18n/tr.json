@@ -293,7 +293,6 @@
     "mobile.server_url.empty": "Lütfen geçerli bir sunucu adresi yazın",
     "mobile.server_url.invalid_format": "Adres http:// ya da https:// ile başlamalıdır",
     "mobile.set_status.dnd": "Rahatsız etmeyin",
-    "mobile.set_status.online": "Çevrimiçi",
     "mobile.storage_permission_denied_title": "{applicationName} dosyalarınıza erişmek istiyor",
     "mobile.suggestion.members": "Üyeler",
     "mobile.system_message.channel_archived_message": "{username} kanalı arşivledi",

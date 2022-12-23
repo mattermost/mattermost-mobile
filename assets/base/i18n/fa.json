@@ -271,7 +271,6 @@
     "mobile.server_url.empty": "لطفاً یک URL سرور معتبر وارد کنید",
     "mobile.server_url.invalid_format": "URL باید با http:// یا https:// شروع شود",
     "mobile.set_status.dnd": "مزاحم نشوید",
-    "mobile.set_status.online": "برخط",
     "mobile.storage_permission_denied_title": "{applicationName} می‌خواهد به فایل‌های شما دسترسی داشته باشد",
     "mobile.suggestion.members": "اعضا",
     "mobile.system_message.channel_archived_message": "{username} کانال را بایگانی کرد",

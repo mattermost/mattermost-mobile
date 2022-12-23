@@ -293,7 +293,6 @@
     "mobile.server_url.empty": "Ange en giltig server-URL",
     "mobile.server_url.invalid_format": "Måste börja med http:// eller https://",
     "mobile.set_status.dnd": "Stör ej",
-    "mobile.set_status.online": "Ansluten",
     "mobile.storage_permission_denied_title": "{applicationName} vill ha åtkomst till dina filer",
     "mobile.suggestion.members": "Medlemmar",
     "mobile.system_message.channel_archived_message": "{username} arkiverade kanalen",

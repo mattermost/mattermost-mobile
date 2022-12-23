@@ -191,7 +191,6 @@
     "mobile.server_url.empty": "Введіть дійсну URL-адресу сервера",
     "mobile.server_url.invalid_format": "Адреса повинен починатися з http:// або https://",
     "mobile.set_status.dnd": "Не турбувати ",
-    "mobile.set_status.online": "Online ",
     "mobile.storage_permission_denied_title": "{applicationName} хоче отримати доступ до ваших файлів",
     "mobile.suggestion.members": "Учасники ",
     "mobile.system_message.channel_archived_message": "{username} архівує канал.",

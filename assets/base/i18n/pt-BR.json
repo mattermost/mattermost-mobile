@@ -293,7 +293,6 @@
     "mobile.server_url.empty": "Insira um URL de servidor válido",
     "mobile.server_url.invalid_format": "URL deve começar com http:// ou https://",
     "mobile.set_status.dnd": "Não Perturbe",
-    "mobile.set_status.online": "Conectado",
     "mobile.storage_permission_denied_title": "{applicationName} gostaria de acessar seus arquivos",
     "mobile.suggestion.members": "Membros",
     "mobile.system_message.channel_archived_message": "{username} arquivou o canal",

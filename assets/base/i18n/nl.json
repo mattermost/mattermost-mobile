@@ -293,7 +293,6 @@
     "mobile.server_url.empty": "Geef een geldige server URL op",
     "mobile.server_url.invalid_format": "URL moet beginnen met http:// of https://",
     "mobile.set_status.dnd": "Niet Storen",
-    "mobile.set_status.online": "Online",
     "mobile.storage_permission_denied_title": "{applicationName} wil toegang tot jouw bestanden",
     "mobile.suggestion.members": "Leden",
     "mobile.system_message.channel_archived_message": "{username} archiveerde het kanaal",

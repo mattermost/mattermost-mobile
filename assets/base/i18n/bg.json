@@ -274,7 +274,6 @@
     "mobile.server_url.empty": "Моля, въведете валиден URL на сървъра",
     "mobile.server_url.invalid_format": "URL адресът трябва да започва с http:// или https://",
     "mobile.set_status.dnd": "Не безпокой",
-    "mobile.set_status.online": "На линия",
     "mobile.storage_permission_denied_title": "{applicationName} би искал да получи достъп до вашите файлове",
     "mobile.suggestion.members": "Потребители",
     "mobile.system_message.channel_archived_message": "{username} архивира канала",

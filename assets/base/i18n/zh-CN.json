@@ -293,7 +293,6 @@
     "mobile.server_url.empty": "请输入有效的服务端网址",
     "mobile.server_url.invalid_format": "每个 URL 必须以 http:// 或 https:// 开头",
     "mobile.set_status.dnd": "请勿打扰",
-    "mobile.set_status.online": "在线",
     "mobile.storage_permission_denied_title": "{applicationName} 想要访问您的文件",
     "mobile.suggestion.members": "成员",
     "mobile.system_message.channel_archived_message": "{username} 已归档频道",
