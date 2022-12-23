@@ -7,13 +7,13 @@ import FastImage from 'react-native-fast-image';
 import {RectButton, TouchableWithoutFeedback} from 'react-native-gesture-handler';
 import Animated from 'react-native-reanimated';
 
-import {typography} from '@app/utils/typography';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {Preferences} from '@constants';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {calculateDimensions} from '@utils/images';
 import {changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const styles = StyleSheet.create({
     container: {

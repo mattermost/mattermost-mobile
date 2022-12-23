@@ -7,10 +7,15 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryMyTeams} from '@queries/servers/team';
+import MyTeamModel from '@typings/database/models/servers/my_team';
 
-import SelectTeam from './select_team';
+import JoinTeam from './join_team';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+
+const membershipsToIdSet = (mm: MyTeamModel[]) => {
+    return new Set(mm.map((m) => m.id));
+};
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     // TODO https://mattermost.atlassian.net/browse/MM-43622
@@ -20,13 +25,13 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     //     switchMap((r) => of$(hasPermission(r, Permissions.CREATE_TEAM, false))),
     // );
 
-    const myTeams = queryMyTeams(database).observe();
-    const nTeams = myTeams.pipe(switchMap((mm) => of$(mm.length)));
-    const firstTeamId = myTeams.pipe(switchMap((mm) => of$(mm[0]?.id)));
+    const joinedIds = queryMyTeams(database).observe().pipe(
+        switchMap((mm) => of$(membershipsToIdSet(mm))),
+    );
+
     return {
-        nTeams,
-        firstTeamId,
+        joinedIds,
     };
 });
 
-export default withDatabase(enhanced(SelectTeam));
+export default withDatabase(enhanced(JoinTeam));

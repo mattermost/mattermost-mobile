@@ -18,6 +18,7 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import {goToScreen, loginAnimationOptions, resetToHome, resetToTeams} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {isServerError} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -139,9 +140,9 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
 
     const checkLoginResponse = (data: LoginActionResponse) => {
         let errorId = '';
-        const clientError = data.error as ClientErrorProps;
-        if (clientError && clientError.server_error_id) {
-            errorId = clientError.server_error_id;
+        const loginError = data.error;
+        if (isServerError(loginError) && loginError.server_error_id) {
+            errorId = loginError.server_error_id;
         }
 
         if (data.failed && MFA_EXPECTED_ERRORS.includes(errorId)) {
@@ -150,9 +151,9 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
             return false;
         }
 
-        if (data?.error && data.failed) {
+        if (loginError && data.failed) {
             setIsLoading(false);
-            setError(getLoginErrorMessage(data.error));
+            setError(getLoginErrorMessage(loginError));
             return false;
         }
 
