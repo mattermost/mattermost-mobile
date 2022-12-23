@@ -56,7 +56,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const CustomStatusInput = ({emoji, isStatusSet, onChangeText, onClearHandle, onOpenEmojiPicker, text, theme}: Props) => {
     const style = getStyleSheet(theme);
     const intl = useIntl();
-    const placeholder = intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a Status'});
+    const placeholder = intl.formatMessage({id: 'custom_status.set_status', defaultMessage: 'Set a custom status'});
 
     return (
         <>

@@ -283,7 +283,6 @@ const OptionItem = ({
             }
         </View>
     );
-
     if (Object.values(TouchableOptionTypes).includes(type)) {
         return (
             <TouchableOpacity onPress={onPress}>

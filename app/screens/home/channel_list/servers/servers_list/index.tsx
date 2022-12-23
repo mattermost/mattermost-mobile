@@ -61,7 +61,7 @@ const ServerList = ({servers}: Props) => {
             testID='server_list'
             title={intl.formatMessage({id: 'your.servers', defaultMessage: 'Your servers'})}
         >
-            <View style={styles.container}>
+            <View style={[styles.container, {marginTop: isTablet ? 12 : 0}]}>
                 <FlatList
                     data={servers}
                     renderItem={renderServer}

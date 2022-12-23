@@ -8,8 +8,11 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Client} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
 import PanelItem from '@screens/edit_profile/components/panel_item';
 import {bottomSheet} from '@screens/navigation';
@@ -17,11 +20,11 @@ import PickerUtil from '@utils/file/file_picker';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type UserModel from '@typings/database/models/servers/user';
 
 const hitSlop = {top: 100, bottom: 20, right: 20, left: 100};
-const ACTION_HEIGHT = 55;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -37,6 +40,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             bottom: 0,
             right: 0,
             backgroundColor: theme.centerChannelBg,
+        },
+        title: {
+            ...typography('Heading', 600, 'SemiBold'),
+            color: theme.centerChannelColor,
+            marginBottom: 8,
         },
     };
 });
@@ -72,16 +80,24 @@ const ProfileImagePicker = ({
 }: ImagePickerProps) => {
     const theme = useTheme();
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles, intl]);
     const canRemovePicture = hasPictureUrl(user, serverUrl);
     const styles = getStyleSheet(theme);
+    const isTablet = useIsTablet();
 
     const showFileAttachmentOptions = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
             return (
                 <>
+                    {!isTablet &&
+                        <FormattedText
+                            id='user.edit_profile.profile_photo.change_photo'
+                            defaultMessage='Change profile photo'
+                            style={styles.title}
+                        />
+                    }
                     <PanelItem
                         pickerAction='takePhoto'
                         pictureUtils={pictureUtils}
@@ -106,16 +122,16 @@ const ProfileImagePicker = ({
         };
 
         const snapPointsCount = canRemovePicture ? 5 : 4;
-        const snapPoint = bottomSheetSnapPoint(snapPointsCount, ACTION_HEIGHT, insets.bottom);
+        const snapPoint = bottomSheetSnapPoint(snapPointsCount, ITEM_HEIGHT, bottom);
 
         return bottomSheet({
             closeButtonId: 'close-edit-profile',
             renderContent,
             snapPoints: [snapPoint, 10],
-            title: '',
+            title: 'Change profile photo',
             theme,
         });
-    }), [canRemovePicture, onRemoveProfileImage, insets, pictureUtils, theme]);
+    }), [canRemovePicture, onRemoveProfileImage, bottom, pictureUtils, theme]);
 
     return (
         <TouchableOpacity
