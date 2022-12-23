@@ -95,6 +95,7 @@ type NewStatusType = {
     duration: CustomStatusDuration;
     expiresAt: moment.Moment;
 }
+
 function reducer(state: NewStatusType, action: {
     type: 'clear' | 'fromUserCustomStatus' | 'fromUserCustomStatusIgnoringExpire' | 'text' | 'emoji' | 'duration';
     status?: UserCustomStatus;
@@ -124,7 +125,7 @@ function reducer(state: NewStatusType, action: {
         case 'emoji':
             return {...state, emoji: action.value};
         case 'duration':
-            if (action.duration) {
+            if (action.duration != null) {
                 return {
                     ...state,
                     duration: action.duration,
