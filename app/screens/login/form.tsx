@@ -4,11 +4,12 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {MutableRefObject, useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, TextInput, useWindowDimensions, View} from 'react-native';
+import {Keyboard, Platform, TextInput, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {login} from '@actions/remote/session';
+import CompassIcon from '@app/components/compass_icon';
 import ClientError from '@client/rest/error';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
@@ -20,7 +21,7 @@ import {goToScreen, loginAnimationOptions, resetToHome, resetToTeams} from '@scr
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isServerError} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
 
@@ -34,6 +35,7 @@ interface LoginProps extends LaunchProps {
 }
 
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
+const hitSlop = {top: 8, right: 8, bottom: 8, left: 8};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -69,6 +71,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     loginButton: {
         marginTop: 25,
     },
+    endAdornment: {
+        top: 2,
+    },
 }));
 
 const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
@@ -84,6 +89,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     const [loginId, setLoginId] = useState<string>('');
     const [password, setPassword] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
+    const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const emailEnabled = config.EnableSignInWithEmail === 'true';
     const usernameEnabled = config.EnableSignInWithUsername === 'true';
     const ldapEnabled = license.IsLicensed === 'true' && config.EnableLdap === 'true' && license.LDAP === 'true';
@@ -266,6 +272,10 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
         goToScreen(FORGOT_PASSWORD, '', passProps, loginAnimationOptions());
     }, [theme]);
 
+    const togglePasswordVisiblity = useCallback(() => {
+        setIsPasswordVisible((prevState) => !prevState);
+    }, []);
+
     // useEffect to set userName for EMM
     useEffect(() => {
         const setEmmUsernameIfAvailable = async () => {
@@ -324,6 +334,20 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
         );
     }, [buttonDisabled, loginId, password, isLoading, theme]);
 
+    const endAdornment = (
+        <TouchableOpacity
+            onPress={togglePasswordVisiblity}
+            hitSlop={hitSlop}
+            style={styles.endAdornment}
+        >
+            <CompassIcon
+                name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color={changeOpacity(theme.centerChannelColor, 0.64)}
+            />
+        </TouchableOpacity>
+    );
+
     return (
         <View style={styles.container}>
             <FloatingTextInput
@@ -365,10 +389,11 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 ref={passwordRef}
                 returnKeyType='join'
                 spellCheck={false}
-                secureTextEntry={true}
+                secureTextEntry={!isPasswordVisible}
                 testID='login_form.password.input'
                 theme={theme}
                 value={password}
+                endAdornment={endAdornment}
             />
 
             {(emailEnabled || usernameEnabled) && (
