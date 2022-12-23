@@ -30,6 +30,7 @@ type Props = {
     currentTimezone: string | null;
     currentUserId: string;
     currentUsername: string;
+    disablePullToRefresh?: boolean;
     highlightedId?: PostModel['id'];
     highlightPinnedOrSaved?: boolean;
     isCRTEnabled?: boolean;
@@ -45,6 +46,7 @@ type Props = {
     showMoreMessages?: boolean;
     showNewMessageLine?: boolean;
     footer?: ReactElement;
+    header?: ReactElement;
     testID: string;
     currentCallBarVisible?: boolean;
     joinCallBannerVisible?: boolean;
@@ -84,7 +86,9 @@ const PostList = ({
     currentTimezone,
     currentUserId,
     currentUsername,
+    disablePullToRefresh,
     footer,
+    header,
     highlightedId,
     highlightPinnedOrSaved = true,
     isCRTEnabled,
@@ -348,8 +352,13 @@ const PostList = ({
                 scrolledToHighlighted.current = true;
                 // eslint-disable-next-line max-nested-callbacks
                 const index = orderedPosts.findIndex((p) => typeof p !== 'string' && p.id === highlightedId);
-                if (index >= 0) {
-                    scrollToIndex(index, true);
+                if (index >= 0 && listRef.current) {
+                    listRef.current?.scrollToIndex({
+                        animated: true,
+                        index,
+                        viewOffset: 0,
+                        viewPosition: 0.5, // 0 is at bottom
+                    });
                 }
             }
         }, 500);
@@ -360,7 +369,7 @@ const PostList = ({
     return (
         <>
             <PostListRefreshControl
-                enabled={enableRefreshControl}
+                enabled={!disablePullToRefresh && enableRefreshControl}
                 refreshing={refreshing}
                 onRefresh={onRefresh}
                 style={styles.container}
@@ -372,6 +381,7 @@ const PostList = ({
                     keyboardShouldPersistTaps='handled'
                     keyExtractor={keyExtractor}
                     initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
+                    ListHeaderComponent={header}
                     ListFooterComponent={footer}
                     maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                     maxToRenderPerBatch={10}

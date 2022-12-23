@@ -27,7 +27,7 @@ type RenderersProps = SystemMessageProps & {
     intl: IntlShape;
     styles: {
         containerStyle: StyleProp<ViewStyle>;
-        messageStyle: StyleProp<ViewStyle>;
+        messageStyle: StyleProp<TextStyle>;
         textStyles: {
             [key: string]: TextStyle;
         };

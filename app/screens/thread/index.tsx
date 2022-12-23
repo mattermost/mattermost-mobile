@@ -15,7 +15,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables(['rootId'], ({database, rootId}: WithDatabaseArgs & {rootId: string}) => {
     const isInACall = observeCurrentCall().pipe(
-        switchMap((call) => of$(Boolean(call))),
+        switchMap((call) => of$(Boolean(call?.connected))),
         distinctUntilChanged(),
     );
 

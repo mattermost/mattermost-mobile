@@ -2,19 +2,13 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
-import {observeWebsocket} from '@queries/servers/system';
+import WebsocketManager from '@managers/websocket_manager';
 
 import WebSocket from './websocket';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
-
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    isConnected: observeWebsocket(database).pipe(
-        switchMap((value) => of$(value > 0)),
-    ),
+const enhanced = withObservables(['serverUrl'], ({serverUrl}: {serverUrl: string}) => ({
+    websocketState: WebsocketManager.observeWebsocketState(serverUrl),
 }));
 
 export default enhanced(WebSocket);

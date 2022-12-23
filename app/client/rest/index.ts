@@ -15,6 +15,7 @@ import ClientFiles, {ClientFilesMix} from './files';
 import ClientGeneral, {ClientGeneralMix} from './general';
 import ClientGroups, {ClientGroupsMix} from './groups';
 import ClientIntegrations, {ClientIntegrationsMix} from './integrations';
+import ClientNPS, {ClientNPSMix} from './nps';
 import ClientPosts, {ClientPostsMix} from './posts';
 import ClientPreferences, {ClientPreferencesMix} from './preferences';
 import ClientTeams, {ClientTeamsMix} from './teams';
@@ -40,7 +41,8 @@ interface Client extends ClientBase,
     ClientTosMix,
     ClientUsersMix,
     ClientCallsMix,
-    ClientPluginsMix
+    ClientPluginsMix,
+    ClientNPSMix
 {}
 
 class Client extends mix(ClientBase).with(
@@ -60,6 +62,7 @@ class Client extends mix(ClientBase).with(
     ClientUsers,
     ClientCalls,
     ClientPlugins,
+    ClientNPS,
 ) {
     // eslint-disable-next-line no-useless-constructor
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {

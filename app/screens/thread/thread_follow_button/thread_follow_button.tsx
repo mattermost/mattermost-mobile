@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Platform, StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
@@ -59,7 +59,7 @@ function ThreadFollow({isFollowing, teamId, threadId}: Props) {
         updateThreadFollowing(serverUrl, teamId, threadId, !isFollowing);
     });
 
-    const containerStyle = [styles.container];
+    const containerStyle: StyleProp<ViewStyle> = [styles.container];
     let followTextProps = {
         id: t('threads.follow'),
         defaultMessage: 'Follow',

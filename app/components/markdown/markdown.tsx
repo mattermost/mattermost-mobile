@@ -1,20 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useMemo, useRef} from 'react';
-import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View} from 'react-native';
+import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
-import Hashtag from '@components/markdown/hashtag';
+import {computeTextStyle} from '@utils/markdown';
 import {blendColors, changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
 import AtMention from './at_mention';
 import ChannelMention, {ChannelMentions} from './channel_mention';
+import Hashtag from './hashtag';
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
 import MarkdownImage from './markdown_image';
@@ -37,7 +39,6 @@ import type {
 type MarkdownProps = {
     autolinkedUrlSchemes?: string[];
     baseTextStyle: StyleProp<TextStyle>;
-    baseParagraphStyle?: StyleProp<TextStyle>;
     blockStyles?: MarkdownBlockStyles;
     channelId?: string;
     channelMentions?: ChannelMentions;
@@ -84,7 +85,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
     return {
         block: {
-            alignItems: 'flex-start',
+            alignItems: 'center',
             flexDirection: 'row',
             flexWrap: 'wrap',
         },
@@ -120,11 +121,6 @@ const getExtraPropsForNode = (node: any) => {
     return extraProps;
 };
 
-const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: StyleProp<TextStyle>, context: string[]) => {
-    const contextStyles: TextStyle[] = context.map((type) => textStyles[type]).filter((f) => f !== undefined);
-    return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
-};
-
 const Markdown = ({
     autolinkedUrlSchemes, baseTextStyle, blockStyles, channelId, channelMentions,
     disableAtChannelMentionHighlight, disableAtMentions, disableBlockQuote, disableChannelLink,
@@ -132,9 +128,10 @@ const Markdown = ({
     enableInlineLatex, enableLatex,
     imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutHeight, layoutWidth,
     location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
-    textStyles = {}, theme, value = '', baseParagraphStyle,
+    textStyles = {}, theme, value = '',
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
+    const managedConfig = useManagedConfig<ManagedConfig>();
 
     const urlFilter = (url: string) => {
         const scheme = getScheme(url);
@@ -386,13 +383,11 @@ const Markdown = ({
         }
 
         return (
-            <Text>
-                <MarkdownLatexInline
-                    content={latexCode}
-                    maxMathWidth={Dimensions.get('window').width * 0.75}
-                    theme={theme}
-                />
-            </Text>
+            <MarkdownLatexInline
+                content={latexCode}
+                maxMathWidth={Dimensions.get('window').width * 0.75}
+                theme={theme}
+            />
         );
     };
 
@@ -435,7 +430,7 @@ const Markdown = ({
             return null;
         }
 
-        const blockStyle = [style.block];
+        const blockStyle: StyleProp<ViewStyle> = [style.block];
         if (!first) {
             blockStyle.push(blockStyles?.adjacentParagraph);
         }
@@ -445,9 +440,7 @@ const Markdown = ({
                 style={blockStyle}
                 testID='markdown_paragraph'
             >
-                <Text style={baseParagraphStyle}>
-                    {children}
-                </Text>
+                {children}
             </View>
         );
     };
@@ -475,10 +468,14 @@ const Markdown = ({
     };
 
     const renderText = ({context, literal}: MarkdownBaseRenderer) => {
+        const selectable = (managedConfig.copyAndPasteProtection !== 'true') && context.includes('table_cell');
         if (context.indexOf('image') !== -1) {
             // If this text is displayed, it will be styled by the image component
             return (
-                <Text testID='markdown_text'>
+                <Text
+                    testID='markdown_text'
+                    selectable={selectable}
+                >
                     {literal}
                 </Text>
             );
@@ -492,10 +489,15 @@ const Markdown = ({
             styles = computeTextStyle(textStyles, baseTextStyle, context);
         }
 
+        if (context.includes('mention_highlight')) {
+            styles = concatStyles(styles, {backgroundColor: theme.mentionHighlightBg});
+        }
+
         return (
             <Text
                 testID='markdown_text'
                 style={styles}
+                selectable={selectable}
             >
                 {literal}
             </Text>

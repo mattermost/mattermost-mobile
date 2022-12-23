@@ -32,6 +32,7 @@ type Props = {
     onPress?: (user: UserProfile) => void;
     onLongPress: (user: UserProfile) => void;
     selectable: boolean;
+    disabled?: boolean;
     selected: boolean;
     tutorialWatched?: boolean;
 }
@@ -94,7 +95,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 const DISABLED_OPACITY = 0.32;
 const DEFAULT_ICON_OPACITY = 0.32;
 
-export default function UserListRow({
+function UserListRow({
     id,
     isMyUser,
     highlight,
@@ -105,6 +106,7 @@ export default function UserListRow({
     onLongPress,
     tutorialWatched = false,
     selectable,
+    disabled,
     selected,
 }: Props) {
     const theme = useTheme();
@@ -122,7 +124,7 @@ export default function UserListRow({
             const bounds: TutorialItemBounds = {
                 startX: x - 20,
                 startY: y,
-                endX: x + w + 20,
+                endX: x + w,
                 endY: y + h,
             };
             if (viewRef.current) {
@@ -154,7 +156,11 @@ export default function UserListRow({
     }, [onLongPress, user]);
 
     const icon = useMemo(() => {
-        const iconOpacity = DEFAULT_ICON_OPACITY * (selectable ? 1 : DISABLED_OPACITY);
+        if (!selectable) {
+            return null;
+        }
+
+        const iconOpacity = DEFAULT_ICON_OPACITY * (disabled ? DISABLED_OPACITY : 1);
         const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
         return (
             <View style={style.selector}>
@@ -165,7 +171,7 @@ export default function UserListRow({
                 />
             </View>
         );
-    }, [selectable, selected, theme]);
+    }, [selectable, disabled, selected, theme]);
 
     let usernameDisplay = `@${username}`;
     if (isMyUser) {
@@ -179,7 +185,7 @@ export default function UserListRow({
     const showTeammateDisplay = teammateDisplay !== username;
 
     const userItemTestID = `${testID}.${id}`;
-    const opacity = selectable || selected ? 1 : DISABLED_OPACITY;
+    const opacity = selectable || selected || !disabled ? 1 : DISABLED_OPACITY;
 
     return (
         <>
@@ -261,3 +267,4 @@ export default function UserListRow({
     );
 }
 
+export default React.memo(UserListRow);

@@ -5,6 +5,7 @@ import {Dimensions} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
 import LocalConfig from '@assets/config.json';
+import {Device} from '@constants';
 
 const isSystemAdmin = (roles: string) => {
     // TODO: Replace this function with an utility function based on previous code
@@ -50,7 +51,7 @@ export class Analytics {
                             height,
                             width,
                         },
-                        isTablet: DeviceInfo.isTablet(),
+                        isTablet: Device.IS_TABLET,
                         os: DeviceInfo.getSystemVersion(),
                     },
                     ip: '0.0.0.0',

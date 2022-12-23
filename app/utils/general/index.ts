@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import DeviceInfo from 'react-native-device-info';
 import ReactNativeHapticFeedback, {HapticFeedbackTypes} from 'react-native-haptic-feedback';
 
 type SortByCreatAt = (Session | Channel | Team | Post) & {
@@ -51,3 +52,5 @@ export const sortByNewest = (a: SortByCreatAt, b: SortByCreatAt) => {
 
     return 1;
 };
+
+export const isBetaApp = DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta');

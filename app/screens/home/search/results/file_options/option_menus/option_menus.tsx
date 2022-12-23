@@ -42,7 +42,7 @@ const OptionMenus = ({
 
     const handlePermalink = useCallback(() => {
         if (fileInfo.post_id) {
-            showPermalink(serverUrl, '', fileInfo.post_id, intl);
+            showPermalink(serverUrl, '', fileInfo.post_id);
             setAction('opening');
         }
     }, [intl, serverUrl, fileInfo.post_id, setAction]);

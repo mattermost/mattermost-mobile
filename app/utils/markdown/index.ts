@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform, StyleSheet} from 'react-native';
+import {Platform, StyleProp, StyleSheet, TextStyle} from 'react-native';
 
 import {getViewPortWidth} from '@utils/images';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type {MarkdownTextStyles} from '@typings/global/markdown';
 
 type LanguageObject = {
     [key: string]: {
@@ -28,6 +30,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
         },
         strong: {
             fontFamily: 'OpenSans-SemiBold',
+            fontWeight: '600',
         },
         del: {
             textDecorationLine: 'line-through',
@@ -278,4 +281,9 @@ export const getMarkdownImageSize = (
     // When no metadata and source size is not specified (full size svg's)
     const width = layoutWidth || getViewPortWidth(isReplyPost, isTablet);
     return {width, height: layoutHeight || width};
+};
+
+export const computeTextStyle = (textStyles: MarkdownTextStyles, baseStyle: StyleProp<TextStyle>, context: string[]) => {
+    const contextStyles: TextStyle[] = context.map((type) => textStyles[type]).filter((f) => f !== undefined);
+    return contextStyles.length ? concatStyles(baseStyle, contextStyles) : baseStyle;
 };

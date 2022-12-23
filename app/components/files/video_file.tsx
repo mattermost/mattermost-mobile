@@ -76,9 +76,8 @@ const VideoFile = ({
             const viewPortHeight = Math.max(dimensions.height, dimensions.width) * 0.45;
             return calculateDimensions(video.height || wrapperWidth, video.width || wrapperWidth, wrapperWidth, viewPortHeight);
         }
-
         return undefined;
-    }, [dimensions.height, dimensions.width, video.height, video.width, wrapperWidth]);
+    }, [dimensions.height, dimensions.width, video.height, video.width, wrapperWidth, isSingleImage]);
 
     const getThumbnail = async () => {
         const data = {...file};
@@ -161,7 +160,12 @@ const VideoFile = ({
 
     if (failed) {
         thumbnail = (
-            <View style={[isSingleImage ? null : style.imagePreview, style.failed, imageDimensions]}>
+            <View
+
+                // @ts-expect-error ref of type unknown
+                ref={forwardRef}
+                style={[isSingleImage ? null : {height: '100%'}, style.failed, imageDimensions]}
+            >
                 <FileIcon
                     failed={failed}
                     file={file}
@@ -174,7 +178,7 @@ const VideoFile = ({
         <View
             style={style.fileImageWrapper}
         >
-            {!isSingleImage && <View style={style.boxPlaceholder}/>}
+            {!isSingleImage && !failed && <View style={style.boxPlaceholder}/>}
             {thumbnail}
             <View style={style.playContainer}>
                 <View style={style.play}>

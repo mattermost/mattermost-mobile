@@ -54,7 +54,6 @@ export const saveFavoriteChannel = async (serverUrl: string, channelId: string, 
     }
 
     try {
-        // Todo: @shaz I think you'll need to add the category handler here so that the channel is added/removed from the favorites category
         const userId = await getCurrentUserId(operator.database);
         const favPref: PreferenceType = {
             category: CATEGORY_FAVORITE_CHANNEL,

@@ -10,7 +10,6 @@ import {isTypeDMorGM} from '@utils/channel';
 import EditChannel from './edit_channel';
 import IgnoreMentions from './ignore_mentions';
 import Members from './members';
-import NotificationPreference from './notification_preference';
 import PinnedMessages from './pinned_messages';
 
 type Props = {
@@ -27,13 +26,16 @@ const Options = ({channelId, type, callsEnabled}: Props) => {
             {type !== General.DM_CHANNEL &&
                 <IgnoreMentions channelId={channelId}/>
             }
-            <NotificationPreference channelId={channelId}/>
+            {/*<NotificationPreference channelId={channelId}/>*/}
             <PinnedMessages channelId={channelId}/>
             {type !== General.DM_CHANNEL &&
                 <Members channelId={channelId}/>
             }
             {callsEnabled && !isDMorGM && // if calls is not enabled, copy link will show in the channel actions
-                <CopyChannelLinkOption channelId={channelId}/>
+                <CopyChannelLinkOption
+                    channelId={channelId}
+                    testID='channel_info.options.copy_channel_link.option'
+                />
             }
             {type !== General.DM_CHANNEL && type !== General.GM_CHANNEL &&
                 <EditChannel channelId={channelId}/>

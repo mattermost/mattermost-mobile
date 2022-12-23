@@ -27,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             height: 1,
             marginLeft: 15,
         },
-        checkMark: {
+        checkmark: {
             fontSize: 12,
             color: theme.linkColor,
         },

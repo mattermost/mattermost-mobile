@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode, useCallback, useEffect, useRef} from 'react';
-import {DeviceEventEmitter, Keyboard, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, StyleSheet, View} from 'react-native';
 import {State, TapGestureHandler} from 'react-native-gesture-handler';
 import {Navigation as RNN} from 'react-native-navigation';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -28,10 +28,10 @@ type SlideUpPanelProps = {
 }
 
 export const PADDING_TOP_MOBILE = 20;
+export const PADDING_TOP_TABLET = 8;
 
 const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50], testID}: SlideUpPanelProps) => {
     const sheetRef = useRef<RNBottomSheet>(null);
-    const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
     const theme = useTheme();
     const firstRun = useRef(isTablet);
@@ -101,7 +101,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
 
     const backdropStyle = useAnimatedStyle(() => ({
         opacity: withTiming(backdropOpacity.value, {duration: 250, easing: Easing.inOut(Easing.linear)}),
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
+        backgroundColor: 'rgba(0, 0, 0, 0.6)',
     }));
 
     const renderBackdrop = () => {
@@ -127,11 +127,13 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
         <View
             style={{
                 backgroundColor: theme.centerChannelBg,
+                borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+                borderWidth: isTablet ? 0 : 1,
                 opacity: 1,
                 paddingHorizontal: 20,
-                paddingTop: isTablet ? 0 : PADDING_TOP_MOBILE,
+                paddingTop: isTablet ? PADDING_TOP_TABLET : PADDING_TOP_MOBILE,
                 height: '100%',
-                width: isTablet ? '100%' : Math.min(dimensions.width, 450),
+                width: '100%',
                 alignSelf: 'center',
             }}
             testID={`${testID}.screen`}
@@ -155,7 +157,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
             <RNBottomSheet
                 ref={sheetRef}
                 snapPoints={snapPoints}
-                borderRadius={10}
+                borderRadius={12}
                 initialSnap={snapPoints.length - 1}
                 renderContent={renderContainerContent}
                 onCloseEnd={handleCloseEnd}

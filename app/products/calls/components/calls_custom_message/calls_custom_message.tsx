@@ -126,7 +126,7 @@ export const CallsCustomMessage = ({
         }
 
         if (isLimitRestricted) {
-            showLimitRestrictedAlert(limitRestrictedInfo!.maxParticipants, intl);
+            showLimitRestrictedAlert(limitRestrictedInfo!, intl);
             return;
         }
 

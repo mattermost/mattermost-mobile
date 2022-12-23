@@ -45,6 +45,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         zIndex: 10,
         maxWidth: 315,
     },
+    readOnly: {
+        backgroundColor: changeOpacity(theme.centerChannelBg, 0.16),
+    },
     smallLabel: {
         fontSize: 10,
     },
@@ -109,7 +112,7 @@ type FloatingTextInputProps = TextInputProps & {
     testID?: string;
     textInputStyle?: TextStyle;
     theme: Theme;
-    value: string;
+    value?: string;
 }
 
 const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProps>(({
@@ -130,7 +133,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     testID,
     textInputStyle,
     theme,
-    value = '',
+    value,
     ...props
 }: FloatingTextInputProps, ref) => {
     const [focused, setIsFocused] = useState(false);
@@ -150,11 +153,11 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
 
     useEffect(
         () => {
-            if (!focusedLabel && value) {
+            if (!focusedLabel && (value || props.defaultValue)) {
                 debouncedOnFocusTextInput(true);
             }
         },
-        [value],
+        [value, props.defaultValue],
     );
 
     const onTextInputBlur = useCallback((e: NativeSyntheticEvent<TextInputFocusEventData>) => onExecution(e,
@@ -181,7 +184,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
 
     const combinedContainerStyle = useMemo(() => {
-        const res = [styles.container];
+        const res: StyleProp<ViewStyle> = [styles.container];
         if (multiline) {
             res.push({height: 100 + (2 * BORDER_DEFAULT_WIDTH)});
         }
@@ -191,6 +194,9 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
 
     const combinedTextInputStyle = useMemo(() => {
         const res: StyleProp<TextStyle> = [styles.textInput];
+        if (!editable) {
+            res.push(styles.readOnly);
+        }
         res.push({
             borderWidth: focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH,
             height: DEFAULT_INPUT_HEIGHT + ((focusedLabel ? BORDER_FOCUSED_WIDTH : BORDER_DEFAULT_WIDTH) * 2),
@@ -209,10 +215,10 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         }
 
         return res;
-    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline]);
+    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
 
     const textAnimatedTextStyle = useAnimatedStyle(() => {
-        const inputText = placeholder || value;
+        const inputText = placeholder || value || props.defaultValue;
         const index = inputText || focusedLabel ? 1 : 0;
         const toValue = positions[index];
         const toSize = size[index];

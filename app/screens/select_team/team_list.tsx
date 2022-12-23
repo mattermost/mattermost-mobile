@@ -55,7 +55,7 @@ function TeamList({
     };
 
     const containerStyle = useMemo(() => {
-        return isTablet ? [styles.container, {maxWidth: 600, alignItems: 'center'}] : styles.container;
+        return isTablet ? [styles.container, {maxWidth: 600, alignItems: 'center' as const}] : styles.container;
     }, [isTablet, styles]);
 
     return (

@@ -87,6 +87,7 @@ const NavigationSearch = forwardRef<SearchRef, Props>(({
                 searchIconColor={theme.sidebarText}
                 selectionColor={theme.sidebarText}
                 ref={ref}
+                testID='navigation.header.search_bar'
             />
         </Animated.View>
     );

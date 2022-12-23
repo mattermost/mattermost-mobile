@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {fetchGroupsForChannel, fetchGroupsForMember, fetchGroupsForTeam} from '@actions/remote/groups';
-import {deleteGroupChannelById, deleteGroupMembershipById, deleteGroupTeamById} from '@app/queries/servers/group';
-import {generateGroupAssociationId} from '@app/utils/groups';
 import DatabaseManager from '@database/manager';
+import {deleteGroupChannelById, deleteGroupMembershipById, deleteGroupTeamById} from '@queries/servers/group';
+import {generateGroupAssociationId} from '@utils/groups';
 import {logError} from '@utils/log';
 
 type WebsocketGroupMessage = WebSocketMessage<{

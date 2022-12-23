@@ -6,7 +6,7 @@ import {BehaviorSubject} from 'rxjs';
 
 import {CallsState, DefaultCallsState} from '@calls/types/calls';
 
-const callsStateSubjects = {} as Dictionary<BehaviorSubject<CallsState>>;
+const callsStateSubjects: Dictionary<BehaviorSubject<CallsState>> = {};
 
 const getCallsStateSubject = (serverUrl: string) => {
     if (!callsStateSubjects[serverUrl]) {

@@ -90,7 +90,6 @@ export type HandleThreadsArgs = {
   threads?: ThreadWithLastFetchedAt[];
   prepareRecordsOnly?: boolean;
   teamId?: string;
-  loadedInGlobalThreads?: boolean;
 };
 
 export type HandleThreadParticipantsArgs = {
@@ -102,7 +101,11 @@ export type HandleThreadParticipantsArgs = {
 export type HandleThreadInTeamArgs = {
   threadsMap?: Record<string, Thread[]>;
   prepareRecordsOnly?: boolean;
-  loadedInGlobalThreads?: boolean;
+};
+
+export type HandleTeamThreadsSyncArgs = {
+  data: TeamThreadsSync[];
+  prepareRecordsOnly?: boolean;
 };
 
 export type SanitizeReactionsArgs = {
@@ -192,6 +195,11 @@ export type HandleCustomEmojiArgs = PrepareOnly & {
 
 export type HandleSystemArgs = PrepareOnly & {
     systems?: IdValue[];
+}
+
+export type HandleConfigArgs = PrepareOnly & {
+  configs: IdValue[];
+  configsToDelete: IdValue[];
 }
 
 export type HandleMyChannelArgs = PrepareOnly & {

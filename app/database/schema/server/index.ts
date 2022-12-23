@@ -9,6 +9,7 @@ import {
     ChannelInfoSchema,
     ChannelMembershipSchema,
     ChannelSchema,
+    ConfigSchema,
     CustomEmojiSchema,
     DraftSchema,
     FileSchema,
@@ -33,17 +34,19 @@ import {
     ThreadSchema,
     ThreadInTeamSchema,
     ThreadParticipantSchema,
+    TeamThreadsSyncSchema,
     UserSchema,
 } from './table_schemas';
 
 export const serverSchema: AppSchema = appSchema({
-    version: 3,
+    version: 7,
     tables: [
         CategorySchema,
         CategoryChannelSchema,
         ChannelInfoSchema,
         ChannelMembershipSchema,
         ChannelSchema,
+        ConfigSchema,
         CustomEmojiSchema,
         DraftSchema,
         FileSchema,
@@ -65,6 +68,7 @@ export const serverSchema: AppSchema = appSchema({
         TeamMembershipSchema,
         TeamSchema,
         TeamSearchHistorySchema,
+        TeamThreadsSyncSchema,
         ThreadSchema,
         ThreadInTeamSchema,
         ThreadParticipantSchema,

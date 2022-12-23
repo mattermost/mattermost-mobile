@@ -2,87 +2,69 @@
 // See LICENSE.txt for license information.
 
 class NavigationStore {
-    allNavigationComponentIds: string[] = [];
-    navigationComponentIdStack: string[] = [];
-    navigationModalStack: string[] = [];
-    visibleTab = 'Home';
+    private screensInStack: string[] = [];
+    private modalsInStack: string[] = [];
+    private visibleTab = 'Home';
+    private tosOpen = false;
 
-    addNavigationComponentId = (componentId: string) => {
-        this.addToNavigationComponentIdStack(componentId);
-        this.addToAllNavigationComponentIds(componentId);
+    addModalToStack = (modalId: string) => {
+        this.removeModalFromStack(modalId);
+        this.addScreenToStack(modalId);
+        this.modalsInStack.unshift(modalId);
     };
 
-    addToAllNavigationComponentIds = (componentId: string) => {
-        if (!this.allNavigationComponentIds.includes(componentId)) {
-            this.allNavigationComponentIds.unshift(componentId);
-        }
+    addScreenToStack = (screenId: string) => {
+        this.removeScreenFromStack(screenId);
+        this.screensInStack.unshift(screenId);
     };
 
-    addToNavigationComponentIdStack = (componentId: string) => {
-        const index = this.navigationComponentIdStack.indexOf(componentId);
-        if (index >= 0) {
-            this.navigationComponentIdStack.splice(index, 1);
-        }
-
-        this.navigationComponentIdStack.unshift(componentId);
+    clearScreensFromStack = () => {
+        this.screensInStack = [];
     };
 
-    addNavigationModal = (componentId: string) => {
-        this.navigationModalStack.unshift(componentId);
-    };
+    getModalsInStack = () => this.modalsInStack;
 
-    clearNavigationComponents = () => {
-        this.navigationComponentIdStack = [];
-        this.navigationModalStack = [];
-        this.allNavigationComponentIds = [];
-    };
+    getScreensInStack = () => this.screensInStack;
 
-    clearNavigationModals = () => {
-        this.navigationModalStack = [];
-    };
+    getVisibleModal = () => this.modalsInStack[0];
 
-    getAllNavigationComponents = () => this.allNavigationComponentIds;
-
-    getAllNavigationModals = () => this.navigationModalStack;
-
-    getNavigationTopComponentId = () => {
-        return this.navigationComponentIdStack[0];
-    };
-
-    getNavigationTopModalId = () => {
-        return this.navigationModalStack[0];
-    };
-
-    getNavigationComponents = () => {
-        return this.navigationComponentIdStack;
-    };
+    getVisibleScreen = () => this.screensInStack[0];
 
     getVisibleTab = () => this.visibleTab;
 
-    hasModalsOpened = () => this.navigationModalStack.length > 0;
+    hasModalsOpened = () => this.modalsInStack.length > 0;
 
-    private removeNavigationComponent = (componentId: string) => {
-        const index = this.allNavigationComponentIds.indexOf(componentId);
-        if (index >= 0) {
-            this.allNavigationComponentIds.splice(index, 1);
+    isToSOpen = () => this.tosOpen;
+
+    popTo = (screenId: string) => {
+        const index = this.screensInStack.indexOf(screenId);
+        if (index > -1) {
+            this.screensInStack.splice(0, index);
         }
     };
 
-    removeNavigationComponentId = (componentId: string) => {
-        this.removeNavigationComponent(componentId);
-        const index = this.navigationComponentIdStack.indexOf(componentId);
-        if (index >= 0) {
-            this.navigationComponentIdStack.splice(index, 1);
+    removeScreenFromStack = (screenId: string) => {
+        const index = this.screensInStack.indexOf(screenId);
+        if (index > -1) {
+            this.screensInStack.splice(index, 1);
         }
     };
 
-    removeNavigationModal = (componentId: string) => {
-        this.removeNavigationComponentId(componentId);
-        const index = this.navigationModalStack.indexOf(componentId);
-
-        if (index >= 0) {
-            this.navigationModalStack.splice(index, 1);
+    removeModalFromStack = (modalId: string) => {
+        const indexInStack = this.screensInStack.indexOf(modalId);
+        if (indexInStack > -1) {
+            // This removes all the screens that were on top of the modal
+            this.screensInStack.splice(0, indexInStack + 1);
         }
+
+        const index = this.modalsInStack.indexOf(modalId);
+        if (index > -1) {
+            this.modalsInStack.splice(index, 1);
+        }
+    };
+
+    setToSOpen = (open: boolean) => {
+        this.tosOpen = open;
     };
 
     setVisibleTap = (tab: string) => {
@@ -94,15 +76,15 @@ class NavigationStore {
      * Use this function only if you know what you are doing
      * this function will run until the screen appears in the stack
      * and can easily run forever if the screen is never prevesented.
-     * @param componentId string
+     * @param screenId string
      */
-    waitUntilScreenHasLoaded = async (componentId: string) => {
+    waitUntilScreenHasLoaded = async (screenId: string) => {
         let found = false;
         while (!found) {
             // eslint-disable-next-line no-await-in-loop
             await (new Promise((r) => requestAnimationFrame(r)));
 
-            found = this.navigationComponentIdStack.includes(componentId);
+            found = this.screensInStack.includes(screenId);
         }
     };
 
@@ -110,15 +92,15 @@ class NavigationStore {
      * Waits until a passed screen is the top screen
      * Use this function only if you know what you are doing
      * this function will run until the screen is in the top
-     * @param componentId string
+     * @param screenId string
      */
-    waitUntilScreenIsTop = async (componentId: string) => {
+    waitUntilScreenIsTop = async (screenId: string) => {
         let found = false;
         while (!found) {
             // eslint-disable-next-line no-await-in-loop
             await (new Promise((r) => requestAnimationFrame(r)));
 
-            found = this.getNavigationTopComponentId() === componentId;
+            found = this.getVisibleScreen() === screenId;
         }
     };
 
@@ -127,15 +109,15 @@ class NavigationStore {
      * Use this function only if you know what you are doing
      * this function will run until the screen disappears from the stack
      * and can easily run forever if the screen is never removed.
-     * @param componentId string
+     * @param screenId string
      */
-    waitUntilScreensIsRemoved = async (componentId: string) => {
+    waitUntilScreensIsRemoved = async (screenId: string) => {
         let found = false;
         while (!found) {
             // eslint-disable-next-line no-await-in-loop
-            await (new Promise((r) => requestAnimationFrame(r)));
+            await (new Promise((r) => setTimeout(r, 250)));
 
-            found = !this.navigationComponentIdStack.includes(componentId);
+            found = !this.screensInStack.includes(screenId);
         }
     };
 }

@@ -26,7 +26,7 @@ interface SSOWithWebViewProps {
     loginUrl: string;
     serverUrl: string;
     ssoType: string;
-    theme: Partial<Theme>;
+    theme: Theme;
 }
 
 const HEADERS = {

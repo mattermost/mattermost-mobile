@@ -5,7 +5,7 @@ import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import ServerDataOperator from '@database/operator/server_data_operator';
 
-import {prepareCategories, prepareCategoryChannels} from './categories';
+import {prepareCategoriesAndCategoriesChannels} from './categories';
 import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
 import {prepareMyPreferences} from './preference';
 import {resetWebSocketLastDisconnected} from './system';
@@ -62,8 +62,7 @@ export async function prepareModels({operator, initialTeamId, removeTeams, remov
     }
 
     if (chData?.categories?.length) {
-        modelPromises.push(prepareCategories(operator, chData.categories));
-        modelPromises.push(prepareCategoryChannels(operator, chData.categories));
+        modelPromises.push(prepareCategoriesAndCategoriesChannels(operator, chData.categories, true));
     }
 
     if (chData?.channels?.length && chData.memberships?.length) {

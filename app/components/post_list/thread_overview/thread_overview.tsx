@@ -13,6 +13,7 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {useFetchingThreadState} from '@hooks/fetching_thread';
 import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -23,6 +24,7 @@ import type PostModel from '@typings/database/models/servers/post';
 type Props = {
     isSaved: boolean;
     repliesCount: number;
+    rootId: string;
     rootPost?: PostModel;
     testID: string;
     style?: StyleProp<ViewStyle>;
@@ -56,13 +58,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props) => {
+const ThreadOverview = ({isSaved, repliesCount, rootId, rootPost, style, testID}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const intl = useIntl();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
+    const isFetchingThread = useFetchingThreadState(rootId);
 
     const onHandleSavePress = useCallback(preventDoubleTap(() => {
         if (rootPost?.id) {
@@ -86,7 +89,7 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
     }), [rootPost]);
 
     const containerStyle = useMemo(() => {
-        const container = [styles.container];
+        const container: StyleProp<ViewStyle> = [styles.container];
         if (repliesCount === 0) {
             container.push({
                 borderBottomWidth: 0,
@@ -98,30 +101,44 @@ const ThreadOverview = ({isSaved, repliesCount, rootPost, style, testID}: Props)
 
     const saveButtonTestId = isSaved ? `${testID}.unsave.button` : `${testID}.save.button`;
 
+    let repliesCountElement;
+    if (repliesCount > 0) {
+        repliesCountElement = (
+            <FormattedText
+                style={styles.repliesCount}
+                id='thread.repliesCount'
+                defaultMessage='{repliesCount, number} {repliesCount, plural, one {reply} other {replies}}'
+                testID={`${testID}.replies_count`}
+                values={{repliesCount}}
+            />
+        );
+    } else if (isFetchingThread) {
+        repliesCountElement = (
+            <FormattedText
+                style={styles.repliesCount}
+                id='thread.loadingReplies'
+                defaultMessage='Loading replies...'
+                testID={`${testID}.loading_replies`}
+            />
+        );
+    } else {
+        repliesCountElement = (
+            <FormattedText
+                style={styles.repliesCount}
+                id='thread.noReplies'
+                defaultMessage='No replies yet'
+                testID={`${testID}.no_replies`}
+            />
+        );
+    }
+
     return (
         <View
             style={containerStyle}
             testID={testID}
         >
             <View style={styles.repliesCountContainer}>
-                {
-                    repliesCount > 0 ? (
-                        <FormattedText
-                            style={styles.repliesCount}
-                            id='thread.repliesCount'
-                            defaultMessage='{repliesCount, number} {repliesCount, plural, one {reply} other {replies}}'
-                            testID={`${testID}.replies_count`}
-                            values={{repliesCount}}
-                        />
-                    ) : (
-                        <FormattedText
-                            style={styles.repliesCount}
-                            id='thread.noReplies'
-                            defaultMessage='No replies yet'
-                            testID={`${testID}.no_replies`}
-                        />
-                    )
-                }
+                {repliesCountElement}
             </View>
             <View style={styles.optionsContainer}>
                 <TouchableOpacity
