@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
-import {useIntl} from 'react-intl';
-import {Keyboard, Platform, View} from 'react-native';
+import {defineMessages, useIntl} from 'react-intl';
+import {Keyboard, LayoutChangeEvent, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
@@ -11,21 +11,40 @@ import {fetchProfiles, fetchProfilesInTeam, searchProfiles} from '@actions/remot
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
+import SelectedUsers from '@components/selected_users';
+import UserList from '@components/user_list';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
+import {useModalPosition} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
 
-import SelectedUsers from './selected_users';
-import UserList from './user_list';
+const messages = defineMessages({
+    dm: {
+        id: t('mobile.open_dm.error'),
+        defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
+    },
+    gm: {
+        id: t('mobile.open_gm.error'),
+        defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
+    },
+    buttonText: {
+        id: t('mobile.create_direct_message.start'),
+        defaultMessage: 'Start Conversation',
+    },
+    toastMessage: {
+        id: t('mobile.create_direct_message.max_limit_reached'),
+        defaultMessage: 'Group messages are limited to {maxCount} members',
+    },
+});
 
-const START_BUTTON = 'start-conversation';
 const CLOSE_BUTTON = 'close-dms';
 
 type Props = {
@@ -42,7 +61,7 @@ const close = () => {
     dismissModal();
 };
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
@@ -68,8 +87,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
         },
         noResultText: {
-            fontSize: 26,
             color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 600, 'Regular'),
         },
     };
 });
@@ -79,6 +98,13 @@ function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: Use
         return [...state, ...action.values];
     }
     return state;
+}
+
+function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
+    const newSelectedIds = Object.assign({}, list);
+
+    Reflect.deleteProperty(newSelectedIds, id);
+    return newSelectedIds;
 }
 
 export default function CreateDirectMessage({
@@ -99,6 +125,8 @@ export default function CreateDirectMessage({
     const next = useRef(true);
     const page = useRef(-1);
     const mounted = useRef(false);
+    const mainView = useRef<View>(null);
+    const modalPosition = useModalPosition(mainView);
 
     const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
@@ -106,6 +134,8 @@ export default function CreateDirectMessage({
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
+    const [showToast, setShowToast] = useState(false);
+    const [containerHeight, setContainerHeight] = useState(0);
     const selectedCount = Object.keys(selectedIds).length;
 
     const isSearch = Boolean(term);
@@ -121,6 +151,28 @@ export default function CreateDirectMessage({
             dispatchProfiles({type: 'add', values: users});
         }
     };
+
+    const data = useMemo(() => {
+        if (term) {
+            const exactMatches: UserProfile[] = [];
+            const filterByTerm = (p: UserProfile) => {
+                if (selectedCount > 0 && p.id === currentUserId) {
+                    return false;
+                }
+
+                if (p.username === term || p.username.startsWith(term)) {
+                    exactMatches.push(p);
+                    return false;
+                }
+
+                return true;
+            };
+
+            const results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
+            return [...exactMatches, ...results];
+        }
+        return profiles;
+    }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -139,32 +191,16 @@ export default function CreateDirectMessage({
     }, 100), [loading, isSearch, restrictDirectMessage, serverUrl, currentTeamId]);
 
     const handleRemoveProfile = useCallback((id: string) => {
-        const newSelectedIds = Object.assign({}, selectedIds);
-
-        Reflect.deleteProperty(newSelectedIds, id);
-
-        setSelectedIds(newSelectedIds);
-    }, [selectedIds]);
+        setSelectedIds((current) => removeProfileFromList(current, id));
+    }, []);
 
     const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
         const user = selectedIds[id];
-
         const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
-
         const result = await makeDirectChannel(serverUrl, id, displayName);
 
         if (result.error) {
-            alertErrorWithFallback(
-                intl,
-                result.error,
-                {
-                    id: 'mobile.open_dm.error',
-                    defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
-                },
-                {
-                    displayName,
-                },
-            );
+            alertErrorWithFallback(intl, result.error, messages.dm);
         }
 
         return !result.error;
@@ -174,14 +210,7 @@ export default function CreateDirectMessage({
         const result = await makeGroupChannel(serverUrl, ids);
 
         if (result.error) {
-            alertErrorWithFallback(
-                intl,
-                result.error,
-                {
-                    id: t('mobile.open_gm.error'),
-                    defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
-                },
-            );
+            alertErrorWithFallback(intl, result.error, messages.gm);
         }
 
         return !result.error;
@@ -212,11 +241,6 @@ export default function CreateDirectMessage({
     }, [startingConversation, selectedIds, createGroupChannel, createDirectChannel]);
 
     const handleSelectProfile = useCallback((user: UserProfile) => {
-        if (selectedIds[user.id]) {
-            handleRemoveProfile(user.id);
-            return;
-        }
-
         if (user.id === currentUserId) {
             const selectedId = {
                 [currentUserId]: true,
@@ -224,22 +248,28 @@ export default function CreateDirectMessage({
 
             startConversation(selectedId);
         } else {
-            const wasSelected = selectedIds[user.id];
-
-            if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
-                return;
-            }
-
-            const newSelectedIds = Object.assign({}, selectedIds);
-            if (!wasSelected) {
-                newSelectedIds[user.id] = user;
-            }
-
-            setSelectedIds(newSelectedIds);
-
             clearSearch();
+            setSelectedIds((current) => {
+                if (current[user.id]) {
+                    return removeProfileFromList(current, user.id);
+                }
+
+                const wasSelected = current[user.id];
+
+                if (!wasSelected && selectedCount >= General.MAX_USERS_IN_GM) {
+                    setShowToast(true);
+                    return current;
+                }
+
+                const newSelectedIds = Object.assign({}, current);
+                if (!wasSelected) {
+                    newSelectedIds[user.id] = user;
+                }
+
+                return newSelectedIds;
+            });
         }
-    }, [selectedIds, currentUserId, handleRemoveProfile, startConversation, clearSearch]);
+    }, [currentUserId, clearSearch]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
@@ -252,18 +282,22 @@ export default function CreateDirectMessage({
             results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
         }
 
-        let data: UserProfile[] = [];
+        let searchData: UserProfile[] = [];
         if (results.data) {
-            data = results.data;
+            searchData = results.data;
         }
 
-        setSearchResults(data);
+        setSearchResults(searchData);
         setLoading(false);
     }, [restrictDirectMessage, serverUrl, currentTeamId]);
 
     const search = useCallback(() => {
         searchUsers(term);
     }, [searchUsers, term]);
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
 
     const onSearch = useCallback((text: string) => {
         if (text) {
@@ -280,7 +314,7 @@ export default function CreateDirectMessage({
         }
     }, [searchUsers, clearSearch]);
 
-    const updateNavigationButtons = useCallback(async (startEnabled: boolean) => {
+    const updateNavigationButtons = useCallback(async () => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
         setButtons(componentId, {
             leftButtons: [{
@@ -288,23 +322,14 @@ export default function CreateDirectMessage({
                 icon: closeIcon,
                 testID: 'close.create_direct_message.button',
             }],
-            rightButtons: [{
-                color: theme.sidebarHeaderTextColor,
-                id: START_BUTTON,
-                text: formatMessage({id: 'mobile.create_direct_message.start', defaultMessage: 'Start'}),
-                showAsAction: 'always',
-                enabled: startEnabled,
-                testID: 'create_direct_message.start.button',
-            }],
         });
     }, [intl.locale, theme]);
 
-    useNavButtonPressed(START_BUTTON, componentId, startConversation, [startConversation]);
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
 
     useEffect(() => {
         mounted.current = true;
-        updateNavigationButtons(false);
+        updateNavigationButtons();
         getProfiles();
         return () => {
             mounted.current = false;
@@ -312,31 +337,8 @@ export default function CreateDirectMessage({
     }, []);
 
     useEffect(() => {
-        const canStart = selectedCount > 0 && !startingConversation;
-        updateNavigationButtons(canStart);
-    }, [selectedCount > 0, startingConversation, updateNavigationButtons]);
-
-    const data = useMemo(() => {
-        if (term) {
-            const exactMatches: UserProfile[] = [];
-            const filterByTerm = (p: UserProfile) => {
-                if (selectedCount > 0 && p.id === currentUserId) {
-                    return false;
-                }
-
-                if (p.username === term || p.username.startsWith(term)) {
-                    exactMatches.push(p);
-                    return false;
-                }
-
-                return true;
-            };
-
-            const results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
-            return [...exactMatches, ...results];
-        }
-        return profiles;
-    }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
+        setShowToast(selectedCount >= General.MAX_USERS_IN_GM);
+    }, [selectedCount >= General.MAX_USERS_IN_GM]);
 
     if (startingConversation) {
         return (
@@ -350,12 +352,15 @@ export default function CreateDirectMessage({
         <SafeAreaView
             style={style.container}
             testID='create_direct_message.screen'
+            onLayout={onLayout}
+            ref={mainView}
+            edges={['top', 'left', 'right']}
         >
             <View style={style.searchBar}>
                 <Search
                     testID='create_direct_message.search_bar'
-                    placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                    cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                    placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
                     onChangeText={onSearch}
                     onSubmitEditing={search}
@@ -365,15 +370,6 @@ export default function CreateDirectMessage({
                     value={term}
                 />
             </View>
-            {selectedCount > 0 &&
-            <SelectedUsers
-                selectedIds={selectedIds}
-                warnCount={General.MAX_USERS_IN_GM - 2}
-                maxCount={General.MAX_USERS_IN_GM}
-                onRemove={handleRemoveProfile}
-                teammateNameDisplay={teammateNameDisplay}
-            />
-            }
             <UserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
@@ -386,6 +382,21 @@ export default function CreateDirectMessage({
                 term={term}
                 testID='create_direct_message.user_list'
                 tutorialWatched={tutorialWatched}
+            />
+            <SelectedUsers
+                containerHeight={containerHeight}
+                modalPosition={modalPosition}
+                showToast={showToast}
+                setShowToast={setShowToast}
+                toastIcon={'check'}
+                toastMessage={formatMessage(messages.toastMessage, {maxCount: General.MAX_USERS_IN_GM})}
+                selectedIds={selectedIds}
+                onRemove={handleRemoveProfile}
+                teammateNameDisplay={teammateNameDisplay}
+                onPress={startConversation}
+                buttonIcon={'forum-outline'}
+                buttonText={formatMessage(messages.buttonText)}
+                testID='create_direct_message'
             />
         </SafeAreaView>
     );

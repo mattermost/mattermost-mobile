@@ -11,11 +11,9 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import AddTeam from './add_team';
 import TeamList from './team_list';
 
-import type TeamModel from '@typings/database/models/servers/team';
-
 type Props = {
     iconPad?: boolean;
-    otherTeams: TeamModel[];
+    canJoinOtherTeams: boolean;
     teamsCount: number;
 }
 
@@ -38,8 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function TeamSidebar({iconPad, otherTeams, teamsCount}: Props) {
-    const showAddTeam = otherTeams.length > 0;
+export default function TeamSidebar({iconPad, canJoinOtherTeams, teamsCount}: Props) {
     const initialWidth = teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0;
     const width = useSharedValue(initialWidth);
     const marginTop = useSharedValue(iconPad ? 44 : 0);
@@ -68,10 +65,8 @@ export default function TeamSidebar({iconPad, otherTeams, teamsCount}: Props) {
         <Animated.View style={[styles.container, transform]}>
             <Animated.View style={[styles.listContainer, serverStyle]}>
                 <TeamList testID='team_sidebar.team_list'/>
-                {showAddTeam && (
-                    <AddTeam
-                        otherTeams={otherTeams}
-                    />
+                {canJoinOtherTeams && (
+                    <AddTeam/>
                 )}
             </Animated.View>
         </Animated.View>

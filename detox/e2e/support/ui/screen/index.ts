@@ -33,11 +33,13 @@ import PushNotificationSettingsScreen from './push_notification_settings';
 import ReactionsScreen from './reactions';
 import RecentMentionsScreen from './recent_mentions';
 import SavedMessagesScreen from './saved_messages';
+import SearchMessagesScreen from './search_messages';
 import SelectTimezoneScreen from './select_timezone';
 import ServerScreen from './server';
 import ServerListScreen from './server_list';
 import SettingsScreen from './settings';
 import TableScreen from './table';
+import TeamDropdownMenuScreen from './team_dropdown_menu';
 import ThemeDisplaySettingsScreen from './theme_display_settings';
 import ThreadScreen from './thread';
 import ThreadOptionsScreen from './thread_options';
@@ -77,11 +79,13 @@ export {
     ReactionsScreen,
     RecentMentionsScreen,
     SavedMessagesScreen,
+    SearchMessagesScreen,
     SelectTimezoneScreen,
     ServerScreen,
     ServerListScreen,
     SettingsScreen,
     TableScreen,
+    TeamDropdownMenuScreen,
     ThemeDisplaySettingsScreen,
     ThreadScreen,
     ThreadOptionsScreen,

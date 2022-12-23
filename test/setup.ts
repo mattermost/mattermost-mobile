@@ -236,12 +236,6 @@ jest.mock('react-native-device-info', () => {
     };
 });
 
-jest.mock('react-native-user-agent', () => {
-    return {
-        getUserAgent: () => 'user-agent',
-    };
-});
-
 jest.mock('react-native-localize', () => ({
     getTimeZone: () => 'World/Somewhere',
     getLocales: () => ([

@@ -42,9 +42,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.centerChannelColor,
             ...typography('Body', 200, 'Regular'),
         },
-        errorTextParagraph: {
-            textAlign: 'center',
-        },
         errorButtonContainer: {
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
@@ -131,7 +128,6 @@ function PermalinkError({
                     theme={theme}
                     value={text}
                     baseTextStyle={style.errorText}
-                    baseParagraphStyle={style.errorTextParagraph}
                     disableAtMentions={true}
                     disableAtChannelMentionHighlight={true}
                     disableChannelLink={true}

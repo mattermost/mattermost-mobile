@@ -18,7 +18,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         divider: {
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             height: 1,
         },
     };
@@ -110,13 +110,11 @@ const Filter = ({initialFilter, setFilter, title}: FilterProps) => {
             showTitle={!isTablet}
             testID='search.filters'
             title={title}
-            titleSeparator={true}
         >
-            <View style={style.container}>
+            <View>
                 <FlatList
                     data={data}
                     renderItem={renderFilterItem}
-                    contentContainerStyle={style.contentContainer}
                     ItemSeparatorComponent={separator}
                 />
             </View>

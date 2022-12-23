@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React from 'react';
+import React, {useMemo} from 'react';
 import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import FormattedText from '@components/formatted_text';
@@ -14,8 +15,11 @@ import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {bottomSheetSnapPoint} from '@utils/helpers';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import {TITLE_HEIGHT} from '../bottom_sheet/content';
 
 import MarkAsUnreadOption from './options/mark_as_unread_option';
 import OpenInChannelOption from './options/open_in_channel_option';
@@ -35,12 +39,11 @@ type ThreadOptionsProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         listHeader: {
-            marginBottom: 12,
+            marginBottom: 8,
         },
         listHeaderText: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            textTransform: 'uppercase',
-            ...typography('Body', 75, 'SemiBold'),
+            color: theme.centerChannelColor,
+            ...typography('Heading', 600, 'SemiBold'),
         },
     };
 });
@@ -56,7 +59,7 @@ const ThreadOptions = ({
 }: ThreadOptionsProps) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
-
+    const {bottom} = useSafeAreaInsets();
     const style = getStyleSheet(theme);
 
     const close = () => {
@@ -103,6 +106,8 @@ const ThreadOptions = ({
         );
     }
 
+    const snapPoint = useMemo(() => TITLE_HEIGHT + bottomSheetSnapPoint(options.length, ITEM_HEIGHT, bottom), [bottom, options.length]);
+
     const renderContent = () => (
         <>
             {!isTablet && (
@@ -124,7 +129,7 @@ const ThreadOptions = ({
             closeButtonId={THREAD_OPTIONS_BUTTON}
             componentId={Screens.THREAD_OPTIONS}
             initialSnapIndex={0}
-            snapPoints={[((options.length + 2) * ITEM_HEIGHT), 10]}
+            snapPoints={[snapPoint, 10]}
             testID='thread_options'
         />
     );

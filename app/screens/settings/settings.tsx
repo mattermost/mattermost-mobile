@@ -17,6 +17,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
+import ReportProblem from './report_problem';
 import SettingItem from './setting_item';
 
 const CLOSE_BUTTON_ID = 'close-settings';
@@ -146,15 +147,16 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
             />
             {Platform.OS === 'android' && <View style={styles.helpGroup}/>}
             {showHelp &&
-            <SettingItem
-                optionLabelTextStyle={{color: theme.linkColor}}
-                onPress={openHelp}
-                optionName='help'
-                separator={false}
-                testID='settings.help.option'
-                type='default'
-            />
+                <SettingItem
+                    optionLabelTextStyle={{color: theme.linkColor}}
+                    onPress={openHelp}
+                    optionName='help'
+                    separator={false}
+                    testID='settings.help.option'
+                    type='default'
+                />
             }
+            <ReportProblem siteName={siteName}/>
         </SettingContainer>
     );
 };

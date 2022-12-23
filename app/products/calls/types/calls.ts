@@ -22,8 +22,8 @@ export type CallsState = {
 export const DefaultCallsState: CallsState = {
     serverUrl: '',
     myUserId: '',
-    calls: {} as Dictionary<Call>,
-    enabled: {} as Dictionary<boolean>,
+    calls: {},
+    enabled: {},
 };
 
 export type Call = {
@@ -33,15 +33,18 @@ export type Call = {
     screenOn: string;
     threadId: string;
     ownerId: string;
+    recState?: RecordingState;
+    hostId: string;
 }
 
 export const DefaultCall: Call = {
-    participants: {} as Dictionary<CallParticipant>,
+    participants: {},
     channelId: '',
     startTime: 0,
     screenOn: '',
     threadId: '',
     ownerId: '',
+    hostId: '',
 };
 
 export type CurrentCall = Call & {
@@ -52,22 +55,21 @@ export type CurrentCall = Call & {
     speakerphoneOn: boolean;
     voiceOn: Dictionary<boolean>;
     micPermissionsErrorDismissed: boolean;
+    reactionStream: ReactionStreamEmoji[];
+    recAcknowledged: boolean;
 }
 
 export const DefaultCurrentCall: CurrentCall = {
+    ...DefaultCall,
     connected: false,
     serverUrl: '',
     myUserId: '',
-    participants: {},
-    channelId: '',
-    startTime: 0,
-    screenOn: '',
-    threadId: '',
-    ownerId: '',
     screenShareURL: '',
     speakerphoneOn: false,
     voiceOn: {},
     micPermissionsErrorDismissed: false,
+    reactionStream: [],
+    recAcknowledged: false,
 };
 
 export type CallParticipant = {
@@ -75,13 +77,14 @@ export type CallParticipant = {
     muted: boolean;
     raisedHand: number;
     userModel?: UserModel;
+    reaction?: CallReaction;
 }
 
 export type ChannelsWithCalls = Dictionary<boolean>;
 
 export type ServerChannelState = {
     channel_id: string;
-    enabled: boolean;
+    enabled?: boolean;
     call?: ServerCallState;
 }
 
@@ -98,11 +101,8 @@ export type ServerCallState = {
     thread_id: string;
     screen_sharing_id: string;
     owner_id: string;
-}
-
-export type VoiceEventData = {
-    channelId: string;
-    userId: string;
+    host_id: string;
+    recording: RecordingState;
 }
 
 export type CallsConnection = {
@@ -113,6 +113,7 @@ export type CallsConnection = {
     raiseHand: () => void;
     unraiseHand: () => void;
     initializeVoiceTrack: () => void;
+    sendReaction: (emoji: CallReactionEmoji) => void;
 }
 
 export type ServerCallsConfig = {
@@ -123,6 +124,7 @@ export type ServerCallsConfig = {
     NeedsTURNCredentials: boolean;
     sku_short_name: string;
     MaxCallParticipants: number;
+    EnableRecordings: boolean;
 }
 
 export type CallsConfig = ServerCallsConfig & {
@@ -140,6 +142,7 @@ export const DefaultCallsConfig: CallsConfig = {
     last_retrieved_at: 0,
     sku_short_name: '',
     MaxCallParticipants: 0,
+    EnableRecordings: false,
 };
 
 export type ICEServersConfigs = Array<ConfigurationParamWithUrls | ConfigurationParamWithUrl>;
@@ -148,4 +151,28 @@ export type ApiResp = {
     message?: string;
     detailed_error?: string;
     status_code: number;
+}
+
+export type CallReactionEmoji = {
+    name: string;
+    skin?: string;
+    unified: string;
+}
+
+export type CallReaction = {
+    user_id: string;
+    emoji: CallReactionEmoji;
+    timestamp: number;
+}
+
+export type ReactionStreamEmoji = {
+    name: string;
+    latestTimestamp: number;
+    count: number;
+};
+
+export type RecordingState = {
+    init_at: number;
+    start_at: number;
+    end_at: number;
 }

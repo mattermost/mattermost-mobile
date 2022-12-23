@@ -33,16 +33,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         input: {
             color: theme.centerChannelColor,
+            height: 150,
+            paddingHorizontal: 15,
             ...typography('Body', 100, 'Regular'),
-        },
-        inputContainer: {
-            height: 128,
         },
         containerStyle: {
             marginTop: 30,
             alignSelf: 'center',
             paddingHorizontal: 18.5,
         },
+        labelTextStyle: {left: 32},
         keywordLabelStyle: {
             paddingHorizontal: 18.5,
             marginTop: 4,
@@ -202,7 +202,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                     blurOnSubmit={true}
                     containerStyle={styles.containerStyle}
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                    label={intl.formatMessage({id: 'notification_settings.mentions.keywords', defaultMessage: 'Enter other keywords'})}
+                    label={intl.formatMessage({id: 'notification_settings.mentions.keywords', defaultMessage: 'Keywords'})}
                     multiline={true}
                     onChangeText={onChangeText}
                     placeholder={intl.formatMessage({id: 'notification_settings.mentions..keywordsDescription', defaultMessage: 'Other words that trigger a mention'})}
@@ -214,7 +214,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                     theme={theme}
                     underlineColorAndroid='transparent'
                     value={mentionKeywords}
-                    textInputContainerStyle={styles.inputContainer}
+                    labelTextStyle={styles.labelTextStyle}
                 />
                 <Text
                     style={styles.keywordLabelStyle}

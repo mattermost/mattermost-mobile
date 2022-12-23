@@ -22,7 +22,7 @@ struct AttachmentsView: View {
       if sizeError && attachments.count == 1 {
         return "File must be less than \(server.maxFileSize.formattedFileSize)"
       } else if sizeError {
-        return "Each file must be less then \(server.maxFileSize.formattedFileSize)"
+        return "Each file must be less than \(server.maxFileSize.formattedFileSize)"
       } else if resolutionError {
         return "Image exceeds maximum dimensions of 7680 x 4320 px"
       }

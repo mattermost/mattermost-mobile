@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, Keyboard, View} from 'react-native';
+import {Keyboard, View} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import SearchBar from '@components/search';
-import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
 import {dismissModal} from '@screens/navigation';
@@ -57,7 +56,6 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
 
     const close = useCallback(() => {
         Keyboard.dismiss();
-        DeviceEventEmitter.emit(Events.PAUSE_KEYBOARD_TRACKING_VIEW, false);
         return dismissModal({componentId});
     }, []);
 

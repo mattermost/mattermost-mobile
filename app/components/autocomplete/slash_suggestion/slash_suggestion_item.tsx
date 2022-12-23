@@ -33,9 +33,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             width: 16,
             height: 16,
         },
-        iconColor: {
-            tintColor: theme.centerChannelColor,
-        },
         container: {
             flexDirection: 'row',
             alignItems: 'center',
@@ -110,7 +107,8 @@ const SlashSuggestionItem = ({
 
     let image = (
         <FastImage
-            style={[style.iconColor, style.slashIcon]}
+            tintColor={theme.centerChannelColor}
+            style={style.slashIcon}
             source={slashIcon}
         />
     );

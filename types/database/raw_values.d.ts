@@ -91,7 +91,12 @@ type TermsOfService = {
 type ThreadInTeam = {
     thread_id: string;
     team_id: string;
-    loaded_in_global_threads: boolean;
+};
+
+type TeamThreadsSync = {
+    id: string;
+    earliest: number;
+    latest: number;
 };
 
 type RawValue =
@@ -125,5 +130,6 @@ type RawValue =
   | ThreadWithLastFetchedAt
   | ThreadInTeam
   | ThreadParticipant
+  | TeamThreadsSync
   | UserProfile
   | Pick<ChannelMembership, 'channel_id' | 'user_id'>

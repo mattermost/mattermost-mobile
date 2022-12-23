@@ -7,6 +7,7 @@ import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
 import {Options} from 'react-native-navigation';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
+import {recordingAlert, recordingWillBePostedAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
@@ -95,7 +96,8 @@ const CurrentCallBar = ({
 }: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const {formatMessage} = useIntl();
+    const intl = useIntl();
+    const {formatMessage} = intl;
     usePermissionsChecker(micPermissionsGranted);
 
     const goToCallScreen = useCallback(async () => {
@@ -130,7 +132,7 @@ const CurrentCallBar = ({
         talkingMessage = formatMessage({
             id: 'mobile.calls_name_is_talking',
             defaultMessage: '{name} is talking',
-        }, {name: displayUsername(userModelsDict[speaker], teammateNameDisplay)});
+        }, {name: displayUsername(userModelsDict[speaker], intl.locale, teammateNameDisplay)});
     }
 
     const muteUnmute = () => {
@@ -142,6 +144,19 @@ const CurrentCallBar = ({
     };
 
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
+
+    // The user should receive an alert if all of the following conditions apply:
+    // - Recording has started and recording has not ended.
+    const isHost = Boolean(currentCall?.hostId === myParticipant?.id);
+    if (currentCall?.recState?.start_at && !currentCall?.recState?.end_at) {
+        recordingAlert(isHost, intl);
+    }
+
+    // The user should receive a recording finished alert if all of the following conditions apply:
+    // - Is the host, recording has started, and recording has ended
+    if (isHost && currentCall?.recState?.start_at && currentCall.recState.end_at) {
+        recordingWillBePostedAlert(intl);
+    }
 
     return (
         <>

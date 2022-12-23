@@ -227,7 +227,7 @@ export default function PostInput({
     }, [addFiles, intl]);
 
     const handleHardwareEnterPress = useCallback((keyEvent: {pressedKey: string}) => {
-        const topScreen = NavigationStore.getNavigationTopComponentId();
+        const topScreen = NavigationStore.getVisibleScreen();
         let sourceScreen = Screens.CHANNEL;
         if (rootId) {
             sourceScreen = Screens.THREAD;

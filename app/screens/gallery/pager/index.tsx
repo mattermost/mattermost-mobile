@@ -39,9 +39,6 @@ const MIN_VELOCITY = 700;
 const MAX_VELOCITY = 3000;
 
 const styles = StyleSheet.create({
-    backdrop: {
-        flex: 1,
-    },
     pager: {
         flex: 1,
         flexDirection: 'row',

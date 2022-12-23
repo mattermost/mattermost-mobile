@@ -16,13 +16,13 @@ import {CategoryModel, CategoryChannelModel, ChannelModel, ChannelInfoModel, Cha
     GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
     PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
     SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-    ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel, ConfigModel,
+    ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel, ConfigModel,
 } from '@database/models/server';
 import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
-import {queryActiveServer, queryServer, queryServerByIdentifier} from '@queries/app/servers';
+import {getActiveServer, getServer, getServerByIdentifier} from '@queries/app/servers';
 import {querySystemValue} from '@queries/servers/system';
 import {deleteLegacyFileCache} from '@utils/file';
 import {emptyFunction} from '@utils/general';
@@ -50,7 +50,7 @@ class DatabaseManager {
             GroupModel, GroupChannelModel, GroupTeamModel, GroupMembershipModel, MyChannelModel, MyChannelSettingsModel, MyTeamModel,
             PostModel, PostsInChannelModel, PostsInThreadModel, PreferenceModel, ReactionModel, RoleModel,
             SystemModel, TeamModel, TeamChannelHistoryModel, TeamMembershipModel, TeamSearchHistoryModel,
-            ThreadModel, ThreadParticipantModel, ThreadInTeamModel, UserModel,
+            ThreadModel, ThreadParticipantModel, ThreadInTeamModel, TeamThreadsSyncModel, UserModel,
         ];
 
         this.databaseDirectory = Platform.OS === 'ios' ? getIOSAppGroupDetails().appGroupDatabase : `${FileSystem.DocumentDirectoryPath}/databases/`;
@@ -223,7 +223,7 @@ class DatabaseManager {
         try {
             const appDatabase = this.appDatabase?.database;
             if (appDatabase) {
-                const serverModel = await queryServer(appDatabase, serverUrl);
+                const serverModel = await getServer(serverUrl);
 
                 if (!serverModel) {
                     await appDatabase.write(async () => {
@@ -254,9 +254,9 @@ class DatabaseManager {
     public updateServerIdentifier = async (serverUrl: string, identifier: string, displayName?: string) => {
         const appDatabase = this.appDatabase?.database;
         if (appDatabase) {
-            const server = await queryServer(appDatabase, serverUrl);
+            const server = await getServer(serverUrl);
             await appDatabase.write(async () => {
-                await server.update((record) => {
+                await server?.update((record) => {
                     record.identifier = identifier;
                     if (displayName) {
                         record.displayName = displayName;
@@ -269,9 +269,9 @@ class DatabaseManager {
     public updateServerDisplayName = async (serverUrl: string, displayName: string) => {
         const appDatabase = this.appDatabase?.database;
         if (appDatabase) {
-            const server = await queryServer(appDatabase, serverUrl);
+            const server = await getServer(serverUrl);
             await appDatabase.write(async () => {
-                await server.update((record) => {
+                await server?.update((record) => {
                     record.displayName = displayName;
                 });
             });
@@ -284,50 +284,31 @@ class DatabaseManager {
     * @returns {Promise<boolean>}
     */
     private isServerPresent = async (serverUrl: string): Promise<boolean> => {
-        if (this.appDatabase?.database) {
-            const server = await queryServer(this.appDatabase.database, serverUrl);
-            return Boolean(server);
-        }
-
-        return false;
+        const server = await getServer(serverUrl);
+        return Boolean(server);
     };
 
     /**
     * getActiveServerUrl: Get the server url for active server database.
-    * @returns {Promise<string|null|undefined>}
+    * @returns {Promise<string|undefined>}
     */
-    public getActiveServerUrl = async (): Promise<string|null|undefined> => {
-        const database = this.appDatabase?.database;
-        if (database) {
-            const server = await queryActiveServer(database);
-            return server?.url;
-        }
-
-        return null;
+    public getActiveServerUrl = async (): Promise<string|undefined> => {
+        const server = await getActiveServer();
+        return server?.url;
     };
 
     /**
     * getActiveServerDisplayName: Get the server display name for active server database.
-    * @returns {Promise<string|null|undefined>}
+    * @returns {Promise<string|undefined>}
     */
-    public getActiveServerDisplayName = async (): Promise<string|null|undefined> => {
-        const database = this.appDatabase?.database;
-        if (database) {
-            const server = await queryActiveServer(database);
-            return server?.displayName;
-        }
-
-        return null;
+    public getActiveServerDisplayName = async (): Promise<string|undefined> => {
+        const server = await getActiveServer();
+        return server?.displayName;
     };
 
     public getServerUrlFromIdentifier = async (identifier: string): Promise<string|undefined> => {
-        const database = this.appDatabase?.database;
-        if (database) {
-            const server = await queryServerByIdentifier(database, identifier);
-            return server?.url;
-        }
-
-        return undefined;
+        const server = await getServerByIdentifier(identifier);
+        return server?.url;
     };
 
     /**
@@ -335,12 +316,9 @@ class DatabaseManager {
     * @returns {Promise<Database|undefined>}
     */
     public getActiveServerDatabase = async (): Promise<Database|undefined> => {
-        const database = this.appDatabase?.database;
-        if (database) {
-            const server = await queryActiveServer(database);
-            if (server?.url) {
-                return this.serverDatabases[server.url]?.database;
-            }
+        const server = await getActiveServer();
+        if (server?.url) {
+            return this.serverDatabases[server.url]?.database;
         }
 
         return undefined;
@@ -405,9 +383,9 @@ class DatabaseManager {
     * @returns {Promise<boolean>}
     */
     public deleteServerDatabase = async (serverUrl: string): Promise<void> => {
-        if (this.appDatabase?.database) {
-            const database = this.appDatabase?.database;
-            const server = await queryServer(database, serverUrl);
+        const database = this.appDatabase?.database;
+        if (database) {
+            const server = await getServer(serverUrl);
             if (server) {
                 database.write(async () => {
                     await server.update((record) => {
@@ -429,9 +407,9 @@ class DatabaseManager {
     * @returns {Promise<boolean>}
     */
     public destroyServerDatabase = async (serverUrl: string): Promise<void> => {
-        if (this.appDatabase?.database) {
-            const database = this.appDatabase?.database;
-            const server = await queryServer(database, serverUrl);
+        const database = this.appDatabase?.database;
+        if (database) {
+            const server = await getServer(serverUrl);
             if (server) {
                 database.write(async () => {
                     await server.destroyPermanently();

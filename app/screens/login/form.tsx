@@ -19,6 +19,7 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import {goToScreen, loginAnimationOptions, resetToHome, resetToTeams} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {isServerError} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -34,6 +35,7 @@ interface LoginProps extends LaunchProps {
 }
 
 export const MFA_EXPECTED_ERRORS = ['mfa.validate_token.authenticate.app_error', 'ent.mfa.validate_token.authenticate.app_error'];
+const hitSlop = {top: 8, right: 8, bottom: 8, left: 8};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -68,6 +70,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     loginButton: {
         marginTop: 25,
+    },
+    endAdornment: {
+        top: 2,
     },
 }));
 
@@ -141,9 +146,9 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
 
     const checkLoginResponse = (data: LoginActionResponse) => {
         let errorId = '';
-        const clientError = data.error as ClientErrorProps;
-        if (clientError && clientError.server_error_id) {
-            errorId = clientError.server_error_id;
+        const loginError = data.error;
+        if (isServerError(loginError) && loginError.server_error_id) {
+            errorId = loginError.server_error_id;
         }
 
         if (data.failed && MFA_EXPECTED_ERRORS.includes(errorId)) {
@@ -152,9 +157,9 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
             return false;
         }
 
-        if (data?.error && data.failed) {
+        if (loginError && data.failed) {
             setIsLoading(false);
-            setError(getLoginErrorMessage(data.error));
+            setError(getLoginErrorMessage(loginError));
             return false;
         }
 
@@ -329,6 +334,20 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
         );
     }, [buttonDisabled, loginId, password, isLoading, theme]);
 
+    const endAdornment = (
+        <TouchableOpacity
+            onPress={togglePasswordVisiblity}
+            hitSlop={hitSlop}
+            style={styles.endAdornment}
+        >
+            <CompassIcon
+                name={isPasswordVisible ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color={changeOpacity(theme.centerChannelColor, 0.64)}
+            />
+        </TouchableOpacity>
+    );
+
     return (
         <View style={styles.container}>
             <FloatingTextInput
@@ -362,10 +381,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 enablesReturnKeyAutomatically={true}
                 error={error}
                 keyboardType='default'
-                label={intl.formatMessage({
-                    id: 'login.password',
-                    defaultMessage: 'Password',
-                })}
+                label={intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
                 onBlur={onBlur}
                 onChangeText={onPasswordChange}
                 onFocus={onFocus}
@@ -377,32 +393,13 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 testID='login_form.password.input'
                 theme={theme}
                 value={password}
-                endAdornment={
-                    <TouchableOpacity
-                        onPress={togglePasswordVisiblity}
-                        hitSlop={{top: 8, right: 8, bottom: 8, left: 8}}
-                    >
-                        <CompassIcon
-                            name={
-                                isPasswordVisible ? 'eye-off-outline' : 'eye-outline'
-                            }
-                            size={18}
-                            color={changeOpacity(
-                                theme.centerChannelColor,
-                                0.64,
-                            )}
-                        />
-                    </TouchableOpacity>
-                }
+                endAdornment={endAdornment}
             />
 
             {(emailEnabled || usernameEnabled) && (
                 <Button
                     onPress={onPressForgotPassword}
-                    containerStyle={[
-                        styles.forgotPasswordBtn,
-                        error ? styles.forgotPasswordError : undefined,
-                    ]}
+                    containerStyle={[styles.forgotPasswordBtn, error ? styles.forgotPasswordError : undefined]}
                     testID='login_form.forgot_password.button'
                 >
                     <FormattedText

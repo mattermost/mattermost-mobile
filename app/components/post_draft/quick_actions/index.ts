@@ -5,7 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 
-import {observeCanUploadFiles, observeMaxFileCount} from '@queries/servers/system';
+import {observeCanUploadFiles, observeIsPostPriorityEnabled, observeMaxFileCount} from '@queries/servers/system';
 
 import QuickActions from './quick_actions';
 
@@ -17,6 +17,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         canUploadFiles,
+        isPostPriorityEnabled: observeIsPostPriorityEnabled(database),
         maxFileCount,
     };
 });
