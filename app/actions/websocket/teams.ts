@@ -2,64 +2,46 @@
 // See LICENSE.txt for license information.
 
 import {Model} from '@nozbe/watermelondb';
-import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam} from '@actions/local/team';
 import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
-import {fetchAllTeams, handleTeamChange, fetchMyTeam} from '@actions/remote/team';
+import {fetchAllTeams, fetchMyTeam, handleKickFromTeam} from '@actions/remote/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
-import Events from '@constants/events';
 import DatabaseManager from '@database/manager';
-import {getActiveServerUrl} from '@queries/app/servers';
-import {prepareCategories, prepareCategoryChannels} from '@queries/servers/categories';
+import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
-import {getCurrentTeam, getLastTeam, prepareMyTeams} from '@queries/servers/team';
+import {getCurrentTeam, prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModals, popToRoot, resetToTeams} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
+import {logDebug} from '@utils/log';
 
 export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMessage) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
-        return;
-    }
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    const currentTeam = await getCurrentTeam(database.database);
-    const user = await getCurrentUser(database.database);
-    if (!user) {
-        return;
-    }
-
-    const {user_id: userId, team_id: teamId} = msg.data;
-    if (user.id === userId) {
-        await removeUserFromTeam(serverUrl, teamId);
-        fetchAllTeams(serverUrl);
-
-        if (user.isGuest) {
-            updateUsersNoLongerVisible(serverUrl);
+        const user = await getCurrentUser(database);
+        if (!user) {
+            return;
         }
 
-        if (currentTeam?.id === teamId) {
-            const appDatabase = DatabaseManager.appDatabase?.database;
-            let currentServer = '';
-            if (appDatabase) {
-                currentServer = await getActiveServerUrl(appDatabase);
+        const {user_id: userId, team_id: teamId} = msg.data;
+        if (user.id === userId) {
+            const currentTeam = await getCurrentTeam(database);
+            if (currentTeam?.id === teamId) {
+                await handleKickFromTeam(serverUrl, teamId);
             }
 
-            if (currentServer === serverUrl) {
-                DeviceEventEmitter.emit(Events.LEAVE_TEAM, currentTeam?.displayName);
-                await dismissAllModals();
-                await popToRoot();
-            }
+            await removeUserFromTeam(serverUrl, teamId);
+            fetchAllTeams(serverUrl);
 
-            const teamToJumpTo = await getLastTeam(database.database);
-            if (teamToJumpTo) {
-                handleTeamChange(serverUrl, teamToJumpTo);
-            } else if (currentServer === serverUrl) {
-                resetToTeams();
+            if (user.isGuest) {
+                updateUsersNoLongerVisible(serverUrl);
             }
         }
+    } catch (error) {
+        logDebug('cannot handle leave team websocket event', error);
     }
 }
 
@@ -81,10 +63,6 @@ export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMes
 }
 
 export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSocketMessage) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
     const {team_id: teamId} = msg.data;
 
     // Ignore duplicated team join events sent by the server
@@ -93,25 +71,32 @@ export async function handleUserAddedToTeamEvent(serverUrl: string, msg: WebSock
     }
     EphemeralStore.startAddingToTeam(teamId);
 
-    const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
+    try {
+        setTeamLoading(serverUrl, true);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {teams, memberships: teamMemberships} = await fetchMyTeam(serverUrl, teamId, true);
 
-    const modelPromises: Array<Promise<Model[]>> = [];
-    if (teams?.length && teamMemberships?.length) {
-        const {channels, memberships, categories} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
-        modelPromises.push(prepareCategories(operator, categories));
-        modelPromises.push(prepareCategoryChannels(operator, categories));
-        modelPromises.push(...await prepareMyChannelsForTeam(operator, teamId, channels || [], memberships || []));
+        const modelPromises: Array<Promise<Model[]>> = [];
+        if (teams?.length && teamMemberships?.length) {
+            const {channels, memberships, categories} = await fetchMyChannelsForTeam(serverUrl, teamId, false, 0, true);
+            modelPromises.push(prepareCategoriesAndCategoriesChannels(operator, categories || [], true));
+            modelPromises.push(...await prepareMyChannelsForTeam(operator, teamId, channels || [], memberships || []));
 
-        const {roles} = await fetchRoles(serverUrl, teamMemberships, memberships, undefined, true);
-        modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
+            const {roles} = await fetchRoles(serverUrl, teamMemberships, memberships, undefined, true);
+            modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
+        }
+
+        if (teams && teamMemberships) {
+            modelPromises.push(...prepareMyTeams(operator, teams, teamMemberships));
+        }
+
+        const models = await Promise.all(modelPromises);
+        await operator.batchRecords(models.flat());
+        setTeamLoading(serverUrl, false);
+    } catch (error) {
+        logDebug('could not handle user added to team websocket event');
+        setTeamLoading(serverUrl, false);
     }
-
-    if (teams && teamMemberships) {
-        modelPromises.push(...prepareMyTeams(operator, teams, teamMemberships));
-    }
-
-    const models = await Promise.all(modelPromises);
-    await operator.batchRecords(models.flat());
 
     EphemeralStore.finishAddingToTeam(teamId);
 }

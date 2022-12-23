@@ -5,9 +5,7 @@ import React, {useCallback, useMemo} from 'react';
 import {Pressable, PressableStateCallbackType, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import {
-    LARGE_ICON_SIZE,
-} from '@constants/reaction_picker';
+import {LARGE_ICON_SIZE} from '@constants/reaction_picker';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -39,7 +37,7 @@ const PickReaction = ({openEmojiPicker, width, height}: PickReactionProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const highlightedStyle = useCallback(({pressed}: PressableStateCallbackType) => pressed && styles.highlight, [styles.highlight]);
+    const highlightedStyle = useCallback(({pressed}: PressableStateCallbackType) => (pressed ? styles.highlight : undefined), [styles.highlight]);
     const pickReactionStyle = useMemo(() => [
         styles.container,
         {

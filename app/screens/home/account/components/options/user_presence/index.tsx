@@ -15,6 +15,7 @@ import General from '@constants/general';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet, dismissBottomSheet, dismissModal} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
@@ -39,7 +40,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         spacer: {
             marginLeft: 16,
         },
-
         listHeader: {
             marginBottom: 12,
         },
@@ -57,7 +57,7 @@ type Props = {
 };
 const UserStatus = ({currentUser}: Props) => {
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -71,7 +71,7 @@ const UserStatus = ({currentUser}: Props) => {
                     {!isTablet && (
                         <View style={styles.listHeader}>
                             <FormattedText
-                                id='mobile.user_presence.header'
+                                id='user_status.title'
                                 defaultMessage={'Status'}
                                 style={styles.listHeaderText}
                             />
@@ -79,44 +79,44 @@ const UserStatus = ({currentUser}: Props) => {
                     )}
                     <SlideUpPanelItem
                         icon='check-circle'
-                        imageStyles={{color: theme.onlineIndicator}}
+                        iconStyles={{color: theme.onlineIndicator}}
                         onPress={() => setUserStatus(ONLINE)}
                         testID='user_status.online.option'
                         text={intl.formatMessage({
-                            id: 'mobile.set_status.online',
+                            id: 'user_status.online',
                             defaultMessage: 'Online',
                         })}
                         textStyles={styles.label}
                     />
                     <SlideUpPanelItem
                         icon='clock'
-                        imageStyles={{color: theme.awayIndicator}}
+                        iconStyles={{color: theme.awayIndicator}}
                         onPress={() => setUserStatus(AWAY)}
                         testID='user_status.away.option'
                         text={intl.formatMessage({
-                            id: 'mobile.set_status.away',
+                            id: 'user_status.away',
                             defaultMessage: 'Away',
                         })}
                         textStyles={styles.label}
                     />
                     <SlideUpPanelItem
                         icon='minus-circle'
-                        imageStyles={{color: theme.dndIndicator}}
+                        iconStyles={{color: theme.dndIndicator}}
                         onPress={() => setUserStatus(DND)}
                         testID='user_status.dnd.option'
                         text={intl.formatMessage({
-                            id: 'mobile.set_status.dnd',
+                            id: 'user_status.dnd',
                             defaultMessage: 'Do Not Disturb',
                         })}
                         textStyles={styles.label}
                     />
                     <SlideUpPanelItem
                         icon='circle-outline'
-                        imageStyles={{color: changeOpacity('#B8B8B8', 0.64)}}
+                        iconStyles={{color: changeOpacity('#B8B8B8', 0.64)}}
                         onPress={() => setUserStatus(OFFLINE)}
                         testID='user_status.offline.option'
                         text={intl.formatMessage({
-                            id: 'mobile.set_status.offline',
+                            id: 'user_status.offline',
                             defaultMessage: 'Offline',
                         })}
                         textStyles={styles.label}
@@ -125,15 +125,15 @@ const UserStatus = ({currentUser}: Props) => {
             );
         };
 
-        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT, insets.bottom);
+        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT, bottom);
         bottomSheet({
             closeButtonId: 'close-set-user-status',
             renderContent,
-            snapPoints: [(snapPoint + insets.bottom), 10],
-            title: intl.formatMessage({id: 'mobile.user_presence.header', defaultMessage: 'Status'}),
+            snapPoints: [(snapPoint + TITLE_HEIGHT), 10],
+            title: intl.formatMessage({id: 'user_status.title', defaultMessage: 'Status'}),
             theme,
         });
-    }), [theme, insets]);
+    }), [theme, bottom]);
 
     const updateStatus = useCallback((status: string) => {
         const userStatus = {

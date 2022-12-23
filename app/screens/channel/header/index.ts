@@ -6,7 +6,6 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
-import {observeIsCallsFeatureRestricted} from '@calls/observers';
 import {General} from '@constants';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
@@ -22,11 +21,10 @@ import ChannelHeader from './header';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
-    serverUrl: string;
     channelId: string;
 };
 
-const enhanced = withObservables(['channelId'], ({serverUrl, channelId, database}: OwnProps & WithDatabaseArgs) => {
+const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps & WithDatabaseArgs) => {
     const currentUserId = observeCurrentUserId(database);
     const teamId = observeCurrentTeamId(database);
 
@@ -90,7 +88,6 @@ const enhanced = withObservables(['channelId'], ({serverUrl, channelId, database
         memberCount,
         searchTerm,
         teamId,
-        callsFeatureRestricted: observeIsCallsFeatureRestricted(database, serverUrl, channelId),
     };
 });
 

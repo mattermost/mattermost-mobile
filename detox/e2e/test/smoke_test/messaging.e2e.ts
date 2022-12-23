@@ -27,7 +27,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Smoke Test - Messaging', () => {
@@ -189,6 +189,7 @@ describe('Smoke Test - Messaging', () => {
         await PostOptionsScreen.pinPostOption.tap();
 
         // * Verify pinned text is displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         const {postListPostItemPreHeaderText: threadPostListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(post.id, message);
         await expect(threadPostListPostItemPreHeaderText).toHaveText(pinnedText);
 

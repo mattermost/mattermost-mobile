@@ -7,11 +7,13 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ChannelActions from '@components/channel_actions';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import ChannelInfoAppBindings from './app_bindings';
 import DestructiveOptions from './destructive_options';
 import Extra from './extra';
 import Options from './options';
@@ -24,7 +26,6 @@ type Props = {
     type?: ChannelType;
     canEnableDisableCalls: boolean;
     isCallsEnabledInChannel: boolean;
-    isCallsFeatureRestricted: boolean;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -51,14 +52,17 @@ const ChannelInfo = ({
     type,
     canEnableDisableCalls,
     isCallsEnabledInChannel,
-    isCallsFeatureRestricted,
 }: Props) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
-    const callsAvailable = isCallsEnabledInChannel && !isCallsFeatureRestricted;
+
+    // NOTE: isCallsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
+    //   which comes from observeIsCallsEnabledInChannel
+    const callsAvailable = isCallsEnabledInChannel;
 
     const onPressed = useCallback(() => {
-        dismissModal({componentId});
+        return dismissModal({componentId});
     }, [componentId]);
 
     useNavButtonPressed(closeButtonId, componentId, onPressed, []);
@@ -94,7 +98,7 @@ const ChannelInfo = ({
                     callsEnabled={callsAvailable}
                 />
                 <View style={styles.separator}/>
-                {canEnableDisableCalls && !isCallsFeatureRestricted &&
+                {canEnableDisableCalls &&
                     <>
                         <ChannelInfoEnableCalls
                             channelId={channelId}
@@ -103,6 +107,11 @@ const ChannelInfo = ({
                         <View style={styles.separator}/>
                     </>
                 }
+                <ChannelInfoAppBindings
+                    channelId={channelId}
+                    serverUrl={serverUrl}
+                    dismissChannelInfo={onPressed}
+                />
                 <DestructiveOptions
                     channelId={channelId}
                     componentId={componentId}

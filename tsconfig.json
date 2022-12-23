@@ -63,7 +63,7 @@
             "*": ["./*", "node_modules/*"],
         }
     },
-    "include": ["app/**/*", "share_extensionn/**/*", "test/**/*", "types/**/*"],
+    "include": ["app/**/*", "share_extension/**/*", "test/**/*", "types/**/*"],
     "exclude": [
         "node_modules",
         "build",

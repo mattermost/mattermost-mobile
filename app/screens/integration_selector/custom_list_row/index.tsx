@@ -22,10 +22,6 @@ export type Props = {
 };
 
 const style = StyleSheet.create({
-    touchable: {
-        flex: 1,
-        overflow: 'hidden',
-    },
     container: {
         flexDirection: 'row',
         height: 65,

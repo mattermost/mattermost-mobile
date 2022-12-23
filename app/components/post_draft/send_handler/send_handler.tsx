@@ -13,6 +13,7 @@ import {setStatus} from '@actions/remote/user';
 import {canEndCall, endCall, getEndCallMessage} from '@calls/actions/calls';
 import ClientError from '@client/rest/error';
 import {Events, Screens} from '@constants';
+import {PostPriorityType} from '@constants/post';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
 import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
@@ -54,6 +55,10 @@ type Props = {
     uploadFileError: React.ReactNode;
 }
 
+const INITIAL_PRIORITY = {
+    priority: PostPriorityType.STANDARD,
+};
+
 export default function SendHandler({
     testID,
     channelId,
@@ -83,8 +88,7 @@ export default function SendHandler({
 
     const [channelTimezoneCount, setChannelTimezoneCount] = useState(0);
     const [sendingMessage, setSendingMessage] = useState(false);
-
-    const [postProps, setPostProps] = useState<Post['props']>({});
+    const [postPriority, setPostPriority] = useState<PostPriorityData>(INITIAL_PRIORITY);
 
     const canSend = useCallback(() => {
         if (sendingMessage) {
@@ -120,17 +124,19 @@ export default function SendHandler({
             message: value,
         } as Post;
 
-        if (Object.keys(postProps).length) {
-            post.props = postProps;
+        if (Object.keys(postPriority).length) {
+            post.metadata = {
+                priority: postPriority,
+            };
         }
 
         createPost(serverUrl, post, postFiles);
 
         clearDraft();
         setSendingMessage(false);
-        setPostProps({});
+        setPostPriority(INITIAL_PRIORITY);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
-    }, [files, currentUserId, channelId, rootId, value, clearDraft, postProps]);
+    }, [files, currentUserId, channelId, rootId, value, clearDraft, postPriority]);
 
     const showSendToAllOrChannelOrHereAlert = useCallback((calculatedMembersCount: number, atHere: boolean) => {
         const notifyAllMessage = DraftUtils.buildChannelWideMentionMessage(intl, calculatedMembersCount, Boolean(isTimezoneEnabled), channelTimezoneCount, atHere);
@@ -217,11 +223,6 @@ export default function SendHandler({
 
         clearDraft();
 
-        // TODO Apps related https://mattermost.atlassian.net/browse/MM-41233
-        // if (data?.form) {
-        //     showAppForm(data.form, data.call, theme);
-        // }
-
         if (data?.goto_location && !value.startsWith('/leave')) {
             handleGotoLocation(serverUrl, intl, data.goto_location);
         }
@@ -302,8 +303,8 @@ export default function SendHandler({
             canSend={canSend()}
             maxMessageLength={maxMessageLength}
             updatePostInputTop={updatePostInputTop}
-            postProps={postProps}
-            updatePostProps={setPostProps}
+            postPriority={postPriority}
+            updatePostPriority={setPostPriority}
             setIsFocused={setIsFocused}
         />
     );

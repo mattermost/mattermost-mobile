@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode, useCallback, useEffect, useRef} from 'react';
-import {DeviceEventEmitter, Keyboard, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, StyleSheet, View} from 'react-native';
 import {State, TapGestureHandler} from 'react-native-gesture-handler';
 import {Navigation as RNN} from 'react-native-navigation';
 import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -32,7 +32,6 @@ export const PADDING_TOP_TABLET = 8;
 
 const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50], testID}: SlideUpPanelProps) => {
     const sheetRef = useRef<RNBottomSheet>(null);
-    const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
     const theme = useTheme();
     const firstRun = useRef(isTablet);
@@ -134,7 +133,7 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
                 paddingHorizontal: 20,
                 paddingTop: isTablet ? PADDING_TOP_TABLET : PADDING_TOP_MOBILE,
                 height: '100%',
-                width: isTablet ? '100%' : Math.min(dimensions.width, 450),
+                width: '100%',
                 alignSelf: 'center',
             }}
             testID={`${testID}.screen`}

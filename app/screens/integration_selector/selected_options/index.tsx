@@ -67,7 +67,6 @@ const SelectedOptions = ({
     return (
         <ScrollView
             style={style.container}
-            contentContainerStyle={style.scrollViewContent}
         >
             <View style={style.users}>
                 {options}

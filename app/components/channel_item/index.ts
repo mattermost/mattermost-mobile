@@ -10,9 +10,10 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {observeChannelsWithCalls} from '@calls/state';
 import {General} from '@constants';
 import {withServerUrl} from '@context/server';
-import {observeMyChannel} from '@queries/servers/channel';
+import {observeChannelSettings, observeMyChannel} from '@queries/servers/channel';
 import {queryDraft} from '@queries/servers/drafts';
 import {observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
+import {observeTeam} from '@queries/servers/team';
 
 import ChannelItem from './channel_item';
 
@@ -26,7 +27,7 @@ type EnhanceProps = WithDatabaseArgs & {
     serverUrl?: string;
 }
 
-const observeIsMutedSetting = (mc: MyChannelModel) => mc.settings.observe().pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === General.MENTION)));
+const observeIsMutedSetting = (mc: MyChannelModel) => observeChannelSettings(mc.database, mc.id).pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === General.MENTION)));
 
 const enhance = withObservables(['channel', 'showTeamName'], ({
     channel,
@@ -58,7 +59,7 @@ const enhance = withObservables(['channel', 'showTeamName'], ({
 
     let teamDisplayName = of$('');
     if (channel.teamId && showTeamName) {
-        teamDisplayName = channel.team.observe().pipe(
+        teamDisplayName = observeTeam(database, channel.teamId).pipe(
             switchMap((team) => of$(team?.displayName || '')),
             distinctUntilChanged(),
         );

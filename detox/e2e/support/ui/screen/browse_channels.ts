@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class BrowseChannelsScreen {
@@ -50,6 +50,7 @@ class BrowseChannelsScreen {
     open = async () => {
         // # Open browse channels screen
         await ChannelListScreen.headerPlusButton.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelListScreen.browseChannelsItem.tap();
 
         return this.toBeVisible();

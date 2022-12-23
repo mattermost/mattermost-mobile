@@ -95,7 +95,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 const DISABLED_OPACITY = 0.32;
 const DEFAULT_ICON_OPACITY = 0.32;
 
-export default function UserListRow({
+function UserListRow({
     id,
     isMyUser,
     highlight,
@@ -124,7 +124,7 @@ export default function UserListRow({
             const bounds: TutorialItemBounds = {
                 startX: x - 20,
                 startY: y,
-                endX: x + w + 20,
+                endX: x + w,
                 endY: y + h,
             };
             if (viewRef.current) {
@@ -160,7 +160,7 @@ export default function UserListRow({
             return null;
         }
 
-        const iconOpacity = DEFAULT_ICON_OPACITY * (disabled ? 1 : DISABLED_OPACITY);
+        const iconOpacity = DEFAULT_ICON_OPACITY * (disabled ? DISABLED_OPACITY : 1);
         const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
         return (
             <View style={style.selector}>
@@ -267,3 +267,4 @@ export default function UserListRow({
     );
 }
 
+export default React.memo(UserListRow);

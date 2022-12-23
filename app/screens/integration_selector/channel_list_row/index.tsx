@@ -15,7 +15,7 @@ import CustomListRow, {Props as CustomListRowProps} from '../custom_list_row';
 
 type ChannelListRowProps = {
     id: string;
-    theme: object;
+    theme: Theme;
     channel: Channel;
     onPress: (item: Channel) => void;
 };

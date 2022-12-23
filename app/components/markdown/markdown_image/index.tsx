@@ -59,7 +59,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 24,
     },
     container: {
-        marginBottom: 5,
+        marginVertical: 5,
+        top: 5,
     },
     svg: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),

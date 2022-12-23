@@ -60,7 +60,6 @@ describe('Channels - Create Direct Message', () => {
 
         // * Verify basic elements on create direct message screen
         await expect(CreateDirectMessageScreen.closeButton).toBeVisible();
-        await expect(CreateDirectMessageScreen.startButton).toBeVisible();
         await expect(CreateDirectMessageScreen.searchInput).toBeVisible();
         await expect(CreateDirectMessageScreen.sectionUserList).toBeVisible();
 

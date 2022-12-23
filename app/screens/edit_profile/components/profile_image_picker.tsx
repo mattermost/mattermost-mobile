@@ -6,10 +6,10 @@ import {useIntl} from 'react-intl';
 import {TouchableOpacity} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import FormattedText from '@app/components/formatted_text';
-import {typography} from '@app/utils/typography';
 import {Client} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -20,11 +20,11 @@ import PickerUtil from '@utils/file/file_picker';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type UserModel from '@typings/database/models/servers/user';
 
 const hitSlop = {top: 100, bottom: 20, right: 20, left: 100};
-const ACTION_HEIGHT = 50;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -80,7 +80,7 @@ const ProfileImagePicker = ({
 }: ImagePickerProps) => {
     const theme = useTheme();
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
     const pictureUtils = useMemo(() => new PickerUtil(intl, uploadFiles), [uploadFiles, intl]);
     const canRemovePicture = hasPictureUrl(user, serverUrl);
@@ -122,7 +122,7 @@ const ProfileImagePicker = ({
         };
 
         const snapPointsCount = canRemovePicture ? 5 : 4;
-        const snapPoint = bottomSheetSnapPoint(snapPointsCount, ACTION_HEIGHT, insets.bottom);
+        const snapPoint = bottomSheetSnapPoint(snapPointsCount, ITEM_HEIGHT, bottom);
 
         return bottomSheet({
             closeButtonId: 'close-edit-profile',
@@ -131,7 +131,7 @@ const ProfileImagePicker = ({
             title: 'Change profile photo',
             theme,
         });
-    }), [canRemovePicture, onRemoveProfileImage, insets, pictureUtils, theme]);
+    }), [canRemovePicture, onRemoveProfileImage, bottom, pictureUtils, theme]);
 
     return (
         <TouchableOpacity

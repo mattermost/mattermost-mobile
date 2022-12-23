@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import CameraAction from './camera_quick_action';
 import FileAction from './file_quick_action';
@@ -22,22 +22,12 @@ type Props = {
     value: string;
     updateValue: (value: string) => void;
     addFiles: (file: FileInfo[]) => void;
-    postProps: Post['props'];
-    updatePostProps: (postProps: Post['props']) => void;
+    postPriority: PostPriorityData;
+    updatePostPriority: (postPriority: PostPriorityData) => void;
     focus: () => void;
 }
 
 const style = StyleSheet.create({
-    container: {
-        display: 'flex',
-        flexDirection: 'row',
-        justifyContent: 'space-between',
-        alignItems: 'center',
-        paddingBottom: Platform.select({
-            ios: 1,
-            android: 2,
-        }),
-    },
     quickActionsContainer: {
         display: 'flex',
         flexDirection: 'row',
@@ -55,8 +45,8 @@ export default function QuickActions({
     maxFileCount,
     updateValue,
     addFiles,
-    postProps,
-    updatePostProps,
+    postPriority,
+    updatePostPriority,
     focus,
 }: Props) {
     const atDisabled = value[value.length - 1] === '@';
@@ -111,8 +101,8 @@ export default function QuickActions({
             {isPostPriorityEnabled && canShowPostPriority && (
                 <PostPriorityAction
                     testID={postPriorityActionTestID}
-                    postProps={postProps}
-                    updatePostProps={updatePostProps}
+                    postPriority={postPriority}
+                    updatePostPriority={updatePostPriority}
                 />
             )}
         </View>

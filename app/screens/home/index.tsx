@@ -14,6 +14,7 @@ import {Events, Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import {handleDeepLink} from '@utils/deep_link';
 import {alertChannelArchived, alertChannelRemove, alertTeamRemove} from '@utils/navigation';
 import {notificationError} from '@utils/notification';
 
@@ -24,7 +25,7 @@ import SavedMessages from './saved_messages';
 import Search from './search';
 import TabBar from './tab_bar';
 
-import type {LaunchProps} from '@typings/launch';
+import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 if (Platform.OS === 'ios') {
     // We do this on iOS to avoid conflicts betwen ReactNavigation & Wix ReactNativeNavigation
@@ -83,8 +84,7 @@ export default function HomeScreen(props: HomeProps) {
 
     useEffect(() => {
         const listener = HWKeyboardEvent.onHWKeyPressed((keyEvent: {pressedKey: string}) => {
-            const screen = NavigationStore.getAllNavigationComponents();
-            if (!screen.includes(Screens.FIND_CHANNELS) && keyEvent.pressedKey === 'find-channels') {
+            if (!NavigationStore.getScreensInStack().includes(Screens.FIND_CHANNELS) && keyEvent.pressedKey === 'find-channels') {
                 findChannels(
                     intl.formatMessage({id: 'find_channels.title', defaultMessage: 'Find Channels'}),
                     theme,
@@ -95,6 +95,15 @@ export default function HomeScreen(props: HomeProps) {
             listener.remove();
         };
     }, [intl.locale]);
+
+    useEffect(() => {
+        if (props.launchType === 'deeplink') {
+            const deepLink = props.extra as DeepLinkWithData;
+            if (deepLink?.url) {
+                handleDeepLink(deepLink.url);
+            }
+        }
+    }, []);
 
     return (
         <>
@@ -112,7 +121,7 @@ export default function HomeScreen(props: HomeProps) {
                 }}
             >
                 <Tab.Navigator
-                    screenOptions={{headerShown: false, lazy: true, unmountOnBlur: false}}
+                    screenOptions={{headerShown: false, unmountOnBlur: false, lazy: true}}
                     backBehavior='none'
                     tabBar={(tabProps: BottomTabBarProps) => (
                         <TabBar
@@ -122,29 +131,29 @@ export default function HomeScreen(props: HomeProps) {
                 >
                     <Tab.Screen
                         name={Screens.HOME}
-                        options={{title: 'Channel', unmountOnBlur: false, tabBarTestID: 'tab_bar.home.tab', freezeOnBlur: true}}
+                        options={{tabBarTestID: 'tab_bar.home.tab', unmountOnBlur: false, freezeOnBlur: true}}
                     >
                         {() => <ChannelList {...props}/>}
                     </Tab.Screen>
                     <Tab.Screen
                         name={Screens.SEARCH}
                         component={Search}
-                        options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.search.tab', freezeOnBlur: true}}
+                        options={{tabBarTestID: 'tab_bar.search.tab', unmountOnBlur: false, freezeOnBlur: true, lazy: true}}
                     />
                     <Tab.Screen
                         name={Screens.MENTIONS}
                         component={RecentMentions}
-                        options={{tabBarTestID: 'tab_bar.mentions.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
+                        options={{tabBarTestID: 'tab_bar.mentions.tab', freezeOnBlur: true, lazy: true}}
                     />
                     <Tab.Screen
                         name={Screens.SAVED_MESSAGES}
                         component={SavedMessages}
-                        options={{unmountOnBlur: false, lazy: true, tabBarTestID: 'tab_bar.saved_messages.tab', freezeOnBlur: true}}
+                        options={{tabBarTestID: 'tab_bar.saved_messages.tab', freezeOnBlur: true, lazy: true}}
                     />
                     <Tab.Screen
                         name={Screens.ACCOUNT}
                         component={Account}
-                        options={{tabBarTestID: 'tab_bar.account.tab', lazy: true, unmountOnBlur: false, freezeOnBlur: true}}
+                        options={{tabBarTestID: 'tab_bar.account.tab', freezeOnBlur: true, lazy: true}}
                     />
                 </Tab.Navigator>
             </NavigationContainer>

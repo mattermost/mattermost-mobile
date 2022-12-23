@@ -32,6 +32,7 @@ export type DeepLinkType = typeof DeepLink[keyof typeof DeepLink];
 
 export interface DeepLinkWithData {
     type: DeepLinkType;
+    url: string;
     data?: DeepLinkChannel | DeepLinkDM | DeepLinkGM | DeepLinkPermalink | DeepLinkPlugin;
 }
 

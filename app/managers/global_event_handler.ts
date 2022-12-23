@@ -9,12 +9,11 @@ import {autoUpdateTimezone} from '@actions/remote/user';
 import LocalConfig from '@assets/config.json';
 import {Events, Sso} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
-import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
-import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
 import * as analytics from '@managers/analytics';
-import {queryAllServers} from '@queries/app/servers';
+import {getAllServers} from '@queries/app/servers';
+import {handleDeepLink} from '@utils/deep_link';
 import {logError} from '@utils/log';
 
 import type {jsAndNativeErrorHandler} from '@typings/global/error_handling';
@@ -29,8 +28,7 @@ class GlobalEventHandler {
         DeviceEventEmitter.addListener(Events.CONFIG_CHANGED, this.onServerConfigChanged);
         RNLocalize.addEventListener('change', async () => {
             try {
-                const {database} = DatabaseManager.getAppDatabaseAndOperator();
-                const servers = await queryAllServers(database);
+                const servers = await getAllServers();
                 for (const server of servers) {
                     if (server.url && server.lastActiveAt > 0) {
                         autoUpdateTimezone(server.url);
@@ -66,8 +64,7 @@ class GlobalEventHandler {
         }
 
         if (event.url) {
-            const props = getLaunchPropsFromDeepLink(event.url);
-            relaunchApp(props);
+            handleDeepLink(event.url);
         }
     };
 

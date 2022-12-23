@@ -37,9 +37,6 @@ export default class ThreadInTeamModel extends Model implements ThreadInTeamMode
     /** team_id: Associated team identifier */
     @field('team_id') teamId!: string;
 
-    /** loaded_in_global_threads : Flag to differentiate the unread threads loaded for showing unread counts/mentions */
-    @field('loaded_in_global_threads') loadedInGlobalThreads!: boolean;
-
     @immutableRelation(THREAD, 'thread_id') thread!: Relation<ThreadModel>;
 
     @immutableRelation(TEAM, 'team_id') team!: Relation<TeamModel>;

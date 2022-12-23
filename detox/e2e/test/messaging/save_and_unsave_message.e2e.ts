@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Save and Unsave Message', () => {
@@ -102,6 +102,7 @@ describe('Messaging - Save and Unsave Message', () => {
         await PostOptionsScreen.unsavePostOption.tap();
 
         // * Verify saved text is not displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         await expect(postListPostItemPreHeaderText).not.toBeVisible();
 
         // # Go back to channel list screen

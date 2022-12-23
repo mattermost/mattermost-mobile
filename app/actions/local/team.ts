@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import {prepareDeleteTeam, getMyTeamById, queryTeamSearchHistoryByTeamId, removeTeamFromTeamHistory, getTeamSearchHistoryById} from '@queries/servers/team';
+import {prepareDeleteTeam, getMyTeamById, queryTeamSearchHistoryByTeamId, removeTeamFromTeamHistory, getTeamSearchHistoryById, getTeamById} from '@queries/servers/team';
 import {logError} from '@utils/log';
 
 import type Model from '@nozbe/watermelondb/Model';
@@ -12,7 +12,7 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const myTeam = await getMyTeamById(database, teamId);
         if (myTeam) {
-            const team = await myTeam.team.fetch();
+            const team = await getTeamById(database, myTeam.id);
             if (!team) {
                 throw new Error('Team not found');
             }

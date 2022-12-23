@@ -14,10 +14,6 @@ import {typography} from '@utils/typography';
 
 import PostPriorityPickerItem from './post_priority_picker_item';
 
-export type PostPriorityData = {
-    priority: PostPriorityType;
-};
-
 type Props = {
     data: PostPriorityData;
     onSubmit: (data: PostPriorityData) => void;
@@ -61,8 +57,8 @@ const PostPriorityPicker = ({data, onSubmit}: Props) => {
     // For now, we just have one option but the spec suggest we have more in the next phase
     // const [data, setData] = React.useState<PostPriorityData>(defaultData);
 
-    const handleUpdatePriority = React.useCallback((priority: PostPriorityType) => {
-        onSubmit({priority});
+    const handleUpdatePriority = React.useCallback((priority: PostPriorityData['priority']) => {
+        onSubmit({priority: priority || ''});
     }, [onSubmit]);
 
     return (

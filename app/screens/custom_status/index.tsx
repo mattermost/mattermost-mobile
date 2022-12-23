@@ -164,7 +164,7 @@ class CustomStatusModal extends NavigationComponent<Props, State> {
 
     onBackPress = () => {
         const {componentId} = this.props;
-        if (NavigationStore.getNavigationTopComponentId() === componentId) {
+        if (NavigationStore.getVisibleScreen() === componentId) {
             if (this.props.isTablet) {
                 DeviceEventEmitter.emit(Events.ACCOUNT_SELECT_TABLET_VIEW, '');
             } else {

@@ -8,6 +8,7 @@ import {Navigation, Options} from 'react-native-navigation';
 import {Screens} from '@constants';
 
 export const appearanceControlledScreens = new Set([
+    Screens.ONBOARDING,
     Screens.SERVER,
     Screens.LOGIN,
     Screens.FORGOT_PASSWORD,

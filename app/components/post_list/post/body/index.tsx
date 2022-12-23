@@ -95,7 +95,7 @@ const Body = ({
             return undefined;
         }
 
-        const barStyle = [style.replyBar];
+        const barStyle: StyleProp<ViewStyle> = [style.replyBar];
 
         if (isFirstReply) {
             barStyle.push(style.replyBarFirst);

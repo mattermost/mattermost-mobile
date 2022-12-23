@@ -4,11 +4,14 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleProp, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -19,6 +22,7 @@ import UsersList from './users_list';
 import type UserModel from '@typings/database/models/servers/user';
 
 const OVERFLOW_DISPLAY_LIMIT = 99;
+const USER_ROW_HEIGHT = 40;
 
 type Props = {
     channelId: string;
@@ -98,11 +102,9 @@ const UserAvatarsStack = ({breakAt = 3, channelId, location, style: baseContaine
     const theme = useTheme();
     const intl = useIntl();
     const isTablet = useIsTablet();
+    const {bottom} = useSafeAreaInsets();
 
     const showParticipantsList = useCallback(preventDoubleTap(() => {
-        const BOTTOM_SHEET_TITLE_HEIGHT = 118;
-        const USER_ROW_HEIGHT = 40;
-
         const renderContent = () => (
             <>
                 {!isTablet && (
@@ -121,15 +123,16 @@ const UserAvatarsStack = ({breakAt = 3, channelId, location, style: baseContaine
                 />
             </>
         );
+        const snap = bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT, bottom);
         bottomSheet({
             closeButtonId: 'close-set-user-status',
             renderContent,
             initialSnapIndex: 1,
-            snapPoints: ['90%', BOTTOM_SHEET_TITLE_HEIGHT + ((users.length) * USER_ROW_HEIGHT), 10],
+            snapPoints: ['90%', TITLE_HEIGHT + snap, 10],
             title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
             theme,
         });
-    }), [isTablet, theme, users, channelId, location]);
+    }), [isTablet, theme, users, channelId, location, bottom]);
 
     const displayUsers = users.slice(0, breakAt);
     const overflowUsersCount = Math.min(users.length - displayUsers.length, OVERFLOW_DISPLAY_LIMIT);

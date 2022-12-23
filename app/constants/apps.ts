@@ -37,6 +37,13 @@ export const AppFieldTypes: { [name: string]: AppFieldType } = {
     MARKDOWN: 'markdown',
 };
 
+export const SelectableAppFieldTypes = [
+    AppFieldTypes.CHANNEL,
+    AppFieldTypes.USER,
+    AppFieldTypes.STATIC_SELECT,
+    AppFieldTypes.DYNAMIC_SELECT,
+];
+
 export const COMMAND_SUGGESTION_ERROR = 'error';
 export const COMMAND_SUGGESTION_CHANNEL = 'channel';
 export const COMMAND_SUGGESTION_USER = 'user';

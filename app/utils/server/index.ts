@@ -13,6 +13,7 @@ import {changeOpacity} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import type ServersModel from '@typings/database/models/app/servers';
+import type {DeepLinkWithData} from '@typings/launch';
 
 export function isSupportedServer(currentVersion: string) {
     return isMinimumServerVersion(currentVersion, SupportedServer.MAJOR_VERSION, SupportedServer.MIN_VERSION, SupportedServer.PATCH_VERSION);
@@ -39,15 +40,16 @@ export function semverFromServerVersion(value: string) {
     return `${major}.${minor}.${patch}`;
 }
 
-export async function addNewServer(theme: Theme, serverUrl?: string, displayName?: string) {
+export async function addNewServer(theme: Theme, serverUrl?: string, displayName?: string, deepLinkProps?: DeepLinkWithData) {
     await dismissBottomSheet();
     const closeButtonId = 'close-server';
     const props = {
         closeButtonId,
         displayName,
-        launchType: Launch.AddServer,
+        launchType: deepLinkProps ? Launch.AddServerFromDeepLink : Launch.AddServer,
         serverUrl,
         theme,
+        extra: deepLinkProps,
     };
     const options = buildServerModalOptions(theme, closeButtonId);
 
@@ -193,6 +195,20 @@ export function alertServerAlreadyConnected(intl: IntlShape) {
         }),
     );
 }
+
+export const sortServersByDisplayName = (servers: ServersModel[], intl: IntlShape) => {
+    function serverName(s: ServersModel) {
+        if (s.displayName === s.url) {
+            return intl.formatMessage({id: 'servers.default', defaultMessage: 'Default Server'});
+        }
+
+        return s.displayName;
+    }
+
+    return servers.sort((a, b) => {
+        return serverName(a).localeCompare(serverName(b));
+    });
+};
 
 function unsupportedServerAdminAlert(serverDisplayName: string, intl: IntlShape, onPress?: () => void) {
     const title = intl.formatMessage({id: 'mobile.server_upgrade.title', defaultMessage: 'Server upgrade required'});

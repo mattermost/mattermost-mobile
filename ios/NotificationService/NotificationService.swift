@@ -9,6 +9,11 @@ class NotificationService: UNNotificationServiceExtension {
 
   var retryIndex = 0
   
+  override init() {
+    super.init()
+    initSentryAppExt()
+  }
+  
   override func didReceive(_ request: UNNotificationRequest, withContentHandler contentHandler: @escaping (UNNotificationContent) -> Void) {
     self.contentHandler = contentHandler
 
@@ -24,7 +29,6 @@ class NotificationService: UNNotificationServiceExtension {
 
   func processResponse(serverUrl: String, data: Data, bestAttemptContent: UNMutableNotificationContent, contentHandler: ((UNNotificationContent) -> Void)?) {
     bestAttemptContent.userInfo["server_url"] = serverUrl
-    
     let json = try? JSONSerialization.jsonObject(with: data) as! [String: Any]
     if let json = json {
       if let message = json["message"] as? String {
@@ -45,6 +49,7 @@ class NotificationService: UNNotificationServiceExtension {
     if (preferences.object(forKey: "ApplicationIsForeground") as? String != "true") {
       Network.default.fetchAndStoreDataForPushNotification(bestAttemptContent, withContentHandler: contentHandler)
     } else if let contentHandler = contentHandler {
+      bestAttemptContent.badge = Gekidou.Database.default.getTotalMentions() as NSNumber
       contentHandler(bestAttemptContent)
     }
   }

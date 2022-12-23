@@ -9,23 +9,26 @@ import {DeviceEventEmitter} from 'react-native';
 import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
 import {removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
-import {Events, General, Preferences, Screens} from '@constants';
+import {loadCallForChannel} from '@calls/actions/calls';
+import {DeepLink, Events, General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
+import {getActiveServer} from '@queries/app/servers';
 import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {getCommonSystemValues, getConfig, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId} from '@queries/servers/system';
-import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams} from '@queries/servers/team';
+import {getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
+import {dismissAllModals, popToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
-import {logError, logInfo} from '@utils/log';
+import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
-import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import {fetchGroupsForChannelIfConstrained} from './groups';
@@ -357,6 +360,9 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
     }
 
     try {
+        if (!fetchOnly) {
+            setTeamLoading(serverUrl, true);
+        }
         const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
@@ -385,10 +391,14 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
             if (models.length) {
                 await operator.batchRecords(models);
             }
+            setTeamLoading(serverUrl, false);
         }
 
         return {channels, memberships, categories};
     } catch (error) {
+        if (!fetchOnly) {
+            setTeamLoading(serverUrl, false);
+        }
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
@@ -598,6 +608,7 @@ export async function joinChannel(serverUrl: string, teamId: string, channelId?:
     }
 
     if (channelId || channel?.id) {
+        loadCallForChannel(serverUrl, channelId || channel!.id);
         EphemeralStore.removeJoiningChannel(channelId || channel!.id);
     }
     return {channel, member};
@@ -651,7 +662,7 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
     let joinedTeam = false;
     let teamId = '';
     try {
-        if (teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT) {
+        if (teamName === DeepLink.Redirect) {
             teamId = await getCurrentTeamId(database);
         } else {
             const team = await getTeamByName(database, teamName);
@@ -1295,5 +1306,47 @@ export const convertChannelToPrivate = async (serverUrl: string, channelId: stri
         return {error};
     } finally {
         EphemeralStore.removeConvertingChannel(channelId);
+    }
+};
+
+export const handleKickFromChannel = async (serverUrl: string, channelId: string, event: string = Events.LEAVE_CHANNEL) => {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const currentChannelId = await getCurrentChannelId(database);
+        if (currentChannelId !== channelId) {
+            return;
+        }
+
+        const currentServer = await getActiveServer();
+        if (currentServer?.url === serverUrl) {
+            const channel = await getChannelById(database, channelId);
+            DeviceEventEmitter.emit(event, channel?.displayName);
+            await dismissAllModals();
+            await popToRoot();
+        }
+
+        const tabletDevice = await isTablet();
+
+        if (tabletDevice) {
+            const teamId = await getCurrentTeamId(database);
+            await removeChannelFromTeamHistory(operator, teamId, channelId);
+            const newChannelId = await getNthLastChannelFromTeam(database, teamId, 0, channelId);
+            if (newChannelId) {
+                if (currentServer?.url === serverUrl) {
+                    if (newChannelId === Screens.GLOBAL_THREADS) {
+                        await switchToGlobalThreads(serverUrl, teamId, false);
+                    } else {
+                        await switchToChannelById(serverUrl, newChannelId, teamId, true);
+                    }
+                } else {
+                    await setCurrentTeamAndChannelId(operator, teamId, channelId);
+                }
+            } // TODO else jump to "join a channel" screen https://mattermost.atlassian.net/browse/MM-41051
+        } else {
+            await setCurrentChannelId(operator, '');
+        }
+    } catch (error) {
+        logDebug('cannot kick user from channel', error);
     }
 };
