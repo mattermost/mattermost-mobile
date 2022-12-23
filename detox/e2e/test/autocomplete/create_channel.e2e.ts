@@ -20,6 +20,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Autocomplete - Create Channel', () => {
@@ -58,7 +59,7 @@ describe('Autocomplete - Create Channel', () => {
         await CreateOrEditChannelScreen.headerInput.typeText('@');
 
         // * Verify at-mention list is displayed
-        await expect(Autocomplete.sectionAtMentionList).toBeVisible();
+        await waitFor(Autocomplete.sectionAtMentionList).toBeVisible().withTimeout(timeouts.ONE_SEC);
     });
 
     it('MM-T4904_2 - should render channel mention autocomplete in header input', async () => {
