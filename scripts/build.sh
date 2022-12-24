@@ -68,7 +68,7 @@ function setup() {
             echo "Generating app assets"
         fi
 
-        echo "Installing Fastane"
+        echo "Installing Fastlane"
         if !gem list bundler -i --version 2.1.4 > /dev/null 2>&1; then
           gem install bundler --versio 2.1.4
         fi
