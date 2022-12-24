@@ -30,7 +30,6 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
         },
         strong: {
             fontFamily: 'OpenSans-SemiBold',
-            fontWeight: '600',
         },
         del: {
             textDecorationLine: 'line-through',
