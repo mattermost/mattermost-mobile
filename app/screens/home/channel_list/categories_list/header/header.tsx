@@ -105,7 +105,7 @@ const ChannelListHeader = ({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const serverDisplayName = useServerDisplayName();
     const marginLeft = useSharedValue(iconPad ? 50 : 0);
     const styles = getStyles(theme);
@@ -150,11 +150,11 @@ const ChannelListHeader = ({
         bottomSheet({
             closeButtonId,
             renderContent,
-            snapPoints: [bottomSheetSnapPoint(items, ITEM_HEIGHT, insets.bottom) + (separators * SEPARATOR_HEIGHT), 10],
+            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + (separators * SEPARATOR_HEIGHT)],
             theme,
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
-    }, [intl, insets, isTablet, theme]);
+    }, [intl, bottom, isTablet, theme]);
 
     const onPushAlertPress = useCallback(() => {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {

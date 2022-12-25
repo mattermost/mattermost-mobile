@@ -1,15 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BottomSheetProps, BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
+import {ScrollView} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
 import {dismissModal} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 
 import AppBindingsPostOptions from './options/app_bindings_post_option';
@@ -48,6 +53,9 @@ const PostOptions = ({
     sourceScreen, post, thread, bindings, serverUrl,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const {bottom} = useSafeAreaInsets();
+    const isTablet = useIsTablet();
+    const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
 
     const close = () => {
         dismissModal({componentId});
@@ -63,17 +71,65 @@ const PostOptions = ({
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
     const shouldShowBindings = bindings.length > 0 && !isSystemPost;
 
-    const snapPoints = [
+    const snapPoints = useMemo(() => {
+        const items: BottomSheetProps['snapPoints'] = [1];
+        let count = shouldShowBindings ? 0.5 : 0;
+        if (canAddReaction) {
+            count++;
+        }
+
+        if (canReply && sourceScreen !== Screens.THREAD) {
+            count++;
+        }
+
+        if (shouldRenderFollow) {
+            count++;
+        }
+
+        if (canMarkAsUnread && !isSystemPost) {
+            count++;
+        }
+
+        if (canCopyPermalink) {
+            count++;
+        }
+
+        if (!isSystemPost) {
+            count++;
+        }
+
+        if (canCopyText && post.message) {
+            count++;
+        }
+
+        if (canPin) {
+            count++;
+        }
+
+        if (canEdit) {
+            count++;
+        }
+
+        if (canDelete) {
+            count++;
+        }
+
+        items.push(bottomSheetSnapPoint(count, ITEM_HEIGHT, bottom));
+
+        if (shouldShowBindings) {
+            items.push('90%');
+        }
+
+        return items;
+    }, [
         canAddReaction, canCopyPermalink, canCopyText,
-        canDelete, canEdit, shouldRenderFollow,
-        canMarkAsUnread, canPin, canReply, !isSystemPost,
-    ].reduce((acc, v) => {
-        return v ? acc + 1 : acc;
-    }, 0);
+        canDelete, canEdit, shouldRenderFollow, shouldShowBindings, sourceScreen,
+        canMarkAsUnread, canPin, canReply, isSystemPost, bottom,
+    ]);
 
     const renderContent = () => {
         return (
-            <>
+            <Scroll bounces={false}>
                 {canAddReaction && <ReactionBar postId={post.id}/>}
                 {canReply && sourceScreen !== Screens.THREAD && <ReplyOption post={post}/>}
                 {shouldRenderFollow &&
@@ -126,31 +182,17 @@ const PostOptions = ({
                     bindings={bindings}
                 />
                 }
-            </>
+            </Scroll>
         );
     };
-
-    const finalSnapPoints = useMemo(() => {
-        const additionalSnapPoints = 2;
-
-        const lowerSnapPoints = snapPoints + additionalSnapPoints;
-        if (!shouldShowBindings) {
-            return [lowerSnapPoints * ITEM_HEIGHT, 10];
-        }
-
-        const upperSnapPoints = lowerSnapPoints + bindings.length;
-        return [upperSnapPoints * ITEM_HEIGHT, lowerSnapPoints * ITEM_HEIGHT, 10];
-    }, [snapPoints, shouldShowBindings, bindings.length]);
-
-    const initialSnapIndex = shouldShowBindings ? 1 : 0;
 
     return (
         <BottomSheet
             renderContent={renderContent}
             closeButtonId={POST_OPTIONS_BUTTON}
             componentId={Screens.POST_OPTIONS}
-            initialSnapIndex={initialSnapIndex}
-            snapPoints={finalSnapPoints}
+            initialSnapIndex={1}
+            snapPoints={snapPoints}
             testID='post_options'
         />
     );

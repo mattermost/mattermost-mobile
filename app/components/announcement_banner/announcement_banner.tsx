@@ -9,6 +9,7 @@ import {
     View,
 } from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {dismissAnnouncement} from '@actions/local/systems';
 import CompassIcon from '@components/compass_icon';
@@ -17,6 +18,7 @@ import {ANNOUNCEMENT_BAR_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getMarkdownTextStyles} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -82,6 +84,7 @@ const AnnouncementBanner = ({
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const height = useSharedValue(0);
+    const {bottom} = useSafeAreaInsets();
     const theme = useTheme();
     const [visible, setVisible] = useState(false);
     const style = getStyle(theme);
@@ -100,19 +103,20 @@ const AnnouncementBanner = ({
             defaultMessage: 'Announcement',
         });
 
-        let snapPoint = SNAP_POINT_WITHOUT_DISMISS;
-        if (allowDismissal) {
-            snapPoint += DISMISS_BUTTON_HEIGHT;
-        }
+        const snapPoint = bottomSheetSnapPoint(
+            1,
+            SNAP_POINT_WITHOUT_DISMISS + (allowDismissal ? DISMISS_BUTTON_HEIGHT : 0),
+            bottom,
+        );
 
         bottomSheet({
             closeButtonId: CLOSE_BUTTON_ID,
             title,
             renderContent,
-            snapPoints: [snapPoint, 10],
+            snapPoints: [1, snapPoint],
             theme,
         });
-    }, [theme.sidebarHeaderTextColor, intl.locale, renderContent, allowDismissal]);
+    }, [theme.sidebarHeaderTextColor, intl.locale, renderContent, allowDismissal, bottom]);
 
     const handleDismiss = useCallback(() => {
         dismissAnnouncement(serverUrl, bannerText);

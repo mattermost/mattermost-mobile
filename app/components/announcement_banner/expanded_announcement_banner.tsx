@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 import Button from 'react-native-button';
-import {ScrollView} from 'react-native-gesture-handler';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {dismissAnnouncement} from '@actions/local/systems';
@@ -94,7 +94,7 @@ const ExpandedAnnouncementBanner = ({
                     })}
                 </Text>
             )}
-            <ScrollView
+            <BottomSheetScrollView
                 style={style.scrollContainer}
             >
                 <Markdown
@@ -106,7 +106,7 @@ const ExpandedAnnouncementBanner = ({
                     theme={theme}
                     location={Screens.BOTTOM_SHEET}
                 />
-            </ScrollView>
+            </BottomSheetScrollView>
             <Button
                 containerStyle={buttonStyles.okay.button}
                 onPress={close}

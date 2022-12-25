@@ -48,7 +48,7 @@ export default function ChannelDropdown({
     sharedChannelsEnabled,
 }: Props) {
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
@@ -73,11 +73,11 @@ export default function ChannelDropdown({
             items += 1;
         }
 
-        const itemsSnap = bottomSheetSnapPoint(items, ITEM_HEIGHT, insets.bottom) + TITLE_HEIGHT;
+        const itemsSnap = bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + TITLE_HEIGHT;
         bottomSheet({
             title: intl.formatMessage({id: 'browse_channels.dropdownTitle', defaultMessage: 'Show'}),
             renderContent,
-            snapPoints: [itemsSnap, 10],
+            snapPoints: [1, itemsSnap],
             closeButtonId: 'close',
             theme,
         });
