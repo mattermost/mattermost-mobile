@@ -103,7 +103,7 @@ const PostOptions = ({
                         postId={post.id}
                     />
                 }
-                {canReply && sourceScreen !== Screens.THREAD &&
+                {canReply &&
                     <ReplyOption
                         bottomSheetId={Screens.POST_OPTIONS}
                         post={post}
