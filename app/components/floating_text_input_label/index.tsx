@@ -40,6 +40,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     input: {
         flex: 1,
+        color: theme.centerChannelColor,
+        fontFamily: 'OpenSans',
+        fontSize: 16,
     },
     label: {
         position: 'absolute',
