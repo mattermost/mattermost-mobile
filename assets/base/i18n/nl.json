@@ -581,7 +581,7 @@
     "alert.push_proxy_unknown.description": "Deze server kon om een onbekende reden geen pushberichten ontvangen. Dit zal de volgende keer als je verbinding maakt opnieuw geprobeerd worden.",
     "custom_status.suggestions.title": "Suggesties",
     "custom_status.suggestions.recent_title": "Recent",
-    "custom_status.set_status": "Een status instellen",
+    "custom_status.set_status": "Een aangepaste status instellen",
     "create_post.thread_reply": "Reageer op dit draadje...",
     "create_direct_message.title": "Direct bericht maken",
     "channel_modal.purposeEx": "Een kanaal om bugs en verbeteringen in te dienen",
@@ -925,5 +925,6 @@
     "post_priority.picker.label.standard": "Standaard",
     "post_priority.picker.label.important": "Belangrijk",
     "post_priority.picker.beta": "BETA",
-    "mobile.open_dm.error": "We konden geen direct bericht openen met {displayName} . Controleer jouw verbinding en probeer het opnieuw."
+    "mobile.open_dm.error": "We konden geen direct bericht openen met {displayName} . Controleer jouw verbinding en probeer het opnieuw.",
+    "connection_banner.connecting": "Bezig met verbinden..."
 }
