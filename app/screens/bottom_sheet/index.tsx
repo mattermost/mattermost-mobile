@@ -31,7 +31,8 @@ type Props = {
     testID?: string;
 }
 
-export const PADDING_TOP = 8;
+const PADDING_TOP_MOBILE = 20;
+const PADDING_TOP_TABLET = 8;
 
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -54,7 +55,10 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         content: {
             flex: 1,
             paddingHorizontal: 20,
-            paddingTop: PADDING_TOP,
+            paddingTop: PADDING_TOP_MOBILE,
+        },
+        contentTablet: {
+            paddingTop: PADDING_TOP_TABLET,
         },
         separator: {
             height: 1,
@@ -143,7 +147,7 @@ const BottomSheet = ({
 
     const renderContainerContent = () => (
         <View
-            style={styles.content}
+            style={[styles.content, isTablet && styles.contentTablet]}
             testID={`${testID}.screen`}
         >
             {renderContent()}
