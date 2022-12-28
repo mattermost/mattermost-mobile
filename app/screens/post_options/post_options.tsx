@@ -84,7 +84,7 @@ const PostOptions = ({
         items.push(bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT, bottom) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0));
 
         if (shouldShowBindings) {
-            items.push('90%');
+            items.push('80%');
         }
 
         return items;

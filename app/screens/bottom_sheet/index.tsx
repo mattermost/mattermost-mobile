@@ -3,7 +3,7 @@
 
 import BottomSheetM, {BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import React, {ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, Keyboard, View} from 'react-native';
+import {DeviceEventEmitter, Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
 import useNavButtonPressed from '@app/hooks/navigation_button_pressed';
 import {Events} from '@constants';
@@ -24,6 +24,7 @@ export {default as BottomSheetContent, TITLE_HEIGHT} from './content';
 type Props = {
     closeButtonId?: string;
     componentId: string;
+    contentStyle?: StyleProp<ViewStyle>;
     initialSnapIndex?: number;
     footerComponent?: React.FC<BottomSheetFooterProps>;
     renderContent: () => ReactNode;
@@ -80,10 +81,11 @@ export const animatedConfig: Omit<WithSpringConfig, 'velocity'> = {
 const BottomSheet = ({
     closeButtonId,
     componentId,
+    contentStyle,
     initialSnapIndex = 1,
     footerComponent,
     renderContent,
-    snapPoints = [1, '50%', '90%'],
+    snapPoints = [1, '50%', '80%'],
     testID,
 }: Props) => {
     const sheetRef = useRef<BottomSheetM>(null);
@@ -147,7 +149,7 @@ const BottomSheet = ({
 
     const renderContainerContent = () => (
         <View
-            style={[styles.content, isTablet && styles.contentTablet]}
+            style={[styles.content, isTablet && styles.contentTablet, contentStyle]}
             testID={`${testID}.screen`}
         >
             {renderContent()}
@@ -176,6 +178,8 @@ const BottomSheet = ({
             style={styles.bottomSheet}
             backgroundStyle={bottomSheetBackgroundStyle}
             footerComponent={footerComponent}
+            keyboardBehavior='extend'
+            keyboardBlurBehavior='restore'
         >
             {renderContainerContent()}
         </BottomSheetM>

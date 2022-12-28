@@ -122,7 +122,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
                 bottomSheetSnapPoint(Math.min(2.5, registeredServers.current.length), 72, bottom) + TITLE_HEIGHT + BUTTON_HEIGHT,
             ];
             if (registeredServers.current.length > 1) {
-                snapPoints.push('90%');
+                snapPoints.push('80%');
             }
 
             const closeButtonId = 'close-your-servers';

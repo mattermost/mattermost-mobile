@@ -12,7 +12,7 @@ import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
-import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheetModalOptions, openAsBottomSheet, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -112,15 +112,13 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     };
 
     const handleAddReaction = useCallback(preventDoubleTap(() => {
-        const title = intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
-
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const passProps = {
-            closeButton,
-            onEmojiPress: handleAddReactionToPost,
-        };
-
-        showModal(Screens.EMOJI_PICKER, title, passProps);
+        openAsBottomSheet({
+            closeButtonId: 'close-add-reaction',
+            screen: Screens.EMOJI_PICKER,
+            theme,
+            title: intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+            props: {onEmojiPress: handleAddReactionToPost},
+        });
     }), [intl, theme]);
 
     const handleReactionPress = useCallback(async (emoji: string, remove: boolean) => {

@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {useWindowDimensions, View} from 'react-native';
 
 import {addReaction} from '@actions/remote/reactions';
-import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {
     LARGE_CONTAINER_SIZE,
@@ -19,7 +18,7 @@ import {
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {dismissBottomSheet, showModal} from '@screens/navigation';
+import {dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import PickReaction from './pick_reaction';
@@ -61,14 +60,14 @@ const ReactionBar = ({bottomSheetId, recentEmojis = [], postId}: QuickReactionPr
 
     const openEmojiPicker = useCallback(async () => {
         await dismissBottomSheet(bottomSheetId);
-
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const screen = Screens.EMOJI_PICKER;
-        const title = intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
-        const passProps = {closeButton, onEmojiPress: handleEmojiPress};
-
-        showModal(screen, title, passProps);
-    }, [bottomSheetId, intl, theme]);
+        openAsBottomSheet({
+            closeButtonId: 'close-add-reaction',
+            screen: Screens.EMOJI_PICKER,
+            theme,
+            title: intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+            props: {onEmojiPress: handleEmojiPress},
+        });
+    }, [intl, theme]);
 
     let containerSize = LARGE_CONTAINER_SIZE;
     let iconSize = LARGE_ICON_SIZE;

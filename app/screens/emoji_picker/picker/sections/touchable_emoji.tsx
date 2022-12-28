@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {StyleProp, ViewStyle} from 'react-native';
+import {StyleProp, View, ViewStyle} from 'react-native';
 
 import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -19,16 +19,20 @@ const TouchableEmoji = ({name, onEmojiPress, size = 30, style}: Props) => {
     const onPress = useCallback(preventDoubleTap(() => onEmojiPress(name)), []);
 
     return (
-        <TouchableWithFeedback
-            onPress={onPress}
+        <View
             style={style}
-            type={'opacity'}
         >
-            <Emoji
-                emojiName={name}
-                size={size}
-            />
-        </TouchableWithFeedback>
+            <TouchableWithFeedback
+                onPress={onPress}
+                style={style}
+                type={'opacity'}
+            >
+                <Emoji
+                    emojiName={name}
+                    size={size}
+                />
+            </TouchableWithFeedback>
+        </View>
     );
 };
 
