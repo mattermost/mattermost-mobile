@@ -604,7 +604,7 @@
     "display_settings.clock.military": "24-timmars",
     "custom_status.suggestions.title": "Förslag",
     "custom_status.suggestions.recent_title": "Nyligen",
-    "custom_status.set_status": "Ange status",
+    "custom_status.set_status": "Ange egen status",
     "create_post.thread_reply": "Svara på tråden...",
     "create_direct_message.title": "Skapa ett direktmeddelande",
     "channel_modal.purposeEx": "En kanal att rapportera buggar och förbättringar",
@@ -925,5 +925,7 @@
     "connection_banner.not_connected": "Ingen internetåtkomst",
     "connection_banner.connected": "Anslutningen är återställd",
     "thread.loadingReplies": "Laddar svar..",
-    "mobile.calls_open_channel": "Öppen kanal"
+    "mobile.calls_open_channel": "Öppen kanal",
+    "join_team.error.group_error": "Du behöver vara medlem i en länkad grupp för att gå med i teamet.",
+    "connection_banner.connecting": "Ansluter..."
 }
