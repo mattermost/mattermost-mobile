@@ -280,7 +280,7 @@
     "mobile.reset_status.title_ooo": "Inaktivera \"Ej på kontoret\"?",
     "mobile.routes.code": "{language} kod",
     "mobile.routes.code.noLanguage": "Kod",
-    "mobile.routes.custom_status": "Ange status",
+    "mobile.routes.custom_status": "Ange egen status",
     "mobile.routes.table": "Tabell",
     "mobile.routes.user_profile": "Profil",
     "mobile.search.jump": "Hoppa till senaste meddelanden",
@@ -927,5 +927,15 @@
     "thread.loadingReplies": "Laddar svar..",
     "mobile.calls_open_channel": "Öppen kanal",
     "join_team.error.group_error": "Du behöver vara medlem i en länkad grupp för att gå med i teamet.",
-    "connection_banner.connecting": "Ansluter..."
+    "connection_banner.connecting": "Ansluter...",
+    "video.download_description": "Denna video måste laddas ner för att kunna spelas upp.",
+    "user.edit_profile.profile_photo.change_photo": "Ändra profilbild",
+    "user_status.title": "Status",
+    "user_status.online": "Ansluten",
+    "user_status.offline": "Offline",
+    "user_status.dnd": "Stör ej",
+    "user_status.away": "Tillfälligt borta",
+    "mobile.camera_type.title": "Alternativ för kameran",
+    "join_team.error.title": "Fel vid anslutning till teamet",
+    "join_team.error.message": "Det har uppstått ett fel när du skulle anslutas till teamet"
 }
