@@ -8,6 +8,7 @@ import {ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, SectionList
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
+import TouchableEmoji from '@components/touchable_emoji';
 import {EMOJIS_PER_PAGE} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
@@ -19,7 +20,6 @@ import EmojiCategoryBar from '../emoji_category_bar';
 
 import SectionFooter from './section_footer';
 import SectionHeader, {SECTION_HEADER_HEIGHT} from './section_header';
-import TouchableEmoji from './touchable_emoji';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 

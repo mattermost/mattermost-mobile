@@ -3,7 +3,7 @@
 
 import BottomSheetM, {BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import React, {ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, Keyboard, StyleProp, View, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, Handle, InteractionManager, Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
 import useNavButtonPressed from '@app/hooks/navigation_button_pressed';
 import {Events} from '@constants';
@@ -92,6 +92,7 @@ const BottomSheet = ({
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const interaction = useRef<Handle>();
 
     const bottomSheetBackgroundStyle = useMemo(() => [
         styles.bottomSheetBackground,
@@ -114,6 +115,10 @@ const BottomSheet = ({
         return () => listener.remove();
     }, [close]);
 
+    const handleAnimationStart = useCallback(() => {
+        interaction.current = InteractionManager.createInteractionHandle();
+    }, []);
+
     const handleClose = useCallback(() => {
         if (sheetRef.current) {
             sheetRef.current.close();
@@ -122,7 +127,14 @@ const BottomSheet = ({
         }
     }, []);
 
-    const handleDismissIfNeeded = useCallback((index: number) => {
+    const handleChange = useCallback((index: number) => {
+        setTimeout(() => {
+            if (interaction.current) {
+                InteractionManager.clearInteractionHandle(interaction.current);
+                interaction.current = undefined;
+            }
+        });
+
         if (index <= 0) {
             close();
         }
@@ -172,7 +184,8 @@ const BottomSheet = ({
             snapPoints={snapPoints}
             animateOnMount={true}
             backdropComponent={renderBackdrop}
-            onChange={handleDismissIfNeeded}
+            onAnimate={handleAnimationStart}
+            onChange={handleChange}
             animationConfigs={animatedConfig}
             handleComponent={Indicator}
             style={styles.bottomSheet}
