@@ -85,14 +85,7 @@ exports[`components/channel_list_row should be selected 1`] = `
           My purpose
         </Text>
       </View>
-      <View
-        style={
-          {
-            "alignItems": "center",
-            "justifyContent": "center",
-          }
-        }
-      >
+      <View>
         <Icon
           color="#1c58d9"
           name="check-circle"
