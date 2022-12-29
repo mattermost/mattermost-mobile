@@ -148,7 +148,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
                         <TouchableEmoji
                             name={skins[skinTone]}
                             onEmojiPress={expand}
-                            size={32}
+                            size={28}
                         />
                     </Animated.View>
                 </Animated.View>
@@ -162,6 +162,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
             >
                 {!isTablet && <CloseButton collapse={collapse}/>}
                 <SkinSelector
+                    selected={skinTone}
                     skins={skins}
                     onSelectSkin={collapse}
                 />

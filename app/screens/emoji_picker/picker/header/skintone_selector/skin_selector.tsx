@@ -11,11 +11,12 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {skinCodes} from '@utils/emoji';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
     onSelectSkin: () => void;
+    selected: string;
     skins: Record<string, string>;
 }
 
@@ -25,6 +26,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: 42,
         alignItems: 'center',
         justifyContent: 'center',
+    },
+    selected: {
+        backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+        borderRadius: 4,
     },
     skins: {
         flex: 1,
@@ -41,7 +46,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const SkinSelector = ({onSelectSkin, skins}: Props) => {
+const SkinSelector = ({onSelectSkin, selected, skins}: Props) => {
     const isTablet = useIsTablet();
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -64,18 +69,21 @@ const SkinSelector = ({onSelectSkin, skins}: Props) => {
                 />
             </View>
             <View style={[styles.skins, isTablet && {marginRight: 10}]}>
-                {Object.values(skins).map((name) => (
-                    <View
-                        key={name}
-                        style={styles.container}
-                    >
-                        <TouchableEmoji
-                            name={name}
-                            size={32}
-                            onEmojiPress={handleSelectSkin}
-                        />
-                    </View>
-                ))}
+                {Object.keys(skins).map((key) => {
+                    const name = skins[key];
+                    return (
+                        <View
+                            key={name}
+                            style={[styles.container, selected === key && styles.selected]}
+                        >
+                            <TouchableEmoji
+                                name={name}
+                                size={28}
+                                onEmojiPress={handleSelectSkin}
+                            />
+                        </View>
+                    );
+                })}
             </View>
         </>
     );
