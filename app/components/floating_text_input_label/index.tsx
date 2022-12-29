@@ -38,12 +38,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         lineHeight: 16,
         paddingVertical: 5,
     },
-    input: {
-        flex: 1,
-        color: theme.centerChannelColor,
-        fontFamily: 'OpenSans',
-        fontSize: 16,
-    },
     label: {
         position: 'absolute',
         color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -205,6 +199,27 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         return res;
     }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
 
+    const combinedTextInputStyle = useMemo(() => {
+        const res: StyleProp<TextStyle> = [styles.textInput];
+
+        res.push({
+            borderWidth: 0,
+            paddingHorizontal: 0,
+            paddingTop: 0,
+            paddingBottom: 0,
+            backgroundColor: 'transparent',
+            flex: 1,
+        });
+
+        res.push(textInputStyle);
+
+        if (multiline) {
+            res.push({height: 80, textAlignVertical: 'top'});
+        }
+
+        return res;
+    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
+
     const textAnimatedTextStyle = useAnimatedStyle(() => {
         const inputText = placeholder || value || props.defaultValue;
         const index = inputText || focusedLabel ? 1 : 0;
@@ -245,7 +260,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     <TextInput
                         {...props}
                         editable={isKeyboardInput && editable}
-                        style={styles.input}
+                        style={combinedTextInputStyle}
                         placeholder={placeholder}
                         placeholderTextColor={styles.label.color}
                         multiline={multiline}
