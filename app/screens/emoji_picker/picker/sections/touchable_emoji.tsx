@@ -12,7 +12,7 @@ type Props = {
     name: string;
     onEmojiPress: (emoji: string) => void;
     size?: number;
-    style: StyleProp<ViewStyle>;
+    style?: StyleProp<ViewStyle>;
 }
 
 const TouchableEmoji = ({name, onEmojiPress, size = 30, style}: Props) => {

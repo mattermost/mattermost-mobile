@@ -53,6 +53,8 @@ const getItemLayout = sectionListGetItemLayout({
 });
 
 const styles = StyleSheet.create(({
+    flex: {flex: 1},
+    contentContainerStyle: {paddingBottom: 50},
     row: {
         flexDirection: 'row',
         justifyContent: 'space-between',
@@ -93,6 +95,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
     const isTablet = useIsTablet();
     const {currentIndex, selectedIndex} = useEmojiCategoryBar();
     const list = useRef<SectionList<EmojiSection>>(null);
+    const categoryIndex = useRef(currentIndex);
     const [customEmojiPage, setCustomEmojiPage] = useState(0);
     const [fetchingCustomEmojis, setFetchingCustomEmojis] = useState(false);
     const [loadedAllCustomEmojis, setLoadedAllCustomEmojis] = useState(false);
@@ -178,11 +181,13 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
             return;
         }
 
-        const nextIndex = contentOffset.y >= emojiSectionsByOffset[currentIndex + 1] - SECTION_HEADER_HEIGHT ? currentIndex + 1 : currentIndex;
-        const prevIndex = Math.max(0, contentOffset.y <= emojiSectionsByOffset[currentIndex] - SECTION_HEADER_HEIGHT ? currentIndex - 1 : currentIndex);
-        if (nextIndex > currentIndex && direction === 'up') {
+        const nextIndex = contentOffset.y >= emojiSectionsByOffset[categoryIndex.current + 1] - SECTION_HEADER_HEIGHT ? categoryIndex.current + 1 : categoryIndex.current;
+        const prevIndex = Math.max(0, contentOffset.y <= emojiSectionsByOffset[categoryIndex.current] - SECTION_HEADER_HEIGHT ? categoryIndex.current - 1 : categoryIndex.current);
+        if (nextIndex > categoryIndex.current && direction === 'up') {
+            categoryIndex.current = nextIndex;
             setEmojiCategoryBarSection(nextIndex);
-        } else if (prevIndex < currentIndex && direction === 'down') {
+        } else if (prevIndex < categoryIndex.current && direction === 'down') {
+            categoryIndex.current = prevIndex;
             setEmojiCategoryBarSection(prevIndex);
         }
     }, []);
@@ -241,7 +246,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
     }, [selectedIndex]);
 
     return (
-        <View style={{flex: 1}}>
+        <View style={styles.flex}>
             <List
 
                 // @ts-expect-error bottom sheet definition
@@ -250,8 +255,6 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='always'
                 ListFooterComponent={renderFooter}
-
-                // maxToRenderPerBatch={20}
                 onEndReached={onLoadMoreCustomEmojis}
                 onEndReachedThreshold={2}
                 onScroll={onScroll}
@@ -259,9 +262,8 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                 renderItem={renderItem}
                 renderSectionHeader={renderSectionHeader}
                 sections={sections}
-                contentContainerStyle={{paddingBottom: 50}}
-
-                // windowSize={100}
+                contentContainerStyle={styles.contentContainerStyle}
+                windowSize={50}
                 stickySectionHeadersEnabled={true}
                 testID='emoji_picker.emoji_sections.section_list'
             />

@@ -88,6 +88,7 @@ const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, 
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     onCancel={onCancelSearch}
                     onChangeText={onChangeSearchTerm}
+                    skinTone={skinTone}
                     testID={`${testID}.search_bar`}
                     value={searchTerm}
                 />
