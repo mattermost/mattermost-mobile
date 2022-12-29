@@ -1,9 +1,6 @@
 #!/usr/bin/env bash
 
 if [[ "$OSTYPE" == "darwin"* ]]; then
-  if !gem list bundler -i --version 2.1.4 > /dev/null 2>&1; then
-    gem install bundler --version 2.1.4
-  fi
   echo "Installing Gems"
   npm run ios-gems &> /dev/null
   echo "Getting Cocoapods dependencies"

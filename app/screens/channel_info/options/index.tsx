@@ -9,8 +9,9 @@ import {isTypeDMorGM} from '@utils/channel';
 
 import EditChannel from './edit_channel';
 import IgnoreMentions from './ignore_mentions';
-import Members from './members';
 import PinnedMessages from './pinned_messages';
+
+// import Members from './members';
 
 type Props = {
     channelId: string;
@@ -28,11 +29,16 @@ const Options = ({channelId, type, callsEnabled}: Props) => {
             }
             {/*<NotificationPreference channelId={channelId}/>*/}
             <PinnedMessages channelId={channelId}/>
+            {/* Add back in after MM-47653 is resolved. https://mattermost.atlassian.net/browse/MM-47653
             {type !== General.DM_CHANNEL &&
                 <Members channelId={channelId}/>
             }
+            */}
             {callsEnabled && !isDMorGM && // if calls is not enabled, copy link will show in the channel actions
-                <CopyChannelLinkOption channelId={channelId}/>
+                <CopyChannelLinkOption
+                    channelId={channelId}
+                    testID='channel_info.options.copy_channel_link.option'
+                />
             }
             {type !== General.DM_CHANNEL && type !== General.GM_CHANNEL &&
                 <EditChannel channelId={channelId}/>

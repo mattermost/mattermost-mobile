@@ -16,7 +16,7 @@ import TeamIcon from './team_icon';
 import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
-    team: TeamModel;
+    team?: TeamModel;
     hasUnreads: boolean;
     mentionCount: number;
     selected: boolean;
@@ -61,6 +61,10 @@ export default function TeamItem({team, hasUnreads, mentionCount, selected}: Pro
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+
+    if (!team) {
+        return null;
+    }
 
     const hasBadge = Boolean(mentionCount || hasUnreads);
     let badgeStyle = styles.unread;

@@ -14,6 +14,7 @@ import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {isTablet} from '@utils/helpers';
 import {emitNotificationError} from '@utils/notification';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
@@ -81,8 +82,10 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         switchedToScreen = true;
     }
 
+    setTeamLoading(serverUrl, true);
     const entryData = await entry(serverUrl, teamId, channelId);
     if ('error' in entryData) {
+        setTeamLoading(serverUrl, false);
         return {error: entryData.error};
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
@@ -134,6 +137,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     }
 
     await operator.batchRecords(models);
+    setTeamLoading(serverUrl, false);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(operator.database))!;
     const config = await getConfig(database);

@@ -7,6 +7,7 @@ import {useIntl} from 'react-intl';
 import {retryInitialChannel} from '@actions/remote/retry';
 import LoadingError from '@components/loading_error';
 import {useServerUrl} from '@context/server';
+import {setTeamLoading} from '@store/team_load_store';
 
 import LoadTeamsError from '../load_teams_error';
 
@@ -22,7 +23,10 @@ const LoadChannelsError = ({teamDisplayName, teamId}: Props) => {
 
     const onRetryTeams = useCallback(async () => {
         setLoading(true);
+
+        setTeamLoading(serverUrl, true);
         const {error} = await retryInitialChannel(serverUrl, teamId);
+        setTeamLoading(serverUrl, false);
 
         if (error) {
             setLoading(false);

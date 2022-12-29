@@ -398,6 +398,7 @@ export default function CreateDirectMessage({
                 onPress={startConversation}
                 buttonIcon={'forum-outline'}
                 buttonText={formatMessage(messages.buttonText)}
+                testID='create_direct_message'
             />
         </SafeAreaView>
     );

@@ -37,6 +37,7 @@ interface ServerProps extends LaunchProps {
     animated?: boolean;
     closeButtonId?: string;
     componentId: string;
+    isModal?: boolean;
     theme: Theme;
 }
 
@@ -69,6 +70,7 @@ const Server = ({
     componentId,
     displayName: defaultDisplayName,
     extra,
+    isModal,
     launchType,
     launchError,
     serverUrl: defaultServerUrl,
@@ -88,15 +90,16 @@ const Server = ({
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
+    const additionalServer = launchType === Launch.AddServerFromDeepLink || launchType === Launch.AddServer;
 
     useEffect(() => {
         let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
         let serverUrl: string | undefined = defaultServerUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
         let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
 
-        if (launchType === Launch.DeepLink) {
+        if (launchType === Launch.DeepLink || launchType === Launch.AddServerFromDeepLink) {
             const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
-            if (managedConfig) {
+            if (managedConfig.serverUrl) {
                 autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
                 if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
                     Alert.alert('', intl.formatMessage({
@@ -341,11 +344,11 @@ const Server = ({
                     style={styles.flex}
                 >
                     <ServerHeader
-                        additionalServer={launchType === Launch.AddServer}
+                        additionalServer={additionalServer}
                         theme={theme}
                     />
                     <ServerForm
-                        autoFocus={launchType === Launch.AddServer}
+                        autoFocus={additionalServer}
                         buttonDisabled={buttonDisabled}
                         connecting={connecting}
                         displayName={displayName}
@@ -354,6 +357,7 @@ const Server = ({
                         handleConnect={handleConnect}
                         handleDisplayNameTextChanged={handleDisplayNameTextChanged}
                         handleUrlTextChanged={handleUrlTextChanged}
+                        isModal={isModal}
                         keyboardAwareRef={keyboardAwareRef}
                         theme={theme}
                         url={url}

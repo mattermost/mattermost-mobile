@@ -5,11 +5,11 @@
 
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
-import {ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton} from 'react-native-navigation';
+import {ComponentWillAppearEvent, ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton, ScreenPoppedEvent} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
-import {Device, Events, Screens, Navigation as NavigationConstants, Launch} from '@constants';
+import {Device, Events, Screens, Launch} from '@constants';
 import {NOT_READY} from '@constants/screens';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import EphemeralStore from '@store/ephemeral_store';
@@ -28,6 +28,52 @@ const alpha = {
     to: 1,
     duration: 150,
 };
+
+export function registerNavigationListeners() {
+    Navigation.events().registerScreenPoppedListener(onPoppedListener);
+    Navigation.events().registerCommandListener(onCommandListener);
+    Navigation.events().registerComponentWillAppearListener(onScreenWillAppear);
+}
+
+function onCommandListener(name: string, params: any) {
+    switch (name) {
+        case 'setRoot':
+            NavigationStore.clearScreensFromStack();
+            NavigationStore.addScreenToStack(params.layout.root.children[0].id);
+            break;
+        case 'push':
+            NavigationStore.addScreenToStack(params.layout.id);
+            break;
+        case 'showModal':
+            NavigationStore.addModalToStack(params.layout.children[0].id);
+            break;
+        case 'popToRoot':
+            NavigationStore.clearScreensFromStack();
+            NavigationStore.addScreenToStack(Screens.HOME);
+            break;
+        case 'popTo':
+            NavigationStore.popTo(params.componentId);
+            break;
+        case 'dismissModal':
+            NavigationStore.removeModalFromStack(params.componentId);
+            break;
+    }
+
+    if (NavigationStore.getVisibleScreen() === Screens.HOME) {
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+    }
+}
+
+function onPoppedListener({componentId}: ScreenPoppedEvent) {
+    // screen pop does not trigger registerCommandListener, but does trigger screenPoppedListener
+    NavigationStore.removeScreenFromStack(componentId);
+}
+
+function onScreenWillAppear(event: ComponentWillAppearEvent) {
+    if (event.componentId === Screens.HOME) {
+        DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, true);
+    }
+}
 
 export const loginAnimationOptions = () => {
     const theme = getThemeFromState();
@@ -159,7 +205,7 @@ Navigation.setDefaultOptions({
 
 Appearance.addChangeListener(() => {
     const theme = getThemeFromState();
-    const screens = NavigationStore.getAllNavigationComponents();
+    const screens = NavigationStore.getScreensInStack();
 
     if (screens.includes(Screens.SERVER) || screens.includes(Screens.ONBOARDING)) {
         for (const screen of screens) {
@@ -205,16 +251,16 @@ export function resetToHome(passProps: LaunchProps = {launchType: Launch.Normal}
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    if (passProps.launchType === Launch.AddServer) {
+    if (passProps.launchType === Launch.AddServer || passProps.launchType === Launch.AddServerFromDeepLink) {
         dismissModal({componentId: Screens.SERVER});
         dismissModal({componentId: Screens.LOGIN});
         dismissModal({componentId: Screens.SSO});
         dismissModal({componentId: Screens.BOTTOM_SHEET});
-        DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
+        if (passProps.launchType === Launch.AddServerFromDeepLink) {
+            Navigation.updateProps(Screens.HOME, {launchType: Launch.DeepLink, extra: passProps.extra});
+        }
         return '';
     }
-
-    NavigationStore.clearNavigationComponents();
 
     const stack = {
         children: [{
@@ -255,8 +301,6 @@ export function resetToSelectServer(passProps: LaunchProps) {
     const theme = getDefaultThemeByAppearance();
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
-
-    NavigationStore.clearNavigationComponents();
 
     const children = [{
         component: {
@@ -304,8 +348,6 @@ export function resetToOnboarding(passProps: LaunchProps) {
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    NavigationStore.clearNavigationComponents();
-
     const children = [{
         component: {
             id: Screens.ONBOARDING,
@@ -352,8 +394,6 @@ export function resetToTeams() {
     const isDark = tinyColor(theme.sidebarBg).isDark();
     StatusBar.setBarStyle(isDark ? 'light-content' : 'dark-content');
 
-    NavigationStore.clearNavigationComponents();
-
     return Navigation.setRoot({
         root: {
             stack: {
@@ -395,8 +435,7 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
 
     const theme = getThemeFromState();
     const isDark = tinyColor(theme.sidebarBg).isDark();
-    const componentId = NavigationStore.getNavigationTopComponentId();
-    DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
+    const componentId = NavigationStore.getVisibleScreen();
     const defaultOptions: Options = {
         layout: {
             componentBackgroundColor: theme.centerChannelBg,
@@ -427,6 +466,8 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
         },
     };
 
+    DeviceEventEmitter.emit(Events.TAB_BAR_VISIBLE, false);
+
     return Navigation.push(componentId, {
         component: {
             id: name,
@@ -441,13 +482,13 @@ export function popTopScreen(screenId?: string) {
     if (screenId) {
         Navigation.pop(screenId);
     } else {
-        const componentId = NavigationStore.getNavigationTopComponentId();
+        const componentId = NavigationStore.getVisibleScreen();
         Navigation.pop(componentId);
     }
 }
 
 export async function popToRoot() {
-    const componentId = NavigationStore.getNavigationTopComponentId();
+    const componentId = NavigationStore.getVisibleScreen();
 
     try {
         await Navigation.popToRoot(componentId);
@@ -460,8 +501,6 @@ export async function popToRoot() {
 export async function dismissAllModalsAndPopToRoot() {
     await dismissAllModals();
     await popToRoot();
-
-    DeviceEventEmitter.emit(NavigationConstants.NAVIGATION_DISMISS_AND_POP_TO_ROOT);
 }
 
 /**
@@ -474,7 +513,7 @@ export async function dismissAllModalsAndPopToRoot() {
  */
 export async function dismissAllModalsAndPopToScreen(screenId: string, title: string, passProps = {}, options = {}) {
     await dismissAllModals();
-    if (NavigationStore.getNavigationComponents().includes(screenId)) {
+    if (NavigationStore.getScreensInStack().includes(screenId)) {
         let mergeOptions = options;
         if (title) {
             mergeOptions = merge(mergeOptions, {
@@ -533,7 +572,6 @@ export function showModal(name: string, title: string, passProps = {}, options: 
         modal: {swipeToDismiss: false},
     };
 
-    NavigationStore.addNavigationModal(name);
     Navigation.showModal({
         stack: {
             children: [{
@@ -615,11 +653,10 @@ export async function dismissModal(options?: Options & { componentId: string}) {
         return;
     }
 
-    const componentId = options?.componentId || NavigationStore.getNavigationTopModalId();
+    const componentId = options?.componentId || NavigationStore.getVisibleModal();
     if (componentId) {
         try {
             await Navigation.dismissModal(componentId, options);
-            NavigationStore.removeNavigationModal(componentId);
         } catch (error) {
             // RNN returns a promise rejection if there is no modal to
             // dismiss. We'll do nothing in this case.
@@ -633,9 +670,8 @@ export async function dismissAllModals() {
     }
 
     try {
-        const modals = [...NavigationStore.getAllNavigationModals()];
+        const modals = [...NavigationStore.getModalsInStack()];
         for await (const modal of modals) {
-            NavigationStore.removeNavigationModal(modal);
             await Navigation.dismissModal(modal, {animations: {dismissModal: {enabled: false}}});
         }
     } catch (error) {

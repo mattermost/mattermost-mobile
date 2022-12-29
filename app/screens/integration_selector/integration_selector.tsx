@@ -7,13 +7,13 @@ import {View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import ServerChannelList from '@app/components/server_channel_list';
-import ServerUserList from '@app/components/server_user_list';
-import {t} from '@app/i18n';
 import FormattedText from '@components/formatted_text';
 import SearchBar from '@components/search';
+import ServerUserList from '@components/server_user_list';
 import {General, View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
+import {t} from '@i18n';
 import {
     buildNavigationButton,
     popTopScreen, setButtons,

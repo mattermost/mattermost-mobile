@@ -1,14 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {useIntl} from 'react-intl';
 import {View} from 'react-native';
 import Animated, {useAnimatedStyle} from 'react-native-reanimated';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {fetchAllTeams} from '@actions/remote/team';
+import {addCurrentUserToTeam, fetchTeamsForComponent, handleTeamChange} from '@actions/remote/team';
+import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {logDebug} from '@utils/log';
+import {alertTeamAddError} from '@utils/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import {resetToHome} from '../navigation';
@@ -22,10 +26,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         backgroundColor: theme.sidebarBg,
     },
+    loading: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 }));
 
 type Props = {
     nTeams: number;
+    firstTeamId?: string;
 }
 
 const safeAreaEdges = ['left' as const, 'right' as const];
@@ -33,19 +43,56 @@ const safeAreaStyle = {flex: 1};
 
 const SelectTeam = ({
     nTeams,
+    firstTeamId,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
-    const [loading, setLoading] = useState(true);
+    const intl = useIntl();
     const insets = useSafeAreaInsets();
+    const resettingToHome = useRef(false);
+    const [loading, setLoading] = useState(true);
+    const [joining, setJoining] = useState(false);
     const top = useAnimatedStyle(() => {
         return {height: insets.top, backgroundColor: theme.sidebarBg};
     });
 
+    const page = useRef(0);
+    const hasMore = useRef(true);
+
     const mounted = useRef(false);
 
-    const [otherTeams, setOtherTeams] = useState<Team[]>();
+    const [otherTeams, setOtherTeams] = useState<Team[]>([]);
+
+    const loadTeams = useCallback(async () => {
+        setLoading(true);
+        const resp = await fetchTeamsForComponent(serverUrl, page.current);
+        page.current = resp.page;
+        hasMore.current = resp.hasMore;
+        if (resp.teams.length && mounted.current) {
+            setOtherTeams((cur) => [...cur, ...resp.teams]);
+        }
+        setLoading(false);
+    }, [serverUrl]);
+
+    const onEndReached = useCallback(() => {
+        if (hasMore.current && !loading) {
+            loadTeams();
+        }
+    }, [loadTeams, loading]);
+
+    const onTeamPressed = useCallback(async (teamId: string) => {
+        setJoining(true);
+        const {error} = await addCurrentUserToTeam(serverUrl, teamId);
+        if (error) {
+            alertTeamAddError(error, intl);
+            logDebug('error joining a team:', error);
+
+            setJoining(false);
+        }
+
+        // Back to home handled in an effect
+    }, [serverUrl, intl]);
 
     useEffect(() => {
         mounted.current = true;
@@ -55,32 +102,32 @@ const SelectTeam = ({
     }, []);
 
     useEffect(() => {
-        if (nTeams > 0) {
-            resetToHome();
+        if (resettingToHome.current) {
+            return;
         }
-    }, [nTeams > 0]);
+
+        if ((nTeams > 0) && firstTeamId) {
+            resettingToHome.current = true;
+            handleTeamChange(serverUrl, firstTeamId).then(() => {
+                resetToHome();
+            });
+        }
+    }, [(nTeams > 0) && firstTeamId]);
 
     useEffect(() => {
-        // eslint-disable-next-line max-nested-callbacks
-        fetchAllTeams(serverUrl, false).then((r) => {
-            if (mounted.current) {
-                setOtherTeams(r.teams || []);
-            }
-        // eslint-disable-next-line max-nested-callbacks
-        }).finally(() => {
-            if (mounted.current) {
-                setLoading(false);
-            }
-        });
+        loadTeams();
     }, []);
 
     let body;
-    if (loading) {
-        body = null;
-    } else if (otherTeams?.length) {
+    if (joining || (loading && !otherTeams.length)) {
+        body = <Loading containerStyle={styles.loading}/>;
+    } else if (otherTeams.length) {
         body = (
             <TeamList
                 teams={otherTeams}
+                onEndReached={onEndReached}
+                onPress={onTeamPressed}
+                loading={loading}
             />
         );
     } else {

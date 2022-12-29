@@ -9,6 +9,7 @@ import {FAVORITES_CATEGORY} from '@constants/categories';
 import {MM_TABLES} from '@constants/database';
 import {makeCategoryChannelId} from '@utils/categories';
 import {pluckUnique} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 
 import {observeChannelsByLastPostAt} from './channel';
 
@@ -38,16 +39,10 @@ export const queryCategoriesByTeamIds = (database: Database, teamIds: string[]) 
 
 export async function prepareCategoriesAndCategoriesChannels(operator: ServerDataOperator, categories: CategoryWithChannels[], prune = false) {
     try {
-        const modelPromises: Array<Promise<Model[]>> = [];
-        const preparedCategories = prepareCategories(operator, categories);
-        if (preparedCategories) {
-            modelPromises.push(preparedCategories);
-        }
-
-        const preparedCategoryChannels = prepareCategoryChannels(operator, categories);
-        if (preparedCategoryChannels) {
-            modelPromises.push(preparedCategoryChannels);
-        }
+        const modelPromises: Array<Promise<Model[]>> = [
+            prepareCategories(operator, categories),
+            prepareCategoryChannels(operator, categories),
+        ];
 
         const models = await Promise.all(modelPromises);
         const flattenedModels = models.flat();
@@ -71,7 +66,8 @@ export async function prepareCategoriesAndCategoriesChannels(operator: ServerDat
         }
 
         return flattenedModels;
-    } catch {
+    } catch (error) {
+        logDebug('error while preparing categories and categories channels', error);
         return [];
     }
 }

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactNode} from 'react';
-import {View} from 'react-native';
+import {StyleProp, View, ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -24,6 +24,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'flex-start',
             padding: 8,
         },
+        textContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            flexWrap: 'wrap',
+        },
         cellRightBorder: {
             borderRightWidth: 1,
         },
@@ -40,7 +45,7 @@ const MarkdownTableCell = ({isLastCell, align, children}: MarkdownTableCellProps
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const cellStyle = [style.cell];
+    const cellStyle: StyleProp<ViewStyle> = [style.cell];
     if (!isLastCell) {
         cellStyle.push(style.cellRightBorder);
     }
@@ -57,7 +62,9 @@ const MarkdownTableCell = ({isLastCell, align, children}: MarkdownTableCellProps
             style={[cellStyle, textStyle]}
             testID='markdown_table_cell'
         >
-            {children}
+            <View style={style.textContainer}>
+                {children}
+            </View>
         </View>
     );
 };

@@ -2,16 +2,15 @@
 // See LICENSE.txt for license information.
 
 import {setLastServerVersionCheck} from '@actions/local/systems';
-import {switchToChannelById} from '@actions/remote/channel';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
-import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, setCurrentTeamAndChannelId, getCurrentChannelId, getConfig, getLicense} from '@queries/servers/system';
+import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, getCurrentChannelId, getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import {setTeamLoading} from '@store/team_load_store';
 import {deleteV1Data} from '@utils/file';
-import {isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 
-import {registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
+import {handleEntryAfterLoadNavigation, registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
 import {deferredAppEntryActions, entry} from './gql_common';
 
 export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) {
@@ -35,13 +34,14 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
 
     const {database} = operator;
 
-    const tabletDevice = await isTablet();
     const currentTeamId = await getCurrentTeamId(database);
     const currentChannelId = await getCurrentChannelId(database);
     const lastDisconnectedAt = (await getWebSocketLastDisconnected(database)) || since;
 
+    setTeamLoading(serverUrl, true);
     const entryData = await entry(serverUrl, currentTeamId, currentChannelId, since);
     if ('error' in entryData) {
+        setTeamLoading(serverUrl, false);
         return {error: entryData.error};
     }
 
@@ -53,25 +53,17 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
         }
     }
 
-    let switchToChannel = false;
-
-    // Immediately set the new team as the current team in the database so that the UI
-    // renders the correct team.
-    if (tabletDevice && initialChannelId) {
-        switchToChannel = true;
-        switchToChannelById(serverUrl, initialChannelId, initialTeamId);
-    } else {
-        setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
-    }
+    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId, currentChannelId, initialTeamId, initialChannelId);
 
     const dt = Date.now();
     await operator.batchRecords(models);
     logInfo('ENTRY MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
+    setTeamLoading(serverUrl, false);
 
     const {id: currentUserId, locale: currentUserLocale} = meData?.user || (await getCurrentUser(database))!;
     const config = await getConfig(database);
     const license = await getLicense(database);
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId, switchToChannel ? initialChannelId : undefined);
+    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 
     if (!since) {
         // Load data from other servers

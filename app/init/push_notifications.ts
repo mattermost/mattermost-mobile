@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import {
     Notification,
     NotificationAction,
@@ -29,6 +28,7 @@ import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import {dismissOverlay, showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import {isBetaApp} from '@utils/general';
 import {isMainActivity, isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
@@ -121,11 +121,11 @@ class PushNotifications {
             const isSameChannelNotification = payload?.channel_id === channelId;
             const isSameThreadNotification = isThreadNotification && payload?.root_id === EphemeralStore.getCurrentThreadId();
 
-            let isInChannelScreen = NavigationStore.getNavigationTopComponentId() === Screens.CHANNEL;
+            let isInChannelScreen = NavigationStore.getVisibleScreen() === Screens.CHANNEL;
             if (isTabletDevice) {
                 isInChannelScreen = NavigationStore.getVisibleTab() === Screens.HOME;
             }
-            const isInThreadScreen = NavigationStore.getNavigationTopComponentId() === Screens.THREAD;
+            const isInThreadScreen = NavigationStore.getVisibleScreen() === Screens.THREAD;
 
             // Conditions:
             // 1. If not in channel screen or thread screen, show the notification
@@ -248,7 +248,7 @@ class PushNotifications {
 
             if (Platform.OS === 'ios') {
                 prefix = Device.PUSH_NOTIFY_APPLE_REACT_NATIVE;
-                if (DeviceInfo.getBundleId().includes('rnbeta')) {
+                if (isBetaApp) {
                     prefix = `${prefix}beta`;
                 }
             } else {

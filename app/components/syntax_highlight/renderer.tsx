@@ -74,7 +74,7 @@ function createNativeElement({node, stylesheet, key, defaultColor, fontFamily, f
             <Text
                 key={key}
                 style={Object.assign({color: defaultColor}, startingStyle)}
-                selectable={true}
+                selectable={selectable}
             >
                 {value}
             </Text>

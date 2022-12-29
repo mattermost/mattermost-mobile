@@ -118,10 +118,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         flexDirection: 'row',
         flexWrap: 'wrap',
-        width: '100%',
-        height: '100%',
-        alignContent: 'center',
-        alignItems: 'flex-start',
+        alignContent: 'flex-start',
     },
     usersScrollLandscapeScreenOn: {
         position: 'absolute',
@@ -276,7 +273,7 @@ const CallScreen = ({
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
     const recordOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Record'});
     const stopRecordingOptionTitle = intl.formatMessage({id: 'mobile.calls_stop_recording', defaultMessage: 'Stop Recording'});
-    const openChannelOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Open Channel'});
+    const openChannelOptionTitle = intl.formatMessage({id: 'mobile.calls_open_channel', defaultMessage: 'Open Channel'});
 
     useEffect(() => {
         mergeNavigationOptions('Call', {
@@ -379,7 +376,7 @@ const CallScreen = ({
     const showOtherActions = useCallback(async () => {
         const renderContent = () => {
             return (
-                <View style={style.bottomSheet}>
+                <View>
                     {
                         isHost && EnableRecordings && !(waitingForRecording || recording) &&
                         <SlideUpPanelItem
@@ -392,7 +389,6 @@ const CallScreen = ({
                         isHost && EnableRecordings && (waitingForRecording || recording) &&
                         <SlideUpPanelItem
                             icon={'record-square-outline'}
-                            imageStyles={style.denimDND}
                             onPress={stopRecording}
                             text={stopRecordingOptionTitle}
                             textStyles={style.denimDND}
@@ -421,7 +417,7 @@ const CallScreen = ({
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
-            if (channelId === currentCall?.channelId && NavigationStore.getNavigationTopComponentId() === componentId) {
+            if (channelId === currentCall?.channelId && NavigationStore.getVisibleScreen() === componentId) {
                 Navigation.pop(componentId);
             }
         });
@@ -433,7 +429,7 @@ const CallScreen = ({
         // Note: this happens because the screen is "rendered", even after the screen has been popped, and the
         // currentCall will have already been set to null when those extra renders run. We probably don't ever need
         // to pop, but just in case.
-        if (NavigationStore.getNavigationTopComponentId() === componentId) {
+        if (NavigationStore.getVisibleScreen() === componentId) {
             // ignore the error because the call screen has likely already been popped async
             Navigation.pop(componentId).catch(() => null);
         }
@@ -455,7 +451,7 @@ const CallScreen = ({
                 <FormattedText
                     id={'mobile.calls_viewing_screen'}
                     defaultMessage={'You are viewing {name}\'s screen'}
-                    values={{name: displayUsername(participantsDict[currentCall.screenOn].userModel, teammateNameDisplay)}}
+                    values={{name: displayUsername(participantsDict[currentCall.screenOn].userModel, intl.locale, teammateNameDisplay)}}
                     style={style.screenShareText}
                 />
             </Pressable>
@@ -469,7 +465,7 @@ const CallScreen = ({
             <ScrollView
                 alwaysBounceVertical={false}
                 horizontal={currentCall.screenOn !== ''}
-                contentContainerStyle={[isLandscape && currentCall.screenOn && style.usersScrollLandscapeScreenOn]}
+                contentContainerStyle={[isLandscape && Boolean(currentCall.screenOn) && style.usersScrollLandscapeScreenOn]}
             >
                 <Pressable
                     testID='users-list'
@@ -479,7 +475,7 @@ const CallScreen = ({
                     {participants.map((user) => {
                         return (
                             <View
-                                style={[style.user, currentCall.screenOn && style.userScreenOn]}
+                                style={[style.user, Boolean(currentCall.screenOn) && style.userScreenOn]}
                                 key={user.id}
                             >
                                 <CallAvatar
@@ -493,7 +489,7 @@ const CallScreen = ({
                                     serverUrl={currentCall.serverUrl}
                                 />
                                 <Text style={style.username}>
-                                    {displayUsername(user.userModel, teammateNameDisplay)}
+                                    {displayUsername(user.userModel, intl.locale, teammateNameDisplay)}
                                     {user.id === myParticipant.id &&
                                         ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
                                     }

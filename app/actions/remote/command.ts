@@ -5,26 +5,18 @@ import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {doAppSubmit, postEphemeralCallResponseForCommandArgs} from '@actions/remote/apps';
-import {showPermalink} from '@actions/remote/permalink';
 import {Client} from '@client/rest';
 import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
 import {AppCallResponseTypes} from '@constants/apps';
-import DeepLinkType from '@constants/deep_linking';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
 import IntegrationsManager from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getConfig, getCurrentTeamId} from '@queries/servers/system';
-import {getTeammateNameDisplay, queryUsersByUsername} from '@queries/servers/user';
-import {showAppForm, showModal} from '@screens/navigation';
-import * as DraftUtils from '@utils/draft';
-import {matchDeepLink, tryOpenURL} from '@utils/url';
-import {displayUsername} from '@utils/user';
-
-import {makeDirectChannel, switchToChannelById, switchToChannelByName} from './channel';
-
-import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkDM, DeepLinkGM, DeepLinkPlugin} from '@typings/launch';
+import {showAppForm} from '@screens/navigation';
+import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
+import {tryOpenURL} from '@utils/url';
 
 export const executeCommand = async (serverUrl: string, intl: IntlShape, message: string, channelId: string, rootId?: string): Promise<{data?: CommandResponse; error?: string | {message: string}}> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -144,60 +136,9 @@ export const handleGotoLocation = async (serverUrl: string, intl: IntlShape, loc
 
     const config = await getConfig(database);
     const match = matchDeepLink(location, serverUrl, config?.SiteURL);
-    let linkServerUrl: string | undefined;
-    if (match?.data?.serverUrl) {
-        linkServerUrl = DatabaseManager.searchUrl(match.data.serverUrl);
-    }
 
-    if (match && linkServerUrl) {
-        switch (match.type) {
-            case DeepLinkType.Channel: {
-                const data = match.data as DeepLinkChannel;
-                switchToChannelByName(linkServerUrl, data.channelName, data.teamName, DraftUtils.errorBadChannel, intl);
-                break;
-            }
-            case DeepLinkType.Permalink: {
-                const data = match.data as DeepLinkPermalink;
-                showPermalink(linkServerUrl, data.teamName, data.postId, intl);
-                break;
-            }
-            case DeepLinkType.DirectMessage: {
-                const data = match.data as DeepLinkDM;
-                if (!data.userName) {
-                    DraftUtils.errorUnkownUser(intl);
-                    return {data: false};
-                }
-
-                if (data.serverUrl !== serverUrl) {
-                    if (!database) {
-                        return {error: `${serverUrl} database not found`};
-                    }
-                }
-                const user = (await queryUsersByUsername(database, [data.userName]).fetch())[0];
-                if (!user) {
-                    DraftUtils.errorUnkownUser(intl);
-                    return {data: false};
-                }
-
-                makeDirectChannel(linkServerUrl, user.id, displayUsername(user, intl.locale, await getTeammateNameDisplay(database)), true);
-                break;
-            }
-            case DeepLinkType.GroupMessage: {
-                const data = match.data as DeepLinkGM;
-                if (!data.channelId) {
-                    DraftUtils.errorBadChannel(intl);
-                    return {data: false};
-                }
-
-                switchToChannelById(linkServerUrl, data.channelId);
-                break;
-            }
-            case DeepLinkType.Plugin: {
-                const data = match.data as DeepLinkPlugin;
-                showModal('PluginInternal', data.id, {link: location});
-                break;
-            }
-        }
+    if (match) {
+        handleDeepLink(match, intl, location);
     } else {
         const {formatMessage} = intl;
         const onError = () => Alert.alert(

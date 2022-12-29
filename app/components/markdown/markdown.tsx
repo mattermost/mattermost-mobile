@@ -1,21 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useMemo, useRef} from 'react';
-import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View} from 'react-native';
+import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import FormattedText from '@components/formatted_text';
-import Hashtag from '@components/markdown/hashtag';
 import {computeTextStyle} from '@utils/markdown';
 import {blendColors, changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';
 import {getScheme} from '@utils/url';
 
 import AtMention from './at_mention';
 import ChannelMention, {ChannelMentions} from './channel_mention';
+import Hashtag from './hashtag';
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
 import MarkdownImage from './markdown_image';
@@ -131,6 +132,7 @@ const Markdown = ({
     textStyles = {}, theme, value = '', baseParagraphStyle,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
+    const managedConfig = useManagedConfig<ManagedConfig>();
 
     const urlFilter = (url: string) => {
         const scheme = getScheme(url);
@@ -431,7 +433,7 @@ const Markdown = ({
             return null;
         }
 
-        const blockStyle = [style.block];
+        const blockStyle: StyleProp<ViewStyle> = [style.block];
         if (!first) {
             blockStyle.push(blockStyles?.adjacentParagraph);
         }
@@ -471,10 +473,14 @@ const Markdown = ({
     };
 
     const renderText = ({context, literal}: MarkdownBaseRenderer) => {
+        const selectable = (managedConfig.copyAndPasteProtection !== 'true') && context.includes('table_cell');
         if (context.indexOf('image') !== -1) {
             // If this text is displayed, it will be styled by the image component
             return (
-                <Text testID='markdown_text'>
+                <Text
+                    testID='markdown_text'
+                    selectable={selectable}
+                >
                     {literal}
                 </Text>
             );
@@ -496,6 +502,7 @@ const Markdown = ({
             <Text
                 testID='markdown_text'
                 style={styles}
+                selectable={selectable}
             >
                 {literal}
             </Text>

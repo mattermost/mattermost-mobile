@@ -3,25 +3,15 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {useWindowDimensions, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
-import {bottomSheet} from '@screens/navigation';
+import {showModal} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
-import {getTeamsSnapHeight} from '@utils/team_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import AddTeamSlideUp from './add_team_slide_up';
-
-import type TeamModel from '@typings/database/models/servers/team';
-
-type Props = {
-    otherTeams: TeamModel[];
-}
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -45,35 +35,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function AddTeam({otherTeams}: Props) {
+export default function AddTeam() {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const dimensions = useWindowDimensions();
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
-    const isTablet = useIsTablet();
 
     const onPress = useCallback(preventDoubleTap(() => {
         const title = intl.formatMessage({id: 'mobile.add_team.join_team', defaultMessage: 'Join Another Team'});
-        const renderContent = () => {
-            return (
-                <AddTeamSlideUp
-                    otherTeams={otherTeams}
-                    showTitle={!isTablet && Boolean(otherTeams.length)}
-                    title={title}
-                />
-            );
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        const closeButtonId = 'close-join-team';
+        const options = {
+            topBar: {
+                leftButtons: [{
+                    id: closeButtonId,
+                    icon: closeButton,
+                    testID: 'close.join_team.button',
+                }],
+            },
         };
-
-        const height = getTeamsSnapHeight({dimensions, teams: otherTeams, insets});
-        bottomSheet({
-            closeButtonId: 'close-team_list',
-            renderContent,
-            snapPoints: [height, 10],
-            theme,
-            title,
-        });
-    }), [otherTeams, intl, isTablet, dimensions, theme]);
+        showModal(Screens.JOIN_TEAM, title, {closeButtonId}, options);
+    }), [intl]);
 
     return (
         <View style={styles.container}>

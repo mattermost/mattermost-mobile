@@ -83,7 +83,7 @@ export default function ChannelListRow({
         const iconOpacity = DEFAULT_ICON_OPACITY * (disabled ? 1 : DISABLED_OPACITY);
         const color = selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, iconOpacity);
         return (
-            <View style={style.selector}>
+            <View>
                 <CompassIcon
                     name={selected ? 'check-circle' : 'circle-outline'}
                     size={28}

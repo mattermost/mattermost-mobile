@@ -79,11 +79,19 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
         const teamId = channel.teamId || currentTeamId;
 
         let switchingTeams = false;
-        if (currentTeamId !== teamId) {
+        if (currentTeamId === teamId) {
+            const models = await prepareCommonSystemValues(operator, {
+                currentChannelId: channel.id,
+            });
+            if (models.length) {
+                await operator.batchRecords(models);
+            }
+        } else {
             const modelPromises: Array<Promise<Model[]>> = [];
             switchingTeams = true;
             modelPromises.push(addTeamToTeamHistory(operator, teamId, true));
             const commonValues: PrepareCommonSystemValuesArgs = {
+                currentChannelId: channel.id,
                 currentTeamId: teamId,
             };
             modelPromises.push(prepareCommonSystemValues(operator, commonValues));

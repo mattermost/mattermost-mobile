@@ -18,6 +18,7 @@ import {
 } from '@constants/reaction_picker';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -37,6 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             height: REACTION_PICKER_HEIGHT,
             justifyContent: 'space-between',
+            marginBottom: 8,
         },
     };
 });
@@ -48,6 +50,8 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
     const serverUrl = useServerUrl();
     const isSmallDevice = width < SMALL_ICON_BREAKPOINT;
     const styles = getStyleSheet(theme);
+
+    const isTablet = useIsTablet();
 
     const handleEmojiPress = useCallback(async (emoji: string) => {
         await dismissBottomSheet(Screens.POST_OPTIONS);
@@ -74,7 +78,7 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, {marginTop: isTablet ? 12 : 0}]}>
             {
                 recentEmojis.map((emoji) => {
                     return (

@@ -7,7 +7,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observePost} from '@queries/servers/post';
-import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {observeCurrentTeamId} from '@queries/servers/system';
 import {queryMyTeamsByIds, queryTeamByName} from '@queries/servers/team';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 
@@ -42,7 +42,6 @@ const enhance = withObservables([], ({database, postId, teamName}: OwnProps) => 
             switchMap((ms) => of$(Boolean(ms?.[0]))),
         ),
         currentTeamId: observeCurrentTeamId(database),
-        currentUserId: observeCurrentUserId(database),
         isCRTEnabled: observeIsCRTEnabled(database),
     };
 });
