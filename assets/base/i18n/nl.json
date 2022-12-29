@@ -280,7 +280,7 @@
     "mobile.reset_status.title_ooo": "\"Out of Office\" Uitschakelen?",
     "mobile.routes.code": "{language} Code",
     "mobile.routes.code.noLanguage": "Code",
-    "mobile.routes.custom_status": "Een status instellen",
+    "mobile.routes.custom_status": "Een aangepaste status instellen",
     "mobile.routes.table": "Tabel",
     "mobile.routes.user_profile": "Profiel",
     "mobile.search.jump": "Naar recente berichten gaan",
@@ -926,5 +926,16 @@
     "post_priority.picker.label.important": "Belangrijk",
     "post_priority.picker.beta": "BETA",
     "mobile.open_dm.error": "We konden geen direct bericht openen met {displayName} . Controleer jouw verbinding en probeer het opnieuw.",
-    "connection_banner.connecting": "Bezig met verbinden..."
+    "connection_banner.connecting": "Bezig met verbinden...",
+    "video.download_description": "Deze video moet worden gedownload om deze af te spelen.",
+    "user.edit_profile.profile_photo.change_photo": "Profielfoto wijzigen",
+    "user_status.title": "Status",
+    "user_status.online": "Online",
+    "user_status.offline": "Offline",
+    "user_status.dnd": "Niet Storen",
+    "user_status.away": "Afwezig",
+    "mobile.camera_type.title": "Camera-opties",
+    "join_team.error.title": "Fout bij het lid worden van een team",
+    "join_team.error.message": "Er is een fout opgetreden bij het lid worden van het team",
+    "join_team.error.group_error": "Je moet lid zijn van een gekoppelde groep om deel te nemen aan dit team."
 }
