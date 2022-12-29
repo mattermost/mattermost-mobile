@@ -104,11 +104,11 @@ export default class CategoryModel extends Model implements CategoryInterface {
             Q.sortBy('last_post_at', Q.desc),
         );
 
-    observeHasChannels = (canViewArchived: boolean) => {
+    observeHasChannels = (canViewArchived: boolean, channelId: string) => {
         return this.channels.observeWithColumns(['delete_at']).pipe(
             map((channels) => {
                 if (canViewArchived) {
-                    return channels.length > 0;
+                    return channels.filter((c) => c.deleteAt === 0 || c.id === channelId).length > 0;
                 }
 
                 return channels.filter((c) => c.deleteAt === 0).length > 0;
