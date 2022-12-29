@@ -10,6 +10,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
+import {REACTION_PICKER_HEIGHT, REACTION_PICKER_MARGIN} from '@constants/reaction_picker';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
@@ -74,10 +75,6 @@ const PostOptions = ({
     const snapPoints = useMemo(() => {
         const items: BottomSheetProps['snapPoints'] = [1];
         let count = shouldShowBindings ? 0.5 : 0;
-        if (canAddReaction) {
-            count++;
-        }
-
         if (canReply && sourceScreen !== Screens.THREAD) {
             count++;
         }
@@ -114,7 +111,7 @@ const PostOptions = ({
             count++;
         }
 
-        items.push(bottomSheetSnapPoint(count, ITEM_HEIGHT, bottom));
+        items.push(bottomSheetSnapPoint(count, ITEM_HEIGHT, bottom) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0));
 
         if (shouldShowBindings) {
             items.push('90%');
