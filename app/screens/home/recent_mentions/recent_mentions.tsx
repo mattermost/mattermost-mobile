@@ -17,11 +17,11 @@ import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
-import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
+import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
 
-import type {ViewableItemsChanged} from '@typings/components/post_list';
+import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -136,28 +136,30 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
         </View>
     ), [loading, theme, paddingTop]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<string | PostModel>) => {
-        if (typeof item === 'string') {
-            if (isDateLine(item)) {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
+        switch (item.type) {
+            case 'date':
                 return (
                     <DateSeparator
-                        date={getDateForDateLine(item)}
+                        key={item.value}
+                        date={getDateForDateLine(item.value)}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
-            }
-            return null;
+            case 'post':
+                return (
+                    <PostWithChannelInfo
+                        appsEnabled={appsEnabled}
+                        customEmojiNames={customEmojiNames}
+                        key={item.value.id}
+                        location={Screens.MENTIONS}
+                        post={item.value}
+                        testID='recent_mentions.post_list'
+                    />
+                );
+            default:
+                return null;
         }
-
-        return (
-            <PostWithChannelInfo
-                appsEnabled={appsEnabled}
-                customEmojiNames={customEmojiNames}
-                location={Screens.MENTIONS}
-                post={item}
-                testID='recent_mentions.post_list'
-            />
-        );
     }, [appsEnabled, customEmojiNames]);
 
     return (
