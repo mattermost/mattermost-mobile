@@ -4,7 +4,7 @@
 import React, {useCallback, useMemo} from 'react';
 import {FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle} from 'react-native';
 
-import FormattedText from '@app/components/formatted_text';
+import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

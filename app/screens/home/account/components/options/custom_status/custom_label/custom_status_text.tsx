@@ -31,7 +31,7 @@ const CustomStatusText = ({isStatusSet, customStatus, testID}: CustomStatusTextP
     text = (
         <FormattedText
             id='mobile.routes.custom_status'
-            defaultMessage='Set a Status'
+            defaultMessage='Set a custom status'
             style={styles.text}
         />
     );

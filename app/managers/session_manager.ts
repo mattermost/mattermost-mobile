@@ -185,7 +185,7 @@ class SessionManager {
                 await storeOnboardingViewedValue(false);
             }
 
-            relaunchApp({launchType, serverUrl, displayName}, true);
+            relaunchApp({launchType, serverUrl, displayName});
         }
     };
 
@@ -197,7 +197,7 @@ class SessionManager {
         const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         const serverDisplayName = await getServerDisplayName(serverUrl);
 
-        await relaunchApp({launchType: Launch.Normal, serverUrl, displayName: serverDisplayName}, true);
+        await relaunchApp({launchType: Launch.Normal, serverUrl, displayName: serverDisplayName});
         if (activeServerUrl) {
             addNewServer(getThemeFromState(), serverUrl, serverDisplayName);
         } else {

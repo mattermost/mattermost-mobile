@@ -3,6 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {queryMyTeams} from '@queries/servers/team';
 
@@ -18,10 +20,12 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     //     switchMap((r) => of$(hasPermission(r, Permissions.CREATE_TEAM, false))),
     // );
 
-    const nTeams = queryMyTeams(database).observeCount();
-
+    const myTeams = queryMyTeams(database).observe();
+    const nTeams = myTeams.pipe(switchMap((mm) => of$(mm.length)));
+    const firstTeamId = myTeams.pipe(switchMap((mm) => of$(mm[0]?.id)));
     return {
         nTeams,
+        firstTeamId,
     };
 });
 

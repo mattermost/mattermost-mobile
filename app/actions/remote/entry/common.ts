@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model} from '@nozbe/watermelondb';
-import {DeviceEventEmitter} from 'react-native';
 
 import {dataRetentionCleanup} from '@actions/local/systems';
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, MyChannelsRequest} from '@actions/remote/channel';
@@ -11,11 +10,11 @@ import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
-import {fetchAllTeams, fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, handleKickFromTeam, MyTeamsRequest} from '@actions/remote/team';
+import {fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, handleKickFromTeam, MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {gqlAllChannels} from '@client/graphQL/entry';
-import {Events, General, Preferences, Screens} from '@constants';
+import {General, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import DatabaseManager from '@database/manager';
@@ -321,9 +320,7 @@ export async function restDeferredAppEntryActions(
             channelsToFetchProfiles = new Set<Channel>(directChannels);
 
             // defer fetching posts for unread channels on initial team
-            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, true);
-        } else {
-            DeviceEventEmitter.emit(Events.FETCHING_POSTS, false);
+            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
         }
     }, FETCH_UNREADS_TIMEOUT);
 
@@ -347,7 +344,7 @@ export async function restDeferredAppEntryActions(
         }
     }
 
-    await fetchAllTeams(serverUrl);
+    updateCanJoinTeams(serverUrl);
     await updateAllUsersSince(serverUrl, since);
 
     // Fetch groups for current user

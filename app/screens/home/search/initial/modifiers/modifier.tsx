@@ -46,9 +46,9 @@ const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {
         setSearchValue(newValue);
         if (item.cursorPosition) {
             const position = newValue.length + item.cursorPosition;
-            requestAnimationFrame(() => {
+            setTimeout(() => {
                 searchRef.current?.setNativeProps({selection: {start: position, end: position}});
-            });
+            }, 50);
         }
     });
 

@@ -3,7 +3,7 @@
 
 import withObservables from '@nozbe/with-observables';
 
-import {observeAllActiveServers} from '@app/queries/app/servers';
+import {observeAllActiveServers} from '@queries/app/servers';
 
 import ServersList from './servers_list';
 

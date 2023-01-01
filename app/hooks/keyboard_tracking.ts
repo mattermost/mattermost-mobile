@@ -11,24 +11,40 @@ export const useKeyboardTrackingPaused = (keyboardTrackingRef: RefObject<Keyboar
     const isPostDraftPaused = useRef(false);
 
     useEffect(() => {
-        const commandListener = Navigation.events().registerCommandListener(() => {
-            if (!isPostDraftPaused.current) {
-                isPostDraftPaused.current = true;
-                keyboardTrackingRef.current?.pauseTracking(trackerId);
-            }
-        });
+        keyboardTrackingRef.current?.resumeTracking(trackerId);
+    }, []);
 
-        const commandCompletedListener = Navigation.events().registerCommandCompletedListener(() => {
+    useEffect(() => {
+        const onCommandComplete = () => {
             const id = NavigationStore.getVisibleScreen();
             if (screens.includes(id) && isPostDraftPaused.current) {
                 isPostDraftPaused.current = false;
                 keyboardTrackingRef.current?.resumeTracking(trackerId);
             }
+        };
+
+        const commandListener = Navigation.events().registerCommandListener(() => {
+            setTimeout(() => {
+                const visibleScreen = NavigationStore.getVisibleScreen();
+                if (!isPostDraftPaused.current && !screens.includes(visibleScreen)) {
+                    isPostDraftPaused.current = true;
+                    keyboardTrackingRef.current?.pauseTracking(trackerId);
+                }
+            });
+        });
+
+        const commandCompletedListener = Navigation.events().registerCommandCompletedListener(() => {
+            onCommandComplete();
+        });
+
+        const popListener = Navigation.events().registerScreenPoppedListener(() => {
+            onCommandComplete();
         });
 
         return () => {
             commandListener.remove();
             commandCompletedListener.remove();
+            popListener.remove();
         };
     }, [trackerId]);
 };

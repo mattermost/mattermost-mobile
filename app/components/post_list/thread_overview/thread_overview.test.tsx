@@ -14,6 +14,7 @@ describe('ThreadOverview', () => {
         const props = {
             isSaved: true,
             repliesCount: 0,
+            rootId: '',
             rootPost: {} as PostModel,
             testID: 'thread-overview',
         };
@@ -26,6 +27,7 @@ describe('ThreadOverview', () => {
         const props = {
             isSaved: false,
             repliesCount: 2,
+            rootId: '',
             rootPost: {} as PostModel,
             testID: 'thread-overview',
         };

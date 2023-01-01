@@ -448,7 +448,13 @@ export async function setCurrentTeamAndChannelId(operator: ServerDataOperator, t
 export const observeLastUnreadChannelId = (database: Database): Observable<string> => {
     return querySystemValue(database, SYSTEM_IDENTIFIERS.LAST_UNREAD_CHANNEL_ID).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$({value: ''}))),
-        switchMap((model) => of$(model.value)),
+        switchMap((model) => {
+            if (model.value) {
+                return of$(model.value);
+            }
+
+            return observeCurrentChannelId(database);
+        }),
     );
 };
 
