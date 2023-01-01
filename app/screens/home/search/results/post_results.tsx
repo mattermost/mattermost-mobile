@@ -14,6 +14,8 @@ import {TabTypes} from '@utils/search';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    appsEnabled: boolean;
+    customEmojiNames: string[];
     currentTimezone: string;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
@@ -22,7 +24,9 @@ type Props = {
 }
 
 const PostResults = ({
+    appsEnabled,
     currentTimezone,
+    customEmojiNames,
     isTimezoneEnabled,
     posts,
     paddingTop,
@@ -47,6 +51,8 @@ const PostResults = ({
         if ('message' in item) {
             return (
                 <PostWithChannelInfo
+                    appsEnabled={appsEnabled}
+                    customEmojiNames={customEmojiNames}
                     location={Screens.SEARCH}
                     post={item}
                     testID='search_results.post_list'
@@ -54,7 +60,7 @@ const PostResults = ({
             );
         }
         return null;
-    }, []);
+    }, [appsEnabled, customEmojiNames]);
 
     const noResults = useMemo(() => (
         <NoResultsWithTerm

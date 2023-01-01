@@ -28,6 +28,8 @@ const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 type Props = {
+    appsEnabled: boolean;
+    customEmojiNames: string[];
     currentTimezone: string | null;
     isTimezoneEnabled: boolean;
     mentions: PostModel[];
@@ -47,7 +49,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Props) => {
+const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentTimezone, isTimezoneEnabled}: Props) => {
     const theme = useTheme();
     const route = useRoute();
     const isFocused = useIsFocused();
@@ -149,12 +151,14 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
 
         return (
             <PostWithChannelInfo
+                appsEnabled={appsEnabled}
+                customEmojiNames={customEmojiNames}
                 location={Screens.MENTIONS}
                 post={item}
                 testID='recent_mentions.post_list'
             />
         );
-    }, []);
+    }, [appsEnabled, customEmojiNames]);
 
     return (
         <>

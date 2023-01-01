@@ -3,7 +3,6 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import compose from 'lodash/fp/compose';
 
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 
@@ -17,7 +16,4 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     };
 });
 
-export default compose(
-    withDatabase,
-    enhance,
-)(PostWithChannelInfo);
+export default withDatabase(enhance(PostWithChannelInfo));

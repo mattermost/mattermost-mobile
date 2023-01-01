@@ -15,7 +15,7 @@ import ThreadOverview from '@components/post_list/thread_overview';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, isThreadOverview, preparePostList, START_OF_NEW_MESSAGES} from '@utils/post_list';
+import {getDateForDateLine, isCombinedUserActivityPost, isDateLine, isStartOfNewMessages, isThreadOverview, PostWithPrevAndNext, preparePostList, START_OF_NEW_MESSAGES} from '@utils/post_list';
 
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
 import MoreMessages from './more_messages';
@@ -25,11 +25,13 @@ import type {ViewableItemsChanged, ViewableItemsChangedListenerEvent} from '@typ
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    appsEnabled: boolean;
     channelId: string;
     contentContainerStyle?: StyleProp<ViewStyle>;
     currentTimezone: string | null;
     currentUserId: string;
     currentUsername: string;
+    customEmojiNames: string[];
     disablePullToRefresh?: boolean;
     highlightedId?: PostModel['id'];
     highlightPinnedOrSaved?: boolean;
@@ -50,6 +52,7 @@ type Props = {
     testID: string;
     currentCallBarVisible?: boolean;
     joinCallBannerVisible?: boolean;
+    savedPostIds: Set<string>;
 }
 
 type onScrollEndIndexListenerEvent = (endIndex: number) => void;
@@ -81,11 +84,13 @@ const styles = StyleSheet.create({
 });
 
 const PostList = ({
+    appsEnabled,
     channelId,
     contentContainerStyle,
     currentTimezone,
     currentUserId,
     currentUsername,
+    customEmojiNames,
     disablePullToRefresh,
     footer,
     header,
@@ -106,6 +111,7 @@ const PostList = ({
     testID,
     currentCallBarVisible,
     joinCallBannerVisible,
+    savedPostIds,
 }: Props) => {
     const listRef = useRef<FlatList<string | PostModel>>(null);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
@@ -116,8 +122,8 @@ const PostList = ({
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const orderedPosts = useMemo(() => {
-        return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, currentTimezone, location === Screens.THREAD);
-    }, [posts, lastViewedAt, showNewMessageLine, currentTimezone, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, location]);
+        return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, currentTimezone, location === Screens.THREAD, savedPostIds);
+    }, [posts, lastViewedAt, showNewMessageLine, currentTimezone, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, location, savedPostIds]);
 
     const initialIndex = useMemo(() => {
         return orderedPosts.indexOf(START_OF_NEW_MESSAGES);
@@ -220,22 +226,12 @@ const PostList = ({
         return removeListener;
     }, []);
 
-    const renderItem = useCallback(({item, index}: ListRenderItemInfo<string | PostModel>) => {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<string | PostWithPrevAndNext>) => {
         if (typeof item === 'string') {
             if (isStartOfNewMessages(item)) {
-                // postIds includes a date item after the new message indicator so 2
-                // needs to be added to the index for the length check to be correct.
-                const moreNewMessages = orderedPosts.length === index + 2;
-
-                // The date line and new message line each count for a line. So the
-                // goal of this is to check for the 3rd previous, which for the start
-                // of a thread would be null as it doesn't exist.
-                const checkForPostId = index < orderedPosts.length - 3;
-
                 return (
                     <NewMessagesLine
                         theme={theme}
-                        moreMessages={moreNewMessages && checkForPostId}
                         testID={`${testID}.new_messages_line`}
                         style={styles.scale}
                     />
@@ -275,39 +271,6 @@ const PostList = ({
             return null;
         }
 
-        let previousPost: PostModel|undefined;
-        let nextPost: PostModel|undefined;
-
-        const lastPosts = orderedPosts.slice(index + 1);
-        const immediateLastPost = lastPosts[0];
-
-        // Post after `Thread Overview` should show user avatar irrespective of being the consecutive post
-        // So we skip sending previous post to avoid the check for consecutive post
-        const skipFindingPreviousPost = (
-            location === Screens.THREAD &&
-            typeof immediateLastPost === 'string' &&
-            isThreadOverview(immediateLastPost)
-        );
-
-        if (!skipFindingPreviousPost) {
-            const prev = lastPosts.find((v) => typeof v !== 'string');
-            if (prev) {
-                previousPost = prev as PostModel;
-            }
-        }
-
-        if (index > 0) {
-            const next = orderedPosts.slice(0, index);
-            for (let i = next.length - 1; i >= 0; i--) {
-                const v = next[i];
-                if (typeof v !== 'string') {
-                    nextPost = v;
-                    break;
-                }
-            }
-        }
-
-        // Skip rendering Flag for the root post in the thread as it is visible in the `Thread Overview`
         const post = item;
         const skipSaveddHeader = (
             location === Screens.THREAD &&
@@ -315,27 +278,26 @@ const PostList = ({
         );
 
         const postProps = {
+            appsEnabled,
+            customEmojiNames,
+            isCRTEnabled,
             highlight: highlightedId === post.id,
             highlightPinnedOrSaved,
+            isSaved: post.isSaved,
+            key: post.id,
             location,
-            nextPost,
-            previousPost,
+            nextPost: post.nextPost,
+            post,
+            previousPost: post.previousPost,
+            rootId,
             shouldRenderReplyButton,
             skipSaveddHeader,
+            style: styles.scale,
+            testID: `${testID}.post`,
         };
 
-        return (
-            <Post
-                isCRTEnabled={isCRTEnabled}
-                key={post.id}
-                post={post}
-                rootId={rootId}
-                style={styles.scale}
-                testID={`${testID}.post`}
-                {...postProps}
-            />
-        );
-    }, [currentTimezone, highlightPinnedOrSaved, isCRTEnabled, isTimezoneEnabled, orderedPosts, shouldRenderReplyButton, theme]);
+        return (<Post {...postProps}/>);
+    }, [appsEnabled, currentTimezone, customEmojiNames, highlightPinnedOrSaved, isCRTEnabled, isTimezoneEnabled, shouldRenderReplyButton, theme]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
         listRef.current?.scrollToIndex({
@@ -387,7 +349,7 @@ const PostList = ({
                     maxToRenderPerBatch={10}
                     nativeID={nativeID}
                     onEndReached={onEndReached}
-                    onEndReachedThreshold={2}
+                    onEndReachedThreshold={0.9}
                     onScroll={onScroll}
                     onScrollToIndexFailed={onScrollToIndexFailed}
                     onViewableItemsChanged={onViewableItemsChanged}

@@ -26,7 +26,9 @@ import type {ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    appsEnabled: boolean;
     currentTimezone: string | null;
+    customEmojiNames: string[];
     isTimezoneEnabled: boolean;
     posts: PostModel[];
 }
@@ -48,7 +50,7 @@ const styles = StyleSheet.create({
     },
 });
 
-function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
+function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, isTimezoneEnabled}: Props) {
     const intl = useIntl();
     const [loading, setLoading] = useState(!posts.length);
     const [refreshing, setRefreshing] = useState(false);
@@ -150,12 +152,14 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
 
         return (
             <PostWithChannelInfo
+                appsEnabled={appsEnabled}
+                customEmojiNames={customEmojiNames}
                 location={Screens.SAVED_MESSAGES}
                 post={item}
                 testID='saved_messages.post_list'
             />
         );
-    }, [currentTimezone, isTimezoneEnabled, theme]);
+    }, [appsEnabled, currentTimezone, customEmojiNames, isTimezoneEnabled, theme]);
 
     return (
         <>

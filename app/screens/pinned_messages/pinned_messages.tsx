@@ -22,9 +22,11 @@ import type {ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    appsEnabled: boolean;
     channelId: string;
     componentId: string;
     currentTimezone: string | null;
+    customEmojiNames: string[];
     isCRTEnabled: boolean;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
@@ -47,9 +49,11 @@ const styles = StyleSheet.create({
 });
 
 function SavedMessages({
+    appsEnabled,
     channelId,
     componentId,
     currentTimezone,
+    customEmojiNames,
     isCRTEnabled,
     isTimezoneEnabled,
     posts,
@@ -124,6 +128,8 @@ function SavedMessages({
 
         return (
             <Post
+                appsEnabled={appsEnabled}
+                customEmojiNames={customEmojiNames}
                 highlightPinnedOrSaved={false}
                 isCRTEnabled={isCRTEnabled}
                 location={Screens.PINNED_MESSAGES}
@@ -137,7 +143,7 @@ function SavedMessages({
                 testID='pinned_messages.post_list.post'
             />
         );
-    }, [currentTimezone, isTimezoneEnabled, theme]);
+    }, [appsEnabled, currentTimezone, customEmojiNames, isTimezoneEnabled, theme]);
 
     return (
         <SafeAreaView

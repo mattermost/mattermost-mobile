@@ -9,6 +9,8 @@ import {isFromWebhook} from '@utils/post';
 
 import type PostModel from '@typings/database/models/servers/post';
 
+export type PostWithPrevAndNext = PostModel & {nextPost?: PostModel; previousPost?: PostModel; isSaved?: boolean};
+
 const joinLeavePostTypes = [
     Post.POST_TYPES.JOIN_LEAVE,
     Post.POST_TYPES.JOIN_CHANNEL,
@@ -49,10 +51,10 @@ export const START_OF_NEW_MESSAGES = 'start-of-new-messages';
 export const THREAD_OVERVIEW = 'thread-overview';
 export const MAX_COMBINED_SYSTEM_POSTS = 100;
 
-function combineUserActivityPosts(orderedPosts: Array<PostModel | string>) {
+function combineUserActivityPosts(orderedPosts: Array<PostWithPrevAndNext | string>) {
     let lastPostIsUserActivity = false;
     let combinedCount = 0;
-    const out: Array<PostModel | string> = [];
+    const out: Array<PostWithPrevAndNext | string> = [];
     let changed = false;
 
     for (let i = 0; i < orderedPosts.length; i++) {
@@ -175,21 +177,38 @@ function isJoinLeavePostForUsername(post: PostModel, currentUsername: string): b
         post.props.removedUsername === currentUsername;
 }
 
-// are we going to do something with selectedPostId as in v1?
+export function selectOrderedPostsWithPrevAndNext(
+    posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUserId: string, currentUsername: string, showJoinLeave: boolean,
+    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>(),
+): Array<PostWithPrevAndNext | string> {
+    return selectOrderedPosts(
+        posts, lastViewedAt, indicateNewMessages,
+        currentUserId, currentUsername, showJoinLeave,
+        timezoneEnabled, currentTimezone, isThreadScreen, savedPostIds, true,
+    );
+}
+
 export function selectOrderedPosts(
     posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUserId: string, currentUsername: string, showJoinLeave: boolean,
-    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false) {
+    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>(), includePrevNext = false) {
     if (posts.length === 0) {
         return [];
     }
 
-    const out: Array<PostModel|string> = [];
+    const out: Array<PostWithPrevAndNext|string> = [];
     let lastDate;
     let addedNewMessagesIndicator = false;
 
     // Iterating through the posts from oldest to newest
     for (let i = posts.length - 1; i >= 0; i--) {
-        const post = posts[i];
+        const post: PostWithPrevAndNext = posts[i];
+        post.isSaved = savedPostIds.has(post.id);
+        if (includePrevNext) {
+            post.nextPost = posts[i - 1];
+            if (!isThreadScreen || out[out.length - 1] !== THREAD_OVERVIEW) {
+                post.previousPost = posts[i + 1];
+            }
+        }
 
         if (
             !post ||
@@ -368,8 +387,8 @@ export function isThreadOverview(item: string) {
 
 export function preparePostList(
     posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUserId: string, currentUsername: string, showJoinLeave: boolean,
-    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false) {
-    const orderedPosts = selectOrderedPosts(posts, lastViewedAt, indicateNewMessages, currentUserId, currentUsername, showJoinLeave, timezoneEnabled, currentTimezone, isThreadScreen);
+    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>()) {
+    const orderedPosts = selectOrderedPostsWithPrevAndNext(posts, lastViewedAt, indicateNewMessages, currentUserId, currentUsername, showJoinLeave, timezoneEnabled, currentTimezone, isThreadScreen, savedPostIds);
     return combineUserActivityPosts(orderedPosts);
 }
 
