@@ -11,18 +11,19 @@ import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 type CopyTextProps = {
+    bottomSheetId: typeof Screens[keyof typeof Screens];
     isSaved: boolean;
     postId: string;
 }
 
-const SaveOption = ({isSaved, postId}: CopyTextProps) => {
+const SaveOption = ({bottomSheetId, isSaved, postId}: CopyTextProps) => {
     const serverUrl = useServerUrl();
 
     const onHandlePress = useCallback(async () => {
         const remoteAction = isSaved ? deleteSavedPost : savePostPreference;
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         remoteAction(serverUrl, postId);
-    }, [postId, serverUrl]);
+    }, [bottomSheetId, postId, serverUrl]);
 
     const id = isSaved ? t('mobile.post_info.unsave') : t('mobile.post_info.save');
     const defaultMessage = isSaved ? 'Unsave' : 'Save';
