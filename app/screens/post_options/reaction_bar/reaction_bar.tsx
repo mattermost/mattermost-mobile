@@ -26,6 +26,7 @@ import PickReaction from './pick_reaction';
 import Reaction from './reaction';
 
 type QuickReactionProps = {
+    bottomSheetId: typeof Screens[keyof typeof Screens];
     recentEmojis: string[];
     postId: string;
 };
@@ -43,7 +44,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
+const ReactionBar = ({bottomSheetId, recentEmojis = [], postId}: QuickReactionProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const {width} = useWindowDimensions();
@@ -54,12 +55,12 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
     const isTablet = useIsTablet();
 
     const handleEmojiPress = useCallback(async (emoji: string) => {
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         addReaction(serverUrl, postId, emoji);
-    }, [postId, serverUrl]);
+    }, [bottomSheetId, postId, serverUrl]);
 
     const openEmojiPicker = useCallback(async () => {
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
 
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
         const screen = Screens.EMOJI_PICKER;
@@ -67,7 +68,7 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
         const passProps = {closeButton, onEmojiPress: handleEmojiPress};
 
         showModal(screen, title, passProps);
-    }, [intl, theme]);
+    }, [bottomSheetId, intl, theme]);
 
     let containerSize = LARGE_CONTAINER_SIZE;
     let iconSize = LARGE_ICON_SIZE;
