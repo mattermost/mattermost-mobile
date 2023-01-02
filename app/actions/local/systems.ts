@@ -226,6 +226,9 @@ export async function dataRetentionCleanup(serverUrl: string) {
 function getDataRetentionPolicyCutoff(postDuration: number) {
     const periodDate = new Date();
     periodDate.setDate(periodDate.getDate() - postDuration);
+    periodDate.setHours(0);
+    periodDate.setMinutes(0);
+    periodDate.setSeconds(0);
     return periodDate.getTime();
 }
 
