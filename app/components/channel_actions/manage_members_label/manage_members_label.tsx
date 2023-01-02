@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 
@@ -59,14 +59,18 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
     const {formatMessage} = intl;
     const serverUrl = useServerUrl();
 
+    const [actionText, setActionText] = useState('');
+    const [icon, setIcon] = useState('');
+    const [isDestructive, setisDestructive] = useState(false);
+
     const handleRemoveUser = useCallback(async () => {
         await removeMemberFromChannel(serverUrl, channelId, userId);
         fetchChannelStats(serverUrl, channelId, false);
         await dismissBottomSheet();
         DeviceEventEmitter.emit(Events.REMOVE_USER_FROM_CHANNEL, userId);
-    }, [channelId, userId, serverUrl]);
+    }, [channelId, serverUrl, userId]);
 
-    const removeFromChannel = () => {
+    const removeFromChannel = useCallback(() => {
         Alert.alert(
             formatMessage(messages.remove_title),
             formatMessage(messages.remove_message),
@@ -79,7 +83,7 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
                 onPress: handleRemoveUser,
             }], {cancelable: false},
         );
-    };
+    }, [handleRemoveUser]);
 
     const makeChannelAdmin = () => {
         updateChannelMemberSchemeRole(true);
@@ -98,30 +102,41 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
         DeviceEventEmitter.emit(Events.MANAGE_USER_CHANGE_ROLE, {userId, schemeAdmin});
     };
 
-    let actionText;
-    let icon;
-    let isDestructive = false;
-    let onAction;
-    switch (manageOption) {
-        case REMOVE_USER:
-            actionText = formatMessage(messages.remove_title);
-            icon = 'trash-can-outline';
-            isDestructive = true;
-            onAction = removeFromChannel;
-            break;
-        case MAKE_CHANNEL_ADMIN:
-            actionText = formatMessage(messages.make_channel_admin);
-            icon = 'account-outline';
-            onAction = makeChannelAdmin;
-            break;
-        case MAKE_CHANNEL_MEMBER:
-            actionText = formatMessage(messages.make_channel_member);
-            icon = 'account-outline';
-            onAction = makeChannelMember;
-            break;
-        default:
-            break;
-    }
+    const onAction = useCallback(() => {
+        switch (manageOption) {
+            case REMOVE_USER:
+                removeFromChannel();
+                break;
+            case MAKE_CHANNEL_ADMIN:
+                makeChannelAdmin();
+                break;
+            case MAKE_CHANNEL_MEMBER:
+                makeChannelMember();
+                break;
+            default:
+                break;
+        }
+    }, [manageOption]);
+
+    useEffect(() => {
+        switch (manageOption) {
+            case REMOVE_USER:
+                setActionText(formatMessage(messages.remove_title));
+                setIcon('trash-can-outline');
+                setisDestructive(true);
+                break;
+            case MAKE_CHANNEL_ADMIN:
+                setActionText(formatMessage(messages.make_channel_admin));
+                setIcon('account-outline');
+                break;
+            case MAKE_CHANNEL_MEMBER:
+                setActionText(formatMessage(messages.make_channel_member));
+                setIcon('account-outline');
+                break;
+            default:
+                break;
+        }
+    }, [manageOption]);
 
     if (manageOption === REMOVE_USER && !canRemoveUser) {
         return null;
