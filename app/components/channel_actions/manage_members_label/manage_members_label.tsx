@@ -7,7 +7,6 @@ import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {fetchChannelStats, removeMemberFromChannel, updateChannelMemberSchemeRoles} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
-import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {Events, Members} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
@@ -50,13 +49,12 @@ const messages = defineMessages({
 type Props = {
     canRemoveUser: boolean;
     channelId: string;
-    isOptionItem?: boolean;
     manageOption: string;
     testID?: string;
     userId: string;
 }
 
-const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOption, testID, userId}: Props) => {
+const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, userId}: Props) => {
     const intl = useIntl();
     const {formatMessage} = intl;
     const serverUrl = useServerUrl();
@@ -100,70 +98,47 @@ const ManageMembersLabel = ({canRemoveUser, channelId, isOptionItem, manageOptio
         DeviceEventEmitter.emit(Events.MANAGE_USER_CHANGE_ROLE, {userId, schemeAdmin});
     };
 
-    const onAction = () => {
-        // In the future this switch / case will accomodate more user cases
-        switch (manageOption) {
-            case REMOVE_USER:
-                removeFromChannel();
-                break;
-            case MAKE_CHANNEL_ADMIN:
-                makeChannelAdmin();
-                break;
-            case MAKE_CHANNEL_MEMBER:
-                makeChannelMember();
-                break;
-        }
-    };
-
-    if (manageOption === REMOVE_USER && !canRemoveUser) {
-        return null;
-    }
-
     let actionText;
     let icon;
     let isDestructive = false;
+    let onAction;
     switch (manageOption) {
         case REMOVE_USER:
             actionText = formatMessage(messages.remove_title);
             icon = 'trash-can-outline';
             isDestructive = true;
+            onAction = removeFromChannel;
             break;
         case MAKE_CHANNEL_ADMIN:
             actionText = formatMessage(messages.make_channel_admin);
             icon = 'account-outline';
+            onAction = makeChannelAdmin;
             break;
         case MAKE_CHANNEL_MEMBER:
             actionText = formatMessage(messages.make_channel_member);
             icon = 'account-outline';
+            onAction = makeChannelMember;
             break;
         default:
             break;
+    }
+
+    if (manageOption === REMOVE_USER && !canRemoveUser) {
+        return null;
     }
 
     if (!actionText) {
         return null;
     }
 
-    if (isOptionItem) {
-        return (
-            <OptionItem
-                action={onAction}
-                destructive={isDestructive}
-                icon={icon}
-                label={actionText}
-                testID={testID}
-                type='default'
-            />
-        );
-    }
-
     return (
-        <SlideUpPanelItem
-            destructive={true}
+        <OptionItem
+            action={onAction}
+            destructive={isDestructive}
             icon={icon}
-            onPress={onAction}
-            text={actionText}
+            label={actionText}
             testID={testID}
+            type='default'
         />
     );
 };

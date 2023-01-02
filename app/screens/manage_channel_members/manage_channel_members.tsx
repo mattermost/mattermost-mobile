@@ -132,7 +132,7 @@ export default function ManageChannelMembers({
         const lowerCasedTerm = searchTerm.toLowerCase();
         setLoading(true);
 
-        // TODO search through profiles state instead of server call
+        // TODO: search through profiles state instead of server call
         const options: SearchUserOptions = {team_id: currentTeamId, in_channel_id: channelId, allow_inactive: true};
         const {data = EMPTY} = await searchProfiles(serverUrl, lowerCasedTerm, options);
 

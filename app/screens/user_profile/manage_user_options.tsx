@@ -43,7 +43,6 @@ const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId}
             <ManageMembersLabel
                 channelId={channelId}
                 isDefaultChannel={isDefaultChannel}
-                isOptionItem={true}
                 manageOption={manageOption}
                 testID='channel.make_channel_admin'
                 userId={userId}
@@ -51,7 +50,6 @@ const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId}
             <ManageMembersLabel
                 channelId={channelId}
                 isDefaultChannel={isDefaultChannel}
-                isOptionItem={true}
                 manageOption={REMOVE_USER}
                 testID='channel.remove_member'
                 userId={userId}
