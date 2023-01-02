@@ -14,7 +14,7 @@ import {REACTION_PICKER_HEIGHT, REACTION_PICKER_MARGIN} from '@constants/reactio
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
-import {dismissModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 
@@ -59,7 +59,7 @@ const PostOptions = ({
     const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
 
     const close = () => {
-        dismissModal({componentId});
+        return dismissBottomSheet(Screens.POST_OPTIONS);
     };
 
     useNavButtonPressed(POST_OPTIONS_BUTTON, componentId, close, []);
@@ -127,53 +127,74 @@ const PostOptions = ({
     const renderContent = () => {
         return (
             <Scroll bounces={false}>
-                {canAddReaction && <ReactionBar postId={post.id}/>}
-                {canReply && sourceScreen !== Screens.THREAD && <ReplyOption post={post}/>}
+                {canAddReaction &&
+                    <ReactionBar
+                        bottomSheetId={Screens.POST_OPTIONS}
+                        postId={post.id}
+                    />
+                }
+                {canReply && sourceScreen !== Screens.THREAD &&
+                    <ReplyOption
+                        bottomSheetId={Screens.POST_OPTIONS}
+                        post={post}
+                    />
+                }
                 {shouldRenderFollow &&
-                <FollowThreadOption thread={thread}/>
+                    <FollowThreadOption
+                        bottomSheetId={Screens.POST_OPTIONS}
+                        thread={thread}
+                    />
                 }
                 {canMarkAsUnread && !isSystemPost &&
                 <MarkAsUnreadOption
+                    bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     sourceScreen={sourceScreen}
                 />
                 }
                 {canCopyPermalink &&
                 <CopyPermalinkOption
+                    bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     sourceScreen={sourceScreen}
                 />
                 }
                 {!isSystemPost &&
                 <SaveOption
+                    bottomSheetId={Screens.POST_OPTIONS}
                     isSaved={isSaved}
                     postId={post.id}
                 />
                 }
                 {Boolean(canCopyText && post.message) &&
                 <CopyTextOption
+                    bottomSheetId={Screens.POST_OPTIONS}
                     postMessage={post.message}
                     sourceScreen={sourceScreen}
                 />}
                 {canPin &&
                 <PinChannelOption
+                    bottomSheetId={Screens.POST_OPTIONS}
                     isPostPinned={post.isPinned}
                     postId={post.id}
                 />
                 }
                 {canEdit &&
                 <EditOption
+                    bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     canDelete={canDelete}
                 />
                 }
                 {canDelete &&
                 <DeletePostOption
+                    bottomSheetId={Screens.POST_OPTIONS}
                     combinedPost={combinedPost}
                     post={post}
                 />}
                 {shouldShowBindings &&
                 <AppBindingsPostOptions
+                    bottomSheetId={Screens.POST_OPTIONS}
                     post={post}
                     serverUrl={serverUrl}
                     bindings={bindings}

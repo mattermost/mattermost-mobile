@@ -14,7 +14,7 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
-import {dismissModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -63,31 +63,35 @@ const ThreadOptions = ({
     const style = getStyleSheet(theme);
 
     const close = () => {
-        dismissModal({componentId});
+        return dismissBottomSheet(Screens.THREAD_OPTIONS);
     };
 
     useNavButtonPressed(THREAD_OPTIONS_BUTTON, componentId, close, []);
 
     const options = [
         <ReplyOption
+            bottomSheetId={Screens.THREAD_OPTIONS}
             key='reply'
-            location={Screens.THREAD_OPTIONS}
             post={post}
         />,
         <FollowThreadOption
+            bottomSheetId={Screens.THREAD_OPTIONS}
             key='unfollow'
             thread={thread}
         />,
         <OpenInChannelOption
+            bottomSheetId={Screens.THREAD_OPTIONS}
             key='open-in-channel'
             threadId={thread.id}
         />,
         <MarkAsUnreadOption
+            bottomSheetId={Screens.THREAD_OPTIONS}
             key='mark-as-unread'
             teamId={team.id}
             thread={thread}
         />,
         <SaveOption
+            bottomSheetId={Screens.THREAD_OPTIONS}
             key='save'
             isSaved={isSaved}
             postId={thread.id}
@@ -99,6 +103,7 @@ const ThreadOptions = ({
     if (canCopyLink) {
         options.push(
             <CopyPermalinkOption
+                bottomSheetId={Screens.THREAD_OPTIONS}
                 key='copy-link'
                 post={post}
                 sourceScreen={Screens.THREAD_OPTIONS}

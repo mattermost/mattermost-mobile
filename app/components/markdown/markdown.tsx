@@ -39,6 +39,7 @@ import type {
 type MarkdownProps = {
     autolinkedUrlSchemes?: string[];
     baseTextStyle: StyleProp<TextStyle>;
+    baseParagraphStyle?: StyleProp<TextStyle>;
     blockStyles?: MarkdownBlockStyles;
     channelId?: string;
     channelMentions?: ChannelMentions;
@@ -85,7 +86,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 
     return {
         block: {
-            alignItems: 'center',
+            alignItems: 'flex-start',
             flexDirection: 'row',
             flexWrap: 'wrap',
         },
@@ -128,7 +129,7 @@ const Markdown = ({
     enableInlineLatex, enableLatex,
     imagesMetadata, isEdited, isReplyPost, isSearchResult, layoutHeight, layoutWidth,
     location, mentionKeys, minimumHashtagLength = 3, onPostPress, postId, searchPatterns,
-    textStyles = {}, theme, value = '',
+    textStyles = {}, theme, value = '', baseParagraphStyle,
 }: MarkdownProps) => {
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -383,11 +384,13 @@ const Markdown = ({
         }
 
         return (
-            <MarkdownLatexInline
-                content={latexCode}
-                maxMathWidth={Dimensions.get('window').width * 0.75}
-                theme={theme}
-            />
+            <Text>
+                <MarkdownLatexInline
+                    content={latexCode}
+                    maxMathWidth={Dimensions.get('window').width * 0.75}
+                    theme={theme}
+                />
+            </Text>
         );
     };
 
@@ -440,7 +443,9 @@ const Markdown = ({
                 style={blockStyle}
                 testID='markdown_paragraph'
             >
-                {children}
+                <Text style={baseParagraphStyle}>
+                    {children}
+                </Text>
             </View>
         );
     };

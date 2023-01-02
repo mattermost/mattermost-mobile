@@ -14,16 +14,16 @@ import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
     post: PostModel;
-    location?: typeof Screens[keyof typeof Screens];
+    bottomSheetId: typeof Screens[keyof typeof Screens];
 }
-const ReplyOption = ({post, location}: Props) => {
+const ReplyOption = ({post, bottomSheetId}: Props) => {
     const serverUrl = useServerUrl();
 
     const handleReply = useCallback(async () => {
         const rootId = post.rootId || post.id;
-        await dismissBottomSheet(location || Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         fetchAndSwitchToThread(serverUrl, rootId);
-    }, [post, serverUrl]);
+    }, [bottomSheetId, post, serverUrl]);
 
     return (
         <BaseOption
