@@ -8,19 +8,15 @@ import {useIntl} from 'react-intl';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
-import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-import {typography} from '@utils/typography';
 import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import ManageUserOptions, {DIVIDER_MARGIN} from './manage_user_options';
 import UserProfileOptions, {OptionsType} from './options';
-import UserProfileTitle from './title';
+import UserProfileTitle, {MANAGE_TITLE_HEIGHT, MANAGE_TITLE_MARGIN} from './title';
 import UserInfo from './user_info';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -30,27 +26,6 @@ const OPTIONS_HEIGHT = 82;
 const SINGLE_OPTION_HEIGHT = 68;
 const LABEL_HEIGHT = 58;
 const EXTRA_HEIGHT = 60;
-const MANAGE_TITLE_MARGIN = 22;
-const MANAGE_TITLE_HEIGHT = 30;
-const MANAGE_ICON_HEIGHT = 72;
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        divider: {
-            alignSelf: 'center',
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
-            height: 1,
-            marginVertical: 8,
-            paddingHorizontal: 20,
-            width: '100%',
-        },
-        title: {
-            color: theme.centerChannelColor,
-            marginBottom: MANAGE_TITLE_MARGIN,
-            ...typography('Heading', 600, 'SemiBold'),
-        },
-    };
-});
 
 type Props = {
     channelId?: string;
@@ -82,8 +57,6 @@ const UserProfile = ({
     user, userIconOverride, usernameOverride,
 }: Props) => {
     const {locale} = useIntl();
-    const theme = useTheme();
-    const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
     const channelContext = [Screens.CHANNEL, Screens.THREAD].includes(location);
@@ -154,21 +127,13 @@ const UserProfile = ({
     const renderContent = () => {
         return (
             <>
-                {manageMode &&
-                    <FormattedText
-                        id={'mobile.manage_members.manage_member'}
-                        defaultMessage={'Manage member'}
-                        style={styles.title}
-                        testID='user_profile.manage_title'
-                    />
-                }
                 <UserProfileTitle
                     enablePostIconOverride={enablePostIconOverride}
                     enablePostUsernameOverride={enablePostUsernameOverride}
                     isChannelAdmin={isChannelAdmin}
                     isSystemAdmin={isSystemAdmin}
                     isTeamAdmin={isTeamAdmin}
-                    imageSize={manageMode ? MANAGE_ICON_HEIGHT : undefined}
+                    manageMode={manageMode}
                     teammateDisplayName={teammateDisplayName}
                     user={user}
                     userIconOverride={userIconOverride}
