@@ -61,7 +61,7 @@ const ReportProblem = ({buildNumber, currentTeamId, currentUserId, siteName, sup
             onPress={openEmailClient}
             optionName='report_problem'
             separator={false}
-            testID='settings.report.problem'
+            testID='settings.report_problem.option'
             type='default'
         />
     );

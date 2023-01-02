@@ -12,16 +12,17 @@ import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 type Props = {
+    bottomSheetId: typeof Screens[keyof typeof Screens];
     threadId: string;
 }
-const OpenInChannelOption = ({threadId}: Props) => {
+const OpenInChannelOption = ({bottomSheetId, threadId}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
     const onHandlePress = useCallback(async () => {
-        await dismissBottomSheet(Screens.THREAD_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         showPermalink(serverUrl, '', threadId);
-    }, [intl, serverUrl, threadId]);
+    }, [bottomSheetId, intl, serverUrl, threadId]);
 
     return (
         <BaseOption

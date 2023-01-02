@@ -21,13 +21,14 @@ import {preventDoubleTap} from '@utils/tap';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    bottomSheetId: typeof Screens[keyof typeof Screens];
     bindings: AppBinding[];
     post: PostModel;
     serverUrl: string;
     teamId: string;
 }
 
-const AppBindingsPostOptions = ({serverUrl, post, teamId, bindings}: Props) => {
+const AppBindingsPostOptions = ({bottomSheetId, serverUrl, post, teamId, bindings}: Props) => {
     const onCallResponse = useCallback((callResp: AppCallResponse, message: string) => {
         postEphemeralCallResponseForPost(serverUrl, callResp, message, post);
     }, [serverUrl, post]);
@@ -48,11 +49,11 @@ const AppBindingsPostOptions = ({serverUrl, post, teamId, bindings}: Props) => {
 
     const onPress = useCallback(async (binding: AppBinding) => {
         const submitPromise = handleBindingSubmit(binding);
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
 
         const finish = await submitPromise;
         await finish();
-    }, [handleBindingSubmit]);
+    }, [bottomSheetId, handleBindingSubmit]);
 
     if (isSystemMessage(post)) {
         return null;

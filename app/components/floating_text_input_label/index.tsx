@@ -39,10 +39,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingVertical: 5,
     },
     input: {
+        backgroundColor: 'transparent',
+        borderWidth: 0,
         flex: 1,
-        color: theme.centerChannelColor,
-        fontFamily: 'OpenSans',
-        fontSize: 16,
+        paddingHorizontal: 0,
+        paddingTop: 0,
+        paddingBottom: 0,
     },
     label: {
         position: 'absolute',
@@ -205,6 +207,16 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         return res;
     }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
 
+    const combinedTextInputStyle = useMemo(() => {
+        const res: StyleProp<TextStyle> = [styles.textInput, styles.input, textInputStyle];
+
+        if (multiline) {
+            res.push({height: 80, textAlignVertical: 'top'});
+        }
+
+        return res;
+    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
+
     const textAnimatedTextStyle = useAnimatedStyle(() => {
         const inputText = placeholder || value || props.defaultValue;
         const index = inputText || focusedLabel ? 1 : 0;
@@ -245,7 +257,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                     <TextInput
                         {...props}
                         editable={isKeyboardInput && editable}
-                        style={styles.input}
+                        style={combinedTextInputStyle}
                         placeholder={placeholder}
                         placeholderTextColor={styles.label.color}
                         multiline={multiline}
