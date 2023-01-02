@@ -158,7 +158,7 @@
     "gallery.open_file": "파일 열기",
     "get_post_link_modal.title": "링크 복사",
     "global_threads.allThreads": "모든 글타레",
-    "global_threads.emptyThreads.message": "언급되거나 참여한 모든 글타래가 여기에 지켜보는 글타래와 함께 표시됩니다.",
+    "global_threads.emptyThreads.message": "언급되거나 참여한 모든 글타래는 여기에 지켜보는 중인 글타래와 함께 표시됩니다.\n멘션되거나 참여한 모든 스레드가 팔로우 중인 스레드와 함께 표시됩니다.",
     "global_threads.emptyThreads.title": "아직 지켜보는 글타래가 없습니다",
     "global_threads.emptyUnreads.message": "볼 건 다 본 것 같네요.",
     "global_threads.emptyUnreads.title": "읽지 않은 글타래 없음",
