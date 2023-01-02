@@ -21,12 +21,6 @@ import UserInfo from './user_info';
 
 import type UserModel from '@typings/database/models/servers/user';
 
-const TITLE_HEIGHT = 118;
-const OPTIONS_HEIGHT = 82;
-const SINGLE_OPTION_HEIGHT = 68;
-const LABEL_HEIGHT = 58;
-const EXTRA_HEIGHT = 60;
-
 type Props = {
     channelId?: string;
     closeButtonId: string;
@@ -49,6 +43,12 @@ type Props = {
     userIconOverride?: string;
     usernameOverride?: string;
 }
+
+const TITLE_HEIGHT = 118;
+const OPTIONS_HEIGHT = 82;
+const SINGLE_OPTION_HEIGHT = 68;
+const LABEL_HEIGHT = 58;
+const EXTRA_HEIGHT = 60;
 
 const UserProfile = ({
     channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
