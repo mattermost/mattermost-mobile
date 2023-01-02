@@ -504,7 +504,7 @@
   "mobile.manage_members.make_channel_admin": "Make Channel Admin",
   "mobile.manage_members.make_channel_member": "Make Channel Member",
   "mobile.manage_members.manage": "Manage",
-  "mobile.manage_members.manage_members": "Manage member",
+  "mobile.manage_members.manage_member": "Manage member",
   "mobile.manage_members.member": "Member",
   "mobile.manage_members.message": "Are you sure you want to remove the selected member from the channel?",
   "mobile.manage_members.remove": "Remove",

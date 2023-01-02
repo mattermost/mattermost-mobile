@@ -180,7 +180,7 @@ function UserListRow({
         }
 
         const color = changeOpacity(theme.centerChannelColor, 0.64);
-        const i18nId = isChannelAdmin ? t('mobile.manage_members.admin') : ('mobile.manage_members.member');
+        const i18nId = isChannelAdmin ? t('mobile.manage_members.admin') : t('mobile.manage_members.member');
         const defaultMessage = isChannelAdmin ? 'Admin' : 'Member';
 
         return (

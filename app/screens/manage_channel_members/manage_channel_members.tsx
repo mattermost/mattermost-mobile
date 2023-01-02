@@ -261,7 +261,7 @@ export default function ManageChannelMembers({
                 />
             </View>
 
-            {/* TODO https://mattermost.atlassian.net/browse/MM-48830 */}
+            {/* TODO: https://mattermost.atlassian.net/browse/MM-48830 */}
             <UserList
                 currentUserId={currentUserId}
                 fetchMore={getProfiles}

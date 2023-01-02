@@ -156,7 +156,7 @@ const UserProfile = ({
             <>
                 {manageMode &&
                     <FormattedText
-                        id={'mobile.manage_members.manage_members'}
+                        id={'mobile.manage_members.manage_member'}
                         defaultMessage={'Manage member'}
                         style={styles.title}
                         testID='user_profile.manage_title'
@@ -183,13 +183,12 @@ const UserProfile = ({
                     />
                 }
                 {!manageMode &&
-                <UserInfo
-                    localTime={localTime}
-                    override={override}
-                    showCustomStatus={showCustomStatus}
-                    user={user}
-                />
-
+                    <UserInfo
+                        localTime={localTime}
+                        override={override}
+                        showCustomStatus={showCustomStatus}
+                        user={user}
+                    />
                 }
                 {manageMode && channelId && canManageMembers &&
                     <ManageUserOptions
