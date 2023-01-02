@@ -4,7 +4,6 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
@@ -40,7 +39,6 @@ type ChannelProps = {
     searchTerm: string;
     teamId: string;
     callsEnabledInChannel: boolean;
-    callsFeatureRestricted: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -68,20 +66,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelHeader = ({
     channelId, channelType, componentId, customStatus, displayName,
     isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
-    searchTerm, teamId, callsEnabledInChannel, callsFeatureRestricted,
+    searchTerm, teamId, callsEnabledInChannel,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const defaultHeight = useDefaultHeaderHeight();
-    const insets = useSafeAreaInsets();
-    const callsAvailable = callsEnabledInChannel && !callsFeatureRestricted;
+
+    // NOTE: callsEnabledInChannel will be true/false (not undefined) based on explicit state + the DefaultEnabled system setting
+    //   which ultimately comes from channel/index.tsx, and observeIsCallsEnabledInChannel
+    const callsAvailable = callsEnabledInChannel;
 
     const isDMorGM = isTypeDMorGM(channelType);
     const contextStyle = useMemo(() => ({
-        top: defaultHeight + insets.top,
-    }), [defaultHeight, insets.top]);
+        top: defaultHeight,
+    }), [defaultHeight]);
 
     const leftComponent = useMemo(() => {
         if (isTablet || !channelId || !teamId) {

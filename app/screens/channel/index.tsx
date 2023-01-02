@@ -6,7 +6,8 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {observeCallsConfig, observeCallsState, observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
+import {observeIsCallsEnabledInChannel} from '@calls/observers';
+import {observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannelId} from '@queries/servers/system';
 
@@ -20,10 +21,6 @@ type EnhanceProps = WithDatabaseArgs & {
 
 const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
     const channelId = observeCurrentChannelId(database);
-    const isCallsPluginEnabled = observeCallsConfig(serverUrl).pipe(
-        switchMap((config) => of$(config.pluginEnabled)),
-        distinctUntilChanged(),
-    );
     const isCallInCurrentChannel = combineLatest([channelId, observeChannelsWithCalls(serverUrl)]).pipe(
         switchMap(([id, calls]) => of$(Boolean(calls[id]))),
         distinctUntilChanged(),
@@ -34,33 +31,17 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         distinctUntilChanged(),
     );
     const isInACall = currentCall.pipe(
-        switchMap((call) => of$(Boolean(call))),
+        switchMap((call) => of$(Boolean(call?.connected))),
         distinctUntilChanged(),
     );
     const isInCurrentChannelCall = combineLatest([channelId, ccChannelId]).pipe(
         switchMap(([id, ccId]) => of$(id === ccId)),
         distinctUntilChanged(),
     );
-    const callsStateEnabledDict = observeCallsState(serverUrl).pipe(
-        switchMap((state) => of$(state.enabled)),
-        distinctUntilChanged(), // Did the enabled object ref change? If so, a channel's enabled state has changed.
-    );
-    const callsDefaultEnabled = observeCallsConfig(serverUrl).pipe(
-        switchMap((config) => of$(config.DefaultEnabled)),
-        distinctUntilChanged(),
-    );
-    const isCallsEnabledInChannel = combineLatest([channelId, callsStateEnabledDict, callsDefaultEnabled]).pipe(
-        switchMap(([id, enabled, defaultEnabled]) => {
-            const explicitlyEnabled = enabled.hasOwnProperty(id as string) && enabled[id];
-            const explicitlyDisabled = enabled.hasOwnProperty(id as string) && !enabled[id];
-            return of$(explicitlyEnabled || (!explicitlyDisabled && defaultEnabled));
-        }),
-        distinctUntilChanged(),
-    );
+    const isCallsEnabledInChannel = observeIsCallsEnabledInChannel(database, serverUrl, channelId);
 
     return {
         channelId,
-        isCallsPluginEnabled,
         isCallInCurrentChannel,
         isInACall,
         isInCurrentChannelCall,

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {ReactElement, ReactNode} from 'react';
-import {View} from 'react-native';
+import {StyleProp, View, ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -33,7 +33,7 @@ const MarkdownTableRow = ({isFirstRow, isLastRow, children}: MarkdownTableRowPro
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const rowStyle = [style.row];
+    const rowStyle: StyleProp<ViewStyle> = [style.row];
     if (!isLastRow) {
         rowStyle.push(style.rowBottomBorder);
     }

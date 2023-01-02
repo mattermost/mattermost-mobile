@@ -3,6 +3,7 @@
 
 import DatabaseManager from '@database/manager';
 import {
+    transformConfigRecord,
     transformCustomEmojiRecord,
     transformRoleRecord,
     transformSystemRecord,
@@ -92,6 +93,30 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             createOrUpdateRawValues: systems,
             tableName: 'System',
             prepareRecordsOnly: false,
+        });
+    });
+
+    it('=> HandleConfig: should write to the CONFIG table', async () => {
+        expect.assertions(1);
+
+        const spyOnHandleRecords = jest.spyOn(operator, 'handleRecords');
+
+        const configs = [{id: 'config-1', value: 'config-1'}];
+        const configsToDelete = [{id: 'toDelete', value: 'toDelete'}];
+
+        await operator.handleConfigs({
+            configs,
+            configsToDelete,
+            prepareRecordsOnly: false,
+        });
+
+        expect(spyOnHandleRecords).toHaveBeenCalledWith({
+            fieldName: 'id',
+            transformer: transformConfigRecord,
+            createOrUpdateRawValues: configs,
+            tableName: 'Config',
+            prepareRecordsOnly: false,
+            deleteRawValues: configsToDelete,
         });
     });
 

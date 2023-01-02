@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useRef, useState} from 'react';
 import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import QuickActions from '@components/post_draft/quick_actions';
+import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -16,15 +17,22 @@ import Typing from '../typing';
 import MessageInput from './message_input';
 import VoiceInput from './voice_input';
 
+import type {PasteInputRef} from '@mattermost/react-native-paste-input';
+
 type Props = {
     testID?: string;
     channelId: string;
     rootId?: string;
     currentUserId: string;
     voiceMessageEnabled: boolean;
+    canShowPostPriority?: boolean;
+
+    // Post Props
+    postPriority: PostPriorityData;
+    updatePostPriority: (postPriority: PostPriorityData) => void;
 
     // Cursor Position Handler
-    updateCursorPosition: (pos: number) => void;
+    updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
     cursorPosition: number;
 
     // Send Handler
@@ -36,9 +44,10 @@ type Props = {
     files: FileInfo[];
     value: string;
     uploadFileError: React.ReactNode;
-    updateValue: (value: string) => void;
+    updateValue: React.Dispatch<React.SetStateAction<string>>;
     addFiles: (files: FileInfo[]) => void;
     updatePostInputTop: (top: number) => void;
+    setIsFocused: (isFocused: boolean) => void;
 }
 
 const SAFE_AREA_VIEW_EDGES: Edge[] = ['left', 'right'];
@@ -83,6 +92,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             right: -5,
             top: 16,
         },
+        postPriorityLabel: {
+            marginLeft: 12,
+            marginTop: Platform.select({
+                ios: 3,
+                android: 10,
+            }),
+        },
     };
 });
 
@@ -92,6 +108,7 @@ export default function DraftInput({
     channelId,
     currentUserId,
     cursorPosition,
+    canShowPostPriority,
     files,
     maxMessageLength,
     rootId = '',
@@ -103,6 +120,9 @@ export default function DraftInput({
     uploadFileError,
     value,
     voiceMessageEnabled,
+    postPriority,
+    updatePostPriority,
+    setIsFocused,
 }: Props) {
     const [recording, setRecording] = useState(false);
     const theme = useTheme();
@@ -121,6 +141,13 @@ export default function DraftInput({
     }, []);
 
     const isHandlingVoice = files[0]?.is_voice_recording || recording;
+    const inputRef = useRef<PasteInputRef>();
+    const focus = useCallback(() => {
+        inputRef.current?.focus();
+    }, []);
+
+    // Render
+    const quickActionsTestID = `${testID}.quick_actions`;
     const sendActionTestID = `${testID}.send_action`;
     const recordActionTestID = `${testID}.record_action`;
 
@@ -139,6 +166,7 @@ export default function DraftInput({
                 disabled={!canSend}
                 sendMessage={sendMessage}
                 testID={sendActionTestID}
+                containerStyle={isHandlingVoice && style.sendVoiceMessage}
             />
         );
     }, [
@@ -152,8 +180,6 @@ export default function DraftInput({
         voiceMessageEnabled,
         isHandlingVoice,
     ]);
-
-    const quickActionsTestID = `${testID}.quick_actions`;
 
     return (
         <>
@@ -178,6 +204,11 @@ export default function DraftInput({
                     showsVerticalScrollIndicator={false}
                     style={style.inputContainer}
                 >
+                    {Boolean(postPriority?.priority) && (
+                        <View style={style.postPriorityLabel}>
+                            <PostPriorityLabel label={postPriority!.priority}/>
+                        </View>
+                    )}
                     {recording && (
                         <VoiceInput
                             addFiles={addFiles}
@@ -188,15 +219,15 @@ export default function DraftInput({
                     {!recording &&
                         <MessageInput
                             addFiles={addFiles}
-                            canSend={canSend}
                             channelId={channelId}
                             currentUserId={currentUserId}
                             cursorPosition={cursorPosition}
                             files={files}
+                            inputRef={inputRef}
                             maxMessageLength={maxMessageLength}
                             rootId={rootId}
                             sendMessage={sendMessage}
-                            setRecording={setRecording}
+                            setIsFocused={setIsFocused}
                             testID={testID}
                             updateCursorPosition={updateCursorPosition}
                             updateValue={updateValue}
@@ -207,21 +238,19 @@ export default function DraftInput({
                     <View style={style.actionsContainer}>
                         {!isHandlingVoice &&
                             <QuickActions
-                                testID={quickActionsTestID}
-                                fileCount={files.length}
                                 addFiles={addFiles}
+                                canShowPostPriority={canShowPostPriority}
+                                fileCount={files.length}
+                                postPriority={postPriority}
+                                testID={quickActionsTestID}
+                                updatePostPriority={updatePostPriority}
                                 updateValue={updateValue}
                                 value={value}
+                                focus={focus}
                             />
                         }
                         {!isHandlingVoice && getActionButton()}
                     </View>
-                    <SendAction
-                        disabled={!canSend}
-                        sendMessage={sendMessage}
-                        testID={sendActionTestID}
-                        containerStyle={isHandlingVoice && style.sendVoiceMessage}
-                    />
                 </ScrollView>
             </SafeAreaView>
         </>

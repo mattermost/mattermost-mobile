@@ -2,13 +2,16 @@
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
+import deepEqual from 'deep-equal';
 import JailMonkey from 'jail-monkey';
 import {Alert, AlertButton, AppState, AppStateStatus, Platform} from 'react-native';
 
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
+import {toMilliseconds} from '@utils/datetime';
+import {isMainActivity} from '@utils/helpers';
 import {getIOSAppGroupDetails} from '@utils/mattermost_managed';
 
-const PROMPT_IN_APP_PIN_CODE_AFTER = 5 * 60 * 1000;
+const PROMPT_IN_APP_PIN_CODE_AFTER = toMilliseconds({minutes: 5});
 
 class ManagedApp {
     backgroundSince = 0;
@@ -18,9 +21,15 @@ class ManagedApp {
     previousAppState?: AppStateStatus;
     processConfigTimeout?: NodeJS.Timeout;
     vendor = 'Mattermost';
+    cacheConfig?: ManagedConfig = undefined;
 
     constructor() {
-        Emm.addListener(this.processConfig);
+        Emm.addListener((cfg: ManagedConfig) => {
+            if (!deepEqual(cfg, this.cacheConfig)) {
+                this.processConfig(cfg);
+                this.cacheConfig = cfg;
+            }
+        });
 
         this.setIOSAppGroupIdentifier();
 
@@ -28,7 +37,8 @@ class ManagedApp {
     }
 
     init() {
-        this.processConfig(Emm.getManagedConfig<ManagedConfig>());
+        this.cacheConfig = Emm.getManagedConfig<ManagedConfig>();
+        this.processConfig(this.cacheConfig);
     }
 
     setIOSAppGroupIdentifier = () => {
@@ -72,9 +82,9 @@ class ManagedApp {
             return;
         }
 
-        const inAppPinCode = config!.inAppPinCode === 'true';
-        if (inAppPinCode) {
-            this.handleDeviceAuthentication();
+        this.inAppPinCode = config!.inAppPinCode === 'true';
+        if (this.inAppPinCode && !this.performingAuthentication) {
+            await this.handleDeviceAuthentication();
         }
     };
 
@@ -111,11 +121,14 @@ class ManagedApp {
 
         if (authExpired) {
             try {
-                await Emm.authenticate({
+                const auth = await Emm.authenticate({
                     reason: translations[t('mobile.managed.secured_by')].replace('{vendor}', this.vendor),
                     fallback: true,
                     supressEnterPassword: true,
                 });
+                if (!auth) {
+                    throw new Error('Authorization cancelled');
+                }
             } catch (err) {
                 Emm.exitApp();
                 return;
@@ -133,8 +146,8 @@ class ManagedApp {
         const isActive = appState === 'active';
         const isBackground = appState === 'background';
 
-        if (isActive && this.previousAppState === 'background') {
-            if (this.enabled && this.inAppPinCode) {
+        if (isActive && this.previousAppState === 'background' && !this.performingAuthentication) {
+            if (this.enabled && this.inAppPinCode && isMainActivity()) {
                 const authExpired = this.backgroundSince > 0 && (Date.now() - this.backgroundSince) >= PROMPT_IN_APP_PIN_CODE_AFTER;
                 await this.handleDeviceAuthentication(authExpired);
             }

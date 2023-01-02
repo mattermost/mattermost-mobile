@@ -9,7 +9,7 @@ import {switchMap} from 'rxjs/operators';
 import {Permissions} from '@constants';
 import {queryAllMyChannel} from '@queries/servers/channel';
 import {queryRolesByNames} from '@queries/servers/role';
-import {observeConfig, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {hasPermission} from '@utils/role';
 
@@ -18,15 +18,8 @@ import SearchHandler from './search_handler';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const config = observeConfig(database);
-
-    const sharedChannelsEnabled = config.pipe(
-        switchMap((v) => of$(v?.ExperimentalSharedChannels === 'true')),
-    );
-
-    const canShowArchivedChannels = config.pipe(
-        switchMap((v) => of$(v?.ExperimentalViewArchivedChannels === 'true')),
-    );
+    const sharedChannelsEnabled = observeConfigBooleanValue(database, 'ExperimentalSharedChannels');
+    const canShowArchivedChannels = observeConfigBooleanValue(database, 'ExperimentalViewArchivedChannels');
 
     const currentTeamId = observeCurrentTeamId(database);
     const currentUserId = observeCurrentUserId(database);
@@ -43,7 +36,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         canCreateChannels,
-        currentUserId,
         currentTeamId,
         joinedChannels,
         sharedChannelsEnabled,

@@ -2,15 +2,12 @@
     "DefaultServerUrl": "",
     "DefaultServerName": "",
     "TestServerUrl": "http://localhost:8065",
-    "DefaultTheme": "default",
-    "ShowErrorsList": false,
-    "MinServerVersion": "5.25.0",
-    "EELearnURL": "about.mattermost.com",
-    "TeamEditionLearnURL": "mattermost.org",
-    "AboutTeamURL": "http://www.mattermost.org/",
-    "AboutEnterpriseURL": "http://about.mattermost.com/",
-    "PlatformNoticeURL": "https://about.mattermost.com/platform-notice-txt/",
-    "MobileNoticeURL": "https://about.mattermost.com/mobile-notice-txt/",
+    "AutoSelectServerUrl": false,
+
+    "WebsiteURL": "https://mattermost.com",
+    "ServerNoticeURL": "https://github.com/mattermost/mattermost-server/blob/master/NOTICE.txt",
+    "MobileNoticeURL": "https://github.com/mattermost/mattermost-mobile/blob/master/NOTICE.txt",
+
     "RudderApiKey": "",
 
     "SentryEnabled": false,
@@ -24,17 +21,9 @@
         }
     },
 
+    "ShowReview": false,
+    "ShowOnboarding": false,
+
     "ExperimentalNormalizeMarkdownLinks": false,
-
-    "AutoSelectServerUrl": false,
-
-    "EnableMobileClientUpgrade": false,
-    "EnableMobileClientUpgradeUserSetting": false,
-    "EnableForceMobileClientUpgrade": false,
-    "MobileClientUpgradeAndroidApkLink": "https://about.mattermost.com/mattermost-android-app/",
-    "MobileClientUpgradeIosIpaLink": "https://about.mattermost.com/mattermost-ios-app/",
-
-    "ShowSentryDebugOptions": false,
-
     "CustomRequestHeaders": {}
 }

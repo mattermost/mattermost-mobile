@@ -3,7 +3,7 @@
 
 import React, {PureComponent, ReactNode} from 'react';
 import {injectIntl, IntlShape} from 'react-intl';
-import {Dimensions, EventSubscription, LayoutChangeEvent, Platform, ScaledSize, ScrollView, TouchableOpacity, View} from 'react-native';
+import {Dimensions, EventSubscription, LayoutChangeEvent, Platform, ScaledSize, ScrollView, StyleProp, TouchableOpacity, View, ViewStyle} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';
@@ -203,7 +203,7 @@ class MarkdownTable extends PureComponent<MarkdownTableProps, MarkdownTableState
     getTableStyle = (isFullView: boolean) => {
         const {theme} = this.props;
         const style = getStyleSheet(theme);
-        const tableStyle = [style.table];
+        const tableStyle: StyleProp<ViewStyle> = [style.table];
 
         const renderAsFlex = this.shouldRenderAsFlex(isFullView);
         if (renderAsFlex) {

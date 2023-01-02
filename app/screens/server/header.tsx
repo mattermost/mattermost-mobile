@@ -27,7 +27,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Heading', 400, 'SemiBold'),
     },
     connect: {
-        width: 270,
+        width: 320,
         letterSpacing: -1,
         color: theme.centerChannelColor,
         marginVertical: 12,

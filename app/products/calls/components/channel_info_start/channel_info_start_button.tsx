@@ -44,7 +44,7 @@ const ChannelInfoStartButton = ({
         if (alreadyInCall) {
             leaveCall();
         } else if (isLimitRestricted) {
-            showLimitRestrictedAlert(limitRestrictedInfo.maxParticipants, intl);
+            showLimitRestrictedAlert(limitRestrictedInfo, intl);
         } else {
             leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, !isACallInCurrentChannel, channelIsDMorGM);
         }
@@ -69,7 +69,7 @@ const ChannelInfoStartButton = ({
             destructiveText={leaveText}
             destructiveIconName={'phone-hangup'}
             isDestructive={alreadyInCall}
-            testID='channel_info.options.join_start_call.option'
+            testID='channel_info.channel_actions.join_start_call.action'
         />
     );
 };

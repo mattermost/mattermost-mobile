@@ -48,6 +48,7 @@ const TutorialSwipeLeft = ({containerStyle, message, style, textStyles}: Props) 
         <View
             pointerEvents='none'
             style={[styles.container, containerStyle]}
+            testID='tutorial_swipe_left'
         >
             <View style={[styles.view, style]}>
                 <LongPressIllustration/>

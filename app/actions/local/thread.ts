@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {getCommonSystemValues, getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, PrepareCommonSystemValuesArgs, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, PrepareCommonSystemValuesArgs, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
@@ -74,16 +74,24 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             throw new Error('Channel not found');
         }
 
-        const system = await getCommonSystemValues(database);
+        const currentTeamId = await getCurrentTeamId(database);
         const isTabletDevice = await isTablet();
-        const teamId = channel.teamId || system.currentTeamId;
+        const teamId = channel.teamId || currentTeamId;
 
         let switchingTeams = false;
-        if (system.currentTeamId !== teamId) {
+        if (currentTeamId === teamId) {
+            const models = await prepareCommonSystemValues(operator, {
+                currentChannelId: channel.id,
+            });
+            if (models.length) {
+                await operator.batchRecords(models);
+            }
+        } else {
             const modelPromises: Array<Promise<Model[]>> = [];
             switchingTeams = true;
             modelPromises.push(addTeamToTeamHistory(operator, teamId, true));
             const commonValues: PrepareCommonSystemValuesArgs = {
+                currentChannelId: channel.id,
                 currentTeamId: teamId,
             };
             modelPromises.push(prepareCommonSystemValues(operator, commonValues));
@@ -168,7 +176,7 @@ export async function createThreadFromNewPost(serverUrl: string, post: Post, pre
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const models: Model[] = [];
         if (post.root_id) {
-        // Update the thread data: `reply_count`
+            // Update the thread data: `reply_count`
             const {model: threadModel} = await updateThread(serverUrl, post.root_id, {reply_count: post.reply_count}, true);
             if (threadModel) {
                 models.push(threadModel);
@@ -204,7 +212,7 @@ export async function createThreadFromNewPost(serverUrl: string, post: Post, pre
 }
 
 // On receiving threads, Along with the "threads" & "thread participants", extract and save "posts" & "users"
-export async function processReceivedThreads(serverUrl: string, threads: Thread[], teamId: string, loadedInGlobalThreads = false, prepareRecordsOnly = false) {
+export async function processReceivedThreads(serverUrl: string, threads: Thread[], teamId: string, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentUserId = await getCurrentUserId(database);
@@ -236,7 +244,6 @@ export async function processReceivedThreads(serverUrl: string, threads: Thread[
             threads: threadsToHandle,
             teamId,
             prepareRecordsOnly: true,
-            loadedInGlobalThreads,
         });
 
         const models = [...postModels, ...threadModels];
@@ -325,6 +332,20 @@ export async function updateThread(serverUrl: string, threadId: string, updatedT
         return {model};
     } catch (error) {
         logError('Failed updateThread', error);
+        return {error};
+    }
+}
+
+export async function updateTeamThreadsSync(serverUrl: string, data: TeamThreadsSync, prepareRecordsOnly = false) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const models = await operator.handleTeamThreadsSync({data: [data], prepareRecordsOnly});
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords(models);
+        }
+        return {models};
+    } catch (error) {
+        logError('Failed updateTeamThreadsSync', error);
         return {error};
     }
 }

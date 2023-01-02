@@ -74,7 +74,7 @@ public class CustomPushNotificationHelper {
 
         if (serverUrl != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
             try {
-                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, senderId))));
+                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, senderId, null))));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -270,7 +270,7 @@ public class CustomPushNotificationHelper {
 
         if (serverUrl != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
             try {
-                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, "me"))));
+                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, "me", null))));
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -397,6 +397,7 @@ public class CustomPushNotificationHelper {
         String channelName = getConversationTitle(bundle);
         String senderName = bundle.getString("sender_name");
         String serverUrl = bundle.getString("server_url");
+        String urlOverride = bundle.getString("override_icon_url");
 
         int smallIconResId = getSmallIconResourceId(context, smallIcon);
         notification.setSmallIcon(smallIconResId);
@@ -404,23 +405,29 @@ public class CustomPushNotificationHelper {
         if (serverUrl != null && channelName.equals(senderName)) {
             try {
                 String senderId = bundle.getString("sender_id");
-                notification.setLargeIcon(userAvatar(context, serverUrl, senderId));
+                notification.setLargeIcon(userAvatar(context, serverUrl, senderId, urlOverride));
             } catch (IOException e) {
                 e.printStackTrace();
             }
         }
     }
 
-    private static Bitmap userAvatar(Context context, final String serverUrl, final String userId) throws IOException {
-        final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
-        final String token = Credentials.getCredentialsForServerSync(reactApplicationContext, serverUrl);
-
+    private static Bitmap userAvatar(Context context, final String serverUrl, final String userId, final String urlOverride) throws IOException {
         final OkHttpClient client = new OkHttpClient();
-        final String url = String.format("%s/api/v4/users/%s/image", serverUrl, userId);
-        Request request = new Request.Builder()
+        Request request;
+        String url;
+        if (urlOverride != null) {
+            request = new Request.Builder().url(urlOverride).build();
+            url = urlOverride;
+        } else {
+            final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
+            final String token = Credentials.getCredentialsForServerSync(reactApplicationContext, serverUrl);
+            url = String.format("%s/api/v4/users/%s/image", serverUrl, userId);
+            request = new Request.Builder()
                 .header("Authorization", String.format("Bearer %s", token))
                 .url(url)
                 .build();
+        }
         Response response = client.newCall(request).execute();
         if (response.code() == 200) {
             assert response.body() != null;

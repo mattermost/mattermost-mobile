@@ -5,13 +5,16 @@ import {tableSchema} from '@nozbe/watermelondb';
 
 import {MM_TABLES} from '@constants/database';
 
+import type {TableSchemaSpec} from '@nozbe/watermelondb/Schema';
+
 const {THREADS_IN_TEAM} = MM_TABLES.SERVER;
 
-export default tableSchema({
+export const tableSchemaSpec: TableSchemaSpec = {
     name: THREADS_IN_TEAM,
     columns: [
-        {name: 'loaded_in_global_threads', type: 'boolean', isIndexed: true},
         {name: 'team_id', type: 'string', isIndexed: true},
         {name: 'thread_id', type: 'string', isIndexed: true},
     ],
-});
+};
+
+export default tableSchema(tableSchemaSpec);

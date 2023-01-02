@@ -1,10 +1,3 @@
-//
-//  File.swift
-//  
-//
-//  Created by Miguel Alatzar on 8/26/21.
-//
-
 import Foundation
 import UserNotifications
 import SQLite
@@ -93,6 +86,30 @@ extension Network {
             print("invalid regex: \(error.localizedDescription)")
                     return []
         }
+    }
+    
+    public func fetchProfileImageSync(_ serverUrl: String, senderId: String, overrideIconUrl: String?) -> Data? {
+        var imgData: Data?
+        let semaphore = DispatchSemaphore(value: 0)
+        
+        func processResponse(data: Data?, response: URLResponse?, error: Error?) {
+            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 && error == nil {
+                imgData = data
+            }
+            semaphore.signal()
+        }
+        
+        if let overrideUrl = overrideIconUrl,
+           let url = URL(string: overrideUrl) {
+            request(url, withMethod: "GET", withServerUrl: "", completionHandler: processResponse)
+        } else {
+            let endpoint = "/users/\(senderId)/image"
+            let url = buildApiUrl(serverUrl, endpoint)
+            request(url, withMethod: "GET", withServerUrl: serverUrl, completionHandler: processResponse)
+        }
+        
+        semaphore.wait()
+        return imgData
     }
     
     public func postNotificationReceipt(_ ackNotification: AckNotification, completionHandler: @escaping ResponseHandler) {

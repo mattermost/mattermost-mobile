@@ -139,18 +139,18 @@ const Post = ({
 
     const handlePostPress = () => {
         if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
-            showPermalink(serverUrl, '', post.id, intl);
+            showPermalink(serverUrl, '', post.id);
             return;
         }
 
         const isValidSystemMessage = isAutoResponder || !isSystemPost;
-        if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
+        if (isEphemeral || hasBeenDeleted) {
+            removePost(serverUrl, post);
+        } else if (isValidSystemMessage && !hasBeenDeleted && !isPendingOrFailed) {
             if ([Screens.CHANNEL, Screens.PERMALINK].includes(location)) {
                 const postRootId = post.rootId || post.id;
                 fetchAndSwitchToThread(serverUrl, postRootId);
             }
-        } else if ((isEphemeral || hasBeenDeleted)) {
-            removePost(serverUrl, post);
         }
 
         setTimeout(() => {
@@ -182,7 +182,7 @@ const Post = ({
         }
 
         Keyboard.dismiss();
-        const passProps = {sourceScreen: location, post, showAddReaction};
+        const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
         if (isTablet) {
@@ -209,7 +209,7 @@ const Post = ({
     const highlightSaved = isSaved && !skipSavedHeader;
     const hightlightPinned = post.isPinned && !skipPinnedHeader;
     const itemTestID = `${testID}.${post.id}`;
-    const rightColumnStyle = [styles.rightColumn, (post.rootId && isLastReply && styles.rightColumnPadding)];
+    const rightColumnStyle: StyleProp<ViewStyle> = [styles.rightColumn, (Boolean(post.rootId) && isLastReply && styles.rightColumnPadding)];
     const pendingPostStyle: StyleProp<ViewStyle> | undefined = isPendingOrFailed ? styles.pendingPost : undefined;
 
     let highlightedStyle: StyleProp<ViewStyle>;
@@ -222,10 +222,15 @@ const Post = ({
     let header: ReactNode;
     let postAvatar: ReactNode;
     let consecutiveStyle: StyleProp<ViewStyle>;
-    const isProrityPost = Boolean(isPostPriorityEnabled && post.props?.priority);
+
+    // If the post is a priority post:
+    // 1. Show the priority label in channel screen
+    // 2. Show the priority label in thread screen for the root post
+    const showPostPriority = Boolean(isPostPriorityEnabled && post.metadata?.priority?.priority) && (location !== Screens.THREAD || !post.rootId);
+
     const sameSequence = hasReplies ? (hasReplies && post.rootId) : !post.rootId;
-    if (!isProrityPost && hasSameRoot && isConsecutivePost && sameSequence) {
-        consecutiveStyle = styles.consective;
+    if (!showPostPriority && hasSameRoot && isConsecutivePost && sameSequence) {
+        consecutiveStyle = styles.consecutive;
         postAvatar = <View style={styles.consecutivePostContainer}/>;
     } else {
         postAvatar = (
@@ -256,13 +261,13 @@ const Post = ({
                     differentThreadSequence={differentThreadSequence}
                     isAutoResponse={isAutoResponder}
                     isCRTEnabled={isCRTEnabled}
-                    isPostPriorityEnabled={isPostPriorityEnabled}
                     isEphemeral={isEphemeral}
                     isPendingOrFailed={isPendingOrFailed}
                     isSystemPost={isSystemPost}
                     isWebHook={isWebHook}
                     location={location}
                     post={post}
+                    showPostPriority={showPostPriority}
                     shouldRenderReplyButton={shouldRenderReplyButton}
                 />
             );

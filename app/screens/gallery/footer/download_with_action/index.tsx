@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CameraRoll from '@react-native-community/cameraroll';
+import {CameraRoll} from '@react-native-camera-roll/camera-roll';
 import React, {useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {NativeModules, Platform, StyleSheet, Text, View} from 'react-native';
@@ -13,6 +13,7 @@ import {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Share from 'react-native-share';
 
+import {updateLocalFilePath} from '@actions/local/file';
 import {downloadFile} from '@actions/remote/file';
 import CompassIcon from '@components/compass_icon';
 import ProgressBar from '@components/progress_bar';
@@ -173,6 +174,8 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
                 return;
             }
 
+            updateLocalFilePath(serverUrl, item.id, path);
+
             Share.open({
                 url: path,
                 saveToFiles: true,
@@ -193,6 +196,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
                     album: applicationName,
                 });
                 setSaved(true);
+                updateLocalFilePath(serverUrl, item.id, path);
             } catch {
                 setError(intl.formatMessage({id: 'gallery.save_failed', defaultMessage: 'Unable to save the file'}));
             }
@@ -223,6 +227,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
             if (response.data?.path) {
                 const path = response.data.path as string;
                 onDownloadSuccess?.(path);
+                updateLocalFilePath(serverUrl, item.id, path);
                 Share.open({
                     message: '',
                     title: '',

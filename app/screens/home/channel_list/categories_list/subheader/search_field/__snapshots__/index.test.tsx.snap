@@ -12,7 +12,7 @@ exports[`Search Field should match snapshot 1`] = `
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    Object {
+    {
       "backgroundColor": "rgba(255,255,255,0.12)",
       "borderRadius": 8,
       "flex": 1,
@@ -28,7 +28,7 @@ exports[`Search Field should match snapshot 1`] = `
   <Icon
     name="magnify"
     style={
-      Object {
+      {
         "color": "rgba(255,255,255,0.72)",
         "fontSize": 24,
         "width": 24,
@@ -37,7 +37,7 @@ exports[`Search Field should match snapshot 1`] = `
   />
   <Text
     style={
-      Object {
+      {
         "color": "rgba(255,255,255,0.72)",
         "fontFamily": "OpenSans",
         "fontSize": 16,

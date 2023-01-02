@@ -60,7 +60,6 @@ describe('Channels - Create Direct Message', () => {
 
         // * Verify basic elements on create direct message screen
         await expect(CreateDirectMessageScreen.closeButton).toBeVisible();
-        await expect(CreateDirectMessageScreen.startButton).toBeVisible();
         await expect(CreateDirectMessageScreen.searchInput).toBeVisible();
         await expect(CreateDirectMessageScreen.sectionUserList).toBeVisible();
 
@@ -98,7 +97,8 @@ describe('Channels - Create Direct Message', () => {
         await expect(ChannelScreen.headerTitle).toHaveText(newUserDisplayName);
         await expect(ChannelScreen.introDisplayName).toHaveText(newUserDisplayName);
 
-        // # Go back to channel list screen
+        // # Post a message and go back to channel list screen
+        await ChannelScreen.postMessage('test');
         await ChannelScreen.back();
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();
@@ -144,7 +144,8 @@ describe('Channels - Create Direct Message', () => {
         await expect(ChannelScreen.headerTitle).toHaveText(groupDisplayName);
         await expect(ChannelScreen.introDisplayName).toHaveText(groupDisplayName);
 
-        // # Go back to channel list screen
+        // # Post a message and go back to channel list screen
+        await ChannelScreen.postMessage('test');
         await ChannelScreen.back();
         await device.reloadReactNative();
         await ChannelListScreen.toBeVisible();

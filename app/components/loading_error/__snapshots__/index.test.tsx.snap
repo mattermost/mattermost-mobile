@@ -3,7 +3,7 @@
 exports[`Loading Error should match snapshot 1`] = `
 <View
   style={
-    Object {
+    {
       "alignItems": "center",
       "flex": 1,
       "justifyContent": "center",
@@ -13,7 +13,7 @@ exports[`Loading Error should match snapshot 1`] = `
 >
   <View
     style={
-      Object {
+      {
         "alignItems": "center",
         "backgroundColor": "rgba(255,255,255,0.08)",
         "borderRadius": 60,
@@ -26,7 +26,7 @@ exports[`Loading Error should match snapshot 1`] = `
     <Icon
       name="alert-circle-outline"
       style={
-        Object {
+        {
           "color": "rgba(255,255,255,0.48)",
           "fontSize": 72,
           "lineHeight": 72,
@@ -36,14 +36,14 @@ exports[`Loading Error should match snapshot 1`] = `
   </View>
   <Text
     style={
-      Array [
-        Object {
+      [
+        {
           "fontFamily": "Metropolis-SemiBold",
           "fontSize": 20,
           "fontWeight": "600",
           "lineHeight": 28,
         },
-        Object {
+        {
           "color": "#ffffff",
           "marginTop": 20,
           "textAlign": "center",
@@ -55,14 +55,14 @@ exports[`Loading Error should match snapshot 1`] = `
   </Text>
   <Text
     style={
-      Array [
-        Object {
+      [
+        {
           "fontFamily": "OpenSans",
           "fontSize": 16,
           "fontWeight": "400",
           "lineHeight": 24,
         },
-        Object {
+        {
           "color": "#ffffff",
           "marginTop": 4,
           "textAlign": "center",
@@ -84,7 +84,7 @@ exports[`Loading Error should match snapshot 1`] = `
     onResponderTerminationRequest={[Function]}
     onStartShouldSetResponder={[Function]}
     style={
-      Object {
+      {
         "alignItems": "center",
         "backgroundColor": "#ffffff",
         "borderRadius": 4,
@@ -100,8 +100,8 @@ exports[`Loading Error should match snapshot 1`] = `
   >
     <Text
       style={
-        Array [
-          Object {
+        [
+          {
             "alignItems": "center",
             "fontFamily": "OpenSans-SemiBold",
             "fontWeight": "600",
@@ -109,12 +109,12 @@ exports[`Loading Error should match snapshot 1`] = `
             "padding": 1,
             "textAlignVertical": "center",
           },
-          Object {
+          {
             "fontSize": 16,
             "lineHeight": 18,
             "marginTop": 1,
           },
-          Object {
+          {
             "color": "#1c58d9",
           },
         ]

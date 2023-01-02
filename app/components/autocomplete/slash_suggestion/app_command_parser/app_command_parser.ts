@@ -7,9 +7,9 @@ import {IntlShape} from 'react-intl';
 import {doAppFetchForm, doAppLookup} from '@actions/remote/apps';
 import {fetchChannelById, fetchChannelByName, searchChannels} from '@actions/remote/channel';
 import {fetchUsersByIds, fetchUsersByUsernames, searchUsers} from '@actions/remote/user';
-import {AppCallResponseTypes, AppFieldTypes, COMMAND_SUGGESTION_ERROR} from '@constants/apps';
+import {AppBindingLocations, AppCallResponseTypes, AppFieldTypes, COMMAND_SUGGESTION_ERROR} from '@constants/apps';
 import DatabaseManager from '@database/manager';
-import IntegrationsManager from '@managers/integrations_manager';
+import AppsManager from '@managers/apps_manager';
 import {getChannelById, getChannelByName} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getUserById, queryUsersByUsername} from '@queries/servers/user';
@@ -173,7 +173,7 @@ export class ParsedCommand {
                 }
 
                 case ParseState.EndCommand: {
-                    const binding = bindings.find(this.findBindings);
+                    const binding = bindings.find(this.findBindings, this);
                     if (!binding) {
                     // gone as far as we could, this token doesn't match a sub-command.
                     // return the state from the last matching binding
@@ -856,15 +856,13 @@ export class AppCommandParser {
     private teamID: string;
     private rootPostID?: string;
     private intl: IntlShape;
-    private theme: Theme;
 
-    constructor(serverUrl: string, intl: IntlShape, channelID: string, teamID = '', rootPostID = '', theme: Theme) {
+    constructor(serverUrl: string, intl: IntlShape, channelID: string, teamID = '', rootPostID = '') {
         this.serverUrl = serverUrl;
         this.channelID = channelID;
         this.rootPostID = rootPostID;
         this.teamID = teamID;
         this.intl = intl;
-        this.theme = theme;
 
         // We are making the assumption the database is always present at this level.
         // This assumption may not be correct. Please review.
@@ -986,6 +984,9 @@ export class AppCommandParser {
                                 break;
                             }
                             user = res.users[0] || res.existingUsers[0];
+                            if (!user) {
+                                break;
+                            }
                         }
                         parsed.values[f.name] = user.username;
                         break;
@@ -1000,6 +1001,9 @@ export class AppCommandParser {
                                 break;
                             }
                             channel = res.channel;
+                            if (!channel) {
+                                break;
+                            }
                         }
                         parsed.values[f.name] = channel.name;
                         break;
@@ -1022,7 +1026,6 @@ export class AppCommandParser {
         const result: AutocompleteSuggestion[] = [];
 
         const bindings = this.getCommandBindings();
-
         for (const binding of bindings) {
             let base = binding.label;
             if (!base) {
@@ -1179,14 +1182,21 @@ export class AppCommandParser {
 
         const errors: {[key: string]: string} = {};
         await Promise.all(parsed.resolvedForm.fields.map(async (f) => {
-            if (!values[f.name]) {
+            const fieldValue = values[f.name];
+            if (!fieldValue) {
                 return;
             }
             switch (f.type) {
                 case AppFieldTypes.DYNAMIC_SELECT:
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
+                        } else {
+                            commandValues = [fieldValue] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         for (const value of commandValues) {
                             if (options.find((o) => o.value === value)) {
                                 errors[f.name] = this.intl.formatMessage({
@@ -1202,7 +1212,7 @@ export class AppCommandParser {
                         break;
                     }
 
-                    values[f.name] = {label: values[f.name], value: values[f.name]};
+                    values[f.name] = {label: fieldValue, value: fieldValue};
                     break;
                 case AppFieldTypes.STATIC_SELECT: {
                     const getOption = (value: string) => {
@@ -1220,9 +1230,15 @@ export class AppCommandParser {
                         values[f.name] = undefined;
                     };
 
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
+                        } else {
+                            commandValues = [fieldValue] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         for (const value of commandValues) {
                             const option = getOption(value);
                             if (!option) {
@@ -1244,9 +1260,9 @@ export class AppCommandParser {
                         break;
                     }
 
-                    const option = getOption(values[f.name]);
+                    const option = getOption(fieldValue);
                     if (!option) {
-                        setOptionError(values[f.name]);
+                        setOptionError(fieldValue);
                         return;
                     }
                     values[f.name] = option;
@@ -1275,9 +1291,15 @@ export class AppCommandParser {
                         });
                     };
 
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
+                        } else {
+                            commandValues = [fieldValue] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         /* eslint-disable no-await-in-loop */
                         for (const value of commandValues) {
                             let userName = value;
@@ -1341,9 +1363,15 @@ export class AppCommandParser {
                         });
                     };
 
-                    if (f.multiselect && Array.isArray(values[f.name])) {
+                    if (f.multiselect) {
+                        let commandValues: string[] = [];
+                        if (Array.isArray(fieldValue)) {
+                            commandValues = fieldValue as string[];
+                        } else {
+                            commandValues = [fieldValue] as string[];
+                        }
+
                         const options: AppSelectOption[] = [];
-                        const commandValues = values[f.name] as string[];
                         /* eslint-disable no-await-in-loop */
                         for (const value of commandValues) {
                             let channelName = value;
@@ -1435,11 +1463,7 @@ export class AppCommandParser {
     // getCommandBindings returns the commands in the redux store.
     // They are grouped by app id since each app has one base command
     private getCommandBindings = (): AppBinding[] => {
-        const manager = IntegrationsManager.getManager(this.serverUrl);
-        if (this.rootPostID) {
-            return manager.getRHSCommandBindings();
-        }
-        return manager.getCommandBindings();
+        return AppsManager.getBindings(this.serverUrl, AppBindingLocations.COMMAND, Boolean(this.rootPostID));
     };
 
     // getChannel gets the channel in which the user is typing the command
@@ -1538,10 +1562,9 @@ export class AppCommandParser {
     };
 
     public getSubmittableForm = async (location: string, binding: AppBinding): Promise<{form?: AppForm; error?: string} | undefined> => {
-        const manager = IntegrationsManager.getManager(this.serverUrl);
         const rootID = this.rootPostID || '';
         const key = `${this.channelID}-${rootID}-${location}`;
-        const submittableForm = this.rootPostID ? manager.getAppRHSCommandForm(key) : manager.getAppCommandForm(key);
+        const submittableForm = AppsManager.getCommandForm(this.serverUrl, key, Boolean(this.rootPostID));
         if (submittableForm) {
             return {form: submittableForm};
         }
@@ -1555,11 +1578,7 @@ export class AppCommandParser {
         const context = await this.getAppContext(binding);
         const fetched = await this.fetchSubmittableForm(binding.form.source, context);
         if (fetched?.form) {
-            if (this.rootPostID) {
-                manager.setAppRHSCommandForm(key, fetched.form);
-            } else {
-                manager.setAppCommandForm(key, fetched.form);
-            }
+            AppsManager.setCommandForm(this.serverUrl, key, fetched.form, Boolean(this.rootPostID));
         }
         return fetched;
     };
@@ -1696,7 +1715,13 @@ export class AppCommandParser {
             prefix = '';
         }
 
-        const applicable = parsed.resolvedForm.fields.filter((field) => field.label && field.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()) && !parsed.values[field.name]);
+        const applicable = parsed.resolvedForm.fields.filter((field) => (
+            field.label &&
+            field.label.toLowerCase().startsWith(parsed.incomplete.toLowerCase()) &&
+            !parsed.values[field.name] &&
+            !field.readonly &&
+            field.type !== AppFieldTypes.MARKDOWN
+        ));
         if (applicable) {
             return applicable.map((f) => {
                 return {
@@ -1899,7 +1924,7 @@ export class AppCommandParser {
         if (input[0] === '@') {
             input = input.substring(1);
         }
-        const res = await searchUsers(this.serverUrl, input, this.channelID);
+        const res = await searchUsers(this.serverUrl, input, this.teamID, this.channelID);
         return getUserSuggestions(res.users);
     };
 
@@ -1908,7 +1933,7 @@ export class AppCommandParser {
         if (input[0] === '~') {
             input = input.substring(1);
         }
-        const res = await searchChannels(this.serverUrl, input);
+        const res = await searchChannels(this.serverUrl, input, this.teamID);
         return getChannelSuggestions(res.channels);
     };
 

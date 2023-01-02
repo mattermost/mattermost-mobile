@@ -12,41 +12,34 @@ import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
-import {queryServerName} from '@queries/app/servers';
-import {getCurrentUserId, getCommonSystemValues, getExpiredSession} from '@queries/servers/system';
+import {getServerDisplayName} from '@queries/app/servers';
+import {getCurrentUserId, getExpiredSession, getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {logWarning, logError} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
 import {getCSRFFromCookie} from '@utils/security';
-import {getDeviceTimezone, isTimezoneEnabled} from '@utils/timezone';
 
 import {loginEntry} from './entry';
 import {fetchDataRetentionPolicy} from './systems';
-import {autoUpdateTimezone} from './user';
 
 import type ClientError from '@client/rest/error';
 import type {LoginArgs} from '@typings/database/database';
 
 const HTTP_UNAUTHORIZED = 401;
 
-export const completeLogin = async (serverUrl: string, user: UserProfile) => {
+export const completeLogin = async (serverUrl: string) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
 
     const {database} = operator;
-    const {config, license}: { config: Partial<ClientConfig>; license: Partial<ClientLicense> } = await getCommonSystemValues(database);
+    const license = await getLicense(database);
+    const config = await getConfig(database);
 
-    if (!Object.keys(config)?.length || !Object.keys(license)?.length) {
+    if (!Object.keys(config)?.length || !license || !Object.keys(license)?.length) {
         return null;
-    }
-
-    // Set timezone
-    if (isTimezoneEnabled(config)) {
-        const timezone = getDeviceTimezone();
-        await autoUpdateTimezone(serverUrl, {deviceTimezone: timezone, userId: user.id});
     }
 
     // Data retention
@@ -131,7 +124,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 
     try {
-        deviceToken = await getDeviceToken(appDatabase);
+        deviceToken = await getDeviceToken();
         user = await client.login(
             loginId,
             password,
@@ -165,7 +158,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
 
     try {
         const {error, hasTeams, time} = await loginEntry({serverUrl, user});
-        completeLogin(serverUrl, user);
+        completeLogin(serverUrl);
         return {error: error as ClientError, failed: false, hasTeams, time};
     } catch (error) {
         return {error: error as ClientError, failed: false, time: 0};
@@ -211,11 +204,10 @@ export const cancelSessionNotification = async (serverUrl: string) => {
 
 export const scheduleSessionNotification = async (serverUrl: string) => {
     try {
-        const {database: appDatabase} = DatabaseManager.getAppDatabaseAndOperator();
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const sessions = await fetchSessions(serverUrl, 'me');
         const user = await getCurrentUser(database);
-        const serverName = await queryServerName(appDatabase, serverUrl);
+        const serverName = await getServerDisplayName(serverUrl);
 
         await cancelSessionNotification(serverUrl);
 
@@ -293,7 +285,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
                 displayName: serverDisplayName,
             },
         });
-        deviceToken = await getDeviceToken(database);
+        deviceToken = await getDeviceToken();
         user = await client.getMe();
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await server?.operator.handleSystem({
@@ -309,7 +301,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
 
     try {
         const {error, hasTeams, time} = await loginEntry({serverUrl, user, deviceToken});
-        completeLogin(serverUrl, user);
+        completeLogin(serverUrl);
         return {error: error as ClientError, failed: false, hasTeams, time};
     } catch (error) {
         return {error: error as ClientError, failed: false, time: 0};
@@ -319,9 +311,8 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
 async function findSession(serverUrl: string, sessions: Session[]) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const {database: appDatabase} = DatabaseManager.getAppDatabaseAndOperator();
         const expiredSession = await getExpiredSession(database);
-        const deviceToken = await getDeviceToken(appDatabase);
+        const deviceToken = await getDeviceToken();
 
         // First try and find the session by the given identifier  hyqddef7jjdktqiyy36gxa8sqy
         let session = sessions.find((s) => s.id === expiredSession?.id);

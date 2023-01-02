@@ -2,18 +2,18 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React from 'react';
+import React, {useMemo} from 'react';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {PostTypes} from '@constants/post';
-import {REACTION_PICKER_HEIGHT} from '@constants/reaction_picker';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
-import {dismissModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 import {isSystemMessage} from '@utils/post';
 
+import AppBindingsPostOptions from './options/app_bindings_post_option';
 import CopyTextOption from './options/copy_text_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
@@ -39,17 +39,19 @@ type PostOptionsProps = {
     post: PostModel;
     thread?: ThreadModel;
     componentId: string;
+    bindings: AppBinding[];
+    serverUrl: string;
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
     combinedPost, componentId, isSaved,
-    sourceScreen, post, thread,
+    sourceScreen, post, thread, bindings, serverUrl,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
 
     const close = () => {
-        dismissModal({componentId});
+        return dismissBottomSheet(Screens.POST_OPTIONS);
     };
 
     useNavButtonPressed(POST_OPTIONS_BUTTON, componentId, close, []);
@@ -60,21 +62,12 @@ const PostOptions = ({
     const canCopyText = canCopyPermalink && post.message;
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
-    const shouldRenderReply = canReply && sourceScreen !== Screens.THREAD;
-    const shouldRenderMarkAsUnread = canMarkAsUnread && !isSystemPost;
-    const shouldRenderCopyText = Boolean(canCopyText && post.message);
-    const shouldRenderEdit = canEdit && post.type !== PostTypes.VOICE_MESSAGE;
+    const shouldShowBindings = bindings.length > 0 && !isSystemPost;
 
     const snapPoints = [
-        shouldRenderReply,
-        shouldRenderFollow,
-        shouldRenderMarkAsUnread,
-        canCopyPermalink,
-        !isSystemPost,
-        shouldRenderCopyText,
-        canPin,
-        shouldRenderEdit,
-        canDelete,
+        canAddReaction, canCopyPermalink, canCopyText,
+        canDelete, canEdit && post.type !== PostTypes.VOICE_MESSAGE, shouldRenderFollow,
+        canMarkAsUnread, canPin, canReply, !isSystemPost,
     ].reduce((acc, v) => {
         return v ? acc + 1 : acc;
     }, 0);
@@ -82,67 +75,107 @@ const PostOptions = ({
     const renderContent = () => {
         return (
             <>
-                {canAddReaction && <ReactionBar postId={post.id}/>}
-                {shouldRenderReply && <ReplyOption post={post}/>}
-                {shouldRenderFollow &&
-                    <FollowThreadOption thread={thread}/>
-                }
-                {shouldRenderMarkAsUnread &&
-                    <MarkAsUnreadOption
-                        post={post}
-                        sourceScreen={sourceScreen}
+                {canAddReaction &&
+                    <ReactionBar
+                        bottomSheetId={Screens.POST_OPTIONS}
+                        postId={post.id}
                     />
+                }
+                {canReply && sourceScreen !== Screens.THREAD &&
+                    <ReplyOption
+                        bottomSheetId={Screens.POST_OPTIONS}
+                        post={post}
+                    />
+                }
+                {shouldRenderFollow &&
+                    <FollowThreadOption
+                        bottomSheetId={Screens.POST_OPTIONS}
+                        thread={thread}
+                    />
+                }
+                {canMarkAsUnread && !isSystemPost &&
+                <MarkAsUnreadOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    post={post}
+                    sourceScreen={sourceScreen}
+                />
                 }
                 {canCopyPermalink &&
-                    <CopyPermalinkOption
-                        post={post}
-                        sourceScreen={sourceScreen}
-                    />
+                <CopyPermalinkOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    post={post}
+                    sourceScreen={sourceScreen}
+                />
                 }
                 {!isSystemPost &&
-                    <SaveOption
-                        isSaved={isSaved}
-                        postId={post.id}
-                    />
+                <SaveOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    isSaved={isSaved}
+                    postId={post.id}
+                />
                 }
-                {shouldRenderCopyText &&
-                    <CopyTextOption
-                        postMessage={post.message}
-                        sourceScreen={sourceScreen}
-                    />}
+                {Boolean(canCopyText && post.message) &&
+                <CopyTextOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    postMessage={post.message}
+                    sourceScreen={sourceScreen}
+                />}
                 {canPin &&
-                    <PinChannelOption
-                        isPostPinned={post.isPinned}
-                        postId={post.id}
-                    />
+                <PinChannelOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    isPostPinned={post.isPinned}
+                    postId={post.id}
+                />
                 }
-                {shouldRenderEdit &&
-                    <EditOption
-                        post={post}
-                        canDelete={canDelete}
-                    />
+                {canEdit && post.type !== PostTypes.VOICE_MESSAGE &&
+                <EditOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    post={post}
+                    canDelete={canDelete}
+                />
                 }
                 {canDelete &&
                 <DeletePostOption
+                    bottomSheetId={Screens.POST_OPTIONS}
                     combinedPost={combinedPost}
                     post={post}
                 />}
+                {shouldShowBindings &&
+                <AppBindingsPostOptions
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    post={post}
+                    serverUrl={serverUrl}
+                    bindings={bindings}
+                />
+                }
             </>
         );
     };
 
-    const additionalSnapPoints = 1;
+    const finalSnapPoints = useMemo(() => {
+        const additionalSnapPoints = 2;
+
+        const lowerSnapPoints = snapPoints + additionalSnapPoints;
+        if (!shouldShowBindings) {
+            return [lowerSnapPoints * ITEM_HEIGHT, 10];
+        }
+
+        const upperSnapPoints = lowerSnapPoints + bindings.length;
+        return [upperSnapPoints * ITEM_HEIGHT, lowerSnapPoints * ITEM_HEIGHT, 10];
+    }, [snapPoints, shouldShowBindings, bindings.length]);
+
+    const initialSnapIndex = shouldShowBindings ? 1 : 0;
 
     return (
         <BottomSheet
             renderContent={renderContent}
             closeButtonId={POST_OPTIONS_BUTTON}
             componentId={Screens.POST_OPTIONS}
-            initialSnapIndex={0}
-            snapPoints={[(((snapPoints + additionalSnapPoints) * ITEM_HEIGHT) + (canAddReaction ? REACTION_PICKER_HEIGHT : 0)), 10]}
+            initialSnapIndex={initialSnapIndex}
+            snapPoints={finalSnapPoints}
             testID='post_options'
         />
     );
 };
 
-export default PostOptions;
+export default React.memo(PostOptions);

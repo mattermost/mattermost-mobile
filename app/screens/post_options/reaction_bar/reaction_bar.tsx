@@ -18,6 +18,7 @@ import {
 } from '@constants/reaction_picker';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -25,6 +26,7 @@ import PickReaction from './pick_reaction';
 import Reaction from './reaction';
 
 type QuickReactionProps = {
+    bottomSheetId: typeof Screens[keyof typeof Screens];
     recentEmojis: string[];
     postId: string;
 };
@@ -37,11 +39,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             height: REACTION_PICKER_HEIGHT,
             justifyContent: 'space-between',
+            marginBottom: 8,
         },
     };
 });
 
-const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
+const ReactionBar = ({bottomSheetId, recentEmojis = [], postId}: QuickReactionProps) => {
     const theme = useTheme();
     const intl = useIntl();
     const {width} = useWindowDimensions();
@@ -49,13 +52,15 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
     const isSmallDevice = width < SMALL_ICON_BREAKPOINT;
     const styles = getStyleSheet(theme);
 
+    const isTablet = useIsTablet();
+
     const handleEmojiPress = useCallback(async (emoji: string) => {
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         addReaction(serverUrl, postId, emoji);
-    }, [postId, serverUrl]);
+    }, [bottomSheetId, postId, serverUrl]);
 
     const openEmojiPicker = useCallback(async () => {
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
 
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
         const screen = Screens.EMOJI_PICKER;
@@ -63,7 +68,7 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
         const passProps = {closeButton, onEmojiPress: handleEmojiPress};
 
         showModal(screen, title, passProps);
-    }, [intl, theme]);
+    }, [bottomSheetId, intl, theme]);
 
     let containerSize = LARGE_CONTAINER_SIZE;
     let iconSize = LARGE_ICON_SIZE;
@@ -74,7 +79,7 @@ const ReactionBar = ({recentEmojis = [], postId}: QuickReactionProps) => {
     }
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, {marginTop: isTablet ? 12 : 0}]}>
             {
                 recentEmojis.map((emoji) => {
                     return (

@@ -3,16 +3,14 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import React, {useCallback, useState} from 'react';
-import {useIntl} from 'react-intl';
+import React, {useCallback, useMemo, useState} from 'react';
 import {map} from 'rxjs/operators';
 
-import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/remote/apps';
+import {postEphemeralCallResponseForPost} from '@actions/remote/apps';
 import AutocompleteSelector from '@components/autocomplete_selector';
-import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
+import {useAppBinding} from '@hooks/apps';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {createCallContext} from '@utils/apps';
 import {logDebug} from '@utils/log';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -28,63 +26,46 @@ type Props = {
 
 const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
     const [selected, setSelected] = useState<string>();
-    const intl = useIntl();
     const serverUrl = useServerUrl();
 
-    const onSelect = useCallback(async (picked?: string | string[]) => {
-        if (!picked || Array.isArray(picked)) { // We are sure AutocompleteSelector only returns one, since it is not multiselect.
+    const onCallResponse = useCallback((callResp: AppCallResponse, message: string) => {
+        postEphemeralCallResponseForPost(serverUrl, callResp, message, post);
+    }, [serverUrl, post]);
+
+    const context = useMemo(() => ({
+        channel_id: post.channelId,
+        team_id: teamID || currentTeamId,
+        post_id: post.id,
+        root_id: post.rootId || post.id,
+    }), [post, teamID, currentTeamId]);
+
+    const config = useMemo(() => ({
+        onSuccess: onCallResponse,
+        onError: onCallResponse,
+    }), [onCallResponse]);
+
+    const handleBindingSubmit = useAppBinding(context, config);
+
+    const onSelect = useCallback(async (picked: SelectedDialogOption) => {
+        if (!picked || Array.isArray(picked)) {
             return;
         }
-        setSelected(picked);
+        setSelected(picked.value);
 
-        const bind = binding.bindings?.find((b) => b.location === picked);
+        const bind = binding.bindings?.find((b) => b.location === picked.value);
         if (!bind) {
             logDebug('Trying to select element not present in binding.');
             return;
         }
 
-        const context = createCallContext(
-            bind.app_id,
-            AppBindingLocations.IN_POST + bind.location,
-            post.channelId,
-            teamID || currentTeamId,
-            post.id,
-        );
+        const finish = await handleBindingSubmit(bind);
+        finish();
+    }, [handleBindingSubmit, binding.bindings]);
 
-        const res = await handleBindingClick(serverUrl, bind, context, intl);
-        if (res.error) {
-            const errorResponse = res.error;
-            const errorMessage = errorResponse.text || intl.formatMessage({
-                id: 'apps.error.unknown',
-                defaultMessage: 'Unknown error occurred.',
-            });
-            postEphemeralCallResponseForPost(serverUrl, errorResponse, errorMessage, post);
-            return;
-        }
-
-        const callResp = res.data!;
-        switch (callResp.type) {
-            case AppCallResponseTypes.OK:
-                if (callResp.text) {
-                    postEphemeralCallResponseForPost(serverUrl, callResp, callResp.text, post);
-                }
-                return;
-            case AppCallResponseTypes.NAVIGATE:
-            case AppCallResponseTypes.FORM:
-                return;
-            default: {
-                const errorMessage = intl.formatMessage({
-                    id: 'apps.error.responses.unknown_type',
-                    defaultMessage: 'App response type not supported. Response type: {type}.',
-                }, {
-                    type: callResp.type,
-                });
-                postEphemeralCallResponseForPost(serverUrl, callResp, errorMessage, post);
-            }
-        }
-    }, []);
-
-    const options = binding.bindings?.map<PostActionOption>((b: AppBinding) => ({text: b.label, value: b.location || ''}));
+    const options = useMemo(() => binding.bindings?.map<PostActionOption>((b: AppBinding) => ({
+        text: b.label,
+        value: b.location || '',
+    })), [binding.bindings]);
 
     return (
         <AutocompleteSelector

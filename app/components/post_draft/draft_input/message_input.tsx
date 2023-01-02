@@ -6,6 +6,8 @@ import React from 'react';
 import PostInput from '../post_input';
 import Uploads from '../uploads';
 
+import type {PasteInputRef} from '@mattermost/react-native-paste-input';
+
 type Props = {
     testID?: string;
     channelId: string;
@@ -18,32 +20,34 @@ type Props = {
 
     // Send Handler
     sendMessage: () => void;
-    canSend: boolean;
     maxMessageLength: number;
 
     // Draft Handler
+    addFiles: (files: FileInfo[]) => void;
     files: FileInfo[];
-    value: string;
+    inputRef: React.MutableRefObject<PasteInputRef | undefined>;
+    setIsFocused: (isFocused: boolean) => void;
     uploadFileError: React.ReactNode;
     updateValue: (value: string) => void;
-    addFiles: (files: FileInfo[]) => void;
-    setRecording: (v: boolean) => void;
+    value: string;
 }
 
 export default function MessageInput({
-    testID,
+    addFiles,
     channelId,
     currentUserId,
+    cursorPosition,
     files,
+    inputRef,
     maxMessageLength,
     rootId = '',
-    value,
-    uploadFileError,
     sendMessage,
-    updateValue,
-    addFiles,
+    setIsFocused,
+    testID,
     updateCursorPosition,
-    cursorPosition,
+    updateValue,
+    uploadFileError,
+    value,
 }: Props) {
     // Render
     const postInputTestID = `${testID}.post.input`;
@@ -53,16 +57,18 @@ export default function MessageInput({
         <>
             {!isHandlingVoice && (
                 <PostInput
-                    testID={postInputTestID}
+                    addFiles={addFiles}
                     channelId={channelId}
+                    cursorPosition={cursorPosition}
+                    inputRef={inputRef}
                     maxMessageLength={maxMessageLength}
                     rootId={rootId}
-                    cursorPosition={cursorPosition}
+                    sendMessage={sendMessage}
+                    setIsFocused={setIsFocused}
+                    testID={postInputTestID}
                     updateCursorPosition={updateCursorPosition}
                     updateValue={updateValue}
                     value={value}
-                    addFiles={addFiles}
-                    sendMessage={sendMessage}
                 />
             )}
             <Uploads

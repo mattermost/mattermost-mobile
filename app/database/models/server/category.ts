@@ -104,11 +104,18 @@ export default class CategoryModel extends Model implements CategoryInterface {
             Q.sortBy('last_post_at', Q.desc),
         );
 
-    /** hasChannels : Returns a boolean indicating if the category has channels */
-    @lazy hasChannels = this.categoryChannels.observeCount().pipe(
-        map((c) => c > 0),
-        distinctUntilChanged(),
-    );
+    observeHasChannels = (canViewArchived: boolean, channelId: string) => {
+        return this.channels.observeWithColumns(['delete_at']).pipe(
+            map((channels) => {
+                if (canViewArchived) {
+                    return channels.filter((c) => c.deleteAt === 0 || c.id === channelId).length > 0;
+                }
+
+                return channels.filter((c) => c.deleteAt === 0).length > 0;
+            }),
+            distinctUntilChanged(),
+        );
+    };
 
     toCategoryWithChannels = async (): Promise<CategoryWithChannels> => {
         const categoryChannels = await this.categoryChannels.fetch();

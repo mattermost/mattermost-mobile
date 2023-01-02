@@ -1,55 +1,65 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useCallback, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
-    View,
-    Text,
+    DeviceEventEmitter,
+    Keyboard,
     Platform,
     Pressable,
     SafeAreaView,
     ScrollView,
+    Text,
     useWindowDimensions,
-    DeviceEventEmitter, Keyboard,
+    View,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
 import {appEntry} from '@actions/remote/entry';
-import {
-    leaveCall,
-    muteMyself,
-    raiseHand,
-    setSpeakerphoneOn,
-    unmuteMyself,
-    unraiseHand,
-} from '@calls/actions';
+import {leaveCall, muteMyself, setSpeakerphoneOn, unmuteMyself} from '@calls/actions';
+import {startCallRecording, stopCallRecording} from '@calls/actions/calls';
+import {recordingAlert, recordingWillBePostedAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
-import RaisedHandIcon from '@calls/icons/raised_hand_icon';
-import UnraisedHandIcon from '@calls/icons/unraised_hand_icon';
-import {CallParticipant, CurrentCall, VoiceEventData} from '@calls/types/calls';
+import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
+import EmojiList from '@calls/components/emoji_list';
+import PermissionErrorBar from '@calls/components/permission_error_bar';
+import ReactionBar from '@calls/components/reaction_bar';
+import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
+import {usePermissionsChecker} from '@calls/hooks';
+import {useCallsConfig} from '@calls/state';
+import {CallParticipant, CurrentCall} from '@calls/types/calls';
 import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {WebsocketEvents, Screens} from '@constants';
+import {Preferences, Screens, WebsocketEvents} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {bottomSheet, dismissBottomSheet, goToScreen, popTopScreen} from '@screens/navigation';
+import {
+    bottomSheet,
+    dismissAllModalsAndPopToScreen,
+    dismissBottomSheet,
+    goToScreen,
+    popTopScreen,
+} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
 export type Props = {
     componentId: string;
     currentCall: CurrentCall | null;
     participantsDict: Dictionary<CallParticipant>;
+    micPermissionsGranted: boolean;
     teammateNameDisplay: string;
+    fromThreadScreen?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -74,6 +84,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     header: {
         flexDirection: 'row',
+        alignItems: 'center',
         width: '100%',
         paddingTop: 10,
         paddingLeft: 14,
@@ -107,10 +118,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         flexDirection: 'row',
         flexWrap: 'wrap',
-        width: '100%',
-        height: '100%',
-        alignContent: 'center',
-        alignItems: 'center',
+        alignContent: 'flex-start',
     },
     usersScrollLandscapeScreenOn: {
         position: 'absolute',
@@ -163,37 +171,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     mute: {
         flexDirection: 'column',
         alignItems: 'center',
-        padding: 30,
+        padding: 24,
         backgroundColor: '#3DB887',
         borderRadius: 20,
         marginBottom: 10,
         marginTop: 20,
-        marginLeft: 10,
-        marginRight: 10,
+        marginLeft: 16,
+        marginRight: 16,
     },
     muteMuted: {
         backgroundColor: 'rgba(255,255,255,0.16)',
-    },
-    handIcon: {
-        borderRadius: 34,
-        padding: 34,
-        margin: 10,
-        overflow: 'hidden',
-        backgroundColor: 'rgba(255,255,255,0.12)',
-    },
-    handIconRaisedHand: {
-        backgroundColor: 'rgba(255, 188, 66, 0.16)',
-    },
-    handIconSvgStyle: {
-        position: 'relative',
-        top: -12,
-        right: 13,
     },
     speakerphoneIcon: {
         color: theme.sidebarText,
         backgroundColor: 'rgba(255,255,255,0.12)',
     },
-    speakerphoneIconOn: {
+    buttonOn: {
         color: 'black',
         backgroundColor: 'white',
     },
@@ -233,7 +226,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         overflow: 'hidden',
     },
     hangUpIcon: {
-        backgroundColor: '#D24B4E',
+        backgroundColor: Preferences.THEMES.denim.dndIndicator,
     },
     screenShareImage: {
         flex: 7,
@@ -245,19 +238,42 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: 'white',
         margin: 3,
     },
+    unavailableText: {
+        color: changeOpacity(theme.sidebarText, 0.32),
+    },
+    denimDND: {
+        color: Preferences.THEMES.denim.dndIndicator,
+    },
 }));
 
-const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDisplay}: Props) => {
+const CallScreen = ({
+    componentId,
+    currentCall,
+    participantsDict,
+    micPermissionsGranted,
+    teammateNameDisplay,
+    fromThreadScreen,
+}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const {width, height} = useWindowDimensions();
-    const isLandscape = width > height;
+    const serverUrl = useServerUrl();
+    const {EnableRecordings} = useCallsConfig(serverUrl);
+    usePermissionsChecker(micPermissionsGranted);
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
-    const myParticipant = currentCall?.participants[currentCall.myUserId];
+    const [showReactions, setShowReactions] = useState(false);
+
     const style = getStyleSheet(theme);
+    const isLandscape = width > height;
     const showControls = !isLandscape || showControlsInLandscape;
-    const [speakers, setSpeakers] = useState<Dictionary<boolean>>({});
+    const myParticipant = currentCall?.participants[currentCall.myUserId];
+    const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
+
+    const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
+    const recordOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Record'});
+    const stopRecordingOptionTitle = intl.formatMessage({id: 'mobile.calls_stop_recording', defaultMessage: 'Stop Recording'});
+    const openChannelOptionTitle = intl.formatMessage({id: 'mobile.calls_open_channel', defaultMessage: 'Open Channel'});
 
     useEffect(() => {
         mergeNavigationOptions('Call', {
@@ -269,30 +285,6 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
             },
         });
     }, []);
-
-    useEffect(() => {
-        const handleVoiceOn = (data: VoiceEventData) => {
-            if (data.channelId === currentCall?.channelId) {
-                setSpeakers((prev) => ({...prev, [data.userId]: true}));
-            }
-        };
-        const handleVoiceOff = (data: VoiceEventData) => {
-            if (data.channelId === currentCall?.channelId && speakers.hasOwnProperty(data.userId)) {
-                setSpeakers((prev) => {
-                    const next = {...prev};
-                    delete next[data.userId];
-                    return next;
-                });
-            }
-        };
-
-        const onVoiceOn = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_ON, handleVoiceOn);
-        const onVoiceOff = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_USER_VOICE_OFF, handleVoiceOff);
-        return () => {
-            onVoiceOn.remove();
-            onVoiceOff.remove();
-        };
-    }, [speakers, currentCall?.channelId]);
 
     const leaveCallHandler = useCallback(() => {
         popTopScreen();
@@ -307,18 +299,37 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         }
     }, [myParticipant?.muted]);
 
-    const toggleRaiseHand = useCallback(() => {
-        const raisedHand = myParticipant?.raisedHand || 0;
-        if (raisedHand > 0) {
-            unraiseHand();
-        } else {
-            raiseHand();
-        }
-    }, [myParticipant?.raisedHand]);
+    const toggleReactions = useCallback(() => {
+        setShowReactions((prev) => !prev);
+    }, [setShowReactions]);
+
+    const toggleSpeakerPhone = useCallback(() => {
+        setSpeakerphoneOn(!currentCall?.speakerphoneOn);
+    }, [currentCall?.speakerphoneOn]);
 
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
     }, [showControlsInLandscape]);
+
+    const startRecording = useCallback(async () => {
+        Keyboard.dismiss();
+        await dismissBottomSheet();
+        if (!currentCall) {
+            return;
+        }
+
+        await startCallRecording(currentCall.serverUrl, currentCall.channelId);
+    }, [currentCall?.channelId, currentCall?.serverUrl]);
+
+    const stopRecording = useCallback(async () => {
+        Keyboard.dismiss();
+        await dismissBottomSheet();
+        if (!currentCall) {
+            return;
+        }
+
+        await stopCallRecording(currentCall.serverUrl, currentCall.channelId);
+    }, [currentCall?.channelId, currentCall?.serverUrl]);
 
     const switchToThread = useCallback(async () => {
         Keyboard.dismiss();
@@ -329,43 +340,84 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
 
         const activeUrl = await DatabaseManager.getActiveServerUrl();
         if (activeUrl === currentCall.serverUrl) {
-            goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
+            await dismissAllModalsAndPopToScreen(Screens.THREAD, callThreadOptionTitle, {rootId: currentCall.threadId});
             return;
         }
 
         // TODO: this is a temporary solution until we have a proper cross-team thread view.
         //  https://mattermost.atlassian.net/browse/MM-45752
-        popTopScreen(componentId);
+        await popTopScreen(componentId);
+        if (fromThreadScreen) {
+            await popTopScreen(Screens.THREAD);
+        }
         await DatabaseManager.setActiveServerDatabase(currentCall.serverUrl);
         await appEntry(currentCall.serverUrl, Date.now());
-        goToScreen(Screens.THREAD, '', {rootId: currentCall.threadId});
-    }, [currentCall?.serverUrl, currentCall?.threadId]);
+        await goToScreen(Screens.THREAD, callThreadOptionTitle, {rootId: currentCall.threadId});
+    }, [currentCall?.serverUrl, currentCall?.threadId, fromThreadScreen, componentId, callThreadOptionTitle]);
 
-    const showOtherActions = useCallback(() => {
+    // The user should receive a recording alert if all of the following conditions apply:
+    // - Recording has started, recording has not ended
+    const isHost = Boolean(currentCall?.hostId === myParticipant?.id);
+    const recording = Boolean(currentCall?.recState?.start_at && !currentCall.recState.end_at);
+    if (recording) {
+        recordingAlert(isHost, intl);
+    }
+
+    // The user should receive a recording finished alert if all of the following conditions apply:
+    // - Is the host, recording has started, and recording has ended
+    if (isHost && currentCall?.recState?.start_at && currentCall.recState.end_at) {
+        recordingWillBePostedAlert(intl);
+    }
+
+    // The user should see the loading only if:
+    // - Recording has been initialized, recording has not been started, and recording has not ended
+    const waitingForRecording = Boolean(currentCall?.recState?.init_at && !currentCall.recState.start_at && !currentCall.recState.end_at && isHost);
+
+    const showOtherActions = useCallback(async () => {
         const renderContent = () => {
             return (
-                <View style={style.bottomSheet}>
+                <View>
+                    {
+                        isHost && EnableRecordings && !(waitingForRecording || recording) &&
+                        <SlideUpPanelItem
+                            icon={'record-circle-outline'}
+                            onPress={startRecording}
+                            text={recordOptionTitle}
+                        />
+                    }
+                    {
+                        isHost && EnableRecordings && (waitingForRecording || recording) &&
+                        <SlideUpPanelItem
+                            icon={'record-square-outline'}
+                            onPress={stopRecording}
+                            text={stopRecordingOptionTitle}
+                            textStyles={style.denimDND}
+                        />
+                    }
                     <SlideUpPanelItem
                         icon='message-text-outline'
                         onPress={switchToThread}
-                        text={intl.formatMessage({id: 'mobile.calls_chat_thread', defaultMessage: 'Chat thread'})}
+                        text={callThreadOptionTitle}
                     />
                 </View>
             );
         };
 
-        bottomSheet({
+        const items = isHost && EnableRecordings ? 3 : 2;
+        await bottomSheet({
             closeButtonId: 'close-other-actions',
             renderContent,
-            snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
+            snapPoints: [bottomSheetSnapPoint(items, ITEM_HEIGHT, insets.bottom), 10],
             title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
             theme,
         });
-    }, [insets, intl, theme]);
+    }, [insets, intl, theme, isHost, EnableRecordings, waitingForRecording, recording, startRecording,
+        recordOptionTitle, stopRecording, stopRecordingOptionTitle, style, switchToThread, callThreadOptionTitle,
+        openChannelOptionTitle]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
-            if (channelId === currentCall?.channelId && NavigationStore.getNavigationTopComponentId() === componentId) {
+            if (channelId === currentCall?.channelId && NavigationStore.getVisibleScreen() === componentId) {
                 Navigation.pop(componentId);
             }
         });
@@ -377,7 +429,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         // Note: this happens because the screen is "rendered", even after the screen has been popped, and the
         // currentCall will have already been set to null when those extra renders run. We probably don't ever need
         // to pop, but just in case.
-        if (NavigationStore.getNavigationTopComponentId() === componentId) {
+        if (NavigationStore.getVisibleScreen() === componentId) {
             // ignore the error because the call screen has likely already been popped async
             Navigation.pop(componentId).catch(() => null);
         }
@@ -399,7 +451,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                 <FormattedText
                     id={'mobile.calls_viewing_screen'}
                     defaultMessage={'You are viewing {name}\'s screen'}
-                    values={{name: displayUsername(participantsDict[currentCall.screenOn].userModel, teammateNameDisplay)}}
+                    values={{name: displayUsername(participantsDict[currentCall.screenOn].userModel, intl.locale, teammateNameDisplay)}}
                     style={style.screenShareText}
                 />
             </Pressable>
@@ -412,8 +464,8 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         usersList = (
             <ScrollView
                 alwaysBounceVertical={false}
-                horizontal={currentCall?.screenOn !== ''}
-                contentContainerStyle={[isLandscape && currentCall?.screenOn && style.usersScrollLandscapeScreenOn]}
+                horizontal={currentCall.screenOn !== ''}
+                contentContainerStyle={[isLandscape && Boolean(currentCall.screenOn) && style.usersScrollLandscapeScreenOn]}
             >
                 <Pressable
                     testID='users-list'
@@ -423,24 +475,26 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                     {participants.map((user) => {
                         return (
                             <View
-                                style={[style.user, currentCall?.screenOn && style.userScreenOn]}
+                                style={[style.user, Boolean(currentCall.screenOn) && style.userScreenOn]}
                                 key={user.id}
                             >
                                 <CallAvatar
                                     userModel={user.userModel}
-                                    volume={speakers[user.id] ? 1 : 0}
+                                    volume={currentCall.voiceOn[user.id] ? 1 : 0}
                                     muted={user.muted}
                                     sharingScreen={user.id === currentCall.screenOn}
                                     raisedHand={Boolean(user.raisedHand)}
+                                    reaction={user.reaction?.emoji}
                                     size={currentCall.screenOn ? 'm' : 'l'}
                                     serverUrl={currentCall.serverUrl}
                                 />
                                 <Text style={style.username}>
-                                    {displayUsername(user.userModel, teammateNameDisplay)}
+                                    {displayUsername(user.userModel, intl.locale, teammateNameDisplay)}
                                     {user.id === myParticipant.id &&
                                         ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
                                     }
                                 </Text>
+                                {user.id === currentCall.hostId && <CallsBadge type={CallsBadgeType.Host}/>}
                             </View>
                         );
                     })}
@@ -449,19 +503,6 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         );
     }
 
-    const HandIcon = myParticipant.raisedHand ? UnraisedHandIcon : RaisedHandIcon;
-    const LowerHandText = (
-        <FormattedText
-            id={'mobile.calls_lower_hand'}
-            defaultMessage={'Lower hand'}
-            style={style.buttonText}
-        />);
-    const RaiseHandText = (
-        <FormattedText
-            id={'mobile.calls_raise_hand'}
-            defaultMessage={'Raise hand'}
-            style={style.buttonText}
-        />);
     const MuteText = (
         <FormattedText
             id={'mobile.calls_mute'}
@@ -472,7 +513,7 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
         <FormattedText
             id={'mobile.calls_unmute'}
             defaultMessage={'Unmute'}
-            style={style.buttonText}
+            style={[style.buttonText, !micPermissionsGranted && style.unavailableText]}
         />);
 
     return (
@@ -481,6 +522,8 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                 <View
                     style={[style.header, isLandscape && style.headerLandscape, !showControls && style.headerLandscapeNoControls]}
                 >
+                    {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
+                    {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
                     <CallDuration
                         style={style.time}
                         value={currentCall.startTime}
@@ -496,6 +539,9 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                 </View>
                 {usersList}
                 {screenShareView}
+                {micPermissionsError && <PermissionErrorBar/>}
+                <EmojiList reactionStream={currentCall.reactionStream}/>
+                {showReactions && <ReactionBar raisedHand={myParticipant.raisedHand}/>}
                 <View
                     style={[style.buttons, isLandscape && style.buttonsLandscape, !showControls && style.buttonsLandscapeNoControls]}
                 >
@@ -504,10 +550,12 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                             testID='mute-unmute'
                             style={[style.mute, myParticipant.muted && style.muteMuted]}
                             onPress={muteUnmuteHandler}
+                            disabled={!micPermissionsGranted}
                         >
-                            <CompassIcon
+                            <UnavailableIconWrapper
                                 name={myParticipant.muted ? 'microphone-off' : 'microphone'}
                                 size={24}
+                                unavailable={!micPermissionsGranted}
                                 style={style.muteIcon}
                             />
                             {myParticipant.muted ? UnmuteText : MuteText}
@@ -532,12 +580,12 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                         <Pressable
                             testID={'toggle-speakerphone'}
                             style={style.button}
-                            onPress={() => setSpeakerphoneOn(!currentCall?.speakerphoneOn)}
+                            onPress={toggleSpeakerPhone}
                         >
                             <CompassIcon
                                 name={'volume-high'}
                                 size={24}
-                                style={[style.buttonIcon, style.speakerphoneIcon, currentCall?.speakerphoneOn && style.speakerphoneIconOn]}
+                                style={[style.buttonIcon, style.speakerphoneIcon, currentCall.speakerphoneOn && style.buttonOn]}
                             />
                             <FormattedText
                                 id={'mobile.calls_speaker'}
@@ -547,16 +595,18 @@ const CallScreen = ({componentId, currentCall, participantsDict, teammateNameDis
                         </Pressable>
                         <Pressable
                             style={style.button}
-                            onPress={toggleRaiseHand}
+                            onPress={toggleReactions}
                         >
-                            <HandIcon
-                                fill={myParticipant.raisedHand ? 'rgb(255, 188, 66)' : theme.sidebarText}
-                                height={24}
-                                width={24}
-                                style={[style.buttonIcon, style.handIcon, myParticipant.raisedHand && style.handIconRaisedHand]}
-                                svgStyle={style.handIconSvgStyle}
+                            <CompassIcon
+                                name={'emoticon-happy-outline'}
+                                size={24}
+                                style={[style.buttonIcon, showReactions && style.buttonOn]}
                             />
-                            {myParticipant.raisedHand ? LowerHandText : RaiseHandText}
+                            <FormattedText
+                                id={'mobile.calls_react'}
+                                defaultMessage={'React'}
+                                style={style.buttonText}
+                            />
                         </Pressable>
                         <Pressable
                             style={style.button}

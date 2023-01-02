@@ -6,13 +6,20 @@ import assert from 'assert';
 import {act, renderHook} from '@testing-library/react-hooks';
 
 import {
+    newCurrentCall,
     setCallsState,
     setChannelsWithCalls,
     setCurrentCall,
+    setHost,
+    setMicPermissionsErrorDismissed,
+    setMicPermissionsGranted,
+    setRecordingState,
     useCallsConfig,
     useCallsState,
     useChannelsWithCalls,
     useCurrentCall,
+    useGlobalCallsState,
+    userReacted,
 } from '@calls/state';
 import {
     setCalls,
@@ -30,12 +37,23 @@ import {
     setSpeakerPhone,
     setConfig,
     setPluginEnabled,
+    setUserVoiceOn,
 } from '@calls/state/actions';
 import {License} from '@constants';
 
-import {CallsState, CurrentCall, DefaultCallsConfig, DefaultCallsState} from '../types/calls';
+import {
+    Call,
+    CallsState,
+    CurrentCall,
+    DefaultCallsConfig,
+    DefaultCallsState,
+    DefaultCurrentCall,
+    DefaultGlobalCallsState,
+    GlobalCallsState,
+    RecordingState,
+} from '../types/calls';
 
-const call1 = {
+const call1: Call = {
     participants: {
         'user-1': {id: 'user-1', muted: false, raisedHand: 0},
         'user-2': {id: 'user-2', muted: true, raisedHand: 0},
@@ -45,8 +63,9 @@ const call1 = {
     screenOn: '',
     threadId: 'thread-1',
     ownerId: 'user-1',
+    hostId: 'user-1',
 };
-const call2 = {
+const call2: Call = {
     participants: {
         'user-3': {id: 'user-3', muted: false, raisedHand: 0},
         'user-4': {id: 'user-4', muted: true, raisedHand: 0},
@@ -56,8 +75,9 @@ const call2 = {
     screenOn: '',
     threadId: 'thread-2',
     ownerId: 'user-3',
+    hostId: 'user-3',
 };
-const call3 = {
+const call3: Call = {
     participants: {
         'user-5': {id: 'user-5', muted: false, raisedHand: 0},
         'user-6': {id: 'user-6', muted: true, raisedHand: 0},
@@ -67,6 +87,7 @@ const call3 = {
     screenOn: '',
     threadId: 'thread-3',
     ownerId: 'user-5',
+    hostId: 'user-5',
 };
 
 describe('useCallsState', () => {
@@ -107,39 +128,67 @@ describe('useCallsState', () => {
         const initialChannelsWithCallsState = {
             'channel-1': true,
         };
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+        };
+        const testNewCall1 = {
+            ...call1,
+            participants: {
+                'user-1': {id: 'user-1', muted: false, raisedHand: 0},
+                'user-2': {id: 'user-2', muted: true, raisedHand: 0},
+                'user-3': {id: 'user-3', muted: false, raisedHand: 123},
+            },
+        };
         const test = {
-            calls: {'channel-1': call2, 'channel-2': call3},
+            calls: {'channel-1': testNewCall1, 'channel-2': call2, 'channel-3': call3},
             enabled: {'channel-2': true},
         };
+
         const expectedCallsState = {
             ...initialCallsState,
             serverUrl: 'server1',
             myUserId: 'myId',
-            calls: {'channel-1': call2, 'channel-2': call3},
+            calls: {'channel-1': testNewCall1, 'channel-2': call2, 'channel-3': call3},
             enabled: {'channel-2': true},
         };
         const expectedChannelsWithCallsState = {
             ...initialChannelsWithCallsState,
             'channel-2': true,
+            'channel-3': true,
+        };
+        const expectedCurrentCallState = {
+            ...initialCurrentCallState,
+            ...testNewCall1,
         };
 
         // setup
         const {result} = renderHook(() => {
-            return [useCallsState('server1'), useCallsState('server1'), useChannelsWithCalls('server1')];
+            return [
+                useCallsState('server1'),
+                useCallsState('server1'),
+                useChannelsWithCalls('server1'),
+                useCurrentCall(),
+            ];
         });
         act(() => {
             setCallsState('server1', initialCallsState);
             setChannelsWithCalls('server1', initialChannelsWithCallsState);
+            setCurrentCall(initialCurrentCallState);
         });
         assert.deepEqual(result.current[0], initialCallsState);
         assert.deepEqual(result.current[1], initialCallsState);
         assert.deepEqual(result.current[2], initialChannelsWithCallsState);
+        assert.deepEqual(result.current[3], initialCurrentCallState);
 
         // test
         act(() => setCalls('server1', 'myId', test.calls, test.enabled));
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], expectedCallsState);
         assert.deepEqual(result.current[2], expectedChannelsWithCallsState);
+        assert.deepEqual(result.current[3], expectedCurrentCallState);
     });
 
     it('joinedCall', () => {
@@ -150,13 +199,14 @@ describe('useCallsState', () => {
         const initialChannelsWithCallsState = {
             'channel-1': true,
         };
-        const initialCurrentCallState = {
+
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-        } as CurrentCall;
+        };
         const expectedCallsState = {
             'channel-1': {
                 participants: {
@@ -169,6 +219,7 @@ describe('useCallsState', () => {
                 screenOn: '',
                 threadId: 'thread-1',
                 ownerId: 'user-1',
+                hostId: 'user-1',
             },
         };
         const expectedChannelsWithCallsState = initialChannelsWithCallsState;
@@ -209,13 +260,13 @@ describe('useCallsState', () => {
         const initialChannelsWithCallsState = {
             'channel-1': true,
         };
-        const initialCurrentCallState = {
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-        } as CurrentCall;
+        };
         const expectedCallsState = {
             'channel-1': {
                 participants: {
@@ -226,6 +277,7 @@ describe('useCallsState', () => {
                 screenOn: '',
                 threadId: 'thread-1',
                 ownerId: 'user-1',
+                hostId: 'user-1',
             },
         };
         const expectedChannelsWithCallsState = initialChannelsWithCallsState;
@@ -311,13 +363,13 @@ describe('useCallsState', () => {
             calls: {'channel-1': call1, 'channel-2': call2},
         };
         const initialChannelsWithCallsState = {'channel-1': true, 'channel-2': true};
-        const initialCurrentCallState = {
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-        } as CurrentCall;
+        };
 
         // setup
         const {result} = renderHook(() => {
@@ -358,13 +410,12 @@ describe('useCallsState', () => {
             calls: {'channel-1': call1, 'channel-2': call2},
         };
         const initialChannelsWithCallsState = {'channel-1': true, 'channel-2': true};
-        const initialCurrentCallState = {
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-        } as CurrentCall;
+        };
 
         // setup
         const {result} = renderHook(() => {
@@ -414,15 +465,16 @@ describe('useCallsState', () => {
                 screenOn: false,
                 threadId: 'thread-1',
                 ownerId: 'user-1',
+                hostId: 'user-1',
             },
         };
-        const initialCurrentCallState = {
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
             serverUrl: 'server1',
             myUserId: 'myUserId',
             ...call1,
-            screenShareURL: '',
-            speakerphoneOn: false,
-        } as CurrentCall;
+        };
         const expectedCurrentCallState = {
             ...initialCurrentCallState,
             ...expectedCalls['channel-1'],
@@ -469,17 +521,18 @@ describe('useCallsState', () => {
         };
         const expectedCallsState = {
             ...initialCallsState,
-            calls: {...initialCallsState.calls,
+            calls: {
+                ...initialCallsState.calls,
                 'channel-1': newCall1,
             },
         };
-        const expectedCurrentCallState = {
+        const expectedCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
             serverUrl: 'server1',
             myUserId: 'myUserId',
-            screenShareURL: '',
-            speakerphoneOn: false,
             ...newCall1,
-        } as CurrentCall;
+        };
 
         // setup
         const {result} = renderHook(() => {
@@ -490,7 +543,10 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test
-        act(() => userJoinedCall('server1', 'channel-1', 'myUserId'));
+        act(() => {
+            newCurrentCall('server1', 'channel-1', 'myUserId');
+            userJoinedCall('server1', 'channel-1', 'myUserId');
+        });
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], expectedCurrentCallState);
 
@@ -560,6 +616,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test joining a call and setting url:
+        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
         act(() => userJoinedCall('server1', 'channel-1', 'myUserId'));
         assert.deepEqual((result.current[1] as CurrentCall | null)?.screenShareURL, '');
         act(() => setScreenShareURL('testUrl'));
@@ -589,7 +646,8 @@ describe('useCallsState', () => {
         };
         const expectedCallsState = {
             ...initialCallsState,
-            calls: {...initialCallsState.calls,
+            calls: {
+                ...initialCallsState.calls,
                 'channel-1': newCall1,
             },
         };
@@ -603,6 +661,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], null);
 
         // test
+        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
         act(() => userJoinedCall('server1', 'channel-1', 'myUserId'));
         assert.deepEqual((result.current[1] as CurrentCall | null)?.speakerphoneOn, false);
         act(() => setSpeakerPhone(true));
@@ -616,6 +675,123 @@ describe('useCallsState', () => {
         });
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], null);
+    });
+
+    it('MicPermissions', () => {
+        const initialGlobalState = DefaultGlobalCallsState;
+        const initialCallsState: CallsState = {
+            ...DefaultCallsState,
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const newCall1: Call = {
+            ...call1,
+            participants: {
+                ...call1.participants,
+                myUserId: {id: 'myUserId', muted: true, raisedHand: 0},
+            },
+        };
+        const expectedCallsState: CallsState = {
+            ...initialCallsState,
+            calls: {
+                ...initialCallsState.calls,
+                'channel-1': newCall1,
+            },
+        };
+        const expectedCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            connected: true,
+            ...newCall1,
+        };
+        const secondExpectedCurrentCallState: CurrentCall = {
+            ...expectedCurrentCallState,
+            micPermissionsErrorDismissed: true,
+        };
+        const expectedGlobalState: GlobalCallsState = {
+            micPermissionsGranted: true,
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall(), useGlobalCallsState()];
+        });
+        act(() => setCallsState('server1', initialCallsState));
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+        assert.deepEqual(result.current[2], initialGlobalState);
+
+        // join call
+        act(() => {
+            setMicPermissionsGranted(false);
+            newCurrentCall('server1', 'channel-1', 'myUserId');
+            userJoinedCall('server1', 'channel-1', 'myUserId');
+        });
+        assert.deepEqual(result.current[0], expectedCallsState);
+        assert.deepEqual(result.current[1], expectedCurrentCallState);
+        assert.deepEqual(result.current[2], initialGlobalState);
+
+        // dismiss mic error
+        act(() => setMicPermissionsErrorDismissed());
+        assert.deepEqual(result.current[0], expectedCallsState);
+        assert.deepEqual(result.current[1], secondExpectedCurrentCallState);
+        assert.deepEqual(result.current[2], initialGlobalState);
+
+        // grant permissions
+        act(() => setMicPermissionsGranted(true));
+        assert.deepEqual(result.current[0], expectedCallsState);
+        assert.deepEqual(result.current[1], secondExpectedCurrentCallState);
+        assert.deepEqual(result.current[2], expectedGlobalState);
+
+        act(() => {
+            myselfLeftCall();
+            userLeftCall('server1', 'channel-1', 'myUserId');
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+    });
+
+    it('voiceOn and Off', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => {
+            setCallsState('server1', initialCallsState);
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+
+        // test
+        act(() => setUserVoiceOn('channel-1', 'user-1', true));
+        assert.deepEqual(result.current[1], {...initialCurrentCallState, voiceOn: {'user-1': true}});
+        assert.deepEqual(result.current[0], initialCallsState);
+        act(() => setUserVoiceOn('channel-1', 'user-2', true));
+        assert.deepEqual(result.current[1], {...initialCurrentCallState, voiceOn: {'user-1': true, 'user-2': true}});
+        assert.deepEqual(result.current[0], initialCallsState);
+        act(() => setUserVoiceOn('channel-1', 'user-1', false));
+        assert.deepEqual(result.current[1], {...initialCurrentCallState, voiceOn: {'user-2': true}});
+        assert.deepEqual(result.current[0], initialCallsState);
+
+        // test that voice state is cleared on reconnect
+        act(() => setCalls('server1', 'myUserId', initialCallsState.calls, {}));
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+        assert.deepEqual(result.current[0], initialCallsState);
     });
 
     it('config', () => {
@@ -635,6 +811,8 @@ describe('useCallsState', () => {
             last_retrieved_at: 123,
             sku_short_name: License.SKU_SHORT_NAME.Professional,
             MaxCallParticipants: 8,
+            EnableRecordings: true,
+            bot_user_id: '',
         };
 
         // setup
@@ -648,5 +826,185 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current, {...newConfig, pluginEnabled: true});
         act(() => setPluginEnabled('server1', false));
         assert.deepEqual(result.current, {...newConfig, pluginEnabled: false});
+    });
+
+    it('user reactions', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+        };
+        const expectedCurrentCallState: CurrentCall = {
+            ...initialCurrentCallState,
+            reactionStream: [
+                {name: 'smile', latestTimestamp: 202, count: 1},
+                {name: '+1', latestTimestamp: 145, count: 2},
+            ],
+            participants: {
+                ...initialCurrentCallState.participants,
+                'user-1': {
+                    ...initialCurrentCallState.participants['user-1'],
+                    reaction: {
+                        user_id: 'user-1',
+                        emoji: {name: 'smile', unified: 'something'},
+                        timestamp: 202,
+                    },
+                },
+                'user-2': {
+                    ...initialCurrentCallState.participants['user-2'],
+                    reaction: {
+                        user_id: 'user-2',
+                        emoji: {name: '+1', unified: 'something'},
+                        timestamp: 123,
+                    },
+                },
+            },
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => {
+            setCallsState('server1', initialCallsState);
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+
+        // test
+        act(() => {
+            userReacted('server1', 'channel-1', {
+                user_id: 'user-2',
+                emoji: {name: '+1', unified: 'something'},
+                timestamp: 123,
+            });
+            userReacted('server1', 'channel-1', {
+                user_id: 'user-1',
+                emoji: {name: '+1', unified: 'something'},
+                timestamp: 145,
+            });
+            userReacted('server1', 'channel-1', {
+                user_id: 'user-1',
+                emoji: {name: 'smile', unified: 'something'},
+                timestamp: 202,
+            });
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], expectedCurrentCallState);
+    });
+
+    it('setRecordingState', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+        };
+        const recState: RecordingState = {
+            init_at: 123,
+            start_at: 231,
+            end_at: 345,
+        };
+        const expectedCallsState: CallsState = {
+            ...initialCallsState,
+            calls: {
+                ...initialCallsState.calls,
+                'channel-1': {
+                    ...call1,
+                    recState,
+                },
+            },
+        };
+        const expectedCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+            recState,
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => {
+            setCallsState('server1', initialCallsState);
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+
+        // test
+        act(() => setRecordingState('server1', 'channel-1', recState));
+        assert.deepEqual((result.current[0] as CallsState), expectedCallsState);
+        assert.deepEqual((result.current[1] as CurrentCall | null), expectedCurrentCallState);
+        act(() => setRecordingState('server1', 'channel-2', recState));
+        assert.deepEqual((result.current[0] as CallsState).calls['channel-2'], {...call2, recState});
+        assert.deepEqual((result.current[1] as CurrentCall | null), expectedCurrentCallState);
+    });
+
+    it('setHost', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+        };
+        const expectedCallsState: CallsState = {
+            ...initialCallsState,
+            calls: {
+                ...initialCallsState.calls,
+                'channel-1': {
+                    ...call1,
+                    hostId: 'user-52',
+                },
+            },
+        };
+        const expectedCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+            hostId: 'user-52',
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => {
+            setCallsState('server1', initialCallsState);
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], initialCurrentCallState);
+
+        // test
+        act(() => setHost('server1', 'channel-1', 'user-52'));
+        assert.deepEqual((result.current[0] as CallsState), expectedCallsState);
+        assert.deepEqual((result.current[1] as CurrentCall | null), expectedCurrentCallState);
+        act(() => setHost('server1', 'channel-2', 'user-1923'));
+        assert.deepEqual((result.current[0] as CallsState).calls['channel-2'], {...call2, hostId: 'user-1923'});
+        assert.deepEqual((result.current[1] as CurrentCall | null), expectedCurrentCallState);
     });
 });

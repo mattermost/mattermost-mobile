@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {ScaledSize, StyleSheet, useWindowDimensions, View} from 'react-native';
+import {StyleSheet, useWindowDimensions, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
-import Loading from '@app/components/loading';
+import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
 import {TabTypes, TabType} from '@utils/search';
 
@@ -17,21 +17,21 @@ import type PostModel from '@typings/database/models/servers/post';
 
 const duration = 250;
 
-const getStyles = (dimensions: ScaledSize) => {
+const getStyles = (width: number) => {
     return StyleSheet.create({
         container: {
             flex: 1,
             flexDirection: 'row',
-            width: dimensions.width * 2,
+            width: width * 2,
         },
         result: {
             flex: 1,
-            width: dimensions.width,
+            width,
         },
         loading: {
             justifyContent: 'center',
             flex: 1,
-            width: dimensions.width,
+            width,
         },
     });
 };
@@ -63,18 +63,21 @@ const Results = ({
     searchValue,
     selectedTab,
 }: Props) => {
-    const dimensions = useWindowDimensions();
+    const {width} = useWindowDimensions();
     const theme = useTheme();
-    const styles = useMemo(() => getStyles(dimensions), [dimensions]);
+    const styles = useMemo(() => getStyles(width), [width]);
 
     const transform = useAnimatedStyle(() => {
-        const translateX = selectedTab === TabTypes.MESSAGES ? 0 : -dimensions.width;
+        const translateX = selectedTab === TabTypes.MESSAGES ? 0 : -width;
         return {
             transform: [
                 {translateX: withTiming(translateX, {duration})},
             ],
         };
-    }, [selectedTab, dimensions.width]);
+
+        // Do not transform if loading new data. Causes a case where post
+        // results show up in Files results when the team is changed
+    }, [selectedTab, width, !loading]);
 
     const paddingTop = useMemo(() => (
         {paddingTop: scrollPaddingTop, flexGrow: 1}

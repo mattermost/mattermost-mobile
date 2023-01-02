@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 
 type PlusMenuItemProps = {
-    pickerAction: 'browseChannels' | 'createNewChannel' | 'openDirectMessage';
+    pickerAction: 'browseChannels' | 'createNewChannel' | 'openDirectMessage' | 'invitePeopleToTeam';
     onPress: () => void;
 };
 
@@ -32,14 +32,19 @@ const PlusMenuItem = ({pickerAction, onPress}: PlusMenuItemProps) => {
             text: intl.formatMessage({id: 'plus_menu.open_direct_message.title', defaultMessage: 'Open a Direct Message'}),
             testID: 'plus_menu_item.open_direct_message',
         },
+        invitePeopleToTeam: {
+            icon: 'account-plus-outline',
+            text: intl.formatMessage({id: 'plus_menu.invite_people_to_team.title', defaultMessage: 'Invite people to the team'}),
+            testID: 'plus_menu_item.invite_people_to_team',
+        },
     };
+
     const itemType = menuItems[pickerAction];
+
     return (
         <SlideUpPanelItem
-            text={itemType.text}
-            icon={itemType.icon}
+            {...itemType}
             onPress={onPress}
-            testID={itemType.testID}
         />
     );
 };

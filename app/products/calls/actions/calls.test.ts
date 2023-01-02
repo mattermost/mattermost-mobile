@@ -11,6 +11,8 @@ import {getConnectionForTesting} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
 import * as State from '@calls/state';
 import {
+    myselfLeftCall,
+    newCurrentCall,
     setCallsConfig,
     setCallsState,
     setChannelsWithCalls,
@@ -87,6 +89,7 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
         screenOn: '',
         threadId: 'abcd1234567',
         ownerId: 'xohi8cki9787fgiryne716u84o',
+        hostId: 'xohi8cki9787fgiryne716u84o',
     } as Call;
     act(() => {
         State.setCallsState(serverUrl, {serverUrl, myUserId: 'myUserId', calls: {}, enabled: {}});
@@ -139,7 +142,10 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true);
+
+            // manually call newCurrentConnection because newConnection is mocked
+            newCurrentCall('server1', 'channel-id', 'myUserId');
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
 
@@ -163,7 +169,10 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true);
+
+            // manually call newCurrentConnection because newConnection is mocked
+            newCurrentCall('server1', 'channel-id', 'myUserId');
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');
@@ -174,6 +183,9 @@ describe('Actions.Calls', () => {
 
         await act(async () => {
             CallsActions.leaveCall();
+
+            // because disconnect is mocked
+            myselfLeftCall();
         });
 
         expect(disconnectMock).toBeCalled();
@@ -191,7 +203,10 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'myUserId', true);
+
+            // manually call newCurrentConnection because newConnection is mocked
+            newCurrentCall('server1', 'channel-id', 'myUserId');
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');
@@ -218,7 +233,10 @@ describe('Actions.Calls', () => {
 
         let response: { data?: string };
         await act(async () => {
-            response = await CallsActions.joinCall('server1', 'channel-id');
+            response = await CallsActions.joinCall('server1', 'channel-id', 'mysUserId', true);
+
+            // manually call newCurrentConnection because newConnection is mocked
+            newCurrentCall('server1', 'channel-id', 'myUserId');
             userJoinedCall('server1', 'channel-id', 'myUserId');
         });
         assert.equal(response!.data, 'channel-id');
@@ -249,6 +267,36 @@ describe('Actions.Calls', () => {
         assert.equal((result.current[0] as CallsState).enabled['channel-1'], true);
         assert.equal((result.current[1] as ChannelsWithCalls)['channel-1'], true);
         assert.equal((result.current[2] as CurrentCall | null), null);
+    });
+
+    it('loadCalls fails from server', async () => {
+        const expectedCallsState: CallsState = {
+            serverUrl: 'server1',
+            myUserId: 'userId1',
+            calls: {},
+            enabled: {},
+        };
+
+        // setup
+        const oldGetCalls = mockClient.getCalls;
+
+        // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+        // @ts-ignore
+        mockClient.getCalls = jest.fn(() => null);
+
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useChannelsWithCalls('server1'), useCurrentCall()];
+        });
+
+        await act(async () => {
+            await CallsActions.loadCalls('server1', 'userId1');
+        });
+        expect(mockClient.getCalls).toBeCalled();
+        assert.deepEqual((result.current[0] as CallsState), expectedCallsState);
+        assert.deepEqual((result.current[1] as ChannelsWithCalls), {});
+        assert.equal((result.current[2] as CurrentCall | null), null);
+
+        mockClient.getCalls = oldGetCalls;
     });
 
     it('loadConfig', async () => {

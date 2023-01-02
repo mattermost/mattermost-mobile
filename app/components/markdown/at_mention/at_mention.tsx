@@ -3,7 +3,7 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Database} from '@nozbe/watermelondb';
-import Clipboard from '@react-native-community/clipboard';
+import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {GestureResponderEvent, Keyboard, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
@@ -142,7 +142,7 @@ const AtMention = ({
     // Effects
     useEffect(() => {
         // Fetches and updates the local db store with the mention
-        if (!user.username) {
+        if (!user.username && !group?.name) {
             fetchUserOrGroupsByMentionsInBatch(serverUrl, mentionName);
         }
     }, []);

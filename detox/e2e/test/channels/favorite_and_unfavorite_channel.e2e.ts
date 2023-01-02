@@ -20,11 +20,13 @@ import {
 import {
     ChannelScreen,
     ChannelListScreen,
+    CreateDirectMessageScreen,
     HomeScreen,
     LoginScreen,
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Favorite and Unfavorite Channel', () => {
@@ -61,9 +63,11 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         // # Open a channel screen, tap on channel quick actions button, and tap on favorite quick action to favorite the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelScreen.favoriteQuickAction.tap();
 
         // * Verify favorited toast message appears
+        await wait(timeouts.ONE_SEC);
         await expect(ChannelScreen.toastMessage).toHaveText('This channel was favorited');
 
         // # Go back to channel list screen
@@ -75,9 +79,11 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         // # Go back to the favorited channel, tap on channel quick actions button, and tap on favorited quick action to unfavorite the channel
         await ChannelScreen.open(favoritesCategory, testChannel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelScreen.unfavoriteQuickAction.tap();
 
         // * Verify unfavorited toast message appears
+        await wait(timeouts.ONE_SEC);
         await expect(ChannelScreen.toastMessage).toHaveText('This channel was unfavorited');
 
         // # Go back to channel list screen
@@ -112,17 +118,23 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
     });
 
     it('MM-T4929_3 - should be able to favorite/unfavorite a direct message channel from channel intro', async () => {
-        // # Open a direct message channel screen, tap on intro favorite action to favorite the channel, and go back to channel list screen
+        // # Open a direct message channel screen, post a message, tap on intro favorite action to favorite the channel, and go back to channel list screen
         const {user: newUser} = await User.apiCreateUser(siteOneUrl);
         await Team.apiAddUserToTeam(siteOneUrl, newUser.id, testTeam.id);
         const {channel: directMessageChannel} = await Channel.apiCreateDirectChannel(siteOneUrl, [testUser.id, newUser.id]);
+        await CreateDirectMessageScreen.open();
+        await CreateDirectMessageScreen.closeTutorial();
+        await CreateDirectMessageScreen.searchInput.replaceText(newUser.username);
+        await CreateDirectMessageScreen.getUserItem(newUser.id).tap();
+        await CreateDirectMessageScreen.startButton.tap();
+        await ChannelScreen.postMessage('test');
         await device.reloadReactNative();
-        await ChannelScreen.open(directMessagesCategory, directMessageChannel.name);
+        await ChannelListScreen.getChannelItemDisplayName(directMessagesCategory, directMessageChannel.name).tap();
         await ChannelScreen.introFavoriteAction.tap();
         await ChannelScreen.back();
 
         // * Verify direct message channel is listed under favorites category
-        await expect(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, directMessageChannel.name)).toBeVisible();
+        await expect(ChannelListScreen.getChannelItemDisplayName(favoritesCategory, directMessageChannel.name)).toHaveText(newUser.username);
 
         // # Go back to the favorited direct message channel, tap on intro favorited action to unfavorite the direct message channel, and go back to channel list screen
         await ChannelScreen.open(favoritesCategory, directMessageChannel.name);

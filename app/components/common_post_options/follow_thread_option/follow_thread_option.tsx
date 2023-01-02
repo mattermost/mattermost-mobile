@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
@@ -13,11 +13,12 @@ import {dismissBottomSheet} from '@screens/navigation';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
 type FollowThreadOptionProps = {
+    bottomSheetId: typeof Screens[keyof typeof Screens];
     thread: ThreadModel;
     teamId?: string;
 };
 
-const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
+const FollowThreadOption = ({bottomSheetId, thread, teamId}: FollowThreadOptionProps) => {
     let id: string;
     let defaultMessage: string;
     let icon: string;
@@ -44,13 +45,13 @@ const FollowThreadOption = ({thread, teamId}: FollowThreadOptionProps) => {
 
     const serverUrl = useServerUrl();
 
-    const handleToggleFollow = async () => {
+    const handleToggleFollow = useCallback(async () => {
         if (teamId == null) {
             return;
         }
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
-    };
+    }, [bottomSheetId, teamId, thread]);
 
     const followThreadOptionTestId = thread.isFollowing ? 'post_options.following_thread.option' : 'post_options.follow_thread.option';
 

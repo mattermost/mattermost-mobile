@@ -31,7 +31,7 @@ const Code = ({code, language, textStyle}: Props) => {
             <SyntaxHiglight
                 code={code}
                 language={language}
-                selectable={managedConfig.copyAndPasteProtection !== 'false'}
+                selectable={managedConfig.copyAndPasteProtection !== 'true'}
                 textStyle={textStyle}
             />
         </SafeAreaView>

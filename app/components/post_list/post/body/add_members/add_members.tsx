@@ -97,7 +97,6 @@ const AddMembers = ({channelType, currentUser, location, post, theme}: AddMember
                         key={key}
                         id={'post_body.check_for_out_of_channel_mentions.link.and'}
                         defaultMessage={' and '}
-                        style={textStyles}
                     />
                 );
             }

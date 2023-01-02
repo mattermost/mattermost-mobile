@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {AppState, DeviceEventEmitter, Platform} from 'react-native';
-import DeviceInfo from 'react-native-device-info';
 import {
     Notification,
     NotificationAction,
@@ -13,6 +12,7 @@ import {
     NotificationTextInput,
     Registered,
 } from 'react-native-notifications';
+import {requestNotifications} from 'react-native-permissions';
 
 import {storeDeviceToken} from '@actions/app/global';
 import {markChannelAsViewed} from '@actions/local/channel';
@@ -22,25 +22,40 @@ import {Device, Events, Navigation, PushNotification, Screens} from '@constants'
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getLocalizedMessage, t} from '@i18n';
 import NativeNotifications from '@notifications';
-import {queryServerName} from '@queries/app/servers';
+import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import {dismissOverlay, showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {isTablet} from '@utils/helpers';
+import {isBetaApp} from '@utils/general';
+import {isMainActivity, isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 import {convertToNotificationData} from '@utils/notification';
 
 class PushNotifications {
     configured = false;
 
-    init() {
-        Notifications.registerRemoteNotifications();
+    init(register: boolean) {
+        if (register) {
+            Notifications.registerRemoteNotifications();
+        }
+
         Notifications.events().registerNotificationOpened(this.onNotificationOpened);
         Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered);
         Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
         Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
+    }
+
+    async registerIfNeeded() {
+        const isRegistered = await Notifications.isRegisteredForRemoteNotifications();
+        if (!isRegistered) {
+            if (Platform.OS === 'android') {
+                Notifications.registerRemoteNotifications();
+            } else {
+                await requestNotifications(['alert', 'sound', 'badge']);
+            }
+        }
     }
 
     createReplyCategory = () => {
@@ -93,21 +108,40 @@ class PushNotifications {
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (database) {
             const isTabletDevice = await isTablet();
-            const displayName = await queryServerName(DatabaseManager.appDatabase!.database, serverUrl);
+            const displayName = await getServerDisplayName(serverUrl);
             const channelId = await getCurrentChannelId(database);
+            const isCRTEnabled = await getIsCRTEnabled(database);
             let serverName;
             if (Object.keys(DatabaseManager.serverDatabases).length > 1) {
                 serverName = displayName;
             }
 
-            const isDifferentChannel = payload?.channel_id !== channelId;
-            const isVisibleThread = payload?.root_id === EphemeralStore.getCurrentThreadId();
-            let isChannelScreenVisible = NavigationStore.getNavigationTopComponentId() === Screens.CHANNEL;
-            if (isTabletDevice) {
-                isChannelScreenVisible = NavigationStore.getVisibleTab() === Screens.HOME;
-            }
+            const isThreadNotification = Boolean(payload?.root_id);
 
-            if (isDifferentChannel || (!isChannelScreenVisible && !isVisibleThread)) {
+            const isSameChannelNotification = payload?.channel_id === channelId;
+            const isSameThreadNotification = isThreadNotification && payload?.root_id === EphemeralStore.getCurrentThreadId();
+
+            let isInChannelScreen = NavigationStore.getVisibleScreen() === Screens.CHANNEL;
+            if (isTabletDevice) {
+                isInChannelScreen = NavigationStore.getVisibleTab() === Screens.HOME;
+            }
+            const isInThreadScreen = NavigationStore.getVisibleScreen() === Screens.THREAD;
+
+            // Conditions:
+            // 1. If not in channel screen or thread screen, show the notification
+            const condition1 = !isInChannelScreen && !isInThreadScreen;
+
+            // 2. If is in channel screen,
+            //      - Show notification of other channels
+            //        or
+            //      - Show notification if CRT is enabled and it's a thread notification (doesn't matter if it's the same channel)
+            const condition2 = isInChannelScreen && (!isSameChannelNotification || (isCRTEnabled && isThreadNotification));
+
+            // 3. If is in thread screen,
+            //      - Show the notification if it doesn't belong to the thread
+            const condition3 = isInThreadScreen && !isSameThreadNotification;
+
+            if (condition1 || condition2 || condition3) {
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
 
                 const screen = Screens.IN_APP_NOTIFICATION;
@@ -199,7 +233,7 @@ class PushNotifications {
     onNotificationReceivedForeground = (incoming: Notification, completion: (response: NotificationCompletion) => void) => {
         const notification = convertToNotificationData(incoming, false);
         if (AppState.currentState !== 'inactive') {
-            notification.foreground = AppState.currentState === 'active';
+            notification.foreground = AppState.currentState === 'active' && isMainActivity();
 
             this.processNotification(notification);
         }
@@ -214,7 +248,7 @@ class PushNotifications {
 
             if (Platform.OS === 'ios') {
                 prefix = Device.PUSH_NOTIFY_APPLE_REACT_NATIVE;
-                if (DeviceInfo.getBundleId().includes('rnbeta')) {
+                if (isBetaApp) {
                     prefix = `${prefix}beta`;
                 }
             } else {

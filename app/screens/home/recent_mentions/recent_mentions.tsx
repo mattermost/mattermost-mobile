@@ -4,18 +4,16 @@
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {ActivityIndicator, DeviceEventEmitter, FlatList, ListRenderItemInfo, Platform, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, DeviceEventEmitter, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {SafeAreaView, Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
 import {fetchRecentMentions} from '@actions/remote/search';
-import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
-import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
@@ -41,7 +39,6 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        marginBottom: Platform.select({ios: BOTTOM_TAB_HEIGHT}),
     },
     empty: {
         alignItems: 'center',
@@ -54,7 +51,6 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     const theme = useTheme();
     const route = useRoute();
     const isFocused = useIsFocused();
-    const insets = useSafeAreaInsets();
     const {formatMessage} = useIntl();
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -88,8 +84,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     }, [serverUrl, isFocused]);
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<FlatList<string>>(true, onSnap);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop - insets.top, flexGrow: 1}), [scrollPaddingTop, insets.top]);
-    const scrollViewStyle = useMemo(() => ({top: insets.top}), [insets.top]);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
 
     const animated = useAnimatedStyle(() => {
@@ -162,7 +157,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     }, []);
 
     return (
-        <FreezeScreen freeze={!isFocused}>
+        <>
             <NavigationHeader
                 isLargeTitle={true}
                 showBackButton={false}
@@ -196,12 +191,11 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                         renderItem={renderItem}
                         removeClippedSubviews={true}
                         onViewableItemsChanged={onViewableItemsChanged}
-                        style={scrollViewStyle}
                         testID='recent_mentions.post_list.flat_list'
                     />
                 </Animated.View>
             </SafeAreaView>
-        </FreezeScreen>
+        </>
     );
 };
 

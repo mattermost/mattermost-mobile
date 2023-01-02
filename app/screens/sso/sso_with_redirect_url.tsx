@@ -1,19 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import qs from 'querystring';
-
+import qs from 'querystringify';
 import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Linking, Platform, Text, View} from 'react-native';
 import Button from 'react-native-button';
-import DeviceInfo from 'react-native-device-info';
 import urlParse from 'url-parse';
 
 import FormattedText from '@components/formatted_text';
 import {Sso} from '@constants';
 import NetworkManager from '@managers/network_manager';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {isBetaApp} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {tryOpenURL} from '@utils/url';
@@ -63,7 +62,7 @@ const SSOWithRedirectURL = ({doSSOLogin, loginError, loginUrl, serverUrl, setLog
     const style = getStyleSheet(theme);
     const intl = useIntl();
     let customUrlScheme = Sso.REDIRECT_URL_SCHEME;
-    if (DeviceInfo.getBundleId && DeviceInfo.getBundleId().includes('rnbeta')) {
+    if (isBetaApp) {
         customUrlScheme = Sso.REDIRECT_URL_SCHEME_DEV;
     }
 

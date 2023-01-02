@@ -11,7 +11,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    isConnected: boolean;
+    websocketState: WebsocketConnectedState;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -28,10 +28,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const WebSocket = ({isConnected}: Props) => {
+const WebSocket = ({websocketState}: Props) => {
     const theme = useTheme();
 
-    if (!isConnected) {
+    if (websocketState === 'connected' || websocketState === 'connecting') {
         return null;
     }
 

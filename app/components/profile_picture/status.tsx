@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleProp, View, ViewProps} from 'react-native';
+import {StyleProp, View, ViewStyle} from 'react-native';
 
 import UserStatus from '@components/user_status';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -12,7 +12,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     author?: UserModel | UserProfile;
     statusSize: number;
-    statusStyle?: StyleProp<ViewProps>;
+    statusStyle?: StyleProp<ViewStyle>;
     theme: Theme;
 }
 
@@ -38,7 +38,7 @@ const Status = ({author, statusSize, statusStyle, theme}: Props) => {
         styles.statusWrapper,
         statusStyle,
         {borderRadius: statusSize / 2},
-    ]), [statusStyle]);
+    ]), [statusStyle, styles]);
     const isBot = author && (('isBot' in author) ? author.isBot : author.is_bot);
     if (author?.status && !isBot) {
         return (

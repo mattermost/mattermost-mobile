@@ -60,6 +60,7 @@ public class Database: NSObject {
     internal var userTable = Table("User")
     internal var threadTable = Table("Thread")
     internal var threadParticipantTable = Table("ThreadParticipant")
+    internal var configTable = Table("Config")
     
     @objc public static let `default` = Database()
     
@@ -117,7 +118,7 @@ public class Database: NSObject {
             return serverUrl!
         }
     
-        throw DatabaseError.NoResults(query.asSQL())
+        throw DatabaseError.NoResults(query.expression.description)
     }
     
     public func getServerUrlForServer(_ id: String) throws -> String {
@@ -133,7 +134,7 @@ public class Database: NSObject {
             }
         }
     
-        throw DatabaseError.NoResults(query.asSQL())
+        throw DatabaseError.NoResults(query.expression.description)
     }
     
     public func getAllActiveDatabases<T: Codable>() -> [T] {
@@ -200,7 +201,7 @@ public class Database: NSObject {
             return try Connection(path)
         }
         
-        throw DatabaseError.NoResults(query.asSQL())
+        throw DatabaseError.NoResults(query.expression.description)
     }
     
     internal func json(from object:Any?) -> String? {
