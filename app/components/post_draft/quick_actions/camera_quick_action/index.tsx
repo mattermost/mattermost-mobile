@@ -5,14 +5,18 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, StyleSheet} from 'react-native';
 import {CameraOptions} from 'react-native-image-picker';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {fileMaxWarning} from '@utils/file';
 import PickerUtil from '@utils/file/file_picker';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity} from '@utils/theme';
 
 import CameraType from './camera_type';
@@ -36,6 +40,7 @@ export default function CameraQuickAction({
 }: QuickActionAttachmentProps) {
     const intl = useIntl();
     const theme = useTheme();
+    const {bottom} = useSafeAreaInsets();
 
     const handleButtonPress = useCallback((options: CameraOptions) => {
         const picker = new PickerUtil(intl,
@@ -64,14 +69,15 @@ export default function CameraQuickAction({
             return;
         }
 
+        const snap = bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom);
         bottomSheet({
-            title: intl.formatMessage({id: 'camera_type.title', defaultMessage: 'Choose an action'}),
+            title: intl.formatMessage({id: 'mobile.camera_type.title', defaultMessage: 'Camera options'}),
             renderContent,
-            snapPoints: [200, 10],
+            snapPoints: [TITLE_HEIGHT + snap, 10],
             theme,
             closeButtonId: 'camera-close-id',
         });
-    }, [intl, theme, renderContent, maxFilesReached, maxFileCount]);
+    }, [intl, theme, renderContent, maxFilesReached, maxFileCount, bottom]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
     const color = disabled ? changeOpacity(theme.centerChannelColor, 0.16) : changeOpacity(theme.centerChannelColor, 0.64);

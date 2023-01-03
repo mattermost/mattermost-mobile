@@ -139,7 +139,7 @@ const Post = ({
 
     const handlePostPress = () => {
         if ([Screens.SAVED_MESSAGES, Screens.MENTIONS, Screens.SEARCH, Screens.PINNED_MESSAGES].includes(location)) {
-            showPermalink(serverUrl, '', post.id, intl);
+            showPermalink(serverUrl, '', post.id);
             return;
         }
 
@@ -226,7 +226,7 @@ const Post = ({
     // If the post is a priority post:
     // 1. Show the priority label in channel screen
     // 2. Show the priority label in thread screen for the root post
-    const showPostPriority = Boolean(isPostPriorityEnabled && post.props?.priority) && (location !== Screens.THREAD || !post.rootId);
+    const showPostPriority = Boolean(isPostPriorityEnabled && post.metadata?.priority?.priority) && (location !== Screens.THREAD || !post.rootId);
 
     const sameSequence = hasReplies ? (hasReplies && post.rootId) : !post.rootId;
     if (!showPostPriority && hasSameRoot && isConsecutivePost && sameSequence) {

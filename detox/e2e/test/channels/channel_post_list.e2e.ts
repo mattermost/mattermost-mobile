@@ -57,7 +57,6 @@ describe('Channels - Channel Post List', () => {
         await expect(ChannelScreen.backButton).toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
         await expect(ChannelScreen.introDisplayName).toHaveText(testChannel.display_name);
-        await expect(ChannelScreen.introAddPeopleAction).toBeVisible();
         await expect(ChannelScreen.introSetHeaderAction).toBeVisible();
         await expect(ChannelScreen.introChannelInfoAction).toBeVisible();
         await expect(ChannelScreen.postList.getFlatList()).toBeVisible();

@@ -11,6 +11,10 @@
 		13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB01A68108700A75B9A /* AppDelegate.mm */; };
 		13B07FBF1A68108700A75B9A /* Images.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 13B07FB51A68108700A75B9A /* Images.xcassets */; };
 		13B07FC11A68108700A75B9A /* main.m in Sources */ = {isa = PBXBuildFile; fileRef = 13B07FB71A68108700A75B9A /* main.m */; };
+		27C667A329523ECA00E590D5 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 27C667A229523ECA00E590D5 /* Sentry */; };
+		27C667A529523F0A00E590D5 /* Sentry in Frameworks */ = {isa = PBXBuildFile; productRef = 27C667A429523F0A00E590D5 /* Sentry */; };
+		27C667A9295241B600E590D5 /* Sentry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C667A8295241B600E590D5 /* Sentry.swift */; };
+		27C667AA295241B600E590D5 /* Sentry.swift in Sources */ = {isa = PBXBuildFile; fileRef = 27C667A8295241B600E590D5 /* Sentry.swift */; };
 		49AE370126D4455D00EF4E52 /* Gekidou in Frameworks */ = {isa = PBXBuildFile; productRef = 49AE370026D4455D00EF4E52 /* Gekidou */; };
 		536CC6C323E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m in Sources */ = {isa = PBXBuildFile; fileRef = 536CC6C123E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m */; };
 		58495E36BF1A4EAB93609E57 /* Metropolis-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 54956DEFEBB74EF78C3A6AE5 /* Metropolis-SemiBold.ttf */; };
@@ -156,6 +160,7 @@
 		13B07FB71A68108700A75B9A /* main.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = main.m; path = Mattermost/main.m; sourceTree = "<group>"; };
 		182D203F539AF68F1647EFAF /* Pods-Mattermost-MattermostTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mattermost-MattermostTests.release.xcconfig"; path = "Target Support Files/Pods-Mattermost-MattermostTests/Pods-Mattermost-MattermostTests.release.xcconfig"; sourceTree = "<group>"; };
 		25BF2BACE89201DE6E585B7E /* Pods-Mattermost.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Mattermost.release.xcconfig"; path = "Target Support Files/Pods-Mattermost/Pods-Mattermost.release.xcconfig"; sourceTree = "<group>"; };
+		27C667A8295241B600E590D5 /* Sentry.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Sentry.swift; sourceTree = "<group>"; };
 		297AAFCCF0BD99FC109DA2BC /* Pods-MattermostTests.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-MattermostTests.release.xcconfig"; path = "Target Support Files/Pods-MattermostTests/Pods-MattermostTests.release.xcconfig"; sourceTree = "<group>"; };
 		32AC3D4EA79E44738A6E9766 /* OpenSans-BoldItalic.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-BoldItalic.ttf"; path = "../assets/fonts/OpenSans-BoldItalic.ttf"; sourceTree = "<group>"; };
 		3647DF63D6764CF093375861 /* OpenSans-ExtraBold.ttf */ = {isa = PBXFileReference; explicitFileType = undefined; fileEncoding = 9; includeInIndex = 0; lastKnownFileType = unknown; name = "OpenSans-ExtraBold.ttf"; path = "../assets/fonts/OpenSans-ExtraBold.ttf"; sourceTree = "<group>"; };
@@ -279,6 +284,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				49AE370126D4455D00EF4E52 /* Gekidou in Frameworks */,
+				27C667A329523ECA00E590D5 /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -288,6 +294,7 @@
 			files = (
 				7FD4822C2864D73300A5B18B /* OpenGraph in Frameworks */,
 				7F4288042865D340006B48E1 /* Gekidou in Frameworks */,
+				27C667A529523F0A00E590D5 /* Sentry in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -350,6 +357,14 @@
 				7F0F4B0924BA173900E14C60 /* LaunchScreen.storyboard */,
 			);
 			name = Mattermost;
+			sourceTree = "<group>";
+		};
+		27C667AB2952425700E590D5 /* ErrorReporting */ = {
+			isa = PBXGroup;
+			children = (
+				27C667A8295241B600E590D5 /* Sentry.swift */,
+			);
+			path = ErrorReporting;
 			sourceTree = "<group>";
 		};
 		33E107B4DC21A5C48B09F800 /* Pods */ = {
@@ -625,6 +640,7 @@
 		83CBB9F61A601CBA00E9B192 = {
 			isa = PBXGroup;
 			children = (
+				27C667AB2952425700E590D5 /* ErrorReporting */,
 				13B07FAE1A68108700A75B9A /* Mattermost */,
 				7F581D33221ED5C60099E66B /* NotificationService */,
 				7F292A701E8AB73400A450A3 /* SplashScreenResource */,
@@ -698,6 +714,7 @@
 			name = NotificationService;
 			packageProductDependencies = (
 				49AE370026D4455D00EF4E52 /* Gekidou */,
+				27C667A229523ECA00E590D5 /* Sentry */,
 			);
 			productName = NotificationService;
 			productReference = 7F581D32221ED5C60099E66B /* NotificationService.appex */;
@@ -719,6 +736,7 @@
 			packageProductDependencies = (
 				7FD4822B2864D73300A5B18B /* OpenGraph */,
 				7F4288032865D340006B48E1 /* Gekidou */,
+				27C667A429523F0A00E590D5 /* Sentry */,
 			);
 			productName = MattermostShare;
 			productReference = 7FC5698628563FDB000B0905 /* MattermostShare.appex */;
@@ -783,6 +801,7 @@
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
 				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */,
+				27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -1005,6 +1024,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				7F581D35221ED5C60099E66B /* NotificationService.swift in Sources */,
+				27C667A9295241B600E590D5 /* Sentry.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -1021,6 +1041,7 @@
 				7F93AAB8287778090047B89F /* Publishers.swift in Sources */,
 				7F7E9F732864E8060064BFAF /* CompassIcons.swift in Sources */,
 				7F93AABA28777A390047B89F /* Notification.swift in Sources */,
+				27C667AA295241B600E590D5 /* Sentry.swift in Sources */,
 				7FA9A9902868BD8800AB35A1 /* LocalFileManager.swift in Sources */,
 				7F93AA9E2875FD310047B89F /* CancelButton.swift in Sources */,
 				7F42880A286672F6006B48E1 /* ServerService.swift in Sources */,
@@ -1095,7 +1116,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 443;
+				CURRENT_PROJECT_VERSION = 446;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
@@ -1139,7 +1160,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 443;
+				CURRENT_PROJECT_VERSION = 446;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
@@ -1282,7 +1303,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 443;
+				CURRENT_PROJECT_VERSION = 446;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1333,7 +1354,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 443;
+				CURRENT_PROJECT_VERSION = 446;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1502,6 +1523,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
+			requirement = {
+				branch = 8.0.0;
+				kind = branch;
+			};
+		};
 		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/satoshi-takano/OpenGraph.git";
@@ -1513,6 +1542,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		27C667A229523ECA00E590D5 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */;
+			productName = Sentry;
+		};
+		27C667A429523F0A00E590D5 /* Sentry */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */;
+			productName = Sentry;
+		};
 		49AE370026D4455D00EF4E52 /* Gekidou */ = {
 			isa = XCSwiftPackageProductDependency;
 			productName = Gekidou;

@@ -49,6 +49,7 @@ const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
 const Onboarding = ({
     theme,
+    ...props
 }: OnboardingProps) => {
     const {width} = useWindowDimensions();
     const {slidesData} = useSlidesData();
@@ -73,7 +74,7 @@ const Onboarding = ({
         // mark the onboarding as already viewed
         storeOnboardingViewedValue();
 
-        goToScreen(Screens.SERVER, '', {animated: true, theme}, loginAnimationOptions());
+        goToScreen(Screens.SERVER, '', {animated: true, theme, ...props}, loginAnimationOptions());
     }, []);
 
     const nextSlide = useCallback(() => {

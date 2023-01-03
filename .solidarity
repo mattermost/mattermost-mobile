@@ -56,13 +56,6 @@
       },
       {
         "rule": "cli",
-        "binary": "bundler",
-        "semver": "2.1.4",
-        "error": "install watchman `gem install bundler --version 2.1.4`",
-        "platform": "darwin"
-      },
-      {
-        "rule": "cli",
         "binary": "pod",
         "semver": "1.11.3",
         "platform": "darwin"

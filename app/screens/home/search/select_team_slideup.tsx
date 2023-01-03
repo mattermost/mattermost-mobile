@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 
-import TeamList from '@components/team_sidebar/add_team/team_list';
+import TeamList from '@components/team_list';
 import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';

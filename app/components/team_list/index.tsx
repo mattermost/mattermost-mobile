@@ -5,6 +5,8 @@ import React, {useCallback} from 'react';
 import {ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler'; // Keep the FlatList from gesture handler so it works well with bottom sheet
 
+import Loading from '@components/loading';
+
 import TeamListItem from './team_list_item';
 
 import type TeamModel from '@typings/database/models/servers/team';
@@ -17,6 +19,8 @@ type Props = {
     onPress: (id: string) => void;
     testID?: string;
     selectedTeamId?: string;
+    onEndReached?: () => void;
+    loading?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -30,7 +34,7 @@ const styles = StyleSheet.create({
 
 const keyExtractor = (item: TeamModel) => item.id;
 
-export default function TeamList({teams, textColor, iconTextColor, iconBackgroundColor, onPress, testID, selectedTeamId}: Props) {
+export default function TeamList({teams, textColor, iconTextColor, iconBackgroundColor, onPress, testID, selectedTeamId, onEndReached, loading = false}: Props) {
     const renderTeam = useCallback(({item: t}: ListRenderItemInfo<Team|TeamModel>) => {
         return (
             <TeamListItem
@@ -44,6 +48,11 @@ export default function TeamList({teams, textColor, iconTextColor, iconBackgroun
         );
     }, [textColor, iconTextColor, iconBackgroundColor, onPress, selectedTeamId]);
 
+    let footer;
+    if (loading) {
+        footer = (<Loading/>);
+    }
+
     return (
         <View style={styles.container}>
             <FlatList
@@ -52,6 +61,8 @@ export default function TeamList({teams, textColor, iconTextColor, iconBackgroun
                 keyExtractor={keyExtractor}
                 contentContainerStyle={styles.contentContainer}
                 testID={`${testID}.flat_list`}
+                onEndReached={onEndReached}
+                ListFooterComponent={footer}
             />
         </View>
     );

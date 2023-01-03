@@ -11,9 +11,9 @@ import {Events, Sso} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
-import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
 import * as analytics from '@managers/analytics';
 import {getAllServers} from '@queries/app/servers';
+import {handleDeepLink} from '@utils/deep_link';
 import {logError} from '@utils/log';
 
 import type {jsAndNativeErrorHandler} from '@typings/global/error_handling';
@@ -64,8 +64,7 @@ class GlobalEventHandler {
         }
 
         if (event.url) {
-            const props = getLaunchPropsFromDeepLink(event.url);
-            relaunchApp(props);
+            handleDeepLink(event.url);
         }
     };
 

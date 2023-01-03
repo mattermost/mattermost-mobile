@@ -30,6 +30,7 @@ export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const INTERACTIVE_DIALOG = 'InteractiveDialog';
 export const INVITE = 'Invite';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
+export const JOIN_TEAM = 'JoinTeam';
 export const LATEX = 'Latex';
 export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
@@ -96,6 +97,7 @@ export default {
     INTERACTIVE_DIALOG,
     INVITE,
     IN_APP_NOTIFICATION,
+    JOIN_TEAM,
     LATEX,
     LOGIN,
     MENTIONS,

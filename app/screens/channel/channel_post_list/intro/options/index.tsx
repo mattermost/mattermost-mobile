@@ -4,7 +4,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-import AddPeopleBox from '@components/channel_actions/add_people_box';
+// import AddPeopleBox from '@components/channel_actions/add_people_box';
 import FavoriteBox from '@components/channel_actions/favorite_box';
 import InfoBox from '@components/channel_actions/info_box';
 import SetHeaderBox from '@components/channel_actions/set_header_box';
@@ -39,9 +39,10 @@ const styles = StyleSheet.create({
     },
 });
 
-const IntroOptions = ({channelId, header, favorite, people}: Props) => {
+const IntroOptions = ({channelId, header, favorite}: Props) => {
     return (
         <View style={styles.container}>
+            {/* Add back in after MM-47655 is resolved. https://mattermost.atlassian.net/browse/MM-47655
             {people &&
             <AddPeopleBox
                 channelId={channelId}
@@ -49,6 +50,7 @@ const IntroOptions = ({channelId, header, favorite, people}: Props) => {
                 testID='channel_post_list.intro_options.add_people.action'
             />
             }
+            */}
             {header &&
             <SetHeaderBox
                 channelId={channelId}

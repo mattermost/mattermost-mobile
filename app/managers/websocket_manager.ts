@@ -21,10 +21,10 @@ import {isMainActivity} from '@utils/helpers';
 import {logError} from '@utils/log';
 
 const WAIT_TO_CLOSE = toMilliseconds({seconds: 15});
-const WAIT_UNTIL_NEXT = toMilliseconds({seconds: 20});
+const WAIT_UNTIL_NEXT = toMilliseconds({seconds: 5});
 
 class WebsocketManager {
-    private connectedSubjects: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
+    private connectedSubjects: {[serverUrl: string]: BehaviorSubject<WebsocketConnectedState>} = {};
 
     private clients: Record<string, WebSocketClient> = {};
     private connectionTimerIDs: Record<string, DebouncedFunc<() => void>> = {};
@@ -69,7 +69,7 @@ class WebsocketManager {
         }
         delete this.clients[serverUrl];
 
-        this.getConnectedSubject(serverUrl).next(false);
+        this.getConnectedSubject(serverUrl).next('not_connected');
         delete this.connectedSubjects[serverUrl];
     };
 
@@ -96,7 +96,7 @@ class WebsocketManager {
             const client = this.clients[url];
             if (client.isConnected()) {
                 client.close(true);
-                this.getConnectedSubject(url).next(false);
+                this.getConnectedSubject(url).next('not_connected');
             }
         }
     };
@@ -107,6 +107,7 @@ class WebsocketManager {
             if (clientUrl === activeServerUrl) {
                 this.initializeClient(clientUrl);
             } else {
+                this.getConnectedSubject(clientUrl).next('connecting');
                 const bounce = debounce(this.initializeClient.bind(this, clientUrl), WAIT_UNTIL_NEXT);
                 this.connectionTimerIDs[clientUrl] = bounce;
                 bounce();
@@ -118,7 +119,7 @@ class WebsocketManager {
         return this.clients[serverUrl]?.isConnected();
     };
 
-    public observeConnected = (serverUrl: string) => {
+    public observeWebsocketState = (serverUrl: string) => {
         return this.getConnectedSubject(serverUrl).asObservable().pipe(
             distinctUntilChanged(),
         );
@@ -126,7 +127,7 @@ class WebsocketManager {
 
     private getConnectedSubject = (serverUrl: string) => {
         if (!this.connectedSubjects[serverUrl]) {
-            this.connectedSubjects[serverUrl] = new BehaviorSubject(this.isConnected(serverUrl));
+            this.connectedSubjects[serverUrl] = new BehaviorSubject(this.isConnected(serverUrl) ? 'connected' : 'not_connected');
         }
 
         return this.connectedSubjects[serverUrl];
@@ -153,13 +154,13 @@ class WebsocketManager {
     private onFirstConnect = (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
         handleFirstConnect(serverUrl);
-        this.getConnectedSubject(serverUrl).next(true);
+        this.getConnectedSubject(serverUrl).next('connected');
     };
 
-    private onReconnect = (serverUrl: string) => {
+    private onReconnect = async (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
-        handleReconnect(serverUrl);
-        this.getConnectedSubject(serverUrl).next(true);
+        await handleReconnect(serverUrl);
+        this.getConnectedSubject(serverUrl).next('connected');
     };
 
     private onWebsocketClose = async (serverUrl: string, connectFailCount: number, lastDisconnect: number) => {
@@ -168,7 +169,7 @@ class WebsocketManager {
             await handleClose(serverUrl, lastDisconnect);
 
             this.stopPeriodicStatusUpdates(serverUrl);
-            this.getConnectedSubject(serverUrl).next(false);
+            this.getConnectedSubject(serverUrl).next('not_connected');
         }
     };
 

@@ -24,10 +24,13 @@ export const useKeyboardTrackingPaused = (keyboardTrackingRef: RefObject<Keyboar
         };
 
         const commandListener = Navigation.events().registerCommandListener(() => {
-            if (!isPostDraftPaused.current) {
-                isPostDraftPaused.current = true;
-                keyboardTrackingRef.current?.pauseTracking(trackerId);
-            }
+            setTimeout(() => {
+                const visibleScreen = NavigationStore.getVisibleScreen();
+                if (!isPostDraftPaused.current && !screens.includes(visibleScreen)) {
+                    isPostDraftPaused.current = true;
+                    keyboardTrackingRef.current?.pauseTracking(trackerId);
+                }
+            });
         });
 
         const commandCompletedListener = Navigation.events().registerCommandCompletedListener(() => {

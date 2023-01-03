@@ -9,7 +9,7 @@ import websocket_manager from '@managers/websocket_manager';
 import ConnectionBanner from './connection_banner';
 
 const enhanced = withObservables(['serverUrl'], ({serverUrl}: {serverUrl: string}) => ({
-    isConnected: websocket_manager.observeConnected(serverUrl),
+    websocketState: websocket_manager.observeWebsocketState(serverUrl),
 }));
 
 export default withServerUrl(enhanced(ConnectionBanner));

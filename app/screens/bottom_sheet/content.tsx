@@ -45,9 +45,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         separator: {
             height: 1,
-            right: 16,
+            right: 20,
             borderTopWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+            marginBottom: 20,
         },
     };
 });
@@ -83,7 +84,7 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, on
             </>
             {showButton && (
                 <>
-                    <View style={[styles.separator, {width: separatorWidth, marginBottom: (isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN)}]}/>
+                    <View style={[styles.separator, {width: separatorWidth}]}/>
                     <Button
                         disabled={disableButton}
                         onPress={onPress}

@@ -10,7 +10,7 @@ import {addChannelToDefaultCategory, storeCategories} from '@actions/local/categ
 import {removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
-import {Events, General, Preferences, Screens} from '@constants';
+import {DeepLink, Events, General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {privateChannelJoinPrompt} from '@helpers/api/channel';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
@@ -24,11 +24,11 @@ import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams, r
 import {getCurrentUser} from '@queries/servers/user';
 import {dismissAllModals, popToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
+import {setTeamLoading} from '@store/team_load_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
 import {isTablet} from '@utils/helpers';
 import {logDebug, logError, logInfo} from '@utils/log';
 import {showMuteChannelSnackbar} from '@utils/snack_bar';
-import {PERMALINK_GENERIC_TEAM_NAME_REDIRECT} from '@utils/url';
 import {displayGroupMessageName, displayUsername} from '@utils/user';
 
 import {fetchGroupsForChannelIfConstrained} from './groups';
@@ -360,6 +360,9 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
     }
 
     try {
+        if (!fetchOnly) {
+            setTeamLoading(serverUrl, true);
+        }
         const [allChannels, channelMemberships, categoriesWithOrder] = await Promise.all([
             client.getMyChannels(teamId, includeDeleted, since),
             client.getMyChannelMembers(teamId),
@@ -388,10 +391,14 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
             if (models.length) {
                 await operator.batchRecords(models);
             }
+            setTeamLoading(serverUrl, false);
         }
 
         return {channels, memberships, categories};
     } catch (error) {
+        if (!fetchOnly) {
+            setTeamLoading(serverUrl, false);
+        }
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
@@ -655,7 +662,7 @@ export async function switchToChannelByName(serverUrl: string, channelName: stri
     let joinedTeam = false;
     let teamId = '';
     try {
-        if (teamName === PERMALINK_GENERIC_TEAM_NAME_REDIRECT) {
+        if (teamName === DeepLink.Redirect) {
             teamId = await getCurrentTeamId(database);
         } else {
             const team = await getTeamByName(database, teamName);
@@ -1257,7 +1264,7 @@ export const unarchiveChannel = async (serverUrl: string, channelId: string) => 
     try {
         EphemeralStore.addArchivingChannel(channelId);
         await client.unarchiveChannel(channelId);
-        await setChannelDeleteAt(serverUrl, channelId, Date.now());
+        await setChannelDeleteAt(serverUrl, channelId, 0);
         return {error: undefined};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
