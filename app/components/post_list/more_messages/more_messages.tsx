@@ -17,14 +17,14 @@ import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type PostModel from '@typings/database/models/servers/post';
+import type {PostList} from '@typings/components/post_list';
 
 type Props = {
     channelId: string;
     isCRTEnabled?: boolean;
     isManualUnread?: boolean;
     newMessageLineIndex: number;
-    posts: Array<string | PostModel>;
+    posts: PostList;
     registerScrollEndIndexListener: (fn: (endIndex: number) => void) => () => void;
     registerViewableItemsListener: (fn: (viewableItems: ViewToken[]) => void) => () => void;
     rootId?: string;
@@ -188,7 +188,7 @@ const MoreMessages = ({
             return;
         }
 
-        const readCount = posts.slice(0, lastViewableIndex).filter((v) => typeof v !== 'string').length;
+        const readCount = posts.slice(0, lastViewableIndex).filter((v) => v.type === 'post').length;
         const totalUnread = localUnreadCount.current - readCount;
         if (lastViewableIndex >= newMessageLineIndex) {
             resetCount();
