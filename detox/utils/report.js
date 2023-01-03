@@ -308,6 +308,7 @@ function generateTestReport(summary, isUploadedToS3, reportLink, environment, te
 function generateTitle() {
     const {
         BRANCH,
+        COMMIT_HASH,
         IOS,
         PULL_REQUEST,
         RELEASE_BUILD_NUMBER,
@@ -320,7 +321,7 @@ function generateTitle() {
     const lane = `${platform} Build`;
     const appExtension = IOS === 'true' ? 'ipa' : 'apk';
     const appFileName = TYPE === 'GEKIDOU' ? `Mattermost_Beta.${appExtension}` : `Mattermost.${appExtension}`;
-    let buildLink = ` with [${lane}](https://pr-builds.mattermost.com/mattermost-mobile/${BRANCH}/${appFileName})`;
+    let buildLink = ` with [${lane}:${COMMIT_HASH}](https://pr-builds.mattermost.com/mattermost-mobile/${BRANCH}-${COMMIT_HASH}/${appFileName})`;
     if (RELEASE_VERSION && RELEASE_BUILD_NUMBER) {
         const releaseType = TYPE === 'GEKIDOU' ? 'mattermost-mobile-beta' : 'mattermost-mobile';
         buildLink = ` with [${RELEASE_VERSION}:${RELEASE_BUILD_NUMBER}](https://releases.mattermost.com/${releaseType}/${RELEASE_VERSION}/${RELEASE_BUILD_NUMBER}/${appFileName})`;
