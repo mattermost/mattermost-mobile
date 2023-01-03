@@ -59,7 +59,7 @@ function combineUserActivityPosts(orderedPosts: Array<PostModel | string>) {
         const post = orderedPosts[i];
 
         if (typeof post === 'string') {
-            if (post === START_OF_NEW_MESSAGES || post.startsWith(DATE_LINE)) {
+            if (isStartOfNewMessages(post) || isDateLine(post) || isThreadOverview(post)) {
                 // Not a post, so it won't be combined
                 out.push(post);
 
