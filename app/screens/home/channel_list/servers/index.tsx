@@ -63,7 +63,7 @@ const Servers = React.forwardRef<ServersRef>((props, ref) => {
             let unread = Boolean(threadUnreads);
             for (const myChannel of myChannels) {
                 const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
-                mentions += myChannel.mentionsCount;
+                mentions += isMuted ? 0 : myChannel.mentionsCount;
                 unread = unread || (myChannel.isUnread && !isMuted);
             }
 
