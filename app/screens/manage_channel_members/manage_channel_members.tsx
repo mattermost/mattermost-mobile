@@ -220,8 +220,6 @@ export default function ManageChannelMembers({
 
     useEffect(() => {
         mounted.current = true;
-
-        // TODO: remove if all users should be allowed to remove a user from channel
         if (canManageMembers) {
             updateNavigationButtons(false);
         }
