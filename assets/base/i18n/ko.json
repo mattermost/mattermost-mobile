@@ -700,7 +700,7 @@
   "post_info.system": "시스템",
   "post_message_view.edited": "(수정됨)",
   "posts_view.newMsg": "새로운 메시지",
-  "rhs_thread.rootPostDeletedMessage.body": "이 글타래의 일부는 데이터 보존 정책으로 인해 삭제되었습니다. 더 이상 이 글타래에 회신할 수 없습니다.",
+  "rhs_thread.rootPostDeletedMessage.body": "이 글타래의 일부는 데이터 보존 정책으로 인해 삭제되었습니다. 더 이상 이 글타래에 응답 할 수 없습니다.",
   "search_bar.search": "검색",
   "search_header.results": "검색 결과",
   "search_header.title2": "최근 멘션",

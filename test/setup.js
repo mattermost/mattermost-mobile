@@ -101,9 +101,7 @@ jest.doMock('react-native', () => {
 
     const Linking = {
         ...RNLinking,
-        openURL: jest.fn().mockImplementation(
-            () => Promise.resolve(''),
-        ),
+        openURL: jest.fn(),
     };
 
     return Object.setPrototypeOf({

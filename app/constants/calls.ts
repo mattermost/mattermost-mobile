@@ -4,9 +4,9 @@
 const RefreshConfigMillis = 20 * 60 * 1000; // Refresh config after 20 minutes
 
 const RequiredServer = {
-    FULL_VERSION: '6.3.0',
-    MAJOR_VERSION: 6,
-    MIN_VERSION: 3,
+    FULL_VERSION: '7.1.0',
+    MAJOR_VERSION: 7,
+    MIN_VERSION: 1,
     PATCH_VERSION: 0,
 };
 

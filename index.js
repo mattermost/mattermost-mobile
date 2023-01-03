@@ -3,9 +3,13 @@
 
 import 'react-native/Libraries/Core/InitializeCore';
 import {Platform, Text} from 'react-native';
+import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
 import 'react-native-gesture-handler';
 
 import 'app/mattermost';
+
+// Add scaleY back to work around its removal in React Native 0.70.
+ViewReactNativeStyleAttributes.scaleY = true;
 
 if (Platform.OS === 'android') {
     require('harmony-reflect');

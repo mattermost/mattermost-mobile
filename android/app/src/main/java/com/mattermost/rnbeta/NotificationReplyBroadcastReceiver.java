@@ -129,9 +129,8 @@ public class NotificationReplyBroadcastReceiver extends BroadcastReceiver {
     }
 
     private void recreateNotification(int notificationId, final CharSequence message) {
-        final Intent cta = new Intent(mContext, ProxyService.class);
         final PushNotificationProps notificationProps = new PushNotificationProps(bundle);
-        final PendingIntent pendingIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, cta, notificationProps);
+        final PendingIntent pendingIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, notificationProps);
         NotificationCompat.Builder builder = CustomPushNotificationHelper.createNotificationBuilder(mContext, pendingIntent, bundle, false);
         Notification notification =  builder.build();
         NotificationCompat.MessagingStyle messagingStyle = NotificationCompat.MessagingStyle.extractMessagingStyleFromNotification(notification);

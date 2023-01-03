@@ -22,6 +22,7 @@ import java.util.List;
 import java.util.Map;
 
 import com.wix.reactnativenotifications.core.notification.PushNotification;
+import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
@@ -246,7 +247,7 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private void buildNotification(Integer notificationId, boolean createSummary) {
-        final PendingIntent pendingIntent = super.getCTAPendingIntent();
+        final PendingIntent pendingIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, mNotificationProps);
         final Notification notification = buildNotification(pendingIntent);
         if (createSummary) {
             final Notification summary = getNotificationSummaryBuilder(pendingIntent).build();
