@@ -22,6 +22,7 @@ import {
 import {typography} from '@utils/typography';
 
 type UserProfileWithChannelAdmin = UserProfile & {scheme_admin?: boolean}
+type RenderItemType = ListRenderItemInfo<UserProfileWithChannelAdmin> & {section?: SectionListData<UserProfileWithChannelAdmin>}
 
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
@@ -216,7 +217,7 @@ export default function UserList({
         }
     }, []);
 
-    const renderItem = useCallback(({item, index, section}: ListRenderItemInfo<UserProfileWithChannelAdmin> & {section?: SectionListData<UserProfileWithChannelAdmin>}) => {
+    const renderItem = useCallback(({item, index, section}: RenderItemType) => {
         // The list will re-render when the selection changes because it's passed into the list as extraData
         const selected = Boolean(selectedIds[item.id]);
         const canAdd = Object.keys(selectedIds).length < General.MAX_USERS_IN_GM;
