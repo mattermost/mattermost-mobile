@@ -171,7 +171,7 @@ const ServerItem = ({
         let isUnread = Boolean(threadUnreads);
         for (const myChannel of myChannels) {
             const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
-            mentions += myChannel.mentionsCount;
+            mentions += isMuted ? 0 : myChannel.mentionsCount;
             isUnread = isUnread || (myChannel.isUnread && !isMuted);
         }
         mentions += threadMentionCount;

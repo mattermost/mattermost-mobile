@@ -23,6 +23,7 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
     static associations: Associations = {
         [CHANNEL]: {type: 'belongs_to', key: 'id'},
         [CATEGORY_CHANNEL]: {type: 'has_many', foreignKey: 'channel_id'},
+        [MY_CHANNEL_SETTINGS]: {type: 'has_many', foreignKey: 'id'},
     };
 
     /** last_post_at : The timestamp for any last post on this channel */

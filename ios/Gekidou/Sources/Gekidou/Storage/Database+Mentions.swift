@@ -38,8 +38,9 @@ extension Database {
         let stmtString = """
         SELECT SUM(my.mentions_count) \
         FROM MyChannel my \
+        INNER JOIN MyChannelSettings mys ON mys.id=my.id \
         INNER JOIN Channel c ON c.id=my.id \
-        WHERE c.delete_at = 0
+        WHERE c.delete_at = 0 AND mys.notify_props NOT LIKE '%"mark_unread":"mention"%'
         """
         let mentions = try? db.prepare(stmtString).scalar() as? Double
         return Int(mentions ?? 0)
