@@ -197,7 +197,7 @@ export function selectOrderedPosts(
         post.isSaved = savedPostIds.has(post.id);
         if (includePrevNext) {
             post.nextPost = posts[i - 1];
-            if (!isThreadScreen || out[out.length - 1].type !== 'thread-overview') {
+            if (!isThreadScreen || out[out.length - 1]?.type !== 'thread-overview') {
                 post.previousPost = posts[i + 1];
             }
         }
