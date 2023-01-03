@@ -4,12 +4,9 @@ import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
-import {handleTeamChange} from '@actions/remote/team';
-import TeamFlatList from '@components/team_sidebar/add_team/team_list';
-import {useServerUrl} from '@context/server';
+import TeamFlatList from '@components/team_list';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {resetToHome} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -39,23 +36,23 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 type Props = {
     teams: Team[];
+    onEndReached: () => void;
+    onPress: (id: string) => void;
+    loading: boolean;
 };
 function TeamList({
     teams,
+    onEndReached,
+    onPress,
+    loading,
 }: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
-    const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
 
-    const onTeamAdded = async (id: string) => {
-        await handleTeamChange(serverUrl, id);
-        resetToHome();
-    };
-
     const containerStyle = useMemo(() => {
-        return isTablet ? [styles.container, {maxWidth: 600, alignItems: 'center'}] : styles.container;
+        return isTablet ? [styles.container, {maxWidth: 600, alignItems: 'center' as const}] : styles.container;
     }, [isTablet, styles]);
 
     return (
@@ -75,7 +72,9 @@ function TeamList({
                 textColor={theme.sidebarText}
                 iconBackgroundColor={changeOpacity(theme.sidebarText, 0.16)}
                 iconTextColor={theme.sidebarText}
-                onPress={onTeamAdded}
+                onPress={onPress}
+                onEndReached={onEndReached}
+                loading={loading}
             />
         </View>
     );

@@ -88,7 +88,7 @@ describe('Smoke Test - Account', () => {
         await AccountScreen.customStatusClearButton.tap();
 
         // * Verify custom status is cleared from account screen
-        const defaultStatusText = 'Set a Status';
+        const defaultStatusText = 'Set a custom status';
         await expect(accountCustomStatusEmoji).not.toExist();
         await expect(accountCustomStatusText).toHaveText(defaultStatusText);
         await expect(accountCustomStatusExpiry).not.toExist();

@@ -23,6 +23,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Leave Channel', () => {
@@ -89,6 +90,7 @@ describe('Channels - Leave Channel', () => {
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelScreen.leaveChannel({confirm: true});
 
         // * Verify on channel list screen and the channel left by the user does not appear on the list

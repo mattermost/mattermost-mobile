@@ -70,7 +70,7 @@ export default function ChannelListRow({
 
         const color = selected ? theme.buttonBg : theme.centerChannelColor;
         return (
-            <View style={style.selector}>
+            <View>
                 <CompassIcon
                     name={selected ? 'check-circle' : 'circle-outline'}
                     size={28}

@@ -32,7 +32,7 @@ type Props = {
     onRowPress: (item: Channel | DialogOption) => void;
     renderItem: (props: ListItemProps) => JSX.Element;
     selectable?: boolean;
-    theme?: object;
+    theme: Theme;
     shouldRenderSeparator?: boolean;
     testID?: string;
 }

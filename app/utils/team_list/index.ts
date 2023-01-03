@@ -4,7 +4,7 @@
 import {ScaledSize} from 'react-native';
 import {EdgeInsets} from 'react-native-safe-area-context';
 
-import {ITEM_HEIGHT} from '@components/team_sidebar/add_team/team_list_item/team_list_item';
+import {ITEM_HEIGHT} from '@components/team_list/team_list_item/team_list_item';
 import {PADDING_TOP_MOBILE} from '@screens/bottom_sheet';
 import {TITLE_HEIGHT, TITLE_SEPARATOR_MARGIN} from '@screens/bottom_sheet/content';
 import {bottomSheetSnapPoint} from '@utils/helpers';

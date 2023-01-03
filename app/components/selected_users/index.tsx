@@ -7,6 +7,7 @@ import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming}
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Toast from '@components/toast';
+import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
@@ -65,6 +66,11 @@ type Props = {
     * How to display the names of users.
     */
     teammateNameDisplay: string;
+
+    /**
+     * test ID
+     */
+    testID?: string;
 
     /**
      * toast Icon
@@ -129,7 +135,7 @@ export default function SelectedUsers({
     buttonIcon, buttonText, containerHeight = 0,
     modalPosition = 0, onPress, onRemove,
     selectedIds, setShowToast, showToast = false,
-    teammateNameDisplay, toastIcon, toastMessage,
+    teammateNameDisplay, testID, toastIcon, toastMessage,
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -156,7 +162,7 @@ export default function SelectedUsers({
                     user={selectedIds[id]}
                     teammateNameDisplay={teammateNameDisplay}
                     onRemove={onRemove}
-                    testID='create_direct_message.selected_user'
+                    testID={`${testID}.selected_user`}
                 />,
             );
         }
@@ -274,6 +280,8 @@ export default function SelectedUsers({
                         onPress={handlePress}
                         icon={buttonIcon}
                         text={buttonText}
+                        disabled={numberSelectedIds > General.MAX_USERS_IN_GM}
+                        testID={`${testID}.start.button`}
                     />
                 </Animated.View>
             </Animated.View>

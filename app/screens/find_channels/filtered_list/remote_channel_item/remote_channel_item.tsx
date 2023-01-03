@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 
 import ChannelIcon from '@components/channel_icon';
 import {useTheme} from '@context/theme';
@@ -50,11 +50,6 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         top: 5,
     },
 }));
-
-export const textStyle = StyleSheet.create({
-    bright: typography('Body', 200, 'SemiBold'),
-    regular: typography('Body', 200, 'Regular'),
-});
 
 const RemoteChannelItem = ({onPress, channel, teamDisplayName, testID}: Props) => {
     const theme = useTheme();

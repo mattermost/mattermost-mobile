@@ -35,14 +35,26 @@ extension Database {
     }
     
     public func getChannelMentions(_ db: Connection) -> Int {
-        let mentionsCol = Expression<Int?>("mentions_count")
-        let mentions = try? db.scalar(myChannelTable.select(mentionsCol.total))
+        let stmtString = """
+        SELECT SUM(my.mentions_count) \
+        FROM MyChannel my \
+        INNER JOIN MyChannelSettings mys ON mys.id=my.id \
+        INNER JOIN Channel c ON c.id=my.id \
+        WHERE c.delete_at = 0 AND mys.notify_props NOT LIKE '%"mark_unread":"mention"%'
+        """
+        let mentions = try? db.prepare(stmtString).scalar() as? Double
         return Int(mentions ?? 0)
     }
-    
+
     public func getThreadMentions(_ db: Connection) -> Int {
-        let mentionsCol = Expression<Int?>("unread_mentions")
-        let mentions = try? db.scalar(threadTable.select(mentionsCol.total))
+        let stmtString = """
+        SELECT SUM(unread_mentions) \
+        FROM Thread t
+        INNER JOIN Post p ON t.id=p.id \
+        INNER JOIN Channel c ON p.channel_id=c.id
+        WHERE c.delete_at = 0
+        """
+        let mentions = try? db.prepare(stmtString).scalar() as? Double
         return Int(mentions ?? 0)
     }
     

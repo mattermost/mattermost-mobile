@@ -3,7 +3,7 @@
 
 import {ProfilePicture} from '@support/ui/component';
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class CreateDirectMessageScreen {
@@ -19,6 +19,7 @@ class CreateDirectMessageScreen {
         flatUserList: 'create_direct_message.user_list.flat_list',
         sectionUserList: 'create_direct_message.user_list.section_list',
         tutorialHighlight: 'tutorial_highlight',
+        tutorialSwipeLeft: 'tutorial_swipe_left',
     };
 
     createDirectMessageScreen = element(by.id(this.testID.createDirectMessageScreen));
@@ -30,6 +31,7 @@ class CreateDirectMessageScreen {
     flatUserList = element(by.id(this.testID.flatUserList));
     sectionUserList = element(by.id(this.testID.sectionUserList));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
+    tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
 
     getSelectedUser = (userId: string) => {
         return element(by.id(`${this.testID.selectedUserPrefix}${userId}`));
@@ -64,6 +66,7 @@ class CreateDirectMessageScreen {
     open = async () => {
         // # Open create direct message screen
         await ChannelListScreen.headerPlusButton.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelListScreen.openDirectMessageItem.tap();
 
         return this.toBeVisible();
@@ -76,7 +79,7 @@ class CreateDirectMessageScreen {
 
     closeTutorial = async () => {
         await expect(this.tutorialHighlight).toExist();
-        await this.closeButton.tap();
+        await this.tutorialSwipeLeft.tap();
         await expect(this.tutorialHighlight).not.toExist();
     };
 }

@@ -13,7 +13,7 @@
     "ios.release": {
       "type": "ios.app",
       "binaryPath": "../ios/Build/Products/Release-iphonesimulator/Mattermost.app",
-      "build": "cd ../fastlane && NODE_ENV=production bundle exec fastlane ios simulator && cd ../detox"
+      "build": "cd .. && npm run build:ios-sim && cd detox"
     },
     "android.debug": {
       "type": "android.apk",
@@ -30,13 +30,13 @@
     "ios.simulator": {
       "type": "ios.simulator",
       "device": {
-        "type": "iPhone 13"
+        "type": "iPhone 14"
       }
     },
     "android.emulator": {
       "type": "android.emulator",
       "device": {
-        "avdName": "detox_pixel_4_xl_api_30"
+        "avdName": "detox_pixel_4_xl_api_31"
       }
     }
   },

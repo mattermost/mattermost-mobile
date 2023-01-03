@@ -55,11 +55,6 @@ type Props = {
 
 const style = StyleSheet.create({
     flex: {flex: 1},
-    loading: {
-        height: 32,
-        width: 32,
-        justifyContent: 'center',
-    },
     noResultContainer: {
         flexGrow: 1,
         alignItems: 'center',

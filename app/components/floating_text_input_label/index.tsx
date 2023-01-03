@@ -5,11 +5,13 @@
 
 import {debounce} from 'lodash';
 import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useCallback} from 'react';
-import {GestureResponderEvent, LayoutChangeEvent, NativeSyntheticEvent, Platform, StyleProp, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
+import {GestureResponderEvent, LayoutChangeEvent, NativeSyntheticEvent, StyleProp, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming, Easing} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import {getLabelPositions, onExecution} from './utils';
 
 const DEFAULT_INPUT_HEIGHT = 48;
 const BORDER_DEFAULT_WIDTH = 1;
@@ -36,6 +38,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         lineHeight: 16,
         paddingVertical: 5,
     },
+    input: {
+        backgroundColor: 'transparent',
+        borderWidth: 0,
+        flex: 1,
+        paddingHorizontal: 0,
+        paddingTop: 0,
+        paddingBottom: 0,
+    },
     label: {
         position: 'absolute',
         color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -52,6 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontSize: 10,
     },
     textInput: {
+        flexDirection: 'row',
         fontFamily: 'OpenSans',
         fontSize: 16,
         paddingTop: 12,
@@ -65,29 +76,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const onExecution = (
-    e: NativeSyntheticEvent<TextInputFocusEventData>,
-    innerFunc?: () => void,
-    outerFunc?: ((event: NativeSyntheticEvent<TargetedEvent>) => void),
-) => {
-    innerFunc?.();
-    outerFunc?.(e);
-};
-
-const getLabelPositions = (style: TextStyle, labelStyle: TextStyle, smallLabelStyle: TextStyle) => {
-    const top: number = style.paddingTop as number || 0;
-    const bottom: number = style.paddingBottom as number || 0;
-
-    const height: number = (style.height as number || (top + bottom) || style.padding as number) || 0;
-    const textInputFontSize = style.fontSize || 13;
-    const labelFontSize = labelStyle.fontSize || 16;
-    const smallLabelFontSize = smallLabelStyle.fontSize || 10;
-    const fontSizeDiff = textInputFontSize - labelFontSize;
-    const unfocused = (height * 0.5) + (fontSizeDiff * (Platform.OS === 'android' ? 0.5 : 0.6));
-    const focused = -(labelFontSize + smallLabelFontSize) * 0.25;
-    return [unfocused, focused];
-};
-
 export type FloatingTextInputRef = {
     blur: () => void;
     focus: () => void;
@@ -97,6 +85,7 @@ export type FloatingTextInputRef = {
 type FloatingTextInputProps = TextInputProps & {
     containerStyle?: ViewStyle;
     editable?: boolean;
+    endAdornment?: React.ReactNode;
     error?: string;
     errorIcon?: string;
     isKeyboardInput?: boolean;
@@ -120,6 +109,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     editable = true,
     error,
     errorIcon = 'alert-outline',
+    endAdornment,
     isKeyboardInput = true,
     label = '',
     labelTextStyle,
@@ -184,7 +174,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
 
     const combinedContainerStyle = useMemo(() => {
-        const res = [styles.container];
+        const res: StyleProp<ViewStyle> = [styles.container];
         if (multiline) {
             res.push({height: 100 + (2 * BORDER_DEFAULT_WIDTH)});
         }
@@ -192,7 +182,7 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
         return res;
     }, [styles, containerStyle, multiline]);
 
-    const combinedTextInputStyle = useMemo(() => {
+    const combinedTextInputContainerStyle = useMemo(() => {
         const res: StyleProp<TextStyle> = [styles.textInput];
         if (!editable) {
             res.push(styles.readOnly);
@@ -212,6 +202,16 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
 
         if (multiline) {
             res.push({height: 100, textAlignVertical: 'top'});
+        }
+
+        return res;
+    }, [styles, theme, shouldShowError, focused, textInputStyle, focusedLabel, multiline, editable]);
+
+    const combinedTextInputStyle = useMemo(() => {
+        const res: StyleProp<TextStyle> = [styles.textInput, styles.input, textInputStyle];
+
+        if (multiline) {
+            res.push({height: 80, textAlignVertical: 'top'});
         }
 
         return res;
@@ -253,21 +253,24 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
                 >
                     {label}
                 </Animated.Text>
-                <TextInput
-                    {...props}
-                    editable={isKeyboardInput && editable}
-                    style={combinedTextInputStyle}
-                    placeholder={placeholder}
-                    placeholderTextColor={styles.label.color}
-                    multiline={multiline}
-                    value={value}
-                    pointerEvents={isKeyboardInput ? 'auto' : 'none'}
-                    onFocus={onTextInputFocus}
-                    onBlur={onTextInputBlur}
-                    ref={inputRef}
-                    underlineColorAndroid='transparent'
-                    testID={testID}
-                />
+                <View style={combinedTextInputContainerStyle}>
+                    <TextInput
+                        {...props}
+                        editable={isKeyboardInput && editable}
+                        style={combinedTextInputStyle}
+                        placeholder={placeholder}
+                        placeholderTextColor={styles.label.color}
+                        multiline={multiline}
+                        value={value}
+                        pointerEvents={isKeyboardInput ? 'auto' : 'none'}
+                        onFocus={onTextInputFocus}
+                        onBlur={onTextInputBlur}
+                        ref={inputRef}
+                        underlineColorAndroid='transparent'
+                        testID={testID}
+                    />
+                    {endAdornment}
+                </View>
                 {Boolean(error) && (
                     <View style={styles.errorContainer}>
                         {showErrorIcon && errorIcon &&

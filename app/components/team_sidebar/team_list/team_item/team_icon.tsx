@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {View, Text} from 'react-native';
+import {View, Text, StyleProp, TextStyle} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import {useServerUrl} from '@context/server';
@@ -106,10 +106,10 @@ export default function TeamIcon({
 
     let teamIconContent;
     if (nameOnly) {
-        const textStyle = [
+        const textStyle: StyleProp<TextStyle> = [
             styles.text,
             textTypography,
-            textColor && {color: textColor},
+            Boolean(textColor) && {color: textColor},
         ];
 
         teamIconContent = (

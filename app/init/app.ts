@@ -16,6 +16,20 @@ import {registerNavigationListeners} from '@screens/navigation';
 let alreadyInitialized = false;
 let serverCredentials: ServerCredential[];
 
+// Fallback Polyfill for Promise.allSettle
+Promise.allSettled = Promise.allSettled || (<T>(promises: Array<Promise<T>>) => Promise.all(
+    promises.map((p) => p.
+        then((value) => ({
+            status: 'fulfilled',
+            value,
+        })).
+        catch((reason) => ({
+            status: 'rejected',
+            reason,
+        })),
+    ),
+));
+
 export async function initialize() {
     if (!alreadyInitialized) {
         alreadyInitialized = true;

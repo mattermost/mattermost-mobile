@@ -355,39 +355,27 @@ platform :ios do
     update_identifiers
     replace_assets
 
-    sh 'rm -rf ../build-ios/'
-    sh 'cd ../ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -sdk iphoneos -configuration Release -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO'
-    sh 'cd ../build-ios/ && mkdir -p Payload && cp -R ../build-ios/Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/'
-    sh 'mv ../build-ios/Mattermost-unsigned.ipa ../'
-    sh 'rm -rf ../build-ios/'
+    build_ios_unsigned_or_simulator(
+      more_xc_args: "-sdk iphoneos CODE_SIGNING_ALLOWED=NO",
+      rel_build_dir: "Release-iphoneos",
+      output_file: "Mattermost-unsigned.ipa",
+    )
   end
 
   lane :simulator do
     UI.success('Building iOS app for simulator')
 
-    ENV['APP_NAME'] = 'Mattermost'
-    ENV['REPLACE_ASSETS'] = 'true'
-    ENV['BUILD_FOR_RELEASE'] = 'true'
-    ENV['APP_SCHEME'] = 'mattermost'
+    output_file = "Mattermost-simulator-x86_64.app.zip"
 
-    update_identifiers
-    replace_assets
-
-    data_path = 'ios'
-    if ENV['CIRCLECI'] == 'true'
-      data_path = 'build-ios'
-    end
-
-    sh 'rm -rf ../ios/build/'
-    sh 'rm -rf ../build-ios/'
-    sh "cd ../ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -arch x86_64 -sdk iphonesimulator -configuration Release -parallelizeTargets -derivedDataPath ../#{data_path} ENABLE_BITCODE=NO CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO ENABLE_BITCODE=NO"
-    sh "cd ../#{data_path}/Build/Products/Release-iphonesimulator && zip -r Mattermost-simulator-x86_64.app.zip Mattermost.app"
-    sh "mv ../#{data_path}/Build/Products/Release-iphonesimulator/Mattermost-simulator-x86_64.app.zip ../"
-    sh 'rm -rf ../build-ios/'
+    build_ios_unsigned_or_simulator(
+      more_xc_args: "-sdk iphonesimulator -arch x86_64",
+      rel_build_dir: "Release-iphonesimulator",
+      output_file: output_file,
+    )
 
     upload_file_to_s3({
       :os_type => "ios",
-      :file => "Mattermost-simulator-x86_64.app.zip"
+      :file => output_file
     })
   end
 
@@ -580,6 +568,9 @@ platform :ios do
     app_name_sub = app_name.gsub(" ", "_")
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
     method = ENV['IOS_BUILD_EXPORT_METHOD'].nil? || ENV['IOS_BUILD_EXPORT_METHOD'].empty? ? 'ad-hoc' : ENV['IOS_BUILD_EXPORT_METHOD']
+   
+    # Need to add xcargs to only notification and 
+    xcargs = ENV['SENTRY_ENABLED'] == 'true' ? "SENTRY_DSN_IOS='#{ENV['SENTRY_DSN_IOS']}' SENTRY_ENABLED='#{ENV['SENTRY_ENABLED']}'" : ''
 
     setup_code_signing
 
@@ -595,8 +586,27 @@ platform :ios do
         export_options: {
             signingStyle: 'manual',
             iCloudContainerEnvironment: 'Production'
-        }
+        },
+        xcargs:xcargs
     )
+  end
+
+  def build_ios_unsigned_or_simulator(more_xc_args:, rel_build_dir:, output_file:)
+    root_dir = Dir[File.expand_path('..')].first
+    ios_build_dir = "#{root_dir}/ios/Build/Products"
+
+    ENV['APP_NAME'] = 'Mattermost'
+    ENV['REPLACE_ASSETS'] = 'true'
+    ENV['BUILD_FOR_RELEASE'] = 'true'
+    ENV['APP_SCHEME'] = 'mattermost'
+
+    update_identifiers
+    replace_assets
+
+    sh "rm -rf #{ios_build_dir}/"
+    sh "cd #{root_dir}/ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -configuration Release -parallelizeTargets CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO SYMROOT='#{ios_build_dir}' #{more_xc_args} "
+    sh "cd #{ios_build_dir}/#{rel_build_dir} && zip -r #{output_file} Mattermost.app"
+    sh "mv #{ios_build_dir}/#{rel_build_dir}/#{output_file} #{root_dir}"
   end
 
 end

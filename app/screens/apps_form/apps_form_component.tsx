@@ -48,13 +48,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             textAlign: 'left',
             color: (theme.errorTextColor || '#DA4A4A'),
         },
-        button: buttonBackgroundStyle(theme, 'lg', 'primary', 'default'),
         buttonContainer: {
             paddingTop: 20,
             paddingLeft: 50,
             paddingRight: 50,
         },
-        buttonText: buttonTextStyle(theme, 'lg', 'primary', 'default'),
     };
 });
 
@@ -377,6 +375,9 @@ function AppsFormComponent({
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, handleSubmit, [handleSubmit]);
 
+    const submitButtonStyle = useMemo(() => buttonBackgroundStyle(theme, 'lg', 'primary', 'default'), [theme]);
+    const submitButtonTextStyle = useMemo(() => buttonTextStyle(theme, 'lg', 'primary', 'default'), [theme]);
+
     return (
         <SafeAreaView
             testID='interactive_dialog.screen'
@@ -427,9 +428,9 @@ function AppsFormComponent({
                         >
                             <Button
                                 onPress={() => handleSubmit(o.value)}
-                                containerStyle={style.button}
+                                containerStyle={submitButtonStyle}
                             >
-                                <Text style={style.buttonText}>{o.label}</Text>
+                                <Text style={submitButtonTextStyle}>{o.label}</Text>
                             </Button>
                         </View>
                     ))}

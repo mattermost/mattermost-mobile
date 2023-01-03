@@ -14,6 +14,7 @@ import {getMyChannel, getChannelById} from '@queries/servers/channel';
 import {getCurrentTeamId, getWebSocketLastDisconnected} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import EphemeralStore from '@store/ephemeral_store';
 import {emitNotificationError} from '@utils/notification';
 
 const fetchNotificationData = async (serverUrl: string, notification: NotificationWithData, skipEvents = false) => {
@@ -122,6 +123,7 @@ export const openNotification = async (serverUrl: string, notification: Notifica
     }
 
     try {
+        EphemeralStore.setNotificationTapped(true);
         const {database} = operator;
         const channelId = notification.payload!.channel_id!;
         const rootId = notification.payload!.root_id!;

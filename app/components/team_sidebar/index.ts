@@ -1,17 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {switchMap} from 'rxjs/operators';
 
-import {queryMyTeams, queryOtherTeams} from '@queries/servers/team';
+import {withServerUrl} from '@context/server';
+import EphemeralStore from '@store/ephemeral_store';
 
 import TeamSidebar from './team_sidebar';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
-
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
+const enhanced = withObservables([], ({serverUrl}: {serverUrl: string}) => {
     // TODO https://mattermost.atlassian.net/browse/MM-43622
     // const canCreateTeams = observeCurrentUser(database).pipe(
     //     switchMap((u) => (u ? of$(u.roles.split(' ')) : of$([]))),
@@ -19,17 +16,9 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     //     switchMap((r) => of$(hasPermission(r, Permissions.CREATE_TEAM, false))),
     // );
 
-    const otherTeams = queryMyTeams(database).observe().pipe(
-        switchMap((mm) => {
-            // eslint-disable-next-line max-nested-callbacks
-            const ids = mm.map((m) => m.id);
-            return queryOtherTeams(database, ids).observe();
-        }),
-    );
-
     return {
-        otherTeams,
+        canJoinOtherTeams: EphemeralStore.observeCanJoinOtherTeams(serverUrl),
     };
 });
 
-export default withDatabase(enhanced(TeamSidebar));
+export default withServerUrl(enhanced(TeamSidebar));
