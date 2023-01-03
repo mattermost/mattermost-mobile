@@ -61,6 +61,8 @@ export function createProfilesSections(profiles: UserProfile[], members?: Channe
     const sections = new Map();
 
     if (members?.length) {
+        // when channel members are provided, build the sections by admins and members
+        // combine UserProfile and ChannelMember objects so can get channel member scheme_admin permission
         profiles.forEach((p) => userDictionary.set(p.id, p));
         members.forEach((m) => {
             const sectionKey = sectionRoleKeyExtractor(m.scheme_admin!);
@@ -72,6 +74,7 @@ export function createProfilesSections(profiles: UserProfile[], members?: Channe
         sections.set(SECTION_TITLE_ADMINS, channelAdminSections.get(SECTION_TITLE_ADMINS));
         sections.set(SECTION_TITLE_MEMBERS, channelAdminSections.get(SECTION_TITLE_MEMBERS));
     } else {
+        // when channel members are not provided, build the sections alphabetically
         profiles.forEach((p) => {
             const sectionKey = sectionKeyExtractor(p);
             const keyExists = sections.get(sectionKey);
