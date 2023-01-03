@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, IntlShape, useIntl} from 'react-intl';
 import {FlatList, Keyboard, ListRenderItemInfo, Platform, SectionList, SectionListData, Text, View} from 'react-native';
 
 import {storeProfile} from '@actions/local/user';
@@ -13,6 +13,7 @@ import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
+import {t} from '@i18n';
 import {openAsBottomSheet} from '@screens/navigation';
 import {
     changeOpacity,
@@ -25,8 +26,16 @@ type UserProfileWithChannelAdmin = UserProfile & {scheme_admin?: boolean}
 const INITIAL_BATCH_TO_RENDER = 15;
 const SCROLL_EVENT_THROTTLE = 60;
 
-const SECTION_TITLE_ADMINS = 'CHANNEL ADMINS';
-const SECTION_TITLE_MEMBERS = 'MEMBERS';
+const messages = defineMessages({
+    admins: {
+        id: t('mobile.manage_members.section_title_admins'),
+        defaultMessage: 'CHANNEL ADMINS',
+    },
+    members: {
+        id: t('mobile.manage_members.section_title_members'),
+        defaultMessage: 'MEMBERS',
+    },
+});
 
 const keyboardDismissProp = Platform.select({
     android: {
@@ -46,15 +55,18 @@ const sectionKeyExtractor = (profile: UserProfile) => {
     return profile.username[0].toUpperCase();
 };
 
-const sectionRoleKeyExtractor = (cAdmin: boolean) => {
+const sectionRoleKeyExtractor = (intl: IntlShape, cAdmin: boolean) => {
     // Group items by channel admin or channel member
-    return cAdmin ? SECTION_TITLE_ADMINS : SECTION_TITLE_MEMBERS;
+    return intl.formatMessage(cAdmin ? messages.admins : messages.members);
 };
 
-export function createProfilesSections(profiles: UserProfile[], members?: ChannelMember[]) {
+export function createProfilesSections(intl: IntlShape, profiles: UserProfile[], members?: ChannelMember[]) {
     if (!profiles.length) {
         return [];
     }
+
+    const section_title_members = intl.formatMessage(messages.members);
+    const section_title_admins = intl.formatMessage(messages.admins);
 
     const userDictionary = new Map();
     const channelAdminSections = new Map();
@@ -65,14 +77,14 @@ export function createProfilesSections(profiles: UserProfile[], members?: Channe
         // combine UserProfile and ChannelMember objects so can get channel member scheme_admin permission
         profiles.forEach((p) => userDictionary.set(p.id, p));
         members.forEach((m) => {
-            const sectionKey = sectionRoleKeyExtractor(m.scheme_admin!);
+            const sectionKey = sectionRoleKeyExtractor(intl, m.scheme_admin!);
             const keyExists = channelAdminSections.get(sectionKey);
             const newProfileEntry = {...userDictionary.get(m.user_id), ...m};
             const section = keyExists ? [...channelAdminSections.get(sectionKey), newProfileEntry] : [newProfileEntry];
             channelAdminSections.set(sectionKey, section);
         });
-        sections.set(SECTION_TITLE_ADMINS, channelAdminSections.get(SECTION_TITLE_ADMINS));
-        sections.set(SECTION_TITLE_MEMBERS, channelAdminSections.get(SECTION_TITLE_MEMBERS));
+        sections.set(section_title_admins, channelAdminSections.get(section_title_admins));
+        sections.set(section_title_members, channelAdminSections.get(section_title_members));
     } else {
         // when channel members are not provided, build the sections alphabetically
         profiles.forEach((p) => {
@@ -184,7 +196,7 @@ export default function UserList({
             return profiles;
         }
 
-        return createProfilesSections(profiles, channelMembers);
+        return createProfilesSections(intl, profiles, channelMembers);
     }, [channelMembers, loading, profiles, term]);
 
     const openUserProfile = useCallback(async (profile: UserProfile) => {

@@ -22,8 +22,6 @@ import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
-const MANAGE_BUTTON = 'manage-button';
-
 type Props = {
     canManageMembers: boolean;
     channelId: string;
@@ -56,6 +54,7 @@ const messages = defineMessages({
     },
 });
 
+const MANAGE_BUTTON = 'manage-button';
 const EMPTY: UserProfile[] = [];
 const EMPTY_MEMBERS: ChannelMembership[] = [];
 const EMPTY_IDS = {};
@@ -282,4 +281,3 @@ export default function ManageChannelMembers({
         </SafeAreaView>
     );
 }
-
