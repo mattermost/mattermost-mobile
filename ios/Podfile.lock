@@ -337,7 +337,7 @@ PODS:
     - React-Core
   - react-native-cookies (6.2.1):
     - React-Core
-  - react-native-create-thumbnail (1.6.3):
+  - react-native-create-thumbnail (1.6.4):
     - React-Core
   - react-native-document-picker (8.1.3):
     - React-Core
@@ -911,7 +911,7 @@ SPEC CHECKSUMS:
   react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
   react-native-cameraroll: 0ff04cc4e0ff5f19a94ff4313e5c8bc4503cd86d
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
-  react-native-create-thumbnail: 94e68f6cc050a870f830352d1a924c1e8d38b52f
+  react-native-create-thumbnail: e022bcdcba8a0b4529a50d3fa1a832ec921be39d
   react-native-document-picker: 958e2bc82e128be69055be261aeac8d872c8d34c
   react-native-emm: c5b7dcffde34ce345fd0c16d66b587e611a3d31f
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
