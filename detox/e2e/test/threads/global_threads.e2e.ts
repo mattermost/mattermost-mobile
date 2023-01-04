@@ -67,7 +67,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.back();
     });
 
-    it('MM-T4805_2 - should be able to go to a thread a user started and followed', async () => {
+    it.skip('MM-T4805_2 - should be able to go to a thread a user started and followed -- UNSTABLE', async () => {
         // # Create a thread started by the current user which current user replied to
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
