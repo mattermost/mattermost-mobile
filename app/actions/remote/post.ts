@@ -444,7 +444,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         if (activeServerUrl === serverUrl) {
-            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, true);
+            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
         }
         return {error};
     }
