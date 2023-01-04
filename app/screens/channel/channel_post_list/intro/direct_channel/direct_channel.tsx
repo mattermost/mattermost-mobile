@@ -11,6 +11,7 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {getUserIdFromChannelName} from '@utils/user';
 
 import IntroOptions from '../options';
 
@@ -98,23 +99,28 @@ const DirectChannel = ({channel, currentUserId, isBot, members, theme}: Props) =
     }, [channel.displayName, theme]);
 
     const profiles = useMemo(() => {
-        const channelMembers = members?.filter((m) => m.userId !== currentUserId);
-        if (!channelMembers?.length) {
-            return null;
-        }
-
         if (channel.type === General.DM_CHANNEL) {
+            const teammateId = getUserIdFromChannelName(currentUserId, channel.name);
+            const teammate = members?.find((m) => m.userId === teammateId);
+            if (!teammate) {
+                return null;
+            }
+
             return (
                 <Member
                     channelId={channel.id}
                     containerStyle={{height: 96}}
-                    member={channelMembers[0]}
+                    member={teammate}
                     size={96}
                     theme={theme}
                 />
             );
         }
 
+        const channelMembers = members?.filter((m) => m.userId !== currentUserId);
+        if (!channelMembers?.length) {
+            return null;
+        }
         return (
             <Group
                 theme={theme}
