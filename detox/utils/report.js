@@ -323,6 +323,7 @@ function generateTitle() {
     const appFileName = `Mattermost_Beta.${appExtension}`;
     const appBuildType = 'mattermost-mobile-beta';
     let buildLink = '';
+    let releaseDate = '';
     let title;
 
     switch (TYPE) {
@@ -334,8 +335,7 @@ function generateTitle() {
             if (RELEASE_VERSION && RELEASE_BUILD_NUMBER) {
                 buildLink = ` with [${RELEASE_VERSION}:${RELEASE_BUILD_NUMBER}](https://releases.mattermost.com/${appBuildType}/${RELEASE_VERSION}/${RELEASE_BUILD_NUMBER}/${appFileName})`;
             }
-        
-            let releaseDate = '';
+
             if (RELEASE_DATE) {
                 releaseDate = ` for ${RELEASE_DATE}`;
             }
