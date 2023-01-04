@@ -157,11 +157,11 @@
     "gallery.footer.channel_name": "{channelName}에서 공유",
     "gallery.open_file": "파일 열기",
     "get_post_link_modal.title": "링크 복사",
-    "global_threads.allThreads": "모든 스레드",
-    "global_threads.emptyThreads.message": "멘션되거나 참여한 모든 스레드가 팔로우하는 스레드와 함께 표시됩니다.",
-    "global_threads.emptyThreads.title": "아직 팔로우하는 스레드가 없습니다",
+    "global_threads.allThreads": "모든 글타레",
+    "global_threads.emptyThreads.message": "언급되거나 참여한 모든 글타래는 여기에 지켜보는 중인 글타래와 함께 표시됩니다.",
+    "global_threads.emptyThreads.title": "아직 지켜보는 글타래가 없습니다",
     "global_threads.emptyUnreads.message": "볼 건 다 본 것 같네요.",
-    "global_threads.emptyUnreads.title": "읽지 않은 스레드 없음",
+    "global_threads.emptyUnreads.title": "읽지 않은 글타래 없음",
     "global_threads.markAllRead.cancel": "취소",
     "global_threads.markAllRead.markRead": "읽음으로 표시",
     "global_threads.markAllRead.message": "여기에 표시된 모든 글타래를 읽음으로 표시",
@@ -280,7 +280,7 @@
     "mobile.reset_status.title_ooo": "\"부재 중\" 상태를 비활성화 하시겠어요?",
     "mobile.routes.code": "{language} 코드",
     "mobile.routes.code.noLanguage": "코드",
-    "mobile.routes.custom_status": "상태 설정하기",
+    "mobile.routes.custom_status": "사용자 정의 상태 설정하기",
     "mobile.routes.table": "표",
     "mobile.routes.user_profile": "프로필",
     "mobile.search.jump": "최근 메시지로 이동",
@@ -551,5 +551,6 @@
     "channel_info.favorite": "즐겨찾기",
     "channel_info.edit_header": "제목글 편집",
     "channel_info.custom_status": "사용자 정의 상태:",
-    "channel_info.copy_link": "링크 복사"
+    "channel_info.copy_link": "링크 복사",
+    "general_settings.display": "화면"
 }

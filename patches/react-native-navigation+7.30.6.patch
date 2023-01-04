@@ -1,3 +1,28 @@
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
+index 226d3bf..6213a88 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/NavigationActivity.java
+@@ -48,7 +48,7 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+         );
+         navigator.bindViews();
+         getReactGateway().onActivityCreated(this);
+-        setBackPressedCallback();
++        // setBackPressedCallback();
+     }
+ 
+     @Override
+@@ -141,6 +141,11 @@ public class NavigationActivity extends AppCompatActivity implements DefaultHard
+         navigator.destroyViews();
+     }
+ 
++    @Override
++    public void onBackPressed() {
++        getReactGateway().onBackPressed();
++    }
++
+     protected void addDefaultSplashLayout() {
+         View view = new View(this);
+         setContentView(view);
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
 index a34598c..b035a76 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/react/NavigationModule.java
