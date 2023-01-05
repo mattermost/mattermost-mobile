@@ -100,11 +100,11 @@ const UserProfile = ({
 
         if (manageMode) {
             title += MANAGE_TITLE_HEIGHT + MANAGE_TITLE_MARGIN;
-            title += SINGLE_OPTION_HEIGHT; // remove button
             title += DIVIDER_MARGIN * 2;
             if (canManageMembers) {
                 title += SINGLE_OPTION_HEIGHT; // roles button
             }
+            title += SINGLE_OPTION_HEIGHT; // remove button
         }
 
         const extraHeight = manageMode ? 0 : EXTRA_HEIGHT;
