@@ -74,44 +74,14 @@ const PostOptions = ({
 
     const snapPoints = useMemo(() => {
         const items: BottomSheetProps['snapPoints'] = [1];
-        let count = shouldShowBindings ? 0.5 : 0;
-        if (canReply && sourceScreen !== Screens.THREAD) {
-            count++;
-        }
+        const optionsCount = [
+            canCopyPermalink, canCopyText, canDelete, canEdit,
+            canMarkAsUnread, canPin, canReply, !isSystemPost, shouldRenderFollow,
+        ].reduce((acc, v) => {
+            return v ? acc + 1 : acc;
+        }, 0) + (shouldShowBindings ? 0.5 : 0);
 
-        if (shouldRenderFollow) {
-            count++;
-        }
-
-        if (canMarkAsUnread && !isSystemPost) {
-            count++;
-        }
-
-        if (canCopyPermalink) {
-            count++;
-        }
-
-        if (!isSystemPost) {
-            count++;
-        }
-
-        if (canCopyText && post.message) {
-            count++;
-        }
-
-        if (canPin) {
-            count++;
-        }
-
-        if (canEdit) {
-            count++;
-        }
-
-        if (canDelete) {
-            count++;
-        }
-
-        items.push(bottomSheetSnapPoint(count, ITEM_HEIGHT, bottom) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0));
+        items.push(bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT, bottom) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0));
 
         if (shouldShowBindings) {
             items.push('90%');
@@ -120,7 +90,7 @@ const PostOptions = ({
         return items;
     }, [
         canAddReaction, canCopyPermalink, canCopyText,
-        canDelete, canEdit, shouldRenderFollow, shouldShowBindings, sourceScreen,
+        canDelete, canEdit, shouldRenderFollow, shouldShowBindings,
         canMarkAsUnread, canPin, canReply, isSystemPost, bottom,
     ]);
 
