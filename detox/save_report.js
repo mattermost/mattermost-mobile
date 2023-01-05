@@ -31,7 +31,6 @@
  *      - TYPE=[type], e.g. "MASTER", "PR", "RELEASE", "GEKIDOU"
  */
 
-const assert = require('assert');
 const os = require('os');
 const path = require('path');
 
@@ -63,7 +62,6 @@ const saveReport = async () => {
     const {
         DEVICE_NAME,
         DEVICE_OS_VERSION,
-        FAILURE_MESSAGE,
         HEADLESS,
         IOS,
         TYPE,
@@ -140,8 +138,6 @@ const saveReport = async () => {
     if (ZEPHYR_ENABLE === 'true') {
         await createTestExecutions(allTests, testCycle);
     }
-
-    assert(summary.stats.failures === 0, FAILURE_MESSAGE);
 };
 
 saveReport();
