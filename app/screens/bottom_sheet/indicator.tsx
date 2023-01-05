@@ -6,9 +6,9 @@ import {Animated, StyleSheet, View} from 'react-native';
 
 const styles = StyleSheet.create({
     dragIndicatorContainer: {
-        marginVertical: 10,
         alignItems: 'center',
         justifyContent: 'center',
+        top: -15,
     },
     dragIndicator: {
         backgroundColor: 'white',

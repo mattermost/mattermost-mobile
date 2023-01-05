@@ -320,32 +320,30 @@ function generateTitle() {
     const platform = IOS === 'true' ? 'iOS' : 'Android';
     const lane = `${platform} Build`;
     const appExtension = IOS === 'true' ? 'ipa' : 'apk';
-    const appFileName = TYPE === 'GEKIDOU' ? `Mattermost_Beta.${appExtension}` : `Mattermost.${appExtension}`;
-    let buildLink = ` with [${lane}:${COMMIT_HASH}](https://pr-builds.mattermost.com/mattermost-mobile/${BRANCH}-${COMMIT_HASH}/${appFileName})`;
-    if (RELEASE_VERSION && RELEASE_BUILD_NUMBER) {
-        const releaseType = TYPE === 'GEKIDOU' ? 'mattermost-mobile-beta' : 'mattermost-mobile';
-        buildLink = ` with [${RELEASE_VERSION}:${RELEASE_BUILD_NUMBER}](https://releases.mattermost.com/${releaseType}/${RELEASE_VERSION}/${RELEASE_BUILD_NUMBER}/${appFileName})`;
-    }
-
+    const appFileName = `Mattermost_Beta.${appExtension}`;
+    const appBuildType = 'mattermost-mobile-beta';
+    let buildLink = '';
     let releaseDate = '';
-    if (RELEASE_DATE) {
-        releaseDate = ` for ${RELEASE_DATE}`;
-    }
-
     let title;
 
     switch (TYPE) {
         case 'PR':
+            buildLink = ` with [${lane}:${COMMIT_HASH}](https://pr-builds.mattermost.com/${appBuildType}/${BRANCH}-${COMMIT_HASH}/${appFileName})`;
             title = `${platform} E2E for Pull Request Build: [${BRANCH}](${PULL_REQUEST})${buildLink}`;
             break;
         case 'RELEASE':
+            if (RELEASE_VERSION && RELEASE_BUILD_NUMBER) {
+                buildLink = ` with [${RELEASE_VERSION}:${RELEASE_BUILD_NUMBER}](https://releases.mattermost.com/${appBuildType}/${RELEASE_VERSION}/${RELEASE_BUILD_NUMBER}/${appFileName})`;
+            }
+
+            if (RELEASE_DATE) {
+                releaseDate = ` for ${RELEASE_DATE}`;
+            }
+
             title = `${platform} E2E for Release Build${buildLink}${releaseDate}`;
             break;
-        case 'MASTER':
-            title = `${platform} E2E for Master Nightly Build (Prod tests)${buildLink}`;
-            break;
-        case 'GEKIDOU':
-            title = `${platform} E2E for Gekidou Nightly Build (Prod tests)${buildLink}`;
+        case 'MAIN':
+            title = `${platform} E2E for Main Nightly Build (Prod tests)${buildLink}`;
             break;
         default:
             title = `${platform} E2E for Build${buildLink}`;

@@ -6,6 +6,7 @@ import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.net.Uri;
 import android.os.ParcelFileDescriptor;
+import android.text.TextUtils;
 import android.webkit.MimeTypeMap;
 
 import androidx.annotation.NonNull;
@@ -20,8 +21,12 @@ import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReactContextBaseJavaModule;
 import com.facebook.react.bridge.ReactMethod;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.modules.core.DeviceEventManagerModule;
+
+import com.mattermost.helpers.Credentials;
+import com.reactlibrary.createthumbnail.CreateThumbnailModule;
 import com.mattermost.helpers.RealPathUtil;
 
 import java.io.File;
@@ -29,6 +34,7 @@ import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.lang.ref.WeakReference;
+import java.net.URL;
 import java.nio.channels.FileChannel;
 
 public class MattermostManagedModule extends ReactContextBaseJavaModule {
@@ -203,6 +209,30 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
             catch(Exception e) {
                 promise.reject(SAVE_EVENT, e.getMessage());
             }
+        }
+    }
+
+    @ReactMethod
+    public void createThumbnail(ReadableMap options, Promise promise) {
+        try {
+            WritableMap optionsMap = Arguments.createMap();
+            optionsMap.merge(options);
+            String url = options.hasKey("url") ? options.getString("url") : "";
+            URL videoUrl = new URL(url);
+            String serverUrl = videoUrl.getProtocol() + "://" + videoUrl.getHost() + ":" + videoUrl.getPort();
+            String token = Credentials.getCredentialsForServerSync(this.reactContext, serverUrl);
+            if (!TextUtils.isEmpty(token)) {
+                WritableMap headers = Arguments.createMap();
+                if (optionsMap.hasKey("headers")) {
+                    headers.merge(optionsMap.getMap("headers"));
+                }
+                headers.putString("Authorization", "Bearer " + token);
+                optionsMap.putMap("headers", headers);
+            }
+            CreateThumbnailModule thumb = new CreateThumbnailModule(this.reactContext);
+            thumb.create(optionsMap.copy(), promise);
+        } catch (Exception e) {
+            promise.reject("CreateThumbnail_ERROR", e);
         }
     }
 
