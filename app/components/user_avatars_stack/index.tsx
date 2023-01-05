@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BottomSheetProps} from '@gorhom/bottom-sheet';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleProp, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
@@ -123,12 +124,17 @@ const UserAvatarsStack = ({breakAt = 3, channelId, location, style: baseContaine
                 />
             </>
         );
-        const snap = bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT, bottom);
+
+        const snapPoints: BottomSheetProps['snapPoints'] = [1, bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT, bottom) + TITLE_HEIGHT];
+        if (users.length > 5) {
+            snapPoints.push('90%');
+        }
+
         bottomSheet({
             closeButtonId: 'close-set-user-status',
             renderContent,
             initialSnapIndex: 1,
-            snapPoints: ['90%', TITLE_HEIGHT + snap, 10],
+            snapPoints,
             title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
             theme,
         });

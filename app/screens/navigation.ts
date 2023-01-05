@@ -17,6 +17,7 @@ import NavigationStore from '@store/navigation_store';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
+import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {LaunchProps} from '@typings/launch';
 import type {NavButtons} from '@typings/screens/navigation';
 
@@ -738,13 +739,14 @@ export async function dismissOverlay(componentId: string) {
 type BottomSheetArgs = {
     closeButtonId: string;
     initialSnapIndex?: number;
+    footerComponent?: React.FC<BottomSheetFooterProps>;
     renderContent: () => JSX.Element;
     snapPoints: Array<number | string>;
     theme: Theme;
     title: string;
 }
 
-export async function bottomSheet({title, renderContent, snapPoints, initialSnapIndex = 0, theme, closeButtonId}: BottomSheetArgs) {
+export async function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId}: BottomSheetArgs) {
     const {isSplitView} = await isRunningInSplitView();
     const isTablet = Device.IS_TABLET && !isSplitView;
 
@@ -753,12 +755,14 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
             closeButtonId,
             initialSnapIndex,
             renderContent,
+            footerComponent,
             snapPoints,
         }, bottomSheetModalOptions(theme, closeButtonId));
     } else {
         showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
             initialSnapIndex,
             renderContent,
+            footerComponent,
             snapPoints,
         }, bottomSheetModalOptions(theme));
     }

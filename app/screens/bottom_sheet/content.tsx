@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {GestureResponderEvent, Platform, Text, useWindowDimensions, View} from 'react-native';
+import {GestureResponderEvent, Text, useWindowDimensions, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -33,7 +33,7 @@ export const TITLE_SEPARATOR_MARGIN_TABLET = 20;
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            flex: 1,
+            flexGrow: 1,
         },
         titleContainer: {
             marginTop: TITLE_MARGIN_TOP,
@@ -83,18 +83,15 @@ const BottomSheetContent = ({buttonText, buttonIcon, children, disableButton, on
                 {children}
             </>
             {showButton && (
-                <>
-                    <View style={[styles.separator, {width: separatorWidth}]}/>
-                    <Button
-                        disabled={disableButton}
-                        onPress={onPress}
-                        icon={buttonIcon}
-                        testID={buttonTestId}
-                        text={buttonText}
-                    />
-                    <View style={{paddingBottom: Platform.select({ios: (isTablet ? 20 : 32), android: 20})}}/>
-                </>
-            )}
+                <Button
+                    disabled={disableButton}
+                    onPress={onPress}
+                    icon={buttonIcon}
+                    testID={buttonTestId}
+                    text={buttonText}
+                />
+            )
+            }
         </View>
     );
 };

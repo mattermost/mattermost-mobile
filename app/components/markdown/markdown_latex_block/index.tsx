@@ -90,7 +90,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const LatexCodeBlock = ({content, theme}: Props) => {
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const styles = getStyleSheet(theme);
     const languageDisplayName = getHighlightLanguageName('latex');
@@ -161,12 +161,12 @@ const LatexCodeBlock = ({content, theme}: Props) => {
             bottomSheet({
                 closeButtonId: 'close-code-block',
                 renderContent,
-                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig?.copyAndPasteProtection, intl, insets, theme]);
+    }, [managedConfig?.copyAndPasteProtection, intl, bottom, theme]);
 
     const onRenderErrorMessage = useCallback(({error}: {error: Error}) => {
         return <Text style={styles.errorText}>{'Render error: ' + error.message}</Text>;
