@@ -31,7 +31,6 @@
  *      - TYPE=[type], e.g. "MASTER", "PR", "RELEASE", "GEKIDOU"
  */
 
-const assert = require('assert');
 const os = require('os');
 const path = require('path');
 
