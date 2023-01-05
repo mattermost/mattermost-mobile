@@ -195,8 +195,8 @@ const PostList = ({
         }
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
-            if (isViewable) {
-                acc[`${location}-${item.id}`] = true;
+            if (isViewable && item.type === 'post') {
+                acc[`${location}-${item.value.id}`] = true;
             }
             return acc;
         }, {});
