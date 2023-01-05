@@ -41,8 +41,8 @@ public class FileCache: NSObject {
     guard let url = cacheURL else {return nil}
     
     let serverCacheURL = url.appendingPathComponent(serverUrl.toUrlSafeBase64Encode(), isDirectory: true)
-      createDirectoryIfNeeded(directory: serverCacheURL)
-      return serverCacheURL.appendingPathComponent(userId + ".png")
+    createDirectoryIfNeeded(directory: serverCacheURL)
+    return serverCacheURL.appendingPathComponent(userId + ".png")
   }
     
   public func getProfileImage(serverUrl: String, userId: String) -> UIImage? {
