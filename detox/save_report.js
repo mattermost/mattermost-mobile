@@ -62,7 +62,6 @@ const saveReport = async () => {
     const {
         DEVICE_NAME,
         DEVICE_OS_VERSION,
-        FAILURE_MESSAGE,
         HEADLESS,
         IOS,
         TYPE,
