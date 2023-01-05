@@ -23,16 +23,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-export type SectionIconType = {
-    key: string;
-    icon: string;
-}
-
 type Props = {
     onSelect?: (index: number | undefined) => void;
 }
 
-const EmojiSectionBar = ({onSelect}: Props) => {
+const EmojiCategoryBar = ({onSelect}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const {currentIndex, icons} = useEmojiCategoryBar();
@@ -53,7 +48,7 @@ const EmojiSectionBar = ({onSelect}: Props) => {
     return (
         <View
             style={styles.container}
-            testID='emoji_picker.emoji_sections.section_bar'
+            testID='emoji_picker.category_bar'
         >
             {icons.map((icon, index) => (
                 <EmojiCategoryBarIcon
@@ -69,4 +64,4 @@ const EmojiSectionBar = ({onSelect}: Props) => {
     );
 };
 
-export default EmojiSectionBar;
+export default EmojiCategoryBar;

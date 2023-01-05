@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, location, postId, reactions, theme}: ReactionsProps) => {
-    const intl = useIntl();
+    const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const pressed = useRef(false);
@@ -116,10 +116,10 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
             closeButtonId: 'close-add-reaction',
             screen: Screens.EMOJI_PICKER,
             theme,
-            title: intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+            title: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
             props: {onEmojiPress: handleAddReactionToPost},
         });
-    }), [intl, theme]);
+    }), [formatMessage, theme]);
 
     const handleReactionPress = useCallback(async (emoji: string, remove: boolean) => {
         pressed.current = true;
@@ -141,7 +141,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
         };
 
         Keyboard.dismiss();
-        const title = isTablet ? intl.formatMessage({id: 'post.reactions.title', defaultMessage: 'Reactions'}) : '';
+        const title = isTablet ? formatMessage({id: 'post.reactions.title', defaultMessage: 'Reactions'}) : '';
 
         if (!pressed.current) {
             if (isTablet) {
@@ -150,7 +150,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
                 showModalOverCurrentContext(screen, passProps, bottomSheetModalOptions(theme));
             }
         }
-    }, [intl, isTablet, location, postId, theme]);
+    }, [formatMessage, isTablet, location, postId, theme]);
 
     let addMoreReactions = null;
     const {reactionsByName, highlightedReactions} = buildReactionsMap();

@@ -2,19 +2,25 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {DeviceEventEmitter} from 'react-native';
+import {DeviceEventEmitter, StyleSheet} from 'react-native';
 
 import {Events} from '@constants';
 import BottomSheet from '@screens/bottom_sheet';
 
 import Picker from './picker';
-import EmojiSectionBar from './picker/footer';
+import PickerFooter from './picker/footer';
 
 type Props = {
     componentId: string;
     onEmojiPress: (emoji: string) => void;
     closeButtonId: string;
 };
+
+const style = StyleSheet.create({
+    contentStyle: {
+        paddingTop: 14,
+    },
+});
 
 const EmojiPickerScreen = ({closeButtonId, componentId, onEmojiPress}: Props) => {
     const handleEmojiPress = useCallback((emoji: string) => {
@@ -36,9 +42,9 @@ const EmojiPickerScreen = ({closeButtonId, componentId, onEmojiPress}: Props) =>
             renderContent={renderContent}
             closeButtonId={closeButtonId}
             componentId={componentId}
-            contentStyle={{paddingTop: 14}}
+            contentStyle={style.contentStyle}
             initialSnapIndex={1}
-            footerComponent={EmojiSectionBar}
+            footerComponent={PickerFooter}
             testID='post_options'
         />
     );

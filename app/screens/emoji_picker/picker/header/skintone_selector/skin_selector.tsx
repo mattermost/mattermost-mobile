@@ -63,7 +63,7 @@ const SkinSelector = ({onSelectSkin, selected, skins}: Props) => {
         <>
             <View style={[styles.textContainer, isTablet && {marginLeft: 0}]}>
                 <FormattedText
-                    id='default_skin_tones'
+                    id='default_skin_tone'
                     defaultMessage='Default Skin Tone'
                     style={styles.text}
                 />
