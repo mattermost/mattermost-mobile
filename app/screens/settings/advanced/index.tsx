@@ -65,7 +65,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                             style: 'destructive',
                             onPress: async () => {
                                 await deleteFileCache(serverUrl);
-                                await getAllCachedFiles();
+                                getAllCachedFiles();
                             },
                         },
                     ],
