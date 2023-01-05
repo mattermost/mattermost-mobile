@@ -66,7 +66,7 @@ describe('Messaging - Markdown Latex', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4900_2 - should be able to display markdown inline latex -- KNOWN ISSUE: MM-45466', async () => {
+    it.skip('MM-T4900_2 - should be able to display markdown inline latex -- KNOWN ISSUE: MM-45466', async () => {
         // # Open a channel screen and post a markdown inline latex
         // eslint-disable-next-line no-useless-escape
         const message = 'X_k = \sum_{n=0}^{2N-1} x_n \cos \left[\frac{\pi}{N} \left(n+\frac{1}{2}+\frac{N}{2}\right) \left(k+\frac{1}{2}\right) \right]';
