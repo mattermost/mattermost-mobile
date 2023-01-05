@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import ChannelInfoStartButton from '@calls/components/channel_info_start';
+import AddPeopleBox from '@components/channel_actions/add_people_box';
 import CopyChannelLinkBox from '@components/channel_actions/copy_channel_link_box';
 import FavoriteBox from '@components/channel_actions/favorite_box';
 import MutedBox from '@components/channel_actions/mute_box';
@@ -12,8 +13,6 @@ import SetHeaderBox from '@components/channel_actions/set_header_box';
 import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
-
-// import AddPeopleBox from '@components/channel_actions/add_people_box';
 
 type Props = {
     channelId: string;
@@ -70,7 +69,6 @@ const ChannelActions = ({channelId, channelType, inModal = false, dismissChannel
                     testID={`${testID}.set_header.action`}
                 />
             }
-            {/* Add back in after MM-47655 is resolved. https://mattermost.atlassian.net/browse/MM-47655
             {!isDM &&
                 <AddPeopleBox
                     channelId={channelId}
@@ -78,7 +76,6 @@ const ChannelActions = ({channelId, channelType, inModal = false, dismissChannel
                     testID={`${testID}.add_people.action`}
                 />
             }
-            */}
             {!isDM && !callsEnabled &&
                 <>
                     <View style={styles.separator}/>
