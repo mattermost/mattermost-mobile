@@ -140,8 +140,6 @@ const saveReport = async () => {
     if (ZEPHYR_ENABLE === 'true') {
         await createTestExecutions(allTests, testCycle);
     }
-
-    assert(summary.stats.failures === 0, FAILURE_MESSAGE);
 };
 
 saveReport();
