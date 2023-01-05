@@ -79,9 +79,9 @@ const UserProfile = ({
 
     const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
     const showUserProfileOptions = (!isDirectMessage || !channelContext) && !override && !manageMode;
-    const showNickname = Boolean(user.nickname) && !override && !user.isBot;
-    const showPosition = Boolean(user.position) && !override && !user.isBot;
-    const showLocalTime = Boolean(localTime) && !override && !user.isBot;
+    const showNickname = Boolean(user.nickname) && !override && !user.isBot && !manageMode;
+    const showPosition = Boolean(user.position) && !override && !user.isBot && !manageMode;
+    const showLocalTime = Boolean(localTime) && !override && !user.isBot && !manageMode;
 
     const snapPoints = useMemo(() => {
         let title = TITLE_HEIGHT;
@@ -89,23 +89,14 @@ const UserProfile = ({
             title += showOptions === 'all' ? OPTIONS_HEIGHT : SINGLE_OPTION_HEIGHT;
         }
 
-        let labels = 0;
-        if (showCustomStatus) {
-            labels += 1;
-        }
-
-        if (user.nickname) {
-            labels += 1;
-        }
-
-        if (user.position) {
-            labels += 1;
-        }
-
-        if (localTime) {
-            labels += 1;
-        }
-        title += (labels * LABEL_HEIGHT);
+        const optionsCount = [
+            showCustomStatus,
+            showNickname,
+            showPosition,
+            showLocalTime,
+        ].reduce((acc, v) => {
+            return v ? acc + 1 : acc;
+        }, 0);
 
         if (manageMode) {
             title += MANAGE_TITLE_HEIGHT + MANAGE_TITLE_MARGIN;
@@ -120,7 +111,7 @@ const UserProfile = ({
 
         return [
             1,
-            bottomSheetSnapPoint(labels, LABEL_HEIGHT, bottom) + title + extraHeight,
+            bottomSheetSnapPoint(optionsCount, LABEL_HEIGHT, bottom) + title + extraHeight,
         ];
     }, [
         showUserProfileOptions, showCustomStatus, showNickname,
