@@ -46,7 +46,7 @@ const parseLinkLiteral = (literal: string) => {
 
 const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL}: MarkdownLinkProps) => {
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -140,12 +140,12 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
             bottomSheet({
                 closeButtonId: 'close-mardown-link',
                 renderContent,
-                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, insets, theme]);
+    }, [managedConfig, intl, bottom, theme]);
 
     const renderChildren = experimentalNormalizeMarkdownLinks ? parseChildren() : children;
 

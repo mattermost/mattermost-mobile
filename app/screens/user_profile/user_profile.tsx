@@ -12,6 +12,7 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {getLocaleFromLanguage} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import ManageUserOptions, {DIVIDER_MARGIN} from './manage_user_options';
@@ -58,14 +59,14 @@ const UserProfile = ({
 }: Props) => {
     const {locale} = useIntl();
     const serverUrl = useServerUrl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const channelContext = [Screens.CHANNEL, Screens.THREAD].includes(location);
     const showOptions: OptionsType = channelContext && !user.isBot ? 'all' : 'message';
     const override = Boolean(userIconOverride || usernameOverride);
     const timezone = getUserTimezone(user);
     const customStatus = getUserCustomStatus(user);
-    const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
     let localTime: string|undefined;
+
     if (timezone) {
         moment.locale(getLocaleFromLanguage(locale).toLowerCase());
         let format = 'H:mm';
@@ -76,46 +77,54 @@ const UserProfile = ({
         localTime = mtz.tz(Date.now(), timezone).format(format);
     }
 
+    const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
+    const showUserProfileOptions = (!isDirectMessage || !channelContext) && !override && !manageMode;
+    const showNickname = Boolean(user.nickname) && !override && !user.isBot;
+    const showPosition = Boolean(user.position) && !override && !user.isBot;
+    const showLocalTime = Boolean(localTime) && !override && !user.isBot;
+
     const snapPoints = useMemo(() => {
-        let initial = TITLE_HEIGHT;
-        if ((!isDirectMessage || !channelContext) && !override && !manageMode) {
-            initial += showOptions === 'all' ? OPTIONS_HEIGHT : SINGLE_OPTION_HEIGHT;
+        let title = TITLE_HEIGHT;
+        if (showUserProfileOptions) {
+            title += showOptions === 'all' ? OPTIONS_HEIGHT : SINGLE_OPTION_HEIGHT;
         }
 
         let labels = 0;
-        if (!override && !user.isBot && !manageMode) {
-            if (showCustomStatus) {
-                labels += 1;
-            }
-
-            if (user.nickname) {
-                labels += 1;
-            }
-
-            if (user.position) {
-                labels += 1;
-            }
-
-            if (localTime) {
-                labels += 1;
-            }
-            initial += (labels * LABEL_HEIGHT);
+        if (showCustomStatus) {
+            labels += 1;
         }
 
+        if (user.nickname) {
+            labels += 1;
+        }
+
+        if (user.position) {
+            labels += 1;
+        }
+
+        if (localTime) {
+            labels += 1;
+        }
+        title += (labels * LABEL_HEIGHT);
+
         if (manageMode) {
-            initial += MANAGE_TITLE_HEIGHT + MANAGE_TITLE_MARGIN;
-            initial += SINGLE_OPTION_HEIGHT; // remove button
-            initial += DIVIDER_MARGIN * 2;
+            title += MANAGE_TITLE_HEIGHT + MANAGE_TITLE_MARGIN;
+            title += SINGLE_OPTION_HEIGHT; // remove button
+            title += DIVIDER_MARGIN * 2;
             if (canManageMembers) {
-                initial += SINGLE_OPTION_HEIGHT; // roles button
+                title += SINGLE_OPTION_HEIGHT; // roles button
             }
         }
 
         const extraHeight = manageMode ? 0 : EXTRA_HEIGHT;
-        return [initial + insets.bottom + extraHeight, 10];
+
+        return [
+            1,
+            bottomSheetSnapPoint(labels, LABEL_HEIGHT, bottom) + title + extraHeight,
+        ];
     }, [
-        isChannelAdmin, isDirectMessage, isSystemAdmin,
-        isTeamAdmin, user, localTime, insets.bottom, override,
+        showUserProfileOptions, showCustomStatus, showNickname,
+        showPosition, showLocalTime, bottom,
     ]);
 
     useEffect(() => {
@@ -139,7 +148,7 @@ const UserProfile = ({
                     userIconOverride={userIconOverride}
                     usernameOverride={usernameOverride}
                 />
-                {(!isDirectMessage || !channelContext) && !override && !manageMode &&
+                {showUserProfileOptions &&
                     <UserProfileOptions
                         location={location}
                         type={showOptions}
@@ -150,8 +159,10 @@ const UserProfile = ({
                 {!manageMode &&
                     <UserInfo
                         localTime={localTime}
-                        override={override}
                         showCustomStatus={showCustomStatus}
+                        showNickname={showNickname}
+                        showPosition={showPosition}
+                        showLocalTime={showLocalTime}
                         user={user}
                     />
                 }
@@ -172,7 +183,7 @@ const UserProfile = ({
             renderContent={renderContent}
             closeButtonId={closeButtonId}
             componentId={Screens.USER_PROFILE}
-            initialSnapIndex={0}
+            initialSnapIndex={1}
             snapPoints={snapPoints}
             testID='user_profile'
         />

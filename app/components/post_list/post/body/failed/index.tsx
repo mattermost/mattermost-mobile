@@ -33,7 +33,7 @@ const styles = StyleSheet.create({
 
 const Failed = ({post, theme}: FailedProps) => {
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
 
     const onPress = useCallback(() => {
@@ -69,11 +69,11 @@ const Failed = ({post, theme}: FailedProps) => {
         bottomSheet({
             closeButtonId: 'close-post-failed',
             renderContent,
-            snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
+            snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
             title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
             theme,
         });
-    }, [insets]);
+    }, [bottom]);
 
     return (
         <TouchableOpacity

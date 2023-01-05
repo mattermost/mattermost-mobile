@@ -25,7 +25,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         isCRTEnabled: observeIsCRTEnabled(database),
         teamsCount: queryMyTeams(database).observeCount(false),
         channelsCount: observeCurrentTeamId(database).pipe(
-            switchMap((id) => (id ? queryAllMyChannelsForTeam(database, id).observeCount() : of$(0))),
+            switchMap((id) => (id ? queryAllMyChannelsForTeam(database, id).observeCount(false) : of$(0))),
         ),
         isLicensed,
         showToS: observeShowToS(database),

@@ -68,7 +68,7 @@ import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePrefe
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
 import {handleLicenseChangedEvent, handleConfigChangedEvent} from './system';
-import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent} from './teams';
+import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent, handleTeamArchived, handleTeamRestored} from './teams';
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
 import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
@@ -312,6 +312,14 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
             handleOpenDialogEvent(serverUrl, msg);
             break;
 
+        case WebsocketEvents.DELETE_TEAM:
+            handleTeamArchived(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.RESTORE_TEAM:
+            handleTeamRestored(serverUrl, msg);
+            break;
+
         case WebsocketEvents.THREAD_UPDATED:
             handleThreadUpdatedEvent(serverUrl, msg);
             break;
@@ -435,7 +443,10 @@ async function fetchPostDataIfNeeded(serverUrl: string) {
         if (currentChannelId && (isChannelScreenMounted || tabletDevice)) {
             await fetchPostsForChannel(serverUrl, currentChannelId);
             markChannelAsRead(serverUrl, currentChannelId);
-            markChannelAsViewed(serverUrl, currentChannelId);
+            if (!EphemeralStore.wasNotificationTapped()) {
+                markChannelAsViewed(serverUrl, currentChannelId);
+            }
+            EphemeralStore.setNotificationTapped(false);
         }
     } catch (error) {
         logDebug('could not fetch needed post after WS reconnect', error);

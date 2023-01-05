@@ -20,6 +20,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Channel Info', () => {
@@ -58,12 +59,10 @@ describe('Channels - Channel Info', () => {
         await expect(element(by.text(`Channel header: ${testChannel.display_name.toLowerCase()}`))).toBeVisible();
         await expect(ChannelInfoScreen.favoriteAction).toBeVisible();
         await expect(ChannelInfoScreen.muteAction).toBeVisible();
-        await expect(ChannelInfoScreen.addPeopleAction).toBeVisible();
-        await expect(ChannelInfoScreen.copyChannelLinkAction).toBeVisible();
+        await expect(ChannelInfoScreen.joinStartCallAction).toBeVisible();
         await expect(ChannelInfoScreen.ignoreMentionsOptionToggledOff).toBeVisible();
-        await expect(ChannelInfoScreen.notificationPreferenceOption).toBeVisible();
         await expect(ChannelInfoScreen.pinnedMessagesOption).toBeVisible();
-        await expect(ChannelInfoScreen.membersOption).toBeVisible();
+        await expect(ChannelInfoScreen.copyChannelLinkOption).toBeVisible();
         await expect(ChannelInfoScreen.editChannelOption).toBeVisible();
         await expect(ChannelInfoScreen.leaveChannelOption).toBeVisible();
         await expect(ChannelInfoScreen.archiveChannelOption).toBeVisible();
@@ -90,6 +89,7 @@ describe('Channels - Channel Info', () => {
         // # Open a channel screen, tap on channel quick actions button, and tap on channel info action
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelScreen.channelInfoQuickAction.tap();
 
         // * Verify on channel info screen

@@ -25,6 +25,7 @@ class ChannelInfoScreen {
         setHeaderAction: 'channel_info.channel_actions.set_header.action',
         addPeopleAction: 'channel_info.channel_actions.add_people.action',
         copyChannelLinkAction: 'channel_info.channel_actions.copy_channel_link.action',
+        joinStartCallAction: 'channel_info.channel_actions.join_start_call.action',
         extraHeader: 'channel_info.extra.header',
         extraCreatedBy: 'channel_info.extra.created_by',
         extraCreatedOn: 'channel_info.extra.created_on',
@@ -33,6 +34,7 @@ class ChannelInfoScreen {
         notificationPreferenceOption: 'channel_info.options.notification_preference.option',
         pinnedMessagesOption: 'channel_info.options.pinned_messages.option',
         membersOption: 'channel_info.options.members.option',
+        copyChannelLinkOption: 'channel_info.options.copy_channel_link.option',
         editChannelOption: 'channel_info.options.edit_channel.option',
         convertPrivateOption: 'channel_info.options.convert_private.option',
         leaveChannelOption: 'channel_info.options.leave_channel.option',
@@ -53,6 +55,7 @@ class ChannelInfoScreen {
     setHeaderAction = element(by.id(this.testID.setHeaderAction));
     addPeopleAction = element(by.id(this.testID.addPeopleAction));
     copyChannelLinkAction = element(by.id(this.testID.copyChannelLinkAction));
+    joinStartCallAction = element(by.id(this.testID.joinStartCallAction));
     extraHeader = element(by.id(this.testID.extraHeader));
     extraCreatedBy = element(by.id(this.testID.extraCreatedBy));
     extraCreatedOn = element(by.id(this.testID.extraCreatedOn));
@@ -61,6 +64,7 @@ class ChannelInfoScreen {
     notificationPreferenceOption = element(by.id(this.testID.notificationPreferenceOption));
     pinnedMessagesOption = element(by.id(this.testID.pinnedMessagesOption));
     membersOption = element(by.id(this.testID.membersOption));
+    copyChannelLinkOption = element(by.id(this.testID.copyChannelLinkOption));
     editChannelOption = element(by.id(this.testID.editChannelOption));
     convertPrivateOption = element(by.id(this.testID.convertPrivateOption));
     leaveChannelOption = element(by.id(this.testID.leaveChannelOption));

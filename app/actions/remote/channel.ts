@@ -1356,7 +1356,7 @@ export const unarchiveChannel = async (serverUrl: string, channelId: string) => 
     try {
         EphemeralStore.addArchivingChannel(channelId);
         await client.unarchiveChannel(channelId);
-        await setChannelDeleteAt(serverUrl, channelId, Date.now());
+        await setChannelDeleteAt(serverUrl, channelId, 0);
         return {error: undefined};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);

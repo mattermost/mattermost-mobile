@@ -41,7 +41,7 @@ public class MainActivity extends NavigationActivity {
 
     @Override
     protected void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
+        super.onCreate(null);
         setContentView(R.layout.launch_screen);
         setHWKeyboardConnected();
     }

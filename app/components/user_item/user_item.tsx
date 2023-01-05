@@ -25,6 +25,7 @@ type AtMentionItemProps = {
     showFullName: boolean;
     testID?: string;
     isCustomStatusEnabled: boolean;
+    pictureContainerStyle?: StyleProp<ViewStyle>;
 }
 
 const getName = (user: UserProfile | UserModel | undefined, showFullName: boolean, isCurrentUser: boolean, intl: IntlShape) => {
@@ -95,6 +96,7 @@ const UserItem = ({
     showFullName,
     testID,
     isCustomStatusEnabled,
+    pictureContainerStyle,
 }: AtMentionItemProps) => {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -116,7 +118,7 @@ const UserItem = ({
             style={[style.row, containerStyle]}
             testID={userItemTestId}
         >
-            <View style={style.rowPicture}>
+            <View style={[style.rowPicture, pictureContainerStyle]}>
                 <ProfilePicture
                     author={user}
                     size={24}

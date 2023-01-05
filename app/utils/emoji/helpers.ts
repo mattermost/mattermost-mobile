@@ -212,6 +212,10 @@ export function getEmojiByName(emojiName: string, customEmojis: CustomEmojiModel
     return customEmojis.find((e) => e.name === emojiName);
 }
 
+export function mapCustomEmojiNames(customEmois: CustomEmojiModel[]) {
+    return customEmois.map((c) => c.name);
+}
+
 // Since there is no shared logic between the web and mobile app
 // this is copied from the webapp as custom sorting logic for emojis
 

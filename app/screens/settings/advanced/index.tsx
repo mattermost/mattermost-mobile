@@ -65,7 +65,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                             style: 'destructive',
                             onPress: async () => {
                                 await deleteFileCache(serverUrl);
-                                await getAllCachedFiles();
+                                getAllCachedFiles();
                             },
                         },
                     ],
@@ -99,7 +99,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                     icon='trash-can-outline'
                     info={getFormattedFileSize(dataSize || 0)}
                     label={intl.formatMessage({id: 'settings.advanced.delete_data', defaultMessage: 'Delete local files'})}
-                    testID='settings.advanced.delete_data.option'
+                    testID='advanced_settings.delete_data.option'
                     type='none'
                 />
                 <SettingSeparator/>

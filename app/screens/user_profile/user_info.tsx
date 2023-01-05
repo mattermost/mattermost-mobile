@@ -11,33 +11,35 @@ import UserProfileLabel from './label';
 
 type Props = {
     localTime?: string;
-    override: boolean;
     showCustomStatus: boolean;
+    showLocalTime: boolean;
+    showNickname: boolean;
+    showPosition: boolean;
     user: UserModel;
 }
 
-const UserInfo = ({localTime, override, showCustomStatus, user}: Props) => {
+const UserInfo = ({localTime, showCustomStatus, showLocalTime, showNickname, showPosition, user}: Props) => {
     const {formatMessage} = useIntl();
     const customStatus = getUserCustomStatus(user);
 
     return (
         <>
             {showCustomStatus && <UserProfileCustomStatus customStatus={customStatus!}/> }
-            {Boolean(user.nickname) && !override && !user.isBot &&
+            {showNickname &&
                 <UserProfileLabel
                     description={user.nickname}
                     testID='user_profile.nickname'
                     title={formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'})}
                 />
             }
-            {Boolean(user.position) && !override && !user.isBot &&
+            {showPosition &&
                 <UserProfileLabel
                     description={user.position}
                     testID='user_profile.position'
                     title={formatMessage({id: 'channel_info.position', defaultMessage: 'Position'})}
                 />
             }
-            {Boolean(localTime) && !override && !user.isBot &&
+            {showLocalTime &&
                 <UserProfileLabel
                     description={localTime!}
                     testID='user_profile.local_time'

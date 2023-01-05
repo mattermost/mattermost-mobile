@@ -149,6 +149,7 @@ const ThreadsList = ({
     const renderItem = useCallback(({item}: ListRenderItemInfo<ThreadModel>) => (
         <Thread
             location={Screens.GLOBAL_THREADS}
+            key={item.id}
             testID={testID}
             teammateNameDisplay={teammateNameDisplay}
             thread={item}

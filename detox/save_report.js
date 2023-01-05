@@ -12,6 +12,7 @@
  * Environment variables:
  *   BRANCH=[branch]                 : Branch identifier from CI
  *   BUILD_ID=[build_id]             : Build identifier from CI
+ *   COMMIT_HASH=[commit_hash]       : Commit hash from repo
  *   DEVICE_NAME=[device_name]       : Name of the device used for testing
  *   DEVICE_OS_NAME=[device_os_name] : OS of the device used for testing
  *   HEADLESS=[boolean]              : Headed by default (false) or headless (true)

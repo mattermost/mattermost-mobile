@@ -162,8 +162,6 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
     return {
         limit,
         sortedChannels,
-        notifyProps,
-        lastUnreadId,
         unreadsOnTop,
         unreadIds,
         category,

@@ -1,13 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode, useCallback, useEffect, useRef} from 'react';
-import {DeviceEventEmitter, Keyboard, StyleSheet, View} from 'react-native';
-import {State, TapGestureHandler} from 'react-native-gesture-handler';
-import {Navigation as RNN} from 'react-native-navigation';
-import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import RNBottomSheet from 'reanimated-bottom-sheet';
+import BottomSheetM, {BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetFooterProps} from '@gorhom/bottom-sheet';
+import React, {ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
+import {DeviceEventEmitter, Keyboard, View} from 'react-native';
 
+import useNavButtonPressed from '@app/hooks/navigation_button_pressed';
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -18,35 +16,94 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Indicator from './indicator';
 
-type SlideUpPanelProps = {
+import type {WithSpringConfig} from 'react-native-reanimated';
+
+export {default as BottomSheetButton, BUTTON_HEIGHT} from './button';
+export {default as BottomSheetContent, TITLE_HEIGHT} from './content';
+
+type Props = {
     closeButtonId?: string;
     componentId: string;
     initialSnapIndex?: number;
+    footerComponent?: React.FC<BottomSheetFooterProps>;
     renderContent: () => ReactNode;
     snapPoints?: Array<string | number>;
     testID?: string;
 }
 
-export const PADDING_TOP_MOBILE = 20;
+const PADDING_TOP_MOBILE = 20;
+const PADDING_TOP_TABLET = 8;
 
-const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderContent, snapPoints = ['90%', '50%', 50], testID}: SlideUpPanelProps) => {
-    const sheetRef = useRef<RNBottomSheet>(null);
+export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+    return {
+        bottomSheet: {
+            borderTopStartRadius: 24,
+            borderTopEndRadius: 24,
+            shadowOffset: {
+                width: 0,
+                height: 8,
+            },
+            shadowOpacity: 0.12,
+            shadowRadius: 24,
+            shadowColor: '#000',
+            elevation: 24,
+        },
+        bottomSheetBackground: {
+            backgroundColor: theme.centerChannelBg,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+        },
+        content: {
+            flex: 1,
+            paddingHorizontal: 20,
+            paddingTop: PADDING_TOP_MOBILE,
+        },
+        contentTablet: {
+            paddingTop: PADDING_TOP_TABLET,
+        },
+        separator: {
+            height: 1,
+            borderTopWidth: 1,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.08),
+        },
+    };
+});
+
+export const animatedConfig: Omit<WithSpringConfig, 'velocity'> = {
+    damping: 50,
+    mass: 0.3,
+    stiffness: 121.6,
+    overshootClamping: true,
+    restSpeedThreshold: 0.3,
+    restDisplacementThreshold: 0.3,
+};
+
+const BottomSheet = ({
+    closeButtonId,
+    componentId,
+    initialSnapIndex = 1,
+    footerComponent,
+    renderContent,
+    snapPoints = [1, '50%', '90%'],
+    testID,
+}: Props) => {
+    const sheetRef = useRef<BottomSheetM>(null);
     const isTablet = useIsTablet();
     const theme = useTheme();
-    const firstRun = useRef(isTablet);
-    const lastSnap = snapPoints.length - 1;
-    const backdropOpacity = useSharedValue(0);
+    const styles = getStyleSheet(theme);
+
+    const bottomSheetBackgroundStyle = useMemo(() => [
+        styles.bottomSheetBackground,
+        {borderWidth: isTablet ? 0 : 1},
+    ], [isTablet, styles]);
 
     const close = useCallback(() => {
-        if (firstRun.current) {
-            dismissModal({componentId});
-        }
+        dismissModal({componentId});
     }, [componentId]);
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.CLOSE_BOTTOM_SHEET, () => {
             if (sheetRef.current) {
-                sheetRef.current.snapTo(lastSnap);
+                sheetRef.current.close();
             } else {
                 close();
             }
@@ -57,82 +114,40 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
 
     const handleClose = useCallback(() => {
         if (sheetRef.current) {
-            sheetRef.current.snapTo(1);
+            sheetRef.current.close();
         } else {
             close();
         }
     }, []);
 
-    const handleCloseEnd = useCallback(() => {
-        if (firstRun.current) {
-            backdropOpacity.value = 0;
-            setTimeout(close, 250);
+    const handleDismissIfNeeded = useCallback((index: number) => {
+        if (index <= 0) {
+            close();
         }
     }, []);
 
-    const handleOpenStart = useCallback(() => {
-        backdropOpacity.value = 1;
-    }, []);
-
     useAndroidHardwareBackHandler(componentId, handleClose);
+    useNavButtonPressed(closeButtonId || '', componentId, close, [close]);
 
     useEffect(() => {
         hapticFeedback();
         Keyboard.dismiss();
-        sheetRef.current?.snapTo(initialSnapIndex);
-        backdropOpacity.value = 1;
-        const t = setTimeout(() => {
-            firstRun.current = true;
-        }, 100);
-
-        return () => clearTimeout(t);
     }, []);
 
-    useEffect(() => {
-        const navigationEvents = RNN.events().registerNavigationButtonPressedListener(({buttonId}) => {
-            if (closeButtonId && buttonId === closeButtonId) {
-                close();
-            }
-        });
-
-        return () => navigationEvents.remove();
-    }, [close]);
-
-    const backdropStyle = useAnimatedStyle(() => ({
-        opacity: withTiming(backdropOpacity.value, {duration: 250, easing: Easing.inOut(Easing.linear)}),
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-    }));
-
-    const renderBackdrop = () => {
+    const renderBackdrop = useCallback((props: BottomSheetBackdropProps) => {
         return (
-            <TapGestureHandler
-                shouldCancelWhenOutside={true}
-                maxDist={10}
-                onHandlerStateChange={(event) => {
-                    if (event.nativeEvent.state === State.END && event.nativeEvent.oldState === State.ACTIVE) {
-                        sheetRef.current?.snapTo(lastSnap);
-                    }
-                }}
-                testID={`${testID}.backdrop`}
-            >
-                <Animated.View
-                    style={[StyleSheet.absoluteFill, backdropStyle]}
-                />
-            </TapGestureHandler>
+            <BottomSheetBackdrop
+                {...props}
+                disappearsOnIndex={0}
+                appearsOnIndex={1}
+                opacity={0.6}
+            />
         );
-    };
+    }, []);
 
     const renderContainerContent = () => (
         <View
-            style={{
-                backgroundColor: theme.centerChannelBg,
-                opacity: 1,
-                paddingHorizontal: 20,
-                paddingTop: isTablet ? 0 : PADDING_TOP_MOBILE,
-                height: '100%',
-                width: '100%',
-                alignSelf: 'center',
-            }}
+            style={[styles.content, isTablet && styles.contentTablet]}
             testID={`${testID}.screen`}
         >
             {renderContent()}
@@ -140,7 +155,6 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
     );
 
     if (isTablet) {
-        const styles = getStyleSheet(theme);
         return (
             <>
                 <View style={styles.separator}/>
@@ -150,32 +164,22 @@ const BottomSheet = ({closeButtonId, componentId, initialSnapIndex = 0, renderCo
     }
 
     return (
-        <>
-            <RNBottomSheet
-                ref={sheetRef}
-                snapPoints={snapPoints}
-                borderRadius={10}
-                initialSnap={snapPoints.length - 1}
-                renderContent={renderContainerContent}
-                onCloseEnd={handleCloseEnd}
-                onOpenStart={handleOpenStart}
-                enabledBottomInitialAnimation={false}
-                renderHeader={Indicator}
-                enabledContentTapInteraction={false}
-            />
-            {renderBackdrop()}
-        </>
+        <BottomSheetM
+            ref={sheetRef}
+            index={initialSnapIndex}
+            snapPoints={snapPoints}
+            animateOnMount={true}
+            backdropComponent={renderBackdrop}
+            onChange={handleDismissIfNeeded}
+            animationConfigs={animatedConfig}
+            handleComponent={Indicator}
+            style={styles.bottomSheet}
+            backgroundStyle={bottomSheetBackgroundStyle}
+            footerComponent={footerComponent}
+        >
+            {renderContainerContent()}
+        </BottomSheetM>
     );
 };
-
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        separator: {
-            height: 1,
-            borderTopWidth: 1,
-            borderColor: changeOpacity(theme.centerChannelColor, 0.08),
-        },
-    };
-});
 
 export default BottomSheet;

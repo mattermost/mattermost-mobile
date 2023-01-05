@@ -59,6 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     badge: {
         left: 18,
         top: -5,
+        borderColor: theme.centerChannelBg,
     },
     button: {
         borderRadius: 8,
@@ -170,7 +171,7 @@ const ServerItem = ({
         let isUnread = Boolean(threadUnreads);
         for (const myChannel of myChannels) {
             const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
-            mentions += myChannel.mentionsCount;
+            mentions += isMuted ? 0 : myChannel.mentionsCount;
             isUnread = isUnread || (myChannel.isUnread && !isMuted);
         }
         mentions += threadMentionCount;

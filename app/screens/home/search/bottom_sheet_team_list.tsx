@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 
-import TeamList from '@components/team_sidebar/add_team/team_list';
+import TeamList from '@components/team_list';
 import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
@@ -17,7 +17,7 @@ type Props = {
     title: string;
 }
 
-export default function SelectTeamSlideUp({teams, title, setTeamId, teamId}: Props) {
+export default function BottomSheetTeamList({teams, title, setTeamId, teamId}: Props) {
     const isTablet = useIsTablet();
     const showTitle = !isTablet && Boolean(teams.length);
 
@@ -38,6 +38,7 @@ export default function SelectTeamSlideUp({teams, title, setTeamId, teamId}: Pro
                 teams={teams}
                 onPress={onPress}
                 testID='search.select_team_slide_up.team_list'
+                type={isTablet ? 'FlatList' : 'BottomSheetFlatList'}
             />
         </BottomSheetContent>
     );

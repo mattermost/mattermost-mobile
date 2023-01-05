@@ -8,9 +8,11 @@ import compose from 'lodash/fp/compose';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsById} from '@queries/servers/post';
 import {observeConfigBooleanValue, observeRecentMentions} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
+import {mapCustomEmojiNames} from '@utils/emoji/helpers';
 import {getTimezone} from '@utils/user';
 
 import RecentMentionsScreen from './recent_mentions';
@@ -21,6 +23,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
 
     return {
+        appsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
         mentions: observeRecentMentions(database).pipe(
             switchMap((recentMentions) => {
                 if (!recentMentions.length) {
@@ -31,6 +34,9 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
         ),
         currentUser,
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
+        customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
+            switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
+        ),
         isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
     };
 });

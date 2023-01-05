@@ -80,6 +80,7 @@ async function createTestCycle(startDate, endDate) {
     const {
         BRANCH,
         BUILD_ID,
+        COMMIT_HASH,
         JIRA_PROJECT_KEY,
         ZEPHYR_CYCLE_NAME,
         ZEPHYR_FOLDER_ID,
@@ -87,7 +88,7 @@ async function createTestCycle(startDate, endDate) {
 
     const testCycle = {
         projectKey: JIRA_PROJECT_KEY,
-        name: ZEPHYR_CYCLE_NAME ? `${ZEPHYR_CYCLE_NAME} (${BUILD_ID}-${BRANCH})` : `${BUILD_ID}-${BRANCH}`,
+        name: ZEPHYR_CYCLE_NAME ? `${ZEPHYR_CYCLE_NAME} (${BUILD_ID}-${COMMIT_HASH}-${BRANCH})` : `${BUILD_ID}-${COMMIT_HASH}-${BRANCH}`,
         description: `Detox automated test with ${BRANCH}`,
         plannedStartDate: startDate,
         plannedEndDate: endDate,

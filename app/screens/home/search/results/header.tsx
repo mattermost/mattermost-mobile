@@ -93,12 +93,13 @@ const Header = ({
 
     const snapPoints = useMemo(() => {
         return [
+            1,
             bottomSheetSnapPoint(
                 NUMBER_FILTER_ITEMS,
                 FILTER_ITEM_HEIGHT,
                 bottom,
             ) + TITLE_HEIGHT + DIVIDERS_HEIGHT + (isTablet ? TITLE_SEPARATOR_MARGIN_TABLET : TITLE_SEPARATOR_MARGIN),
-            10];
+        ];
     }, []);
 
     const handleFilterPress = useCallback(() => {
