@@ -509,6 +509,7 @@ platform :ios do
             api_key: api_key,
             type: ENV['MATCH_TYPE'] || 'adhoc'
         )
+      end
     end
   end
 
