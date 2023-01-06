@@ -143,7 +143,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             markChannelAsRead(serverUrl, post.channel_id);
         } else if (markAsViewed) {
             preparedMyChannelHack(myChannel);
-            const {member: viewedAt} = await markChannelAsViewed(serverUrl, post.channel_id, true);
+            const {member: viewedAt} = await markChannelAsViewed(serverUrl, post.channel_id, false, true);
             if (viewedAt) {
                 models.push(viewedAt);
             }
