@@ -858,7 +858,7 @@
   "share_feedback.subtitle": "We'd love to hear how we can make your experience better.",
   "share_feedback.title": "Would you share your feedback?",
   "smobile.search.recent_title": "Recent searches in {teamName}",
-  "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {member} other {members} added}",
+  "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {member} other {members}} added",
   "snack.bar.favorited.channel": "This channel was favorited",
   "snack.bar.link.copied": "Link copied to clipboard",
   "snack.bar.message.copied": "Text copied to clipboard",

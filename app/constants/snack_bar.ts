@@ -24,7 +24,7 @@ type SnackBarConfig = {
 export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
     ADD_CHANNEL_MEMBERS: {
         id: t('snack.bar.channel.members.added'),
-        defaultMessage: '{numMembers, number} {numMembers, plural, one {member} other {members} added}',
+        defaultMessage: '{numMembers, number} {numMembers, plural, one {member} other {members}} added',
         iconName: 'check',
         canUndo: false,
     },
