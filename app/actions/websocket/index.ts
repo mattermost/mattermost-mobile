@@ -444,7 +444,7 @@ async function fetchPostDataIfNeeded(serverUrl: string) {
             await fetchPostsForChannel(serverUrl, currentChannelId);
             markChannelAsRead(serverUrl, currentChannelId);
             if (!EphemeralStore.wasNotificationTapped()) {
-                markChannelAsViewed(serverUrl, currentChannelId);
+                markChannelAsViewed(serverUrl, currentChannelId, true);
             }
             EphemeralStore.setNotificationTapped(false);
         }
