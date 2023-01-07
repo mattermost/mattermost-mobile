@@ -123,7 +123,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
             if (!tutorialWatched) {
                 setTooltipVisible(true);
             }
-        }, 1000);
+        }, 750);
 
         return () => clearTimeout(t);
     }, []);
