@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
+import Sentry from '@sentry/react-native';
 import {Breadcrumb, Event} from '@sentry/types';
 import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -17,20 +18,10 @@ import {logError, logWarning} from './log';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
-export const LOGGER_EXTENSION = 'extension';
-export const LOGGER_JAVASCRIPT = 'javascript';
-export const LOGGER_JAVASCRIPT_WARNING = 'javascript_warning';
-export const LOGGER_NATIVE = 'native';
-
-let Sentry: any;
 
 export function initializeSentry() {
     if (!Config.SentryEnabled) {
         return;
-    }
-
-    if (!Sentry) {
-        Sentry = require('@sentry/react-native');
     }
 
     const dsn = getDsn();
@@ -81,16 +72,16 @@ function getDsn() {
     return '';
 }
 
-export function captureException(error: Error | string, logger: string) {
+export function captureException(error: Error | string) {
     if (!Config.SentryEnabled) {
         return;
     }
 
-    if (!error || !logger) {
-        logWarning('captureException called with missing arguments', error, logger);
+    if (!error) {
+        logWarning('captureException called with missing arguments', error);
         return;
     }
-    Sentry.captureException(error, {logger});
+    Sentry.captureException(error);
 }
 
 export function captureJSException(error: Error | ClientError, isFatal: boolean) {
@@ -106,7 +97,7 @@ export function captureJSException(error: Error | ClientError, isFatal: boolean)
     if (error instanceof ClientError) {
         captureClientErrorAsBreadcrumb(error, isFatal);
     } else {
-        captureException(error, LOGGER_JAVASCRIPT);
+        captureException(error);
     }
 }
 

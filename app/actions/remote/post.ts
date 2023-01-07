@@ -436,7 +436,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
 
                 await operator.batchRecords(models);
             } catch (error) {
-                logError('FETCH AUTHORS ERROR', error);
+                logError('FETCH POSTS BEFORE ERROR', error);
             }
         }
 
