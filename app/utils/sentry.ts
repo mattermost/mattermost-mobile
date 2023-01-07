@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Database} from '@nozbe/watermelondb';
-import Sentry from '@sentry/react-native';
 import {Breadcrumb, Event} from '@sentry/types';
 import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
@@ -19,9 +18,14 @@ import {logError, logWarning} from './log';
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';
 
+let Sentry: any;
 export function initializeSentry() {
     if (!Config.SentryEnabled) {
         return;
+    }
+
+    if (!Sentry) {
+        Sentry = require('@sentry/react-native');
     }
 
     const dsn = getDsn();
