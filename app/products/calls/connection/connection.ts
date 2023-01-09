@@ -94,6 +94,7 @@ export async function newConnection(
 
         peer?.destroy();
         peer = null;
+        InCallManager.stop();
 
         if (closeCb) {
             closeCb();
@@ -201,7 +202,7 @@ export async function newConnection(
         InCallManager.start({media: 'audio'});
         InCallManager.stopProximitySensor();
 
-        peer = new RTCPeer({iceServers: iceConfigs || []}, () => InCallManager.stop());
+        peer = new RTCPeer({iceServers: iceConfigs || []});
 
         peer.on('offer', (sdp) => {
             logDebug(`local offer, sending: ${JSON.stringify(sdp)}`);

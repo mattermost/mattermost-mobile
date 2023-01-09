@@ -21,7 +21,6 @@ const rtcConnFailedErr = new Error('rtc connection failed');
 export default class RTCPeer extends EventEmitter {
     private pc: RTCPeerConnection | null;
     private readonly senders: { [key: string]: RTCRtpSender };
-    private destroyCb?: () => void;
 
     public connected: boolean;
 
@@ -32,7 +31,7 @@ export default class RTCPeer extends EventEmitter {
         },
     };
 
-    constructor(config: RTCPeerConfig, destroyCb?: () => void) {
+    constructor(config: RTCPeerConfig) {
         super();
 
         // We keep a map of track IDs -> RTP sender so that we can easily
@@ -47,7 +46,6 @@ export default class RTCPeer extends EventEmitter {
         this.pc.ontrack = (ev) => this.onTrack(ev);
 
         this.connected = false;
-        this.destroyCb = destroyCb;
 
         // We create a data channel for two reasons:
         // - Initiate a connection without preemptively adding audio/video tracks.
@@ -188,6 +186,5 @@ export default class RTCPeer extends EventEmitter {
         this.pc.close();
         this.pc = null;
         this.connected = false;
-        this.destroyCb?.();
     }
 }
