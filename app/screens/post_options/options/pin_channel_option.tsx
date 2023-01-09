@@ -11,17 +11,18 @@ import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 type PinChannelProps = {
+    bottomSheetId: typeof Screens[keyof typeof Screens];
     isPostPinned: boolean;
     postId: string;
 }
 
-const PinChannelOption = ({isPostPinned, postId}: PinChannelProps) => {
+const PinChannelOption = ({bottomSheetId, isPostPinned, postId}: PinChannelProps) => {
     const serverUrl = useServerUrl();
 
     const onPress = useCallback(async () => {
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         togglePinPost(serverUrl, postId);
-    }, [postId, serverUrl]);
+    }, [bottomSheetId, postId, serverUrl]);
 
     let defaultMessage;
     let id;

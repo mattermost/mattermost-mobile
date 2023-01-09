@@ -25,6 +25,7 @@ import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers
 import {queryAllUsers} from '@queries/servers/user';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
+import {isServerError} from '@utils/errors';
 import {logError} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -134,7 +135,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
     let created;
     try {
         created = await client.createPost(newPost);
-    } catch (error: any) {
+    } catch (error) {
         const errorPost = {
             ...newPost,
             id: pendingPostId,
@@ -147,10 +148,11 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
 
         // If the failure was because: the root post was deleted or
         // TownSquareIsReadOnly=true then remove the post
-        if (error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
+        if (isServerError(error) && (
+            error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
             error.server_error_id === ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR ||
             error.server_error_id === ServerErrors.PLUGIN_DISMISSED_POST_ERROR
-        ) {
+        )) {
             await removePost(serverUrl, databasePost);
         } else {
             const models = await operator.handlePosts({
@@ -252,11 +254,12 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
             }
         }
         await operator.batchRecords(models);
-    } catch (error: any) {
-        if (error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
+    } catch (error) {
+        if (isServerError(error) && (
+            error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
             error.server_error_id === ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR ||
             error.server_error_id === ServerErrors.PLUGIN_DISMISSED_POST_ERROR
-        ) {
+        )) {
             await removePost(serverUrl, post);
         } else {
             post.prepareUpdate((p) => {
@@ -433,7 +436,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
 
                 await operator.batchRecords(models);
             } catch (error) {
-                logError('FETCH AUTHORS ERROR', error);
+                logError('FETCH POSTS BEFORE ERROR', error);
             }
         }
 

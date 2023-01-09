@@ -19,6 +19,8 @@ type Props = {
     onSubmit: (data: PostPriorityData) => void;
 };
 
+export const COMPONENT_HEIGHT = 200;
+
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.centerChannelBg,
@@ -30,7 +32,7 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     title: {
         color: theme.centerChannelColor,
-        ...typography('Body', 600, 'SemiBold'),
+        ...typography('Heading', 600, 'SemiBold'),
     },
     betaContainer: {
         backgroundColor: PostPriorityColors.IMPORTANT,

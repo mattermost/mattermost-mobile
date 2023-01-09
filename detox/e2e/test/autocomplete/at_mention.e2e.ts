@@ -232,7 +232,7 @@ describe('Autocomplete - At-Mention', () => {
         await expect(userAtMentionAutocomplete).not.toBeVisible();
     });
 
-    it('MM-T4878_11 - should be able to select at-mention multiple times -- KNOWN ISSUE: MM-46648', async () => {
+    it('MM-T4878_11 - should be able to select at-mention multiple times', async () => {
         // # Type in "@" to activate at-mention autocomplete
         await expect(Autocomplete.sectionAtMentionList).not.toBeVisible();
         await ChannelScreen.postInput.typeText('@');

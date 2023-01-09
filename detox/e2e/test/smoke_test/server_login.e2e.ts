@@ -59,6 +59,7 @@ describe('Smoke Test - Server Login', () => {
     it('MM-T4675_2 - should be able to add a new server and log-in-to/log-out-from the new server', async () => {
         // # Open server list screen
         await ServerListScreen.open();
+        await ServerListScreen.closeTutorial();
 
         // * Verify on server list screen
         await ServerListScreen.toBeVisible();
@@ -73,7 +74,6 @@ describe('Smoke Test - Server Login', () => {
 
         // * Verify on channel list screen of the second server
         await ChannelListScreen.toBeVisible();
-        await device.reloadReactNative();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverTwoDisplayName);
 
         // # Go back to first server, open server list screen, swipe left on second server and tap on logout option

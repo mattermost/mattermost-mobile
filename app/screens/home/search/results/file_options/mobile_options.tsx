@@ -40,7 +40,8 @@ export const showMobileOptionsBottomSheet = ({
         closeButtonId: 'close-search-file-options',
         renderContent,
         snapPoints: [
-            bottomSheetSnapPoint(numOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT, 10,
+            1,
+            bottomSheetSnapPoint(numOptions, ITEM_HEIGHT, insets.bottom) + HEADER_HEIGHT,
         ],
         theme,
         title: '',

@@ -68,6 +68,11 @@ type Props = {
     teammateNameDisplay: string;
 
     /**
+     * test ID
+     */
+    testID?: string;
+
+    /**
      * toast Icon
      */
     toastIcon?: string;
@@ -130,7 +135,7 @@ export default function SelectedUsers({
     buttonIcon, buttonText, containerHeight = 0,
     modalPosition = 0, onPress, onRemove,
     selectedIds, setShowToast, showToast = false,
-    teammateNameDisplay, toastIcon, toastMessage,
+    teammateNameDisplay, testID, toastIcon, toastMessage,
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -157,7 +162,7 @@ export default function SelectedUsers({
                     user={selectedIds[id]}
                     teammateNameDisplay={teammateNameDisplay}
                     onRemove={onRemove}
-                    testID='create_direct_message.selected_user'
+                    testID={`${testID}.selected_user`}
                 />,
             );
         }
@@ -276,6 +281,7 @@ export default function SelectedUsers({
                         icon={buttonIcon}
                         text={buttonText}
                         disabled={numberSelectedIds > General.MAX_USERS_IN_GM}
+                        testID={`${testID}.start.button`}
                     />
                 </Animated.View>
             </Animated.View>

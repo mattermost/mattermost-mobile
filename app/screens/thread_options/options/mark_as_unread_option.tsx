@@ -13,20 +13,21 @@ import {dismissBottomSheet} from '@screens/navigation';
 import type ThreadModel from '@typings/database/models/servers/thread';
 
 type Props = {
+    bottomSheetId: typeof Screens[keyof typeof Screens];
     teamId: string;
     thread: ThreadModel;
 }
-const MarkAsUnreadOption = ({teamId, thread}: Props) => {
+const MarkAsUnreadOption = ({bottomSheetId, teamId, thread}: Props) => {
     const serverUrl = useServerUrl();
 
     const onHandlePress = useCallback(async () => {
-        await dismissBottomSheet(Screens.THREAD_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         if (thread.unreadReplies) {
             markThreadAsRead(serverUrl, teamId, thread.id);
         } else {
             markThreadAsUnread(serverUrl, teamId, thread.id, thread.id);
         }
-    }, [serverUrl, teamId, thread]);
+    }, [bottomSheetId, serverUrl, teamId, thread]);
 
     const id = thread.unreadReplies ? t('global_threads.options.mark_as_read') : t('mobile.post_info.mark_unread');
     const defaultMessage = thread.unreadReplies ? 'Mark as Read' : 'Mark as Unread';

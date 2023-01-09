@@ -14,17 +14,19 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
-import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
+import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './empty';
 
-import type {ViewableItemsChanged} from '@typings/components/post_list';
+import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    appsEnabled: boolean;
     channelId: string;
     componentId: string;
     currentTimezone: string | null;
+    customEmojiNames: string[];
     isCRTEnabled: boolean;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
@@ -47,9 +49,11 @@ const styles = StyleSheet.create({
 });
 
 function SavedMessages({
+    appsEnabled,
     channelId,
     componentId,
     currentTimezone,
+    customEmojiNames,
     isCRTEnabled,
     isTimezoneEnabled,
     posts,
@@ -81,8 +85,8 @@ function SavedMessages({
         }
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
-            if (isViewable) {
-                acc[`${Screens.PINNED_MESSAGES}-${item.id}`] = true;
+            if (isViewable && item.type === 'post') {
+                acc[`${Screens.PINNED_MESSAGES}-${item.value.id}`] = true;
             }
             return acc;
         }, {});
@@ -109,35 +113,39 @@ function SavedMessages({
         </View>
     ), [loading, theme.buttonBg]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<string | PostModel>) => {
-        if (typeof item === 'string') {
-            if (isDateLine(item)) {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
+        switch (item.type) {
+            case 'date':
                 return (
                     <DateSeparator
-                        date={getDateForDateLine(item)}
+                        key={item.value}
+                        date={getDateForDateLine(item.value)}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
-            }
-            return null;
+            case 'post':
+                return (
+                    <Post
+                        appsEnabled={appsEnabled}
+                        customEmojiNames={customEmojiNames}
+                        highlightPinnedOrSaved={false}
+                        isCRTEnabled={isCRTEnabled}
+                        location={Screens.PINNED_MESSAGES}
+                        key={item.value.id}
+                        nextPost={undefined}
+                        post={item.value}
+                        previousPost={undefined}
+                        showAddReaction={false}
+                        shouldRenderReplyButton={false}
+                        skipSavedHeader={true}
+                        skipPinnedHeader={true}
+                        testID='pinned_messages.post_list.post'
+                    />
+                );
+            default:
+                return null;
         }
-
-        return (
-            <Post
-                highlightPinnedOrSaved={false}
-                isCRTEnabled={isCRTEnabled}
-                location={Screens.PINNED_MESSAGES}
-                nextPost={undefined}
-                post={item}
-                previousPost={undefined}
-                showAddReaction={false}
-                shouldRenderReplyButton={false}
-                skipSavedHeader={true}
-                skipPinnedHeader={true}
-                testID='pinned_messages.post_list.post'
-            />
-        );
-    }, [currentTimezone, isTimezoneEnabled, theme]);
+    }, [appsEnabled, currentTimezone, customEmojiNames, isTimezoneEnabled, theme]);
 
     return (
         <SafeAreaView

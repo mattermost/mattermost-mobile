@@ -8,6 +8,8 @@
 
 #import "AppDelegate.h"
 #import "MattermostManaged.h"
+#import "CreateThumbnail.h"
+#import "Mattermost-Swift.h"
 
 @implementation MattermostManaged
 
@@ -107,7 +109,6 @@ RCT_EXPORT_METHOD(renameDatabase: (NSString *)databaseName  to: (NSString *) new
     NSDictionary *appGroupDir = [self appGroupSharedDirectory];
     NSString *databaseDir;
     NSString *newDBDir;
-
     
     if(databaseName){
       databaseDir = [NSString stringWithFormat:@"%@/%@%@", appGroupDir[@"databasePath"], databaseName , @".db"];
@@ -198,6 +199,29 @@ RCT_EXPORT_METHOD(lockPortrait)
                 [[UIDevice currentDevice] setValue:orientationTarget forKey:@"orientation"];
    });
 
+}
+
+RCT_EXPORT_METHOD(createThumbnail:(NSDictionary *)config findEventsWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
+{
+  NSMutableDictionary *newConfig = [config mutableCopy];
+  NSMutableDictionary *headers = [config[@"headers"] ?: @{} mutableCopy];
+  NSString *url = (NSString *)[config objectForKey:@"url"] ?: @"";
+  NSURL *vidURL = nil;
+  NSString *url_ = [url lowercaseString];
+  
+  if ([url_ hasPrefix:@"http://"] || [url_ hasPrefix:@"https://"] || [url_ hasPrefix:@"file://"]) {
+    vidURL = [NSURL URLWithString:url];
+    NSString *serverUrl = [NSString stringWithFormat:@"%@://%@:%@", vidURL.scheme, vidURL.host, vidURL.port];
+    if (vidURL != nil) {
+      NSString *token = [[GekidouWrapper default] getTokenFor:serverUrl];
+      if (token != nil) {
+
+        headers[@"Authorization"] = [NSString stringWithFormat:@"Bearer %@", token];
+        newConfig[@"headers"] = headers;
+      }
+    }
+  }
+  [CreateThumbnail create:newConfig findEventsWithResolver:resolve rejecter:reject];
 }
 
 @end

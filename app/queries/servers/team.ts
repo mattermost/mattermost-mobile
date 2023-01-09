@@ -165,31 +165,6 @@ export const getLastTeam = async (database: Database, ignoreIdForDefault?: strin
     return getDefaultTeamId(database, ignoreIdForDefault);
 };
 
-export async function syncTeamTable(operator: ServerDataOperator, teams: Team[]) {
-    try {
-        const deletedTeams = teams.filter((t) => t.delete_at > 0).map((t) => t.id);
-        const deletedSet = new Set(deletedTeams);
-        const availableTeams = teams.filter((a) => !deletedSet.has(a.id));
-        const models = [];
-
-        if (deletedTeams.length) {
-            const notAvailable = await operator.database.get<TeamModel>(TEAM).query(Q.where('id', Q.oneOf(deletedTeams))).fetch();
-            const deletions = await Promise.all(notAvailable.map((t) => prepareDeleteTeam(t)));
-            for (const d of deletions) {
-                models.push(...d);
-            }
-        }
-
-        models.push(...await operator.handleTeam({teams: availableTeams, prepareRecordsOnly: true}));
-        if (models.length) {
-            await operator.batchRecords(models);
-        }
-        return {};
-    } catch (error) {
-        return {error};
-    }
-}
-
 export const getDefaultTeamId = async (database: Database, ignoreId?: string) => {
     const user = await getCurrentUser(database);
     const config = await getConfig(database);

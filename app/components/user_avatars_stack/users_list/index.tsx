@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, PanResponder, StyleProp, StyleSheet, TouchableOpacity, ViewStyle} from 'react-native';
@@ -16,6 +17,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     channelId: string;
     location: string;
+    type?: BottomSheetList;
     users: UserModel[];
 };
 
@@ -58,8 +60,8 @@ const Item = ({channelId, containerStyle, location, user}: ItemProps) => {
     );
 };
 
-const UsersList = ({channelId, location, users}: Props) => {
-    const [enabled, setEnabled] = useState(false);
+const UsersList = ({channelId, location, type = 'FlatList', users}: Props) => {
+    const [enabled, setEnabled] = useState(type === 'BottomSheetFlatList');
     const [direction, setDirection] = useState<'down' | 'up'>('down');
     const listRef = useRef<FlatList>(null);
     const prevOffset = useRef(0);
@@ -90,6 +92,16 @@ const UsersList = ({channelId, location, users}: Props) => {
             containerStyle={style.container}
         />
     ), [channelId, location]);
+
+    if (type === 'BottomSheetFlatList') {
+        return (
+            <BottomSheetFlatList
+                data={users}
+                renderItem={renderItem}
+                overScrollMode={'always'}
+            />
+        );
+    }
 
     return (
         <FlatList

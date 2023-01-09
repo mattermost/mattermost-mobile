@@ -17,7 +17,6 @@ class ChannelListScreen {
         serverIcon: 'channel_list.servers.server_icon',
         headerTeamDisplayName: 'channel_list_header.team_display_name',
         headerServerDisplayName: 'channel_list_header.server_display_name',
-        headerChevronButton: 'channel_list_header.chevron.button',
         headerPlusButton: 'channel_list_header.plus.button',
         subheaderSearchFieldButton: 'channel_list_subheader.search_field.button',
         findChannelsInput: 'channel_list.search_field.find_channels.input',
@@ -28,7 +27,6 @@ class ChannelListScreen {
     serverIcon = element(by.id(this.testID.serverIcon));
     headerTeamDisplayName = element(by.id(this.testID.headerTeamDisplayName));
     headerServerDisplayName = element(by.id(this.testID.headerServerDisplayName));
-    headerChevronButton = element(by.id(this.testID.headerChevronButton));
     headerPlusButton = element(by.id(this.testID.headerPlusButton));
     subheaderSearchFieldButton = element(by.id(this.testID.subheaderSearchFieldButton));
     findChannelsInput = element(by.id(this.testID.findChannelsInput));
