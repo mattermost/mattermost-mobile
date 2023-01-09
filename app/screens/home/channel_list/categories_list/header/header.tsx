@@ -88,6 +88,13 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'space-between',
         height: 40,
     },
+    outsideBox: {
+        flexDirection: 'row',
+        justifyContent: 'space-between',
+    },
+    firstBox: {
+        width: '85%',
+    },
 }));
 
 const hitSlop: Insets = {top: 10, bottom: 30, left: 20, right: 20};
@@ -171,59 +178,63 @@ const ChannelListHeader = ({
     let header;
     if (displayName) {
         header = (
-            <>
-                <View style={styles.headerRow}>
-                    <TouchableWithoutFeedback
-                        onPress={onHeaderPress}
-                    >
-                        <View style={styles.headerRow}>
-                            <Text
-                                style={styles.headingStyles}
-                                testID='channel_list_header.team_display_name'
-                            >
-                                {displayName}
-                            </Text>
-                        </View>
-                    </TouchableWithoutFeedback>
-                    <TouchableWithFeedback
-                        hitSlop={hitSlop}
-                        onPress={onPress}
-                        style={styles.plusButton}
-                        testID='channel_list_header.plus.button'
-                        type='opacity'
-                    >
-                        <CompassIcon
-                            style={styles.plusIcon}
-                            name={'plus'}
-                        />
-                    </TouchableWithFeedback>
-                </View>
-                <View style={styles.subHeadingView}>
-                    <Text
-                        numberOfLines={1}
-                        ellipsizeMode='tail'
-                        style={styles.subHeadingStyles}
-                        testID='channel_list_header.server_display_name'
-                    >
-                        {serverDisplayName}
-                    </Text>
-                    {(pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
-                        <TouchableWithFeedback
-                            onPress={onPushAlertPress}
-                            testID='channel_list_header.push_alert'
-                            type='opacity'
+            <View style={styles.outsideBox}>
+                <View style={styles.firstBox}>
+                    <View style={styles.headerRow}>
+                        <TouchableWithoutFeedback
+                            onPress={onHeaderPress}
                         >
-                            <CompassIcon
-                                name='alert-outline'
-                                color={theme.errorTextColor}
-                                size={14}
-                                style={styles.pushAlert}
-                            />
-                        </TouchableWithFeedback>
-                    )}
-                    <LoadingUnreads/>
+                            <View style={styles.headerRow}>
+                                <Text
+                                    numberOfLines={2}
+                                    ellipsizeMode='tail'
+                                    style={styles.headingStyles}
+                                    testID='channel_list_header.team_display_name'
+                                >
+                                    {displayName}
+                                </Text>
+                            </View>
+                        </TouchableWithoutFeedback>
+                    </View>
+                    <View style={styles.subHeadingView}>
+                        <Text
+                            numberOfLines={1}
+                            ellipsizeMode='tail'
+                            style={styles.subHeadingStyles}
+                            testID='channel_list_header.server_display_name'
+                        >
+                            {serverDisplayName}
+                        </Text>
+                        {(pushProxyStatus !== PUSH_PROXY_STATUS_VERIFIED) && (
+                            <TouchableWithFeedback
+                                onPress={onPushAlertPress}
+                                testID='channel_list_header.push_alert'
+                                type='opacity'
+                            >
+                                <CompassIcon
+                                    name='alert-outline'
+                                    color={theme.errorTextColor}
+                                    size={14}
+                                    style={styles.pushAlert}
+                                />
+                            </TouchableWithFeedback>
+                        )}
+                        <LoadingUnreads/>
+                    </View>
                 </View>
-            </>
+                <TouchableWithFeedback
+                    hitSlop={hitSlop}
+                    onPress={onPress}
+                    style={styles.plusButton}
+                    testID='channel_list_header.plus.button'
+                    type='opacity'
+                >
+                    <CompassIcon
+                        style={styles.plusIcon}
+                        name={'plus'}
+                    />
+                </TouchableWithFeedback>
+            </View>
         );
     } else {
         header = (
