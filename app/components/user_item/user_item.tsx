@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {StyleProp, Text, View, ViewStyle} from 'react-native';
 
@@ -121,6 +121,10 @@ const UserItem = ({
         }
     }
 
+    const usernameTextStyle = useMemo(() => {
+        return [style.rowUsername, {flexShrink: rowUsernameFlexShrink}];
+    }, [user, rowUsernameFlexShrink]);
+
     return (
         <View
             style={[style.row, containerStyle]}
@@ -158,7 +162,7 @@ const UserItem = ({
                 }
                 {Boolean(user) && (
                     <Text
-                        style={{...style.rowUsername, flexShrink: rowUsernameFlexShrink}}
+                        style={usernameTextStyle}
                         numberOfLines={1}
                         testID={`${userItemTestId}.username`}
                     >

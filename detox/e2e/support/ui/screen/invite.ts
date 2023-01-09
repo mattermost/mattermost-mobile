@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class InviteScreen {
@@ -111,6 +111,7 @@ class InviteScreen {
 
     open = async () => {
         await ChannelListScreen.headerPlusButton.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelListScreen.invitePeopleToTeamItem.tap();
 
         return this.toBeVisible();

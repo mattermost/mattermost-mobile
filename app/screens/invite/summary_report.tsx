@@ -22,14 +22,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderWidth: 1,
             borderColor: changeOpacity(theme.centerChannelColor, 0.16),
             borderRadius: 4,
-            width: '100%',
             marginBottom: 16,
             paddingVertical: 8,
         },
         summaryInvitationsTitle: {
             display: 'flex',
             flexDirection: 'row',
-            flexGrow: 1,
             alignItems: 'center',
             paddingHorizontal: 20,
             paddingVertical: 12,
@@ -42,7 +40,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         summaryInvitationsItem: {
             display: 'flex',
             flexDirection: 'column',
-            flexGrow: 1,
             paddingVertical: 12,
         },
         summaryInvitationsUser: {

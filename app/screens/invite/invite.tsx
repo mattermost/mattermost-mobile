@@ -10,7 +10,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {getTeamMembersByIds, addUsersToTeam, sendEmailInvitesToTeam} from '@actions/remote/team';
 import {searchProfiles} from '@actions/remote/user';
 import Loading from '@components/loading';
-import {General, ServerErrors} from '@constants';
+import {ServerErrors} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useModalPosition} from '@hooks/device';
@@ -27,6 +27,7 @@ import type {NavButtons} from '@typings/screens/navigation';
 
 const CLOSE_BUTTON_ID = 'close-invite';
 const SEND_BUTTON_ID = 'send-invite';
+const SEARCH_TIMEOUT_MILLISECONDS = 200;
 
 const makeLeftButton = (icon: ImageResource): OptionsTopBarButton => {
     return {
@@ -124,6 +125,7 @@ export default function Invite({
     const [result, setResult] = useState<Result>({sent: [], notSent: []});
     const [wrapperHeight, setWrapperHeight] = useState(0);
     const [stage, setStage] = useState(Stage.SELECTION);
+    const [sendError, setSendError] = useState('');
 
     const selectedCount = Object.keys(selectedIds).length;
 
@@ -153,8 +155,8 @@ export default function Invite({
         const {data} = await searchProfiles(serverUrl, searchTerm.toLowerCase(), {allow_inactive: true});
         const results: SearchResult[] = data ?? [];
 
-        if (isEmail(searchTerm.trim())) {
-            results.unshift(searchTerm.trim() as EmailInvite);
+        if (!results.length && isEmail(searchTerm.trim())) {
+            results.push(searchTerm.trim() as EmailInvite);
         }
 
         setSearchResults(results);
@@ -176,7 +178,7 @@ export default function Invite({
         searchTimeoutId.current = setTimeout(async () => {
             await searchUsers(text);
             setLoading(false);
-        }, General.SEARCH_TIMEOUT_MILLISECONDS);
+        }, SEARCH_TIMEOUT_MILLISECONDS);
     }, [searchUsers]);
 
     const handleSelectItem = useCallback((item: SearchResult) => {
@@ -192,6 +194,12 @@ export default function Invite({
 
         handleClearSearch();
     }, [selectedIds, handleClearSearch]);
+
+    const handleSendError = () => {
+        setSendError(formatMessage({id: 'invite.send_error', defaultMessage: 'Received an unexpected error. Please try again or contact your System Admin for assistance.'}));
+        setResult({sent: [], notSent: []});
+        setStage(Stage.RESULT);
+    };
 
     const handleSend = async () => {
         if (!selectedCount) {
@@ -211,11 +219,19 @@ export default function Invite({
             }
         }
 
-        const {members: currentTeamMembers = []} = await getTeamMembersByIds(serverUrl, teamId, userIds);
         const currentMemberIds: Record<string, boolean> = {};
 
-        for (const {user_id: currentMemberId} of currentTeamMembers) {
-            currentMemberIds[currentMemberId] = true;
+        if (userIds.length) {
+            const {members: currentTeamMembers = [], error: getTeamMembersByIdsError} = await getTeamMembersByIds(serverUrl, teamId, userIds);
+
+            if (getTeamMembersByIdsError) {
+                handleSendError();
+                return;
+            }
+
+            for (const {user_id: currentMemberId} of currentTeamMembers) {
+                currentMemberIds[currentMemberId] = true;
+            }
         }
 
         const sent: InviteResult[] = [];
@@ -233,7 +249,12 @@ export default function Invite({
         }
 
         if (usersToAdd.length) {
-            const {members} = await addUsersToTeam(serverUrl, teamId, usersToAdd);
+            const {members, error: addUsersToTeamError} = await addUsersToTeam(serverUrl, teamId, usersToAdd);
+
+            if (addUsersToTeamError) {
+                handleSendError();
+                return;
+            }
 
             if (members) {
                 const membersWithError: Record<string, string> = {};
@@ -254,7 +275,12 @@ export default function Invite({
         }
 
         if (emails.length) {
-            const {members} = await sendEmailInvitesToTeam(serverUrl, teamId, emails);
+            const {members, error: sendEmailInvitesToTeamError} = await sendEmailInvitesToTeam(serverUrl, teamId, emails);
+
+            if (sendEmailInvitesToTeamError) {
+                handleSendError();
+                return;
+            }
 
             if (members) {
                 const membersWithError: Record<string, string> = {};
@@ -320,6 +346,7 @@ export default function Invite({
                     <Summary
                         result={result}
                         selectedIds={selectedIds}
+                        error={sendError}
                         onClose={closeModal}
                         testID='invite.screen.summary'
                     />

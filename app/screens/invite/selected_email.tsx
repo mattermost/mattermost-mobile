@@ -2,41 +2,17 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {useIntl} from 'react-intl';
-import {
-    Text,
-    TouchableOpacity,
-    View,
-} from 'react-native';
+import {Text, TouchableOpacity} from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
-import ProfilePicture from '@components/profile_picture';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {displayUsername} from '@utils/user';
 
 type Props = {
-
-    /*
-     * How to display the names of users.
-     */
-    teammateNameDisplay: string;
-
-    /*
-     * The user that this component represents.
-     */
-    user: UserProfile;
-
-    /*
-     * A handler function that will deselect a user when clicked on.
-     */
+    email: string;
     onRemove: (id: string) => void;
-
-    /*
-     * The test ID.
-     */
     testID?: string;
 }
 
@@ -61,59 +37,45 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             justifyContent: 'center',
             marginLeft: 7,
         },
-        profileContainer: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            marginRight: 8,
-            color: theme.centerChannelColor,
-        },
         text: {
+            marginLeft: 8,
             color: theme.centerChannelColor,
             ...typography('Body', 100, 'SemiBold'),
         },
     };
 });
 
-export default function SelectedUser({
-    teammateNameDisplay,
-    user,
+export default function SelectedEmail({
+    email,
     onRemove,
     testID,
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
-    const intl = useIntl();
 
     const onPress = useCallback(() => {
-        onRemove(user.id);
-    }, [onRemove, user.id]);
+        onRemove(email);
+    }, [onRemove, email]);
 
-    const userItemTestID = `${testID}.${user.id}`;
+    const selectedEmailTestID = `${testID}.${email}`;
+
     return (
         <Animated.View
             entering={FadeIn.duration(FADE_DURATION)}
             exiting={FadeOut.duration(FADE_DURATION)}
             style={style.container}
-            testID={`${testID}.${user.id}`}
+            testID={`${selectedEmailTestID}`}
         >
-            <View style={style.profileContainer}>
-                <ProfilePicture
-                    author={user}
-                    size={20}
-                    iconSize={20}
-                    testID={`${userItemTestID}.profile_picture`}
-                />
-            </View>
             <Text
                 style={style.text}
-                testID={`${testID}.${user.id}.display_name`}
+                testID={`${selectedEmailTestID}.display_name`}
             >
-                {displayUsername(user, intl.locale, teammateNameDisplay)}
+                {email}
             </Text>
             <TouchableOpacity
                 style={style.remove}
                 onPress={onPress}
-                testID={`${testID}.${user.id}.remove.button`}
+                testID={`${selectedEmailTestID}.remove.button`}
             >
                 <CompassIcon
                     name='close-circle'

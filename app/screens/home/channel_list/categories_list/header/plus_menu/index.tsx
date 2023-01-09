@@ -26,7 +26,7 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople}: Pro
         await dismissBottomSheet();
 
         const title = intl.formatMessage({id: 'browse_channels.title', defaultMessage: 'Browse channels'});
-        const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
 
         showModal(Screens.BROWSE_CHANNELS, title, {
             closeButton,
@@ -44,7 +44,7 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople}: Pro
         await dismissBottomSheet();
 
         const title = intl.formatMessage({id: 'create_direct_message.title', defaultMessage: 'Create Direct Message'});
-        const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
         showModal(Screens.CREATE_DIRECT_MESSAGE, title, {
             closeButton,
         });
@@ -54,12 +54,13 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople}: Pro
         await dismissBottomSheet();
 
         const title = intl.formatMessage({id: 'invite.title', defaultMessage: 'Invite'});
-        const closeButton = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
+        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
+        const closeButtonId = 'close-invite';
 
         showModal(
             Screens.INVITE,
             title,
-            {closeButton},
+            {closeButton, closeButtonId},
         );
     }, [intl, theme]);
 

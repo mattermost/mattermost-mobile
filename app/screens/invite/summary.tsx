@@ -18,6 +18,8 @@ import {typography} from '@utils/typography';
 import {SearchResult, Result} from './invite';
 import SummaryReport, {SummaryReportType} from './summary_report';
 
+const MAX_WIDTH_CONTENT = 480;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
@@ -26,36 +28,40 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         summary: {
             display: 'flex',
-            flexGrowth: 1,
+            flex: 1,
         },
         summaryContainer: {
             flexGrow: 1,
             flexDirection: 'column',
             justifyContent: 'center',
-            alignItems: 'center',
-            margin: 20,
+            alignSelf: 'center',
+            marginTop: 20,
+            marginHorizontal: 20,
             paddingBottom: 20,
+            maxWidth: MAX_WIDTH_CONTENT,
         },
         summarySvg: {
             marginBottom: 20,
+            alignSelf: 'center',
         },
         summaryMessageText: {
             color: theme.centerChannelColor,
             ...typography('Heading', 700, 'SemiBold'),
             textAlign: 'center',
             marginHorizontal: 32,
-            marginBottom: 16,
+            marginBottom: 24,
         },
-        summaryButton: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-            margin: 20,
-            padding: 15,
-        },
-        summaryButtonContainer: {
+        footer: {
             display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
             borderTopWidth: 1,
             borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
+            padding: 20,
+        },
+        summaryButtonContainer: {
+            flexGrow: 1,
+            maxWidth: MAX_WIDTH_CONTENT,
         },
     };
 });
@@ -63,6 +69,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 type SummaryProps = {
     result: Result;
     selectedIds: {[id: string]: SearchResult};
+    error?: string;
     testID: string;
     onClose: () => void;
 }
@@ -70,6 +77,7 @@ type SummaryProps = {
 export default function Summary({
     result,
     selectedIds,
+    error,
     testID,
     onClose,
 }: SummaryProps) {
@@ -84,10 +92,21 @@ export default function Summary({
     const styleButtonText = buttonTextStyle(theme, 'lg', 'primary');
     const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
 
-    let message = '';
     let svg = <></>;
+    let message = '';
 
-    if (sentCount && !notSentCount) {
+    if (error) {
+        svg = <ErrorSvg/>;
+    } else if (!sentCount && notSentCount) {
+        svg = <ErrorSvg/>;
+        message = error || formatMessage(
+            {
+                id: 'invite.summary.not_sent',
+                defaultMessage: '{notSentCount, plural, one {Invitation wasn’t} other {Invitations weren’t}} sent',
+            },
+            {notSentCount},
+        );
+    } else if (sentCount && !notSentCount) {
         svg = <SuccessSvg/>;
         message = formatMessage(
             {
@@ -102,15 +121,6 @@ export default function Summary({
             {
                 id: 'invite.summary.some_not_sent',
                 defaultMessage: '{notSentCount, plural, one {An invitation was} other {Some invitations were}} not sent',
-            },
-            {notSentCount},
-        );
-    } else if (!sentCount && notSentCount) {
-        svg = <ErrorSvg/>;
-        message = formatMessage(
-            {
-                id: 'invite.summary.not_sent',
-                defaultMessage: '{notSentCount, plural, one {Invitation wasn’t} other {Invitations weren’t}} sent',
             },
             {notSentCount},
         );
@@ -136,31 +146,37 @@ export default function Summary({
                 <Text style={styles.summaryMessageText}>
                     {message}
                 </Text>
-                <SummaryReport
-                    type={SummaryReportType.NOT_SENT}
-                    invites={notSent}
-                    selectedIds={selectedIds}
-                    testID='invite.summary_report'
-                />
-                <SummaryReport
-                    type={SummaryReportType.SENT}
-                    invites={sent}
-                    selectedIds={selectedIds}
-                    testID='invite.summary_report'
-                />
+                {!error && (
+                    <>
+                        <SummaryReport
+                            type={SummaryReportType.NOT_SENT}
+                            invites={notSent}
+                            selectedIds={selectedIds}
+                            testID='invite.summary_report'
+                        />
+                        <SummaryReport
+                            type={SummaryReportType.SENT}
+                            invites={sent}
+                            selectedIds={selectedIds}
+                            testID='invite.summary_report'
+                        />
+                    </>
+                )}
             </ScrollView>
-            <View style={styles.summaryButtonContainer}>
-                <Button
-                    containerStyle={[styles.summaryButton, styleButtonBackground]}
-                    onPress={handleOnPressButton}
-                    testID='invite.summary_button'
-                >
-                    <FormattedText
-                        id='invite.summary.done'
-                        defaultMessage='Done'
-                        style={styleButtonText}
-                    />
-                </Button>
+            <View style={styles.footer}>
+                <View style={styles.summaryButtonContainer}>
+                    <Button
+                        containerStyle={styleButtonBackground}
+                        onPress={handleOnPressButton}
+                        testID='invite.summary_button'
+                    >
+                        <FormattedText
+                            id='invite.summary.done'
+                            defaultMessage='Done'
+                            style={styleButtonText}
+                        />
+                    </Button>
+                </View>
             </View>
         </View>
     );

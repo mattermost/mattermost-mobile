@@ -114,23 +114,55 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
     }
 }
 
-export async function addUsersToTeam(serverUrl: string, teamId: string, userIds: string[]) {
+export async function addUsersToTeam(serverUrl: string, teamId: string, userIds: string[], fetchOnly = false) {
     let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
 
     try {
+        client = NetworkManager.getClient(serverUrl);
         EphemeralStore.startAddingToTeam(teamId);
 
         const members = await client.addUsersToTeamGracefully(teamId, userIds);
 
+        if (!fetchOnly) {
+            setTeamLoading(serverUrl, true);
+
+            const teamMemberships: TeamMembership[] = [];
+            const roles: Record<string, boolean> = {};
+
+            for (const {member} of members) {
+                teamMemberships.push(member);
+                member.roles.split(' ').forEach((role) => {
+                    if (!roles[role]) {
+                        roles[role] = true;
+                    }
+                });
+            }
+
+            fetchRolesIfNeeded(serverUrl, Object.getOwnPropertyNames(roles));
+
+            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+
+            if (operator) {
+                const team = await client.getTeam(teamId);
+
+                const models: Model[] = (await Promise.all([
+                    operator.handleTeam({teams: [team], prepareRecordsOnly: true}),
+                    operator.handleTeamMemberships({teamMemberships, prepareRecordsOnly: true}),
+                ])).flat();
+
+                await operator.batchRecords(models);
+            }
+
+            setTeamLoading(serverUrl, false);
+        }
+
         EphemeralStore.finishAddingToTeam(teamId);
         return {members};
     } catch (error) {
-        EphemeralStore.finishAddingToTeam(teamId);
+        if (client) {
+            EphemeralStore.finishAddingToTeam(teamId);
+        }
+
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
@@ -138,13 +170,10 @@ export async function addUsersToTeam(serverUrl: string, teamId: string, userIds:
 
 export async function sendEmailInvitesToTeam(serverUrl: string, teamId: string, emails: string[]) {
     let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
 
     try {
+        client = NetworkManager.getClient(serverUrl);
+
         const members = await client.sendEmailInvitesToTeamGracefully(teamId, emails);
 
         return {members};
@@ -469,16 +498,45 @@ export async function handleKickFromTeam(serverUrl: string, teamId: string) {
     }
 }
 
-export async function getTeamMembersByIds(serverUrl: string, teamId: string, userIds: string[]) {
+export async function getTeamMembersByIds(serverUrl: string, teamId: string, userIds: string[], fetchOnly?: boolean) {
     let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
 
     try {
+        client = NetworkManager.getClient(serverUrl);
         const members = await client.getTeamMembersByIds(teamId, userIds);
+
+        if (!fetchOnly) {
+            setTeamLoading(serverUrl, true);
+
+            const teamMemberships: TeamMembership[] = [];
+            const roles: Record<string, boolean> = {};
+
+            for (const member of members) {
+                teamMemberships.push(member);
+                member.roles.split(' ').forEach((role) => {
+                    if (!roles[role]) {
+                        roles[role] = true;
+                    }
+                });
+            }
+
+            fetchRolesIfNeeded(serverUrl, Object.getOwnPropertyNames(roles));
+
+            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+
+            if (operator) {
+                const team = await client.getTeam(teamId);
+
+                const models: Model[] = (await Promise.all([
+                    operator.handleTeam({teams: [team], prepareRecordsOnly: true}),
+                    operator.handleTeamMemberships({teamMemberships, prepareRecordsOnly: true}),
+                ])).flat();
+
+                await operator.batchRecords(models);
+            }
+
+            setTeamLoading(serverUrl, false);
+        }
 
         return {members};
     } catch (error) {
