@@ -5,11 +5,12 @@ import React, {useCallback} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {StyleProp, ViewStyle} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import OptionBox from '@components/option_box';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {dismissBottomSheet, goToScreen, showModal} from '@screens/navigation';
+import {goToScreen, showModal} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
@@ -32,27 +33,36 @@ const messages = defineMessages({
 });
 
 const {CHANNEL_ADD_PEOPLE} = Screens;
+const closeButtonId = 'close-add-people';
 
 const AddPeopleBox = ({channelId, containerStyle, displayName, inModal, testID}: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
 
     const onAddPeople = useCallback(async () => {
+        const closeButton = await CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
         const title = formatMessage(messages.title);
+
         const options = {
             topBar: {
                 subtitle: {
                     color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
                     text: displayName,
                 },
+                leftButtons: inModal ? [] : [{
+                    id: closeButtonId,
+                    icon: closeButton,
+                    testID: 'close.channel_info.button',
+                }],
             },
         };
+
         if (inModal) {
             goToScreen(CHANNEL_ADD_PEOPLE, title, {channelId}, options);
             return;
         }
-        await dismissBottomSheet();
-        showModal(CHANNEL_ADD_PEOPLE, title, {channelId});
+
+        showModal(CHANNEL_ADD_PEOPLE, title, {channelId, closeButtonId}, options);
     }, [formatMessage, channelId, inModal]);
 
     return (

@@ -8,6 +8,7 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {addMembersToChannel} from '@actions/remote/channel';
 import {fetchProfilesNotInChannel, searchProfiles} from '@actions/remote/user';
+import useNavButtonPressed from '@app/hooks/navigation_button_pressed';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import SelectedUsers from '@components/selected_users';
@@ -18,16 +19,12 @@ import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import {useModalPosition} from '@hooks/device';
 import {t} from '@i18n';
-import {popTopScreen} from '@screens/navigation';
+import {dismissModal, popTopScreen} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
 import {alertErrorWithFallback} from '@utils/draft';
 import {showAddChannelMembersSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
-
-const close = () => {
-    Keyboard.dismiss();
-    popTopScreen();
-};
 
 const styles = StyleSheet.create({
     container: {
@@ -65,6 +62,7 @@ const messages = defineMessages({
 
 type Props = {
     channelId: string;
+    closeButtonId: string;
     componentId: string;
     currentTeamId: string;
     currentUserId: string;
@@ -85,8 +83,8 @@ function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
 }
 
 export default function ChannelAddPeople({
-    // componentId,
     channelId,
+    closeButtonId,
     componentId,
     currentTeamId,
     currentUserId,
@@ -119,6 +117,22 @@ export default function ChannelAddPeople({
 
     const isSearch = Boolean(term);
     const hasProfiles = useMemo(() => Boolean(profiles.length), [profiles]);
+
+    const close = () => {
+        const screens = NavigationStore.getScreensInStack();
+
+        if (screens.includes('BottomSheet')) {
+            // from ...
+            dismissModal({componentId});
+        } else {
+            // from Channel Info Screen
+            popTopScreen();
+        }
+
+        Keyboard.dismiss();
+    };
+
+    useNavButtonPressed(closeButtonId, componentId, close, [close]);
 
     const loadedProfiles = ({users}: {users: UserProfile[]}) => {
         if (mounted.current) {
