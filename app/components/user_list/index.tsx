@@ -79,9 +79,9 @@ export function createProfilesSections(intl: IntlShape, profiles: UserProfile[],
         profiles.forEach((p) => userDictionary.set(p.id, p));
         members.forEach((m) => {
             const sectionKey = sectionRoleKeyExtractor(intl, m.scheme_admin!);
-            const keyExists = channelAdminSections.get(sectionKey);
             const newProfileEntry = {...userDictionary.get(m.user_id), ...m};
-            const section = keyExists ? [...channelAdminSections.get(sectionKey), newProfileEntry] : [newProfileEntry];
+            const sectionValue = channelAdminSections.get(sectionKey) || [];
+            const section = [...sectionValue, newProfileEntry];
             channelAdminSections.set(sectionKey, section);
         });
         sections.set(section_title_admins, channelAdminSections.get(section_title_admins));
@@ -90,8 +90,8 @@ export function createProfilesSections(intl: IntlShape, profiles: UserProfile[],
         // when channel members are not provided, build the sections alphabetically
         profiles.forEach((p) => {
             const sectionKey = sectionKeyExtractor(p);
-            const keyExists = sections.get(sectionKey);
-            const section = keyExists ? [...sections.get(sectionKey), p] : [p];
+            const sectionValue = sections.get(sectionKey) || [];
+            const section = [...sectionValue, p];
             sections.set(sectionKey, section);
         });
     }
