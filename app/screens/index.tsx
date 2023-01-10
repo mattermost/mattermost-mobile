@@ -76,14 +76,23 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.BROWSE_CHANNELS:
             screen = withServerDatabase(require('@screens/browse_channels').default);
             break;
+        case Screens.CALL:
+            screen = withServerDatabase(require('@calls/screens/call_screen').default);
+            break;
         case Screens.CHANNEL:
             screen = withServerDatabase(require('@screens/channel').default);
             break;
         case Screens.CHANNEL_INFO:
             screen = withServerDatabase(require('@screens/channel_info').default);
             break;
+        case Screens.CHANNEL_MENTION:
+            screen = withServerDatabase(require('@screens/channel_mention').default);
+            break;
         case Screens.CODE:
             screen = withServerDatabase(require('@screens/code').default);
+            break;
+        case Screens.CREATE_DIRECT_MESSAGE:
+            screen = withServerDatabase(require('@screens/create_direct_message').default);
             break;
         case Screens.CREATE_OR_EDIT_CHANNEL:
             screen = withServerDatabase(require('@screens/create_or_edit_channel').default);
@@ -93,9 +102,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.CUSTOM_STATUS_CLEAR_AFTER:
             screen = withServerDatabase(require('@screens/custom_status_clear_after').default);
-            break;
-        case Screens.CREATE_DIRECT_MESSAGE:
-            screen = withServerDatabase(require('@screens/create_direct_message').default);
             break;
         case Screens.EDIT_POST:
             screen = withServerDatabase(require('@screens/edit_post').default);
@@ -121,11 +127,11 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.GLOBAL_THREADS:
             screen = withServerDatabase(require('@screens/global_threads').default);
             break;
-        case Screens.INTERACTIVE_DIALOG:
-            screen = withServerDatabase(require('@screens/interactive_dialog').default);
-            break;
         case Screens.INTEGRATION_SELECTOR:
             screen = withServerDatabase(require('@screens/integration_selector').default);
+            break;
+        case Screens.INTERACTIVE_DIALOG:
+            screen = withServerDatabase(require('@screens/interactive_dialog').default);
             break;
         case Screens.IN_APP_NOTIFICATION: {
             const notificationScreen = require('@screens/in_app_notification').default;
@@ -149,9 +155,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.MFA:
             screen = withIntl(require('@screens/mfa').default);
             break;
-        case Screens.SELECT_TEAM:
-            screen = withServerDatabase(require('@screens/select_team').default);
-            break;
         case Screens.PERMALINK:
             screen = withServerDatabase(require('@screens/permalink').default);
             break;
@@ -166,6 +169,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.REVIEW_APP:
             screen = withServerDatabase(require('@screens/review_app').default);
+            break;
+        case Screens.SELECT_TEAM:
+            screen = withServerDatabase(require('@screens/select_team').default);
             break;
         case Screens.SETTINGS:
             screen = withServerDatabase(require('@screens/settings').default);
@@ -238,9 +244,6 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.USER_PROFILE:
             screen = withServerDatabase(require('@screens/user_profile').default);
-            break;
-        case Screens.CALL:
-            screen = withServerDatabase(require('@calls/screens/call_screen').default);
             break;
     }
 
