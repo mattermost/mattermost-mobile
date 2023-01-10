@@ -182,10 +182,13 @@ extension Database {
         let sortedChainedPosts = chainAndSortPosts(postData)
         try insertOrUpdatePosts(db, sortedChainedPosts, channelId)
         let sortedAndNotDeletedPosts = sortedChainedPosts.filter({$0.delete_at == 0})
-        let earliest = sortedAndNotDeletedPosts.first!.create_at
-        let latest = sortedAndNotDeletedPosts.last!.create_at
+
         if (!receivingThreads) {
-            try handlePostsInChannel(db, channelId, earliest, latest, usedSince)
+            if !sortedAndNotDeletedPosts.isEmpty {
+                let earliest = sortedAndNotDeletedPosts.first!.create_at
+                let latest = sortedAndNotDeletedPosts.last!.create_at
+                try handlePostsInChannel(db, channelId, earliest, latest, usedSince)
+            }
 
             let lastFetchedAt = postData.posts.map({max($0.create_at, $0.update_at, $0.delete_at)}).max()
             try updateMyChannelLastFetchedAt(db, channelId, lastFetchedAt ?? 0)

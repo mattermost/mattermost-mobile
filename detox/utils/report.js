@@ -113,7 +113,7 @@ function generateStats(allTests) {
     const duration = allTests.duration;
     const start = allTests.start;
     const end = allTests.end;
-    const passes = tests - (skipped + failures + errors);
+    const passes = tests - (failures + errors);
     const passPercent = tests > 0 ? (passes / tests) * 100 : 0;
 
     return {

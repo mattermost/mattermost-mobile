@@ -39,7 +39,7 @@ commands:
     steps:
       - add_ssh_keys:
           fingerprints:
-            - "59:4d:99:5e:1c:6d:30:36:6d:60:76:88:ff:a7:ab:63"
+            - "03:1c:a7:07:35:bc:57:e4:1d:6c:e1:2c:4b:be:09:6d"
       - run:
           name: Clone the mobile private repo
           command: git clone git@github.com:mattermost/mattermost-mobile-private.git ~/mattermost-mobile-private

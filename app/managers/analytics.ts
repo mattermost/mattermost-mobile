@@ -28,7 +28,9 @@ export class Analytics {
     };
 
     async init(config: ClientConfig) {
-        this.analytics = require('@rudderstack/rudder-sdk-react-native').default;
+        if (LocalConfig.RudderApiKey) {
+            this.analytics = require('@rudderstack/rudder-sdk-react-native').default;
+        }
 
         if (this.analytics) {
             const {height, width} = Dimensions.get('window');
@@ -123,10 +125,18 @@ export class Analytics {
     }
 
     trackAPI(event: string, props?: any) {
+        if (!this.analytics) {
+            return;
+        }
+
         this.trackEvent('api', event, props);
     }
 
     trackCommand(event: string, command: string, errorMessage?: string) {
+        if (!this.analytics) {
+            return;
+        }
+
         const sanitizedCommand = this.sanitizeCommand(command);
         let props: any;
         if (errorMessage) {
@@ -139,6 +149,9 @@ export class Analytics {
     }
 
     trackAction(event: string, props?: any) {
+        if (!this.analytics) {
+            return;
+        }
         this.trackEvent('action', event, props);
     }
 
