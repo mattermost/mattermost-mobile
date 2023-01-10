@@ -27,8 +27,6 @@ type Props = {
 
 const styles = StyleSheet.create({
     container: {
-        height: 42,
-        width: 42,
         alignItems: 'center',
         justifyContent: 'center',
     },
@@ -37,6 +35,12 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         width: '100%',
         zIndex: 2,
+    },
+    tooltipStyle: {
+        shadowColor: '#000',
+        shadowOffset: {width: 0, height: 2},
+        shadowRadius: 2,
+        shadowOpacity: 0.16,
     },
 });
 
@@ -58,6 +62,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
     const tooltipContentStyle = useMemo(() => ({
         borderRadius: 8,
         maxWidth: isTablet ? 352 : undefined,
+        padding: 0,
     }), [isTablet]);
 
     const exiting = useCallback((values: ExitAnimationsValues) => {
@@ -138,6 +143,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
                 content={<SkinSelectorTooltip onClose={close}/>}
                 placement={isTablet ? 'left' : 'top'}
                 onClose={close}
+                tooltipStyle={styles.tooltipStyle}
             >
                 <Animated.View
                     style={widthAnimatedStyle}

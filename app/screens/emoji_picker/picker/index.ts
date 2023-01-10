@@ -3,12 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfigBooleanValue, observeRecentReactions} from '@queries/servers/system';
 
 import Picker from './picker';
@@ -19,10 +15,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     customEmojisEnabled: observeConfigBooleanValue(database, 'EnableCustomEmoji'),
     customEmojis: queryAllCustomEmojis(database).observe(),
     recentEmojis: observeRecentReactions(database),
-    skinTone: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_EMOJI, Preferences.EMOJI_SKINTONE).
-        observeWithColumns(['value']).pipe(
-            switchMap((prefs) => of$(prefs?.[0]?.value ?? 'default')),
-        ),
 }));
 
 export default withDatabase(enhanced(Picker));

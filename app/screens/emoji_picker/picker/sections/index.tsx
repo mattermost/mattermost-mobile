@@ -23,9 +23,10 @@ import SectionHeader, {SECTION_HEADER_HEIGHT} from './section_header';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
-export const EMOJI_SIZE = 42;
-export const EMOJIS_PER_ROW = 7;
-export const EMOJI_ROW_MARGIN = 12;
+const EMOJI_SIZE = 34;
+const EMOJIS_PER_ROW = 7;
+const EMOJIS_PER_ROW_TABLET = 9;
+const EMOJI_ROW_MARGIN = 12;
 
 const ICONS: Record<string, string> = {
     recent: 'clock-outline',
@@ -71,7 +72,6 @@ type Props = {
     customEmojisEnabled: boolean;
     onEmojiPress: (emoji: string) => void;
     recentEmojis: string[];
-    skinTone: string;
 }
 
 CategoryNames.forEach((name: string) => {
@@ -90,7 +90,7 @@ const emptyEmoji: EmojiAlias = {
     aliases: [],
 };
 
-const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, skinTone}: Props) => {
+const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis}: Props) => {
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const {currentIndex, selectedIndex} = useEmojiCategoryBar();
@@ -103,13 +103,15 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
     const manualScroll = useRef(false);
 
     const sections: EmojiSection[] = useMemo(() => {
+        const emojisPerRow = isTablet ? EMOJIS_PER_ROW_TABLET : EMOJIS_PER_ROW;
+
         return CategoryNames.map((category) => {
-            const emojiIndices = EmojiIndicesByCategory.get(skinTone)?.get(category);
+            const emojiIndices = EmojiIndicesByCategory.get('default')?.get(category);
 
             let data: EmojiAlias[][];
             switch (category) {
                 case 'custom': {
-                    const builtInCustom = emojiIndices.map(fillEmoji);
+                    const builtInCustom = emojiIndices.map(fillEmoji.bind(null, 'custom'));
 
                     // eslint-disable-next-line max-nested-callbacks
                     const custom = customEmojisEnabled ? customEmojis.map((ce) => ({
@@ -118,7 +120,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                         short_name: '',
                     })) : [];
 
-                    data = chunk<EmojiAlias>(builtInCustom.concat(custom), EMOJIS_PER_ROW);
+                    data = chunk<EmojiAlias>(builtInCustom.concat(custom), emojisPerRow);
                     break;
                 }
                 case 'recent':
@@ -130,14 +132,14 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                     })), EMOJIS_PER_ROW);
                     break;
                 default:
-                    data = chunk(emojiIndices.map(fillEmoji), EMOJIS_PER_ROW);
+                    data = chunk(emojiIndices.map(fillEmoji.bind(null, category)), emojisPerRow);
                     break;
             }
 
             for (const d of data) {
-                if (d.length < EMOJIS_PER_ROW) {
+                if (d.length < emojisPerRow) {
                     d.push(
-                        ...(new Array(EMOJIS_PER_ROW - d.length).fill(emptyEmoji)),
+                        ...(new Array(emojisPerRow - d.length).fill(emptyEmoji)),
                     );
                 }
             }
@@ -148,7 +150,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                 key: category,
             };
         }).filter((s: EmojiSection) => s.data.length);
-    }, [skinTone, customEmojis, customEmojisEnabled]);
+    }, [customEmojis, customEmojisEnabled, isTablet]);
 
     useEffect(() => {
         setEmojiCategoryBarIcons(sections.map((s) => ({
@@ -229,7 +231,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                             key={emoji.name}
                             name={emoji.name}
                             onEmojiPress={onEmojiPress}
-                            style={styles.emoji}
+                            category={emoji.category}
                         />
                     );
                 })}
@@ -251,7 +253,6 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
 
                 // @ts-expect-error bottom sheet definition
                 getItemLayout={getItemLayout}
-                initialNumToRender={20}
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='always'
                 ListFooterComponent={renderFooter}
@@ -263,7 +264,6 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                 renderSectionHeader={renderSectionHeader}
                 sections={sections}
                 contentContainerStyle={styles.contentContainerStyle}
-                windowSize={50}
                 stickySectionHeadersEnabled={true}
                 testID='emoji_picker.emoji_sections.section_list'
             />

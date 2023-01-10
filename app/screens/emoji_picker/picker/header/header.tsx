@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {LayoutChangeEvent, View} from 'react-native';
+import React, {useCallback, useEffect} from 'react';
+import {LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {useSharedValue} from 'react-native-reanimated';
 
 import SearchBar, {SearchProps} from '@components/search';
 import {useIsTablet} from '@hooks/device';
+import {setEmojiSkinTone} from '@hooks/emoji_category_bar';
 
 import BottomSheetSearch from './bottom_sheet_search';
 import SkinToneSelector from './skintone_selector';
@@ -15,10 +16,23 @@ type Props = SearchProps & {
     skinTone: string;
 }
 
+const styles = StyleSheet.create({
+    flex: {flex: 1},
+    row: {flexDirection: 'row'},
+});
+
 const PickerHeader = ({skinTone, ...props}: Props) => {
     const isTablet = useIsTablet();
     const containerWidth = useSharedValue(0);
     const isSearching = useSharedValue(false);
+
+    useEffect(() => {
+        const req = requestAnimationFrame(() => {
+            setEmojiSkinTone(skinTone);
+        });
+
+        return () => cancelAnimationFrame(req);
+    }, [skinTone]);
 
     const onBlur = useCallback(() => {
         isSearching.value = false;
@@ -54,9 +68,9 @@ const PickerHeader = ({skinTone, ...props}: Props) => {
     return (
         <View
             onLayout={onLayout}
-            style={{flexDirection: 'row'}}
+            style={styles.row}
         >
-            <View style={{flex: 1}}>
+            <View style={styles.flex}>
                 {search}
             </View>
             <SkinToneSelector

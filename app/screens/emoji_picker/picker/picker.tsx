@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
 import {useServerUrl} from '@context/server';
@@ -24,7 +24,6 @@ const styles = StyleSheet.create({
     },
     searchBar: {
         paddingBottom: 5,
-        marginRight: Platform.select({ios: 4, default: 12}),
     },
 });
 
@@ -33,11 +32,10 @@ type Props = {
     customEmojisEnabled: boolean;
     onEmojiPress: (emoji: string) => void;
     recentEmojis: string[];
-    skinTone: string;
     testID?: string;
 }
 
-const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, skinTone, testID = ''}: Props) => {
+const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, testID = ''}: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
     const [searchTerm, setSearchTerm] = useState<string|undefined>();
@@ -60,7 +58,6 @@ const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, 
         EmojiList = (
             <EmojiFiltered
                 customEmojis={customEmojis}
-                skinTone={skinTone}
                 searchTerm={searchTerm}
                 onEmojiPress={onEmojiPress}
             />
@@ -72,7 +69,6 @@ const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, 
                 customEmojisEnabled={customEmojisEnabled}
                 onEmojiPress={onEmojiPress}
                 recentEmojis={recentEmojis}
-                skinTone={skinTone}
             />
         );
     }
@@ -88,7 +84,6 @@ const Picker = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, 
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     onCancel={onCancelSearch}
                     onChangeText={onChangeSearchTerm}
-                    skinTone={skinTone}
                     testID={`${testID}.search_bar`}
                     value={searchTerm}
                 />

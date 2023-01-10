@@ -13,12 +13,14 @@ type EmojiCategoryBar = {
     currentIndex: number;
     selectedIndex?: number;
     icons?: EmojiCategoryBarIcon[];
+    skinTone: string;
 };
 
 const defaultState: EmojiCategoryBar = {
     icons: undefined,
     currentIndex: 0,
     selectedIndex: undefined,
+    skinTone: 'default',
 };
 
 const subject: BehaviorSubject<EmojiCategoryBar> = new BehaviorSubject(defaultState);
@@ -51,6 +53,14 @@ export const setEmojiCategoryBarIcons = (icons?: EmojiCategoryBarIcon[]) => {
     });
 };
 
+export const setEmojiSkinTone = (skinTone: string) => {
+    const prevState = getEmojiCategoryBarState();
+    subject.next({
+        ...prevState,
+        skinTone,
+    });
+};
+
 export const useEmojiCategoryBar = () => {
     const [state, setState] = useState(defaultState);
 
@@ -64,4 +74,20 @@ export const useEmojiCategoryBar = () => {
     }, []);
 
     return state;
+};
+
+export const useEmojiSkinTone = () => {
+    const [tone, setTone] = useState(defaultState.skinTone);
+
+    useEffect(() => {
+        const sub = subject.subscribe((state) => {
+            setTone(state.skinTone);
+        });
+
+        return () => {
+            sub.unsubscribe();
+        };
+    }, []);
+
+    return tone;
 };

@@ -15,7 +15,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'space-between',
         backgroundColor: theme.centerChannelBg,
         height: 55,
-        paddingHorizontal: 20,
+        paddingHorizontal: 12,
         paddingTop: 11,
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.08),
         borderTopWidth: 1,

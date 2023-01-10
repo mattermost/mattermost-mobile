@@ -24,7 +24,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'center',
     },
     icon: {
-        color: changeOpacity(theme.centerChannelColor, 0.4),
+        color: changeOpacity(theme.centerChannelColor, 0.56),
     },
     selectedContainer: {
         backgroundColor: changeOpacity(theme.buttonBg, 0.08),
@@ -46,7 +46,7 @@ const EmojiCategoryBarIcon = ({currentIndex, icon, index, scrollToIndex, theme}:
         >
             <CompassIcon
                 name={icon}
-                size={24}
+                size={20}
                 style={[style.icon, currentIndex === index ? style.selected : undefined]}
             />
         </TouchableOpacity>
