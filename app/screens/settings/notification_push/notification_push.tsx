@@ -73,19 +73,23 @@ const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotif
                 sendPushNotifications={sendPushNotifications}
                 setMobilePushPref={setPushSend}
             />
-            {Platform.OS === 'android' && (<SettingSeparator isGroupSeparator={true}/>)}
             {isCRTEnabled && pushSend === 'mention' && (
-                <MobilePushThread
-                    pushThread={pushThread}
-                    onMobilePushThreadChanged={onMobilePushThreadChanged}
-                />
+                <>
+                    {Platform.OS === 'android' && (<SettingSeparator isGroupSeparator={true}/>)}
+                    <MobilePushThread
+                        pushThread={pushThread}
+                        onMobilePushThreadChanged={onMobilePushThreadChanged}
+                    />
+                </>
             )}
-            {Platform.OS === 'android' && (<SettingSeparator isGroupSeparator={true}/>)}
             {sendPushNotifications && pushSend !== 'none' && (
-                <MobilePushStatus
-                    pushStatus={pushStatus}
-                    setMobilePushStatus={setPushStatus}
-                />
+                <>
+                    {Platform.OS === 'android' && (<SettingSeparator isGroupSeparator={true}/>)}
+                    <MobilePushStatus
+                        pushStatus={pushStatus}
+                        setMobilePushStatus={setPushStatus}
+                    />
+                </>
             )}
         </SettingContainer>
     );
