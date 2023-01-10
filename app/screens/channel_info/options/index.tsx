@@ -9,6 +9,7 @@ import {isTypeDMorGM} from '@utils/channel';
 
 import EditChannel from './edit_channel';
 import IgnoreMentions from './ignore_mentions';
+import NotificationPreference from './notification_preference';
 import PinnedMessages from './pinned_messages';
 
 // import Members from './members';
@@ -27,7 +28,7 @@ const Options = ({channelId, type, callsEnabled}: Props) => {
             {type !== General.DM_CHANNEL &&
                 <IgnoreMentions channelId={channelId}/>
             }
-            {/*<NotificationPreference channelId={channelId}/>*/}
+            <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
             {/* Add back in after MM-47653 is resolved. https://mattermost.atlassian.net/browse/MM-47653
             {type !== General.DM_CHANNEL &&

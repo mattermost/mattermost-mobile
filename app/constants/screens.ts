@@ -161,6 +161,5 @@ export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
 
 export const NOT_READY = [
     CHANNEL_ADD_PEOPLE,
-    CHANNEL_MENTION,
     CREATE_TEAM,
 ];
