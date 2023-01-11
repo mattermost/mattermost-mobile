@@ -66,26 +66,21 @@ export function createProfilesSections(intl: IntlShape, profiles: UserProfile[],
         return [];
     }
 
-    const section_title_members = intl.formatMessage(messages.members);
-    const section_title_admins = intl.formatMessage(messages.admins);
-
-    const userDictionary = new Map();
-    const channelAdminSections = new Map();
+    const membersDictionary = new Map();
     const sections = new Map();
 
     if (members?.length) {
         // when channel members are provided, build the sections by admins and members
-        // combine UserProfile and ChannelMember objects so can get channel member scheme_admin permission
-        profiles.forEach((p) => userDictionary.set(p.id, p));
-        members.forEach((m) => {
-            const sectionKey = sectionRoleKeyExtractor(intl, m.scheme_admin!);
-            const newProfileEntry = {...userDictionary.get(m.user_id), ...m};
-            const sectionValue = channelAdminSections.get(sectionKey) || [];
-            const section = [...sectionValue, newProfileEntry];
-            channelAdminSections.set(sectionKey, section);
+        members.forEach((m) => membersDictionary.set(m.user_id, m));
+        profiles.forEach((p) => {
+            const member = membersDictionary.get(p.id);
+            const sectionKey = sectionRoleKeyExtractor(intl, member.scheme_admin!);
+            const sectionValue = sections.get(sectionKey) || [];
+
+            // combine UserProfile and ChannelMember objects so can get channel member scheme_admin permission
+            const section = [...sectionValue, {...p, ...member}];
+            sections.set(sectionKey, section);
         });
-        sections.set(section_title_admins, channelAdminSections.get(section_title_admins));
-        sections.set(section_title_members, channelAdminSections.get(section_title_members));
     } else {
         // when channel members are not provided, build the sections alphabetically
         profiles.forEach((p) => {

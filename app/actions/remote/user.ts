@@ -198,7 +198,7 @@ export async function fetchProfilesPerChannels(serverUrl: string, channelIds: st
         const data: ProfilesInChannelRequest[] = [];
 
         for await (const cIds of channels) {
-            const requests = cIds.map((id) => fetchProfilesInChannel(serverUrl, id, excludeUserId, {}, true));
+            const requests = cIds.map((id) => fetchProfilesInChannel(serverUrl, id, excludeUserId, undefined, true));
             const response = await Promise.all(requests);
             data.push(...response);
         }
