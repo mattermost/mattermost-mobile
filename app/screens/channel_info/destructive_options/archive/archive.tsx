@@ -64,7 +64,7 @@ const Archive = ({
         const message = canViewArchivedChannels ? {
             id: t('channel_info.archive_description.can_view_archived'),
             defaultMessage: 'This will archive the channel from the team. Channel contents will still be accessible by channel members.\n\nAre you sure you wish to archive the {term} {name}?',
-        }: {
+        } : {
             id: t('channel_info.archive_description.cannot_view_archived'),
             defaultMessage: 'This will archive the channel from the team and remove it from the user interface. Archived channels can be unarchived if needed again.\n\nAre you sure you wish to archive the {term} {name}?',
         };
