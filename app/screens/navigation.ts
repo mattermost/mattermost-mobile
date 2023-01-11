@@ -219,11 +219,7 @@ Appearance.addChangeListener(() => {
 });
 
 export function getThemeFromState(): Theme {
-    if (EphemeralStore.theme) {
-        return EphemeralStore.theme;
-    }
-
-    return getDefaultThemeByAppearance();
+    return EphemeralStore.theme || getDefaultThemeByAppearance();
 }
 
 // This is a temporary helper function to avoid
