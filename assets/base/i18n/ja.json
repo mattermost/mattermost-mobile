@@ -267,7 +267,6 @@
     "mobile.post.delete_title": "投稿を削除する",
     "mobile.post.failed_delete": "メッセージを削除",
     "mobile.post.failed_retry": "再実行",
-    "mobile.posts_view.moreMsg": "さらに新しいメッセージがあります",
     "mobile.privacy_link": "プライバシーポリシー",
     "mobile.push_notification_reply.button": "送信する",
     "mobile.push_notification_reply.placeholder": "返信を記述してください...",

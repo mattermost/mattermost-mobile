@@ -267,7 +267,6 @@
     "mobile.post.delete_title": "Delete Post",
     "mobile.post.failed_delete": "Delete Message",
     "mobile.post.failed_retry": "Try Again",
-    "mobile.posts_view.moreMsg": "More New Messages Above",
     "mobile.privacy_link": "Privacy Policy",
     "mobile.push_notification_reply.button": "Send",
     "mobile.push_notification_reply.placeholder": "Write a reply...",
