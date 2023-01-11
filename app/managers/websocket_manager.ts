@@ -30,12 +30,12 @@ class WebsocketManager {
     private connectionTimerIDs: Record<string, DebouncedFunc<() => void>> = {};
     private isBackgroundTimerRunning = false;
     private netConnected = false;
-    private previousAppState: AppStateStatus;
+    private previousActiveState: boolean;
     private statusUpdatesIntervalIDs: Record<string, NodeJS.Timer> = {};
     private backgroundIntervalId: number | undefined;
 
     constructor() {
-        this.previousAppState = AppState.currentState;
+        this.previousActiveState = AppState.currentState === 'active';
     }
 
     public init = async (serverCredentials: ServerCredential[]) => {
@@ -169,12 +169,12 @@ class WebsocketManager {
     };
 
     private onWebsocketClose = async (serverUrl: string, connectFailCount: number, lastDisconnect: number) => {
+        this.getConnectedSubject(serverUrl).next('not_connected');
         if (connectFailCount <= 1) { // First fail
             await setCurrentUserStatusOffline(serverUrl);
             await handleClose(serverUrl, lastDisconnect);
 
             this.stopPeriodicStatusUpdates(serverUrl);
-            this.getConnectedSubject(serverUrl).next('not_connected');
         }
     };
 
@@ -210,14 +210,15 @@ class WebsocketManager {
     }
 
     private onAppStateChange = async (appState: AppStateStatus) => {
-        if (appState === this.previousAppState) {
+        const isActive = appState === 'active';
+        if (isActive === this.previousActiveState) {
             return;
         }
 
         const isMain = isMainActivity();
 
         this.cancelAllConnections();
-        if (appState !== 'active' && !this.isBackgroundTimerRunning) {
+        if (!isActive && !this.isBackgroundTimerRunning) {
             this.isBackgroundTimerRunning = true;
             this.cancelAllConnections();
             this.backgroundIntervalId = BackgroundTimer.setInterval(() => {
@@ -226,22 +227,22 @@ class WebsocketManager {
                 this.isBackgroundTimerRunning = false;
             }, WAIT_TO_CLOSE);
 
-            this.previousAppState = appState;
+            this.previousActiveState = isActive;
             return;
         }
 
-        if (appState === 'active' && this.netConnected && isMain) { // Reopen the websockets only if there is connection
+        if (isActive && this.netConnected && isMain) { // Reopen the websockets only if there is connection
             if (this.backgroundIntervalId) {
                 BackgroundTimer.clearInterval(this.backgroundIntervalId);
             }
             this.isBackgroundTimerRunning = false;
             this.openAll();
-            this.previousAppState = appState;
+            this.previousActiveState = isActive;
             return;
         }
 
         if (isMain) {
-            this.previousAppState = appState;
+            this.previousActiveState = isActive;
         }
     };
 
@@ -253,7 +254,7 @@ class WebsocketManager {
 
         this.netConnected = newState;
 
-        if (this.netConnected && this.previousAppState === 'active') { // Reopen the websockets only if the app is active
+        if (this.netConnected && this.previousActiveState) { // Reopen the websockets only if the app is active
             this.openAll();
             return;
         }
