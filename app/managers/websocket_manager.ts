@@ -81,6 +81,7 @@ class WebsocketManager {
 
         //client.setMissedEventsCallback(() => {}) Nothing to do on missedEvents callback
         client.setReconnectCallback(() => this.onReconnect(serverUrl));
+        client.setReliableReconnectCallback(() => this.onReliableReconnect(serverUrl));
         client.setCloseCallback((connectFailCount: number, lastDisconnect: number) => this.onWebsocketClose(serverUrl, connectFailCount, lastDisconnect));
 
         if (this.netConnected && ['unknown', 'active'].includes(AppState.currentState)) {
@@ -153,13 +154,17 @@ class WebsocketManager {
 
     private onFirstConnect = (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
-        handleFirstConnect(serverUrl);
         this.getConnectedSubject(serverUrl).next('connected');
+        handleFirstConnect(serverUrl);
     };
 
     private onReconnect = async (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
+        this.getConnectedSubject(serverUrl).next('connected');
         await handleReconnect(serverUrl);
+    };
+
+    private onReliableReconnect = async (serverUrl: string) => {
         this.getConnectedSubject(serverUrl).next('connected');
     };
 
