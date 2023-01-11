@@ -41,21 +41,29 @@ const NOTIFY_OPTIONS: Record<string, NotifPrefOptions> = {
         testID: 'channel_notification_preference.notification.none',
         value: NotificationLevel.NONE,
     },
+    THREAD_REPLIES: {
+        defaultMessage: 'Notify me about replies to threads I’m following in this channel',
+        id: t('channel_notification_preference.notification.thread_replies'),
+        testID: 'channel_notification_preference.notification.thread_replies',
+        value: 'thread_replies',
+    },
 };
 const NOTIFY_ABOUT = {id: t('channel_notification_preference.notify_about'), defaultMessage: 'Notify me about...'};
+const THREAD_REPLIES = {id: t('channel_notification_preference.thread_replies'), defaultMessage: 'Thread replies'};
 
 type ChannelNotificationPreferenceProps = {
     componentId: string;
-    notifyLevel: string;
+    notifyLevel?: NotificationLevel;
 
     isCRTEnabled: boolean;
 
 };
-const ChannelNotificationPreference = ({componentId, notifyLevel}: ChannelNotificationPreferenceProps) => {
+const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}: ChannelNotificationPreferenceProps) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
 
     const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(notifyLevel);
+    const [threadReplies, setThreadReplies] = useState<boolean>(false); // TODO: get from server
     const close = () => popTopScreen(componentId);
 
     const canSaveSettings = useCallback(() => notifyAbout !== notifyLevel, [notifyAbout, notifyLevel]);
@@ -78,7 +86,6 @@ const ChannelNotificationPreference = ({componentId, notifyLevel}: ChannelNotifi
             <SettingBlock
                 headerText={NOTIFY_ABOUT}
             >
-
                 { Object.keys(NOTIFY_OPTIONS).map((k: string) => {
                     const {id, defaultMessage, value, testID} = NOTIFY_OPTIONS[k];
                     return (
@@ -98,6 +105,23 @@ const ChannelNotificationPreference = ({componentId, notifyLevel}: ChannelNotifi
                 })
                 }
             </SettingBlock>
+            {isCRTEnabled && (
+                <SettingBlock
+                    headerText={THREAD_REPLIES}
+                >
+                    <SettingOption
+                        action={setThreadReplies}
+                        key='notif_pref_option_thread_replies'
+                        label={intl.formatMessage({
+                            id: NOTIFY_OPTIONS.THREAD_REPLIES.id,
+                            defaultMessage: NOTIFY_OPTIONS.THREAD_REPLIES.defaultMessage,
+                        })}
+                        testID={NOTIFY_OPTIONS.THREAD_REPLIES.testID}
+                        type='toggle'
+                        value={`${threadReplies}`}
+                    />
+                    <SettingSeparator/>
+                </SettingBlock>)}
         </SettingContainer>
     );
 };
