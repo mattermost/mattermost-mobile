@@ -22,6 +22,7 @@ import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
+import {beforeUpgrade} from '@helpers/database/upgrade';
 import {getActiveServer, getServer, getServerByIdentifier} from '@queries/app/servers';
 import {querySystemValue} from '@queries/servers/system';
 import {deleteLegacyFileCache} from '@utils/file';
@@ -63,14 +64,17 @@ class DatabaseManager {
     */
     public init = async (serverUrls: string[]): Promise<void> => {
         await this.createAppDatabase();
+        const buildNumber = DeviceInfo.getBuildNumber();
+        const versionNumber = DeviceInfo.getVersion();
+        await beforeUpgrade.call(this, serverUrls, versionNumber, buildNumber);
         for await (const serverUrl of serverUrls) {
             await this.initServerDatabase(serverUrl);
         }
         this.appDatabase?.operator.handleInfo({
             info: [{
-                build_number: DeviceInfo.getBuildNumber(),
+                build_number: buildNumber,
                 created_at: Date.now(),
-                version_number: DeviceInfo.getVersion(),
+                version_number: versionNumber,
             }],
             prepareRecordsOnly: false,
         });
@@ -428,7 +432,7 @@ class DatabaseManager {
     */
     private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
         const databaseName = urlSafeBase64Encode(serverUrl);
-        this.deleteServerDatabaseFilesByName(databaseName);
+        return this.deleteServerDatabaseFilesByName(databaseName);
     };
 
     /**
@@ -439,7 +443,7 @@ class DatabaseManager {
     private deleteServerDatabaseFilesByName = async (databaseName: string): Promise<void> => {
         if (Platform.OS === 'ios') {
             // On iOS, we'll delete the *.db file under the shared app-group/databases folder
-            deleteIOSDatabase({databaseName});
+            await deleteIOSDatabase({databaseName});
             return;
         }
 
@@ -449,14 +453,15 @@ class DatabaseManager {
         const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
         const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
 
-        FileSystem.unlink(databaseFile).catch(emptyFunction);
-        FileSystem.unlink(databaseShm).catch(emptyFunction);
-        FileSystem.unlink(databaseWal).catch(emptyFunction);
+        await FileSystem.unlink(databaseFile).catch(emptyFunction);
+        await FileSystem.unlink(databaseShm).catch(emptyFunction);
+        await FileSystem.unlink(databaseWal).catch(emptyFunction);
     };
 
     /**
-    * deleteServerDatabaseFilesByName: Removes the *.db file from the App-Group directory for iOS or the files directory for Android, given the database name
+    * renameDatabase: Renames the *.db file from the App-Group directory for iOS or the files directory for Android
     * @param {string} databaseName
+    * @param {string} newDBName
     * @returns {Promise<void>}
     */
     private renameDatabase = async (databaseName: string, newDBName: string): Promise<void> => {
