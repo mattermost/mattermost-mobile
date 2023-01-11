@@ -432,6 +432,7 @@ jobs:
           task: "Deploy to Google Play"
           target: android
           file: "*.apk"
+          env: "SUPPLY_TRACK=beta"
 
   deploy-android-beta:
     executor:
@@ -451,6 +452,7 @@ jobs:
           task: "Deploy to TestFlight"
           target: ios
           file: "*.ipa"
+          env: ""
 
   deploy-ios-beta:
     executor: ios
