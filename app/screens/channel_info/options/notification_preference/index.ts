@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeChannelSettings} from '@queries/servers/channel';
+import {observeChannel, observeChannelSettings} from '@queries/servers/channel';
 
 import NotificationPreference from './notification_preference';
 
@@ -21,8 +21,11 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     const notifyLevel = settings.pipe(
         switchMap((s) => of$(s?.notifyProps.push)),
     );
+    const channel = observeChannel(database, channelId);
+    const displayName = channel.pipe(switchMap((c) => of$(c?.displayName)));
 
     return {
+        displayName,
         notifyLevel,
     };
 });
