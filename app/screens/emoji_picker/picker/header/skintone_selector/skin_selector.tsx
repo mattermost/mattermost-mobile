@@ -22,7 +22,6 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        height: 42,
         width: 42,
         alignItems: 'center',
         justifyContent: 'center',

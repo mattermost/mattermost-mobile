@@ -27,6 +27,7 @@ const EMOJI_SIZE = 34;
 const EMOJIS_PER_ROW = 7;
 const EMOJIS_PER_ROW_TABLET = 9;
 const EMOJI_ROW_MARGIN = 12;
+const scrollIndicatorInsets = {right: -4};
 
 const ICONS: Record<string, string> = {
     recent: 'clock-outline',
@@ -265,6 +266,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                 sections={sections}
                 contentContainerStyle={styles.contentContainerStyle}
                 stickySectionHeadersEnabled={true}
+                scrollIndicatorInsets={scrollIndicatorInsets}
                 testID='emoji_picker.emoji_sections.section_list'
             />
             {isTablet &&
