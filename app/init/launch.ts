@@ -27,7 +27,7 @@ const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, Pu
 export const initialLaunch = async () => {
     const deepLinkUrl = await Linking.getInitialURL();
     if (deepLinkUrl) {
-        launchAppFromDeepLink(deepLinkUrl, true);
+        await launchAppFromDeepLink(deepLinkUrl, true);
         return;
     }
 
@@ -43,21 +43,21 @@ export const initialLaunch = async () => {
         tapped = delivered.find((d) => (d as unknown as NotificationData).ack_id === notification?.payload.ack_id) == null;
     }
     if (initialNotificationTypes.includes(notification?.payload?.type) && tapped) {
-        launchAppFromNotification(convertToNotificationData(notification!), true);
+        await launchAppFromNotification(convertToNotificationData(notification!), true);
         return;
     }
 
-    launchApp({launchType: Launch.Normal, coldStart: true});
+    await launchApp({launchType: Launch.Normal, coldStart: true});
 };
 
-const launchAppFromDeepLink = (deepLinkUrl: string, coldStart = false) => {
+const launchAppFromDeepLink = async (deepLinkUrl: string, coldStart = false) => {
     const props = getLaunchPropsFromDeepLink(deepLinkUrl, coldStart);
-    launchApp(props);
+    return launchApp(props);
 };
 
 const launchAppFromNotification = async (notification: NotificationWithData, coldStart = false) => {
     const props = await getLaunchPropsFromNotification(notification, coldStart);
-    launchApp(props);
+    return launchApp(props);
 };
 
 /**
