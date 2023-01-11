@@ -85,7 +85,7 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
         const screen = Screens.CODE;
         const passProps = {
             code: content,
-            language,
+            language: getHighlightLanguageFromNameOrAlias(language),
             textStyle,
         };
 
