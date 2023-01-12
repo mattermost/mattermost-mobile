@@ -130,7 +130,7 @@ export async function getMemberInChannel(serverUrl: string, channelId: string, u
     }
 }
 
-export async function fetchChannelMemberships(serverUrl: string, channelId: string, options = {}, fetchOnly = false) {
+export async function fetchChannelMemberships(serverUrl: string, channelId: string, options: GetUsersOptions, fetchOnly = false) {
     const {users = []} = await fetchProfilesInChannel(serverUrl, channelId, undefined, options, fetchOnly);
     const userIds = users.map((u) => u.id);
 
