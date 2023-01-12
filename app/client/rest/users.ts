@@ -24,7 +24,7 @@ export interface ClientUsersMix {
     getProfilesInTeam: (teamId: string, page?: number, perPage?: number, sort?: string, options?: Record<string, any>) => Promise<UserProfile[]>;
     getProfilesNotInTeam: (teamId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getProfilesWithoutTeam: (page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
-    getProfilesInChannel: (channelId: string, page?: number, perPage?: number, options?: Record<string, any>) => Promise<UserProfile[]>;
+    getProfilesInChannel: (channelId: string, options?: GetUsersOptions) => Promise<UserProfile[]>;
     getProfilesInGroupChannels: (channelsIds: string[]) => Promise<{[x: string]: UserProfile[]}>;
     getProfilesNotInChannel: (teamId: string, channelId: string, groupConstrained: boolean, page?: number, perPage?: number) => Promise<UserProfile[]>;
     getMe: () => Promise<UserProfile>;
@@ -37,7 +37,7 @@ export interface ClientUsersMix {
     getSessions: (userId: string) => Promise<Session[]>;
     checkUserMfa: (loginId: string) => Promise<{mfa_required: boolean}>;
     attachDevice: (deviceId: string) => Promise<any>;
-    searchUsers: (term: string, options: any) => Promise<UserProfile[]>;
+    searchUsers: (term: string, options: SearchUserOptions) => Promise<UserProfile[]>;
     getStatusesByIds: (userIds: string[]) => Promise<UserStatus[]>;
     getStatus: (userId: string) => Promise<UserStatus>;
     updateStatus: (status: UserStatus) => Promise<UserStatus>;
@@ -250,10 +250,10 @@ const ClientUsers = (superclass: any) => class extends superclass {
         );
     };
 
-    getProfilesInChannel = async (channelId: string, page = 0, perPage = PER_PAGE_DEFAULT, options = {}) => {
+    getProfilesInChannel = async (channelId: string, options: GetUsersOptions) => {
         this.analytics.trackAPI('api_profiles_get_in_channel', {channel_id: channelId});
 
-        const queryStringObj = {in_channel: channelId, page, per_page: perPage, ...options};
+        const queryStringObj = {in_channel: channelId, ...options};
         return this.doFetch(
             `${this.getUsersRoute()}${buildQueryString(queryStringObj)}`,
             {method: 'get'},

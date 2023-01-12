@@ -110,3 +110,21 @@ type SearchUserOptions = {
 	limit?: string;
 };
 
+type GetUsersOptions = {
+    page?: number;
+    per_page?: number;
+	in_team?: string;
+	not_in_team?: string;
+	in_channel?: string;
+	not_in_channel?: string;
+	in_group?: string;
+	group_constrained?: boolean;
+	without_team?: boolean;
+	active?: boolean;
+	inactive?: boolean;
+	role?: string;
+	sort?: string;
+	roles?: string;
+	channel_roles?: string;
+	team_roles?: string;
+};

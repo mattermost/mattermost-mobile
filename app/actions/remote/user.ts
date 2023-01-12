@@ -74,7 +74,7 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
     }
 };
 
-export async function fetchProfilesInChannel(serverUrl: string, channelId: string, excludeUserId?: string, options = {}, fetchOnly = false): Promise<ProfilesInChannelRequest> {
+export async function fetchProfilesInChannel(serverUrl: string, channelId: string, excludeUserId?: string, options?: GetUsersOptions, fetchOnly = false): Promise<ProfilesInChannelRequest> {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -83,7 +83,7 @@ export async function fetchProfilesInChannel(serverUrl: string, channelId: strin
     }
 
     try {
-        const users = await client.getProfilesInChannel(channelId, undefined, undefined, options);
+        const users = await client.getProfilesInChannel(channelId, options);
         const uniqueUsers = Array.from(new Set(users));
         const filteredUsers = uniqueUsers.filter((u) => u.id !== excludeUserId);
         if (!fetchOnly) {
