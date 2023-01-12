@@ -778,7 +778,7 @@
     "display_settings.clock.military": "24 horas",
     "custom_status.suggestions.title": "Sugerencias",
     "custom_status.suggestions.recent_title": "Reciente",
-    "custom_status.set_status": "Asignar un estado",
+    "custom_status.set_status": "Establecer un estado personalizado",
     "create_post.thread_reply": "Responder a este hilo...",
     "create_direct_message.title": "Crear Mensaje Directo",
     "channel_modal.makePrivate.label": "Hacer privado",
@@ -836,5 +836,13 @@
     "post_priority.picker.label.important": "Importante",
     "post_priority.picker.beta": "BETA",
     "mobile.integration_selector.loading_options": "Cargando opciones...",
-    "mobile.integration_selector.loading_channels": "Cargando canales..."
+    "mobile.integration_selector.loading_channels": "Cargando canales...",
+    "extension.no_memberships.title": "Aún no es miembro de ningún equipo",
+    "extension.no_memberships.description": "Para compartir contenidos, tendrás que ser miembro de un equipo en un servidor Mattermost.",
+    "connection_banner.not_reachable": "No se puede acceder al servidor",
+    "connection_banner.not_connected": "Sin conexión a Internet",
+    "connection_banner.connecting": "Conectando...",
+    "connection_banner.connected": "Conexión restablecida",
+    "announcment_banner.okay": "Vale",
+    "announcment_banner.dismiss": "Desestimar anuncio"
 }
