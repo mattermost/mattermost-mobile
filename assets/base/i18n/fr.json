@@ -850,5 +850,9 @@
     "server.websocket.unreachable": "Le serveur est inaccessible.",
     "server.tutorial.swipe": "Balayez vers la gauche sur un serveur pour voir d'autres actions",
     "server.remove.alert_description": "Il sera supprimé de la liste des serveurs. Toutes les données associées seront supprimées",
-    "server_upgrade.dismiss": "Masquer"
+    "server_upgrade.dismiss": "Masquer",
+    "settings.about.version": "Version de l'application :",
+    "settings.about.serverVersionNoBuild": "{version}",
+    "settings.about.server.version.value": "{version} (Build {number})",
+    "settings.about.server.version.desc": "Version du serveur :"
 }
