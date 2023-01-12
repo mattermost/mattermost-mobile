@@ -475,12 +475,17 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
     });
 }
 
-export function popTopScreen(screenId?: string) {
-    if (screenId) {
-        Navigation.pop(screenId);
-    } else {
-        const componentId = NavigationStore.getVisibleScreen();
-        Navigation.pop(componentId);
+export async function popTopScreen(screenId?: string) {
+    try {
+        if (screenId) {
+            await Navigation.pop(screenId);
+        } else {
+            const componentId = NavigationStore.getVisibleScreen();
+            await Navigation.pop(componentId);
+        }
+    } catch (error) {
+        // RNN returns a promise rejection if there are no screens
+        // atop the root screen to pop. We'll do nothing in this case.
     }
 }
 
