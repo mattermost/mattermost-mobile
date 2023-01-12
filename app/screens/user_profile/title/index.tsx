@@ -5,7 +5,6 @@ import {useIntl} from 'react-intl';
 import {Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
-import FormattedText from '@components/formatted_text';
 import {GalleryInit} from '@context/gallery';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -26,19 +25,18 @@ import type {GalleryItemType} from '@typings/screens/gallery';
 type Props = {
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
+    headerText?: string;
+    imageSize?: number;
     isChannelAdmin: boolean;
     isSystemAdmin: boolean;
     isTeamAdmin: boolean;
-    manageMode?: boolean;
     teammateDisplayName: string;
     user: UserModel;
     userIconOverride?: string;
     usernameOverride?: string;
 }
 
-const MANAGE_ICON_HEIGHT = 72;
-export const MANAGE_TITLE_MARGIN = 22;
-export const MANAGE_TITLE_HEIGHT = 30;
+export const HEADER_TEXT_HEIGHT = 30;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -58,9 +56,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.64),
         ...typography('Body', 200),
     },
-    title: {
+    heading: {
+        height: HEADER_TEXT_HEIGHT,
         color: theme.centerChannelColor,
-        marginBottom: MANAGE_TITLE_MARGIN,
+        marginBottom: 20,
         ...typography('Heading', 600, 'SemiBold'),
     },
     tablet: {
@@ -69,8 +68,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const UserProfileTitle = ({
-    enablePostIconOverride, enablePostUsernameOverride,
-    isChannelAdmin, isSystemAdmin, isTeamAdmin, manageMode,
+    enablePostIconOverride, enablePostUsernameOverride, headerText,
+    imageSize, isChannelAdmin, isSystemAdmin, isTeamAdmin,
     teammateDisplayName, user, userIconOverride, usernameOverride,
 }: Props) => {
     const galleryIdentifier = `${user.id}-avatarPreview`;
@@ -80,7 +79,6 @@ const UserProfileTitle = ({
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
     const override = enablePostUsernameOverride && usernameOverride;
-    const imageSize = manageMode ? MANAGE_ICON_HEIGHT : undefined;
 
     let displayName: string;
     if (override) {
@@ -130,13 +128,13 @@ const UserProfileTitle = ({
 
     return (
         <>
-            {manageMode &&
-                <FormattedText
-                    id={'mobile.manage_members.manage_member'}
-                    defaultMessage={'Manage member'}
-                    style={styles.title}
-                    testID='user_profile.manage_title'
-                />
+            {headerText &&
+                <Text
+                    style={styles.heading}
+                    testID='user_profile.heading'
+                >
+                    {headerText}
+                </Text>
             }
             <View style={[styles.container, isTablet && styles.tablet]}>
                 <GalleryInit galleryIdentifier={galleryIdentifier}>
@@ -145,7 +143,7 @@ const UserProfileTitle = ({
                             <UserProfileAvatar
                                 forwardRef={ref}
                                 enablePostIconOverride={enablePostIconOverride}
-                                imageSize={imageSize}
+                                imageSize={imageSize || undefined}
                                 user={user}
                                 userIconOverride={userIconOverride}
                             />

@@ -4,20 +4,20 @@
 import moment from 'moment';
 import mtz from 'moment-timezone';
 import React, {useEffect, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {getLocaleFromLanguage} from '@i18n';
+import {getLocaleFromLanguage, t} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import ManageUserOptions, {DIVIDER_MARGIN} from './manage_user_options';
 import UserProfileOptions, {OptionsType} from './options';
-import UserProfileTitle, {MANAGE_TITLE_HEIGHT, MANAGE_TITLE_MARGIN} from './title';
+import UserProfileTitle, {HEADER_TEXT_HEIGHT} from './title';
 import UserInfo from './user_info';
 
 import type UserModel from '@typings/database/models/servers/user';
@@ -50,6 +50,14 @@ const OPTIONS_HEIGHT = 82;
 const SINGLE_OPTION_HEIGHT = 68;
 const LABEL_HEIGHT = 58;
 const EXTRA_HEIGHT = 60;
+const MANAGE_ICON_HEIGHT = 72;
+
+const messages = defineMessages({
+    manageMember: {
+        id: t('mobile.manage_members.manage_member'),
+        defaultMessage: 'Manage member',
+    },
+});
 
 const UserProfile = ({
     channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
@@ -57,7 +65,7 @@ const UserProfile = ({
     isSystemAdmin, isTeamAdmin, location, manageMode = false, teamId, teammateDisplayName,
     user, userIconOverride, usernameOverride,
 }: Props) => {
-    const {locale} = useIntl();
+    const {formatMessage, locale} = useIntl();
     const serverUrl = useServerUrl();
     const {bottom} = useSafeAreaInsets();
     const channelContext = [Screens.CHANNEL, Screens.THREAD].includes(location);
@@ -83,8 +91,15 @@ const UserProfile = ({
     const showPosition = Boolean(user.position) && !override && !user.isBot && !manageMode;
     const showLocalTime = Boolean(localTime) && !override && !user.isBot && !manageMode;
 
+    const headerText = manageMode ? formatMessage(messages.manageMember) : undefined;
+
     const snapPoints = useMemo(() => {
         let title = TITLE_HEIGHT;
+
+        if (headerText) {
+            title += HEADER_TEXT_HEIGHT;
+        }
+
         if (showUserProfileOptions) {
             title += showOptions === 'all' ? OPTIONS_HEIGHT : SINGLE_OPTION_HEIGHT;
         }
@@ -99,7 +114,6 @@ const UserProfile = ({
         }, 0);
 
         if (manageMode) {
-            title += MANAGE_TITLE_HEIGHT + MANAGE_TITLE_MARGIN;
             title += DIVIDER_MARGIN * 2;
             if (canManageMembers) {
                 title += SINGLE_OPTION_HEIGHT; // roles button
@@ -130,10 +144,11 @@ const UserProfile = ({
                 <UserProfileTitle
                     enablePostIconOverride={enablePostIconOverride}
                     enablePostUsernameOverride={enablePostUsernameOverride}
+                    headerText={headerText}
+                    imageSize={manageMode ? MANAGE_ICON_HEIGHT : undefined}
                     isChannelAdmin={isChannelAdmin}
                     isSystemAdmin={isSystemAdmin}
                     isTeamAdmin={isTeamAdmin}
-                    manageMode={manageMode}
                     teammateDisplayName={teammateDisplayName}
                     user={user}
                     userIconOverride={userIconOverride}
