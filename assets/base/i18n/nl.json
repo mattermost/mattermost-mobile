@@ -936,5 +936,8 @@
     "mobile.camera_type.title": "Camera-opties",
     "join_team.error.title": "Fout bij het lid worden van een team",
     "join_team.error.message": "Er is een fout opgetreden bij het lid worden van het team",
-    "join_team.error.group_error": "Je moet lid zijn van een gekoppelde groep om deel te nemen aan dit team."
+    "join_team.error.group_error": "Je moet lid zijn van een gekoppelde groep om deel te nemen aan dit team.",
+    "skintone_selector.tooltip.title": "Kies jouw standaard huidskleur",
+    "skintone_selector.tooltip.description": "Je kan nu de huidskleur kiezen die je het liefst gebruikt voor je emoji's.",
+    "default_skin_tone": "Standaard huidskleur"
 }
