@@ -157,7 +157,7 @@ class NotificationService: UNNotificationServiceExtension {
           os_log(
             OSLogType.default,
             "Mattermost Notifications: notification receipt failed with status %{public}@. Will call sendMessageIntent",
-            httpResponse.statusCode
+            String(describing: httpResponse.statusCode)
           )
           self.sendMessageIntent(notification: self.bestAttemptContent!)
           return
@@ -172,7 +172,7 @@ class NotificationService: UNNotificationServiceExtension {
               os_log(
                 OSLogType.default,
                 "Mattermost Notifications: receipt retrieval failed. Retry %{public}@",
-                self.retryIndex
+                String(describing: self.retryIndex)
               )
               self.fetchReceipt(ackNotification)
             })
