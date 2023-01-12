@@ -1,31 +1,37 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BottomSheetSectionList} from '@gorhom/bottom-sheet';
 import {chunk} from 'lodash';
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, SectionList, SectionListData, StyleSheet, View} from 'react-native';
 import sectionListGetItemLayout from 'react-native-section-list-get-item-layout';
 
 import {fetchCustomEmojis} from '@actions/remote/custom_emoji';
+import TouchableEmoji from '@components/touchable_emoji';
 import {EMOJIS_PER_PAGE} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
+import {useIsTablet} from '@hooks/device';
+import {setEmojiCategoryBarIcons, setEmojiCategoryBarSection, useEmojiCategoryBar} from '@hooks/emoji_category_bar';
 import {CategoryNames, EmojiIndicesByCategory, CategoryTranslations, CategoryMessage} from '@utils/emoji';
 import {fillEmoji} from '@utils/emoji/helpers';
 
-import EmojiSectionBar, {SCROLLVIEW_NATIVE_ID, SectionIconType} from './icons_bar';
+import EmojiCategoryBar from '../emoji_category_bar';
+
 import SectionFooter from './section_footer';
 import SectionHeader, {SECTION_HEADER_HEIGHT} from './section_header';
-import TouchableEmoji from './touchable_emoji';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
-export const EMOJI_SIZE = 30;
-export const EMOJI_GUTTER = 8;
+const EMOJI_SIZE = 34;
+const EMOJIS_PER_ROW = 7;
+const EMOJIS_PER_ROW_TABLET = 9;
+const EMOJI_ROW_MARGIN = 12;
 
 const ICONS: Record<string, string> = {
     recent: 'clock-outline',
     'smileys-emotion': 'emoticon-happy-outline',
-    'people-body': 'eye-outline',
+    'people-body': 'account-outline',
     'animals-nature': 'leaf-outline',
     'food-drink': 'food-apple',
     'travel-places': 'airplane-variant',
@@ -37,20 +43,27 @@ const ICONS: Record<string, string> = {
 };
 
 const categoryToI18n: Record<string, CategoryTranslation> = {};
+let emojiSectionsByOffset: number[] = [];
+
 const getItemLayout = sectionListGetItemLayout({
-    getItemHeight: () => (EMOJI_SIZE + (EMOJI_GUTTER * 2)),
+    getItemHeight: () => EMOJI_SIZE + EMOJI_ROW_MARGIN,
     getSectionHeaderHeight: () => SECTION_HEADER_HEIGHT,
+    sectionOffsetsCallback: (offsetsById) => {
+        emojiSectionsByOffset = offsetsById;
+    },
 });
 
 const styles = StyleSheet.create(({
+    flex: {flex: 1},
+    contentContainerStyle: {paddingBottom: 50},
     row: {
         flexDirection: 'row',
-        marginBottom: EMOJI_GUTTER,
+        justifyContent: 'space-between',
+        marginBottom: EMOJI_ROW_MARGIN,
     },
     emoji: {
-        height: EMOJI_SIZE + EMOJI_GUTTER,
-        marginHorizontal: 7,
-        width: EMOJI_SIZE + EMOJI_GUTTER,
+        height: EMOJI_SIZE,
+        width: EMOJI_SIZE,
     },
 }));
 
@@ -59,8 +72,6 @@ type Props = {
     customEmojisEnabled: boolean;
     onEmojiPress: (emoji: string) => void;
     recentEmojis: string[];
-    skinTone: string;
-    width: number;
 }
 
 CategoryNames.forEach((name: string) => {
@@ -73,27 +84,34 @@ CategoryNames.forEach((name: string) => {
     }
 });
 
-const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis, skinTone, width}: Props) => {
+const emptyEmoji: EmojiAlias = {
+    name: '',
+    short_name: '',
+    aliases: [],
+};
+
+const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentEmojis}: Props) => {
     const serverUrl = useServerUrl();
+    const isTablet = useIsTablet();
+    const {currentIndex, selectedIndex} = useEmojiCategoryBar();
     const list = useRef<SectionList<EmojiSection>>(null);
-    const [sectionIndex, setSectionIndex] = useState(0);
+    const categoryIndex = useRef(currentIndex);
     const [customEmojiPage, setCustomEmojiPage] = useState(0);
     const [fetchingCustomEmojis, setFetchingCustomEmojis] = useState(false);
     const [loadedAllCustomEmojis, setLoadedAllCustomEmojis] = useState(false);
+    const offset = useRef(0);
+    const manualScroll = useRef(false);
 
     const sections: EmojiSection[] = useMemo(() => {
-        if (!width) {
-            return [];
-        }
-        const chunkSize = Math.floor(width / (EMOJI_SIZE + EMOJI_GUTTER));
+        const emojisPerRow = isTablet ? EMOJIS_PER_ROW_TABLET : EMOJIS_PER_ROW;
 
         return CategoryNames.map((category) => {
-            const emojiIndices = EmojiIndicesByCategory.get(skinTone)?.get(category);
+            const emojiIndices = EmojiIndicesByCategory.get('default')?.get(category);
 
             let data: EmojiAlias[][];
             switch (category) {
                 case 'custom': {
-                    const builtInCustom = emojiIndices.map(fillEmoji);
+                    const builtInCustom = emojiIndices.map(fillEmoji.bind(null, 'custom'));
 
                     // eslint-disable-next-line max-nested-callbacks
                     const custom = customEmojisEnabled ? customEmojis.map((ce) => ({
@@ -102,7 +120,7 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                         short_name: '',
                     })) : [];
 
-                    data = chunk<EmojiAlias>(builtInCustom.concat(custom), chunkSize);
+                    data = chunk<EmojiAlias>(builtInCustom.concat(custom), emojisPerRow);
                     break;
                 }
                 case 'recent':
@@ -111,11 +129,19 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                         aliases: [],
                         name: emoji,
                         short_name: '',
-                    })), chunkSize);
+                    })), EMOJIS_PER_ROW);
                     break;
                 default:
-                    data = chunk(emojiIndices.map(fillEmoji), chunkSize);
+                    data = chunk(emojiIndices.map(fillEmoji.bind(null, category)), emojisPerRow);
                     break;
+            }
+
+            for (const d of data) {
+                if (d.length < emojisPerRow) {
+                    d.push(
+                        ...(new Array(emojisPerRow - d.length).fill(emptyEmoji)),
+                    );
+                }
             }
 
             return {
@@ -124,23 +150,13 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                 key: category,
             };
         }).filter((s: EmojiSection) => s.data.length);
-    }, [skinTone, customEmojis, customEmojisEnabled, width]);
+    }, [customEmojis, customEmojisEnabled, isTablet]);
 
-    const sectionIcons: SectionIconType[] = useMemo(() => {
-        return sections.map((s) => ({
+    useEffect(() => {
+        setEmojiCategoryBarIcons(sections.map((s) => ({
             key: s.key,
             icon: s.icon,
-        }));
-    }, [sections]);
-
-    const emojiSectionsByOffset = useMemo(() => {
-        let lastOffset = 0;
-        return sections.map((s) => {
-            const start = lastOffset;
-            const nextOffset = s.data.length * (EMOJI_SIZE + (EMOJI_GUTTER * 2));
-            lastOffset += nextOffset;
-            return start;
-        });
+        })));
     }, [sections]);
 
     const onLoadMoreCustomEmojis = useCallback(async () => {
@@ -160,24 +176,31 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
 
     const onScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
         const {contentOffset} = e.nativeEvent;
-        let nextIndex = emojiSectionsByOffset.findIndex(
-            (offset) => contentOffset.y <= offset,
-        );
+        const direction = contentOffset.y > offset.current ? 'up' : 'down';
+        offset.current = contentOffset.y;
 
-        if (nextIndex === -1) {
-            nextIndex = emojiSectionsByOffset.length - 1;
-        } else if (nextIndex !== 0) {
-            nextIndex -= 1;
+        if (manualScroll.current) {
+            return;
         }
 
-        if (nextIndex !== sectionIndex) {
-            setSectionIndex(nextIndex);
+        const nextIndex = contentOffset.y >= emojiSectionsByOffset[categoryIndex.current + 1] - SECTION_HEADER_HEIGHT ? categoryIndex.current + 1 : categoryIndex.current;
+        const prevIndex = Math.max(0, contentOffset.y <= emojiSectionsByOffset[categoryIndex.current] - SECTION_HEADER_HEIGHT ? categoryIndex.current - 1 : categoryIndex.current);
+        if (nextIndex > categoryIndex.current && direction === 'up') {
+            categoryIndex.current = nextIndex;
+            setEmojiCategoryBarSection(nextIndex);
+        } else if (prevIndex < categoryIndex.current && direction === 'down') {
+            categoryIndex.current = prevIndex;
+            setEmojiCategoryBarSection(prevIndex);
         }
-    }, [emojiSectionsByOffset, sectionIndex]);
+    }, []);
 
     const scrollToIndex = (index: number) => {
+        manualScroll.current = true;
         list.current?.scrollToLocation({sectionIndex: index, itemIndex: 0, animated: false, viewOffset: 0});
-        setSectionIndex(index);
+        setEmojiCategoryBarSection(index);
+        setTimeout(() => {
+            manualScroll.current = false;
+        }, 350);
     };
 
     const renderSectionHeader = useCallback(({section}: {section: SectionListData<EmojiAlias[], EmojiSection>}) => {
@@ -193,14 +216,22 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
     const renderItem = useCallback(({item}: ListRenderItemInfo<EmojiAlias[]>) => {
         return (
             <View style={styles.row}>
-                {item.map((emoji: EmojiAlias) => {
+                {item.map((emoji: EmojiAlias, index: number) => {
+                    if (!emoji.name && !emoji.short_name) {
+                        return (
+                            <View
+                                key={`empty-${index.toString()}`}
+                                style={styles.emoji}
+                            />
+                        );
+                    }
+
                     return (
                         <TouchableEmoji
                             key={emoji.name}
                             name={emoji.name}
                             onEmojiPress={onEmojiPress}
-                            size={EMOJI_SIZE}
-                            style={styles.emoji}
+                            category={emoji.category}
                         />
                     );
                 })}
@@ -208,16 +239,23 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
         );
     }, []);
 
+    const List = useMemo(() => (isTablet ? SectionList : BottomSheetSectionList), [isTablet]);
+
+    useEffect(() => {
+        if (selectedIndex != null) {
+            scrollToIndex(selectedIndex);
+        }
+    }, [selectedIndex]);
+
     return (
-        <>
-            <SectionList
+        <View style={styles.flex}>
+            <List
+
+                // @ts-expect-error bottom sheet definition
                 getItemLayout={getItemLayout}
-                initialNumToRender={20}
                 keyboardDismissMode='interactive'
                 keyboardShouldPersistTaps='always'
                 ListFooterComponent={renderFooter}
-                maxToRenderPerBatch={20}
-                nativeID={SCROLLVIEW_NATIVE_ID}
                 onEndReached={onLoadMoreCustomEmojis}
                 onEndReachedThreshold={2}
                 onScroll={onScroll}
@@ -225,16 +263,15 @@ const EmojiSections = ({customEmojis, customEmojisEnabled, onEmojiPress, recentE
                 renderItem={renderItem}
                 renderSectionHeader={renderSectionHeader}
                 sections={sections}
-                contentContainerStyle={{paddingBottom: 50}}
-                windowSize={100}
+                contentContainerStyle={styles.contentContainerStyle}
+                stickySectionHeadersEnabled={true}
+                showsVerticalScrollIndicator={false}
                 testID='emoji_picker.emoji_sections.section_list'
             />
-            <EmojiSectionBar
-                currentIndex={sectionIndex}
-                scrollToIndex={scrollToIndex}
-                sections={sectionIcons}
-            />
-        </>
+            {isTablet &&
+            <EmojiCategoryBar/>
+            }
+        </View>
     );
 };
 

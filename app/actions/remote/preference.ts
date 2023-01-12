@@ -178,3 +178,19 @@ export const setDirectChannelVisible = async (serverUrl: string, channelId: stri
         return {error};
     }
 };
+
+export const savePreferredSkinTone = async (serverUrl: string, skinCode: string) => {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const userId = await getCurrentUserId(database);
+        const pref: PreferenceType = {
+            user_id: userId,
+            category: Preferences.CATEGORY_EMOJI,
+            name: Preferences.EMOJI_SKINTONE,
+            value: skinCode,
+        };
+        return savePreference(serverUrl, [pref]);
+    } catch (error) {
+        return {error};
+    }
+};

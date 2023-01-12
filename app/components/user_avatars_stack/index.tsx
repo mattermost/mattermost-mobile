@@ -127,7 +127,7 @@ const UserAvatarsStack = ({breakAt = 3, channelId, location, style: baseContaine
 
         const snapPoints: BottomSheetProps['snapPoints'] = [1, bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT, bottom) + TITLE_HEIGHT];
         if (users.length > 5) {
-            snapPoints.push('90%');
+            snapPoints.push('80%');
         }
 
         bottomSheet({

@@ -17,7 +17,7 @@ import * as Screens from '@constants/screens';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {openAsBottomSheet} from '@screens/navigation';
 import {hasJumboEmojiOnly} from '@utils/emoji/helpers';
 import {fromAutoResponder, isFromWebhook, isPostFailed, isPostPendingOrFailed, isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
@@ -192,11 +192,13 @@ const Post = ({
         const passProps = {sourceScreen: location, post, showAddReaction, serverUrl};
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
-        if (isTablet) {
-            showModal(Screens.POST_OPTIONS, title, passProps, bottomSheetModalOptions(theme, 'close-post-options'));
-        } else {
-            showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
-        }
+        openAsBottomSheet({
+            closeButtonId: 'close-post-options',
+            screen: Screens.POST_OPTIONS,
+            theme,
+            title,
+            props: passProps,
+        });
     };
 
     const [, rerender] = useState(false);

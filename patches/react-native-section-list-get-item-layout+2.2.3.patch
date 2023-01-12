@@ -1,0 +1,50 @@
+diff --git a/node_modules/react-native-section-list-get-item-layout/dist/index.d.ts b/node_modules/react-native-section-list-get-item-layout/dist/index.d.ts
+index 8f066b8..6fc9768 100644
+--- a/node_modules/react-native-section-list-get-item-layout/dist/index.d.ts
++++ b/node_modules/react-native-section-list-get-item-layout/dist/index.d.ts
+@@ -8,8 +8,9 @@ export interface Parameters {
+     getSectionHeaderHeight?: (sectionIndex: number) => number;
+     getSectionFooterHeight?: (sectionIndex: number) => number;
+     listHeaderHeight?: number | (() => number);
++    sectionOffsetsCallback?: (sectionOffsets: number[]) => void;
+ }
+-declare const _default: ({ getItemHeight, getSeparatorHeight, getSectionHeaderHeight, getSectionFooterHeight, listHeaderHeight, }: Parameters) => (data: {
++declare const _default: ({ getItemHeight, getSeparatorHeight, getSectionHeaderHeight, getSectionFooterHeight, listHeaderHeight, sectionOffsetsCallback }: Parameters) => (data: {
+     title: string;
+     data: any[];
+ }[], index: number) => {
+diff --git a/node_modules/react-native-section-list-get-item-layout/dist/index.js b/node_modules/react-native-section-list-get-item-layout/dist/index.js
+index e7f6635..bf3da2f 100644
+--- a/node_modules/react-native-section-list-get-item-layout/dist/index.js
++++ b/node_modules/react-native-section-list-get-item-layout/dist/index.js
+@@ -2,10 +2,12 @@
+ exports.__esModule = true;
+ exports["default"] = (function (_a) {
+     var getItemHeight = _a.getItemHeight, _b = _a.getSeparatorHeight, getSeparatorHeight = _b === void 0 ? function () { return 0; } : _b, _c = _a.getSectionHeaderHeight, getSectionHeaderHeight = _c === void 0 ? function () { return 0; } : _c, _d = _a.getSectionFooterHeight, getSectionFooterHeight = _d === void 0 ? function () { return 0; } : _d, _e = _a.listHeaderHeight, listHeaderHeight = _e === void 0 ? 0 : _e;
++    var callback = _a.sectionOffsetsCallback;
+     return function (data, index) {
+         var i = 0;
+         var sectionIndex = 0;
+         var elementPointer = { type: 'SECTION_HEADER' };
++        var offsetById = [];
+         var offset = typeof listHeaderHeight === 'function'
+             ? listHeaderHeight()
+             : listHeaderHeight;
+@@ -15,6 +17,7 @@ exports["default"] = (function (_a) {
+                     var sectionData = data[sectionIndex].data;
+                     offset += getSectionHeaderHeight(sectionIndex);
+                     // If this section is empty, we go right to the footer...
++                    offsetById[sectionIndex] = offset;
+                     if (sectionData.length === 0) {
+                         elementPointer = { type: 'SECTION_FOOTER' };
+                         // ...otherwise we make elementPointer point at the first row in this section
+@@ -61,6 +64,9 @@ exports["default"] = (function (_a) {
+             default:
+                 throw new Error('Unknown elementPointer.type');
+         }
++        if (callback) {
++            callback(offsetById);
++        }
+         return { length: length, offset: offset, index: index };
+     };
+ });

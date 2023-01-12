@@ -18,28 +18,31 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
+        width: 32,
+        height: 32,
         alignItems: 'center',
-        flex: 1,
-        height: 35,
         justifyContent: 'center',
-        zIndex: 10,
     },
     icon: {
-        color: changeOpacity(theme.centerChannelColor, 0.4),
+        color: changeOpacity(theme.centerChannelColor, 0.56),
+    },
+    selectedContainer: {
+        backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+        borderRadius: 4,
     },
     selected: {
-        color: theme.centerChannelColor,
+        color: theme.buttonBg,
     },
 }));
 
-const SectionIcon = ({currentIndex, icon, index, scrollToIndex, theme}: Props) => {
+const EmojiCategoryBarIcon = ({currentIndex, icon, index, scrollToIndex, theme}: Props) => {
     const style = getStyleSheet(theme);
     const onPress = useCallback(preventDoubleTap(() => scrollToIndex(index)), []);
 
     return (
         <TouchableOpacity
             onPress={onPress}
-            style={style.container}
+            style={[style.container, currentIndex === index ? style.selectedContainer : undefined]}
         >
             <CompassIcon
                 name={icon}
@@ -50,4 +53,4 @@ const SectionIcon = ({currentIndex, icon, index, scrollToIndex, theme}: Props) =
     );
 };
 
-export default SectionIcon;
+export default EmojiCategoryBarIcon;
