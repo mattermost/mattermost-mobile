@@ -57,7 +57,7 @@ const Emoji = (props: EmojiProps) => {
             } catch {
                 // do nothing
             }
-        } else if (name && !isUnicodeEmoji(name)) {
+        } else if (name && (name.length > 1 || !isUnicodeEmoji(name))) {
             fetchCustomEmojiInBatch(serverUrl, name);
         }
     }

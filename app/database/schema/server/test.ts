@@ -45,7 +45,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 7,
+            version: 1,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {

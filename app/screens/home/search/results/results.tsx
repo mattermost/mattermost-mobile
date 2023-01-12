@@ -37,8 +37,10 @@ const getStyles = (width: number) => {
 };
 
 type Props = {
+    appsEnabled: boolean;
     canDownloadFiles: boolean;
     currentTimezone: string;
+    customEmojiNames: string[];
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
     isTimezoneEnabled: boolean;
@@ -51,8 +53,10 @@ type Props = {
 }
 
 const Results = ({
+    appsEnabled,
     canDownloadFiles,
     currentTimezone,
+    customEmojiNames,
     fileChannels,
     fileInfos,
     isTimezoneEnabled,
@@ -96,7 +100,9 @@ const Results = ({
             <Animated.View style={[styles.container, transform]}>
                 <View style={styles.result} >
                     <PostResults
+                        appsEnabled={appsEnabled}
                         currentTimezone={currentTimezone}
+                        customEmojiNames={customEmojiNames}
                         isTimezoneEnabled={isTimezoneEnabled}
                         posts={posts}
                         paddingTop={paddingTop}

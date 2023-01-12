@@ -7,6 +7,7 @@ import {Post} from '@constants';
 import {toMilliseconds} from '@utils/datetime';
 import {isFromWebhook} from '@utils/post';
 
+import type {PostList, PostWithPrevAndNext} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 const joinLeavePostTypes = [
@@ -49,44 +50,37 @@ export const START_OF_NEW_MESSAGES = 'start-of-new-messages';
 export const THREAD_OVERVIEW = 'thread-overview';
 export const MAX_COMBINED_SYSTEM_POSTS = 100;
 
-function combineUserActivityPosts(orderedPosts: Array<PostModel | string>) {
+function combineUserActivityPosts(orderedPosts: PostList) {
     let lastPostIsUserActivity = false;
     let combinedCount = 0;
-    const out: Array<PostModel | string> = [];
+    const out: PostList = [];
     let changed = false;
 
     for (let i = 0; i < orderedPosts.length; i++) {
-        const post = orderedPosts[i];
+        const item = orderedPosts[i];
+        if (item.type === 'start-of-new-messages' || item.type === 'date' || item.type === 'thread-overview') {
+            // Not a post, so it won't be combined
+            out.push(item);
 
-        if (typeof post === 'string') {
-            if (post === START_OF_NEW_MESSAGES || post.startsWith(DATE_LINE)) {
-                // Not a post, so it won't be combined
-                out.push(post);
+            lastPostIsUserActivity = false;
+            combinedCount = 0;
 
-                lastPostIsUserActivity = false;
-                combinedCount = 0;
-
-                continue;
-            }
-        } else if (post.deleteAt) {
-            out.push(post);
+            continue;
+        } else if (item.type === 'post' && item.value.deleteAt) {
+            out.push(item);
 
             lastPostIsUserActivity = false;
             combinedCount = 0;
         } else {
-            const postIsUserActivity = Post.USER_ACTIVITY_POST_TYPES.includes(post.type);
+            const postIsUserActivity = item.type === 'post' && Post.USER_ACTIVITY_POST_TYPES.includes(item.value.type);
             if (postIsUserActivity && lastPostIsUserActivity && combinedCount < MAX_COMBINED_SYSTEM_POSTS) {
-                // Add the ID to the previous combined post
-                out[out.length - 1] += '_' + post.id;
-                combinedCount += 1;
-                changed = true;
+                out[out.length - 1].value += '_' + item.value.id;
             } else if (postIsUserActivity) {
-                // Start a new combined post, even if the "combined" post is only a single post
-                out.push(COMBINED_USER_ACTIVITY + post.id);
+                out.push({type: 'user-activity', value: `${COMBINED_USER_ACTIVITY}${item.value.id}`});
                 combinedCount = 1;
                 changed = true;
             } else {
-                out.push(post);
+                out.push(item);
                 combinedCount = 0;
             }
 
@@ -175,21 +169,38 @@ function isJoinLeavePostForUsername(post: PostModel, currentUsername: string): b
         post.props.removedUsername === currentUsername;
 }
 
-// are we going to do something with selectedPostId as in v1?
+export function selectOrderedPostsWithPrevAndNext(
+    posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUserId: string, currentUsername: string, showJoinLeave: boolean,
+    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>(),
+): PostList {
+    return selectOrderedPosts(
+        posts, lastViewedAt, indicateNewMessages,
+        currentUserId, currentUsername, showJoinLeave,
+        timezoneEnabled, currentTimezone, isThreadScreen, savedPostIds, true,
+    );
+}
+
 export function selectOrderedPosts(
     posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUserId: string, currentUsername: string, showJoinLeave: boolean,
-    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false) {
+    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>(), includePrevNext = false) {
     if (posts.length === 0) {
         return [];
     }
 
-    const out: Array<PostModel|string> = [];
+    const out: PostList = [];
     let lastDate;
     let addedNewMessagesIndicator = false;
 
     // Iterating through the posts from oldest to newest
     for (let i = posts.length - 1; i >= 0; i--) {
-        const post = posts[i];
+        const post: PostWithPrevAndNext = posts[i];
+        post.isSaved = savedPostIds.has(post.id);
+        if (includePrevNext) {
+            post.nextPost = posts[i - 1];
+            if (!isThreadScreen || out[out.length - 1]?.type !== 'thread-overview') {
+                post.previousPost = posts[i + 1];
+            }
+        }
 
         if (
             !post ||
@@ -217,7 +228,7 @@ export function selectOrderedPosts(
         }
 
         if (!lastDate || lastDate.toDateString() !== postDate.toDateString()) {
-            out.push(DATE_LINE + postDate.getTime());
+            out.push({type: 'date', value: DATE_LINE + postDate.getTime()});
 
             lastDate = postDate;
         }
@@ -229,14 +240,14 @@ export function selectOrderedPosts(
             !addedNewMessagesIndicator &&
             indicateNewMessages
         ) {
-            out.push(START_OF_NEW_MESSAGES);
+            out.push({type: 'start-of-new-messages', value: START_OF_NEW_MESSAGES});
             addedNewMessagesIndicator = true;
         }
 
-        out.push(post);
+        out.push({type: 'post', value: post});
 
         if (isThreadScreen && i === posts.length - 1) {
-            out.push(THREAD_OVERVIEW);
+            out.push({type: 'thread-overview', value: THREAD_OVERVIEW});
         }
     }
 
@@ -350,26 +361,10 @@ export function getPostIdsForCombinedUserActivityPost(item: string) {
     return item.substring(COMBINED_USER_ACTIVITY.length).split('_');
 }
 
-export function isCombinedUserActivityPost(item: string) {
-    return (/^user-activity-(?:[^_]+_)*[^_]+$/).test(item);
-}
-
-export function isDateLine(item: string) {
-    return Boolean(item?.startsWith(DATE_LINE));
-}
-
-export function isStartOfNewMessages(item: string) {
-    return item === START_OF_NEW_MESSAGES;
-}
-
-export function isThreadOverview(item: string) {
-    return item === THREAD_OVERVIEW;
-}
-
 export function preparePostList(
     posts: PostModel[], lastViewedAt: number, indicateNewMessages: boolean, currentUserId: string, currentUsername: string, showJoinLeave: boolean,
-    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false) {
-    const orderedPosts = selectOrderedPosts(posts, lastViewedAt, indicateNewMessages, currentUserId, currentUsername, showJoinLeave, timezoneEnabled, currentTimezone, isThreadScreen);
+    timezoneEnabled: boolean, currentTimezone: string | null, isThreadScreen = false, savedPostIds = new Set<string>()) {
+    const orderedPosts = selectOrderedPostsWithPrevAndNext(posts, lastViewedAt, indicateNewMessages, currentUserId, currentUsername, showJoinLeave, timezoneEnabled, currentTimezone, isThreadScreen, savedPostIds);
     return combineUserActivityPosts(orderedPosts);
 }
 

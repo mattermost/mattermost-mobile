@@ -96,7 +96,7 @@ class PushNotifications {
                         markThreadAsRead(serverUrl, payload.team_id, payload.post_id);
                     }
                 } else {
-                    markChannelAsViewed(serverUrl, payload.channel_id, false);
+                    markChannelAsViewed(serverUrl, payload.channel_id);
                 }
             }
         }

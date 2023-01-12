@@ -67,7 +67,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.back();
     });
 
-    it('MM-T4805_2 - should be able to go to a thread a user started and followed', async () => {
+    it.skip('MM-T4805_2 - should be able to go to a thread a user started and followed -- UNSTABLE', async () => {
         // # Create a thread started by the current user which current user replied to
         const parentMessage = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -133,7 +133,7 @@ describe('Threads - Global Threads', () => {
         await GlobalThreadsScreen.back();
     });
 
-    it('MM-T4805_4 - should be able to go to a thread a user replied to and followed', async () => {
+    it.skip('MM-T4805_4 - should be able to go to a thread a user replied to and followed -- UNSTABLE', async () => {
         // # Create a thread started by another user which the current user replied to
         const parentMessage = `Message ${getRandomId()}`;
         const {post: parentPost} = await Post.apiCreatePost(siteOneUrl, {

@@ -74,7 +74,10 @@ public class CustomPushNotificationHelper {
 
         if (serverUrl != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
             try {
-                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, senderId, null))));
+                Bitmap avatar = userAvatar(context, serverUrl, senderId, null);
+                if (avatar != null) {
+                    sender.setIcon(IconCompat.createWithBitmap(avatar));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -270,7 +273,10 @@ public class CustomPushNotificationHelper {
 
         if (serverUrl != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
             try {
-                sender.setIcon(IconCompat.createWithBitmap(Objects.requireNonNull(userAvatar(context, serverUrl, "me", null))));
+                Bitmap avatar = userAvatar(context, serverUrl, "me", null);
+                if (avatar != null) {
+                    sender.setIcon(IconCompat.createWithBitmap(avatar));
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -405,7 +411,10 @@ public class CustomPushNotificationHelper {
         if (serverUrl != null && channelName.equals(senderName)) {
             try {
                 String senderId = bundle.getString("sender_id");
-                notification.setLargeIcon(userAvatar(context, serverUrl, senderId, urlOverride));
+                Bitmap avatar = userAvatar(context, serverUrl, senderId, urlOverride);
+                if (avatar != null) {
+                    notification.setLargeIcon(avatar);
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -413,31 +422,35 @@ public class CustomPushNotificationHelper {
     }
 
     private static Bitmap userAvatar(Context context, final String serverUrl, final String userId, final String urlOverride) throws IOException {
-        final OkHttpClient client = new OkHttpClient();
-        Request request;
-        String url;
-        if (urlOverride != null) {
-            request = new Request.Builder().url(urlOverride).build();
-            url = urlOverride;
-        } else {
-            final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
-            final String token = Credentials.getCredentialsForServerSync(reactApplicationContext, serverUrl);
-            url = String.format("%s/api/v4/users/%s/image", serverUrl, userId);
-            request = new Request.Builder()
-                .header("Authorization", String.format("Bearer %s", token))
-                .url(url)
-                .build();
-        }
-        Response response = client.newCall(request).execute();
-        if (response.code() == 200) {
-            assert response.body() != null;
-            byte[] bytes = Objects.requireNonNull(response.body()).bytes();
-            Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+        try {
+            final OkHttpClient client = new OkHttpClient();
+            Request request;
+            String url;
+            if (urlOverride != null) {
+                request = new Request.Builder().url(urlOverride).build();
+                Log.i("ReactNative", String.format("Fetch override profile image %s", urlOverride));
+            } else {
+                final ReactApplicationContext reactApplicationContext = new ReactApplicationContext(context);
+                final String token = Credentials.getCredentialsForServerSync(reactApplicationContext, serverUrl);
+                url = String.format("%s/api/v4/users/%s/image", serverUrl, userId);
+                Log.i("ReactNative", String.format("Fetch profile image %s", url));
+                request = new Request.Builder()
+                        .header("Authorization", String.format("Bearer %s", token))
+                        .url(url)
+                        .build();
+            }
+            Response response = client.newCall(request).execute();
+            if (response.code() == 200) {
+                assert response.body() != null;
+                byte[] bytes = Objects.requireNonNull(response.body()).bytes();
+                Bitmap bitmap = BitmapFactory.decodeByteArray(bytes, 0, bytes.length);
+                return getCircleBitmap(bitmap);
+            }
 
-            Log.i("ReactNative", String.format("Fetch profile %s", url));
-            return getCircleBitmap(bitmap);
+            return null;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
         }
-
-        return null;
     }
 }
