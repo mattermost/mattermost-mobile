@@ -85,7 +85,7 @@ jest.doMock('react-native', () => {
         },
         MattermostManaged: {
             getConstants: () => ({
-                appGroupIdentifier: 'group.mattermost.rnbeta',
+                appGroupIdentifier: 'group.com.sangoma.teamhub.mobile',
                 appGroupSharedDirectory: {
                     sharedDirectory: '',
                     databasePath: '',

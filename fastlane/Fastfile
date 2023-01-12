@@ -49,7 +49,7 @@ after_all do |lane|
   if ENV['CIRCLECI'] != 'true'
     if ENV['RESET_GIT_BRANCH'] == 'true'
       branch = ENV['BRANCH_TO_BUILD'] || 'master'
-      package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
+      package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.sangoma.teamhub.mobile'
       beta_dir = '../android/app/src/main/java/com/mattermost/rnbeta'
       release_dir = "../android/app/src/main/java/#{package_id.gsub '.', '/'}"
 
@@ -381,7 +381,7 @@ platform :ios do
 
   lane :update_identifiers do
     # Set the name for the app
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'TeamHub'
     update_info_plist(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
@@ -389,7 +389,7 @@ platform :ios do
     )
 
     # Set the notification service extension bundle identifier
-    notification_bundle_id = ENV['NOTIFICATION_SERVICE_IDENTIFIER'] || 'com.mattermost.rnbeta.NotificationService'
+    notification_bundle_id = ENV['NOTIFICATION_SERVICE_IDENTIFIER'] || 'com.sangoma.teamhub.mobile.NotificationService'
     update_app_identifier(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'NotificationService/Info.plist',
@@ -398,12 +398,12 @@ platform :ios do
 
     find_replace_string(
         path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
-        old_string: 'com.mattermost.rnbeta.NotificationService',
+        old_string: 'com.sangoma.teamhub.mobile.NotificationService',
         new_string: notification_bundle_id
     )
 
     # Set the share extension bundle identifier
-    extension_bundle_id = ENV['EXTENSION_APP_IDENTIFIER'] || 'com.mattermost.rnbeta.MattermostShare'
+    extension_bundle_id = ENV['EXTENSION_APP_IDENTIFIER'] || 'com.sangoma.teamhub.mobile.MattermostShare'
     update_app_identifier(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'MattermostShare/Info.plist',
@@ -412,12 +412,12 @@ platform :ios do
 
     find_replace_string(
         path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
-        old_string: 'com.mattermost.rnbeta.MattermostShare',
+        old_string: 'com.sangoma.teamhub.mobile.MattermostShare',
         new_string: extension_bundle_id
     )
 
     # Set the app bundle id
-    app_bundle_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
+    app_bundle_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.sangoma.teamhub.mobile'
     update_app_identifier(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
@@ -426,7 +426,7 @@ platform :ios do
 
     find_replace_string(
         path_to_file: './ios/Mattermost.xcodeproj/project.pbxproj',
-        old_string: 'com.mattermost.rnbeta',
+        old_string: 'com.sangoma.teamhub.mobile',
         new_string: app_bundle_id
     )
 
@@ -451,14 +451,14 @@ platform :ios do
     end
 
     # Set the ICloud container
-    icloud_container = ENV['IOS_ICLOUD_CONTAINER'] || 'iCloud.com.mattermost.rnbeta'
+    icloud_container = ENV['IOS_ICLOUD_CONTAINER'] || 'iCloud.com.sangoma.teamhub.mobile'
     update_icloud_container_identifiers(
         entitlements_file: './ios/Mattermost/Mattermost.entitlements',
         icloud_container_identifiers: [icloud_container]
     )
 
     # Set the app group id to share data between the app and the extension
-    app_group_id = ENV['IOS_APP_GROUP'] || 'group.com.mattermost.rnbeta'
+    app_group_id = ENV['IOS_APP_GROUP'] || 'group.com.sangoma.teamhub.mobile'
     update_app_group_identifiers(
         entitlements_file: './ios/Mattermost/Mattermost.entitlements',
         app_group_identifiers: [app_group_id]
@@ -573,7 +573,7 @@ platform :ios do
   end
 
   def build_ios
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'TeamHub'
     app_name_sub = app_name.gsub(" ", "_")
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
     method = ENV['IOS_BUILD_EXPORT_METHOD'].nil? || ENV['IOS_BUILD_EXPORT_METHOD'].empty? ? 'ad-hoc' : ENV['IOS_BUILD_EXPORT_METHOD']
@@ -657,14 +657,14 @@ platform :android do
 
   lane :update_identifiers do
     # Set the name for the app
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'TeamHub'
     sh "echo '#{app_name}' > ../fastlane/metadata/android/en-US/title.txt"
     android_change_string_app_name(
         newName: app_name,
         stringsFile: './android/app/src/main/res/values/strings.xml'
     )
 
-    package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
+    package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.sangoma.teamhub.mobile'
     android_change_package_identifier(newIdentifier: package_id, manifest: './android/app/src/main/AndroidManifest.xml')
     android_update_application_id(app_folder_name: 'android/app', application_id: package_id)
 
@@ -695,14 +695,14 @@ platform :android do
 
       find_replace_string(
           path_to_file: './android/app/BUCK',
-          old_string: 'package com.mattermost.rnbeta;',
+          old_string: 'package com.sangoma.teamhub.mobile;',
           new_string: "package #{package_id};"
       )
 
       Dir.glob(".#{release_dir}*.java") do |item|
         find_replace_string(
             path_to_file: item[1..-1],
-            old_string: 'package com.mattermost.rnbeta;',
+            old_string: 'package com.sangoma.teamhub.mobile;',
             new_string: "package #{package_id};"
         )
       end
@@ -710,7 +710,7 @@ platform :android do
       Dir.glob('../android/app/src/main/java/com/mattermost/share/*.java') do |item|
         find_replace_string(
             path_to_file: item[1..-1],
-            old_string: 'import com.mattermost.rnbeta.MainApplication;',
+            old_string: 'import com.sangoma.teamhub.mobile.MainApplication;',
             new_string: "import #{package_id}.MainApplication;"
         )
       end
@@ -718,7 +718,7 @@ platform :android do
       Dir.glob('../android/app/src/main/java/com/mattermost/helpers/*.java') do |item|
         find_replace_string(
             path_to_file: item[1..-1],
-            old_string: 'import com.mattermost.rnbeta.*;',
+            old_string: 'import com.sangoma.teamhub.mobile.*;',
             new_string: "import #{package_id}.*;"
         )
       end
@@ -727,7 +727,7 @@ platform :android do
     Dir.glob('../android/app/src/main/java/com/mattermost/newarchitecture/*.java') do |item|
       find_replace_string(
           path_to_file: item[1..-1],
-          old_string: 'import com.mattermost.rnbeta.BuildConfig;',
+          old_string: 'import com.sangoma.teamhub.mobile.BuildConfig;',
           new_string: "import #{package_id}.BuildConfig;"
       )
     end
@@ -783,7 +783,7 @@ platform :android do
   end
 
   def move_apk_to_root
-    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    app_name =  ENV['APP_NAME'] || 'TeamHub'
     app_name_sub = app_name.gsub(" ", "_")
     apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
     json_path = lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
@@ -980,7 +980,7 @@ def submit_to_google_play(apk_path)
 
   if ENV['BETA_BUILD'] == 'true'
     pretext = '#### New Android beta published to Google Play'
-    msg = "Sign up as a beta tester [here](https://play.google.com/apps/testing/com.mattermost.rnbeta).\nDownload links:\n#{links}"
+    msg = "Sign up as a beta tester [here](https://play.google.com/apps/testing/com.sangoma.teamhub.mobile).\nDownload links:\n#{links}"
   end
 
   send_message_to_mattermost({

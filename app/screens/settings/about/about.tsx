@@ -24,7 +24,7 @@ import Subtitle from './subtitle';
 import Title from './title';
 import TosPrivacyContainer from './tos_privacy';
 
-const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
+const MATTERMOST_BUNDLE_IDS = ['com.sangoma.teamhub.mobile'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {

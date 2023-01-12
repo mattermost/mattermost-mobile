@@ -4,13 +4,17 @@
 export BRANCH_TO_BUILD=master
 export GIT_LOCAL_BRANCH=build
 
-export APP_NAME="Mattermost Beta"
+export APP_NAME="TeamHub"
 export APP_SCHEME=mattermost
 
 #export INCREMENT_BUILD_NUMBER=false
+
 ## This sets the version number ex: 1.22.0 if not set it uses the one in the code base
+
 #export VERSION_NUMBER=
+
 ## This sets the version number ex: 210 if not set it uses the one in the code base (this one should increment always by 1 and will only update if INCREMENT_BUILD_NUMBER is true
+
 #export BUILD_NUMBER=
 
 ############ MAKE GIT RESTORE THE BRANCH STATE ONCE BUILD FINISHES ############
@@ -27,7 +31,7 @@ export FASTLANE_PASSWORD=<itunes connect password>
 export MATCH_PASSWORD=<itunes connect password>
 export MATCH_KEYCHAIN_PASSWORD=<the password of the user running the build in the build machine>
 export MATCH_GIT_URL=<private git repository to allow match sync the provisioning profiles>
-export MATCH_APP_IDENTIFIER=com.mattermost.rnbeta.NotificationService,com.mattermost.rnbeta.MattermostShare,com.mattermost.rnbeta
+export MATCH_APP_IDENTIFIER=com.sangoma.teamhub.mobile.NotificationService,com.sangoma.teamhub.mobile.MattermostShare,com.sangoma.teamhub.mobile
 export MATCH_TYPE=appstore
 export MATCH_SHALLOW_CLONE=true
 export MATCH_SKIP_DOCS=true
@@ -40,7 +44,7 @@ export PILOT_SKIP_WAITING_FOR_BUILD_PROCESSING=true
 
 ############ NEEDED TO UPLOAD THE BUILD TO GOOGLE PLAY ############
 export SUPPLY_TRACK=alpha
-export SUPPLY_PACKAGE_NAME=com.mattermost.rnbeta
+export SUPPLY_PACKAGE_NAME=com.sangoma.teamhub.mobile
 export SUPPLY_JSON_KEY=<The path to the service account json file used to authenticate with Google>
 export SUPPLY_VALIDATE_ONLY=false
 
@@ -50,11 +54,11 @@ export BUILD_FOR_RELEASE=true
 export REPLACE_ASSETS=false
 
 ############ APP IDENTIFIERS ############
-export MAIN_APP_IDENTIFIER=com.mattermost.rnbeta
-export EXTENSION_APP_IDENTIFIER=com.mattermost.rnbeta.MattermostShare
-export NOTIFICATION_SERVICE_IDENTIFIER=com.mattermost.rnbeta.NotificationService
-export IOS_APP_GROUP=group.com.mattermost.rnbeta
-export IOS_ICLOUD_CONTAINER=iCloud.com.mattermost.rnbeta
+export MAIN_APP_IDENTIFIER=com.sangoma.teamhub.mobile
+export EXTENSION_APP_IDENTIFIER=com.sangoma.teamhub.mobile.MattermostShare
+export NOTIFICATION_SERVICE_IDENTIFIER=com.sangoma.teamhub.mobile.NotificationService
+export IOS_APP_GROUP=group.com.sangoma.teamhub.mobile
+export IOS_ICLOUD_CONTAINER=iCloud.com.sangoma.teamhub.mobile
 export IOS_BUILD_EXPORT_METHOD=app-store
 
 ############ SET TO TRUE TO UPLOAD THE BUILDS TO TESTFLIGH AND GOOGLE PLAY ############
