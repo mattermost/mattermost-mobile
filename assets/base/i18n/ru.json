@@ -936,5 +936,8 @@
     "join_team.error.title": "Ошибка при вступлении в команду",
     "join_team.error.message": "Произошла ошибка при вступлении в команду",
     "join_team.error.group_error": "Вы должны быть участником связанной группы, чтобы присоединиться к этой команде.",
-    "connection_banner.connecting": "Подключение..."
+    "connection_banner.connecting": "Подключение...",
+    "skintone_selector.tooltip.title": "Выберите свой стандартный тон темы",
+    "skintone_selector.tooltip.description": "Теперь вы можете выбрать тон темы, который вы предпочитаете использовать для своих эмодзи.",
+    "default_skin_tone": "Оттенок темы по умолчанию"
 }
