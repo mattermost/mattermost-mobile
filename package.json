@@ -144,7 +144,7 @@
     "axios-cookiejar-support": "4.0.6",
     "babel-jest": "29.3.1",
     "babel-loader": "9.1.2",
-    "babel-plugin-module-resolver": "4.1.0",
+    "babel-plugin-module-resolver": "5.0.0",
     "deep-freeze": "0.0.1",
     "detox": "20.1.1",
     "eslint": "8.31.0",
