@@ -21,7 +21,7 @@ const enhanced = withObservables([], () => {
         switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
     );
 
-    // TODO: to be optimized
+    // TODO: to be optimized https://mattermost.atlassian.net/browse/MM-49338
     const participantsDict = combineLatest([database, currentCall]).pipe(
         switchMap(([db, call]) => (db && call ? queryUsersById(db, Object.keys(call.participants)).observeWithColumns(['nickname', 'username', 'first_name', 'last_name', 'last_picture_update']) : of$([])).pipe(
             // eslint-disable-next-line max-nested-callbacks
