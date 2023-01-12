@@ -86,14 +86,6 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
         );
     }, [handleRemoveUser]);
 
-    const makeChannelAdmin = () => {
-        updateChannelMemberSchemeRole(true);
-    };
-
-    const makeChannelMember = () => {
-        updateChannelMemberSchemeRole(false);
-    };
-
     const updateChannelMemberSchemeRole = async (schemeAdmin: boolean) => {
         const result = await updateChannelMemberSchemeRoles(serverUrl, channelId, userId, true, schemeAdmin);
         if (result.error) {
@@ -109,10 +101,10 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
                 removeFromChannel();
                 break;
             case MAKE_CHANNEL_ADMIN:
-                makeChannelAdmin();
+                updateChannelMemberSchemeRole(true);
                 break;
             case MAKE_CHANNEL_MEMBER:
-                makeChannelMember();
+                updateChannelMemberSchemeRole(false);
                 break;
             default:
                 break;
