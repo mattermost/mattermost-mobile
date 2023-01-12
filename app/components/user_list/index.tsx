@@ -66,11 +66,11 @@ export function createProfilesSections(intl: IntlShape, profiles: UserProfile[],
         return [];
     }
 
-    const membersDictionary = new Map();
     const sections = new Map();
 
     if (members?.length) {
         // when channel members are provided, build the sections by admins and members
+        const membersDictionary = new Map();
         members.forEach((m) => membersDictionary.set(m.user_id, m));
         profiles.forEach((p) => {
             const member = membersDictionary.get(p.id);
