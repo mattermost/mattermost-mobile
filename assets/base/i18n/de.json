@@ -936,5 +936,8 @@
     "join_team.error.title": "Fehler beim Beitritt zu einem Team",
     "join_team.error.message": "Es ist ein Fehler beim Beitritt zum Team aufgetreten",
     "join_team.error.group_error": "Du musst Mitglied einer verknüpften Gruppe sein, um diesem Team beitreten zu können.",
-    "connection_banner.connecting": "Verbinde..."
+    "connection_banner.connecting": "Verbinde...",
+    "skintone_selector.tooltip.title": "Wählen deinen Standard-Hautton",
+    "skintone_selector.tooltip.description": "Du kannst nun den Hautton auswählen, den du für deine Emojis verwenden möchtest.",
+    "default_skin_tone": "Standard-Hautton"
 }
