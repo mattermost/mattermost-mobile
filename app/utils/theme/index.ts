@@ -278,6 +278,7 @@ export function setThemeDefaults(theme: ExtendedTheme): Theme {
 export const updateThemeIfNeeded = (theme: Theme, force = false) => {
     const storedTheme = EphemeralStore.theme;
     if (!deepEqual(theme, storedTheme) || force) {
+        EphemeralStore.theme = theme;
         requestAnimationFrame(() => {
             setNavigationStackStyles(theme);
         });
