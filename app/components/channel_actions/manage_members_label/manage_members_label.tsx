@@ -109,7 +109,7 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
             default:
                 break;
         }
-    }, [manageOption]);
+    }, [manageOption, removeFromChannel]);
 
     useEffect(() => {
         switch (manageOption) {
