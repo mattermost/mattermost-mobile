@@ -47,11 +47,11 @@ export async function initialize() {
 
 export async function start() {
     await initialize();
-    await WebsocketManager.init(serverCredentials);
 
     PushNotifications.init(serverCredentials.length > 0);
 
     registerNavigationListeners();
     registerScreens();
-    initialLaunch();
+    await initialLaunch();
+    WebsocketManager.init(serverCredentials);
 }

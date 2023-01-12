@@ -108,7 +108,7 @@ export function getEmojiName(emoji: string, customEmojiNames: string[]) {
     if (matchUnicodeEmoji) {
         const index = EmojiIndicesByUnicode.get(matchUnicodeEmoji[0]);
         if (index != null) {
-            return fillEmoji(Emojis[index]).name;
+            return fillEmoji('', Emojis[index]).name;
         }
         return undefined;
     }
@@ -310,11 +310,12 @@ export const isCustomEmojiEnabled = (config: ClientConfig | SystemModel) => {
     return config?.EnableCustomEmoji === 'true';
 };
 
-export function fillEmoji(index: number) {
+export function fillEmoji(category: string, index: number) {
     const emoji = Emojis[index];
     return {
         name: 'short_name' in emoji ? emoji.short_name : emoji.name,
         aliases: 'short_names' in emoji ? emoji.short_names : [],
+        category,
     };
 }
 

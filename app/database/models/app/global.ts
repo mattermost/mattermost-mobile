@@ -11,8 +11,6 @@ import type GlobalModelInterface from '@typings/database/models/app/global';
 
 const {GLOBAL} = MM_TABLES.APP;
 
-// TODO : add TS definitions to sanitizer function signature.
-
 /**
  * The Global model will act as a dictionary of name-value pairs.  The value field can be a JSON object or any other
  * data type.  It will hold information that applies to the whole app ( e.g. sidebar settings for tablets)
