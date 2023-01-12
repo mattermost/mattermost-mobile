@@ -110,16 +110,12 @@ export default function ManageChannelMembers({
     }, 100), [channelId, loading, serverUrl, term]);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
-        if (!isManageMode) {
-            return;
-        }
-
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const props = {
             channelId,
             closeButtonId: CLOSE_BUTTON_ID,
             location: USER_PROFILE,
-            manageMode: true,
+            manageMode: isManageMode,
             userId: profile.id,
             canManageMembers,
         };
