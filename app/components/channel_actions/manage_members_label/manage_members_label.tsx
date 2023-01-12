@@ -8,12 +8,13 @@ import {Alert, DeviceEventEmitter} from 'react-native';
 import {fetchChannelStats, removeMemberFromChannel, updateChannelMemberSchemeRoles} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
 import {Events, Members} from '@constants';
+import {ManageOptionsTypes} from '@constants/members';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 
-const {MAKE_CHANNEL_ADMIN, MAKE_CHANNEL_MEMBER, REMOVE_USER} = Members.MANAGE_OPTIONS;
+const {MAKE_CHANNEL_ADMIN, MAKE_CHANNEL_MEMBER, REMOVE_USER} = Members.ManageOptions;
 
 const messages = defineMessages({
     role_change_error: {
@@ -49,7 +50,7 @@ const messages = defineMessages({
 type Props = {
     canRemoveUser: boolean;
     channelId: string;
-    manageOption: string;
+    manageOption: ManageOptionsTypes;
     testID?: string;
     userId: string;
 }
