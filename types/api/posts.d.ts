@@ -20,8 +20,10 @@ type PostType =
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph';
 
-type PostPriorityData = {
-    priority: ''|'urgent'|'important';
+type PostPriorityMetadata = {
+    priority: '' | 'urgent' | 'important';
+    requested_ack?: boolean;
+    persistent_notifications?: boolean;
 };
 
 type PostEmbed = {
@@ -43,7 +45,7 @@ type PostMetadata = {
     files?: FileInfo[];
     images?: Dictionary<PostImage>;
     reactions?: Reaction[];
-    priority?: PostPriorityData;
+    priority?: PostPriorityMetadata;
 };
 
 type Post = {
