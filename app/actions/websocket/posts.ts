@@ -164,8 +164,13 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         }
     }
 
+    let actionType: string = ActionType.POSTS.RECEIVED_NEW;
+    if (isCRTEnabled && post.root_id) {
+        actionType = ActionType.POSTS.RECEIVED_IN_THREAD;
+    }
+
     const postModels = await operator.handlePosts({
-        actionType: ActionType.POSTS.RECEIVED_NEW,
+        actionType,
         order: [post.id],
         posts: [post],
         prepareRecordsOnly: true,
@@ -203,8 +208,14 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         models.push(...authorsModels);
     }
 
+    let actionType: string = ActionType.POSTS.RECEIVED_NEW;
+    const isCRTEnabled = await getIsCRTEnabled(operator.database);
+    if (isCRTEnabled && post.root_id) {
+        actionType = ActionType.POSTS.RECEIVED_IN_THREAD;
+    }
+
     const postModels = await operator.handlePosts({
-        actionType: ActionType.POSTS.RECEIVED_NEW,
+        actionType,
         order: [post.id],
         posts: [post],
         prepareRecordsOnly: true,

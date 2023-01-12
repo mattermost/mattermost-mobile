@@ -61,9 +61,6 @@ const SelectedOptions = ({
             />);
     });
 
-    // eslint-disable-next-line no-warning-comments
-    // TODO Consider using a Virtualized List since the number of elements is potentially unbounded.
-    // https://mattermost.atlassian.net/browse/MM-48420
     return (
         <ScrollView
             style={style.container}

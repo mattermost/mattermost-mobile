@@ -88,6 +88,7 @@
     "react-native-svg": "13.6.0",
     "react-native-vector-icons": "9.2.0",
     "react-native-video": "5.2.1",
+    "react-native-walkthrough-tooltip": "1.4.0",
     "react-native-webrtc": "github:mattermost/react-native-webrtc",
     "react-native-webview": "11.26.0",
     "react-syntax-highlighter": "15.5.0",
@@ -228,6 +229,9 @@
     },
     "detox": {
       "jest": "^29.1.0"
+    },
+    "react-native-walkthrough-tooltip": {
+      "@types/react": "^18.0.26"
     }
   }
 }
