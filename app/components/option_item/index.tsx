@@ -27,7 +27,7 @@ const OptionType = {
     ...TouchableOptionTypes,
 } as const;
 
-type OptionType = typeof OptionType[keyof typeof OptionType];
+export type OptionType = typeof OptionType[keyof typeof OptionType];
 
 export const ITEM_HEIGHT = 48;
 
@@ -108,6 +108,7 @@ export type OptionItemProps = {
     info?: string;
     inline?: boolean;
     label: string;
+    labelContainerStyle?: StyleProp<ViewStyle>;
     onRemove?: () => void;
     optionDescriptionTextStyle?: StyleProp<TextStyle>;
     optionLabelTextStyle?: StyleProp<TextStyle>;
@@ -130,6 +131,7 @@ const OptionItem = ({
     info,
     inline = false,
     label,
+    labelContainerStyle,
     onRemove,
     optionDescriptionTextStyle,
     optionLabelTextStyle,
@@ -236,7 +238,7 @@ const OptionItem = ({
             onLayout={onLayout}
         >
             <View style={styles.row}>
-                <View style={styles.labelContainer}>
+                <View style={[styles.labelContainer, labelContainerStyle]}>
                     {Boolean(icon) && (
                         <View style={styles.iconContainer}>
                             <OptionIcon

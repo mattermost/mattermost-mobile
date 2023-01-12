@@ -45,6 +45,8 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     const enableConfirmNotificationsToChannel = observeConfigBooleanValue(database, 'EnableConfirmNotificationsToChannel');
     const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
     const maxMessageLength = observeConfigIntValue(database, 'MaxPostSize', MAX_MESSAGE_LENGTH_FALLBACK);
+    const persistentNotificationInterval = observeConfigIntValue(database, 'PersistentNotificationInterval');
+    const persistentNotificationMaxRecipients = observeConfigIntValue(database, 'PersistentNotificationMaxRecipients');
 
     const useChannelMentions = combineLatest([channel, currentUser]).pipe(
         switchMap(([c, u]) => {
@@ -57,6 +59,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     );
 
     const channelInfo = channel.pipe(switchMap((c) => (c ? c.info.observe() : of$(undefined))));
+    const channelType = channel.pipe(switchMap((c) => of$(c?.type)));
     const membersCount = channelInfo.pipe(
         switchMap((i) => (i ? of$(i.memberCount) : of$(0))),
     );
@@ -64,6 +67,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     const customEmojis = queryAllCustomEmojis(database).observe();
 
     return {
+        channelType,
         currentUserId,
         enableConfirmNotificationsToChannel,
         isTimezoneEnabled,
@@ -72,6 +76,8 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         userIsOutOfOffice,
         useChannelMentions,
         customEmojis,
+        persistentNotificationInterval,
+        persistentNotificationMaxRecipients,
     };
 });
 

@@ -5,9 +5,10 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {Config, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
+import {observeCurrentUser} from '@queries/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -196,10 +197,29 @@ export const observeConfigIntValue = (database: Database, key: keyof ClientConfi
 };
 
 export const observeIsPostPriorityEnabled = (database: Database) => {
-    const featureFlag = observeConfigValue(database, 'FeatureFlagPostPriority');
-    const cfg = observeConfigValue(database, 'PostPriority');
+    const featureFlag = observeConfigBooleanValue(database, 'FeatureFlagPostPriority');
+    const cfg = observeConfigBooleanValue(database, 'PostPriority');
     return combineLatest([featureFlag, cfg]).pipe(
-        switchMap(([ff, c]) => of$(ff === Config.TRUE && c === Config.TRUE)),
+        switchMap(([ff, c]) => of$(ff && c)),
+        distinctUntilChanged(),
+    );
+};
+
+export const observeIsPostAcknowledgementsEnabled = (database: Database) => {
+    return observeConfigBooleanValue(database, 'PostAcknowledgements');
+};
+
+export const observePersistentNotificationsEnabled = (database: Database) => {
+    const user = observeCurrentUser(database);
+    const enabledForAll = observeConfigBooleanValue(database, 'AllowPersistentNotifications');
+    const enabledForGuests = observeConfigBooleanValue(database, 'AllowPersistentNotificationsForGuests');
+    return combineLatest([user, enabledForAll, enabledForGuests]).pipe(
+        switchMap(([u, forAll, forGuests]) => {
+            if (u?.isGuest) {
+                return of$(forAll && forGuests);
+            }
+            return of$(forAll);
+        }),
         distinctUntilChanged(),
     );
 };

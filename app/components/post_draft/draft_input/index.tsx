@@ -2,11 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {PasteInputRef} from '@mattermost/react-native-paste-input';
-import React, {useCallback, useRef} from 'react';
-import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import React, {useCallback, useMemo, useRef} from 'react';
+import {useIntl} from 'react-intl';
+import {Alert, LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import PostPriorityLabel from '@components/post_priority/post_priority_label';
+import {General} from '@constants';
+import {MENTIONS_REGEX, SPECIAL_MENTIONS_REGEX} from '@constants/autocomplete';
+import {PostPriorityType} from '@constants/post';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -16,16 +19,21 @@ import SendAction from '../send_action';
 import Typing from '../typing';
 import Uploads from '../uploads';
 
+import Header from './header';
+
 type Props = {
     testID?: string;
     channelId: string;
+    channelType?: ChannelType;
     rootId?: string;
     currentUserId: string;
     canShowPostPriority?: boolean;
 
     // Post Props
-    postPriority: PostPriorityData;
-    updatePostPriority: (postPriority: PostPriorityData) => void;
+    postPriority: PostPriorityMetadata;
+    updatePostPriority: (postPriority: PostPriorityMetadata) => void;
+    persistentNotificationInterval: number;
+    persistentNotificationMaxRecipients: number;
 
     // Cursor Position Handler
     updateCursorPosition: React.Dispatch<React.SetStateAction<number>>;
@@ -96,6 +104,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 export default function DraftInput({
     testID,
     channelId,
+    channelType,
     currentUserId,
     canShowPostPriority,
     files,
@@ -112,8 +121,11 @@ export default function DraftInput({
     updatePostInputTop,
     postPriority,
     updatePostPriority,
+    persistentNotificationInterval,
+    persistentNotificationMaxRecipients,
     setIsFocused,
 }: Props) {
+    const intl = useIntl();
     const theme = useTheme();
 
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
@@ -130,6 +142,90 @@ export default function DraftInput({
     const quickActionsTestID = `${testID}.quick_actions`;
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
+
+    const persistenNotificationsEnabled = postPriority?.persistent_notifications && postPriority?.priority === PostPriorityType.URGENT;
+    const {noMentionsError, mentionsList} = useMemo(() => {
+        let error = false;
+        let mentions: string[] = [];
+        if (
+            channelType !== General.DM_CHANNEL &&
+            persistenNotificationsEnabled
+        ) {
+            mentions = (value.match(MENTIONS_REGEX) || []);
+            error = mentions.length === 0;
+        }
+
+        return {noMentionsError: error, mentionsList: mentions};
+    }, [channelType, persistenNotificationsEnabled, value]);
+
+    const handleSendMessage = useCallback(() => {
+        // @TODO - Check if usernames in mentionsList matched users/groups
+        if (persistenNotificationsEnabled) {
+            let title = '';
+            let description = '';
+            let error = true;
+            if (SPECIAL_MENTIONS_REGEX.test(value)) {
+                description = intl.formatMessage({
+                    id: 'persistent_notifications.error.special_mentions',
+                    defaultMessage: 'Cannot use @channel, @all or @here to mention recipients of persistent notifications.',
+                });
+            } else if (mentionsList.length > persistentNotificationMaxRecipients) {
+                title = intl.formatMessage({
+                    id: 'persistent_notifications.error.max_recipients.title',
+                    defaultMessage: 'Too many recipients',
+                });
+                description = intl.formatMessage({
+                    id: 'persistent_notifications.error.max_recipients.description',
+                    defaultMessage: 'You can send persistent notifications to a maximum of {max} recipients. There are {count} recipients mentioned in your message. You’ll need to change who you’ve mentioned before you can send.',
+                }, {
+                    max: persistentNotificationMaxRecipients,
+                    count: mentionsList.length,
+                });
+            } else {
+                error = false;
+                title = intl.formatMessage({
+                    id: 'persistent_notifications.confirm.title',
+                    defaultMessage: 'Send persistent notifications',
+                });
+                description = intl.formatMessage({
+                    id: 'persistent_notifications.confirm.description',
+                    defaultMessage: '@mentioned recipients will be notified every {interval, plural, one {1 minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
+                }, {
+                    interval: persistentNotificationInterval,
+                });
+            }
+            Alert.alert(
+                title,
+                description,
+                error ? [{
+                    text: intl.formatMessage({
+                        id: 'persistent_notifications.error.okay',
+                        defaultMessage: 'Okay',
+                    }),
+                    style: 'cancel',
+                }] : [
+                    {
+                        text: intl.formatMessage({
+                            id: 'persistent_notifications.confirm.cancel',
+                            defaultMessage: 'Cancel',
+                        }),
+                        style: 'cancel',
+                    },
+                    {
+                        text: intl.formatMessage({
+                            id: 'persistent_notifications.confirm.send',
+                            defaultMessage: 'Send',
+                        }),
+                        onPress: sendMessage,
+                    },
+                ],
+            );
+        } else {
+            sendMessage();
+        }
+    }, [persistenNotificationsEnabled, persistentNotificationMaxRecipients, sendMessage, value]);
+
+    const sendActionDisabled = !canSend || noMentionsError;
 
     return (
         <>
@@ -155,11 +251,10 @@ export default function DraftInput({
                     overScrollMode={'never'}
                     disableScrollViewPanResponder={true}
                 >
-                    {Boolean(postPriority?.priority) && (
-                        <View style={style.postPriorityLabel}>
-                            <PostPriorityLabel label={postPriority!.priority}/>
-                        </View>
-                    )}
+                    <Header
+                        noMentionsError={noMentionsError}
+                        postPriority={postPriority}
+                    />
                     <PostInput
                         testID={postInputTestID}
                         channelId={channelId}
@@ -195,8 +290,8 @@ export default function DraftInput({
                         />
                         <SendAction
                             testID={sendActionTestID}
-                            disabled={!canSend}
-                            sendMessage={sendMessage}
+                            disabled={sendActionDisabled}
+                            sendMessage={handleSendMessage}
                         />
                     </View>
                 </ScrollView>

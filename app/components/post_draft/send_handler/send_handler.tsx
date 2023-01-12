@@ -29,6 +29,7 @@ import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji
 type Props = {
     testID?: string;
     channelId: string;
+    channelType?: ChannelType;
     rootId: string;
     canShowPostPriority?: boolean;
     setIsFocused: (isFocused: boolean) => void;
@@ -53,6 +54,8 @@ type Props = {
     updatePostInputTop: (top: number) => void;
     addFiles: (file: FileInfo[]) => void;
     uploadFileError: React.ReactNode;
+    persistentNotificationInterval: number;
+    persistentNotificationMaxRecipients: number;
 }
 
 const INITIAL_PRIORITY = {
@@ -62,6 +65,7 @@ const INITIAL_PRIORITY = {
 export default function SendHandler({
     testID,
     channelId,
+    channelType,
     currentUserId,
     enableConfirmNotificationsToChannel,
     files,
@@ -82,13 +86,15 @@ export default function SendHandler({
     updateCursorPosition,
     updatePostInputTop,
     setIsFocused,
+    persistentNotificationInterval,
+    persistentNotificationMaxRecipients,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
     const [channelTimezoneCount, setChannelTimezoneCount] = useState(0);
     const [sendingMessage, setSendingMessage] = useState(false);
-    const [postPriority, setPostPriority] = useState<PostPriorityData>(INITIAL_PRIORITY);
+    const [postPriority, setPostPriority] = useState<PostPriorityMetadata>(INITIAL_PRIORITY);
 
     const canSend = useCallback(() => {
         if (sendingMessage) {
@@ -289,6 +295,7 @@ export default function SendHandler({
         <DraftInput
             testID={testID}
             channelId={channelId}
+            channelType={channelType}
             currentUserId={currentUserId}
             rootId={rootId}
             canShowPostPriority={canShowPostPriority}
@@ -305,6 +312,8 @@ export default function SendHandler({
             updatePostInputTop={updatePostInputTop}
             postPriority={postPriority}
             updatePostPriority={setPostPriority}
+            persistentNotificationInterval={persistentNotificationInterval}
+            persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
             setIsFocused={setIsFocused}
         />
     );

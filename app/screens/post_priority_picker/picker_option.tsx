@@ -3,32 +3,40 @@
 
 import React from 'react';
 
-import OptionItem, {OptionItemProps} from '@components/option_item';
+import OptionItem, {OptionItemProps, OptionType} from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
-    optionLabelTextStyle: {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+    labelContainer: {
+        alignItems: 'flex-start',
+    },
+    optionLabelText: {
         color: theme.centerChannelColor,
         ...typography('Body', 200, 'Regular'),
     },
 }));
 
-const PostPriorityPickerItem = (props: Omit<OptionItemProps, 'type'>) => {
+type Props = Omit<OptionItemProps, 'type'> & {
+    type?: OptionType;
+}
+
+const PickerOption = (props: Props) => {
     const theme = useTheme();
-    const style = getStyle(theme);
+    const style = getStyleSheet(theme);
 
     const testID = `post_priority_picker_item.${props.value || 'standard'}`;
 
     return (
         <OptionItem
-            optionLabelTextStyle={style.optionLabelTextStyle}
+            labelContainerStyle={style.labelContainer}
+            optionLabelTextStyle={style.optionLabelText}
             testID={testID}
-            type='select'
             {...props}
+            type={props.type || 'select'}
         />
     );
 };
 
-export default PostPriorityPickerItem;
+export default PickerOption;

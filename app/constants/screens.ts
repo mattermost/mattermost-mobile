@@ -38,6 +38,7 @@ export const ONBOARDING = 'Onboarding';
 export const PERMALINK = 'Permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
+export const POST_PRIORITY_PICKER = 'PostPriorityPicker';
 export const REACTIONS = 'Reactions';
 export const REVIEW_APP = 'ReviewApp';
 export const SAVED_MESSAGES = 'SavedMessages';
@@ -104,6 +105,7 @@ export default {
     PERMALINK,
     PINNED_MESSAGES,
     POST_OPTIONS,
+    POST_PRIORITY_PICKER,
     REACTIONS,
     REVIEW_APP,
     SAVED_MESSAGES,
@@ -152,6 +154,7 @@ export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
 export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
     BOTTOM_SHEET,
     POST_OPTIONS,
+    POST_PRIORITY_PICKER,
     THREAD_OPTIONS,
     PERMALINK,
     REACTIONS,
