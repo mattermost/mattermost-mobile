@@ -936,5 +936,8 @@
     "settings.notice_mobile_link": "applications mobiles",
     "settings.link.error.text": "Impossible d'ouvrir le lien.",
     "settings.advanced.cancel": "Annuler",
-    "settings.advanced_settings": "Paramètres avancés"
+    "settings.advanced_settings": "Paramètres avancés",
+    "skintone_selector.tooltip.title": "Choisissez votre couleur de peau par défaut",
+    "skintone_selector.tooltip.description": "Vous pouvez désormais choisir le ton de peau que vous préférez utiliser pour vos emojis.",
+    "default_skin_tone": "Teinte de peau par défaut"
 }
