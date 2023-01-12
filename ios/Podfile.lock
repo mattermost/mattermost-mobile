@@ -345,7 +345,7 @@ PODS:
     - React-Core
   - react-native-hw-keyboard-event (0.0.4):
     - React
-  - react-native-image-picker (4.10.3):
+  - react-native-image-picker (5.0.0):
     - React-Core
   - react-native-in-app-review (4.2.1):
     - React-Core
@@ -485,7 +485,7 @@ PODS:
     - React-Core
   - RNReactNativeHapticFeedback (1.14.0):
     - React-Core
-  - RNReanimated (2.13.0):
+  - RNReanimated (2.14.1):
     - DoubleConversion
     - FBLazyVector
     - FBReactNativeSpec
@@ -512,18 +512,18 @@ PODS:
     - React-RCTText
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNRudderSdk (1.0.0):
+  - RNRudderSdk (1.5.2):
     - React
     - Rudder (~> 1.6.0)
   - RNScreens (3.18.2):
     - React-Core
     - React-RCTImage
-  - RNSentry (4.12.0):
+  - RNSentry (4.13.0):
     - React-Core
-    - Sentry/HybridSDK (= 7.31.3)
+    - Sentry/HybridSDK (= 7.31.5)
   - RNShare (8.1.0):
     - React-Core
-  - RNSVG (13.6.0):
+  - RNSVG (13.7.0):
     - React-Core
   - RNVectorIcons (9.2.0):
     - React-Core
@@ -534,7 +534,7 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - Sentry/HybridSDK (7.31.3)
+  - Sentry/HybridSDK (7.31.5)
   - simdjson (1.0.0)
   - SocketRocket (0.6.0)
   - Starscream (4.0.4)
@@ -915,7 +915,7 @@ SPEC CHECKSUMS:
   react-native-document-picker: 958e2bc82e128be69055be261aeac8d872c8d34c
   react-native-emm: c5b7dcffde34ce345fd0c16d66b587e611a3d31f
   react-native-hw-keyboard-event: b517cefb8d5c659a38049c582de85ff43337dc53
-  react-native-image-picker: 60f4246eb5bb7187fc15638a8c1f13abd3820695
+  react-native-image-picker: 9160f95f836aae4a9afb90a7b2ab78b2b534e5bd
   react-native-in-app-review: a073f67c5f3392af6ea7fb383217cdb1aa2aa726
   react-native-netinfo: 2517ad504b3d303e90d7a431b0fcaef76d207983
   react-native-network-client: ce464b9d413872f1b0c36852a44d66b1a45a9dce
@@ -953,17 +953,17 @@ SPEC CHECKSUMS:
   RNLocalize: 0df7970cfc60389f00eb62fd7c097dc75af3fb4f
   RNPermissions: dcdb7b99796bbeda6975a6e79ad519c41b251b1c
   RNReactNativeHapticFeedback: 1e3efeca9628ff9876ee7cdd9edec1b336913f8c
-  RNReanimated: ce445c233a6ff5600223484a88ad5704945d972a
-  RNRudderSdk: 14c176adb1557f3832cb385fcd14250f76a7e268
+  RNReanimated: 8125b2324ba03108136ab5dd506fc49b2454da24
+  RNRudderSdk: 07f732edfe473ef67b8cc6ad1800ddb81b78286f
   RNScreens: 34cc502acf1b916c582c60003dc3089fa01dc66d
-  RNSentry: 4c09f4dd9740cb9b33e94303de5b6d0dbeb0737d
+  RNSentry: acebe4104a6f5915ae871eb59dc73f13dcc92ef7
   RNShare: 48b3113cd089a2be8ff0515c3ae7a46a4db8a76b
-  RNSVG: 3a79c0c4992213e4f06c08e62730c5e7b9e4dc17
+  RNSVG: d787d64ca06b9158e763ad2638a8c4edce00782a
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   Rudder: 7c080303528ea612f58c9f9e8fcfab92b5dbcca8
   SDWebImage: a47aea9e3d8816015db4e523daff50cfd294499d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  Sentry: 08884c523575ec0f6690d94ed3ccb0246a1600bf
+  Sentry: 4c9babff9034785067c896fd580b1f7de44da020
   simdjson: c96317b3a50dff3468a42f586ab7ed22c6ab2fd9
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
