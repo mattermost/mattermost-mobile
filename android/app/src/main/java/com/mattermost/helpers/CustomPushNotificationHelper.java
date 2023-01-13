@@ -428,7 +428,7 @@ public class CustomPushNotificationHelper {
             final OkHttpClient client = new OkHttpClient();
             Request request;
             String url;
-            if (urlOverride != null) {
+            if (!TextUtils.isEmpty(urlOverride)) {
                 request = new Request.Builder().url(urlOverride).build();
                 Log.i("ReactNative", String.format("Fetch override profile image %s", urlOverride));
             } else {
