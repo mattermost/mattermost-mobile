@@ -166,7 +166,6 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
 
             // @ts-expect-error clearIcon definition does not include a ReactElement
             clearIcon={clearIcon}
-            enablesReturnKeyAutomatically={true}
             containerStyle={[styles.containerStyle, props.containerStyle]}
             inputContainerStyle={[styles.inputContainerStyle, props.inputContainerStyle]}
             inputStyle={[styles.inputStyle, props.inputStyle]}

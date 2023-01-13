@@ -324,6 +324,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                 showBackButton={false}
                 title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
                 hasSearch={true}
+                enablesReturnKeyAutomatically={true}
                 scrollValue={scrollValue}
                 lockValue={lockValue}
                 hideHeader={hideHeader}
