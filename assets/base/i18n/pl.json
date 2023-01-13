@@ -936,5 +936,8 @@
     "join_team.error.title": "Błąd przy dołączaniu do zespołu",
     "join_team.error.message": "Wystąpił błąd w dołączeniu do zespołu",
     "join_team.error.group_error": "Musisz być członkiem grupy połączonej, żeby dołączyć do tego zespołu.",
-    "connection_banner.connecting": "Łączenie..."
+    "connection_banner.connecting": "Łączenie...",
+    "skintone_selector.tooltip.title": "Wybierz swój domyślny odcień wyglądu",
+    "skintone_selector.tooltip.description": "Możesz teraz wybrać odcień wyglądu, który wolisz używać dla swoich emojis.",
+    "default_skin_tone": "Domyślny odcień wyglądu"
 }
