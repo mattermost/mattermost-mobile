@@ -76,7 +76,7 @@ const searchScreenIndex = 1;
 const SearchScreen = ({teamId, teams}: Props) => {
     const nav = useNavigation();
     const isFocused = useIsFocused();
-    const intl = useIntl();
+    const {formatMessage} = useIntl();
     const theme = useTheme();
     const insets = useSafeAreaInsets();
     const keyboardHeight = useKeyboardHeight();
@@ -238,16 +238,16 @@ const SearchScreen = ({teamId, teams}: Props) => {
     const renderInitialOrLoadingItem = useCallback(() => {
         return loading ? (
             <Loading
-                containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
                 color={theme.buttonBg}
+                containerStyle={[styles.loading, {paddingTop: scrollPaddingTop}]}
                 size='large'
             />
         ) : (
             <Initial
                 scrollEnabled={scrollEnabled}
+                searchRef={searchRef}
                 searchValue={searchValue}
                 setRecentValue={handleRecentSearch}
-                searchRef={searchRef}
                 setSearchValue={handleModifierTextChange}
                 setTeamId={setSearchTeamId}
                 teamId={searchTeamId}
@@ -320,29 +320,29 @@ const SearchScreen = ({teamId, teams}: Props) => {
     return (
         <FreezeScreen freeze={!isFocused}>
             <NavigationHeader
-                isLargeTitle={true}
-                showBackButton={false}
-                title={intl.formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
-                hasSearch={true}
-                enablesReturnKeyAutomatically={true}
-                scrollValue={scrollValue}
-                lockValue={lockValue}
-                hideHeader={hideHeader}
-                onChangeText={handleTextChange}
-                onSubmitEditing={onSubmit}
                 blurOnSubmit={true}
-                placeholder={intl.formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
-                onBlur={onBlur}
-                onClear={handleClearSearch}
-                onCancel={handleCancelSearch}
-                onFocus={onFocus}
                 defaultValue={searchValue}
+                enablesReturnKeyAutomatically={true}
+                hasSearch={true}
+                hideHeader={hideHeader}
+                isLargeTitle={true}
+                lockValue={lockValue}
+                onBlur={onBlur}
+                onCancel={handleCancelSearch}
+                onChangeText={handleTextChange}
+                onClear={handleClearSearch}
+                onFocus={onFocus}
+                onSubmitEditing={onSubmit}
+                placeholder={formatMessage({id: 'screen.search.placeholder', defaultMessage: 'Search messages & files'})}
                 ref={searchRef}
+                scrollValue={scrollValue}
+                showBackButton={false}
+                title={formatMessage({id: 'screen.search.title', defaultMessage: 'Search'})}
             />
             <SafeAreaView
-                style={styles.flex}
                 edges={EDGES}
                 onLayout={onLayout}
+                style={styles.flex}
                 testID='search_messages.screen'
             >
                 <Animated.View style={animated}>
@@ -350,61 +350,61 @@ const SearchScreen = ({teamId, teams}: Props) => {
                         <RoundedHeaderContext/>
                         {lastSearchedValue && !loading &&
                             <Header
-                                teamId={searchTeamId}
-                                setTeamId={handleResultsTeamChange}
-                                onTabSelect={setSelectedTab}
-                                onFilterChanged={handleFilterChange}
-                                numberMessages={posts.length}
-                                selectedTab={selectedTab}
                                 numberFiles={fileInfos.length}
+                                numberMessages={posts.length}
+                                onFilterChanged={handleFilterChange}
+                                onTabSelect={setSelectedTab}
                                 selectedFilter={filter}
+                                selectedTab={selectedTab}
+                                setTeamId={handleResultsTeamChange}
+                                teamId={searchTeamId}
                                 teams={teams}
                             />
                         }
                     </Animated.View>
                     {!showResults &&
                         <AnimatedFlatList
-                            onLayout={onFlatLayout}
-                            data={dummyData}
                             contentContainerStyle={initialContainerStyle}
-                            keyboardShouldPersistTaps='handled'
-                            keyboardDismissMode={'interactive'}
-                            nestedScrollEnabled={true}
+                            data={dummyData}
                             indicatorStyle='black'
+                            keyboardDismissMode={'interactive'}
+                            keyboardShouldPersistTaps='handled'
+                            nestedScrollEnabled={true}
+                            onLayout={onFlatLayout}
                             onScroll={onScroll}
-                            scrollEventThrottle={16}
-                            removeClippedSubviews={false}
-                            scrollToOverflowEnabled={true}
                             overScrollMode='always'
                             ref={scrollRef}
+                            removeClippedSubviews={false}
                             renderItem={renderInitialOrLoadingItem}
+                            scrollEventThrottle={16}
+                            scrollToOverflowEnabled={true}
                         />
                     }
                     {showResults && !loading &&
                         <Results
-                            loading={resultsLoading}
-                            selectedTab={selectedTab}
-                            searchValue={lastSearchedValue}
-                            posts={posts}
-                            fileInfos={fileInfos}
-                            scrollPaddingTop={lockValue.value}
                             fileChannelIds={fileChannelIds}
+                            fileInfos={fileInfos}
+                            loading={resultsLoading}
+                            posts={posts}
+                            scrollPaddingTop={lockValue.value}
+                            searchValue={lastSearchedValue}
+                            selectedTab={selectedTab}
                         />
                     }
                 </Animated.View>
             </SafeAreaView>
             {searchIsFocused &&
             <Autocomplete
-                updateValue={handleTextChange}
-                cursorPosition={cursorPosition}
-                value={searchValue}
-                isSearch={true}
-                hasFilesAttached={false}
                 availableSpace={autocompleteMaxHeight}
-                position={autocompletePosition}
-                growDown={true}
                 containerStyle={styles.autocompleteContainer}
+                cursorPosition={cursorPosition}
+                growDown={true}
+                hasFilesAttached={false}
+                isSearch={true}
+                position={autocompletePosition}
                 teamId={searchTeamId}
+                updateValue={handleTextChange}
+                value={searchValue}
             />
             }
         </FreezeScreen>
