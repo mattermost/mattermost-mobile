@@ -58,6 +58,7 @@ public class CustomPushNotificationHelper {
         String senderId = bundle.getString("sender_id");
         String serverUrl = bundle.getString("server_url");
         String type = bundle.getString("type");
+        String urlOverride = bundle.getString("override_icon_url");
         if (senderId == null) {
             senderId = "sender_id";
         }
@@ -74,7 +75,7 @@ public class CustomPushNotificationHelper {
 
         if (serverUrl != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
             try {
-                Bitmap avatar = userAvatar(context, serverUrl, senderId, null);
+                Bitmap avatar = userAvatar(context, serverUrl, senderId, urlOverride);
                 if (avatar != null) {
                     sender.setIcon(IconCompat.createWithBitmap(avatar));
                 }
@@ -266,6 +267,7 @@ public class CustomPushNotificationHelper {
         final String senderId = "me";
         final String serverUrl = bundle.getString("server_url");
         final String type = bundle.getString("type");
+        String urlOverride = bundle.getString("override_icon_url");
 
         Person.Builder sender = new Person.Builder()
                 .setKey(senderId)
@@ -273,7 +275,7 @@ public class CustomPushNotificationHelper {
 
         if (serverUrl != null && !type.equals(CustomPushNotificationHelper.PUSH_TYPE_SESSION)) {
             try {
-                Bitmap avatar = userAvatar(context, serverUrl, "me", null);
+                Bitmap avatar = userAvatar(context, serverUrl, "me", urlOverride);
                 if (avatar != null) {
                     sender.setIcon(IconCompat.createWithBitmap(avatar));
                 }
