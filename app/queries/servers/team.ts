@@ -84,7 +84,7 @@ export const getTeamChannelHistory = async (database: Database, teamId: string) 
     }
 };
 
-export const getNthLastChannelFromTeam = async (database: Database, teamId: string, n = 0) => {
+export const getNthLastChannelFromTeam = async (database: Database, teamId: string, n = 0, ignoreIdForDefault?: string) => {
     let channelId = '';
 
     try {
@@ -98,7 +98,7 @@ export const getNthLastChannelFromTeam = async (database: Database, teamId: stri
 
     if (!channelId) {
         // No channel history for the team
-        const channel = await getDefaultChannelForTeam(database, teamId);
+        const channel = await getDefaultChannelForTeam(database, teamId, ignoreIdForDefault);
         if (channel) {
             channelId = channel.id;
         }
@@ -156,41 +156,16 @@ export const removeTeamFromTeamHistory = async (operator: ServerDataOperator, te
     return patchTeamHistory(operator, teamIds, prepareRecordsOnly);
 };
 
-export const getLastTeam = async (database: Database) => {
+export const getLastTeam = async (database: Database, ignoreIdForDefault?: string) => {
     const teamHistory = (await getTeamHistory(database));
     if (teamHistory.length > 0) {
         return teamHistory[0];
     }
 
-    return getDefaultTeamId(database);
+    return getDefaultTeamId(database, ignoreIdForDefault);
 };
 
-export async function syncTeamTable(operator: ServerDataOperator, teams: Team[]) {
-    try {
-        const deletedTeams = teams.filter((t) => t.delete_at > 0).map((t) => t.id);
-        const deletedSet = new Set(deletedTeams);
-        const availableTeams = teams.filter((a) => !deletedSet.has(a.id));
-        const models = [];
-
-        if (deletedTeams.length) {
-            const notAvailable = await operator.database.get<TeamModel>(TEAM).query(Q.where('id', Q.oneOf(deletedTeams))).fetch();
-            const deletions = await Promise.all(notAvailable.map((t) => prepareDeleteTeam(t)));
-            for (const d of deletions) {
-                models.push(...d);
-            }
-        }
-
-        models.push(...await operator.handleTeam({teams: availableTeams, prepareRecordsOnly: true}));
-        if (models.length) {
-            await operator.batchRecords(models);
-        }
-        return {};
-    } catch (error) {
-        return {error};
-    }
-}
-
-export const getDefaultTeamId = async (database: Database) => {
+export const getDefaultTeamId = async (database: Database, ignoreId?: string) => {
     const user = await getCurrentUser(database);
     const config = await getConfig(database);
     const teamOrderPreferences = await queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER, '').fetch();
@@ -199,7 +174,13 @@ export const getDefaultTeamId = async (database: Database) => {
         teamOrderPreference = teamOrderPreferences[0].value;
     }
 
-    const teamModels = await database.get<TeamModel>(TEAM).query(Q.on(MY_TEAM, Q.where('id', Q.notEq('')))).fetch();
+    const clauses: Q.Clause[] = [Q.on(MY_TEAM, Q.where('id', Q.notEq('')))];
+
+    if (ignoreId) {
+        clauses.push(Q.where('id', Q.notEq(ignoreId)));
+    }
+
+    const teamModels = await database.get<TeamModel>(TEAM).query(...clauses).fetch();
 
     const defaultTeam = selectDefaultTeam(teamModels, user?.locale || DEFAULT_LOCALE, teamOrderPreference, config?.ExperimentalPrimaryTeam);
     return defaultTeam?.id;

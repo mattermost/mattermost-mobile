@@ -115,7 +115,7 @@ const Autocomplete = ({
     }, [growDown, position]);
 
     const containerStyles = useMemo(() => {
-        const s = [style.base, containerAnimatedStyle];
+        const s: StyleProp<ViewStyle> = [style.base, containerAnimatedStyle];
         if (hasElements) {
             s.push(style.borders);
         }
@@ -189,6 +189,7 @@ const Autocomplete = ({
                         nestedScrollEnabled={nestedScrollEnabled}
                         channelId={channelId}
                         rootId={rootId}
+                        isAppsEnabled={isAppsEnabled}
                     />
                 }
                 {/* {(isSearch && enableDateSuggestion) &&

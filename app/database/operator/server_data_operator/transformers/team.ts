@@ -72,6 +72,7 @@ export const transformTeamRecord = ({action, database, value}: TransformerArgs):
         team.allowedDomains = raw.allowed_domains;
         team.isGroupConstrained = Boolean(raw.group_constrained);
         team.lastTeamIconUpdatedAt = raw.last_team_icon_update;
+        team.inviteId = raw.invite_id;
     };
 
     return prepareBaseRecord({

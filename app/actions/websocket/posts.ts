@@ -128,11 +128,8 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             ) {
                 markAsViewed = true;
                 markAsRead = false;
-            } else if ((post.channel_id === currentChannelId)) { // TODO: THREADS && !viewingGlobalThreads) {
-                // Don't mark as read if we're in global threads screen
-                // the currentChannelId still refers to previously viewed channel
-
-                const isChannelScreenMounted = NavigationStore.getNavigationComponents().includes(Screens.CHANNEL);
+            } else if ((post.channel_id === currentChannelId)) {
+                const isChannelScreenMounted = NavigationStore.getScreensInStack().includes(Screens.CHANNEL);
 
                 const isTabletDevice = await isTablet();
                 if (isChannelScreenMounted || isTabletDevice) {
@@ -146,7 +143,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
             markChannelAsRead(serverUrl, post.channel_id);
         } else if (markAsViewed) {
             preparedMyChannelHack(myChannel);
-            const {member: viewedAt} = await markChannelAsViewed(serverUrl, post.channel_id, true);
+            const {member: viewedAt} = await markChannelAsViewed(serverUrl, post.channel_id, false, true);
             if (viewedAt) {
                 models.push(viewedAt);
             }
@@ -167,8 +164,13 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         }
     }
 
+    let actionType: string = ActionType.POSTS.RECEIVED_NEW;
+    if (isCRTEnabled && post.root_id) {
+        actionType = ActionType.POSTS.RECEIVED_IN_THREAD;
+    }
+
     const postModels = await operator.handlePosts({
-        actionType: ActionType.POSTS.RECEIVED_NEW,
+        actionType,
         order: [post.id],
         posts: [post],
         prepareRecordsOnly: true,
@@ -206,8 +208,14 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
         models.push(...authorsModels);
     }
 
+    let actionType: string = ActionType.POSTS.RECEIVED_NEW;
+    const isCRTEnabled = await getIsCRTEnabled(operator.database);
+    if (isCRTEnabled && post.root_id) {
+        actionType = ActionType.POSTS.RECEIVED_IN_THREAD;
+    }
+
     const postModels = await operator.handlePosts({
-        actionType: ActionType.POSTS.RECEIVED_NEW,
+        actionType,
         order: [post.id],
         posts: [post],
         prepareRecordsOnly: true,

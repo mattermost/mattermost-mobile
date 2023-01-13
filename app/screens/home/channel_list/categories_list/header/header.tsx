@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
-import {Insets, Text, View} from 'react-native';
+import {Insets, Text, TouchableWithoutFeedback, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -24,11 +24,14 @@ import {typography} from '@utils/typography';
 
 import LoadingUnreads from './loading_unreads';
 import PlusMenu from './plus_menu';
+import {SEPARATOR_HEIGHT} from './plus_menu/separator';
 
 type Props = {
     canCreateChannels: boolean;
     canJoinChannels: boolean;
-    displayName: string;
+    canInvitePeople: boolean;
+    displayName?: string;
+    inviteId?: string;
     iconPad?: boolean;
     onHeaderPress?: () => void;
     pushProxyStatus: string;
@@ -92,7 +95,9 @@ const hitSlop: Insets = {top: 10, bottom: 30, left: 20, right: 20};
 const ChannelListHeader = ({
     canCreateChannels,
     canJoinChannels,
+    canInvitePeople,
     displayName,
+    inviteId,
     iconPad,
     onHeaderPress,
     pushProxyStatus,
@@ -100,16 +105,16 @@ const ChannelListHeader = ({
     const theme = useTheme();
     const isTablet = useIsTablet();
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const serverDisplayName = useServerDisplayName();
-    const marginLeft = useSharedValue(iconPad ? 44 : 0);
+    const marginLeft = useSharedValue(iconPad ? 50 : 0);
     const styles = getStyles(theme);
     const animatedStyle = useAnimatedStyle(() => ({
         marginLeft: withTiming(marginLeft.value, {duration: 350}),
     }), []);
     const serverUrl = useServerUrl();
     useEffect(() => {
-        marginLeft.value = iconPad ? 44 : 0;
+        marginLeft.value = iconPad ? 50 : 0;
     }, [iconPad]);
 
     const onPress = useCallback(() => {
@@ -118,12 +123,17 @@ const ChannelListHeader = ({
                 <PlusMenu
                     canCreateChannels={canCreateChannels}
                     canJoinChannels={canJoinChannels}
+                    canInvitePeople={canInvitePeople}
+                    displayName={displayName}
+                    inviteId={inviteId}
                 />
             );
         };
 
         const closeButtonId = 'close-plus-menu';
         let items = 1;
+        let separators = 0;
+
         if (canCreateChannels) {
             items += 1;
         }
@@ -132,14 +142,19 @@ const ChannelListHeader = ({
             items += 1;
         }
 
+        if (canInvitePeople) {
+            items += 1;
+            separators += 1;
+        }
+
         bottomSheet({
             closeButtonId,
             renderContent,
-            snapPoints: [bottomSheetSnapPoint(items, ITEM_HEIGHT, insets.bottom), 10],
+            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom) + (separators * SEPARATOR_HEIGHT)],
             theme,
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
-    }, [intl, insets, isTablet, theme]);
+    }, [intl, bottom, isTablet, theme]);
 
     const onPushAlertPress = useCallback(() => {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {
@@ -158,9 +173,8 @@ const ChannelListHeader = ({
         header = (
             <>
                 <View style={styles.headerRow}>
-                    <TouchableWithFeedback
+                    <TouchableWithoutFeedback
                         onPress={onHeaderPress}
-                        type='opacity'
                     >
                         <View style={styles.headerRow}>
                             <Text
@@ -169,17 +183,8 @@ const ChannelListHeader = ({
                             >
                                 {displayName}
                             </Text>
-                            <View
-                                style={styles.chevronButton}
-                                testID='channel_list_header.chevron.button'
-                            >
-                                <CompassIcon
-                                    style={styles.chevronIcon}
-                                    name={'chevron-down'}
-                                />
-                            </View>
                         </View>
-                    </TouchableWithFeedback>
+                    </TouchableWithoutFeedback>
                     <TouchableWithFeedback
                         hitSlop={hitSlop}
                         onPress={onPress}

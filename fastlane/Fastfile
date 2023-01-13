@@ -165,6 +165,16 @@ lane :configure do
     json['SentryDsnAndroid'] = ENV['SENTRY_DSN_ANDROID']
   end
 
+  # Configure show app review
+  if ENV['SHOW_REVIEW'] == 'true'
+    json['ShowReview'] = true
+  end
+
+  # Configure Show Onboarding
+  if ENV['SHOW_ONBOARDING'] == 'true'
+    json['ShowOnboarding'] = true
+  end
+
   # Save the config.json file
   save_json_as_file('../dist/assets/config.json', json)
 
@@ -177,7 +187,7 @@ lane :upload_file_to_s3 do |options|
   extension = os_type == "android" ? "*.apk" : "*.ipa"
   build_folder_path = Dir[File.expand_path('..')].first
   files = []
-  
+
   unless options[:file].nil? || options[:file].empty?
     files.push("#{build_folder_path}/#{options[:file]}")
   else
@@ -194,7 +204,7 @@ lane :upload_file_to_s3 do |options|
       pr_file = File.basename(files.first)
       plist_file = "#{File.basename(files.first, '.*')}.plist"
     else
-      version_number = os_type == "android" ? 
+      version_number = os_type == "android" ?
         android_get_version_name(gradle_file: './android/app/build.gradle') :
         get_version_number(xcodeproj: './ios/Mattermost.xcodeproj', target: 'Mattermost')
       build_number = os_type == "android" ?
@@ -207,7 +217,7 @@ lane :upload_file_to_s3 do |options|
     s3_folder = is_build_pr ?
       "#{ENV['AWS_FOLDER_NAME']}/#{ENV['BRANCH_TO_BUILD']}" :
       "#{ENV['AWS_FOLDER_NAME']}/#{version_number}/#{build_number}"
-    
+
     s3 = Aws::S3::Resource.new(region: s3_region)
     s3_bucket = s3.bucket(s3_bucket_name)
     mutex = Mutex.new
@@ -254,7 +264,7 @@ lane :upload_file_to_s3 do |options|
                             :install_url => install_url
                         })
     end
-  
+
     if options[:file] == 'Mattermost-simulator-x86_64.app.zip'
       pretext = '#### New iOS build for VM/Simulator'
       msg = "Download link: #{links.first}"
@@ -313,7 +323,7 @@ platform :ios do
 
   desc 'Get iOS match profiles'
   lane :certs do
-    if !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
+    if !ENV['IOS_API_KEY_ID'].nil? && !ENV['IOS_API_KEY_ID'].empty?
       api_key = get_apple_api_key()
       match(
           api_key: api_key,
@@ -345,39 +355,27 @@ platform :ios do
     update_identifiers
     replace_assets
 
-    sh 'rm -rf ../build-ios/'
-    sh 'cd ../ios/ && xcodebuild -workspace Mattermost.xcworkspace/ -scheme Mattermost -sdk iphoneos -configuration Release -parallelizeTargets -resultBundlePath ../build-ios/result -derivedDataPath ../build-ios/ CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO CODE_SIGNING_ALLOWED=NO'
-    sh 'cd ../build-ios/ && mkdir -p Payload && cp -R ../ios/Build/Products/Release-iphoneos/Mattermost.app Payload/ && zip -r Mattermost-unsigned.ipa Payload/'
-    sh 'mv ../build-ios/Mattermost-unsigned.ipa ../'
-    sh 'rm -rf ../build-ios/'
+    build_ios_unsigned_or_simulator(
+      more_xc_args: "-sdk iphoneos CODE_SIGNING_ALLOWED=NO",
+      rel_build_dir: "Release-iphoneos",
+      output_file: "Mattermost-unsigned.ipa",
+    )
   end
 
   lane :simulator do
     UI.success('Building iOS app for simulator')
 
-    ENV['APP_NAME'] = 'Mattermost'
-    ENV['REPLACE_ASSETS'] = 'true'
-    ENV['BUILD_FOR_RELEASE'] = 'true'
-    ENV['APP_SCHEME'] = 'mattermost'
+    output_file = "Mattermost-simulator-x86_64.app.zip"
 
-    update_identifiers
-    replace_assets
-
-    data_path = 'ios'
-    if ENV['CIRCLECI'] == 'true'
-      data_path = 'build-ios'
-    end
-
-    sh 'rm -rf ../ios/build/'
-    sh 'rm -rf ../build-ios/'
-    sh 'cd ../ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -arch x86_64 -sdk iphonesimulator -configuration Release -parallelizeTargets -derivedDataPath ../build-ios ENABLE_BITCODE=NO CODE_SIGN_IDENTITY="" CODE_SIGNING_REQUIRED=NO ENABLE_BITCODE=NO'
-    sh "cd ../#{data_path}/Build/Products/Release-iphonesimulator && zip -r Mattermost-simulator-x86_64.app.zip Mattermost.app"
-    sh "mv ../#{data_path}/Build/Products/Release-iphonesimulator/Mattermost-simulator-x86_64.app.zip ../"
-    sh 'rm -rf ../build-ios/'
+    build_ios_unsigned_or_simulator(
+      more_xc_args: "-sdk iphonesimulator -arch x86_64",
+      rel_build_dir: "Release-iphonesimulator",
+      output_file: output_file,
+    )
 
     upload_file_to_s3({
       :os_type => "ios",
-      :file => "Mattermost-simulator-x86_64.app.zip"
+      :file => output_file
     })
   end
 
@@ -501,8 +499,17 @@ platform :ios do
     )
 
     # Sync the provisioning profiles using match
-    if ENV['SYNC_PROVISIONING_PROFILES'] == 'true' && !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
-      match(type: ENV['MATCH_TYPE'] || 'adhoc')
+    if ENV['SYNC_PROVISIONING_PROFILES'] == 'true'
+      if !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
+        match(type: ENV['MATCH_TYPE'] || 'adhoc')
+      end
+      if !ENV['IOS_API_KEY_ID'].nil? && !ENV['IOS_API_KEY_ID'].empty?
+        api_key = get_apple_api_key()
+        match(
+            api_key: api_key,
+            type: ENV['MATCH_TYPE'] || 'adhoc'
+        )
+      end
     end
   end
 
@@ -570,6 +577,9 @@ platform :ios do
     app_name_sub = app_name.gsub(" ", "_")
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
     method = ENV['IOS_BUILD_EXPORT_METHOD'].nil? || ENV['IOS_BUILD_EXPORT_METHOD'].empty? ? 'ad-hoc' : ENV['IOS_BUILD_EXPORT_METHOD']
+   
+    # Need to add xcargs to only notification and 
+    xcargs = ENV['SENTRY_ENABLED'] == 'true' ? "SENTRY_DSN_IOS='#{ENV['SENTRY_DSN_IOS']}' SENTRY_ENABLED='#{ENV['SENTRY_ENABLED']}'" : ''
 
     setup_code_signing
 
@@ -585,8 +595,27 @@ platform :ios do
         export_options: {
             signingStyle: 'manual',
             iCloudContainerEnvironment: 'Production'
-        }
+        },
+        xcargs:xcargs
     )
+  end
+
+  def build_ios_unsigned_or_simulator(more_xc_args:, rel_build_dir:, output_file:)
+    root_dir = Dir[File.expand_path('..')].first
+    ios_build_dir = "#{root_dir}/ios/Build/Products"
+
+    ENV['APP_NAME'] = 'Mattermost'
+    ENV['REPLACE_ASSETS'] = 'true'
+    ENV['BUILD_FOR_RELEASE'] = 'true'
+    ENV['APP_SCHEME'] = 'mattermost'
+
+    update_identifiers
+    replace_assets
+
+    sh "rm -rf #{ios_build_dir}/"
+    sh "cd #{root_dir}/ios && xcodebuild -workspace Mattermost.xcworkspace -scheme Mattermost -configuration Release -parallelizeTargets CODE_SIGN_IDENTITY='' CODE_SIGNING_REQUIRED=NO SYMROOT='#{ios_build_dir}' #{more_xc_args} "
+    sh "cd #{ios_build_dir}/#{rel_build_dir} && zip -r #{output_file} Mattermost.app"
+    sh "mv #{ios_build_dir}/#{rel_build_dir}/#{output_file} #{root_dir}"
   end
 
 end
@@ -675,6 +704,14 @@ platform :android do
             path_to_file: item[1..-1],
             old_string: 'package com.mattermost.rnbeta;',
             new_string: "package #{package_id};"
+        )
+      end
+
+      Dir.glob('../android/app/src/main/java/com/mattermost/share/*.java') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.MainApplication;',
+            new_string: "import #{package_id}.MainApplication;"
         )
       end
 
@@ -850,14 +887,14 @@ def get_apple_api_key
           f.write("\n") unless index == p8_array.length - 1
         end
       end
-    
+
       api_key = app_store_connect_api_key(
         key_id: ENV['IOS_API_KEY_ID'],
         issuer_id: ENV['IOS_API_ISSUER_ID'],
         key_filepath: "./#{api_key_path}",
         in_house: ENV['IOS_IN_HOUSE'] == 'true', # optional but may be required if using match/sigh
       )
-    
+
       File.delete("../#{api_key_path}")
     end
 

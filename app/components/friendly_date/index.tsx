@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {StyleProp, Text, ViewStyle} from 'react-native';
+import {StyleProp, Text, TextStyle} from 'react-native';
 
 import {DateTime} from '@constants';
 import {isYesterday} from '@utils/datetime';
@@ -11,7 +11,7 @@ import {isYesterday} from '@utils/datetime';
 const {SECONDS} = DateTime;
 
 type Props = {
-    style?: StyleProp<ViewStyle>;
+    style?: StyleProp<TextStyle>;
     sourceDate?: number | Date;
     value: number | Date;
 };

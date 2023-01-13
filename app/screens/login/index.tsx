@@ -209,6 +209,7 @@ const LoginOptions = ({
                         {hasLoginForm &&
                         <Form
                             config={config}
+                            extra={extra}
                             keyboardAwareRef={keyboardAwareRef}
                             license={license}
                             launchError={launchError}

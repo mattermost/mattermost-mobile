@@ -9,9 +9,11 @@ import Button from 'react-native-button';
 import {map} from 'rxjs/operators';
 
 import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/remote/apps';
+import {handleGotoLocation} from '@actions/remote/command';
 import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import {observeCurrentTeamId} from '@queries/servers/system';
+import {showAppForm} from '@screens/navigation';
 import {createCallContext} from '@utils/apps';
 import {getStatusColors} from '@utils/message_attachment_colors';
 import {preventDoubleTap} from '@utils/tap';
@@ -97,7 +99,14 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
                 }
                 return;
             case AppCallResponseTypes.NAVIGATE:
+                if (callResp.navigate_to_url) {
+                    handleGotoLocation(serverUrl, intl, callResp.navigate_to_url);
+                }
+                return;
             case AppCallResponseTypes.FORM:
+                if (callResp.form) {
+                    showAppForm(callResp.form, context);
+                }
                 return;
             default: {
                 const errorMessage = intl.formatMessage({

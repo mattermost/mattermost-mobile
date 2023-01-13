@@ -47,7 +47,6 @@ exports[`components/categories_list should render channels error 1`] = `
     >
       <View
         accessible={true}
-        collapsable={false}
         focusable={false}
         onClick={[Function]}
         onResponderGrant={[Function]}
@@ -58,52 +57,26 @@ exports[`components/categories_list should render channels error 1`] = `
         onStartShouldSetResponder={[Function]}
         style={
           {
-            "opacity": 1,
+            "alignItems": "center",
+            "flexDirection": "row",
+            "justifyContent": "space-between",
           }
         }
       >
-        <View
+        <Text
           style={
             {
-              "alignItems": "center",
-              "flexDirection": "row",
-              "justifyContent": "space-between",
+              "color": "#ffffff",
+              "fontFamily": "Metropolis-SemiBold",
+              "fontSize": 28,
+              "fontWeight": "600",
+              "lineHeight": 36,
             }
           }
+          testID="channel_list_header.team_display_name"
         >
-          <Text
-            style={
-              {
-                "color": "#ffffff",
-                "fontFamily": "Metropolis-SemiBold",
-                "fontSize": 28,
-                "fontWeight": "600",
-                "lineHeight": 36,
-              }
-            }
-            testID="channel_list_header.team_display_name"
-          >
-            Test Team!
-          </Text>
-          <View
-            style={
-              {
-                "marginLeft": 4,
-              }
-            }
-            testID="channel_list_header.chevron.button"
-          >
-            <Icon
-              name="chevron-down"
-              style={
-                {
-                  "color": "rgba(255,255,255,0.8)",
-                  "fontSize": 24,
-                }
-              }
-            />
-          </View>
-        </View>
+          Test Team!
+        </Text>
       </View>
       <View
         accessible={true}
@@ -170,40 +143,6 @@ exports[`components/categories_list should render channels error 1`] = `
           }
         }
         testID="channel_list_header.server_display_name"
-      />
-      <View
-        animatedStyle={
-          {
-            "value": {
-              "opacity": 1,
-              "transform": [
-                {
-                  "rotateZ": "0deg",
-                },
-              ],
-            },
-          }
-        }
-        collapsable={false}
-        style={
-          {
-            "borderBottomColor": "rgba(255,255,255,0.16)",
-            "borderLeftColor": "#ffffff",
-            "borderRadius": 7,
-            "borderRightColor": "rgba(255,255,255,0.16)",
-            "borderTopColor": "rgba(255,255,255,0.16)",
-            "borderWidth": 2,
-            "height": 14,
-            "marginLeft": 5,
-            "opacity": 1,
-            "transform": [
-              {
-                "rotateZ": "0deg",
-              },
-            ],
-            "width": 14,
-          }
-        }
       />
     </View>
   </View>

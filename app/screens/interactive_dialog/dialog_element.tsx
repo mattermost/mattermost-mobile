@@ -60,6 +60,15 @@ function DialogElement({
         onChange(name, newValue);
     }, [onChange, type, subtype]);
 
+    const handleSelect = useCallback((newValue: DialogOption | undefined) => {
+        if (!newValue) {
+            onChange(name, '');
+            return;
+        }
+
+        onChange(name, newValue.value);
+    }, [onChange]);
+
     switch (type) {
         case 'text':
         case 'textarea':
@@ -87,12 +96,12 @@ function DialogElement({
                     dataSource={dataSource}
                     options={options}
                     optional={optional}
-                    onSelected={handleChange}
+                    onSelected={handleSelect}
                     helpText={helpText}
                     errorText={errorText}
                     placeholder={placeholder}
                     showRequiredAsterisk={true}
-                    selected={value as string | string[]}
+                    selected={value as string}
                     roundedBorders={false}
                     testID={testID}
                 />

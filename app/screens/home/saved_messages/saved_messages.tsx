@@ -4,9 +4,9 @@
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, FlatList, ListRenderItemInfo, Platform, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchSavedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';
@@ -15,19 +15,20 @@ import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
-import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
-import {isDateLine, getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
+import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
 
-import type {ViewableItemsChanged} from '@typings/components/post_list';
+import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    appsEnabled: boolean;
     currentTimezone: string | null;
+    customEmojiNames: string[];
     isTimezoneEnabled: boolean;
     posts: PostModel[];
 }
@@ -41,7 +42,6 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        marginBottom: Platform.select({ios: BOTTOM_TAB_HEIGHT}),
     },
     empty: {
         alignItems: 'center',
@@ -50,7 +50,7 @@ const styles = StyleSheet.create({
     },
 });
 
-function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
+function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, isTimezoneEnabled}: Props) {
     const intl = useIntl();
     const [loading, setLoading] = useState(!posts.length);
     const [refreshing, setRefreshing] = useState(false);
@@ -58,7 +58,6 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
     const serverUrl = useServerUrl();
     const route = useRoute();
     const isFocused = useIsFocused();
-    const insets = useSafeAreaInsets();
 
     const params = route.params as {direction: string};
     const toLeft = params.direction === 'left';
@@ -88,8 +87,7 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
     }, [serverUrl, isFocused]);
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<FlatList<string>>(true, onSnap);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop - insets.top, flexGrow: 1}), [scrollPaddingTop, insets.top]);
-    const scrollViewStyle = useMemo(() => ({top: insets.top}), [insets.top]);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const data = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
 
     const animated = useAnimatedStyle(() => {
@@ -111,8 +109,8 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
         }
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
-            if (isViewable) {
-                acc[`${Screens.SAVED_MESSAGES}-${item.id}`] = true;
+            if (isViewable && item.type === 'post') {
+                acc[`${Screens.SAVED_MESSAGES}-${item.value.id}`] = true;
             }
             return acc;
         }, {});
@@ -139,27 +137,31 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
         </View>
     ), [loading, theme.buttonBg]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<string | PostModel>) => {
-        if (typeof item === 'string') {
-            if (isDateLine(item)) {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
+        switch (item.type) {
+            case 'date':
                 return (
                     <DateSeparator
-                        date={getDateForDateLine(item)}
+                        key={item.value}
+                        date={getDateForDateLine(item.value)}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
-            }
-            return null;
+            case 'post':
+                return (
+                    <PostWithChannelInfo
+                        appsEnabled={appsEnabled}
+                        customEmojiNames={customEmojiNames}
+                        key={item.value.id}
+                        location={Screens.SAVED_MESSAGES}
+                        post={item.value}
+                        testID='saved_messages.post_list'
+                    />
+                );
+            default:
+                return null;
         }
-
-        return (
-            <PostWithChannelInfo
-                location={Screens.SAVED_MESSAGES}
-                post={item}
-                testID='saved_messages.post_list'
-            />
-        );
-    }, [currentTimezone, isTimezoneEnabled, theme]);
+    }, [appsEnabled, currentTimezone, customEmojiNames, isTimezoneEnabled, theme]);
 
     return (
         <>
@@ -196,7 +198,6 @@ function SavedMessages({posts, currentTimezone, isTimezoneEnabled}: Props) {
                         onScroll={onScroll}
                         removeClippedSubviews={true}
                         onViewableItemsChanged={onViewableItemsChanged}
-                        style={scrollViewStyle}
                         testID='saved_messages.post_list.flat_list'
                     />
                 </Animated.View>

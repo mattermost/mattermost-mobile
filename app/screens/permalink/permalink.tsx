@@ -8,7 +8,7 @@ import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-cont
 
 import {fetchChannelById, joinChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById, fetchPostsAround, fetchPostThread} from '@actions/remote/post';
-import {addUserToTeam, fetchTeamByName, removeUserFromTeam} from '@actions/remote/team';
+import {addCurrentUserToTeam, fetchTeamByName, removeCurrentUserFromTeam} from '@actions/remote/team';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
@@ -37,7 +37,6 @@ type Props = {
     rootId?: string;
     teamName?: string;
     isTeamMember?: boolean;
-    currentUserId: string;
     currentTeamId: string;
     isCRTEnabled: boolean;
     postId: PostModel['id'];
@@ -130,7 +129,6 @@ function Permalink({
     postId,
     teamName,
     isTeamMember,
-    currentUserId,
     currentTeamId,
 }: Props) {
     const [posts, setPosts] = useState<PostModel[]>([]);
@@ -187,7 +185,7 @@ function Permalink({
                 joinedTeam = fetchData.team;
 
                 if (joinedTeam) {
-                    const addData = await addUserToTeam(serverUrl, joinedTeam.id, currentUserId);
+                    const addData = await addCurrentUserToTeam(serverUrl, joinedTeam.id);
                     if (addData.error) {
                         joinedTeam = undefined;
                     }
@@ -197,7 +195,7 @@ function Permalink({
             const {post} = await fetchPostById(serverUrl, postId, true);
             if (!post) {
                 if (joinedTeam) {
-                    removeUserFromTeam(serverUrl, joinedTeam.id, currentUserId);
+                    removeCurrentUserFromTeam(serverUrl, joinedTeam.id);
                 }
                 setError({notExist: true});
                 setLoading(false);
@@ -210,7 +208,7 @@ function Permalink({
 
                 // Wrong team passed or DM/GM
                 if (joinedTeam && localChannel?.teamId !== '' && localChannel?.teamId !== joinedTeam.id) {
-                    removeUserFromTeam(serverUrl, joinedTeam.id, currentUserId);
+                    removeCurrentUserFromTeam(serverUrl, joinedTeam.id);
                     joinedTeam = undefined;
                 }
 
@@ -233,7 +231,7 @@ function Permalink({
             const {channel: fetchedChannel} = await fetchChannelById(serverUrl, post.channel_id);
             if (!fetchedChannel) {
                 if (joinedTeam) {
-                    removeUserFromTeam(serverUrl, joinedTeam.id, currentUserId);
+                    removeCurrentUserFromTeam(serverUrl, joinedTeam.id);
                 }
                 setError({notExist: true});
                 setLoading(false);
@@ -242,7 +240,7 @@ function Permalink({
 
             // Wrong team passed or DM/GM
             if (joinedTeam && fetchedChannel.team_id !== '' && fetchedChannel.team_id !== joinedTeam.id) {
-                removeUserFromTeam(serverUrl, joinedTeam.id, currentUserId);
+                removeCurrentUserFromTeam(serverUrl, joinedTeam.id);
                 joinedTeam = undefined;
             }
 
@@ -261,7 +259,7 @@ function Permalink({
 
     const handleClose = useCallback(() => {
         if (error?.joinedTeam && error.teamId) {
-            removeUserFromTeam(serverUrl, error.teamId, currentUserId);
+            removeCurrentUserFromTeam(serverUrl, error.teamId);
         }
         dismissModal({componentId: Screens.PERMALINK});
         closePermalink();
@@ -288,7 +286,7 @@ function Permalink({
             }
             setChannelId(error.channelId);
         }
-    }), [error, serverUrl, currentUserId]);
+    }), [error, serverUrl]);
 
     let content;
     if (loading) {
@@ -392,7 +390,7 @@ function Permalink({
                     </View>
                 </View>
                 {showHeaderDivider && (
-                    <View style={style.dividerContainer}>
+                    <View>
                         <View style={style.divider}/>
                     </View>
                 )}
@@ -406,7 +404,8 @@ function Permalink({
 function processThreadPosts(posts: PostModel[], postId: string) {
     posts.sort((a, b) => b.createAt - a.createAt);
     const postIndex = posts.findIndex((p) => p.id === postId);
-    return posts.slice(postIndex - POSTS_LIMIT, postIndex + POSTS_LIMIT + 1);
+    const start = postIndex - POSTS_LIMIT;
+    return posts.slice(start < 0 ? postIndex : start, postIndex + POSTS_LIMIT + 1);
 }
 
 export default Permalink;

@@ -27,7 +27,6 @@ exports[`components/channel_list/header Channel List Header Component should mat
   >
     <View
       accessible={true}
-      collapsable={false}
       focusable={false}
       onClick={[Function]}
       onResponderGrant={[Function]}
@@ -38,52 +37,26 @@ exports[`components/channel_list/header Channel List Header Component should mat
       onStartShouldSetResponder={[Function]}
       style={
         {
-          "opacity": 1,
+          "alignItems": "center",
+          "flexDirection": "row",
+          "justifyContent": "space-between",
         }
       }
     >
-      <View
+      <Text
         style={
           {
-            "alignItems": "center",
-            "flexDirection": "row",
-            "justifyContent": "space-between",
+            "color": "#ffffff",
+            "fontFamily": "Metropolis-SemiBold",
+            "fontSize": 28,
+            "fontWeight": "600",
+            "lineHeight": 36,
           }
         }
+        testID="channel_list_header.team_display_name"
       >
-        <Text
-          style={
-            {
-              "color": "#ffffff",
-              "fontFamily": "Metropolis-SemiBold",
-              "fontSize": 28,
-              "fontWeight": "600",
-              "lineHeight": 36,
-            }
-          }
-          testID="channel_list_header.team_display_name"
-        >
-          Test!
-        </Text>
-        <View
-          style={
-            {
-              "marginLeft": 4,
-            }
-          }
-          testID="channel_list_header.chevron.button"
-        >
-          <Icon
-            name="chevron-down"
-            style={
-              {
-                "color": "rgba(255,255,255,0.8)",
-                "fontSize": 24,
-              }
-            }
-          />
-        </View>
-      </View>
+        Test!
+      </Text>
     </View>
     <View
       accessible={true}
@@ -150,40 +123,6 @@ exports[`components/channel_list/header Channel List Header Component should mat
         }
       }
       testID="channel_list_header.server_display_name"
-    />
-    <View
-      animatedStyle={
-        {
-          "value": {
-            "opacity": 1,
-            "transform": [
-              {
-                "rotateZ": "0deg",
-              },
-            ],
-          },
-        }
-      }
-      collapsable={false}
-      style={
-        {
-          "borderBottomColor": "rgba(255,255,255,0.16)",
-          "borderLeftColor": "#ffffff",
-          "borderRadius": 7,
-          "borderRightColor": "rgba(255,255,255,0.16)",
-          "borderTopColor": "rgba(255,255,255,0.16)",
-          "borderWidth": 2,
-          "height": 14,
-          "marginLeft": 5,
-          "opacity": 1,
-          "transform": [
-            {
-              "rotateZ": "0deg",
-            },
-          ],
-          "width": 14,
-        }
-      }
     />
   </View>
 </View>

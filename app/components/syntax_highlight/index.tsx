@@ -2,20 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {StyleSheet, TextStyle, View} from 'react-native';
+import {StyleSheet, View} from 'react-native';
 import SyntaxHighlighter from 'react-syntax-highlighter';
-import {github, monokai, solarizedDark, solarizedLight} from 'react-syntax-highlighter/dist/cjs/styles/hljs';
+import {githubGist as github, monokai, solarizedDark, solarizedLight} from 'react-syntax-highlighter/dist/cjs/styles/hljs';
 
 import {useTheme} from '@context/theme';
 
 import CodeHighlightRenderer from './renderer';
 
-type Props = {
-    code: string;
-    language: string;
-    textStyle: TextStyle;
-    selectable?: boolean;
-}
+import type {SyntaxHiglightProps} from '@typings/components/syntax_highlight';
 
 const codeTheme: Record<string, any> = {
     github,
@@ -34,7 +29,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const Highlighter = ({code, language, textStyle, selectable = false}: Props) => {
+const Highlighter = ({code, language, textStyle, selectable = false}: SyntaxHiglightProps) => {
     const theme = useTheme();
     const style = codeTheme[theme.codeTheme] || github;
     const preTagStyle = useMemo(() => [

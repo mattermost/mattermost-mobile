@@ -3,14 +3,13 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, Text, TextStyle, TouchableOpacity, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import SyntaxHighlighter from '@components/syntax_highlight';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet, goToScreen} from '@screens/navigation';
@@ -19,6 +18,8 @@ import {getHighlightLanguageFromNameOrAlias, getHighlightLanguageName} from '@ut
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
+import type {SyntaxHiglightProps} from '@typings/components/syntax_highlight';
+
 type MarkdownCodeBlockProps = {
     language: string;
     content: string;
@@ -26,6 +27,8 @@ type MarkdownCodeBlockProps = {
 };
 
 const MAX_LINES = 4;
+
+let syntaxHighlighter: (props: SyntaxHiglightProps) => JSX.Element;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -68,14 +71,21 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const style = getStyleSheet(theme);
+    const SyntaxHighlighter = useMemo(() => {
+        if (!syntaxHighlighter) {
+            syntaxHighlighter = require('@components/syntax_highlight').default;
+        }
+
+        return syntaxHighlighter;
+    }, []);
 
     const handlePress = useCallback(preventDoubleTap(() => {
         const screen = Screens.CODE;
         const passProps = {
             code: content,
-            language,
+            language: getHighlightLanguageFromNameOrAlias(language),
             textStyle,
         };
 
@@ -137,12 +147,12 @@ const MarkdownCodeBlock = ({language = '', content, textStyle}: MarkdownCodeBloc
             bottomSheet({
                 closeButtonId: 'close-code-block',
                 renderContent,
-                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, insets, theme]);
+    }, [managedConfig, intl, bottom, theme]);
 
     const trimContent = (text: string) => {
         const lines = text.split('\n');

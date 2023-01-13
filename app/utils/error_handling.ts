@@ -11,11 +11,11 @@ import {
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {dismissAllModals} from '@screens/navigation';
 import {ClientError} from '@utils/client_error';
+import {isBetaApp} from '@utils/general';
 import {
     captureException,
     captureJSException,
     initializeSentry,
-    LOGGER_NATIVE,
 } from '@utils/sentry';
 
 import {logWarning} from './log';
@@ -30,7 +30,7 @@ class JavascriptAndNativeErrorHandler {
 
     nativeErrorHandler = (e: string) => {
         logWarning('Handling native error ' + e);
-        captureException(e, LOGGER_NATIVE);
+        captureException(e);
     };
 
     errorHandler = (e: Error | ClientError, isFatal: boolean) => {
@@ -42,7 +42,10 @@ class JavascriptAndNativeErrorHandler {
         }
 
         logWarning('Handling Javascript error', e, isFatal);
-        captureJSException(e, isFatal);
+
+        if (isBetaApp || isFatal) {
+            captureJSException(e, isFatal);
+        }
 
         if (isFatal && e instanceof Error) {
             const translations = getTranslations(DEFAULT_LOCALE);

@@ -42,11 +42,12 @@ export type SearchProps = TextInputProps & {
     showLoading?: boolean;
 };
 
-type SearchRef = {
+export type SearchRef = {
     blur: () => void;
     cancel: () => void;
     clear: () => void;
     focus: () => void;
+    setNativeProps(nativeProps: object): void;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -151,7 +152,9 @@ const Search = forwardRef<SearchRef, SearchProps>((props: SearchProps, ref) => {
         focus: () => {
             searchRef.current?.focus();
         },
-
+        setNativeProps: (nativeProps: object) => {
+            searchRef.current?.setNativeProps(nativeProps);
+        },
     }), [searchRef]);
 
     return (

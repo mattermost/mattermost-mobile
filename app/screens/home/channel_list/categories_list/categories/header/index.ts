@@ -2,14 +2,26 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
+import {combineLatestWith} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
+
+import {observeConfigBooleanValue, observeCurrentChannelId} from '@queries/servers/system';
 
 import CategoryHeader from './header';
 
 import type CategoryModel from '@typings/database/models/servers/category';
 
-const enhanced = withObservables(['category'], ({category}: {category: CategoryModel}) => ({
-    category,
-    hasChannels: category.hasChannels,
-}));
+const enhanced = withObservables(['category'], ({category}: {category: CategoryModel}) => {
+    const canViewArchived = observeConfigBooleanValue(category.database, 'ExperimentalViewArchivedChannels');
+    const currentChannelId = observeCurrentChannelId(category.database);
+
+    return {
+        category,
+        hasChannels: canViewArchived.pipe(
+            combineLatestWith(currentChannelId),
+            switchMap(([canView, channelId]) => category.observeHasChannels(canView, channelId)),
+        ),
+    };
+});
 
 export default enhanced(CategoryHeader);

@@ -87,10 +87,17 @@ const debouncedFetchEmojiByNames = debounce(async (serverUrl: string) => {
         promises.push(client.getCustomEmojiByName(name));
     }
 
-    const emojis = await Promise.all(promises);
-
     try {
-        await operator.handleCustomEmojis({emojis, prepareRecordsOnly: false});
+        const emojisResult = await Promise.allSettled(promises);
+        const emojis = emojisResult.reduce<CustomEmoji[]>((result, e) => {
+            if (e.status === 'fulfilled') {
+                result.push(e.value);
+            }
+            return result;
+        }, []);
+        if (emojis.length) {
+            await operator.handleCustomEmojis({emojis, prepareRecordsOnly: false});
+        }
         return {error: undefined};
     } catch (error) {
         return {error};

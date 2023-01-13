@@ -2,11 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {StyleSheet, useWindowDimensions, View} from 'react-native';
-import {createThumbnail} from 'react-native-create-thumbnail';
+import {StyleSheet, useWindowDimensions, View, NativeModules} from 'react-native';
 
 import {updateLocalFile} from '@actions/local/file';
-import {buildFilePreviewUrl, fetchPublicLink} from '@actions/remote/file';
+import {buildFilePreviewUrl, buildFileUrl} from '@actions/remote/file';
 import CompassIcon from '@components/compass_icon';
 import ProgressiveImage from '@components/progressive_image';
 import {useServerUrl} from '@context/server';
@@ -18,6 +17,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import FileIcon from './file_icon';
 
 import type {ResizeMode} from 'react-native-fast-image';
+const {createThumbnail} = NativeModules.MattermostManaged;
 
 type Props = {
     index: number;
@@ -76,20 +76,17 @@ const VideoFile = ({
             const viewPortHeight = Math.max(dimensions.height, dimensions.width) * 0.45;
             return calculateDimensions(video.height || wrapperWidth, video.width || wrapperWidth, wrapperWidth, viewPortHeight);
         }
-
         return undefined;
-    }, [dimensions.height, dimensions.width, video.height, video.width, wrapperWidth]);
+    }, [dimensions.height, dimensions.width, video.height, video.width, wrapperWidth, isSingleImage]);
 
     const getThumbnail = async () => {
         const data = {...file};
         try {
             const exists = data.mini_preview ? await fileExists(data.mini_preview) : false;
             if (!data.mini_preview || !exists) {
-                // We use the public link to avoid having to pass the token through a third party
-                // library
-                const publicUri = await fetchPublicLink(serverUrl, data.id!);
-                if (('link') in publicUri) {
-                    const {path: uri, height, width} = await createThumbnail({url: data.localPath || publicUri.link, timeStamp: 2000});
+                const videoUrl = buildFileUrl(serverUrl, data.id!);
+                if (videoUrl) {
+                    const {path: uri, height, width} = await createThumbnail({url: data.localPath || videoUrl, timeStamp: 2000});
                     data.mini_preview = uri;
                     data.height = height;
                     data.width = width;
@@ -161,7 +158,12 @@ const VideoFile = ({
 
     if (failed) {
         thumbnail = (
-            <View style={[isSingleImage ? null : style.imagePreview, style.failed, imageDimensions]}>
+            <View
+
+                // @ts-expect-error ref of type unknown
+                ref={forwardRef}
+                style={[isSingleImage ? null : {height: '100%'}, style.failed, imageDimensions]}
+            >
                 <FileIcon
                     failed={failed}
                     file={file}
@@ -174,7 +176,7 @@ const VideoFile = ({
         <View
             style={style.fileImageWrapper}
         >
-            {!isSingleImage && <View style={style.boxPlaceholder}/>}
+            {!isSingleImage && !failed && <View style={style.boxPlaceholder}/>}
             {thumbnail}
             <View style={style.playContainer}>
                 <View style={style.play}>

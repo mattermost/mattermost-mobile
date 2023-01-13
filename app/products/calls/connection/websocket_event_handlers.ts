@@ -10,10 +10,14 @@ import {
     setCallScreenOff,
     setCallScreenOn,
     setChannelEnabled,
+    setHost,
     setRaisedHand,
+    setRecordingState,
     setUserMuted,
+    setUserVoiceOn,
     userJoinedCall,
     userLeftCall,
+    userReacted,
 } from '@calls/state';
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -38,17 +42,11 @@ export const handleCallUserUnmuted = (serverUrl: string, msg: WebSocketMessage) 
 };
 
 export const handleCallUserVoiceOn = (msg: WebSocketMessage) => {
-    DeviceEventEmitter.emit(WebsocketEvents.CALLS_USER_VOICE_ON, {
-        channelId: msg.broadcast.channel_id,
-        userId: msg.data.userID,
-    });
+    setUserVoiceOn(msg.broadcast.channel_id, msg.data.userID, true);
 };
 
 export const handleCallUserVoiceOff = (msg: WebSocketMessage) => {
-    DeviceEventEmitter.emit(WebsocketEvents.CALLS_USER_VOICE_OFF, {
-        channelId: msg.broadcast.channel_id,
-        userId: msg.data.userID,
-    });
+    setUserVoiceOn(msg.broadcast.channel_id, msg.data.userID, false);
 };
 
 export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage) => {
@@ -64,6 +62,7 @@ export const handleCallStarted = (serverUrl: string, msg: WebSocketMessage) => {
         screenOn: '',
         participants: {},
         ownerId: msg.data.owner_id,
+        hostId: msg.data.host_id,
     });
 };
 
@@ -97,4 +96,16 @@ export const handleCallUserRaiseHand = (serverUrl: string, msg: WebSocketMessage
 
 export const handleCallUserUnraiseHand = (serverUrl: string, msg: WebSocketMessage) => {
     setRaisedHand(serverUrl, msg.broadcast.channel_id, msg.data.userID, msg.data.raised_hand);
+};
+
+export const handleCallUserReacted = (serverUrl: string, msg: WebSocketMessage) => {
+    userReacted(serverUrl, msg.broadcast.channel_id, msg.data);
+};
+
+export const handleCallRecordingState = (serverUrl: string, msg: WebSocketMessage) => {
+    setRecordingState(serverUrl, msg.broadcast.channel_id, msg.data.recState);
+};
+
+export const handleCallHostChanged = (serverUrl: string, msg: WebSocketMessage) => {
+    setHost(serverUrl, msg.broadcast.channel_id, msg.data.hostID);
 };

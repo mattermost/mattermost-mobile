@@ -87,6 +87,9 @@ export default class TeamModel extends Model implements TeamModelInterface {
     /** allowed_domains : List of domains that can join this team */
     @field('allowed_domains') allowedDomains!: string;
 
+    /** invite_id : The token id to use in invites to the team */
+    @field('invite_id') inviteId!: string;
+
     /** categories : All the categories associated with this team */
     @children(CATEGORY) categories!: Query<CategoryModel>;
 
@@ -107,10 +110,7 @@ export default class TeamModel extends Model implements TeamModelInterface {
 
     /** threads : Threads list belonging to a team */
     @lazy threadsList = this.collections.get<ThreadModel>(THREAD).query(
-        Q.on(THREADS_IN_TEAM, Q.and(
-            Q.where('team_id', this.id),
-            Q.where('loaded_in_global_threads', true),
-        )),
+        Q.on(THREADS_IN_TEAM, 'team_id', this.id),
         Q.and(
             Q.where('reply_count', Q.gt(0)),
             Q.where('is_following', true),

@@ -4,47 +4,56 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useEffect} from 'react';
-import {useIntl} from 'react-intl';
-import {map} from 'rxjs/operators';
+import {IntlShape, useIntl} from 'react-intl';
+import {distinctUntilChanged, map} from 'rxjs/operators';
 
-import {SupportedServer} from '@constants';
-import {observeConfigValue} from '@queries/servers/system';
+import {setLastServerVersionCheck} from '@actions/local/systems';
+import {useServerUrl} from '@context/server';
+import {getServer} from '@queries/app/servers';
+import {observeConfigValue, observeLastServerVersionCheck} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
-import {isMinimumServerVersion} from '@utils/helpers';
-import {unsupportedServer} from '@utils/server';
+import {isSupportedServer, unsupportedServer} from '@utils/server';
 import {isSystemAdmin} from '@utils/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-type ServerVersionProps = WithDatabaseArgs & {
+type ServerVersionProps = {
+    isAdmin: boolean;
+    lastChecked: number;
     version?: string;
-    roles: string;
 };
 
-const ServerVersion = ({version, roles}: ServerVersionProps) => {
+const VALIDATE_INTERVAL = 24 * 60 * 60 * 1000; // 24 hours
+
+const handleUnsupportedServer = async (serverUrl: string, isAdmin: boolean, intl: IntlShape) => {
+    const serverModel = await getServer(serverUrl);
+    unsupportedServer(serverModel?.displayName || '', isAdmin, intl);
+    setLastServerVersionCheck(serverUrl);
+};
+
+const ServerVersion = ({isAdmin, lastChecked, version}: ServerVersionProps) => {
     const intl = useIntl();
+    const serverUrl = useServerUrl();
 
     useEffect(() => {
         const serverVersion = version || '';
+        const shouldValidate = (Date.now() - lastChecked) >= VALIDATE_INTERVAL || !lastChecked;
 
-        if (serverVersion) {
-            const {MAJOR_VERSION, MIN_VERSION, PATCH_VERSION} = SupportedServer;
-            const isSupportedServer = isMinimumServerVersion(serverVersion, MAJOR_VERSION, MIN_VERSION, PATCH_VERSION);
-
-            if (!isSupportedServer) {
-                // Only display the Alert if the TOS does not need to show first
-                unsupportedServer(isSystemAdmin(roles), intl);
-            }
+        if (serverVersion && shouldValidate && !isSupportedServer(serverVersion)) {
+            // Only display the Alert if the TOS does not need to show first
+            handleUnsupportedServer(serverUrl, isAdmin, intl);
         }
-    }, [version, roles]);
+    }, [version, isAdmin, lastChecked, serverUrl]);
 
     return null;
 };
 
 const enahanced = withObservables([], ({database}: WithDatabaseArgs) => ({
+    lastChecked: observeLastServerVersionCheck(database),
     version: observeConfigValue(database, 'Version'),
-    roles: observeCurrentUser(database).pipe(
-        map((user) => user?.roles),
+    isAdmin: observeCurrentUser(database).pipe(
+        map((user) => isSystemAdmin(user?.roles || '')),
+        distinctUntilChanged(),
     ),
 }));
 

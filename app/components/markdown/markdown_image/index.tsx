@@ -59,7 +59,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 24,
     },
     container: {
-        marginBottom: 5,
+        marginVertical: 5,
+        top: 5,
     },
     svg: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.06),
@@ -74,7 +75,7 @@ const MarkdownImage = ({
 }: MarkdownImageProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const managedConfig = useManagedConfig<ManagedConfig>();
@@ -180,12 +181,12 @@ const MarkdownImage = ({
             bottomSheet({
                 closeButtonId: 'close-mardown-image',
                 renderContent,
-                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl.locale, insets.bottom, theme]);
+    }, [managedConfig, intl.locale, bottom, theme]);
 
     const handleOnError = useCallback(() => {
         setFailed(true);

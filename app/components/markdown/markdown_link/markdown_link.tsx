@@ -9,19 +9,14 @@ import {Alert, StyleSheet, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import urlParse from 'url-parse';
 
-import {switchToChannelByName} from '@actions/remote/channel';
-import {showPermalink} from '@actions/remote/permalink';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import DeepLinkType from '@constants/deep_linking';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
-import {errorBadChannel} from '@utils/draft';
+import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
-import {matchDeepLink, normalizeProtocol, tryOpenURL} from '@utils/url';
-
-import type {DeepLinkChannel, DeepLinkPermalink, DeepLinkWithData} from '@typings/launch';
+import {normalizeProtocol, tryOpenURL} from '@utils/url';
 
 type MarkdownLinkProps = {
     children: ReactElement;
@@ -51,7 +46,7 @@ const parseLinkLiteral = (literal: string) => {
 
 const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteURL}: MarkdownLinkProps) => {
     const intl = useIntl();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -65,28 +60,27 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
             return;
         }
 
-        const match: DeepLinkWithData | null = matchDeepLink(url, serverUrl, siteURL);
+        const onError = () => {
+            Alert.alert(
+                formatMessage({
+                    id: 'mobile.link.error.title',
+                    defaultMessage: 'Error',
+                }),
+                formatMessage({
+                    id: 'mobile.link.error.text',
+                    defaultMessage: 'Unable to open the link.',
+                }),
+            );
+        };
 
-        if (match && match.data?.teamName) {
-            if (match.type === DeepLinkType.Channel) {
-                await switchToChannelByName(serverUrl, (match?.data as DeepLinkChannel).channelName, match.data?.teamName, errorBadChannel, intl);
-            } else if (match.type === DeepLinkType.Permalink) {
-                showPermalink(serverUrl, match.data.teamName, (match.data as DeepLinkPermalink).postId, intl);
+        const match = matchDeepLink(url, serverUrl, siteURL);
+
+        if (match) {
+            const {error} = await handleDeepLink(match, intl);
+            if (error) {
+                tryOpenURL(match, onError);
             }
         } else {
-            const onError = () => {
-                Alert.alert(
-                    formatMessage({
-                        id: 'mobile.link.error.title',
-                        defaultMessage: 'Error',
-                    }),
-                    formatMessage({
-                        id: 'mobile.link.error.text',
-                        defaultMessage: 'Unable to open the link.',
-                    }),
-                );
-            };
-
             tryOpenURL(url, onError);
         }
     }), [href, intl.locale, serverUrl, siteURL]);
@@ -146,12 +140,12 @@ const MarkdownLink = ({children, experimentalNormalizeMarkdownLinks, href, siteU
             bottomSheet({
                 closeButtonId: 'close-mardown-link',
                 renderContent,
-                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, insets, theme]);
+    }, [managedConfig, intl, bottom, theme]);
 
     const renderChildren = experimentalNormalizeMarkdownLinks ? parseChildren() : children;
 

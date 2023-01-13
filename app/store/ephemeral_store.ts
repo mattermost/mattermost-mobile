@@ -1,12 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BehaviorSubject} from 'rxjs';
+
 class EphemeralStore {
     theme: Theme | undefined;
     creatingChannel = false;
     creatingDMorGMTeammates: string[] = [];
 
-    private pushProxyVerification: {[x: string]: string | undefined} = {};
+    private pushProxyVerification: {[serverUrl: string]: string | undefined} = {};
+    private canJoinOtherTeams: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
 
     // As of today, the server sends a duplicated event to add the user to the team.
     // If we do not handle this, this ends up showing some errors in the database, apart
@@ -19,6 +22,7 @@ class EphemeralStore {
     private convertingChannels = new Set<string>();
     private switchingToChannel = new Set<string>();
     private currentThreadId = '';
+    private notificationTapped = false;
 
     // Ephemeral control when (un)archiving a channel locally
     addArchivingChannel = (channelId: string) => {
@@ -114,6 +118,30 @@ class EphemeralStore {
 
     removeSwitchingToChannel = (channelId: string) => {
         this.switchingToChannel.delete(channelId);
+    };
+
+    private getCanJoinOtherTeamsSubject = (serverUrl: string) => {
+        if (!this.canJoinOtherTeams[serverUrl]) {
+            this.canJoinOtherTeams[serverUrl] = new BehaviorSubject(false);
+        }
+
+        return this.canJoinOtherTeams[serverUrl];
+    };
+
+    observeCanJoinOtherTeams = (serverUrl: string) => {
+        return this.getCanJoinOtherTeamsSubject(serverUrl).asObservable();
+    };
+
+    setCanJoinOtherTeams = (serverUrl: string, value: boolean) => {
+        this.getCanJoinOtherTeamsSubject(serverUrl).next(value);
+    };
+
+    setNotificationTapped = (value: boolean) => {
+        this.notificationTapped = value;
+    };
+
+    wasNotificationTapped = () => {
+        return this.notificationTapped;
     };
 }
 

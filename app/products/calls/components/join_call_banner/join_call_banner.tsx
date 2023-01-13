@@ -101,7 +101,7 @@ const JoinCallBanner = ({
 
     const joinHandler = async () => {
         if (isLimitRestricted) {
-            showLimitRestrictedAlert(limitRestrictedInfo.maxParticipants, intl);
+            showLimitRestrictedAlert(limitRestrictedInfo, intl);
             return;
         }
         leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, inACall, false, channelIsDMorGM);

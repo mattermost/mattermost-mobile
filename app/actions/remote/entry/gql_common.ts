@@ -7,8 +7,8 @@ import {storeConfigAndLicense} from '@actions/local/systems';
 import {MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
-import {MyTeamsRequest} from '@actions/remote/team';
-import {fetchNewThreads} from '@actions/remote/thread';
+import {MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
+import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
 import {Preferences} from '@constants';
@@ -48,20 +48,20 @@ export async function deferredAppEntryGraphQLActions(
     setTimeout(() => {
         if (chData?.channels?.length && chData.memberships?.length) {
             // defer fetching posts for unread channels on initial team
-            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId, true);
+            fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
         }
     }, FETCH_UNREADS_TIMEOUT);
 
-    if (preferences && processIsCRTEnabled(preferences, config)) {
+    if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads, config.Version)) {
         if (initialTeamId) {
-            await fetchNewThreads(serverUrl, initialTeamId, false);
+            await syncTeamThreads(serverUrl, initialTeamId);
         }
 
         if (teamData.teams?.length) {
             for await (const team of teamData.teams) {
                 if (team.id !== initialTeamId) {
                     // need to await here since GM/DM threads in different teams overlap
-                    await fetchNewThreads(serverUrl, team.id, false);
+                    await syncTeamThreads(serverUrl, team.id);
                 }
             }
         }
@@ -95,6 +95,7 @@ export async function deferredAppEntryGraphQLActions(
     // Fetch groups for current user
     fetchGroupsForMember(serverUrl, currentUserId);
 
+    updateCanJoinTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
 
     return {error: undefined};
@@ -180,9 +181,22 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
         user: gqlToClientUser(fetchedData.user!),
     };
 
+    const allTeams = getMemberTeamsFromGQLQuery(fetchedData);
+    const allTeamMemberships = fetchedData.teamMembers.map((m) => gqlToClientTeamMembership(m, meData.user.id));
+
+    const [nonArchivedTeams, archivedTeamIds] = allTeams.reduce((acc, t) => {
+        if (t.delete_at) {
+            acc[1].add(t.id);
+            return acc;
+        }
+        return [[...acc[0], t], acc[1]];
+    }, [[], new Set<string>()]);
+
+    const nonArchivedTeamMemberships = allTeamMemberships.filter((m) => !archivedTeamIds.has(m.team_id));
+
     const teamData = {
-        teams: getMemberTeamsFromGQLQuery(fetchedData),
-        memberships: fetchedData.teamMembers.map((m) => gqlToClientTeamMembership(m, meData.user.id)),
+        teams: nonArchivedTeams,
+        memberships: nonArchivedTeamMemberships,
     };
 
     const prefData = {
@@ -202,7 +216,7 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
     let initialTeamId = currentTeamId;
     if (!teamData.teams.length) {
         initialTeamId = '';
-    } else if (!initialTeamId || !teamData.teams.find((t) => t.id === currentTeamId)) {
+    } else if (!initialTeamId || !teamData.teams.find((t) => t.id === currentTeamId && t.delete_at === 0)) {
         const teamOrderPreference = getPreferenceValue(prefData.preferences || [], Preferences.TEAMS_ORDER, '', '') as string;
         initialTeamId = selectDefaultTeam(teamData.teams, meData.user.locale, teamOrderPreference, config.ExperimentalPrimaryTeam)?.id || '';
     }
@@ -256,7 +270,7 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
 
 export async function deferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
-    config: ClientConfig, license: ClientLicense, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
+    config: ClientConfig, license: ClientLicense | undefined, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string) {
     let result;
     if (config?.FeatureFlagGraphQL === 'true') {

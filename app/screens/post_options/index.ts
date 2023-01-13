@@ -7,12 +7,15 @@ import {combineLatest, of as of$, Observable} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions, Post, Screens} from '@constants';
+import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
+import AppsManager from '@managers/apps_manager';
 import {observePost, observePostSaved} from '@queries/servers/post';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
-import {observeConfig, observeLicense} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeConfigIntValue, observeConfigValue, observeLicense} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
+import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -32,6 +35,7 @@ type EnhancedProps = WithDatabaseArgs & {
     post: PostModel;
     showAddReaction: boolean;
     location: string;
+    serverUrl: string;
 }
 
 const observeCanEditPost = (database: Database, isOwner: boolean, post: PostModel, postEditTimeLimit: number, isLicensed: boolean, channel: ChannelModel, user: UserModel) => {
@@ -40,7 +44,7 @@ const observeCanEditPost = (database: Database, isOwner: boolean, post: PostMode
     }
 
     if (isLicensed && postEditTimeLimit !== -1) {
-        const timeLeft = (post.createAt + (postEditTimeLimit * 1000)) - Date.now();
+        const timeLeft = (post.createAt + toMilliseconds({seconds: postEditTimeLimit})) - Date.now();
         if (timeLeft <= 0) {
             return of$(false);
         }
@@ -57,7 +61,7 @@ const observeCanEditPost = (database: Database, isOwner: boolean, post: PostMode
 const withPost = withObservables([], ({post, database}: {post: Post | PostModel} & WithDatabaseArgs) => {
     let id: string | undefined;
     let combinedPost: Observable<Post | PostModel | undefined> = of$(undefined);
-    if (post.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
+    if (post?.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && post.props?.system_post_ids) {
         const systemPostIds = getPostIdsForCombinedUserActivityPost(post.id);
         id = systemPostIds?.pop();
         combinedPost = of$(post);
@@ -69,15 +73,15 @@ const withPost = withObservables([], ({post, database}: {post: Post | PostModel}
     };
 });
 
-const enhanced = withObservables([], ({combinedPost, post, showAddReaction, location, database}: EnhancedProps) => {
+const enhanced = withObservables([], ({combinedPost, post, showAddReaction, location, database, serverUrl}: EnhancedProps) => {
     const channel = post.channel.observe();
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = observeCurrentUser(database);
-    const config = observeConfig(database);
     const isLicensed = observeLicense(database).pipe(switchMap((lcs) => of$(lcs?.IsLicensed === 'true')));
-    const allowEditPost = config.pipe(switchMap((cfg) => of$(cfg?.AllowEditPost)));
-    const serverVersion = config.pipe(switchMap((cfg) => of$(cfg?.Version || '')));
-    const postEditTimeLimit = config.pipe(switchMap((cfg) => of$(parseInt(cfg?.PostEditTimeLimit || '-1', 10))));
+    const allowEditPost = observeConfigValue(database, 'AllowEditPost');
+    const serverVersion = observeConfigValue(database, 'Version');
+    const postEditTimeLimit = observeConfigIntValue(database, 'PostEditTimeLimit', -1);
+    const bindings = AppsManager.observeBindings(serverUrl, AppBindingLocations.POST_MENU_ITEM);
 
     const canPostPermission = combineLatest([channel, currentUser]).pipe(switchMap(([c, u]) => observePermissionForChannel(database, c, u, Permissions.CREATE_POST, false)));
     const hasAddReactionPermission = currentUser.pipe(switchMap((u) => observePermissionForPost(database, post, u, Permissions.ADD_REACTION, true)));
@@ -86,7 +90,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         return observePermissionForPost(database, post, u, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false);
     }));
 
-    const experimentalTownSquareIsReadOnly = config.pipe(switchMap((value) => of$(value?.ExperimentalTownSquareIsReadOnly === 'true')));
+    const experimentalTownSquareIsReadOnly = observeConfigBooleanValue(database, 'ExperimentalTownSquareIsReadOnly');
     const channelIsReadOnly = combineLatest([currentUser, channel, experimentalTownSquareIsReadOnly]).pipe(switchMap(([u, c, readOnly]) => {
         return of$(c?.name === General.DEFAULT_CHANNEL && (u && !isSystemAdmin(u.roles)) && readOnly);
     }));
@@ -98,7 +102,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
 
     const canEditUntil = combineLatest([isLicensed, allowEditPost, postEditTimeLimit, serverVersion, channelIsArchived, channelIsReadOnly]).pipe(
         switchMap(([ls, alw, limit, semVer, isArchived, isReadOnly]) => {
-            if (!isArchived && !isReadOnly && ls && ((alw === Permissions.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(semVer, 6)) || (limit !== -1))) {
+            if (!isArchived && !isReadOnly && ls && ((alw === Permissions.ALLOW_EDIT_POST_TIME_LIMIT && !isMinimumServerVersion(semVer || '', 6)) || (limit !== -1))) {
                 return of$(post.createAt + (limit * (1000)));
             }
             return of$(-1);
@@ -156,8 +160,8 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         canEdit,
         post,
         thread,
+        bindings,
     };
 });
 
 export default withDatabase(withPost(enhanced(PostOptions)));
-

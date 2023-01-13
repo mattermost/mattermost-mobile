@@ -103,7 +103,7 @@ const ChannelIcon = ({
     let unreadGroup;
     let mutedStyle;
 
-    if (isUnread) {
+    if (isUnread && !isMuted) {
         unreadIcon = styles.iconUnread;
         unreadGroupBox = styles.groupBoxUnread;
         unreadGroup = styles.groupUnread;
@@ -116,7 +116,7 @@ const ChannelIcon = ({
     }
 
     if (isInfo) {
-        activeIcon = isUnread ? styles.iconInfoUnread : styles.iconInfo;
+        activeIcon = isUnread && !isMuted ? styles.iconInfoUnread : styles.iconInfo;
         activeGroupBox = styles.groupBoxInfo;
         activeGroup = isUnread ? styles.groupInfoUnread : styles.groupInfo;
     }
@@ -187,7 +187,8 @@ const ChannelIcon = ({
             <DmAvatar
                 channelName={name}
                 isInfo={isInfo}
-            />);
+            />
+        );
     }
 
     return (
