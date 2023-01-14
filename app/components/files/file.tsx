@@ -25,12 +25,13 @@ type FileProps = {
     galleryIdentifier: string;
     index: number;
     inViewPort: boolean;
-    isSingleImage: boolean;
+    isSingleImage?: boolean;
     nonVisibleImagesCount: number;
     onPress: (index: number) => void;
     publicLinkEnabled: boolean;
     channelName?: string;
-    onOptionsPress?: (index: number) => void;
+    onOptionsPress?: (fileInfo: FileInfo) => void;
+    optionSelected?: boolean;
     wrapperWidth?: number;
     showDate?: boolean;
     updateFileForGallery: (idx: number, file: FileInfo) => void;
@@ -74,6 +75,7 @@ const File = ({
     nonVisibleImagesCount = 0,
     onOptionsPress,
     onPress,
+    optionSelected,
     publicLinkEnabled,
     showDate = false,
     updateFileForGallery,
@@ -94,19 +96,15 @@ const File = ({
     const {styles, onGestureEvent, ref} = useGalleryItem(galleryIdentifier, index, handlePreviewPress);
 
     const handleOnOptionsPress = useCallback(() => {
-        onOptionsPress?.(index);
-    }, [index, onOptionsPress]);
+        onOptionsPress?.(file);
+    }, [file, onOptionsPress]);
 
-    const renderOptionsButton = () => {
-        if (onOptionsPress) {
-            return (
-                <FileOptionsIcon
-                    onPress={handleOnOptionsPress}
-                />
-            );
-        }
-        return null;
-    };
+    const optionsButton = (
+        <FileOptionsIcon
+            onPress={handleOnOptionsPress}
+            selected={optionSelected}
+        />
+    );
 
     const fileInfo = (
         <FileInfo
@@ -174,7 +172,7 @@ const File = ({
                     {fileIcon}
                 </View>
                 {fileInfo}
-                {renderOptionsButton()}
+                {onOptionsPress && optionsButton}
             </View>
         );
     };
@@ -189,7 +187,7 @@ const File = ({
             <View style={[style.fileWrapper]}>
                 {renderDocumentFile}
                 {fileInfo}
-                {renderOptionsButton()}
+                {onOptionsPress && optionsButton}
             </View>
         );
     } else {

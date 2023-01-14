@@ -4,32 +4,32 @@
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useState, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {ActivityIndicator, DeviceEventEmitter, FlatList, ListRenderItemInfo, Platform, StyleSheet, View} from 'react-native';
+import {ActivityIndicator, DeviceEventEmitter, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {SafeAreaView, Edge, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
 import {fetchRecentMentions} from '@actions/remote/search';
-import FreezeScreen from '@components/freeze_screen';
 import NavigationHeader from '@components/navigation_header';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Events, Screens} from '@constants';
-import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
-import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
+import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
 
-import type {ViewableItemsChanged} from '@typings/components/post_list';
+import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 type Props = {
+    appsEnabled: boolean;
+    customEmojiNames: string[];
     currentTimezone: string | null;
     isTimezoneEnabled: boolean;
     mentions: PostModel[];
@@ -41,7 +41,6 @@ const styles = StyleSheet.create({
     },
     container: {
         flex: 1,
-        marginBottom: Platform.select({ios: BOTTOM_TAB_HEIGHT}),
     },
     empty: {
         alignItems: 'center',
@@ -50,11 +49,10 @@ const styles = StyleSheet.create({
     },
 });
 
-const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Props) => {
+const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentTimezone, isTimezoneEnabled}: Props) => {
     const theme = useTheme();
     const route = useRoute();
     const isFocused = useIsFocused();
-    const insets = useSafeAreaInsets();
     const {formatMessage} = useIntl();
     const [refreshing, setRefreshing] = useState(false);
     const [loading, setLoading] = useState(true);
@@ -88,8 +86,7 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
     }, [serverUrl, isFocused]);
 
     const {scrollPaddingTop, scrollRef, scrollValue, onScroll, headerHeight} = useCollapsibleHeader<FlatList<string>>(true, onSnap);
-    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop - insets.top, flexGrow: 1}), [scrollPaddingTop, insets.top]);
-    const scrollViewStyle = useMemo(() => ({top: insets.top}), [insets.top]);
+    const paddingTop = useMemo(() => ({paddingTop: scrollPaddingTop, flexGrow: 1}), [scrollPaddingTop]);
     const posts = useMemo(() => selectOrderedPosts(mentions, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [mentions]);
 
     const animated = useAnimatedStyle(() => {
@@ -117,8 +114,8 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
         }
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
-            if (isViewable) {
-                acc[`${Screens.MENTIONS}-${item.id}`] = true;
+            if (isViewable && item.type === 'post') {
+                acc[`${Screens.MENTIONS}-${item.value.id}`] = true;
             }
             return acc;
         }, {});
@@ -139,30 +136,34 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
         </View>
     ), [loading, theme, paddingTop]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<string | PostModel>) => {
-        if (typeof item === 'string') {
-            if (isDateLine(item)) {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
+        switch (item.type) {
+            case 'date':
                 return (
                     <DateSeparator
-                        date={getDateForDateLine(item)}
+                        key={item.value}
+                        date={getDateForDateLine(item.value)}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
-            }
-            return null;
+            case 'post':
+                return (
+                    <PostWithChannelInfo
+                        appsEnabled={appsEnabled}
+                        customEmojiNames={customEmojiNames}
+                        key={item.value.id}
+                        location={Screens.MENTIONS}
+                        post={item.value}
+                        testID='recent_mentions.post_list'
+                    />
+                );
+            default:
+                return null;
         }
-
-        return (
-            <PostWithChannelInfo
-                location={Screens.MENTIONS}
-                post={item}
-                testID='recent_mentions.post_list'
-            />
-        );
-    }, []);
+    }, [appsEnabled, customEmojiNames]);
 
     return (
-        <FreezeScreen freeze={!isFocused}>
+        <>
             <NavigationHeader
                 isLargeTitle={true}
                 showBackButton={false}
@@ -196,12 +197,11 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
                         renderItem={renderItem}
                         removeClippedSubviews={true}
                         onViewableItemsChanged={onViewableItemsChanged}
-                        style={scrollViewStyle}
                         testID='recent_mentions.post_list.flat_list'
                     />
                 </Animated.View>
             </SafeAreaView>
-        </FreezeScreen>
+        </>
     );
 };
 

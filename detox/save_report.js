@@ -12,6 +12,7 @@
  * Environment variables:
  *   BRANCH=[branch]                 : Branch identifier from CI
  *   BUILD_ID=[build_id]             : Build identifier from CI
+ *   COMMIT_HASH=[commit_hash]       : Commit hash from repo
  *   DEVICE_NAME=[device_name]       : Name of the device used for testing
  *   DEVICE_OS_NAME=[device_os_name] : OS of the device used for testing
  *   HEADLESS=[boolean]              : Headed by default (false) or headless (true)
@@ -30,14 +31,19 @@
  *      - TYPE=[type], e.g. "MASTER", "PR", "RELEASE", "GEKIDOU"
  */
 
-const assert = require('assert');
 const os = require('os');
+const path = require('path');
 
 const fse = require('fs-extra');
+const {mergeFiles} = require('junit-report-merger');
 const shell = require('shelljs');
 
 const {saveArtifacts} = require('./utils/artifacts');
 const {ARTIFACTS_DIR} = require('./utils/constants');
+const {
+    generateJestStareHtmlReport,
+    mergeJestStareJsonFiles,
+} = require('./utils/jest_stare');
 const {
     convertXmlToJson,
     generateShortSummary,
@@ -56,7 +62,6 @@ const saveReport = async () => {
     const {
         DEVICE_NAME,
         DEVICE_OS_VERSION,
-        FAILURE_MESSAGE,
         HEADLESS,
         IOS,
         TYPE,
@@ -88,9 +93,14 @@ const saveReport = async () => {
     };
     writeJsonToFile(environmentDetails, 'environment.json', ARTIFACTS_DIR);
 
-    // Read XML from a file
+    // Merge all XML reports into one single XML report
     const platform = process.env.IOS === 'true' ? 'ios' : 'android';
-    const xml = fse.readFileSync(`${ARTIFACTS_DIR}/${platform}-junit.xml`);
+    const combinedFilePath = `${ARTIFACTS_DIR}/${platform}-combined.xml`;
+    await mergeFiles(path.join(__dirname, combinedFilePath), [`${ARTIFACTS_DIR}/${platform}-junit*.xml`]);
+    console.log(`Merged, check ${combinedFilePath}`);
+
+    // Read XML from a file
+    const xml = fse.readFileSync(combinedFilePath);
     const {testsuites} = convertXmlToJson(xml);
 
     // Generate short summary, write to file and then send report via webhook
@@ -98,6 +108,12 @@ const saveReport = async () => {
     const summary = generateShortSummary(allTests);
     console.log(summary);
     writeJsonToFile(summary, 'summary.json', ARTIFACTS_DIR);
+
+    // Generate jest-stare report
+    const jestStareOutputDir = path.join(__dirname, `${ARTIFACTS_DIR}/jest-stare`);
+    const jestStareCombinedFilePath = `${jestStareOutputDir}/${platform}-combined.json`;
+    await mergeJestStareJsonFiles(jestStareCombinedFilePath, [`${ARTIFACTS_DIR}/jest-stare/${platform}-data*.json`]);
+    generateJestStareHtmlReport(jestStareOutputDir, `${platform}-report.html`, jestStareCombinedFilePath);
 
     const result = await saveArtifacts();
     if (result && result.success) {
@@ -122,8 +138,6 @@ const saveReport = async () => {
     if (ZEPHYR_ENABLE === 'true') {
         await createTestExecutions(allTests, testCycle);
     }
-
-    assert(summary.stats.failures === 0, FAILURE_MESSAGE);
 };
 
 saveReport();

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {TouchableOpacity, View} from 'react-native';
+import {TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';
@@ -26,7 +26,7 @@ type Props = {
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    const followingButtonContainerBase = {
+    const followingButtonContainerBase: ViewStyle = {
         justifyContent: 'center',
         height: 32,
         paddingHorizontal: 12,

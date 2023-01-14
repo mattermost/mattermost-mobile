@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import deepEqual from 'deep-equal';
 import merge from 'deepmerge';
 import {StatusBar, StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {Preferences} from '@constants';
-import {MODAL_SCREENS_WITHOUT_BACK, SCREENS_WITH_TRANSPARENT_BACKGROUND} from '@constants/screens';
+import {MODAL_SCREENS_WITHOUT_BACK, SCREENS_AS_BOTTOM_SHEET, SCREENS_WITH_TRANSPARENT_BACKGROUND} from '@constants/screens';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import {NamedStyles} from '@typings/global/styles';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 
 import type {Options} from 'react-native-navigation';
@@ -51,10 +53,10 @@ export function getComponents(inColor: string): {red: number; green: number; blu
     };
 }
 
-export function makeStyleSheetFromTheme(getStyleFromTheme: (a: any) => any): (a: any) => any {
-    let lastTheme: any;
-    let style: any;
-    return (theme: any) => {
+export function makeStyleSheetFromTheme<T extends NamedStyles<T>>(getStyleFromTheme: (a: Theme) => T): (a: Theme) => T {
+    let lastTheme: Theme;
+    let style: T;
+    return (theme: Theme) => {
         if (!style || theme !== lastTheme) {
             style = StyleSheet.create(getStyleFromTheme(theme));
             lastTheme = theme;
@@ -98,13 +100,25 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
         },
     };
 
-    if (!SCREENS_WITH_TRANSPARENT_BACKGROUND.has(componentId)) {
+    if (SCREENS_AS_BOTTOM_SHEET.has(componentId)) {
+        options.topBar = {
+            leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
+            background: {
+                color: theme.centerChannelBg,
+            },
+            title: {
+                color: theme.centerChannelColor,
+            },
+        };
+    }
+
+    if (!SCREENS_WITH_TRANSPARENT_BACKGROUND.has(componentId) && !SCREENS_AS_BOTTOM_SHEET.has(componentId)) {
         options.layout = {
             componentBackgroundColor: theme.centerChannelBg,
         };
     }
 
-    if (!MODAL_SCREENS_WITHOUT_BACK.has(componentId) && options.topBar) {
+    if (!MODAL_SCREENS_WITHOUT_BACK.has(componentId) && !SCREENS_AS_BOTTOM_SHEET.has(componentId) && options.topBar) {
         options.topBar.backButton = {
             color: theme.sidebarHeaderTextColor,
         };
@@ -117,7 +131,7 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
 }
 
 export function setNavigationStackStyles(theme: Theme) {
-    NavigationStore.allNavigationComponentIds.forEach((componentId) => {
+    NavigationStore.getScreensInStack().forEach((componentId) => {
         if (!appearanceControlledScreens.has(componentId)) {
             setNavigatorStyles(componentId, theme);
         }
@@ -262,7 +276,8 @@ export function setThemeDefaults(theme: ExtendedTheme): Theme {
 }
 
 export const updateThemeIfNeeded = (theme: Theme, force = false) => {
-    if (theme !== EphemeralStore.theme || force) {
+    const storedTheme = EphemeralStore.theme;
+    if (!deepEqual(theme, storedTheme) || force) {
         EphemeralStore.theme = theme;
         requestAnimationFrame(() => {
             setNavigationStackStyles(theme);

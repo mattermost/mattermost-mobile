@@ -9,13 +9,12 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {
-    defaultHeight: number;
+    heightOffset: number;
     hasSearch: boolean;
-    largeHeight: number;
-    scrollValue?: Animated.SharedValue<number>;
     subtitle?: string;
     theme: Theme;
     title: string;
+    translateY: Animated.DerivedValue<number>;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -34,33 +33,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const NavigationHeaderLargeTitle = ({
-    defaultHeight,
-    largeHeight,
+    heightOffset,
     hasSearch,
-    scrollValue,
     subtitle,
     theme,
     title,
+    translateY,
 }: Props) => {
     const styles = getStyleSheet(theme);
 
-    const transform = useAnimatedStyle(() => {
-        const value = scrollValue?.value || 0;
-        return {
-            transform: [{translateY: Math.min(-value, largeHeight - defaultHeight)}],
-        };
-    });
+    const transform = useAnimatedStyle(() => (
+        {transform: [{translateY: translateY.value}]}
+    ), [translateY?.value]);
 
     const containerStyle = useMemo(() => {
-        return [{height: largeHeight - defaultHeight}, styles.container];
-    }, [defaultHeight, largeHeight, theme]);
+        return [{height: heightOffset}, styles.container];
+    }, [heightOffset, theme]);
 
     return (
         <Animated.View style={[containerStyle, transform]}>
             <Text
                 ellipsizeMode='tail'
                 numberOfLines={1}
-                style={styles.heading}
+                style={[styles.heading]}
                 testID='navigation.large_header.title'
             >
                 {title}

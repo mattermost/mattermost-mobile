@@ -21,7 +21,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>2.0.0</string>
 	<key>CFBundleVersion</key>
-	<string>427</string>
+	<string>452</string>
 	<key>UIAppFonts</key>
 	<array>
 		<string>OpenSans-Bold.ttf</string>
@@ -50,8 +50,8 @@
 		<dict>
 			<key>NSExtensionActivationRule</key>
 			<dict>
-        <key>NSExtensionActivationDictionaryVersion</key>
-        <integer>2</integer>
+				<key>NSExtensionActivationDictionaryVersion</key>
+				<integer>2</integer>
 				<key>NSExtensionActivationSupportsAttachmentsWithMaxCount</key>
 				<integer>10</integer>
 				<key>NSExtensionActivationSupportsFileWithMaxCount</key>
@@ -73,5 +73,9 @@
 		<key>NSExtensionPointIdentifier</key>
 		<string>com.apple.share-services</string>
 	</dict>
+	<key>SENTRY_DSN_IOS</key>
+	<string>$(SENTRY_DSN_IOS)</string>
+	<key>SENTRY_ENABLED</key>
+	<string>$(SENTRY_ENABLED)</string>
 </dict>
 </plist>

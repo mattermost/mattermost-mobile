@@ -118,15 +118,11 @@ const About = ({config, license}: AboutProps) => {
     }, []);
 
     const handleAboutTeam = useCallback(preventDoubleTap(() => {
-        return openURL(Config.AboutTeamURL);
-    }), []);
-
-    const handleAboutEnterprise = useCallback(preventDoubleTap(() => {
-        return openURL(Config.AboutEnterpriseURL);
+        return openURL(Config.WebsiteURL);
     }), []);
 
     const handlePlatformNotice = useCallback(preventDoubleTap(() => {
-        return openURL(Config.PlatformNoticeURL);
+        return openURL(Config.ServerNoticeURL);
     }), []);
 
     const handleMobileNotice = useCallback(preventDoubleTap(() => {
@@ -256,8 +252,7 @@ const About = ({config, license}: AboutProps) => {
                 )}
                 <LearnMore
                     config={config}
-                    onHandleAboutEnterprise={handleAboutEnterprise}
-                    onHandleAboutTeam={handleAboutTeam}
+                    onPress={handleAboutTeam}
                 />
                 {!MATTERMOST_BUNDLE_IDS.includes(DeviceInfo.getBundleId()) &&
                     <FormattedText
@@ -309,7 +304,7 @@ const About = ({config, license}: AboutProps) => {
                     />
                 </View>
                 <View style={styles.hashContainer}>
-                    <View style={styles.footerGroup}>
+                    <View>
                         <FormattedText
                             defaultMessage='Build Hash:'
                             id={t('about.hash')}
@@ -323,7 +318,7 @@ const About = ({config, license}: AboutProps) => {
                             {config.BuildHash}
                         </Text>
                     </View>
-                    <View style={styles.footerGroup}>
+                    <View>
                         <FormattedText
                             defaultMessage='EE Build Hash:'
                             id={t('about.hashee')}
@@ -338,7 +333,7 @@ const About = ({config, license}: AboutProps) => {
                         </Text>
                     </View>
                 </View>
-                <View style={[styles.footerGroup, {marginBottom: 20}]}>
+                <View style={{marginBottom: 20}}>
                     <FormattedText
                         defaultMessage='Build Date:'
                         id={t('about.date')}

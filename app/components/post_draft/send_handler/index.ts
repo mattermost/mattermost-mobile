@@ -11,7 +11,7 @@ import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {observeChannel, observeCurrentChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {observePermissionForChannel} from '@queries/servers/role';
-import {observeConfig, observeCurrentUserId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeConfigIntValue, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 
 import SendHandler from './send_handler';
@@ -42,16 +42,9 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         switchMap((u) => of$(u?.status === General.OUT_OF_OFFICE)),
     );
 
-    const config = observeConfig(database);
-    const enableConfirmNotificationsToChannel = config.pipe(
-        switchMap((cfg) => of$(Boolean(cfg?.EnableConfirmNotificationsToChannel === 'true'))),
-    );
-    const isTimezoneEnabled = config.pipe(
-        switchMap((cfg) => of$(Boolean(cfg?.ExperimentalTimezone === 'true'))),
-    );
-    const maxMessageLength = config.pipe(
-        switchMap((cfg) => of$(parseInt(cfg?.MaxPostSize || '0', 10) || MAX_MESSAGE_LENGTH_FALLBACK)),
-    );
+    const enableConfirmNotificationsToChannel = observeConfigBooleanValue(database, 'EnableConfirmNotificationsToChannel');
+    const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
+    const maxMessageLength = observeConfigIntValue(database, 'MaxPostSize', MAX_MESSAGE_LENGTH_FALLBACK);
 
     const useChannelMentions = combineLatest([channel, currentUser]).pipe(
         switchMap(([c, u]) => {

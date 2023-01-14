@@ -5,6 +5,8 @@
     <uses-permission-sdk-23 android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.CAMERA"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_IMAGES"/>
+    <uses-permission android:name="android.permission.READ_MEDIA_VIDEO"/>
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
     <uses-permission android:name="android.permission.READ_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE" />
@@ -81,5 +83,23 @@
         android:resizeableActivity="true"
         android:exported="true"
       />
+      <activity
+        android:name="com.mattermost.share.ShareActivity"
+        android:configChanges="keyboard|keyboardHidden|orientation|screenLayout|screenSize|smallestScreenSize|uiMode"
+        android:windowSoftInputMode="adjustResize"
+        android:label="@string/app_name"
+        android:screenOrientation="portrait"
+        android:theme="@style/AppTheme"
+        android:taskAffinity="com.mattermost.share"
+        android:exported="true"
+      >
+          <intent-filter>
+              <action android:name="android.intent.action.SEND" />
+              <action android:name="android.intent.action.SEND_MULTIPLE" />
+              <category android:name="android.intent.category.DEFAULT" />
+              <!-- for sharing-->
+              <data android:mimeType="*/*" />
+          </intent-filter>
+      </activity>
   </application>
 </manifest>

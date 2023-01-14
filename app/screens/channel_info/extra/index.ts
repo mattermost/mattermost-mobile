@@ -8,6 +8,7 @@ import {combineLatestWith, switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser, observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 import {displayUsername, getUserCustomStatus, getUserIdFromChannelName, isCustomStatusExpired as checkCustomStatusIsExpired} from '@utils/user';
 
@@ -39,7 +40,7 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     );
 
     const createdBy = channel.pipe(
-        switchMap((ch) => (ch?.creatorId ? ch.creator.observe() : of$(undefined))),
+        switchMap((ch) => (ch?.creatorId ? observeUser(database, ch.creatorId) : of$(undefined))),
         combineLatestWith(currentUser, teammateNameDisplay),
         switchMap(([creator, me, disaplySetting]) => of$(displayUsername(creator, me?.locale, disaplySetting, false))),
     );
@@ -48,11 +49,14 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
         switchMap((dm) => of$(checkCustomStatusIsExpired(dm) ? undefined : getUserCustomStatus(dm))),
     );
 
+    const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
+
     return {
         createdAt,
         createdBy,
         customStatus,
         header,
+        isCustomStatusEnabled,
     };
 });
 

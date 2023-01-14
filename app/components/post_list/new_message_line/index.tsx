@@ -9,7 +9,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type NewMessagesLineProps = {
-    moreMessages: boolean;
     style?: StyleProp<ViewStyle>;
     theme: Theme;
     testID?: string;
@@ -39,34 +38,19 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function NewMessagesLine({moreMessages, style, testID, theme}: NewMessagesLineProps) {
+function NewMessagesLine({style, testID, theme}: NewMessagesLineProps) {
     const styles = getStyleFromTheme(theme);
-
-    let text = (
-        <FormattedText
-            id='posts_view.newMsg'
-            defaultMessage='New Messages'
-            style={styles.text}
-            testID={testID}
-        />
-    );
-
-    if (moreMessages) {
-        text = (
-            <FormattedText
-                id='mobile.posts_view.moreMsg'
-                defaultMessage='More New Messages Above'
-                style={styles.text}
-                testID={testID}
-            />
-        );
-    }
 
     return (
         <View style={[styles.container, style]}>
             <View style={styles.line}/>
             <View style={styles.textContainer}>
-                {text}
+                <FormattedText
+                    id='posts_view.newMsg'
+                    defaultMessage='New Messages'
+                    style={styles.text}
+                    testID={testID}
+                />
             </View>
             <View style={styles.line}/>
         </View>

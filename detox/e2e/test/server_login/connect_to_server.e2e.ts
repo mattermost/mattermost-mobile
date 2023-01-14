@@ -12,6 +12,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Server Login - Connect to Server', () => {
@@ -91,6 +92,7 @@ describe('Server Login - Connect to Server', () => {
         await connectButton.tap();
 
         // * Verify connection error
+        await wait(timeouts.ONE_SEC);
         await expect(serverUrlInputError).toHaveText(connectionError);
     });
 

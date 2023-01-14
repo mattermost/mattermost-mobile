@@ -4,6 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import enhance from '@nozbe/with-observables';
 
+import {observePostAuthor} from '@queries/servers/post';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 
 import Avatar from './avatar';
@@ -15,7 +16,7 @@ const withPost = enhance(['post'], ({database, post}: {post: PostModel} & WithDa
     const enablePostIconOverride = observeConfigBooleanValue(database, 'EnablePostIconOverride');
 
     return {
-        author: post.author.observe(),
+        author: observePostAuthor(database, post),
         enablePostIconOverride,
     };
 });

@@ -77,7 +77,6 @@ type Props = {
     closeButton: ImageResource;
 
     // Properties not changing during the lifetime of the screen)
-    currentUserId: string;
     currentTeamId: string;
 
     // Calculated Props
@@ -102,7 +101,6 @@ export default function BrowseChannels(props: Props) {
         canCreateChannels,
         sharedChannelsEnabled,
         closeButton,
-        currentUserId,
         currentTeamId,
         canShowArchivedChannels,
         typeOfChannels,
@@ -137,7 +135,7 @@ export default function BrowseChannels(props: Props) {
         setHeaderButtons(false);
         setAdding(true);
 
-        const result = await joinChannel(serverUrl, currentUserId, currentTeamId, channel.id, '', false);
+        const result = await joinChannel(serverUrl, currentTeamId, channel.id, '', false);
 
         if (result.error) {
             alertErrorWithFallback(

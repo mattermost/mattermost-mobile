@@ -29,6 +29,7 @@ const prepackagedPlugins = new Set([
     'com.mattermost.plugin-incident-management',
     'jenkins',
     'jira',
+    'com.mattermost.calls',
     'com.mattermost.nps',
     'com.mattermost.welcomebot',
     'zoom',

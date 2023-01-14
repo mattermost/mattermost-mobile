@@ -4,14 +4,14 @@
 import React, {useCallback, useMemo} from 'react';
 import {View, FlatList} from 'react-native';
 
+import ChannelListRow from '@components/channel_list_row';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
-
-import ChannelListRow from './channel_list_row';
+import {typography} from '@utils/typography';
 
 type Props = {
     onEndReached: () => void;
@@ -40,6 +40,10 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             flexGrow: 1,
             alignItems: 'center' as const,
             justifyContent: 'center' as const,
+        },
+        noResultText: {
+            color: changeOpacity(theme.centerChannelColor, 0.5),
+            ...typography('Body', 600, 'Regular'),
         },
         separator: {
             height: 1,

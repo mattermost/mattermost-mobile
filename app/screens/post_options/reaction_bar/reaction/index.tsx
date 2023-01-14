@@ -15,7 +15,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             fontWeight: 'bold',
         },
         highlight: {
-            backgroundColor: changeOpacity(theme.linkColor, 0.1),
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+            borderRadius: 4,
         },
         reactionContainer: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),

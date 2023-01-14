@@ -21,7 +21,7 @@
 	<key>CFBundleShortVersionString</key>
 	<string>2.0.0</string>
 	<key>CFBundleVersion</key>
-	<string>427</string>
+	<string>452</string>
 	<key>NSExtension</key>
 	<dict>
 		<key>NSExtensionPointIdentifier</key>
@@ -29,5 +29,9 @@
 		<key>NSExtensionPrincipalClass</key>
 		<string>$(PRODUCT_MODULE_NAME).NotificationService</string>
 	</dict>
+	<key>SENTRY_DSN_IOS</key>
+	<string>$(SENTRY_DSN_IOS)</string>
+	<key>SENTRY_ENABLED</key>
+	<string>$(SENTRY_ENABLED)</string>
 </dict>
 </plist>

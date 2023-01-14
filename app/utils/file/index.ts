@@ -166,32 +166,41 @@ export async function deleteV1Data() {
 
 export async function deleteFileCache(serverUrl: string) {
     const serverDir = urlSafeBase64Encode(serverUrl);
-    deleteFileCacheByDir(serverDir);
+    return deleteFileCacheByDir(serverDir);
 }
 
 export async function deleteLegacyFileCache(serverUrl: string) {
     const serverDir = hashCode_DEPRECATED(serverUrl);
-    deleteFileCacheByDir(serverDir);
+    return deleteFileCacheByDir(serverDir);
 }
 
 export async function deleteFileCacheByDir(dir: string) {
+    if (Platform.OS === 'ios') {
+        const appGroupCacheDir = `${getIOSAppGroupDetails().appGroupSharedDirectory}/Library/Caches/${dir}`;
+        await deleteFilesInDir(appGroupCacheDir);
+    }
+
     const cacheDir = `${FileSystem.CachesDirectoryPath}/${dir}`;
-    if (cacheDir) {
-        const cacheDirInfo = await FileSystem.exists(cacheDir);
+    await deleteFilesInDir(cacheDir);
+
+    return true;
+}
+
+async function deleteFilesInDir(directory: string) {
+    if (directory) {
+        const cacheDirInfo = await FileSystem.exists(directory);
         if (cacheDirInfo) {
             if (Platform.OS === 'ios') {
-                await FileSystem.unlink(cacheDir);
-                await FileSystem.mkdir(cacheDir);
+                await FileSystem.unlink(directory);
+                await FileSystem.mkdir(directory);
             } else {
-                const lstat = await FileSystem.readDir(cacheDir);
+                const lstat = await FileSystem.readDir(directory);
                 lstat.forEach((stat: FileSystem.ReadDirItem) => {
                     FileSystem.unlink(stat.path);
                 });
             }
         }
     }
-
-    return true;
 }
 
 export function lookupMimeType(filename: string) {
@@ -359,11 +368,13 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
     const fileIdPath = file.id?.replace(/[^0-9a-z]/g, '');
     if (serverUrl) {
         const server = urlSafeBase64Encode(serverUrl);
-        if (file?.name && !file.name.includes('/')) {
+        const hasValidFilename = file?.name && !file.name.includes('/');
+        const hasValidExtension = file?.extension && !file.extension.includes('/');
+        if (hasValidFilename) {
             let extension: string | undefined = file.extension;
             let filename = file.name;
 
-            if (!extension) {
+            if (!hasValidExtension) {
                 const mimeType = (file instanceof Model) ? file.mimeType : file.mime_type;
                 extension = getExtensionFromMime(mimeType);
             }
@@ -380,8 +391,10 @@ export function getLocalFilePathFromFile(serverUrl: string, file: FileInfo | Fil
             }
 
             return `${FileSystem.CachesDirectoryPath}/${server}/${filename}-${fileIdPath}.${extension}`;
-        } else if (file?.id && file?.extension) {
+        } else if (file?.id && hasValidExtension) {
             return `${FileSystem.CachesDirectoryPath}/${server}/${fileIdPath}.${file.extension}`;
+        } else if (file?.id) {
+            return `${FileSystem.CachesDirectoryPath}/${server}/${fileIdPath}`;
         }
     }
 
@@ -521,8 +534,18 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
     try {
         const files: FileSystem.ReadDirItem[][] = [];
 
-        const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${urlSafeBase64Encode(serverUrl)}`);
-        files.push(directoryFiles);
+        const promises = [FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${urlSafeBase64Encode(serverUrl)}`)];
+        if (Platform.OS === 'ios') {
+            const cacheDir = `${getIOSAppGroupDetails().appGroupSharedDirectory}/Library/Caches/${urlSafeBase64Encode(serverUrl)}`;
+            promises.push(FileSystem.readDir(cacheDir));
+        }
+
+        const dirs = await Promise.allSettled(promises);
+        dirs.forEach((p) => {
+            if (p.status === 'fulfilled') {
+                files.push(p.value);
+            }
+        });
 
         const flattenedFiles = files.flat();
         const totalSize = flattenedFiles.reduce((acc, file) => acc + file.size, 0);
@@ -531,7 +554,6 @@ export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
             totalSize,
         };
     } catch (error) {
-        logError('Failed getAllFilesInCachesDirectory', error);
         return {error};
     }
 };

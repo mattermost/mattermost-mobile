@@ -15,6 +15,7 @@ class SettingsScreen {
         advancedSettingsOption: 'settings.advanced_settings.option',
         aboutOption: 'settings.about.option',
         helpOption: 'settings.help.option',
+        reportProblemOption: 'settings.report_problem.option',
     };
 
     settingsScreen = element(by.id(this.testID.settingsScreen));
@@ -25,6 +26,7 @@ class SettingsScreen {
     advancedSettingsOption = element(by.id(this.testID.advancedSettingsOption));
     aboutOption = element(by.id(this.testID.aboutOption));
     helpOption = element(by.id(this.testID.helpOption));
+    reportProblemOption = element(by.id(this.testID.reportProblemOption));
 
     toBeVisible = async () => {
         await waitFor(this.settingsScreen).toExist().withTimeout(timeouts.TEN_SEC);

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Clipboard from '@react-native-community/clipboard';
+import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback} from 'react';
 
 import {BaseOption} from '@components/common_post_options';
@@ -15,19 +15,20 @@ import {showSnackBar} from '@utils/snack_bar';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    bottomSheetId: typeof Screens[keyof typeof Screens];
     sourceScreen: typeof Screens[keyof typeof Screens];
     post: PostModel;
     teamName: string;
 }
-const CopyPermalinkOption = ({teamName, post, sourceScreen}: Props) => {
+const CopyPermalinkOption = ({bottomSheetId, teamName, post, sourceScreen}: Props) => {
     const serverUrl = useServerUrl();
 
     const handleCopyLink = useCallback(async () => {
         const permalink = `${serverUrl}/${teamName}/pl/${post.id}`;
         Clipboard.setString(permalink);
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         showSnackBar({barType: SNACK_BAR_TYPE.LINK_COPIED, sourceScreen});
-    }, [teamName, post.id]);
+    }, [teamName, post.id, bottomSheetId]);
 
     return (
         <BaseOption

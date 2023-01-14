@@ -138,7 +138,7 @@ export default class FilePickerUtil {
                 if (uri) {
                     files.push({...file, fileName, uri, type, width: file.width, height: file.height});
                 } else {
-                    logError('attaching file reponse return empty uri');
+                    logError('attaching file reponse return empty uri', file);
                 }
             }
         })));
@@ -302,7 +302,7 @@ export default class FilePickerUtil {
             launchImageLibrary(options, async (response: ImagePickerResponse) => {
                 StatusBar.setHidden(false);
                 if (response.errorMessage || response.didCancel) {
-                    logError('Attach failed', response.errorMessage);
+                    logError('Attach failed', response.errorMessage || (response.didCancel ? 'cancelled' : ''));
                     return;
                 }
 

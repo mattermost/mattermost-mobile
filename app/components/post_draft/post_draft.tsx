@@ -8,6 +8,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';
 import {View as ViewConstants} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
@@ -33,6 +34,7 @@ type Props = {
     keyboardTracker: RefObject<KeyboardTrackingViewRef>;
     containerHeight: number;
     isChannelScreen: boolean;
+    canShowPostPriority?: boolean;
 }
 
 const {KEYBOARD_TRACKING_OFFSET} = ViewConstants;
@@ -53,14 +55,17 @@ function PostDraft({
     keyboardTracker,
     containerHeight,
     isChannelScreen,
+    canShowPostPriority,
 }: Props) {
     const [value, setValue] = useState(message);
     const [cursorPosition, setCursorPosition] = useState(message.length);
     const [postInputTop, setPostInputTop] = useState(0);
+    const [isFocused, setIsFocused] = useState(false);
     const isTablet = useIsTablet();
     const keyboardHeight = useKeyboardHeight(keyboardTracker);
     const insets = useSafeAreaInsets();
     const headerHeight = useDefaultHeaderHeight();
+    const serverUrl = useServerUrl();
 
     // Update draft in case we switch channels or threads
     useEffect(() => {
@@ -74,7 +79,7 @@ function PostDraft({
         ios: (keyboardHeight ? keyboardHeight - keyboardAdjustment : (postInputTop + insetsAdjustment)),
         default: postInputTop + insetsAdjustment,
     });
-    const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight + insets.top : 0);
+    const autocompleteAvailableSpace = containerHeight - autocompletePosition - (isChannelScreen ? headerHeight : 0);
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -106,14 +111,16 @@ function PostDraft({
             cursorPosition={cursorPosition}
             files={files}
             rootId={rootId}
+            canShowPostPriority={canShowPostPriority}
             updateCursorPosition={setCursorPosition}
             updatePostInputTop={setPostInputTop}
             updateValue={setValue}
             value={value}
+            setIsFocused={setIsFocused}
         />
     );
 
-    const autoComplete = (
+    const autoComplete = isFocused ? (
         <Autocomplete
             position={animatedAutocompletePosition}
             updateValue={setValue}
@@ -125,8 +132,9 @@ function PostDraft({
             hasFilesAttached={Boolean(files?.length)}
             inPost={true}
             availableSpace={animatedAutocompleteAvailableSpace}
+            serverUrl={serverUrl}
         />
-    );
+    ) : null;
 
     if (Platform.OS === 'android') {
         return (

@@ -58,6 +58,7 @@ describe('Account - Settings', () => {
         await expect(SettingsScreen.advancedSettingsOption).toBeVisible();
         await expect(SettingsScreen.aboutOption).toBeVisible();
         await expect(SettingsScreen.helpOption).toBeVisible();
+        await expect(SettingsScreen.reportProblemOption).toBeVisible();
     });
 
     it('MM-T4991_2 - should be able to go to notification settings screen', async () => {

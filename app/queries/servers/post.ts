@@ -9,12 +9,14 @@ import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 
 import {queryPreferencesByCategoryAndName} from './preference';
+import {observeUser} from './user';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
+import type PreferenceModel from '@typings/database/models/servers/preference';
 
-const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
+const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, PREFERENCE}} = MM_TABLES;
 
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
@@ -72,6 +74,10 @@ export const observePost = (database: Database, postId: string) => {
     );
 };
 
+export const observePostAuthor = (database: Database, post: PostModel) => {
+    return observeUser(database, post.userId);
+};
+
 export const observePostSaved = (database: Database, postId: string) => {
     return queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, postId).
         observeWithColumns(['value']).pipe(
@@ -121,7 +127,20 @@ export const getRecentPostsInThread = async (database: Database, rootId: string)
     return [];
 };
 
-export const queryPostsChunk = (database: Database, id: string, earliest: number, latest: number, inThread = false, includeDeleted = false) => {
+export const getLastPostInThread = async (database: Database, rootId: string) => {
+    const chunks = await queryPostsInThread(database, rootId, true, true).fetch();
+    if (chunks.length) {
+        const recent = chunks[0];
+        const post = await getPostById(database, rootId);
+        if (post) {
+            const posts = await queryPostsChunk(database, rootId, recent.earliest, recent.latest, true, true, 1).fetch();
+            return posts[0];
+        }
+    }
+    return undefined;
+};
+
+export const queryPostsChunk = (database: Database, id: string, earliest: number, latest: number, inThread = false, includeDeleted = false, limit = 0) => {
     const conditions: Q.Condition[] = [Q.where('create_at', Q.between(earliest, latest))];
     if (inThread) {
         conditions.push(Q.where('root_id', id));
@@ -133,12 +152,18 @@ export const queryPostsChunk = (database: Database, id: string, earliest: number
         conditions.push(Q.where('delete_at', Q.eq(0)));
     }
 
-    return database.get<PostModel>(POST).query(
+    const clauses: Q.Clause[] = [
         Q.and(
             ...conditions,
         ),
         Q.sortBy('create_at', Q.desc),
-    );
+    ];
+
+    if (limit) {
+        clauses.push(Q.take(limit));
+    }
+
+    return database.get<PostModel>(POST).query(...clauses);
 };
 
 export const getRecentPostsInChannel = async (database: Database, channelId: string, includeDeleted = false) => {
@@ -185,9 +210,22 @@ export const queryPinnedPostsInChannel = (database: Database, channelId: string)
             Q.where('channel_id', channelId),
             Q.where('is_pinned', Q.eq(true)),
         ),
+        Q.sortBy('create_at', Q.asc),
     );
 };
 
 export const observePinnedPostsInChannel = (database: Database, channelId: string) => {
     return queryPinnedPostsInChannel(database, channelId).observe();
+};
+
+export const observeSavedPostsByIds = (database: Database, postIds: string[]) => {
+    return database.get<PreferenceModel>(PREFERENCE).
+        query(
+            Q.and(
+                Q.where('category', Preferences.CATEGORY_SAVED_POST),
+                Q.where('name', Q.oneOf(postIds)),
+            ),
+        ).observeWithColumns(['name']).pipe(
+            switchMap((prefs) => of$(new Set(prefs.map((p) => p.name)))),
+        );
 };

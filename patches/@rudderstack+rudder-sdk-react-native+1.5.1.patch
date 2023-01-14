@@ -1,0 +1,27 @@
+diff --git a/node_modules/@rudderstack/rudder-sdk-react-native/android/build.gradle b/node_modules/@rudderstack/rudder-sdk-react-native/android/build.gradle
+index 24400ea..c69c39f 100644
+--- a/node_modules/@rudderstack/rudder-sdk-react-native/android/build.gradle
++++ b/node_modules/@rudderstack/rudder-sdk-react-native/android/build.gradle
+@@ -15,7 +15,7 @@ android {
+     compileSdkVersion 30
+ 
+     defaultConfig {
+-        minSdkVersion 16
++        minSdkVersion rootProject.hasProperty('minSdkVersion') ? rootProject.minSdkVersion : 21
+         targetSdkVersion 30
+         versionCode 1
+         versionName "1.0"
+diff --git a/node_modules/@rudderstack/rudder-sdk-react-native/ios/RNRudderSdkModule.h b/node_modules/@rudderstack/rudder-sdk-react-native/ios/RNRudderSdkModule.h
+index f9020d1..7962e7b 100644
+--- a/node_modules/@rudderstack/rudder-sdk-react-native/ios/RNRudderSdkModule.h
++++ b/node_modules/@rudderstack/rudder-sdk-react-native/ios/RNRudderSdkModule.h
+@@ -1,9 +1,5 @@
+ 
+-#if __has_include("RCTBridgeModule.h")
+-#import "RCTBridgeModule.h"
+-#else
+ #import <React/RCTBridgeModule.h>
+-#endif
+ 
+ @interface RNRudderSdkModule : NSObject <RCTBridgeModule>
+ 

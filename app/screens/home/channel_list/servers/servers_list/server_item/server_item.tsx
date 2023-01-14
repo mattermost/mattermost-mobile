@@ -3,9 +3,10 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Animated, DeviceEventEmitter, Platform, Text, View} from 'react-native';
+import {Animated, DeviceEventEmitter, Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
+import {Navigation} from 'react-native-navigation';
 
 import {storeMultiServerTutorial} from '@actions/app/global';
 import {appEntry} from '@actions/remote/entry';
@@ -17,16 +18,15 @@ import Loading from '@components/loading';
 import ServerIcon from '@components/server_icon';
 import TutorialHighlight from '@components/tutorial_highlight';
 import TutorialSwipeLeft from '@components/tutorial_highlight/swipe_left';
-import {Events} from '@constants';
-import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
+import {Events, Screens} from '@constants';
+import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
-import {queryServerByIdentifier} from '@queries/app/servers';
+import {getServerByIdentifier} from '@queries/app/servers';
 import {dismissBottomSheet} from '@screens/navigation';
-import EphemeralStore from '@store/ephemeral_store';
-import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
+import {canReceiveNotifications} from '@utils/push_proxy';
 import {alertServerAlreadyConnected, alertServerError, alertServerLogout, alertServerRemove, editServer, loginToServer} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -59,6 +59,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     badge: {
         left: 18,
         top: -5,
+        borderColor: theme.centerChannelBg,
     },
     button: {
         borderRadius: 8,
@@ -102,7 +103,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderWidth: 1,
         height: 72,
         justifyContent: 'center',
-        width: 45,
+        width: 50,
     },
     unread: {
         top: -2,
@@ -158,7 +159,7 @@ const ServerItem = ({
     const viewRef = useRef<View>(null);
     const [showTutorial, setShowTutorial] = useState(false);
     const [itemBounds, setItemBounds] = useState<TutorialItemBounds>({startX: 0, startY: 0, endX: 0, endY: 0});
-    const database = DatabaseManager.serverDatabases[server.url]?.database;
+
     let displayName = server.displayName;
 
     if (server.url === server.displayName) {
@@ -170,7 +171,7 @@ const ServerItem = ({
         let isUnread = Boolean(threadUnreads);
         for (const myChannel of myChannels) {
             const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
-            mentions += myChannel.mentionsCount;
+            mentions += isMuted ? 0 : myChannel.mentionsCount;
             isUnread = isUnread || (myChannel.isUnread && !isMuted);
         }
         mentions += threadMentionCount;
@@ -179,6 +180,7 @@ const ServerItem = ({
     };
 
     const logoutServer = async () => {
+        Navigation.updateProps(Screens.HOME, {extra: undefined});
         await logout(server.url);
 
         if (isActive) {
@@ -191,6 +193,7 @@ const ServerItem = ({
     const removeServer = async () => {
         const skipLogoutFromServer = server.lastActiveAt === 0;
         await dismissBottomSheet();
+        Navigation.updateProps(Screens.HOME, {extra: undefined});
         await logout(server.url, skipLogoutFromServer, true);
     };
 
@@ -211,7 +214,7 @@ const ServerItem = ({
     };
 
     const containerStyle = useMemo(() => {
-        const style = [styles.container];
+        const style: StyleProp<ViewStyle> = [styles.container];
         if (isActive) {
             style.push(styles.active);
         }
@@ -220,7 +223,7 @@ const ServerItem = ({
     }, [isActive]);
 
     const serverStyle = useMemo(() => {
-        const style = [styles.row];
+        const style: StyleProp<ViewStyle> = [styles.row];
         if (!server.lastActiveAt) {
             style.push(styles.offline);
         }
@@ -244,26 +247,14 @@ const ServerItem = ({
             setSwitching(false);
             return;
         }
-        const existingServer = await queryServerByIdentifier(DatabaseManager.appDatabase!.database, data.config!.DiagnosticId);
+        const existingServer = await getServerByIdentifier(data.config!.DiagnosticId);
         if (existingServer && existingServer.lastActiveAt > 0) {
             alertServerAlreadyConnected(intl);
             setSwitching(false);
             return;
         }
 
-        switch (result.canReceiveNotifications) {
-            case PUSH_PROXY_RESPONSE_NOT_AVAILABLE:
-                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_NOT_AVAILABLE);
-                alertPushProxyError(intl);
-                break;
-            case PUSH_PROXY_RESPONSE_UNKNOWN:
-                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_UNKNOWN);
-                alertPushProxyUnknown(intl);
-                break;
-            default:
-                EphemeralStore.setPushProxyVerificationState(server.url, PUSH_PROXY_STATUS_VERIFIED);
-        }
-
+        canReceiveNotifications(server.url, result.canReceiveNotifications as string, intl);
         loginToServer(theme, server.url, displayName, data.config!, data.license!);
     }, [server, theme, intl]);
 
@@ -299,6 +290,7 @@ const ServerItem = ({
         if (server.lastActiveAt) {
             setSwitching(true);
             await dismissBottomSheet();
+            Navigation.updateProps(Screens.HOME, {extra: undefined});
             DatabaseManager.setActiveServerDatabase(server.url);
             await appEntry(server.url, Date.now());
             return;
@@ -311,7 +303,7 @@ const ServerItem = ({
         DeviceEventEmitter.emit(Events.SWIPEABLE, server.url);
     }, [server]);
 
-    const renderActions = useCallback((progress: Animated.AnimatedInterpolation) => {
+    const renderActions = useCallback((progress: Animated.AnimatedInterpolation<number>) => {
         return (
             <Options
                 onEdit={handleEdit}
@@ -464,9 +456,9 @@ const ServerItem = ({
                 </Text>
             )}
 
-            {Boolean(database) && server.lastActiveAt > 0 &&
+            {server.lastActiveAt > 0 &&
             <WebSocket
-                database={database!}
+                serverUrl={server.url}
             />
             }
             {showTutorial &&

@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
-import {DeviceEventEmitter} from 'react-native';
+import React, {useEffect} from 'react';
 import Animated, {cancelAnimation, Easing, useAnimatedStyle, useSharedValue, withRepeat, withTiming} from 'react-native-reanimated';
 
-import {Events} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import {useTeamsLoading} from '@hooks/teams_loading';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -26,9 +26,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const LoadingUnreads = () => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const [loading, setLoading] = useState(true);
     const opacity = useSharedValue(1);
     const rotation = useSharedValue(0);
+    const serverUrl = useServerUrl();
+    const loading = useTeamsLoading(serverUrl);
 
     const animatedStyle = useAnimatedStyle(() => ({
         opacity: opacity.value,
@@ -51,17 +52,6 @@ const LoadingUnreads = () => {
             cancelAnimation(rotation);
         };
     }, [loading]);
-
-    useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.FETCHING_POSTS, (value: boolean) => {
-            setLoading(value);
-            if (value) {
-                rotation.value = 0;
-            }
-        });
-
-        return () => listener.remove();
-    }, []);
 
     if (!loading) {
         return null;

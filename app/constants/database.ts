@@ -15,6 +15,7 @@ export const MM_TABLES = {
         CHANNEL: 'Channel',
         CHANNEL_INFO: 'ChannelInfo',
         CHANNEL_MEMBERSHIP: 'ChannelMembership',
+        CONFIG: 'Config',
         CUSTOM_EMOJI: 'CustomEmoji',
         DRAFT: 'Draft',
         FILE: 'File',
@@ -39,6 +40,7 @@ export const MM_TABLES = {
         THREAD: 'Thread',
         THREADS_IN_TEAM: 'ThreadsInTeam',
         THREAD_PARTICIPANT: 'ThreadParticipant',
+        TEAM_THREADS_SYNC: 'TeamThreadsSync',
         USER: 'User',
     },
 };
@@ -57,6 +59,9 @@ export const SYSTEM_IDENTIFIERS = {
     CURRENT_USER_ID: 'currentUserId',
     DATA_RETENTION_POLICIES: 'dataRetentionPolicies',
     EXPANDED_LINKS: 'expandedLinks',
+    GLOBAL_THREADS_TAB: 'globalThreadsTab',
+    LAST_DISMISSED_BANNER: 'lastDismissedBanner',
+    LAST_SERVER_VERSION_CHECK: 'LastServerVersionCheck',
     LICENSE: 'license',
     ONLY_UNREADS: 'onlyUnreads',
     PUSH_VERIFICATION_STATUS: 'pushVerificationStatus',
@@ -70,8 +75,10 @@ export const SYSTEM_IDENTIFIERS = {
 
 export const GLOBAL_IDENTIFIERS = {
     DEVICE_TOKEN: 'deviceToken',
-    MULTI_SERVER_TUTORIAL: 'multiServerTutorial',
-    PROFILE_LONG_PRESS_TUTORIAL: 'profileLongPressTutorial',
+    DONT_ASK_FOR_REVIEW: 'dontAskForReview',
+    FIRST_LAUNCH: 'firstLaunch',
+    LAST_ASK_FOR_REVIEW: 'lastAskForReview',
+    ONBOARDING: 'onboarding',
 };
 
 export enum OperationType {

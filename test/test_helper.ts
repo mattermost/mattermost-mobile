@@ -98,7 +98,6 @@ class TestHelper {
         });
 
         const systems = await prepareCommonSystemValues(operator, {
-            config: {} as ClientConfig,
             license: {} as ClientLicense,
             currentChannelId: '',
             currentTeamId: this.basicTeam!.id,

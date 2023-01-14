@@ -5,11 +5,8 @@ import {Dimensions} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
 import LocalConfig from '@assets/config.json';
-
-const isSystemAdmin = (roles: string) => {
-    // TODO: Replace this function with an utility function based on previous code
-    return roles === 'system_admin';
-};
+import {Device} from '@constants';
+import {isSystemAdmin} from '@utils/user';
 
 const clientMap: Record<string, Analytics> = {};
 
@@ -27,7 +24,9 @@ export class Analytics {
     };
 
     async init(config: ClientConfig) {
-        this.analytics = require('@rudderstack/rudder-sdk-react-native').default;
+        if (LocalConfig.RudderApiKey) {
+            this.analytics = require('@rudderstack/rudder-sdk-react-native').default;
+        }
 
         if (this.analytics) {
             const {height, width} = Dimensions.get('window');
@@ -50,7 +49,7 @@ export class Analytics {
                             height,
                             width,
                         },
-                        isTablet: DeviceInfo.isTablet(),
+                        isTablet: Device.IS_TABLET,
                         os: DeviceInfo.getSystemVersion(),
                     },
                     ip: '0.0.0.0',
@@ -122,10 +121,18 @@ export class Analytics {
     }
 
     trackAPI(event: string, props?: any) {
+        if (!this.analytics) {
+            return;
+        }
+
         this.trackEvent('api', event, props);
     }
 
     trackCommand(event: string, command: string, errorMessage?: string) {
+        if (!this.analytics) {
+            return;
+        }
+
         const sanitizedCommand = this.sanitizeCommand(command);
         let props: any;
         if (errorMessage) {
@@ -138,6 +145,9 @@ export class Analytics {
     }
 
     trackAction(event: string, props?: any) {
+        if (!this.analytics) {
+            return;
+        }
         this.trackEvent('action', event, props);
     }
 

@@ -30,6 +30,7 @@ import {
     ServerScreen,
     ServerListScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Server Login - Server List', () => {
@@ -61,6 +62,7 @@ describe('Server Login - Server List', () => {
     it('MM-T4691_1 - should match elements on server list screen', async () => {
         // # Open server list screen
         await ServerListScreen.open();
+        await ServerListScreen.closeTutorial();
 
         // * Verify basic elements on server list screen
         await expect(ServerListScreen.serverListTitle).toHaveText('Your servers');
@@ -91,7 +93,6 @@ describe('Server Login - Server List', () => {
 
         // * Verify on channel list screen of the second server
         await ChannelListScreen.toBeVisible();
-        await device.reloadReactNative();
         await expect(ChannelListScreen.headerServerDisplayName).toHaveText(serverTwoDisplayName);
 
         // # Open server list screen
@@ -195,6 +196,7 @@ describe('Server Login - Server List', () => {
 
         // # Tap on remove button and go back to server list screen
         await Alert.removeButton.tap();
+        await wait(timeouts.ONE_SEC);
         await ServerListScreen.open();
 
         // * Verify first server is removed

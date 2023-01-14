@@ -128,6 +128,10 @@ jest.doMock('react-native', () => {
                 },
             }),
         },
+        WebRTCModule: {
+            senderGetCapabilities: jest.fn().mockReturnValue(null),
+            receiverGetCapabilities: jest.fn().mockReturnValue(null),
+        },
     };
 
     const Linking = {
@@ -229,12 +233,6 @@ jest.mock('react-native-device-info', () => {
         hasNotch: () => true,
         isTablet: () => false,
         getApplicationName: () => 'Mattermost',
-    };
-});
-
-jest.mock('react-native-user-agent', () => {
-    return {
-        getUserAgent: () => 'user-agent',
     };
 });
 
@@ -349,7 +347,21 @@ jest.mock('@screens/navigation', () => ({
     dismissOverlay: jest.fn(() => Promise.resolve()),
 }));
 
-jest.mock('@mattermost/react-native-emm');
+jest.mock('@mattermost/react-native-emm', () => ({
+    addListener: jest.fn(),
+    authenticate: async () => {
+        return true;
+    },
+    getManagedConfig: <T>() => ({} as T),
+    isDeviceSecured: async () => {
+        return true;
+    },
+    openSecuritySettings: () => jest.fn(),
+    setAppGroupId: () => {
+        return '';
+    },
+    useManagedConfig: () => ({}),
+}));
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 

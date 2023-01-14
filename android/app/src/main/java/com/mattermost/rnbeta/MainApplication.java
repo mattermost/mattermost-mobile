@@ -12,13 +12,12 @@ import java.util.List;
 import java.util.Map;
 
 import com.mattermost.helpers.RealPathUtil;
+import com.mattermost.share.ShareModule;
 import com.wix.reactnativenotifications.RNNotificationsPackage;
 
 import com.reactnativenavigation.NavigationApplication;
 import com.wix.reactnativenotifications.core.notification.INotificationsApplication;
 import com.wix.reactnativenotifications.core.notification.IPushNotification;
-import com.wix.reactnativenotifications.core.notificationdrawer.IPushNotificationsDrawer;
-import com.wix.reactnativenotifications.core.notificationdrawer.INotificationsDrawerApplication;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
@@ -68,10 +67,12 @@ public class MainApplication extends NavigationApplication implements INotificat
                   switch (name) {
                   case "MattermostManaged":
                       return MattermostManagedModule.getInstance(reactContext);
-                    case "Notifications":
-                      return NotificationsModule.getInstance(instance, reactContext);
-                    default:
-                      throw new IllegalArgumentException("Could not find module " + name);
+                  case "MattermostShare":
+                    return ShareModule.getInstance(reactContext);
+                  case "Notifications":
+                    return NotificationsModule.getInstance(instance, reactContext);
+                  default:
+                    throw new IllegalArgumentException("Could not find module " + name);
                   }
                 }
 
@@ -80,6 +81,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                   return () -> {
                     Map<String, ReactModuleInfo> map = new HashMap<>();
                     map.put("MattermostManaged", new ReactModuleInfo("MattermostManaged", "com.mattermost.rnbeta.MattermostManagedModule", false, false, false, false, false));
+                    map.put("MattermostShare", new ReactModuleInfo("MattermostShare", "com.mattermost.share.ShareModule", false, false, true, false, false));
                     map.put("Notifications", new ReactModuleInfo("Notifications", "com.mattermost.rnbeta.NotificationsModule", false, false, false, false, false));
                     return map;
                   };

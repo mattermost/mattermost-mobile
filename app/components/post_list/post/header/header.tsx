@@ -23,22 +23,23 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type HeaderProps = {
-    author: UserModel;
+    author?: UserModel;
     commentCount: number;
     currentUser: UserModel;
     enablePostUsernameOverride: boolean;
     isAutoResponse: boolean;
     isCRTEnabled?: boolean;
+    isCustomStatusEnabled: boolean;
     isEphemeral: boolean;
     isMilitaryTime: boolean;
     isPendingOrFailed: boolean;
-    isPostPriorityEnabled: boolean;
     isSystemPost: boolean;
     isTimezoneEnabled: boolean;
     isWebHook: boolean;
     location: string;
     post: PostModel;
     rootPostAuthor?: UserModel;
+    showPostPriority: boolean;
     shouldRenderReplyButton?: boolean;
     teammateNameDisplay: string;
 }
@@ -76,9 +77,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Header = (props: HeaderProps) => {
     const {
-        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled,
-        isEphemeral, isMilitaryTime, isPendingOrFailed, isPostPriorityEnabled, isSystemPost, isTimezoneEnabled, isWebHook,
-        location, post, rootPostAuthor, shouldRenderReplyButton, teammateNameDisplay,
+        author, commentCount = 0, currentUser, enablePostUsernameOverride, isAutoResponse, isCRTEnabled, isCustomStatusEnabled,
+        isEphemeral, isMilitaryTime, isPendingOrFailed, isSystemPost, isTimezoneEnabled, isWebHook,
+        location, post, rootPostAuthor, showPostPriority, shouldRenderReplyButton, teammateNameDisplay,
     } = props;
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -90,8 +91,8 @@ const Header = (props: HeaderProps) => {
     const customStatus = getUserCustomStatus(author);
     const customStatusExpired = isCustomStatusExpired(author);
     const showCustomStatusEmoji = Boolean(
-        displayName && customStatus &&
-        !(isSystemPost || author.isBot || isAutoResponse || isWebHook),
+        isCustomStatusEnabled && displayName && customStatus &&
+        !(isSystemPost || author?.isBot || isAutoResponse || isWebHook),
     );
 
     return (
@@ -120,8 +121,8 @@ const Header = (props: HeaderProps) => {
                     {(!isSystemPost || isAutoResponse) &&
                     <HeaderTag
                         isAutoResponder={isAutoResponse}
-                        isAutomation={isWebHook || author.isBot}
-                        isGuest={author.isGuest}
+                        isAutomation={isWebHook || author?.isBot}
+                        isGuest={author?.isGuest}
                     />
                     }
                     <FormattedTime
@@ -131,10 +132,10 @@ const Header = (props: HeaderProps) => {
                         style={style.time}
                         testID='post_header.date_time'
                     />
-                    {Boolean(isPostPriorityEnabled && post.props?.priority) && (
+                    {showPostPriority && post.metadata?.priority?.priority && (
                         <View style={style.postPriority}>
                             <PostPriorityLabel
-                                label={post.props?.priority}
+                                label={post.metadata.priority.priority}
                             />
                         </View>
                     )}

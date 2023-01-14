@@ -6,7 +6,7 @@ import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import CallScreen from '@calls/screens/call_screen/call_screen';
-import {observeCurrentCall} from '@calls/state';
+import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
 import {CallParticipant} from '@calls/types/calls';
 import DatabaseManager from '@database/manager';
 import {observeTeammateNameDisplay, queryUsersById} from '@queries/servers/user';
@@ -21,7 +21,7 @@ const enhanced = withObservables([], () => {
         switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
     );
 
-    // TODO: to be optimized
+    // TODO: to be optimized https://mattermost.atlassian.net/browse/MM-49338
     const participantsDict = combineLatest([database, currentCall]).pipe(
         switchMap(([db, call]) => (db && call ? queryUsersById(db, Object.keys(call.participants)).observeWithColumns(['nickname', 'username', 'first_name', 'last_name', 'last_picture_update']) : of$([])).pipe(
             // eslint-disable-next-line max-nested-callbacks
@@ -34,6 +34,10 @@ const enhanced = withObservables([], () => {
             }, {} as Dictionary<CallParticipant>))),
         )),
     );
+    const micPermissionsGranted = observeGlobalCallsState().pipe(
+        switchMap((gs) => of$(gs.micPermissionsGranted)),
+        distinctUntilChanged(),
+    );
     const teammateNameDisplay = database.pipe(
         switchMap((db) => (db ? observeTeammateNameDisplay(db) : of$(''))),
         distinctUntilChanged(),
@@ -42,6 +46,7 @@ const enhanced = withObservables([], () => {
     return {
         currentCall,
         participantsDict,
+        micPermissionsGranted,
         teammateNameDisplay,
     };
 });

@@ -6,10 +6,9 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
-import {observeIsCallsFeatureRestricted} from '@calls/observers';
 import {General} from '@constants';
 import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
-import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {
     getUserCustomStatus,
@@ -22,11 +21,10 @@ import ChannelHeader from './header';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type OwnProps = {
-    serverUrl: string;
     channelId: string;
 };
 
-const enhanced = withObservables(['channelId'], ({serverUrl, channelId, database}: OwnProps & WithDatabaseArgs) => {
+const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps & WithDatabaseArgs) => {
     const currentUserId = observeCurrentUserId(database);
     const teamId = observeCurrentTeamId(database);
 
@@ -60,6 +58,8 @@ const enhanced = withObservables(['channelId'], ({serverUrl, channelId, database
         switchMap((dm) => of$(checkCustomStatusIsExpired(dm))),
     );
 
+    const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
+
     const searchTerm = channel.pipe(
         combineLatestWith(dmUser),
         switchMap(([c, dm]) => {
@@ -82,12 +82,12 @@ const enhanced = withObservables(['channelId'], ({serverUrl, channelId, database
         channelType,
         customStatus,
         displayName,
+        isCustomStatusEnabled,
         isCustomStatusExpired,
         isOwnDirectMessage,
         memberCount,
         searchTerm,
         teamId,
-        callsFeatureRestricted: observeIsCallsFeatureRestricted(database, serverUrl, channelId),
     };
 });
 

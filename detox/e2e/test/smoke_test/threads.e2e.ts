@@ -26,7 +26,7 @@ import {
     ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Smoke Test - Threads', () => {
@@ -91,6 +91,7 @@ describe('Smoke Test - Threads', () => {
         await ThreadOptionsScreen.markAsReadOption.tap();
 
         // * Verify thread is not displayed anymore in unread threads section
+        await wait(timeouts.ONE_SEC);
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
 
         // # Tap on all your threads button, tap on the thread, and add new reply to thread
@@ -132,7 +133,9 @@ describe('Smoke Test - Threads', () => {
         // # Go back to global threads screen, open thread options for thread, tap on save option, and tap on thread
         await ThreadScreen.back();
         await GlobalThreadsScreen.openThreadOptionsFor(parentPost.id);
+        await wait(timeouts.ONE_SEC);
         await ThreadOptionsScreen.unsaveThreadOption.tap();
+        await wait(timeouts.ONE_SEC);
         await GlobalThreadsScreen.getThreadItem(parentPost.id).tap();
 
         // * Verify saved text is not displayed on the post pre-header

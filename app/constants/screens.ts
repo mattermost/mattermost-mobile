@@ -29,14 +29,17 @@ export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const INTERACTIVE_DIALOG = 'InteractiveDialog';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
+export const JOIN_TEAM = 'JoinTeam';
 export const LATEX = 'Latex';
 export const LOGIN = 'Login';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
+export const ONBOARDING = 'Onboarding';
 export const PERMALINK = 'Permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
 export const REACTIONS = 'Reactions';
+export const REVIEW_APP = 'ReviewApp';
 export const SAVED_MESSAGES = 'SavedMessages';
 export const SEARCH = 'Search';
 export const SELECT_TEAM = 'SelectTeam';
@@ -53,9 +56,11 @@ export const SETTINGS_NOTIFICATION_AUTO_RESPONDER = 'SettingsNotificationAutoRes
 export const SETTINGS_NOTIFICATION_EMAIL = 'SettingsNotificationEmail';
 export const SETTINGS_NOTIFICATION_MENTION = 'SettingsNotificationMention';
 export const SETTINGS_NOTIFICATION_PUSH = 'SettingsNotificationPush';
+export const SHARE_FEEDBACK = 'ShareFeedback';
 export const SNACK_BAR = 'SnackBar';
 export const SSO = 'SSO';
 export const TABLE = 'Table';
+export const TERMS_OF_SERVICE = 'TermsOfService';
 export const THREAD = 'Thread';
 export const THREAD_FOLLOW_BUTTON = 'ThreadFollowButton';
 export const THREAD_OPTIONS = 'ThreadOptions';
@@ -90,14 +95,17 @@ export default {
     INTEGRATION_SELECTOR,
     INTERACTIVE_DIALOG,
     IN_APP_NOTIFICATION,
+    JOIN_TEAM,
     LATEX,
     LOGIN,
     MENTIONS,
     MFA,
+    ONBOARDING,
     PERMALINK,
     PINNED_MESSAGES,
     POST_OPTIONS,
     REACTIONS,
+    REVIEW_APP,
     SAVED_MESSAGES,
     SEARCH,
     SELECT_TEAM,
@@ -114,9 +122,11 @@ export default {
     SETTINGS_NOTIFICATION_EMAIL,
     SETTINGS_NOTIFICATION_MENTION,
     SETTINGS_NOTIFICATION_PUSH,
+    SHARE_FEEDBACK,
     SNACK_BAR,
     SSO,
     TABLE,
+    TERMS_OF_SERVICE,
     THREAD,
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
@@ -132,20 +142,23 @@ export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,
-    EMOJI_PICKER,
     FIND_CHANNELS,
     GALLERY,
     PERMALINK,
-    REACTIONS,
 ]);
 
 export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
+    PERMALINK,
+    REVIEW_APP,
+    SNACK_BAR,
+]);
+
+export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     BOTTOM_SHEET,
+    EMOJI_PICKER,
     POST_OPTIONS,
     THREAD_OPTIONS,
-    PERMALINK,
     REACTIONS,
-    SNACK_BAR,
     USER_PROFILE,
 ]);
 
@@ -153,6 +166,4 @@ export const NOT_READY = [
     CHANNEL_ADD_PEOPLE,
     CHANNEL_MENTION,
     CREATE_TEAM,
-    INTEGRATION_SELECTOR,
-    INTERACTIVE_DIALOG,
 ];

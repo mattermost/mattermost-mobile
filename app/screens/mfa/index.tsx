@@ -221,7 +221,6 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
                                 autoCorrect={false}
                                 autoCapitalize={'none'}
                                 blurOnSubmit={true}
-                                containerStyle={styles.inputBoxEmail}
                                 disableFullscreenUI={true}
                                 enablesReturnKeyAutomatically={true}
                                 error={error}

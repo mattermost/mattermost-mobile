@@ -6,9 +6,9 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {General} from '@constants';
-import {observeProfileLongPresTutorial} from '@queries/app/global';
-import {observeConfig, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {General, Tutorial} from '@constants';
+import {observeTutorialWatched} from '@queries/app/global';
+import {observeConfigValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
 import CreateDirectMessage from './create_direct_message';
@@ -16,15 +16,15 @@ import CreateDirectMessage from './create_direct_message';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const restrictDirectMessage = observeConfig(database).pipe(
-        switchMap((cfg) => of$(cfg?.RestrictDirectMessage !== General.RESTRICT_DIRECT_MESSAGE_ANY)),
+    const restrictDirectMessage = observeConfigValue(database, 'RestrictDirectMessage').pipe(
+        switchMap((v) => of$(v !== General.RESTRICT_DIRECT_MESSAGE_ANY)),
     );
 
     return {
         teammateNameDisplay: observeTeammateNameDisplay(database),
         currentUserId: observeCurrentUserId(database),
         currentTeamId: observeCurrentTeamId(database),
-        tutorialWatched: observeProfileLongPresTutorial(),
+        tutorialWatched: observeTutorialWatched(Tutorial.PROFILE_LONG_PRESS),
         restrictDirectMessage,
     };
 });
