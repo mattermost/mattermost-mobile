@@ -638,7 +638,7 @@
     "display_settings.theme": "テーマ",
     "custom_status.suggestions.title": "おすすめ",
     "custom_status.suggestions.recent_title": "最近",
-    "custom_status.set_status": "ステータスを設定する",
+    "custom_status.set_status": "カスタムステータスを設定する",
     "create_post.thread_reply": "このスレッドに返信する...",
     "create_direct_message.title": "ダイレクトメッセージを作成する",
     "channel_modal.purposeEx": "バグや改善点を取りまとめるためのチャンネル",
@@ -924,5 +924,11 @@
     "mobile.calls_host_rec": "あなたはこの会議をレコーディングしています。この会議が記録されていることを全員に知らせることを検討してください。",
     "mobile.calls_host": "ホスト",
     "mobile.calls_dismiss": "破棄",
-    "mobile.calls_call_thread": "Callスレッド"
+    "mobile.calls_call_thread": "Callスレッド",
+    "mobile.camera_type.title": "カメラオプション",
+    "join_team.error.title": "チーム参加エラー",
+    "join_team.error.message": "チームに参加する際にエラーが発生しました",
+    "join_team.error.group_error": "このチームに参加するにはリンクされたグループのメンバーになる必要があります。",
+    "default_skin_tone": "デフォルトの肌色",
+    "connection_banner.connecting": "接続しています..."
 }
