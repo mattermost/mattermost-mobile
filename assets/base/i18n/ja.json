@@ -279,7 +279,7 @@
     "mobile.reset_status.title_ooo": "外出中を無効化しますか？",
     "mobile.routes.code": "{language} コード",
     "mobile.routes.code.noLanguage": "コード",
-    "mobile.routes.custom_status": "ステータスを設定する",
+    "mobile.routes.custom_status": "カスタムステータスを設定する",
     "mobile.routes.table": "テーブル",
     "mobile.routes.user_profile": "プロフィール",
     "mobile.search.jump": "最新のメッセージへ移動する",
@@ -382,7 +382,7 @@
     "channel_modal.headerHelp": "チャンネル名近くのチャンネルヘッダーに表示されるテキストを指定してください。例えば、よく利用されるリンクを [リンクのタイトル](http://example.com) と入力してください。",
     "channel_info.notification.none": "しない",
     "your.servers": "あなたのサーバー",
-    "video.failed_description": "動画を再生する際にエラーが発生しました。\n",
+    "video.failed_description": "動画を再生する際にエラーが発生しました。",
     "video.download": "動画をダウンロード",
     "user.tutorial.long_press": "ユーザーのプロフィールを表示するために、アイテムを長押ししてください",
     "user.settings.notifications.email_threads.description": "フォローしているスレッドに対するすべての返信を通知する",
@@ -930,5 +930,14 @@
     "join_team.error.message": "チームに参加する際にエラーが発生しました",
     "join_team.error.group_error": "このチームに参加するにはリンクされたグループのメンバーになる必要があります。",
     "default_skin_tone": "デフォルトの肌色",
-    "connection_banner.connecting": "接続しています..."
+    "connection_banner.connecting": "接続しています...",
+    "video.download_description": "この動画を再生するには、ダウンロードが必要です。",
+    "user.edit_profile.profile_photo.change_photo": "プロフィール写真を変更する",
+    "user_status.title": "ステータス",
+    "user_status.online": "オンライン",
+    "user_status.offline": "オフライン",
+    "user_status.dnd": "取り込み中",
+    "user_status.away": "離席中",
+    "skintone_selector.tooltip.title": "デフォルトの肌の色を選択",
+    "skintone_selector.tooltip.description": "絵文字に使用する肌の色をお好みで選べるようになりました。"
 }
