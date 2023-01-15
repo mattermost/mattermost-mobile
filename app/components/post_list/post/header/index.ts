@@ -6,10 +6,9 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
-import {getPreferenceAsBool} from '@helpers/api/preference';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observePostAuthor, queryPostReplies} from '@queries/servers/post';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
@@ -26,12 +25,12 @@ type HeaderInputProps = {
 const withHeaderProps = withObservables(
     ['post', 'differentThreadSequence'],
     ({post, database, differentThreadSequence}: WithDatabaseArgs & HeaderInputProps) => {
-        const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
+        const preferences = queryDisplayNamePreferences(database).
             observeWithColumns(['value']);
         const author = observePostAuthor(database, post);
         const enablePostUsernameOverride = observeConfigBooleanValue(database, 'EnablePostUsernameOverride');
         const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
-        const isMilitaryTime = preferences.pipe(map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)));
+        const isMilitaryTime = preferences.pipe(map((prefs) => getDisplayNamePreferenceAsBool(prefs, 'use_military_time')));
         const teammateNameDisplay = observeTeammateNameDisplay(database);
         const commentCount = queryPostReplies(database, post.rootId || post.id).observeCount();
         const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');

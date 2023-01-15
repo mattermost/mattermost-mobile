@@ -7,8 +7,8 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import Preferences from '@constants/preferences';
-import {getPreferenceAsBool} from '@helpers/api/preference';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
+import {querySidebarPreferences} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeCurrentTeamId, observeOnlyUnreads} from '@queries/servers/system';
 import {observeUnreadsAndMentionsInTeam} from '@queries/servers/thread';
 
@@ -22,10 +22,10 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     return {
         currentChannelId: observeCurrentChannelId(database),
-        groupUnreadsSeparately: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
+        groupUnreadsSeparately: querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
             observeWithColumns(['value']).
             pipe(
-                switchMap((prefs: PreferenceModel[]) => of$(getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false))),
+                switchMap((prefs: PreferenceModel[]) => of$(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
             ),
         onlyUnreads: observeOnlyUnreads(database),
         unreadsAndMentions: currentTeamId.pipe(

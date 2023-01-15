@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Config, Preferences} from '@constants';
-import {getPreferenceValue} from '@helpers/api/preference';
+import {getDisplayNamePreference} from '@helpers/api/preference';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
@@ -12,7 +12,7 @@ export function processIsCRTEnabled(preferences: PreferenceModel[]|PreferenceTyp
     if (configValue === Config.DEFAULT_ON) {
         preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_ON;
     }
-    const preference = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.COLLAPSED_REPLY_THREADS, preferenceDefault);
+    const preference = getDisplayNamePreference<string>(preferences, Preferences.COLLAPSED_REPLY_THREADS, preferenceDefault);
 
     // CRT Feature flag removed in 7.6
     const isFeatureFlagEnabled = version && isMinimumServerVersion(version, 7, 6) ? true : featureFlag === Config.TRUE;

@@ -29,7 +29,7 @@ import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
@@ -385,7 +385,7 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
         const otherUser = await getUserById(database, otherID);
         const license = await getLicense(database);
         const config = await getConfig(database);
-        const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
+        const preferences = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
         const displaySetting = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         msg = intl.formatMessage({
             id: 'mobile.calls_end_msg_dm',

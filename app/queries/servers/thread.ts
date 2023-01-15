@@ -5,11 +5,10 @@ import {Database, Q, Query} from '@nozbe/watermelondb';
 import {combineLatest, of as of$, Observable} from 'rxjs';
 import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {processIsCRTEnabled} from '@utils/thread';
 
-import {queryPreferencesByCategoryAndName} from './preference';
+import {queryDisplayNamePreferences} from './preference';
 import {getConfig, observeConfigValue} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -22,7 +21,7 @@ const {SERVER: {CHANNEL, POST, THREAD, THREADS_IN_TEAM, THREAD_PARTICIPANT, TEAM
 
 export const getIsCRTEnabled = async (database: Database): Promise<boolean> => {
     const config = await getConfig(database);
-    const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).fetch();
+    const preferences = await queryDisplayNamePreferences(database).fetch();
     return processIsCRTEnabled(preferences, config?.CollapsedThreads, config?.FeatureFlagCollapsedThreads, config?.Version);
 };
 
@@ -44,7 +43,7 @@ export const observeIsCRTEnabled = (database: Database) => {
     const cfgValue = observeConfigValue(database, 'CollapsedThreads');
     const featureFlag = observeConfigValue(database, 'FeatureFlagCollapsedThreads');
     const version = observeConfigValue(database, 'Version');
-    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observeWithColumns(['value']);
+    const preferences = queryDisplayNamePreferences(database).observeWithColumns(['value']);
     return combineLatest([cfgValue, featureFlag, preferences, version]).pipe(
         map(
             ([cfgV, ff, prefs, ver]) => processIsCRTEnabled(prefs, cfgV, ff, ver),

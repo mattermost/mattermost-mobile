@@ -7,10 +7,10 @@ import {of as of$} from 'rxjs';
 import {combineLatestWith, map, switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {getPreferenceAsBool} from '@helpers/api/preference';
+import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
 import {filterAndSortMyChannels, makeChannelsMap} from '@helpers/database';
 import {getChannelById, observeChannelsByLastPostAt, observeNotifyPropsByChannels, queryMyChannelUnreads} from '@queries/servers/channel';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {querySidebarPreferences} from '@queries/servers/preference';
 import {observeLastUnreadChannelId} from '@queries/servers/system';
 import {observeUnreadsAndMentionsInTeam} from '@queries/servers/thread';
 
@@ -36,10 +36,10 @@ const concatenateChannelsArray = ([a, b]: CA) => {
 };
 
 const enhanced = withObservables(['currentTeamId', 'isTablet', 'onlyUnreads'], ({currentTeamId, isTablet, database, onlyUnreads}: WithDatabaseProps) => {
-    const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
+    const unreadsOnTop = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
         observeWithColumns(['value']).
         pipe(
-            switchMap((prefs: PreferenceModel[]) => of$(getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false))),
+            switchMap((prefs: PreferenceModel[]) => of$(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
         );
 
     const getC = (lastUnreadChannelId: string) => getChannelById(database, lastUnreadChannelId);
