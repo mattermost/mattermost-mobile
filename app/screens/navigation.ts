@@ -701,20 +701,6 @@ export function setButtons(componentId: string, buttons: NavButtons = {leftButto
     mergeNavigationOptions(componentId, options);
 }
 
-export function setTitle(componentId: string, title: string) {
-    const theme = getThemeFromState();
-    const options = {
-        topBar: {
-            title: {
-                color: theme.sidebarHeaderTextColor,
-                text: title,
-            },
-        },
-    };
-
-    mergeNavigationOptions(componentId, options);
-}
-
 export function showOverlay(name: string, passProps = {}, options = {}) {
     if (!isScreenRegistered(name)) {
         return;

@@ -53,14 +53,9 @@ const PlusMenuList = ({canCreateChannels, canJoinChannels, canInvitePeople}: Pro
     const invitePeopleToTeam = useCallback(async () => {
         await dismissBottomSheet();
 
-        const title = intl.formatMessage({id: 'invite.title', defaultMessage: 'Invite'});
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const closeButtonId = 'close-invite';
-
         showModal(
             Screens.INVITE,
-            title,
-            {closeButton, closeButtonId},
+            intl.formatMessage({id: 'invite.title', defaultMessage: 'Invite'}),
         );
     }, [intl, theme]);
 

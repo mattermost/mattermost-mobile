@@ -3,20 +3,22 @@
 
 import React, {useCallback, useEffect, useState, useRef} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {Keyboard, View, LayoutChangeEvent} from 'react-native';
-import {ImageResource, OptionsTopBarButton} from 'react-native-navigation';
+import {Keyboard, View, LayoutChangeEvent, Platform} from 'react-native';
+import {OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {getTeamMembersByIds, addUsersToTeam, sendEmailInvitesToTeam} from '@actions/remote/team';
 import {searchProfiles} from '@actions/remote/user';
+import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import {ServerErrors} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useModalPosition} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {dismissModal, setButtons, setTitle} from '@screens/navigation';
+import {dismissModal, setButtons} from '@screens/navigation';
 import {isEmail} from '@utils/helpers';
+import {mergeNavigationOptions} from '@utils/navigation';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {isGuest} from '@utils/user';
 
@@ -26,16 +28,33 @@ import Summary from './summary';
 import type {NavButtons} from '@typings/screens/navigation';
 
 const CLOSE_BUTTON_ID = 'close-invite';
+const BACK_BUTTON_ID = 'back-invite';
 const SEND_BUTTON_ID = 'send-invite';
 const SEARCH_TIMEOUT_MILLISECONDS = 200;
+const DEFAULT_RESULT = {sent: [], notSent: []};
 
-const makeLeftButton = (icon: ImageResource): OptionsTopBarButton => {
-    return {
-        id: CLOSE_BUTTON_ID,
-        icon,
-        testID: 'invite.close.button',
-    };
-};
+const makeLeftButton = (theme: Theme, type: LeftButtonType): OptionsTopBarButton => (
+    (type === LeftButtonType.BACK) ? (
+        {
+            id: BACK_BUTTON_ID,
+            icon: CompassIcon.getImageSourceSync(
+                Platform.select({
+                    ios: 'arrow-back-ios',
+                    default: 'arrow-left',
+                }),
+                24,
+                theme.sidebarHeaderTextColor,
+            ),
+            testID: 'invite.back.button',
+        }
+    ) : (
+        {
+            id: CLOSE_BUTTON_ID,
+            icon: CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor),
+            testID: 'invite.close.button',
+        }
+    )
+);
 
 const makeRightButton = (theme: Theme, formatMessage: IntlShape['formatMessage'], enabled: boolean): OptionsTopBarButton => ({
     id: SEND_BUTTON_ID,
@@ -86,10 +105,13 @@ enum Stage {
     LOADING = 'loading',
 }
 
+enum LeftButtonType {
+    CLOSE = 'close',
+    BACK = 'back',
+}
+
 type InviteProps = {
     componentId: string;
-    closeButton: ImageResource;
-
     teamId: string;
     teamDisplayName: string;
     teamLastIconUpdate: number;
@@ -100,7 +122,6 @@ type InviteProps = {
 
 export default function Invite({
     componentId,
-    closeButton,
     teamId,
     teamDisplayName,
     teamLastIconUpdate,
@@ -122,7 +143,7 @@ export default function Invite({
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: SearchResult}>({});
     const [loading, setLoading] = useState(false);
-    const [result, setResult] = useState<Result>({sent: [], notSent: []});
+    const [result, setResult] = useState<Result>(DEFAULT_RESULT);
     const [wrapperHeight, setWrapperHeight] = useState(0);
     const [stage, setStage] = useState(Stage.SELECTION);
     const [sendError, setSendError] = useState('');
@@ -132,19 +153,6 @@ export default function Invite({
     const onLayoutWrapper = useCallback((e: LayoutChangeEvent) => {
         setWrapperHeight(e.nativeEvent.layout.height);
     }, []);
-
-    const setHeaderButtons = useCallback((right: boolean, rightEnabled: boolean) => {
-        const buttons: NavButtons = {
-            leftButtons: [makeLeftButton(closeButton)],
-            rightButtons: right ? [makeRightButton(theme, formatMessage, rightEnabled)] : [],
-        };
-
-        setButtons(componentId, buttons);
-    }, [closeButton, locale, theme, componentId]);
-
-    const setHeaderTitle = useCallback((title: string) => {
-        setTitle(componentId, title);
-    }, [locale, theme, componentId]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         if (searchTerm === '') {
@@ -161,6 +169,16 @@ export default function Invite({
 
         setSearchResults(results);
     }, [serverUrl, teamId]);
+
+    const handleReset = () => {
+        setTerm('');
+        setSearchResults([]);
+        setSelectedIds({});
+        setLoading(false);
+        setResult(DEFAULT_RESULT);
+        setStage(Stage.SELECTION);
+        setSendError('');
+    };
 
     const handleClearSearch = useCallback(() => {
         setTerm('');
@@ -196,8 +214,8 @@ export default function Invite({
     }, [selectedIds, handleClearSearch]);
 
     const handleSendError = () => {
-        setSendError(formatMessage({id: 'invite.send_error', defaultMessage: 'Received an unexpected error. Please try again or contact your System Admin for assistance.'}));
-        setResult({sent: [], notSent: []});
+        setSendError(formatMessage({id: 'invite.send_error', defaultMessage: 'Something went wrong while trying to send invitations. Please check your network connection and try again.'}));
+        setResult(DEFAULT_RESULT);
         setStage(Stage.RESULT);
     };
 
@@ -309,19 +327,32 @@ export default function Invite({
     };
 
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, closeModal, [closeModal]);
+    useNavButtonPressed(BACK_BUTTON_ID, componentId, handleReset, [handleReset]);
     useNavButtonPressed(SEND_BUTTON_ID, componentId, handleSend, [handleSend]);
 
     useEffect(() => {
-        // Update header buttons in case anything related to the header changes
-        setHeaderButtons(stage === Stage.SELECTION, selectedCount > 0);
-    }, [theme, locale, selectedCount, stage]);
+        const buttons: NavButtons = {
+            leftButtons: [makeLeftButton(theme, stage === Stage.RESULT && sendError ? LeftButtonType.BACK : LeftButtonType.CLOSE)],
+            rightButtons: stage === Stage.SELECTION ? [makeRightButton(theme, formatMessage, selectedCount > 0)] : [],
+        };
+
+        setButtons(componentId, buttons);
+    }, [theme, locale, componentId, selectedCount, stage, sendError]);
 
     useEffect(() => {
-        if (stage === Stage.RESULT) {
-            // Update header title in case anything related to the header changes
-            setHeaderTitle(formatMessage({id: 'invite.title.summary', defaultMessage: 'Invite summary'}));
-        }
-    }, [locale, stage]);
+        mergeNavigationOptions(componentId, {
+            topBar: {
+                title: {
+                    color: theme.sidebarHeaderTextColor,
+                    text: stage === Stage.RESULT ? (
+                        formatMessage({id: 'invite.title.summary', defaultMessage: 'Invite summary'})
+                    ) : (
+                        formatMessage({id: 'invite.title', defaultMessage: 'Invite'})
+                    ),
+                },
+            },
+        });
+    }, [componentId, locale, theme, stage]);
 
     const handleRemoveItem = useCallback((id: string) => {
         const newSelectedIds = Object.assign({}, selectedIds);
@@ -348,6 +379,7 @@ export default function Invite({
                         selectedIds={selectedIds}
                         error={sendError}
                         onClose={closeModal}
+                        onRetry={handleReset}
                         testID='invite.screen.summary'
                     />
                 );

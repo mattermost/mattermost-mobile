@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, ScrollView} from 'react-native';
 import Button from 'react-native-button';
 
+import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import AlertSvg from '@components/illustrations/alert';
 import ErrorSvg from '@components/illustrations/error';
@@ -51,6 +52,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginHorizontal: 32,
             marginBottom: 24,
         },
+        summaryErrorText: {
+            color: changeOpacity(theme.centerChannelColor, 0.72),
+            ...typography('Body', 200, 'Regular'),
+            textAlign: 'center',
+        },
         footer: {
             display: 'flex',
             flexDirection: 'row',
@@ -63,6 +69,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexGrow: 1,
             maxWidth: MAX_WIDTH_CONTENT,
         },
+        summaryButtonTextContainer: {
+            display: 'flex',
+            flexDirection: 'row',
+            alignItems: 'center',
+            height: 24,
+        },
+        summaryButtonIcon: {
+            marginRight: 7,
+            color: theme.buttonColor,
+
+        },
     };
 });
 
@@ -72,6 +89,7 @@ type SummaryProps = {
     error?: string;
     testID: string;
     onClose: () => void;
+    onRetry: () => void;
 }
 
 export default function Summary({
@@ -80,6 +98,7 @@ export default function Summary({
     error,
     testID,
     onClose,
+    onRetry,
 }: SummaryProps) {
     const {formatMessage} = useIntl();
     const theme = useTheme();
@@ -91,15 +110,33 @@ export default function Summary({
 
     const styleButtonText = buttonTextStyle(theme, 'lg', 'primary');
     const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
+    const styleSummaryMessageText = useMemo(() => {
+        const style = [];
+
+        style.push(styles.summaryMessageText);
+
+        if (error) {
+            style.push({marginBottom: 8});
+        }
+
+        return style;
+    }, [error, styles]);
 
     let svg = <></>;
     let message = '';
 
     if (error) {
         svg = <ErrorSvg/>;
+        message = formatMessage(
+            {
+                id: 'invite.summary.error',
+                defaultMessage: '{invitationsCount, plural, one {Invitation} other {Invitations}} could not be sent successfully',
+            },
+            {invitationsCount: sentCount + notSentCount},
+        );
     } else if (!sentCount && notSentCount) {
         svg = <ErrorSvg/>;
-        message = error || formatMessage(
+        message = formatMessage(
             {
                 id: 'invite.summary.not_sent',
                 defaultMessage: '{notSentCount, plural, one {Invitation wasn’t} other {Invitations weren’t}} sent',
@@ -126,9 +163,14 @@ export default function Summary({
         );
     }
 
-    const handleOnPressButton = () => {
+    const handleOnPressButton = useCallback(() => {
+        if (error) {
+            onRetry();
+            return;
+        }
+
         onClose();
-    };
+    }, [error, onRetry, onClose]);
 
     return (
         <View
@@ -143,10 +185,14 @@ export default function Summary({
                 <View style={styles.summarySvg}>
                     {svg}
                 </View>
-                <Text style={styles.summaryMessageText}>
+                <Text style={styleSummaryMessageText}>
                     {message}
                 </Text>
-                {!error && (
+                {error ? (
+                    <Text style={styles.summaryErrorText}>
+                        {error}
+                    </Text>
+                ) : (
                     <>
                         <SummaryReport
                             type={SummaryReportType.NOT_SENT}
@@ -170,11 +216,26 @@ export default function Summary({
                         onPress={handleOnPressButton}
                         testID='invite.summary_button'
                     >
-                        <FormattedText
-                            id='invite.summary.done'
-                            defaultMessage='Done'
-                            style={styleButtonText}
-                        />
+                        {error ? (
+                            <View style={styles.summaryButtonTextContainer}>
+                                <CompassIcon
+                                    name='refresh'
+                                    size={24}
+                                    style={styles.summaryButtonIcon}
+                                />
+                                <FormattedText
+                                    id='invite.summary.try_again'
+                                    defaultMessage='Try again'
+                                    style={styleButtonText}
+                                />
+                            </View>
+                        ) : (
+                            <FormattedText
+                                id='invite.summary.done'
+                                defaultMessage='Done'
+                                style={styleButtonText}
+                            />
+                        )}
                     </Button>
                 </View>
             </View>
