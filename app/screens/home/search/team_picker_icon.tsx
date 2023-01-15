@@ -3,23 +3,28 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, useWindowDimensions} from 'react-native';
+import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import TeamIcon from '@components/team_sidebar/team_list/team_item/team_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {useTheme} from '@context/theme';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
-import {getTeamsSnapHeight} from '@utils/team_list';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import SelectTeamSlideUp from './select_team_slideup';
+import BottomSheetTeamList from './bottom_sheet_team_list';
 
+import type {BottomSheetProps} from '@gorhom/bottom-sheet';
 import type TeamModel from '@typings/database/models/servers/team';
 
 const MENU_DOWN_ICON_SIZE = 24;
+const NO_TEAMS_HEIGHT = 392;
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         teamContainer: {
@@ -52,9 +57,8 @@ type Props = {
 const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const dimensions = useWindowDimensions();
     const styles = getStyleFromTheme(theme);
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
 
     const selectedTeam = teams.find((t) => t.id === teamId);
 
@@ -63,7 +67,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
     const handleTeamChange = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
             return (
-                <SelectTeamSlideUp
+                <BottomSheetTeamList
                     setTeamId={setTeamId}
                     teams={teams}
                     teamId={teamId}
@@ -72,15 +76,23 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
             );
         };
 
-        const height = getTeamsSnapHeight({dimensions, teams, insets});
+        const snapPoints: BottomSheetProps['snapPoints'] = [
+            1,
+            teams.length ? (bottomSheetSnapPoint(Math.min(3, teams.length), ITEM_HEIGHT, bottom) + TITLE_HEIGHT) : NO_TEAMS_HEIGHT,
+        ];
+
+        if (teams.length > 3) {
+            snapPoints.push('80%');
+        }
+
         bottomSheet({
             closeButtonId: 'close-team_list',
             renderContent,
-            snapPoints: [height, 10],
+            snapPoints,
             theme,
             title,
         });
-    }), [theme, setTeamId, teamId, teams]);
+    }), [theme, setTeamId, teamId, teams, bottom]);
 
     return (
         <>

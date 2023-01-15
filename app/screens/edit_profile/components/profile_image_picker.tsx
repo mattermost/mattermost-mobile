@@ -14,6 +14,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import PanelItem from '@screens/edit_profile/components/panel_item';
 import {bottomSheet} from '@screens/navigation';
 import PickerUtil from '@utils/file/file_picker';
@@ -121,13 +122,12 @@ const ProfileImagePicker = ({
             );
         };
 
-        const snapPointsCount = canRemovePicture ? 5 : 4;
-        const snapPoint = bottomSheetSnapPoint(snapPointsCount, ITEM_HEIGHT, bottom);
+        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT, bottom) + TITLE_HEIGHT;
 
         return bottomSheet({
             closeButtonId: 'close-edit-profile',
             renderContent,
-            snapPoints: [snapPoint, 10],
+            snapPoints: [1, snapPoint],
             title: 'Change profile photo',
             theme,
         });

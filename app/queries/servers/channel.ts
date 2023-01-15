@@ -465,6 +465,7 @@ export function observeMyChannelMentionCount(database: Database, teamId?: string
         Q.on(CHANNEL, Q.and(
             ...conditions,
         )),
+        Q.on(MY_CHANNEL_SETTINGS, Q.where('notify_props', Q.notLike('%"mark_unread":"mention"%'))),
     ).
         observeWithColumns(columns).
         pipe(

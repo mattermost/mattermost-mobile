@@ -17,7 +17,7 @@ type Props = {
     title: string;
 }
 
-export default function SelectTeamSlideUp({teams, title, setTeamId, teamId}: Props) {
+export default function BottomSheetTeamList({teams, title, setTeamId, teamId}: Props) {
     const isTablet = useIsTablet();
     const showTitle = !isTablet && Boolean(teams.length);
 
@@ -38,6 +38,7 @@ export default function SelectTeamSlideUp({teams, title, setTeamId, teamId}: Pro
                 teams={teams}
                 onPress={onPress}
                 testID='search.select_team_slide_up.team_list'
+                type={isTablet ? 'FlatList' : 'BottomSheetFlatList'}
             />
         </BottomSheetContent>
     );

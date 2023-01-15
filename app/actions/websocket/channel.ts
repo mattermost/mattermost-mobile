@@ -128,7 +128,7 @@ export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
         const currentChannelId = await getCurrentChannelId(database);
 
         if (activeServerUrl !== serverUrl || (currentChannelId !== channelId && !EphemeralStore.isSwitchingToChannel(channelId))) {
-            await markChannelAsViewed(serverUrl, channelId, false);
+            await markChannelAsViewed(serverUrl, channelId);
         }
     } catch {
         // do nothing

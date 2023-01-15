@@ -69,11 +69,10 @@ export default function CameraQuickAction({
             return;
         }
 
-        const snap = bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom);
         bottomSheet({
             title: intl.formatMessage({id: 'mobile.camera_type.title', defaultMessage: 'Camera options'}),
             renderContent,
-            snapPoints: [TITLE_HEIGHT + snap, 10],
+            snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom) + TITLE_HEIGHT],
             theme,
             closeButtonId: 'camera-close-id',
         });

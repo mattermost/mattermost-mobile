@@ -19,6 +19,8 @@ type Props = {
     onSubmit: (data: PostPriorityData) => void;
 };
 
+export const COMPONENT_HEIGHT = 200;
+
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.centerChannelBg,

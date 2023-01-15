@@ -76,7 +76,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                 }
 
                 models = (await Promise.all(modelPromises)).flat();
-                const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, true);
+                const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, false, true);
                 if (viewedAt) {
                     models.push(viewedAt);
                 }
@@ -160,7 +160,7 @@ export async function selectAllMyChannelIds(serverUrl: string) {
     }
 }
 
-export async function markChannelAsViewed(serverUrl: string, channelId: string, prepareRecordsOnly = false) {
+export async function markChannelAsViewed(serverUrl: string, channelId: string, onlyCounts = false, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const member = await getMyChannel(database, channelId);
@@ -172,8 +172,10 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
             m.isUnread = false;
             m.mentionsCount = 0;
             m.manuallyUnread = false;
-            m.viewedAt = member.lastViewedAt;
-            m.lastViewedAt = Date.now();
+            if (!onlyCounts) {
+                m.viewedAt = member.lastViewedAt;
+                m.lastViewedAt = Date.now();
+            }
         });
         PushNotifications.removeChannelNotifications(serverUrl, channelId);
         if (!prepareRecordsOnly) {

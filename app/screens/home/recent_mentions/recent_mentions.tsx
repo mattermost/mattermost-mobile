@@ -17,17 +17,19 @@ import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useCollapsibleHeader} from '@hooks/header';
-import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
+import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 
 import EmptyState from './components/empty';
 
-import type {ViewableItemsChanged} from '@typings/components/post_list';
+import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 
 type Props = {
+    appsEnabled: boolean;
+    customEmojiNames: string[];
     currentTimezone: string | null;
     isTimezoneEnabled: boolean;
     mentions: PostModel[];
@@ -47,7 +49,7 @@ const styles = StyleSheet.create({
     },
 });
 
-const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Props) => {
+const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentTimezone, isTimezoneEnabled}: Props) => {
     const theme = useTheme();
     const route = useRoute();
     const isFocused = useIsFocused();
@@ -112,8 +114,8 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
         }
 
         const viewableItemsMap = viewableItems.reduce((acc: Record<string, boolean>, {item, isViewable}) => {
-            if (isViewable) {
-                acc[`${Screens.MENTIONS}-${item.id}`] = true;
+            if (isViewable && item.type === 'post') {
+                acc[`${Screens.MENTIONS}-${item.value.id}`] = true;
             }
             return acc;
         }, {});
@@ -134,27 +136,31 @@ const RecentMentionsScreen = ({mentions, currentTimezone, isTimezoneEnabled}: Pr
         </View>
     ), [loading, theme, paddingTop]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<string | PostModel>) => {
-        if (typeof item === 'string') {
-            if (isDateLine(item)) {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
+        switch (item.type) {
+            case 'date':
                 return (
                     <DateSeparator
-                        date={getDateForDateLine(item)}
+                        key={item.value}
+                        date={getDateForDateLine(item.value)}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
-            }
-            return null;
+            case 'post':
+                return (
+                    <PostWithChannelInfo
+                        appsEnabled={appsEnabled}
+                        customEmojiNames={customEmojiNames}
+                        key={item.value.id}
+                        location={Screens.MENTIONS}
+                        post={item.value}
+                        testID='recent_mentions.post_list'
+                    />
+                );
+            default:
+                return null;
         }
-
-        return (
-            <PostWithChannelInfo
-                location={Screens.MENTIONS}
-                post={item}
-                testID='recent_mentions.post_list'
-            />
-        );
-    }, []);
+    }, [appsEnabled, customEmojiNames]);
 
     return (
         <>

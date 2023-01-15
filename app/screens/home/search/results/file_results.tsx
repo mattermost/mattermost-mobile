@@ -94,6 +94,7 @@ const FileResults = ({
                 channelName={channelNames[item.channel_id!]}
                 fileInfo={item}
                 index={fileInfosIndexes[item.id!] || 0}
+                key={`${item.id}-${item.name}`}
                 numOptions={numOptions}
                 onOptionsPress={onOptionsPress}
                 onPress={onPreviewPress}

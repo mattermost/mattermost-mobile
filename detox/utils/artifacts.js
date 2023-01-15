@@ -18,6 +18,7 @@ require('dotenv').config();
 const {
     BRANCH,
     BUILD_ID,
+    COMMIT_HASH,
     DETOX_AWS_S3_BUCKET,
     DETOX_AWS_ACCESS_KEY_ID,
     DETOX_AWS_SECRET_ACCESS_KEY,
@@ -42,7 +43,7 @@ async function saveArtifacts() {
         return;
     }
 
-    const s3Folder = `${BUILD_ID}-${BRANCH}`.replace(/\./g, '-');
+    const s3Folder = `${BUILD_ID}-${COMMIT_HASH}-${BRANCH}`.replace(/\./g, '-');
     const uploadPath = path.resolve(__dirname, `../${ARTIFACTS_DIR}`);
     const filesToUpload = await getFiles(uploadPath);
 

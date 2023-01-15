@@ -279,7 +279,12 @@
         "RunScheduler": true
     },
     "PluginSettings": {
-        "Enable": false
+        "Enable": false,
+        "PluginStates": {
+            "com.mattermost.calls": {
+                "Enable": true
+            }
+        }
     },
     "DisplaySettings": {
         "CustomUrlSchemes": [],

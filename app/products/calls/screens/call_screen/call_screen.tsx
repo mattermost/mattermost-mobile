@@ -256,7 +256,7 @@ const CallScreen = ({
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const {width, height} = useWindowDimensions();
     const serverUrl = useServerUrl();
     const {EnableRecordings} = useCallsConfig(serverUrl);
@@ -407,11 +407,11 @@ const CallScreen = ({
         await bottomSheet({
             closeButtonId: 'close-other-actions',
             renderContent,
-            snapPoints: [bottomSheetSnapPoint(items, ITEM_HEIGHT, insets.bottom), 10],
+            snapPoints: [1, bottomSheetSnapPoint(items, ITEM_HEIGHT, bottom)],
             title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
             theme,
         });
-    }, [insets, intl, theme, isHost, EnableRecordings, waitingForRecording, recording, startRecording,
+    }, [bottom, intl, theme, isHost, EnableRecordings, waitingForRecording, recording, startRecording,
         recordOptionTitle, stopRecording, stopRecordingOptionTitle, style, switchToThread, callThreadOptionTitle,
         openChannelOptionTitle]);
 

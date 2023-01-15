@@ -4,13 +4,15 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
-import PostPriorityPicker from '@components/post_priority/post_priority_picker';
+import PostPriorityPicker, {COMPONENT_HEIGHT} from '@components/post_priority/post_priority_picker';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
@@ -34,6 +36,7 @@ export default function PostPriorityAction({
 }: Props) {
     const intl = useIntl();
     const theme = useTheme();
+    const {bottom} = useSafeAreaInsets();
 
     const handlePostPriorityPicker = useCallback((postPriorityData: PostPriorityData) => {
         updatePostPriority(postPriorityData);
@@ -55,11 +58,11 @@ export default function PostPriorityAction({
         bottomSheet({
             title: intl.formatMessage({id: 'post_priority.picker.title', defaultMessage: 'Message priority'}),
             renderContent,
-            snapPoints: [275, 10],
+            snapPoints: [1, bottomSheetSnapPoint(1, COMPONENT_HEIGHT, bottom)],
             theme,
             closeButtonId: 'post-priority-close-id',
         });
-    }, [intl, renderContent, theme]);
+    }, [intl, renderContent, theme, bottom]);
 
     const iconName = 'alert-circle-outline';
     const iconColor = changeOpacity(theme.centerChannelColor, 0.64);

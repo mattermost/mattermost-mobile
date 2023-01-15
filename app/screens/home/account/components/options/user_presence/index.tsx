@@ -129,7 +129,7 @@ const UserStatus = ({currentUser}: Props) => {
         bottomSheet({
             closeButtonId: 'close-set-user-status',
             renderContent,
-            snapPoints: [(snapPoint + TITLE_HEIGHT), 10],
+            snapPoints: [1, (snapPoint + TITLE_HEIGHT)],
             title: intl.formatMessage({id: 'user_status.title', defaultMessage: 'Status'}),
             theme,
         });
