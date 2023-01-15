@@ -50,3 +50,11 @@ export function getDisplayNamePreference<T>(preferences: Preference[], name: str
 export function getSidebarPreferenceAsBool(preferences: Preference[], name: string, defaultValue = false) {
     return getPreferenceAsBool(preferences, Preferences.CATEGORIES.SIDEBAR_SETTINGS, name, defaultValue);
 }
+
+export function filterPreferences(preferences?: PreferenceType[]) {
+    if (!preferences?.length) {
+        return preferences;
+    }
+    const categories = new Set(Object.values(CATEGORIES_TO_KEEP));
+    return preferences.filter((p) => categories.has(p.category));
+}
