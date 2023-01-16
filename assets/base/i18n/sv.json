@@ -936,5 +936,8 @@
     "user_status.away": "Tillfälligt borta",
     "mobile.camera_type.title": "Alternativ för kameran",
     "join_team.error.title": "Fel vid anslutning till teamet",
-    "join_team.error.message": "Det har uppstått ett fel när du skulle anslutas till teamet"
+    "join_team.error.message": "Det har uppstått ett fel när du skulle anslutas till teamet",
+    "skintone_selector.tooltip.title": "Välj standard-hudton",
+    "skintone_selector.tooltip.description": "Du kan nu välja vilken hudton du vill använda för dina emojis.",
+    "default_skin_tone": "Standard hudton"
 }
