@@ -26,11 +26,8 @@ type Props = {
     author?: UserModel;
     isMilitaryTime: boolean;
     teammateNameDisplay?: string;
-    currentCallChannelId?: string;
-    leaveChannelName?: string;
-    joinChannelName?: string;
-    joinChannelIsDMorGM?: boolean;
     limitRestrictedInfo?: LimitRestrictedInfo;
+    ccChannelId?: string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -108,7 +105,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 export const CallsCustomMessage = ({
     post, currentUser, author, isMilitaryTime, teammateNameDisplay,
-    currentCallChannelId, leaveChannelName, joinChannelName, joinChannelIsDMorGM, limitRestrictedInfo,
+    ccChannelId, limitRestrictedInfo,
 }: Props) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -116,8 +113,7 @@ export const CallsCustomMessage = ({
     const serverUrl = useServerUrl();
     const timezone = getUserTimezone(currentUser);
 
-    const confirmToJoin = Boolean(currentCallChannelId && currentCallChannelId !== post.channelId);
-    const alreadyInTheCall = Boolean(currentCallChannelId && currentCallChannelId === post.channelId);
+    const alreadyInTheCall = Boolean(ccChannelId && ccChannelId === post.channelId);
     const isLimitRestricted = Boolean(limitRestrictedInfo?.limitRestricted);
 
     const joinHandler = () => {
@@ -130,7 +126,7 @@ export const CallsCustomMessage = ({
             return;
         }
 
-        leaveAndJoinWithAlert(intl, serverUrl, post.channelId, leaveChannelName || '', joinChannelName || '', confirmToJoin, false, Boolean(joinChannelIsDMorGM));
+        leaveAndJoinWithAlert(intl, serverUrl, post.channelId);
     };
 
     if (post.props.end_at) {
