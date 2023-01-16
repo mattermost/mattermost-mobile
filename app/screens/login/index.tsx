@@ -145,7 +145,7 @@ const LoginOptions = ({
 
     useEffect(() => {
         translateX.value = 0;
-    }, [])
+    }, []);
 
     useEffect(() => {
         const listener = {
