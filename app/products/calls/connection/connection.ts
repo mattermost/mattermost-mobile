@@ -12,6 +12,7 @@ import {
     mediaDevices,
 } from 'react-native-webrtc';
 
+import {setSpeakerPhone} from '@calls/state';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
@@ -203,8 +204,8 @@ export async function newConnection(
             }
         }
 
-        InCallManager.start({media: 'audio'});
-        InCallManager.stopProximitySensor();
+        InCallManager.start({media: 'video'});
+        setSpeakerPhone(true);
 
         peer = new Peer(null, iceConfigs);
         peer.on('signal', (data: any) => {
