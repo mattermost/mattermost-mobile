@@ -19,7 +19,9 @@ import {
     setSpeakerPhone,
     setCallForChannel,
     newCurrentCall,
-    myselfLeftCall, getCurrentCall,
+    myselfLeftCall,
+    getCurrentCall,
+    getChannelsWithCalls,
 } from '@calls/state';
 import {General, Preferences, Screens} from '@constants';
 import Calls from '@constants/calls';
@@ -436,29 +438,39 @@ export const stopCallRecording = async (serverUrl: string, callId: string) => {
 };
 
 // handleCallsSlashCommand will return true if the slash command was handled
-export const handleCallsSlashCommand = async (value: string, serverUrl: string, channelId: string, currentUserId: string, intl: IntlShape): Promise<boolean> => {
+export const handleCallsSlashCommand = async (value: string, serverUrl: string, channelId: string, currentUserId: string, intl: IntlShape):
+    Promise<{ handled?: boolean; error?: string }> => {
     const tokens = value.split(' ');
     if (tokens.length < 2 || tokens[0] !== '/call') {
-        return false;
+        return {handled: false};
     }
 
     switch (tokens[1]) {
         case 'end':
             await handleEndCall(serverUrl, channelId, currentUserId, intl);
-            return true;
+            return {handled: true};
         case 'start':
+            if (getChannelsWithCalls(serverUrl)[channelId]) {
+                const error = intl.formatMessage({
+                    id: 'mobile.calls_start_call_exists',
+                    defaultMessage: 'A call is already ongoing in the channel.',
+                });
+                return {error};
+            }
+            await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+            return {handled: true};
         case 'join':
             await leaveAndJoinWithAlert(intl, serverUrl, channelId);
-            return true;
+            return {handled: true};
         case 'leave':
             if (getCurrentCall()?.channelId === channelId) {
                 await leaveCallPopCallScreen();
-                return true;
+                return {handled: true};
             }
             break; // in case we add cases later and forget
     }
 
-    return false;
+    return {handled: false};
 };
 
 const handleEndCall = async (serverUrl: string, channelId: string, currentUserId: string, intl: IntlShape) => {
