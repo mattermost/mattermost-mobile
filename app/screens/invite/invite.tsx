@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useState, useRef} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {Keyboard, View, LayoutChangeEvent, Platform} from 'react-native';
+import {Keyboard, View, LayoutChangeEvent} from 'react-native';
 import {OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
@@ -28,33 +28,15 @@ import Summary from './summary';
 import type {NavButtons} from '@typings/screens/navigation';
 
 const CLOSE_BUTTON_ID = 'close-invite';
-const BACK_BUTTON_ID = 'back-invite';
 const SEND_BUTTON_ID = 'send-invite';
-const SEARCH_TIMEOUT_MILLISECONDS = 200;
+const TIMEOUT_MILLISECONDS = 200;
 const DEFAULT_RESULT = {sent: [], notSent: []};
 
-const makeLeftButton = (theme: Theme, type: LeftButtonType): OptionsTopBarButton => (
-    (type === LeftButtonType.BACK) ? (
-        {
-            id: BACK_BUTTON_ID,
-            icon: CompassIcon.getImageSourceSync(
-                Platform.select({
-                    ios: 'arrow-back-ios',
-                    default: 'arrow-left',
-                }),
-                24,
-                theme.sidebarHeaderTextColor,
-            ),
-            testID: 'invite.back.button',
-        }
-    ) : (
-        {
-            id: CLOSE_BUTTON_ID,
-            icon: CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor),
-            testID: 'invite.close.button',
-        }
-    )
-);
+const makeLeftButton = (theme: Theme): OptionsTopBarButton => ({
+    id: CLOSE_BUTTON_ID,
+    icon: CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor),
+    testID: 'invite.close.button',
+});
 
 const makeRightButton = (theme: Theme, formatMessage: IntlShape['formatMessage'], enabled: boolean): OptionsTopBarButton => ({
     id: SEND_BUTTON_ID,
@@ -103,11 +85,6 @@ enum Stage {
     SELECTION = 'selection',
     RESULT = 'result',
     LOADING = 'loading',
-}
-
-enum LeftButtonType {
-    CLOSE = 'close',
-    BACK = 'back',
 }
 
 type InviteProps = {
@@ -171,13 +148,12 @@ export default function Invite({
     }, [serverUrl, teamId]);
 
     const handleReset = () => {
+        setStage(Stage.LOADING);
+        setSendError('');
         setTerm('');
         setSearchResults([]);
-        setSelectedIds({});
-        setLoading(false);
         setResult(DEFAULT_RESULT);
         setStage(Stage.SELECTION);
-        setSendError('');
     };
 
     const handleClearSearch = useCallback(() => {
@@ -196,7 +172,7 @@ export default function Invite({
         searchTimeoutId.current = setTimeout(async () => {
             await searchUsers(text);
             setLoading(false);
-        }, SEARCH_TIMEOUT_MILLISECONDS);
+        }, TIMEOUT_MILLISECONDS);
     }, [searchUsers]);
 
     const handleSelectItem = useCallback((item: SearchResult) => {
@@ -212,6 +188,15 @@ export default function Invite({
 
         handleClearSearch();
     }, [selectedIds, handleClearSearch]);
+
+    const handleRetry = () => {
+        setSendError('');
+        setStage(Stage.LOADING);
+
+        setTimeout(() => {
+            handleSend();
+        }, TIMEOUT_MILLISECONDS);
+    };
 
     const handleSendError = () => {
         setSendError(formatMessage({id: 'invite.send_error', defaultMessage: 'Something went wrong while trying to send invitations. Please check your network connection and try again.'}));
@@ -327,12 +312,11 @@ export default function Invite({
     };
 
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, closeModal, [closeModal]);
-    useNavButtonPressed(BACK_BUTTON_ID, componentId, handleReset, [handleReset]);
     useNavButtonPressed(SEND_BUTTON_ID, componentId, handleSend, [handleSend]);
 
     useEffect(() => {
         const buttons: NavButtons = {
-            leftButtons: [makeLeftButton(theme, stage === Stage.RESULT && sendError ? LeftButtonType.BACK : LeftButtonType.CLOSE)],
+            leftButtons: [makeLeftButton(theme)],
             rightButtons: stage === Stage.SELECTION ? [makeRightButton(theme, formatMessage, selectedCount > 0)] : [],
         };
 
@@ -379,7 +363,8 @@ export default function Invite({
                         selectedIds={selectedIds}
                         error={sendError}
                         onClose={closeModal}
-                        onRetry={handleReset}
+                        onRetry={handleRetry}
+                        onBack={handleReset}
                         testID='invite.screen.summary'
                     />
                 );

@@ -12,6 +12,7 @@ import AlertSvg from '@components/illustrations/alert';
 import ErrorSvg from '@components/illustrations/error';
 import SuccessSvg from '@components/illustrations/success';
 import {useTheme} from '@context/theme';
+import {t} from '@i18n';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -67,6 +68,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         summaryButtonContainer: {
             flexGrow: 1,
+            flexDirection: 'row',
+            justifyContent: 'center',
             maxWidth: MAX_WIDTH_CONTENT,
         },
         summaryButtonTextContainer: {
@@ -83,6 +86,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
+enum SummaryButtonType {
+    DONE = 'done',
+    RETRY = 'retry',
+    BACK = 'back',
+}
+
 type SummaryProps = {
     result: Result;
     selectedIds: {[id: string]: SearchResult};
@@ -90,6 +99,7 @@ type SummaryProps = {
     testID: string;
     onClose: () => void;
     onRetry: () => void;
+    onBack: () => void;
 }
 
 export default function Summary({
@@ -99,8 +109,9 @@ export default function Summary({
     testID,
     onClose,
     onRetry,
+    onBack,
 }: SummaryProps) {
-    const {formatMessage} = useIntl();
+    const {formatMessage, locale} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -108,8 +119,6 @@ export default function Summary({
     const sentCount = sent.length;
     const notSentCount = notSent.length;
 
-    const styleButtonText = buttonTextStyle(theme, 'lg', 'primary');
-    const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
     const styleSummaryMessageText = useMemo(() => {
         const style = [];
 
@@ -163,14 +172,67 @@ export default function Summary({
         );
     }
 
-    const handleOnPressButton = useCallback(() => {
-        if (error) {
-            onRetry();
-            return;
+    const renderButton = useCallback((type: SummaryButtonType) => {
+        let onPress;
+        let iconName = '';
+        let text;
+        let styleButtonText = buttonTextStyle(theme, 'lg', 'primary');
+        let styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
+        const styleButtonIcon = [];
+        styleButtonIcon.push(styles.summaryButtonIcon);
+
+        switch (type) {
+            case SummaryButtonType.BACK:
+                onPress = onBack;
+                iconName = 'chevron-left';
+                text = {
+                    id: t('invite.summary.back'),
+                    defaultMessage: 'Go back',
+                };
+                styleButtonText = buttonTextStyle(theme, 'lg', 'tertiary');
+                styleButtonBackground = [buttonBackgroundStyle(theme, 'lg', 'tertiary'), {marginRight: 8}];
+                styleButtonIcon.push({color: theme.buttonBg});
+                break;
+            case SummaryButtonType.RETRY:
+                onPress = onRetry;
+                iconName = 'refresh';
+                text = {
+                    id: t('invite.summary.try_again'),
+                    defaultMessage: 'Try again',
+                };
+                break;
+            case SummaryButtonType.DONE:
+            default:
+                onPress = onClose;
+                text = {
+                    id: t('invite.summary.done'),
+                    defaultMessage: 'Done',
+                };
+                break;
         }
 
-        onClose();
-    }, [error, onRetry, onClose]);
+        return (
+            <Button
+                containerStyle={[styleButtonBackground, {flexGrow: 1}]}
+                onPress={onPress}
+                testID={`invite.summary_button.${SummaryButtonType.RETRY}`}
+            >
+                <View style={styles.summaryButtonTextContainer}>
+                    {iconName && (
+                        <CompassIcon
+                            name={iconName}
+                            size={24}
+                            style={styleButtonIcon}
+                        />
+                    )}
+                    <FormattedText
+                        {...text}
+                        style={styleButtonText}
+                    />
+                </View>
+            </Button>
+        );
+    }, [theme, locale, onClose, onRetry, onBack]);
 
     return (
         <View
@@ -211,32 +273,14 @@ export default function Summary({
             </ScrollView>
             <View style={styles.footer}>
                 <View style={styles.summaryButtonContainer}>
-                    <Button
-                        containerStyle={styleButtonBackground}
-                        onPress={handleOnPressButton}
-                        testID='invite.summary_button'
-                    >
-                        {error ? (
-                            <View style={styles.summaryButtonTextContainer}>
-                                <CompassIcon
-                                    name='refresh'
-                                    size={24}
-                                    style={styles.summaryButtonIcon}
-                                />
-                                <FormattedText
-                                    id='invite.summary.try_again'
-                                    defaultMessage='Try again'
-                                    style={styleButtonText}
-                                />
-                            </View>
-                        ) : (
-                            <FormattedText
-                                id='invite.summary.done'
-                                defaultMessage='Done'
-                                style={styleButtonText}
-                            />
-                        )}
-                    </Button>
+                    {error ? (
+                        <>
+                            {renderButton(SummaryButtonType.BACK)}
+                            {renderButton(SummaryButtonType.RETRY)}
+                        </>
+                    ) : (
+                        renderButton(SummaryButtonType.DONE)
+                    )}
                 </View>
             </View>
         </View>
