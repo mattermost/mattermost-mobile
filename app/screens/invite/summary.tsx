@@ -33,13 +33,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flex: 1,
         },
         summaryContainer: {
+            display: 'flex',
             flexGrow: 1,
-            flexDirection: 'column',
+            flexDirection: 'row',
             justifyContent: 'center',
-            alignSelf: 'center',
+            alignItems: 'stretch',
             marginTop: 20,
             marginHorizontal: 20,
             paddingBottom: 20,
+        },
+        summaryContent: {
+            flexGrow: 1,
+            flexDirection: 'column',
+            justifyContent: 'center',
             maxWidth: MAX_WIDTH_CONTENT,
         },
         summarySvg: {
@@ -70,7 +76,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             flexGrow: 1,
             flexDirection: 'row',
             justifyContent: 'center',
-            maxWidth: MAX_WIDTH_CONTENT,
         },
         summaryButtonTextContainer: {
             display: 'flex',
@@ -244,32 +249,34 @@ export default function Summary({
                 contentContainerStyle={styles.summaryContainer}
                 testID='invite.summary'
             >
-                <View style={styles.summarySvg}>
-                    {svg}
-                </View>
-                <Text style={styleSummaryMessageText}>
-                    {message}
-                </Text>
-                {error ? (
-                    <Text style={styles.summaryErrorText}>
-                        {error}
+                <View style={styles.summaryContent}>
+                    <View style={styles.summarySvg}>
+                        {svg}
+                    </View>
+                    <Text style={styleSummaryMessageText}>
+                        {message}
                     </Text>
-                ) : (
-                    <>
-                        <SummaryReport
-                            type={SummaryReportType.NOT_SENT}
-                            invites={notSent}
-                            selectedIds={selectedIds}
-                            testID='invite.summary_report'
-                        />
-                        <SummaryReport
-                            type={SummaryReportType.SENT}
-                            invites={sent}
-                            selectedIds={selectedIds}
-                            testID='invite.summary_report'
-                        />
-                    </>
-                )}
+                    {error ? (
+                        <Text style={styles.summaryErrorText}>
+                            {error}
+                        </Text>
+                    ) : (
+                        <>
+                            <SummaryReport
+                                type={SummaryReportType.NOT_SENT}
+                                invites={notSent}
+                                selectedIds={selectedIds}
+                                testID='invite.summary_report'
+                            />
+                            <SummaryReport
+                                type={SummaryReportType.SENT}
+                                invites={sent}
+                                selectedIds={selectedIds}
+                                testID='invite.summary_report'
+                            />
+                        </>
+                    )}
+                </View>
             </ScrollView>
             <View style={styles.footer}>
                 <View style={styles.summaryButtonContainer}>
