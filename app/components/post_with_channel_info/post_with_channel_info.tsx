@@ -11,6 +11,8 @@ import ChannelInfo from './channel_info';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    appsEnabled: boolean;
+    customEmojiNames: string[];
     isCRTEnabled: boolean;
     post: PostModel;
     location: string;
@@ -28,7 +30,7 @@ const styles = StyleSheet.create({
     },
 });
 
-function PostWithChannelInfo({isCRTEnabled, post, location, testID}: Props) {
+function PostWithChannelInfo({appsEnabled, customEmojiNames, isCRTEnabled, post, location, testID}: Props) {
     return (
         <View style={styles.container}>
             <ChannelInfo
@@ -37,6 +39,8 @@ function PostWithChannelInfo({isCRTEnabled, post, location, testID}: Props) {
             />
             <View style={styles.content}>
                 <Post
+                    appsEnabled={appsEnabled}
+                    customEmojiNames={customEmojiNames}
                     isCRTEnabled={isCRTEnabled}
                     post={post}
                     location={location}

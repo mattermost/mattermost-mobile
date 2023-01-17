@@ -215,7 +215,6 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
                             autoCorrect={false}
                             autoCapitalize={'none'}
                             blurOnSubmit={true}
-                            containerStyle={styles.inputBoxEmail}
                             disableFullscreenUI={true}
                             enablesReturnKeyAutomatically={true}
                             error={error}

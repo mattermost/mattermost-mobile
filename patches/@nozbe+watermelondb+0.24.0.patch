@@ -27,10 +27,10 @@ index 1a7c99e..0cb7b87 100644
  
      public markAsDeleted(): Promise<void>
 diff --git a/node_modules/@nozbe/watermelondb/Model/index.js b/node_modules/@nozbe/watermelondb/Model/index.js
-index 075a047..75e5936 100644
+index 075a047..5a1604d 100644
 --- a/node_modules/@nozbe/watermelondb/Model/index.js
 +++ b/node_modules/@nozbe/watermelondb/Model/index.js
-@@ -78,6 +78,18 @@ var Model = /*#__PURE__*/function () {
+@@ -78,10 +78,22 @@ var Model = /*#__PURE__*/function () {
    // database.batch()
    ;
  
@@ -48,6 +48,11 @@ index 075a047..75e5936 100644
 +
    _proto.prepareUpdate = function prepareUpdate(recordUpdater = _noop.default) {
      var _this = this;
+ 
+-    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes");
++    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes in table " + _this.table);
+ 
+     this.__ensureNotDisposable("Model.prepareUpdate()");
  
 @@ -92,6 +104,7 @@ var Model = /*#__PURE__*/function () {
      } // Perform updates

@@ -17,7 +17,7 @@ type Props = {
     onLogin: () => void;
     onLogout: () => void;
     onRemove: () => void;
-    progress: Animated.AnimatedInterpolation;
+    progress: Animated.AnimatedInterpolation<number>;
     server: ServersModel;
 }
 

@@ -13,7 +13,7 @@ exports[`components/channel_list/categories/header should match snapshot 1`] = `
   onResponderTerminationRequest={[Function]}
   onStartShouldSetResponder={[Function]}
   style={
-    Object {
+    {
       "opacity": 1,
     }
   }
@@ -21,8 +21,8 @@ exports[`components/channel_list/categories/header should match snapshot 1`] = `
 >
   <View
     style={
-      Array [
-        Object {
+      [
+        {
           "alignItems": "flex-start",
           "flexDirection": "row",
           "marginLeft": 16,
@@ -36,10 +36,10 @@ exports[`components/channel_list/categories/header should match snapshot 1`] = `
   >
     <Icon
       animatedStyle={
-        Object {
-          "value": Object {
-            "transform": Array [
-              Object {
+        {
+          "value": {
+            "transform": [
+              {
                 "rotate": "0deg",
               },
             ],
@@ -50,13 +50,13 @@ exports[`components/channel_list/categories/header should match snapshot 1`] = `
       name="chevron-down"
       size={20}
       style={
-        Object {
+        {
           "color": "rgba(255,255,255,0.64)",
           "height": 20,
           "marginRight": 2,
           "marginTop": -2,
-          "transform": Array [
-            Object {
+          "transform": [
+            {
               "rotate": "0deg",
             },
           ],
@@ -66,7 +66,7 @@ exports[`components/channel_list/categories/header should match snapshot 1`] = `
     />
     <Text
       style={
-        Object {
+        {
           "color": "rgba(255,255,255,0.64)",
           "fontFamily": "OpenSans-SemiBold",
           "fontSize": 12,

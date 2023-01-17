@@ -15,12 +15,12 @@ import AnimatedMicrophone from './animated_microphone';
 import SoundWave from './sound_wave';
 import TimeElapsed from './time_elapsed';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const iconCommon = {
         height: MIC_SIZE,
         width: MIC_SIZE,
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
     };
 
     const round = {

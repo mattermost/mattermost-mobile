@@ -10,14 +10,10 @@ import AtMentionItem from '@components/autocomplete/at_mention_item';
 import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
 import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@constants/apps';
 import {useServerUrl} from '@context/server';
-import {useTheme} from '@context/theme';
 import analytics from '@managers/analytics';
 
 import {AppCommandParser, ExtendedAutocompleteSuggestion} from '../app_command_parser/app_command_parser';
 import SlashSuggestionItem from '../slash_suggestion_item';
-
-import type ChannelModel from '@typings/database/models/servers/channel';
-import type UserModel from '@typings/database/models/servers/user';
 
 export type Props = {
     currentTeamId: string;
@@ -32,7 +28,20 @@ export type Props = {
     listStyle: StyleProp<ViewStyle>;
 };
 
-const keyExtractor = (item: ExtendedAutocompleteSuggestion): string => item.Suggestion + item.type + item.item;
+const keyExtractor = (item: ExtendedAutocompleteSuggestion): string => {
+    switch (item.type) {
+        case COMMAND_SUGGESTION_USER: {
+            const user = item.item as UserProfile;
+            return user.id;
+        }
+        case COMMAND_SUGGESTION_CHANNEL: {
+            const channel = item.item as Channel;
+            return channel.id;
+        }
+        default:
+            return item.Suggestion;
+    }
+};
 
 const emptySuggestonList: AutocompleteSuggestion[] = [];
 
@@ -48,9 +57,8 @@ const AppSlashSuggestion = ({
     listStyle,
 }: Props) => {
     const intl = useIntl();
-    const theme = useTheme();
     const serverUrl = useServerUrl();
-    const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId, theme));
+    const appCommandParser = useRef<AppCommandParser>(new AppCommandParser(serverUrl, intl, channelId, currentTeamId, rootId));
     const [dataSource, setDataSource] = useState<AutocompleteSuggestion[]>(emptySuggestonList);
     const active = isAppsEnabled && Boolean(dataSource.length);
     const mounted = useRef(false);
@@ -98,28 +106,34 @@ const AppSlashSuggestion = ({
 
     const renderItem = useCallback(({item}: {item: ExtendedAutocompleteSuggestion}) => {
         switch (item.type) {
-            case COMMAND_SUGGESTION_USER:
-                if (!item.item) {
+            case COMMAND_SUGGESTION_USER: {
+                const user = item.item as UserProfile | undefined;
+                if (!user) {
                     return null;
                 }
+
                 return (
                     <AtMentionItem
-                        user={item.item as UserProfile | UserModel}
+                        user={user}
                         onPress={completeIgnoringSuggestion(item.Complete)}
                         testID='autocomplete.slash_suggestion.at_mention_item'
                     />
                 );
-            case COMMAND_SUGGESTION_CHANNEL:
-                if (!item.item) {
+            }
+            case COMMAND_SUGGESTION_CHANNEL: {
+                const channel = item.item as Channel | undefined;
+                if (!channel) {
                     return null;
                 }
+
                 return (
                     <ChannelMentionItem
-                        channel={item.item as Channel | ChannelModel}
+                        channel={channel}
                         onPress={completeIgnoringSuggestion(item.Complete)}
                         testID='autocomplete.slash_suggestion.channel_mention_item'
                     />
                 );
+            }
             default:
                 return (
                     <SlashSuggestionItem

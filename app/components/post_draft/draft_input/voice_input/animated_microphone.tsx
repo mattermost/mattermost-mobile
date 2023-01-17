@@ -10,12 +10,12 @@ import {MIC_SIZE} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-const getStyleSheet = makeStyleSheetFromTheme((theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     const iconCommon = {
         height: MIC_SIZE,
         width: MIC_SIZE,
-        alignItems: 'center',
-        justifyContent: 'center',
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
     };
 
     const round = {

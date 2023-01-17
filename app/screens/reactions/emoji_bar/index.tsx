@@ -5,6 +5,8 @@ import React, {useCallback, useEffect, useRef} from 'react';
 import {ListRenderItemInfo, StyleSheet} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
+import {useIsTablet} from '@hooks/device';
+
 import Item from './item';
 
 import type ReactionModel from '@typings/database/models/servers/reaction';
@@ -29,6 +31,7 @@ const style = StyleSheet.create({
 });
 
 const EmojiBar = ({emojiSelected, reactionsByName, setIndex, sortedReactions}: Props) => {
+    const isTablet = useIsTablet();
     const listRef = useRef<FlatList<string>>(null);
 
     const scrollToIndex = (index: number, animated = false) => {
@@ -81,7 +84,7 @@ const EmojiBar = ({emojiSelected, reactionsByName, setIndex, sortedReactions}: P
             horizontal={true}
             ref={listRef}
             renderItem={renderItem}
-            style={style.container}
+            style={[style.container, {marginTop: isTablet ? 12 : 0}]}
             onScrollToIndexFailed={onScrollToIndexFailed}
             overScrollMode='never'
         />

@@ -15,7 +15,7 @@ import {
     getMyChannel, getChannelById, queryUsersOnChannel, queryUserChannelsByTypes,
 } from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
+import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig, getLicense} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
@@ -76,7 +76,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                 }
 
                 models = (await Promise.all(modelPromises)).flat();
-                const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, true);
+                const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, false, true);
                 if (viewedAt) {
                     models.push(viewedAt);
                 }
@@ -160,7 +160,7 @@ export async function selectAllMyChannelIds(serverUrl: string) {
     }
 }
 
-export async function markChannelAsViewed(serverUrl: string, channelId: string, prepareRecordsOnly = false) {
+export async function markChannelAsViewed(serverUrl: string, channelId: string, onlyCounts = false, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const member = await getMyChannel(database, channelId);
@@ -172,8 +172,10 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
             m.isUnread = false;
             m.mentionsCount = 0;
             m.manuallyUnread = false;
-            m.viewedAt = member.lastViewedAt;
-            m.lastViewedAt = Date.now();
+            if (!onlyCounts) {
+                m.viewedAt = member.lastViewedAt;
+                m.lastViewedAt = Date.now();
+            }
         });
         PushNotifications.removeChannelNotifications(serverUrl, channelId);
         if (!prepareRecordsOnly) {
@@ -365,9 +367,10 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
             return {};
         }
 
-        const {config, license} = await getCommonSystemValues(database);
+        const license = await getLicense(database);
+        const config = await getConfig(database);
         const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
-        const displaySettings = getTeammateNameDisplaySetting(preferences, config, license);
+        const displaySettings = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         const models: Model[] = [];
         for await (const channel of channels) {
             let newDisplayName = '';

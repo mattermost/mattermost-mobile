@@ -10,6 +10,7 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import OptionIcon from './option_icon';
 import RadioItem, {RadioItemProps} from './radio_item';
 
 const TouchableOptionTypes = {
@@ -103,6 +104,7 @@ export type OptionItemProps = {
     description?: string;
     destructive?: boolean;
     icon?: string;
+    iconColor?: string;
     info?: string;
     inline?: boolean;
     label: string;
@@ -124,6 +126,7 @@ const OptionItem = ({
     description,
     destructive,
     icon,
+    iconColor,
     info,
     inline = false,
     label,
@@ -211,6 +214,7 @@ const OptionItem = ({
                 onPress={onRemove}
                 style={[styles.iconContainer]}
                 type='opacity'
+                testID={`${testID}.remove.button`}
             >
                 <CompassIcon
                     name={'close'}
@@ -235,10 +239,10 @@ const OptionItem = ({
                 <View style={styles.labelContainer}>
                     {Boolean(icon) && (
                         <View style={styles.iconContainer}>
-                            <CompassIcon
-                                name={icon!}
-                                size={24}
-                                color={destructive ? theme.dndIndicator : changeOpacity(theme.centerChannelColor, 0.64)}
+                            <OptionIcon
+                                icon={icon!}
+                                iconColor={iconColor}
+                                destructive={destructive}
                             />
                         </View>
                     )}
@@ -267,7 +271,7 @@ const OptionItem = ({
                     Boolean(info) &&
                     <View style={styles.infoContainer}>
                         <Text
-                            style={[styles.info, destructive && {color: theme.dndIndicator}]}
+                            style={[styles.info, !actionComponent && styles.iconContainer, destructive && {color: theme.dndIndicator}]}
                             testID={`${testID}.info`}
                         >
                             {info}
@@ -279,7 +283,6 @@ const OptionItem = ({
             }
         </View>
     );
-
     if (Object.values(TouchableOptionTypes).includes(type)) {
         return (
             <TouchableOpacity onPress={onPress}>

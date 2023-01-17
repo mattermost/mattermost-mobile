@@ -157,9 +157,10 @@ const ProgressiveImage = ({
                 opacity={defaultOpacity}
                 source={{uri: thumbnailUri}}
                 style={[
-                    thumbnailUri ? StyleSheet.absoluteFill : {tintColor: theme.centerChannelColor},
+                    thumbnailUri ? StyleSheet.absoluteFill : undefined,
                     imageStyle,
                 ]}
+                tintColor={thumbnailUri ? undefined : theme.centerChannelColor}
             />
             {image}
         </Animated.View>

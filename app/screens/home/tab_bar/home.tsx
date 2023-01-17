@@ -10,6 +10,7 @@ import CompassIcon from '@components/compass_icon';
 import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
 import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer, UnreadObserverArgs} from '@database/subscription/unreads';
+import {useAppState} from '@hooks/device';
 import NativeNotification from '@notifications';
 import {changeOpacity} from '@utils/theme';
 
@@ -41,6 +42,7 @@ const style = StyleSheet.create({
 
 const Home = ({isFocused, theme}: Props) => {
     const [total, setTotal] = useState<UnreadMessages>({mentions: 0, unread: false});
+    const appState = useAppState();
 
     const updateTotal = () => {
         let unread = false;
@@ -69,7 +71,7 @@ const Home = ({isFocused, theme}: Props) => {
             let unread = false;
             for (const myChannel of myChannels) {
                 const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
-                mentions += myChannel.mentionsCount;
+                mentions += isMuted ? 0 : myChannel.mentionsCount;
                 unread = unread || (myChannel.isUnread && !isMuted);
             }
 
@@ -118,6 +120,12 @@ const Home = ({isFocused, theme}: Props) => {
             subscriptions.clear();
         };
     }, []);
+
+    useEffect(() => {
+        if (appState === 'background') {
+            updateTotal();
+        }
+    }, [appState]);
 
     let unreadStyle;
     if (total.mentions) {

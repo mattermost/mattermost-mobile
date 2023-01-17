@@ -35,10 +35,16 @@ function getAllTests(testSuites) {
     const suites = [];
     const tests = [];
     let skipped = 0;
+    let failures = 0;
+    let errors = 0;
+    let duration = 0;
     let firstTimestamp;
     let incrementalDuration = 0;
     testSuites.testsuite.forEach((testSuite) => {
         skipped += parseInt(testSuite.skipped[0], 10);
+        failures += parseInt(testSuite.failures[0], 10);
+        errors += parseInt(testSuite.errors[0], 10);
+        duration += parseFloat(testSuite.time[0] * 1000);
         if (!firstTimestamp) {
             firstTimestamp = testSuite.timestamp[0];
         }
@@ -83,16 +89,16 @@ function getAllTests(testSuites) {
     });
     const startDate = new Date(firstTimestamp);
     const start = startDate.toISOString();
-    startDate.setTime(startDate.getTime() + parseFloat(testSuites.time[0] * 1000));
+    startDate.setTime(startDate.getTime() + duration);
     const end = startDate.toISOString();
 
     return {
         suites,
         tests,
         skipped,
-        failures: parseInt(testSuites.failures[0], 10),
-        errors: parseInt(testSuites.errors[0], 10),
-        duration: parseFloat(testSuites.time[0] * 1000),
+        failures,
+        errors,
+        duration,
         start,
         end,
     };
@@ -107,7 +113,7 @@ function generateStats(allTests) {
     const duration = allTests.duration;
     const start = allTests.start;
     const end = allTests.end;
-    const passes = tests - (skipped + failures + errors);
+    const passes = tests - (failures + errors);
     const passPercent = tests > 0 ? (passes / tests) * 100 : 0;
 
     return {
@@ -302,6 +308,9 @@ function generateTestReport(summary, isUploadedToS3, reportLink, environment, te
 function generateTitle() {
     const {
         BRANCH,
+        BUILD_AWS_S3_BUCKET,
+        BUILD_ID,
+        COMMIT_HASH,
         IOS,
         PULL_REQUEST,
         RELEASE_BUILD_NUMBER,
@@ -313,32 +322,32 @@ function generateTitle() {
     const platform = IOS === 'true' ? 'iOS' : 'Android';
     const lane = `${platform} Build`;
     const appExtension = IOS === 'true' ? 'ipa' : 'apk';
-    const appFileName = TYPE === 'GEKIDOU' ? `Mattermost_Beta.${appExtension}` : `Mattermost.${appExtension}`;
-    let buildLink = ` with [${lane}](https://pr-builds.mattermost.com/mattermost-mobile/${BRANCH}/${appFileName})`;
-    if (RELEASE_VERSION && RELEASE_BUILD_NUMBER) {
-        const releaseType = TYPE === 'GEKIDOU' ? 'mattermost-mobile-beta' : 'mattermost-mobile';
-        buildLink = ` with [${RELEASE_VERSION}:${RELEASE_BUILD_NUMBER}](https://releases.mattermost.com/${releaseType}/${RELEASE_VERSION}/${RELEASE_BUILD_NUMBER}/${appFileName})`;
-    }
-
+    const appFileName = `Mattermost_Beta.${appExtension}`;
+    const appBuildType = 'mattermost-mobile-beta';
+    const s3Folder = `${platform.toLocaleLowerCase()}/${BUILD_ID}-${COMMIT_HASH}-${BRANCH}`.replace(/\./g, '-');
+    const appFilePath = IOS === 'true' ? 'Mattermost-simulator-x86_64.app.zip' : 'android/app/build/outputs/apk/release/app-release.apk';
+    let buildLink = '';
     let releaseDate = '';
-    if (RELEASE_DATE) {
-        releaseDate = ` for ${RELEASE_DATE}`;
-    }
-
     let title;
 
     switch (TYPE) {
         case 'PR':
+            buildLink = ` with [${lane}:${COMMIT_HASH}](https://${BUILD_AWS_S3_BUCKET}.s3.amazonaws.com/${s3Folder}/${appFilePath})`;
             title = `${platform} E2E for Pull Request Build: [${BRANCH}](${PULL_REQUEST})${buildLink}`;
             break;
         case 'RELEASE':
+            if (RELEASE_VERSION && RELEASE_BUILD_NUMBER) {
+                buildLink = ` with [${RELEASE_VERSION}:${RELEASE_BUILD_NUMBER}](https://releases.mattermost.com/${appBuildType}/${RELEASE_VERSION}/${RELEASE_BUILD_NUMBER}/${appFileName})`;
+            }
+
+            if (RELEASE_DATE) {
+                releaseDate = ` for ${RELEASE_DATE}`;
+            }
+
             title = `${platform} E2E for Release Build${buildLink}${releaseDate}`;
             break;
-        case 'MASTER':
-            title = `${platform} E2E for Master Nightly Build (Prod tests)${buildLink}`;
-            break;
-        case 'GEKIDOU':
-            title = `${platform} E2E for Gekidou Nightly Build (Prod tests)${buildLink}`;
+        case 'MAIN':
+            title = `${platform} E2E for Main Nightly Build (Prod tests)${buildLink}`;
             break;
         default:
             title = `${platform} E2E for Build${buildLink}`;

@@ -1,19 +1,25 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BottomSheetProps, BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React from 'react';
+import React, {useMemo} from 'react';
+import {ScrollView} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import {ITEM_HEIGHT} from '@components/option_item';
 import {Screens} from '@constants';
 import {PostTypes} from '@constants/post';
-import {REACTION_PICKER_HEIGHT} from '@constants/reaction_picker';
+import {REACTION_PICKER_HEIGHT, REACTION_PICKER_MARGIN} from '@constants/reaction_picker';
+import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
-import {dismissModal} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {isSystemMessage} from '@utils/post';
 
+import AppBindingsPostOptions from './options/app_bindings_post_option';
 import CopyTextOption from './options/copy_text_option';
 import DeletePostOption from './options/delete_post_option';
 import EditOption from './options/edit_option';
@@ -39,17 +45,22 @@ type PostOptionsProps = {
     post: PostModel;
     thread?: ThreadModel;
     componentId: string;
+    bindings: AppBinding[];
+    serverUrl: string;
 };
 const PostOptions = ({
     canAddReaction, canDelete, canEdit,
     canMarkAsUnread, canPin, canReply,
     combinedPost, componentId, isSaved,
-    sourceScreen, post, thread,
+    sourceScreen, post, thread, bindings, serverUrl,
 }: PostOptionsProps) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const {bottom} = useSafeAreaInsets();
+    const isTablet = useIsTablet();
+    const Scroll = useMemo(() => (isTablet ? ScrollView : BottomSheetScrollView), [isTablet]);
 
     const close = () => {
-        dismissModal({componentId});
+        return dismissBottomSheet(Screens.POST_OPTIONS);
     };
 
     useNavButtonPressed(POST_OPTIONS_BUTTON, componentId, close, []);
@@ -60,89 +71,120 @@ const PostOptions = ({
     const canCopyText = canCopyPermalink && post.message;
 
     const shouldRenderFollow = !(sourceScreen !== Screens.CHANNEL || !thread);
-    const shouldRenderReply = canReply && sourceScreen !== Screens.THREAD;
-    const shouldRenderMarkAsUnread = canMarkAsUnread && !isSystemPost;
-    const shouldRenderCopyText = Boolean(canCopyText && post.message);
-    const shouldRenderEdit = canEdit && post.type !== PostTypes.VOICE_MESSAGE;
+    const shouldShowBindings = bindings.length > 0 && !isSystemPost;
 
-    const snapPoints = [
-        shouldRenderReply,
-        shouldRenderFollow,
-        shouldRenderMarkAsUnread,
-        canCopyPermalink,
-        !isSystemPost,
-        shouldRenderCopyText,
-        canPin,
-        shouldRenderEdit,
-        canDelete,
-    ].reduce((acc, v) => {
-        return v ? acc + 1 : acc;
-    }, 0);
+    const snapPoints = useMemo(() => {
+        const items: BottomSheetProps['snapPoints'] = [1];
+        const optionsCount = [
+            canCopyPermalink, canCopyText, canDelete, canEdit,
+            canMarkAsUnread, canPin, canReply, !isSystemPost, shouldRenderFollow,
+        ].reduce((acc, v) => {
+            return v ? acc + 1 : acc;
+        }, 0) + (shouldShowBindings ? 0.5 : 0);
+
+        items.push(bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT, bottom) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0));
+
+        if (shouldShowBindings) {
+            items.push('80%');
+        }
+
+        return items;
+    }, [
+        canAddReaction, canCopyPermalink, canCopyText,
+        canDelete, canEdit && post.type !== PostTypes.VOICE_MESSAGE, shouldRenderFollow, shouldShowBindings,
+        canMarkAsUnread, canPin, canReply, isSystemPost, bottom,
+    ]);
 
     const renderContent = () => {
         return (
-            <>
-                {canAddReaction && <ReactionBar postId={post.id}/>}
-                {shouldRenderReply && <ReplyOption post={post}/>}
-                {shouldRenderFollow &&
-                    <FollowThreadOption thread={thread}/>
-                }
-                {shouldRenderMarkAsUnread &&
-                    <MarkAsUnreadOption
-                        post={post}
-                        sourceScreen={sourceScreen}
+            <Scroll bounces={false}>
+                {canAddReaction &&
+                    <ReactionBar
+                        bottomSheetId={Screens.POST_OPTIONS}
+                        postId={post.id}
                     />
+                }
+                {canReply &&
+                    <ReplyOption
+                        bottomSheetId={Screens.POST_OPTIONS}
+                        post={post}
+                    />
+                }
+                {shouldRenderFollow &&
+                    <FollowThreadOption
+                        bottomSheetId={Screens.POST_OPTIONS}
+                        thread={thread}
+                    />
+                }
+                {canMarkAsUnread && !isSystemPost &&
+                <MarkAsUnreadOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    post={post}
+                    sourceScreen={sourceScreen}
+                />
                 }
                 {canCopyPermalink &&
-                    <CopyPermalinkOption
-                        post={post}
-                        sourceScreen={sourceScreen}
-                    />
+                <CopyPermalinkOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    post={post}
+                    sourceScreen={sourceScreen}
+                />
                 }
                 {!isSystemPost &&
-                    <SaveOption
-                        isSaved={isSaved}
-                        postId={post.id}
-                    />
+                <SaveOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    isSaved={isSaved}
+                    postId={post.id}
+                />
                 }
-                {shouldRenderCopyText &&
-                    <CopyTextOption
-                        postMessage={post.message}
-                        sourceScreen={sourceScreen}
-                    />}
+                {Boolean(canCopyText && post.message) &&
+                <CopyTextOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    postMessage={post.message}
+                    sourceScreen={sourceScreen}
+                />}
                 {canPin &&
-                    <PinChannelOption
-                        isPostPinned={post.isPinned}
-                        postId={post.id}
-                    />
+                <PinChannelOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    isPostPinned={post.isPinned}
+                    postId={post.id}
+                />
                 }
-                {shouldRenderEdit &&
-                    <EditOption
-                        post={post}
-                        canDelete={canDelete}
-                    />
+                {canEdit && post.type !== PostTypes.VOICE_MESSAGE &&
+                <EditOption
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    post={post}
+                    canDelete={canDelete}
+                />
                 }
                 {canDelete &&
                 <DeletePostOption
+                    bottomSheetId={Screens.POST_OPTIONS}
                     combinedPost={combinedPost}
                     post={post}
                 />}
-            </>
+                {shouldShowBindings &&
+                <AppBindingsPostOptions
+                    bottomSheetId={Screens.POST_OPTIONS}
+                    post={post}
+                    serverUrl={serverUrl}
+                    bindings={bindings}
+                />
+                }
+            </Scroll>
         );
     };
-
-    const additionalSnapPoints = 1;
 
     return (
         <BottomSheet
             renderContent={renderContent}
             closeButtonId={POST_OPTIONS_BUTTON}
             componentId={Screens.POST_OPTIONS}
-            initialSnapIndex={0}
-            snapPoints={[(((snapPoints + additionalSnapPoints) * ITEM_HEIGHT) + (canAddReaction ? REACTION_PICKER_HEIGHT : 0)), 10]}
+            initialSnapIndex={1}
+            snapPoints={snapPoints}
             testID='post_options'
         />
     );
 };
 
-export default PostOptions;
+export default React.memo(PostOptions);

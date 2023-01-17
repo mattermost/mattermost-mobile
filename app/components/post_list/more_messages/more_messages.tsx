@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {ActivityIndicator, DeviceEventEmitter, Platform, View, ViewToken} from 'react-native';
+import {ActivityIndicator, DeviceEventEmitter, View, ViewToken} from 'react-native';
 import Animated, {interpolate, useAnimatedStyle, useSharedValue, withSpring} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {resetMessageCount} from '@actions/local/channel';
 import CompassIcon from '@components/compass_icon';
@@ -16,14 +17,14 @@ import {useIsTablet} from '@hooks/device';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type PostModel from '@typings/database/models/servers/post';
+import type {PostList} from '@typings/components/post_list';
 
 type Props = {
     channelId: string;
     isCRTEnabled?: boolean;
     isManualUnread?: boolean;
     newMessageLineIndex: number;
-    posts: Array<string | PostModel>;
+    posts: PostList;
     registerScrollEndIndexListener: (fn: (endIndex: number) => void) => () => void;
     registerViewableItemsListener: (fn: (viewableItems: ViewToken[]) => void) => () => void;
     rootId?: string;
@@ -36,7 +37,7 @@ type Props = {
 }
 
 const HIDDEN_TOP = -60;
-const SHOWN_TOP = Platform.select({ios: 50, default: 5});
+const SHOWN_TOP = 5;
 const MIN_INPUT = 0;
 const MAX_INPUT = 1;
 
@@ -112,6 +113,7 @@ const MoreMessages = ({
 }: Props) => {
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
+    const insets = useSafeAreaInsets();
     const pressed = useRef(false);
     const resetting = useRef(false);
     const initialScroll = useRef(false);
@@ -120,9 +122,11 @@ const MoreMessages = ({
     const underlayColor = useMemo(() => `hsl(${hexToHue(theme.buttonBg)}, 50%, 38%)`, [theme]);
     const top = useSharedValue(0);
     const adjustedShownTop = SHOWN_TOP + (currentCallBarVisible ? CURRENT_CALL_BAR_HEIGHT : 0) + (joinCallBannerVisible ? JOIN_CALL_BAR_HEIGHT : 0);
-    const shownTop = isTablet || (isCRTEnabled && rootId) ? 5 : adjustedShownTop;
+    const adjustTop = isTablet || (isCRTEnabled && rootId);
+    const shownTop = adjustTop ? SHOWN_TOP : adjustedShownTop;
     const BARS_FACTOR = Math.abs((1) / (HIDDEN_TOP - SHOWN_TOP));
     const styles = getStyleSheet(theme);
+
     const animatedStyle = useAnimatedStyle(() => ({
         transform: [{
             translateY: withSpring(interpolate(
@@ -136,13 +140,13 @@ const MoreMessages = ({
                 [
                     HIDDEN_TOP,
                     HIDDEN_TOP,
-                    shownTop,
-                    shownTop,
+                    shownTop + (adjustTop ? 0 : insets.top),
+                    shownTop + (adjustTop ? 0 : insets.top),
                 ],
                 Animated.Extrapolate.CLAMP,
             ), {damping: 15}),
         }],
-    }), [isTablet, shownTop]);
+    }), [shownTop, insets.top, adjustTop]);
 
     // Due to the implementation differences "unreadCount" gets updated for a channel on reset but not for a thread.
     // So we maintain a localUnreadCount to hide the indicator when the count is reset.
@@ -184,7 +188,7 @@ const MoreMessages = ({
             return;
         }
 
-        const readCount = posts.slice(0, lastViewableIndex).filter((v) => typeof v !== 'string').length;
+        const readCount = posts.slice(0, lastViewableIndex).filter((v) => v.type === 'post').length;
         const totalUnread = localUnreadCount.current - readCount;
         if (lastViewableIndex >= newMessageLineIndex) {
             resetCount();

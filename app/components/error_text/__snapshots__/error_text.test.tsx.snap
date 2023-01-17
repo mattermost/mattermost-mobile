@@ -3,15 +3,15 @@
 exports[`ErrorText should match snapshot 1`] = `
 <Text
   style={
-    Array [
-      Object {
+    [
+      {
         "color": "#d24b4e",
         "fontSize": 12,
         "marginBottom": 15,
         "marginTop": 15,
         "textAlign": "left",
       },
-      Object {
+      {
         "fontSize": 14,
         "marginHorizontal": 15,
       },

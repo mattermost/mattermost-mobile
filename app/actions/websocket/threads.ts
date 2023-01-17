@@ -2,12 +2,22 @@
 // See LICENSE.txt for license information.
 
 import {markTeamThreadsAsRead, processReceivedThreads, updateThread} from '@actions/local/thread';
+import {getCurrentTeamId} from '@app/queries/servers/system';
+import DatabaseManager from '@database/manager';
 import EphemeralStore from '@store/ephemeral_store';
 
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return;
+        }
         const thread: Thread = JSON.parse(msg.data.thread);
-        const teamId = msg.broadcast.team_id;
+        let teamId = msg.broadcast.team_id;
+
+        if (!teamId) {
+            teamId = await getCurrentTeamId(database);
+        }
 
         // Mark it as following
         thread.is_following = true;

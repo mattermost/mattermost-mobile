@@ -1,17 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
 
-import {observeConfigBooleanValue} from '@queries/servers/system';
+import AppsManager from '@managers/apps_manager';
 
 import Autocomplete from './autocomplete';
 
-import type {WithDatabaseArgs} from '@typings/database/database';
+type OwnProps = {
+    serverUrl?: string;
+}
 
-const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    isAppsEnabled: observeConfigBooleanValue(database, 'FeatureFlagAppsEnabled'),
+const enhanced = withObservables(['serverUrl'], ({serverUrl}: OwnProps) => ({
+    isAppsEnabled: serverUrl ? AppsManager.observeIsAppsEnabled(serverUrl) : of$(false),
 }));
 
-export default withDatabase(enhanced(Autocomplete));
+export default enhanced(Autocomplete);

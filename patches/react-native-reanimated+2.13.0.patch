@@ -1,0 +1,60 @@
+diff --git a/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js b/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js
+index 4f6187c..a9fc703 100644
+--- a/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js
++++ b/node_modules/react-native-reanimated/lib/reanimated2/jestUtils.js
+@@ -169,6 +169,9 @@ export const setUpTests = (userConfig = {}) => {
+             return compareStyle(received, expectedStyle, config);
+         },
+     });
++    global.ReanimatedDataMock = {
++        now: () => currentTimestamp,
++    };
+ };
+ export const getAnimatedStyle = (received) => {
+     return getCurrentStyle(received);
+diff --git a/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx b/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx
+index 23a65fa..704cb69 100644
+--- a/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx
++++ b/node_modules/react-native-reanimated/src/createAnimatedComponent.tsx
+@@ -195,6 +195,7 @@ export default function createAnimatedComponent(
+     _isFirstRender = true;
+     animatedStyle: { value: StyleProps } = { value: {} };
+     initialStyle = {};
++    _lastSentStyle?: StyleProps;
+     sv: SharedValue<null | Record<string, unknown>> | null;
+     _propsAnimated?: PropsAnimated;
+     _component: ComponentRef | null = null;
+@@ -579,16 +580,33 @@ export default function createAnimatedComponent(
+ 
+     _filterNonAnimatedStyle(inputStyle: StyleProps) {
+       const style: StyleProps = {};
++      let changed = false;
+       for (const key in inputStyle) {
+         const value = inputStyle[key];
+         if (!hasAnimatedNodes(value)) {
+           style[key] = value;
++          changed = changed || style[key] !== this._lastSentStyle?.[key];
+         } else if (value instanceof AnimatedValue) {
+           // if any style in animated component is set directly to the `Value` we set those styles to the first value of `Value` node in order
+           // to avoid flash of default styles when `Value` is being asynchrounously sent via bridge and initialized in the native side.
+           style[key] = value._startingValue;
++          changed = changed || style[key] !== this._lastSentStyle?.[key];
+         }
+       }
++      if (!changed) {
++        const inputKeys = new Set(Object.keys(inputStyle));
++        let equalKeys = true;
++        for (const key in this._lastSentStyle) {
++          if (!inputKeys.has(key)) {
++            equalKeys = false;
++            break;
++          }
++        }
++        if (equalKeys) {
++          return this._lastSentStyle;
++        }
++      }
++      this._lastSentStyle = style;
+       return style;
+     }
+ 

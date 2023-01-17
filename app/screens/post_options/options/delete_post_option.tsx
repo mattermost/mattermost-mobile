@@ -15,10 +15,11 @@ import {dismissBottomSheet} from '@screens/navigation';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    bottomSheetId: typeof Screens[keyof typeof Screens];
     combinedPost?: Post | PostModel;
     post: PostModel;
 }
-const DeletePostOption = ({combinedPost, post}: Props) => {
+const DeletePostOption = ({bottomSheetId, combinedPost, post}: Props) => {
     const serverUrl = useServerUrl();
     const {formatMessage} = useIntl();
 
@@ -36,12 +37,12 @@ const DeletePostOption = ({combinedPost, post}: Props) => {
                 text: formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
                 style: 'destructive',
                 onPress: async () => {
-                    await dismissBottomSheet(Screens.POST_OPTIONS);
+                    await dismissBottomSheet(bottomSheetId);
                     deletePost(serverUrl, combinedPost || post);
                 },
             }],
         );
-    }, [post, combinedPost, serverUrl]);
+    }, [bottomSheetId, post, combinedPost, serverUrl]);
 
     return (
         <BaseOption

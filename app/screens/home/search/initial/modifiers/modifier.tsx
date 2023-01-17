@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
-import {StyleSheet} from 'react-native';
+import React, {Dispatch, RefObject, SetStateAction, useCallback} from 'react';
+import {Platform, StyleSheet} from 'react-native';
 
 import OptionItem from '@components/option_item';
+import {SearchRef} from '@components/search';
 import {preventDoubleTap} from '@utils/tap';
 
 const styles = StyleSheet.create({
@@ -14,21 +15,29 @@ const styles = StyleSheet.create({
 });
 
 export type ModifierItem = {
-        description: string;
-        testID: string;
-        term: string;
+    cursorPosition?: number;
+    description: string;
+    testID: string;
+    term: string;
 }
 
 type Props = {
     item: ModifierItem;
-    setSearchValue: (value: string) => void;
+    setSearchValue: Dispatch<SetStateAction<string>>;
     searchValue?: string;
+    searchRef: RefObject<SearchRef>;
 }
 
-const Modifier = ({item, searchValue, setSearchValue}: Props) => {
+const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {
     const handlePress = useCallback(() => {
         addModifierTerm(item.term);
     }, [item.term, searchValue]);
+
+    const setNativeCursorPositionProp = (position?: number) => {
+        setTimeout(() => {
+            searchRef.current?.setNativeProps({selection: {start: position, end: position}});
+        }, 50);
+    };
 
     const addModifierTerm = preventDoubleTap((modifierTerm) => {
         let newValue = '';
@@ -41,6 +50,19 @@ const Modifier = ({item, searchValue, setSearchValue}: Props) => {
         }
 
         setSearchValue(newValue);
+        if (item.cursorPosition) {
+            const position = newValue.length + item.cursorPosition;
+            setNativeCursorPositionProp(position);
+
+            if (Platform.OS === 'android') {
+                // on Android the selection set by setNativeProps is permanent thus the caret returns to the same
+                // position after we stop typing for a few ms. By setting the position to undefined,
+                // then the caret remains in place.
+                setTimeout(() => {
+                    setNativeCursorPositionProp(undefined);
+                }, 50);
+            }
+        }
     });
 
     return (

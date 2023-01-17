@@ -80,6 +80,7 @@ async function createTestCycle(startDate, endDate) {
     const {
         BRANCH,
         BUILD_ID,
+        COMMIT_HASH,
         JIRA_PROJECT_KEY,
         ZEPHYR_CYCLE_NAME,
         ZEPHYR_FOLDER_ID,
@@ -87,7 +88,7 @@ async function createTestCycle(startDate, endDate) {
 
     const testCycle = {
         projectKey: JIRA_PROJECT_KEY,
-        name: ZEPHYR_CYCLE_NAME ? `${ZEPHYR_CYCLE_NAME} (${BUILD_ID}-${BRANCH})` : `${BUILD_ID}-${BRANCH}`,
+        name: ZEPHYR_CYCLE_NAME ? `${ZEPHYR_CYCLE_NAME} (${BUILD_ID}-${COMMIT_HASH}-${BRANCH})` : `${BUILD_ID}-${COMMIT_HASH}-${BRANCH}`,
         description: `Detox automated test with ${BRANCH}`,
         plannedStartDate: startDate,
         plannedEndDate: endDate,
@@ -114,9 +115,14 @@ async function createTestExecutions(allTests, testCycle) {
     const promises = [];
     Object.entries(testCases).forEach(([key, steps], index) => {
         const testScriptResults = steps.
-            sort((a, b) => a.title.localeCompare(b.title)).
+            sort((a, b) => {
+                const aKey = a.title.match(/(MM-T\d+_\d+)/)[0].split('_')[1];
+                const bKey = b.title.match(/(MM-T\d+_\d+)/)[0].split('_')[1];
+                return parseInt(aKey, 10) - parseInt(bKey, 10);
+            }).
             map((item) => {
                 return {
+                    title: item.title,
                     statusName: status[item.state],
                     actualEndDate: new Date(startTime + item.incrementalDuration).toISOString(),
                     actualResult: 'Detox automated test completed',

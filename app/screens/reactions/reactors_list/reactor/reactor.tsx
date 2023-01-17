@@ -21,6 +21,11 @@ type Props = {
 const style = StyleSheet.create({
     container: {
         marginBottom: 8,
+        paddingLeft: 0,
+        flexDirection: 'row',
+    },
+    picture: {
+        marginLeft: 0,
     },
 });
 
@@ -44,6 +49,7 @@ const Reactor = ({channelId, location, user}: Props) => {
         <TouchableOpacity onPress={openUserProfile}>
             <UserItem
                 containerStyle={style.container}
+                pictureContainerStyle={style.picture}
                 user={user}
                 testID='reactions.reactor_item'
             />

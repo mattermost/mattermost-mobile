@@ -20,6 +20,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Mute and Unmute Channel', () => {
@@ -50,16 +51,20 @@ describe('Channels - Mute and Unmute Channel', () => {
         // # Open a channel screen, tap on channel quick actions button, and tap on mute quick action to mute the channel
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.channelQuickActionsButton.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelScreen.muteQuickAction.tap();
 
         // * Verify muted toast message appears
+        await wait(timeouts.ONE_SEC);
         await expect(ChannelScreen.toastMessage).toHaveText('This channel was muted');
 
         // # Tap on channel quick actions button and tap on muted quick action to unmute the channel
         await ChannelScreen.channelQuickActionsButton.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelScreen.unmuteQuickAction.tap();
 
         // * Verify unmuted toast message appears
+        await wait(timeouts.ONE_SEC);
         await expect(ChannelScreen.toastMessage).toHaveText('This channel was unmuted');
 
         // # Go back to channel list screen

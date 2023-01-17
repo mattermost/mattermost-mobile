@@ -2,8 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React from 'react';
+import React, {useMemo} from 'react';
 import {View} from 'react-native';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {CopyPermalinkOption, FollowThreadOption, ReplyOption, SaveOption} from '@components/common_post_options';
 import FormattedText from '@components/formatted_text';
@@ -13,9 +14,12 @@ import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
-import {dismissModal} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {dismissBottomSheet} from '@screens/navigation';
+import {bottomSheetSnapPoint} from '@utils/helpers';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import {TITLE_HEIGHT} from '../bottom_sheet/content';
 
 import MarkAsUnreadOption from './options/mark_as_unread_option';
 import OpenInChannelOption from './options/open_in_channel_option';
@@ -35,12 +39,11 @@ type ThreadOptionsProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         listHeader: {
-            marginBottom: 12,
+            marginBottom: 8,
         },
         listHeaderText: {
-            color: changeOpacity(theme.centerChannelColor, 0.56),
-            textTransform: 'uppercase',
-            ...typography('Body', 75, 'SemiBold'),
+            color: theme.centerChannelColor,
+            ...typography('Heading', 600, 'SemiBold'),
         },
     };
 });
@@ -56,35 +59,39 @@ const ThreadOptions = ({
 }: ThreadOptionsProps) => {
     const theme = useTheme();
     const isTablet = useIsTablet();
-
+    const {bottom} = useSafeAreaInsets();
     const style = getStyleSheet(theme);
 
     const close = () => {
-        dismissModal({componentId});
+        return dismissBottomSheet(Screens.THREAD_OPTIONS);
     };
 
     useNavButtonPressed(THREAD_OPTIONS_BUTTON, componentId, close, []);
 
     const options = [
         <ReplyOption
+            bottomSheetId={Screens.THREAD_OPTIONS}
             key='reply'
-            location={Screens.THREAD_OPTIONS}
             post={post}
         />,
         <FollowThreadOption
+            bottomSheetId={Screens.THREAD_OPTIONS}
             key='unfollow'
             thread={thread}
         />,
         <OpenInChannelOption
+            bottomSheetId={Screens.THREAD_OPTIONS}
             key='open-in-channel'
             threadId={thread.id}
         />,
         <MarkAsUnreadOption
+            bottomSheetId={Screens.THREAD_OPTIONS}
             key='mark-as-unread'
             teamId={team.id}
             thread={thread}
         />,
         <SaveOption
+            bottomSheetId={Screens.THREAD_OPTIONS}
             key='save'
             isSaved={isSaved}
             postId={thread.id}
@@ -96,12 +103,15 @@ const ThreadOptions = ({
     if (canCopyLink) {
         options.push(
             <CopyPermalinkOption
+                bottomSheetId={Screens.THREAD_OPTIONS}
                 key='copy-link'
                 post={post}
                 sourceScreen={Screens.THREAD_OPTIONS}
             />,
         );
     }
+
+    const snapPoint = useMemo(() => TITLE_HEIGHT + bottomSheetSnapPoint(options.length, ITEM_HEIGHT, bottom), [bottom, options.length]);
 
     const renderContent = () => (
         <>
@@ -123,8 +133,8 @@ const ThreadOptions = ({
             renderContent={renderContent}
             closeButtonId={THREAD_OPTIONS_BUTTON}
             componentId={Screens.THREAD_OPTIONS}
-            initialSnapIndex={0}
-            snapPoints={[((options.length + 2) * ITEM_HEIGHT), 10]}
+            initialSnapIndex={1}
+            snapPoints={[1, snapPoint]}
             testID='thread_options'
         />
     );

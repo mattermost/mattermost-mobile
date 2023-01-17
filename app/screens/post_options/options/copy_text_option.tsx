@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Clipboard from '@react-native-community/clipboard';
+import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback} from 'react';
 
 import {BaseOption} from '@components/common_post_options';
@@ -12,12 +12,13 @@ import {dismissBottomSheet} from '@screens/navigation';
 import {showSnackBar} from '@utils/snack_bar';
 
 type Props = {
+    bottomSheetId: typeof Screens[keyof typeof Screens];
     sourceScreen: typeof Screens[keyof typeof Screens];
     postMessage: string;
 }
-const CopyTextOption = ({postMessage, sourceScreen}: Props) => {
+const CopyTextOption = ({bottomSheetId, postMessage, sourceScreen}: Props) => {
     const handleCopyText = useCallback(async () => {
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         Clipboard.setString(postMessage);
         showSnackBar({barType: SNACK_BAR_TYPE.MESSAGE_COPIED, sourceScreen});
     }, [postMessage]);

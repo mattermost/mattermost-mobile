@@ -22,9 +22,11 @@ type Props = {
     connecting: boolean;
     displayName?: string;
     displayNameError?: string;
+    disableServerUrl: boolean;
     handleConnect: () => void;
     handleDisplayNameTextChanged: (text: string) => void;
     handleUrlTextChanged: (text: string) => void;
+    isModal?: boolean;
     keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
     theme: Theme;
     url?: string;
@@ -77,9 +79,11 @@ const ServerForm = ({
     connecting,
     displayName = '',
     displayNameError,
+    disableServerUrl,
     handleConnect,
     handleDisplayNameTextChanged,
     handleUrlTextChanged,
+    isModal,
     keyboardAwareRef,
     theme,
     url = '',
@@ -94,7 +98,7 @@ const ServerForm = ({
 
     const focus = () => {
         if (Platform.OS === 'ios') {
-            let offsetY = 160;
+            let offsetY = isModal ? 120 : 160;
             if (isTablet) {
                 const {width, height} = dimensions;
                 const isLandscape = width > height;
@@ -169,6 +173,7 @@ const ServerForm = ({
                     blurOnSubmit={false}
                     containerStyle={styles.enterServer}
                     enablesReturnKeyAutomatically={true}
+                    editable={!disableServerUrl}
                     error={urlError}
                     keyboardType='url'
                     label={formatMessage({

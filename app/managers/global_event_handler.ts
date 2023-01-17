@@ -2,14 +2,19 @@
 // See LICENSE.txt for license information.
 
 import {Alert, DeviceEventEmitter, Linking} from 'react-native';
+import RNLocalize from 'react-native-localize';
 import semver from 'semver';
 
+import {autoUpdateTimezone} from '@actions/remote/user';
 import LocalConfig from '@assets/config.json';
 import {Events, Sso} from '@constants';
+import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
-import {getLaunchPropsFromDeepLink, relaunchApp} from '@init/launch';
 import * as analytics from '@managers/analytics';
+import {getAllServers} from '@queries/app/servers';
+import {handleDeepLink} from '@utils/deep_link';
+import {logError} from '@utils/log';
 
 import type {jsAndNativeErrorHandler} from '@typings/global/error_handling';
 
@@ -21,6 +26,18 @@ class GlobalEventHandler {
     constructor() {
         DeviceEventEmitter.addListener(Events.SERVER_VERSION_CHANGED, this.onServerVersionChanged);
         DeviceEventEmitter.addListener(Events.CONFIG_CHANGED, this.onServerConfigChanged);
+        RNLocalize.addEventListener('change', async () => {
+            try {
+                const servers = await getAllServers();
+                for (const server of servers) {
+                    if (server.url && server.lastActiveAt > 0) {
+                        autoUpdateTimezone(server.url);
+                    }
+                }
+            } catch (e) {
+                logError('Localize change', e);
+            }
+        });
 
         Linking.addEventListener('url', this.onDeepLink);
     }
@@ -47,8 +64,7 @@ class GlobalEventHandler {
         }
 
         if (event.url) {
-            const props = getLaunchPropsFromDeepLink(event.url);
-            relaunchApp(props);
+            handleDeepLink(event.url);
         }
     };
 
@@ -63,7 +79,7 @@ class GlobalEventHandler {
         const translations = getTranslations(locale);
 
         if (version) {
-            if (semver.valid(version) && semver.lt(version, LocalConfig.MinServerVersion)) {
+            if (semver.valid(version) && semver.lt(version, MIN_REQUIRED_VERSION)) {
                 Alert.alert(
                     translations[t('mobile.server_upgrade.title')],
                     translations[t('mobile.server_upgrade.description')],
