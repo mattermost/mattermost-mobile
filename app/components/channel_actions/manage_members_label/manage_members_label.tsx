@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 
@@ -60,10 +60,6 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
     const {formatMessage} = intl;
     const serverUrl = useServerUrl();
 
-    const [actionText, setActionText] = useState('');
-    const [icon, setIcon] = useState('');
-    const [isDestructive, setisDestructive] = useState(false);
-
     const handleRemoveUser = useCallback(async () => {
         await removeMemberFromChannel(serverUrl, channelId, userId);
         fetchChannelStats(serverUrl, channelId, false);
@@ -111,25 +107,26 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
         }
     }, [manageOption, removeFromChannel]);
 
-    useEffect(() => {
-        switch (manageOption) {
-            case REMOVE_USER:
-                setActionText(formatMessage(messages.remove_title));
-                setIcon('trash-can-outline');
-                setisDestructive(true);
-                break;
-            case MAKE_CHANNEL_ADMIN:
-                setActionText(formatMessage(messages.make_channel_admin));
-                setIcon('account-outline');
-                break;
-            case MAKE_CHANNEL_MEMBER:
-                setActionText(formatMessage(messages.make_channel_member));
-                setIcon('account-outline');
-                break;
-            default:
-                break;
-        }
-    }, [manageOption]);
+    let actionText;
+    let icon;
+    let isDestructive = false;
+    switch (manageOption) {
+        case REMOVE_USER:
+            actionText = (formatMessage(messages.remove_title));
+            icon = 'trash-can-outline';
+            isDestructive = true;
+            break;
+        case MAKE_CHANNEL_ADMIN:
+            actionText = formatMessage(messages.make_channel_admin);
+            icon = 'account-outline';
+            break;
+        case MAKE_CHANNEL_MEMBER:
+            actionText = formatMessage(messages.make_channel_member);
+            icon = 'account-outline';
+            break;
+        default:
+            break;
+    }
 
     if (manageOption === REMOVE_USER && !canRemoveUser) {
         return null;
