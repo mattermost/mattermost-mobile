@@ -330,7 +330,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
         );
     };
 
-    // TODO: Update a channel member's scheme_admin/scheme_user properties. Typically
+    // Update a channel member's scheme_admin/scheme_user properties. Typically
     // this should either be scheme_admin=false, scheme_user=true for ordinary
     // channel member, or scheme_admin=true, scheme_user=true for a channel
     // admin.
