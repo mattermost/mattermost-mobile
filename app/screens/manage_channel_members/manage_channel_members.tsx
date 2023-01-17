@@ -6,7 +6,7 @@ import {defineMessages, useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {fetchChannelMemberships, getMemberInChannel} from '@actions/remote/channel';
+import {fetchChannelMemberships} from '@actions/remote/channel';
 import {searchProfiles} from '@actions/remote/user';
 import Search from '@components/search';
 import UserList from '@components/user_list';
@@ -193,7 +193,6 @@ export default function ManageChannelMembers({
     }, [profiles, channelMembers]);
 
     const handleUserChangeRole = useCallback(async ({userId, schemeAdmin}: {userId: string; schemeAdmin: boolean}) => {
-        await getMemberInChannel(serverUrl, channelId, userId);
         const clone = channelMembers.map((m) => {
             if (m.user_id === userId) {
                 m.scheme_admin = schemeAdmin;

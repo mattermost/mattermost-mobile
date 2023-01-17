@@ -101,12 +101,14 @@ export async function fetchChannelMembersByIds(serverUrl: string, channelId: str
         return {error};
     }
 }
-export async function updateChannelMemberSchemeRoles(serverUrl: string, channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean) {
+export async function updateChannelMemberSchemeRoles(serverUrl: string, channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean, fetchOnly = false) {
     try {
         const client = NetworkManager.getClient(serverUrl);
-
         await client.updateChannelMemberSchemeRoles(channelId, userId, isSchemeUser, isSchemeAdmin);
-        await client.getMemberInChannel(channelId, userId);
+
+        if (!fetchOnly) {
+            return await getMemberInChannel(serverUrl, channelId, userId);
+        }
 
         return {error: undefined};
     } catch (error) {
@@ -115,14 +117,14 @@ export async function updateChannelMemberSchemeRoles(serverUrl: string, channelI
     }
 }
 
-export async function getMemberInChannel(serverUrl: string, channelId: string, userId: string) {
+export async function getMemberInChannel(serverUrl: string, channelId: string, userId: string, fetchOnly = false) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const member = await client.getMemberInChannel(channelId, userId);
 
-        // TODO: confirm with Elias if this is right way to do this since this
-        // is happening on webapp
-        updateLocalUser(serverUrl, member, userId);
+        if (!fetchOnly) {
+            await updateLocalUser(serverUrl, member, userId);
+        }
         return {member, error: undefined};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
