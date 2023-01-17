@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, PanResponder} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
@@ -15,9 +16,10 @@ import type ReactionModel from '@typings/database/models/servers/reaction';
 type Props = {
     location: string;
     reactions: ReactionModel[];
+    type?: BottomSheetList;
 }
 
-const ReactorsList = ({location, reactions}: Props) => {
+const ReactorsList = ({location, reactions, type = 'FlatList'}: Props) => {
     const serverUrl = useServerUrl();
     const [enabled, setEnabled] = useState(false);
     const [direction, setDirection] = useState<'down' | 'up'>('down');
@@ -55,6 +57,17 @@ const ReactorsList = ({location, reactions}: Props) => {
         // Fetch any missing user
         fetchUsersByIds(serverUrl, userIds);
     }, []);
+
+    if (type === 'BottomSheetFlatList') {
+        return (
+            <BottomSheetFlatList
+                data={reactions}
+                renderItem={renderItem}
+                overScrollMode={'always'}
+                testID='reactions.reactors_list.flat_list'
+            />
+        );
+    }
 
     return (
         <FlatList

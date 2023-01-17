@@ -31,17 +31,6 @@ export const queryGlobalValue = (key: string) => {
     }
 };
 
-export const observeMultiServerTutorial = () => {
-    const query = queryGlobalValue(GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL);
-    if (!query) {
-        return of$(false);
-    }
-    return query.observe().pipe(
-        switchMap((result) => (result.length ? result[0].observe() : of$(false))),
-        switchMap((v) => of$(Boolean(v))),
-    );
-};
-
 export const getOnboardingViewed = async (): Promise<boolean> => {
     try {
         const {database} = DatabaseManager.getAppDatabaseAndOperator();
@@ -50,17 +39,6 @@ export const getOnboardingViewed = async (): Promise<boolean> => {
     } catch {
         return false;
     }
-};
-
-export const observeProfileLongPresTutorial = () => {
-    const query = queryGlobalValue(GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL);
-    if (!query) {
-        return of$(false);
-    }
-    return query.observe().pipe(
-        switchMap((result) => (result.length ? result[0].observe() : of$(false))),
-        switchMap((v) => of$(Boolean(v))),
-    );
 };
 
 export const getLastAskedForReview = async () => {
@@ -84,4 +62,15 @@ export const getFirstLaunch = async () => {
     }
 
     return records[0].value;
+};
+
+export const observeTutorialWatched = (tutorial: string) => {
+    const query = queryGlobalValue(tutorial);
+    if (!query) {
+        return of$(false);
+    }
+    return query.observe().pipe(
+        switchMap((result) => (result.length ? result[0].observe() : of$(false))),
+        switchMap((v) => of$(Boolean(v))),
+    );
 };

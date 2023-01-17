@@ -17,6 +17,7 @@ import NavigationStore from '@store/navigation_store';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
+import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {LaunchProps} from '@typings/launch';
 import type {NavButtons} from '@typings/screens/navigation';
 
@@ -218,11 +219,7 @@ Appearance.addChangeListener(() => {
 });
 
 export function getThemeFromState(): Theme {
-    if (EphemeralStore.theme) {
-        return EphemeralStore.theme;
-    }
-
-    return getDefaultThemeByAppearance();
+    return EphemeralStore.theme || getDefaultThemeByAppearance();
 }
 
 // This is a temporary helper function to avoid
@@ -478,12 +475,17 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
     });
 }
 
-export function popTopScreen(screenId?: string) {
-    if (screenId) {
-        Navigation.pop(screenId);
-    } else {
-        const componentId = NavigationStore.getVisibleScreen();
-        Navigation.pop(componentId);
+export async function popTopScreen(screenId?: string) {
+    try {
+        if (screenId) {
+            await Navigation.pop(screenId);
+        } else {
+            const componentId = NavigationStore.getVisibleScreen();
+            await Navigation.pop(componentId);
+        }
+    } catch (error) {
+        // RNN returns a promise rejection if there are no screens
+        // atop the root screen to pop. We'll do nothing in this case.
     }
 }
 
@@ -738,13 +740,14 @@ export async function dismissOverlay(componentId: string) {
 type BottomSheetArgs = {
     closeButtonId: string;
     initialSnapIndex?: number;
+    footerComponent?: React.FC<BottomSheetFooterProps>;
     renderContent: () => JSX.Element;
     snapPoints: Array<number | string>;
     theme: Theme;
     title: string;
 }
 
-export async function bottomSheet({title, renderContent, snapPoints, initialSnapIndex = 0, theme, closeButtonId}: BottomSheetArgs) {
+export async function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId}: BottomSheetArgs) {
     const {isSplitView} = await isRunningInSplitView();
     const isTablet = Device.IS_TABLET && !isSplitView;
 
@@ -753,12 +756,14 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
             closeButtonId,
             initialSnapIndex,
             renderContent,
+            footerComponent,
             snapPoints,
         }, bottomSheetModalOptions(theme, closeButtonId));
     } else {
         showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
             initialSnapIndex,
             renderContent,
+            footerComponent,
             snapPoints,
         }, bottomSheetModalOptions(theme));
     }

@@ -1,6 +1,7 @@
 import Gekidou
 import UserNotifications
 import Intents
+import os.log
 
 class NotificationService: UNNotificationServiceExtension {
   let preferences = Gekidou.Preferences.default
@@ -24,13 +25,24 @@ class NotificationService: UNNotificationServiceExtension {
        let ackNotification = try? JSONDecoder().decode(AckNotification.self, from: jsonData) {
       fetchReceipt(ackNotification)
     } else {
+      os_log(OSLogType.default, "Mattermost Notifications: bestAttemptContent seems to be empty, will call sendMessageIntent")
       sendMessageIntent(notification: request.content)
     }
   }
 
   func processResponse(serverUrl: String, data: Data, bestAttemptContent: UNMutableNotificationContent) {
     bestAttemptContent.userInfo["server_url"] = serverUrl
+    os_log(
+      OSLogType.default,
+      "Mattermost Notifications: process receipt response for serverUrl %{public}@",
+      serverUrl
+    )
     let json = try? JSONSerialization.jsonObject(with: data) as! [String: Any]
+    os_log(
+      OSLogType.default,
+      "Mattermost Notifications: parsed json response %{public}@",
+      String(describing: json != nil)
+    )
     if let json = json {
       if let message = json["message"] as? String {
         bestAttemptContent.body = message
@@ -49,10 +61,12 @@ class NotificationService: UNNotificationServiceExtension {
 
     if (preferences.object(forKey: "ApplicationIsForeground") as? String != "true") {
       Network.default.fetchAndStoreDataForPushNotification(bestAttemptContent, withContentHandler: {[weak self] notification in
+        os_log(OSLogType.default, "Mattermost Notifications: processed data for db. Will call sendMessageIntent")
         self?.sendMessageIntent(notification: bestAttemptContent)
       })
     } else {
       bestAttemptContent.badge = Gekidou.Database.default.getTotalMentions() as NSNumber
+      os_log(OSLogType.default, "Mattermost Notifications: app in the foreground, no data processed. Will call sendMessageIntent")
       sendMessageIntent(notification: bestAttemptContent)
     }
   }
@@ -60,7 +74,9 @@ class NotificationService: UNNotificationServiceExtension {
   override func serviceExtensionTimeWillExpire() {
     // Called just before the extension will be terminated by the system.
     // Use this as an opportunity to deliver your "best attempt" at modified content, otherwise the original push payload will be used.
-    if let bestAttemptContent =  bestAttemptContent {
+    os_log(OSLogType.default, "Mattermost Notifications: service extension time expired")
+    if let bestAttemptContent = bestAttemptContent {
+      os_log(OSLogType.default, "Mattermost Notifications: calling sendMessageIntent before expiration")
       sendMessageIntent(notification: bestAttemptContent)
     }
   }
@@ -71,68 +87,78 @@ class NotificationService: UNNotificationServiceExtension {
       let channelId = notification.userInfo["channel_id"] as! String
       let rootId = notification.userInfo.index(forKey: "root_id") != nil ? notification.userInfo["root_id"] as! String : ""
       let senderId = notification.userInfo["sender_id"] as? String ?? ""
-      let senderName = notification.userInfo["sender_name"] as? String ?? ""
       let channelName = notification.userInfo["channel_name"] as? String ?? ""
       let overrideIconUrl = notification.userInfo["override_icon_url"] as? String
       let serverUrl = notification.userInfo["server_url"] as? String ?? ""
       let message = (notification.userInfo["message"] as? String ?? "")
-      let avatarData = Network.default.fetchProfileImageSync(serverUrl, senderId: senderId, overrideIconUrl: overrideIconUrl)
-      
-      let handle = INPersonHandle(value: notification.userInfo["sender_id"] as? String, type: .unknown)
-      var avatar: INImage?
-      if let imgData = avatarData {
-        avatar = INImage(imageData: imgData)
-      }
 
-      let sender = INPerson(personHandle: handle,
-                            nameComponents: nil,
-                            displayName: channelName,
-                            image: avatar,
-                            contactIdentifier: nil,
-                            customIdentifier: nil)
-      var conversationId = channelId
-      if isCRTEnabled && rootId != "" {
-        conversationId = rootId
-      }
-      
-      let intent = INSendMessageIntent(recipients: nil,
-                                       outgoingMessageType: .outgoingMessageText,
-                                       content: message,
-                                       speakableGroupName: nil,
-                                       conversationIdentifier: conversationId,
-                                       serviceName: nil,
-                                       sender: sender,
-                                       attachments: nil)
-      
-      let interaction = INInteraction(intent: intent, response: nil)
-      interaction.direction = .incoming
-      
-      interaction.donate { error in
-        if error != nil {
-          self.contentHandler?(notification)
-          return
-        }
-        
-        do {
-          let updatedContent = try notification.updating(from: intent)
-          self.contentHandler?(updatedContent)
-        } catch {
-          self.contentHandler?(notification)
+      if senderId != "" && serverUrl != "" {
+        os_log(OSLogType.default, "Mattermost Notifications: Fetching profile Image in server %{public}@ for sender %{public}@", serverUrl, senderId)
+        let avatarData = Network.default.fetchProfileImageSync(serverUrl, senderId: senderId, overrideIconUrl: overrideIconUrl)
+        if let imgData = avatarData,
+           let avatar = INImage(imageData: imgData) as INImage? {
+          os_log(OSLogType.default, "Mattermost Notifications: creating intent")
+          var conversationId = channelId
+          if isCRTEnabled && rootId != "" {
+            conversationId = rootId
+          }
+
+          let handle = INPersonHandle(value: senderId, type: .unknown)
+          let sender = INPerson(personHandle: handle,
+                                nameComponents: nil,
+                                displayName: channelName,
+                                image: avatar,
+                                contactIdentifier: nil,
+                                customIdentifier: nil)
+
+          let intent = INSendMessageIntent(recipients: nil,
+                                           outgoingMessageType: .outgoingMessageText,
+                                           content: message,
+                                           speakableGroupName: nil,
+                                           conversationIdentifier: conversationId,
+                                           serviceName: nil,
+                                           sender: sender,
+                                           attachments: nil)
+
+          let interaction = INInteraction(intent: intent, response: nil)
+          interaction.direction = .incoming
+          interaction.donate { error in
+            if error != nil {
+              self.contentHandler?(notification)
+              os_log(OSLogType.default, "Mattermost Notifications: sendMessageIntent intent error %{public}@", error! as CVarArg)
+            }
+
+            do {
+              let updatedContent = try notification.updating(from: intent)
+              os_log(OSLogType.default, "Mattermost Notifications: present updated notification")
+              self.contentHandler?(updatedContent)
+            } catch {
+              os_log(OSLogType.default, "Mattermost Notifications: something failed updating the notification %{public}@", error as CVarArg)
+              self.contentHandler?(notification)
+            }
+          }
         }
       }
     } else {
+      os_log(OSLogType.default, "Mattermost Notifications: No intent created. will call contentHandler to present notification")
       self.contentHandler?(notification)
     }
   }
   
   func fetchReceipt(_ ackNotification: AckNotification) -> Void {
     if (self.retryIndex >= self.fibonacciBackoffsInSeconds.count) {
+      os_log(OSLogType.default, "Mattermost Notifications: max retries reached. Will call sendMessageIntent")
       sendMessageIntent(notification: bestAttemptContent!)
       return
     }
 
     Network.default.postNotificationReceipt(ackNotification) {data, response, error in
         if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode != 200 {
+          os_log(
+            OSLogType.default,
+            "Mattermost Notifications: notification receipt failed with status %{public}@. Will call sendMessageIntent",
+            String(describing: httpResponse.statusCode)
+          )
           self.sendMessageIntent(notification: self.bestAttemptContent!)
           return
         }
@@ -143,6 +169,11 @@ class NotificationService: UNNotificationServiceExtension {
             let backoffInSeconds = self.fibonacciBackoffsInSeconds[self.retryIndex]
 
             DispatchQueue.main.asyncAfter(deadline: .now() + backoffInSeconds, execute: {
+              os_log(
+                OSLogType.default,
+                "Mattermost Notifications: receipt retrieval failed. Retry %{public}@",
+                String(describing: self.retryIndex)
+              )
               self.fetchReceipt(ackNotification)
             })
 

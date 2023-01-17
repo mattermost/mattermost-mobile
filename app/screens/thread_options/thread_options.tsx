@@ -133,8 +133,8 @@ const ThreadOptions = ({
             renderContent={renderContent}
             closeButtonId={THREAD_OPTIONS_BUTTON}
             componentId={Screens.THREAD_OPTIONS}
-            initialSnapIndex={0}
-            snapPoints={[snapPoint, 10]}
+            initialSnapIndex={1}
+            snapPoints={[1, snapPoint]}
             testID='thread_options'
         />
     );

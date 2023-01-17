@@ -1,6 +1,7 @@
 import Foundation
 import UserNotifications
 import SQLite
+import os.log
 
 public struct AckNotification: Codable {
     let type: String
@@ -66,6 +67,14 @@ extension String {
         guard self.hasPrefix(prefix) else { return self }
         return String(self.dropFirst(prefix.count))
     }
+    
+    func toUrlSafeBase64Encode() -> String {
+        return Data(
+            self.replacingOccurrences(of: "/\\+/g", with: "-", options: .regularExpression)
+                .replacingOccurrences(of: "/\\//g", with: "_", options: .regularExpression)
+                .utf8
+        ).base64EncodedString()
+    }
 }
 
 extension Network {
@@ -93,8 +102,18 @@ extension Network {
         let semaphore = DispatchSemaphore(value: 0)
         
         func processResponse(data: Data?, response: URLResponse?, error: Error?) {
-            if let httpResponse = response as? HTTPURLResponse, httpResponse.statusCode == 200 && error == nil {
-                imgData = data
+            if let httpResponse = response as? HTTPURLResponse {
+                if (httpResponse.statusCode == 200 && error == nil) {
+                    imgData = data
+                    FileCache.default.saveProfileImage(serverUrl: serverUrl, userId: senderId, imageData: data)
+                } else {
+                    os_log(
+                        OSLogType.default,
+                        "Mattermost Notifications: Request for profile image failed with status %{public}@ and error %{public}@",
+                        httpResponse.statusCode,
+                        (error?.localizedDescription ?? "")
+                    )
+                }
             }
             semaphore.signal()
         }
@@ -103,9 +122,14 @@ extension Network {
            let url = URL(string: overrideUrl) {
             request(url, withMethod: "GET", withServerUrl: "", completionHandler: processResponse)
         } else {
-            let endpoint = "/users/\(senderId)/image"
-            let url = buildApiUrl(serverUrl, endpoint)
-            request(url, withMethod: "GET", withServerUrl: serverUrl, completionHandler: processResponse)
+            if let image = FileCache.default.getProfileImage(serverUrl: serverUrl, userId: senderId) {
+                os_log(OSLogType.default, "Mattermost Notifications: cached image")
+                imgData = image.pngData()
+                semaphore.signal()
+            } else {
+                os_log(OSLogType.default, "Mattermost Notifications: image not cached")
+                fetchUserProfilePicture(userId: senderId, withServerUrl: serverUrl, completionHandler: processResponse)
+            }
         }
         
         semaphore.wait()

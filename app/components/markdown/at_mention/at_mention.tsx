@@ -69,7 +69,7 @@ const AtMention = ({
     const intl = useIntl();
     const managedConfig = useManagedConfig<ManagedConfig>();
     const theme = useTheme();
-    const insets = useSafeAreaInsets();
+    const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
 
     const user = useMemo(() => {
@@ -92,6 +92,7 @@ const AtMention = ({
         // @ts-expect-error: The model constructor is hidden within WDB type definition
         return new UserModel(database.get(USER), {username: ''});
     }, [users, mentionName]);
+
     const userMentionKeys = useMemo(() => {
         if (mentionKeys) {
             return mentionKeys;
@@ -195,12 +196,12 @@ const AtMention = ({
             bottomSheet({
                 closeButtonId: 'close-at-mention',
                 renderContent,
-                snapPoints: [bottomSheetSnapPoint(2, ITEM_HEIGHT, insets.bottom), 10],
+                snapPoints: [1, bottomSheetSnapPoint(2, ITEM_HEIGHT, bottom)],
                 title: intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}),
                 theme,
             });
         }
-    }, [managedConfig, intl, theme, insets]);
+    }, [managedConfig, intl, theme, bottom]);
 
     const mentionTextStyle = [];
 
