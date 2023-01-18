@@ -156,7 +156,15 @@ async function doReconnect(serverUrl: string) {
 
     await fetchPostDataIfNeeded(serverUrl);
 
-    const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;
+    let currentUserId = '';
+    let currentUserLocale = '';
+
+    const user = await getCurrentUser(database);
+    if (user) {
+        currentUserId = user.id;
+        currentUserLocale = user.locale;
+    }
+
     const license = await getLicense(database);
     const config = await getConfig(database);
 
@@ -164,7 +172,9 @@ async function doReconnect(serverUrl: string) {
         loadConfigAndCalls(serverUrl, currentUserId);
     }
 
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+    if (currentUserId && currentUserLocale) {
+        await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
+    }
 
     AppsManager.refreshAppBindings(serverUrl);
 }
