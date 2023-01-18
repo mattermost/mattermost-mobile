@@ -267,7 +267,6 @@
     "mobile.post.delete_title": "게시글 삭제",
     "mobile.post.failed_delete": "메시지 삭제",
     "mobile.post.failed_retry": "다시 시도",
-    "mobile.posts_view.moreMsg": "새로운 메시지가 더 있습니다",
     "mobile.privacy_link": "개인정보 처리 방침",
     "mobile.push_notification_reply.button": "보내기",
     "mobile.push_notification_reply.placeholder": "댓글 작성하기...",
