@@ -227,11 +227,15 @@ export default class FilePickerUtil {
         let uri: string = doc.uri;
 
         if (Platform.OS === 'android') {
-            // For android we need to retrieve the realPath in case the file being imported is from the cloud
-            const newUri = await MattermostManaged.getFilePath(doc.uri);
-            uri = newUri?.filePath;
-            if (uri === undefined) {
-                return {doc: undefined};
+            if (doc.fileCopyUri) {
+                uri = doc.fileCopyUri;
+            } else {
+                // For android we need to retrieve the realPath in case the file being imported is from the cloud
+                const newUri = await MattermostManaged.getFilePath(doc.uri);
+                uri = newUri?.filePath;
+                if (uri === undefined) {
+                    return {doc: undefined};
+                }
             }
 
             doc.uri = uri;
@@ -272,7 +276,7 @@ export default class FilePickerUtil {
 
         if (hasPermission) {
             try {
-                const docResponse = (await DocumentPicker.pick({allowMultiSelection, type: [fileType]}));
+                const docResponse = (await DocumentPicker.pick({allowMultiSelection, type: [fileType], copyTo: 'cachesDirectory'}));
                 const proDocs = docResponse.map(async (d: DocumentPickerResponse) => {
                     const {doc} = await this.buildUri(d);
                     return doc;
