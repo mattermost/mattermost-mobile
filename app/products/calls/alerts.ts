@@ -65,6 +65,7 @@ export const leaveAndJoinWithAlert = async (
     intl: IntlShape,
     joinServerUrl: string,
     joinChannelId: string,
+    title?: string,
 ) => {
     let leaveChannelName = '';
     let joinChannelName = '';
@@ -125,17 +126,24 @@ export const leaveAndJoinWithAlert = async (
                         id: 'mobile.leave_and_join_confirmation',
                         defaultMessage: 'Leave & Join',
                     }),
-                    onPress: () => doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl),
+                    onPress: () => doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title),
                     style: 'cancel',
                 },
             ],
         );
     } else {
-        doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl);
+        doJoinCall(joinServerUrl, joinChannelId, joinChannelIsDMorGM, newCall, intl, title);
     }
 };
 
-const doJoinCall = async (serverUrl: string, channelId: string, joinChannelIsDMorGM: boolean, newCall: boolean, intl: IntlShape) => {
+const doJoinCall = async (
+    serverUrl: string,
+    channelId: string,
+    joinChannelIsDMorGM: boolean,
+    newCall: boolean,
+    intl: IntlShape,
+    title?: string,
+) => {
     const {formatMessage} = intl;
 
     let user;
@@ -181,7 +189,7 @@ const doJoinCall = async (serverUrl: string, channelId: string, joinChannelIsDMo
     const hasPermission = await hasMicrophonePermission();
     setMicPermissionsGranted(hasPermission);
 
-    const res = await joinCall(serverUrl, channelId, user.id, hasPermission);
+    const res = await joinCall(serverUrl, channelId, user.id, hasPermission, title);
     if (res.error) {
         const seeLogs = formatMessage({id: 'mobile.calls_see_logs', defaultMessage: 'See server logs'});
         errorAlert(res.error?.toString() || seeLogs, intl);

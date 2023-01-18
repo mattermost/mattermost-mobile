@@ -408,6 +408,7 @@
   "mobile.calls_not_available_msg": "Please contact your System Admin to enable the feature.",
   "mobile.calls_not_available_option": "(Not available)",
   "mobile.calls_not_available_title": "Calls is not enabled",
+  "mobile.calls_not_connected": "You're not connected to a call in the current channel.",
   "mobile.calls_ok": "OK",
   "mobile.calls_okay": "Okay",
   "mobile.calls_open_channel": "Open Channel",

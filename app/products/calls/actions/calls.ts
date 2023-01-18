@@ -234,7 +234,13 @@ export const enableChannelCalls = async (serverUrl: string, channelId: string, e
     return {};
 };
 
-export const joinCall = async (serverUrl: string, channelId: string, userId: string, hasMicPermission: boolean): Promise<{ error?: string | Error; data?: string }> => {
+export const joinCall = async (
+    serverUrl: string,
+    channelId: string,
+    userId: string,
+    hasMicPermission: boolean,
+    title?: string,
+): Promise<{ error?: string | Error; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
     const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
@@ -252,7 +258,7 @@ export const joinCall = async (serverUrl: string, channelId: string, userId: str
     try {
         connection = await newConnection(serverUrl, channelId, () => {
             myselfLeftCall();
-        }, setScreenShareURL, hasMicPermission);
+        }, setScreenShareURL, hasMicPermission, title);
     } catch (error: unknown) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error: error as Error};
@@ -449,16 +455,19 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
         case 'end':
             await handleEndCall(serverUrl, channelId, currentUserId, intl);
             return {handled: true};
-        case 'start':
+        case 'start': {
             if (getChannelsWithCalls(serverUrl)[channelId]) {
-                const error = intl.formatMessage({
-                    id: 'mobile.calls_start_call_exists',
-                    defaultMessage: 'A call is already ongoing in the channel.',
-                });
-                return {error};
+                return {
+                    error: intl.formatMessage({
+                        id: 'mobile.calls_start_call_exists',
+                        defaultMessage: 'A call is already ongoing in the channel.',
+                    }),
+                };
             }
-            await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+            const title = tokens.length > 2 ? tokens.slice(2).join(' ') : undefined;
+            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title);
             return {handled: true};
+        }
         case 'join':
             await leaveAndJoinWithAlert(intl, serverUrl, channelId);
             return {handled: true};
@@ -467,7 +476,12 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
                 await leaveCallPopCallScreen();
                 return {handled: true};
             }
-            break; // in case we add cases later and forget
+            return {
+                error: intl.formatMessage({
+                    id: 'mobile.calls_not_connected',
+                    defaultMessage: 'You\'re not connected to a call in the current channel.',
+                }),
+            };
     }
 
     return {handled: false};

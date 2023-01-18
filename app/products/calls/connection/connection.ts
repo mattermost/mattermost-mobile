@@ -31,6 +31,7 @@ export async function newConnection(
     closeCb: () => void,
     setScreenShareURL: (url: string) => void,
     hasMicPermission: boolean,
+    title?: string,
 ) {
     let peer: Peer | null = null;
     let stream: MediaStream;
@@ -249,6 +250,7 @@ export async function newConnection(
         } else {
             ws.send('join', {
                 channelID,
+                title,
             });
         }
     });
