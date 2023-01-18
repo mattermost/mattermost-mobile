@@ -61,6 +61,11 @@ const SSO = ({
             loginUrl = `${serverUrl}/oauth/google/mobile_login`;
             break;
         }
+        case Sso.PHABRICATOR: {
+            completeUrlPath = '/signup/phabricator/complete';
+            loginUrl = `${serverUrl}/oauth/phabricator/mobile_login`;
+            break;
+        }
         case Sso.GITLAB: {
             completeUrlPath = '/signup/gitlab/complete';
             loginUrl = `${serverUrl}/oauth/gitlab/mobile_login`;

@@ -531,6 +531,7 @@
   "mobile.login_options.google": "Google",
   "mobile.login_options.heading": "Log In to Your Account",
   "mobile.login_options.none": "You can't log in to your account yet. At least one login option must be configured. Contact your System Admin for assistance.",
+  "mobile.login_options.phabricator": "Phabricator",
   "mobile.login_options.office365": "Office 365",
   "mobile.login_options.openid": "Open ID",
   "mobile.login_options.saml": "SAML",

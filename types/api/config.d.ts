@@ -87,6 +87,7 @@ interface ClientConfig {
     EnableSignUpWithEmail: string;
     EnableSignUpWithGitLab: string;
     EnableSignUpWithGoogle: string;
+    EnableSignUpWithPhabricator: string;
     EnableSignUpWithOffice365: string;
     EnableSignUpWithOpenId: string;
     EnableTesting: string;

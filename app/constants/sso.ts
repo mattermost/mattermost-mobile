@@ -10,6 +10,7 @@ const constants = keyMirror({
     SAML: null,
     GITLAB: null,
     GOOGLE: null,
+    PHABRICATOR: null,
     OFFICE365: null,
     OPENID: null,
 });

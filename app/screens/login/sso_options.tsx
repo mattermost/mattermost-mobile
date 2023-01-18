@@ -45,6 +45,10 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                 sso.text = formatMessage({id: 'mobile.login_options.google', defaultMessage: 'Google'});
                 sso.imageSrc = require('@assets/images/Icon_Google.png');
                 break;
+            case Sso.PHABRICATOR:
+                sso.text = formatMessage({id: 'mobile.login_options.phabricator', defaultMessage: 'Phabricator'});
+                sso.imageSrc = require('@assets/images/Icon_Phabricator.png');
+                break;
             case Sso.OFFICE365:
                 sso.text = formatMessage({id: 'mobile.login_options.office365', defaultMessage: 'Office 365'});
                 sso.imageSrc = require('@assets/images/Icon_Office.png');
