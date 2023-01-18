@@ -18,7 +18,7 @@ export async function setCurrentUserStatusOffline(serverUrl: string) {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const user = await getCurrentUser(database);
         if (!user) {
-            throw new Error(`No current user for ${serverUrl}`);
+            return null;
         }
 
         user.prepareStatus(General.OFFLINE);
