@@ -18,7 +18,7 @@ import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {hashCode_DEPRECATED, urlSafeBase64Encode} from '@utils/security';
+import {urlSafeBase64Encode} from '@utils/security';
 
 import type FileModel from '@typings/database/models/servers/file';
 
@@ -166,11 +166,6 @@ export async function deleteV1Data() {
 
 export async function deleteFileCache(serverUrl: string) {
     const serverDir = urlSafeBase64Encode(serverUrl);
-    return deleteFileCacheByDir(serverDir);
-}
-
-export async function deleteLegacyFileCache(serverUrl: string) {
-    const serverDir = hashCode_DEPRECATED(serverUrl);
     return deleteFileCacheByDir(serverDir);
 }
 
