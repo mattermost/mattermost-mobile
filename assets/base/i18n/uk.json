@@ -259,5 +259,14 @@
     "account.your_profile": "Ваш профіль",
     "account.settings": "Налаштування",
     "account.logout_from": "Вийти з {serverName}",
-    "account.logout": "Вийти"
+    "account.logout": "Вийти",
+    "announcment_banner.okay": "Добре",
+    "announcment_banner.dismiss": "Відхилити оголошення",
+    "alert.removed_from_team.title": "Видалено з команди",
+    "alert.removed_from_team.description": "Вас було видалино з команди {displayName}.",
+    "alert.removed_from_channel.title": "Видалено з каналу",
+    "alert.removed_from_channel.description": "Вас видалили з каналу {displayName}.",
+    "alert.push_proxy.button": "Добре",
+    "alert.push_proxy_unknown.title": "Сповіщення не може бути отримано з цього сервера",
+    "alert.push_proxy_unknown.description": "З невідомих причин цей сервер не зміг отримати push-нотифікацію. Це буде зроблено знову під час наступного підключення."
 }
