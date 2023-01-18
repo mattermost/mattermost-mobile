@@ -61,6 +61,7 @@ class LoginScreen {
         await this.toBeVisible();
         await this.usernameInput.replaceText(user.username);
         await this.passwordInput.replaceText(user.password);
+        await waitFor(this.signinButton).toBeVisible().withTimeout(500);
         await this.signinButton.tap();
         await wait(timeouts.ONE_SEC);
     };

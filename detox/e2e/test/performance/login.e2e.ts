@@ -7,10 +7,8 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import fs from 'fs';
-
+import performance_baseline from '@support/performance_baseline';
 import {Setup} from '@support/server_api';
-import client from '@support/server_api/client';
 import {
     serverOneUrl,
     siteOneUrl,
@@ -20,25 +18,29 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {computeStatsFromData} from '@support/utils/statistics';
+import {checkWithBaseline} from '@support/utils/statistics';
 
 const N_RUNS = 10;
 describe('Performance test', () => {
     let user: any;
     const serverOneDisplayName = 'Server 1';
-    const times: Array<{prev: number; afterTap: number; after: number}> = [];
+    const times: Array<{prev: number; after: number}> = [];
 
     beforeAll(async () => {
+        device.disableSynchronization();
         const init = await Setup.apiInit(siteOneUrl);
         user = init.user;
 
         await ServerScreen.toBeVisible();
         await ServerScreen.serverUrlInput.replaceText(serverOneUrl);
         await ServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
-        client.post(`${process.env.REACT_APP_PERFORMANCE_WEBHOOK}/start_measures`, {measureId: 'login'});
+
+        //client.post(`${process.env.REACT_APP_PERFORMANCE_WEBHOOK}/start_measures`, {measureId: 'login'});
     });
 
     beforeEach(async () => {
+        await new Promise((r) => setTimeout(r, 1000));
+        await waitFor(ServerScreen.connectButton).toBeVisible().withTimeout(500);
         await ServerScreen.connectButton.tap();
         await LoginScreen.toBeVisible();
         await LoginScreen.usernameInput.replaceText(user.username);
@@ -50,40 +52,23 @@ describe('Performance test', () => {
     });
 
     afterAll(async () => {
-        const res = await client.post(`${process.env.REACT_APP_PERFORMANCE_WEBHOOK}/finish_measures`, {measureId: 'login'});
+        device.enableSynchronization();
         const calc = [];
         for (let i = 0; i < N_RUNS; i++) {
-            calc.push({
-                total: times[i]!.after - res.data.measures.start[i],
-                totalDevice: res.data.measures.end[i] - res.data.measures.start[i],
-                testDelay: res.data.measures.start[i] - times[i]!.prev,
-                tapDelay: times[i]!.afterTap - times[i]!.prev,
-                testTotal: times[i]!.after - times[i]!.prev,
-                testAfterTap: times[i]!.after - times[i]!.afterTap,
-            });
+            calc.push(times[i]!.after - times[i]!.prev);
         }
 
-        const baselineAverage = 564.8;
-        const baselineQuasivariance = 27111.73;
-        const baselineN = 10;
-
-        const totals = calc.map((v) => v.totalDevice);
-        const {average, quasiVariance, T, alpha, pass} = computeStatsFromData(totals, {av: baselineAverage, s: baselineQuasivariance, n: baselineN}, 0.10);
-
-        fs.writeFileSync(
-            `${process.env.REACT_APP_PERFORMANCE_OUTPUT}/perfTextResults.txt`,
-            JSON.stringify({local: times, remote: res.data, calc, stats: {average, quasiVariance, alpha, T, pass}}),
-        );
+        checkWithBaseline(calc, performance_baseline.login);
     });
 
     for (let i = 0; i < N_RUNS; i++) {
         it(`name ${i}`, async () => {
+            await waitFor(LoginScreen.signinButton).toBeVisible().withTimeout(500);
             const prev = Date.now();
             await LoginScreen.signinButton.tap();
-            const afterTap = Date.now();
             await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(50000);
             const after = Date.now();
-            times.push({prev, afterTap, after});
+            times.push({prev, after});
         });
     }
 });

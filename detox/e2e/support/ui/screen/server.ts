@@ -46,6 +46,7 @@ class ServerScreen {
         await this.toBeVisible();
         await this.serverUrlInput.replaceText(serverUrl);
         await this.serverDisplayNameInput.replaceText(serverDisplayName);
+        await waitFor(this.connectButton).toBeVisible().withTimeout(500);
         await this.connectButton.tap();
     };
 

@@ -70,18 +70,28 @@ function computeT(av1: number, av2: number, s1: number, s2: number, n1: number, 
     return T;
 }
 
-export function computeStatsFromData(data: number[], baseline?: {av: number; s: number; n: number}, significance?: number) {
+function computeStatsFromData(data: number[], baseline?: {average: number; quasivariance: number; n: number}, significance?: number) {
     const average = data.reduce((acc, v) => acc + v, 0) / data.length;
     const quasiVariance = data.reduce((acc, v) => acc + Math.pow(v - average, 2), 0) / (data.length - 1);
     let T: number |undefined;
     let alpha: number | undefined;
     let pass: boolean | undefined;
     if (baseline) {
-        T = computeT(baseline.av, average, baseline.s, quasiVariance, baseline.n, data.length);
+        T = computeT(baseline.average, average, baseline.quasivariance, quasiVariance, baseline.n, data.length);
         alpha = computeAlpha(T, baseline.n + data.length - 2);
         if (significance) {
             pass = alpha < (1 - (significance / 2));
         }
     }
     return {average, quasiVariance, T, alpha, pass};
+}
+
+export function checkWithBaseline(data: number[], baseline?: {average: number; quasivariance: number; n: number}) {
+    const {average, quasiVariance, alpha, pass} = computeStatsFromData(data, baseline, 0.10);
+    if (pass) {
+        // eslint-disable-next-line no-console
+        console.log('PASSED with alpha', alpha);
+    } else {
+        throw new Error(`Failed with values average=${average} quasivariance=${quasiVariance} alpha=${alpha}`);
+    }
 }
