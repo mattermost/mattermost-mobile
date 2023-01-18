@@ -7,4 +7,5 @@ stages:
   - build
 
 empty:
+  stage: .pre
   script: echo "empty"
