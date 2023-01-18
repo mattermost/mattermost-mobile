@@ -1,0 +1,7 @@
+include:
+  - project: mattermost/ci/$CI_PROJECT_NAME
+    ref: setup-gitlab
+    file: private.yml
+
+stages:
+  - build
