@@ -5,3 +5,6 @@ include:
 
 stages:
   - build
+
+empty:
+  script: echo "empty"
