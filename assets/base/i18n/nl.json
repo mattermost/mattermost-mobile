@@ -1,6 +1,6 @@
 {
     "about.date": "Compilatiedatum:",
-    "about.enterpriseEditione1": "Enterprise-Editie",
+    "about.enterpriseEditione1": "Enterprise-editie",
     "about.enterpriseEditionLearn": "Meer informatie over de Enterprise-Editie op ",
     "about.enterpriseEditionSt": "Moderne communicatie achter jouw eigen firewall.",
     "about.hash": "Compilatiehash:",
@@ -905,7 +905,7 @@
     "share_extension.max_resolution": "Afbeelding overschrijdt de maximum afmeting van 7680 x 4320 px",
     "share_extension.file_limit.single": "Het bestand moet kleiner zijn dan {size}",
     "share_extension.file_limit.multiple": "Elk bestand moet minder dan {size}",
-    "share_extension.count_limit": "Je kan alleen {count, number} {count, plural, one {bestand} other {bestanden}}  delen op deze server",
+    "share_extension.count_limit": "Je kan slechts {count, number} {count, plural, one {file} other {files}} op deze server.",
     "share_extension.channel_label": "Kanaal",
     "share_extension.channel_error": "Je bent geen lid van een team op de geselecteerde server. Selecteer een andere server of open Mattermost om lid te worden van een team.",
     "settings.advanced.delete_message.confirmation": "\nDit zal alle bestanden verwijderen die via de app voor deze server zijn gedownload. Gelieve te bevestigen om verder te gaan.\n",
