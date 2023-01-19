@@ -9,8 +9,6 @@ import Foundation
 import SQLite3
 import SQLite
 
-// TODO: This should be exposed to Objective-C in order to handle
-// any Database throwable methods.
 enum DatabaseError: Error {
     case OpenFailure(_ dbPath: String)
     case MultipleServers

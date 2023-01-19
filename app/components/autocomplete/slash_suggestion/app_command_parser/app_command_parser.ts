@@ -546,7 +546,7 @@ export class ParsedCommand {
                             this.incomplete += c;
                             this.i++;
                             if (escaped) {
-                                //TODO: handle \n, \t, other escaped chars
+                                //TODO: handle \n, \t, other escaped chars https://mattermost.atlassian.net/browse/MM-43476
                                 escaped = false;
                             }
                             break;
@@ -735,7 +735,7 @@ export class ParsedCommand {
                             this.incomplete += c;
                             this.i++;
                             if (escaped) {
-                                //TODO: handle \n, \t, other escaped chars
+                                //TODO: handle \n, \t, other escaped chars https://mattermost.atlassian.net/browse/MM-43476
                                 escaped = false;
                             }
                             break;
@@ -1079,7 +1079,7 @@ export class AppCommandParser {
         }
 
         // Add "Execute Current Command" suggestion
-        // TODO get full text from SuggestionBox
+        // TODO get full text from SuggestionBox https://mattermost.atlassian.net/browse/MM-43477
         const executableStates: string[] = [
             ParseState.EndCommand,
             ParseState.CommandSeparator,

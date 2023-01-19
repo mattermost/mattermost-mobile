@@ -267,7 +267,6 @@
     "mobile.post.delete_title": "删除消息",
     "mobile.post.failed_delete": "删除消息",
     "mobile.post.failed_retry": "重试",
-    "mobile.posts_view.moreMsg": "以上有更多新消息",
     "mobile.privacy_link": "隐私政策",
     "mobile.push_notification_reply.button": "发送",
     "mobile.push_notification_reply.placeholder": "撰写回复...",

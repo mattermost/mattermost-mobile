@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Tutorial} from '@constants';
 import {GLOBAL_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {logError} from '@utils/log';
@@ -22,16 +23,20 @@ export const storeDeviceToken = async (token: string, prepareRecordsOnly = false
     return storeGlobal(GLOBAL_IDENTIFIERS.DEVICE_TOKEN, token, prepareRecordsOnly);
 };
 
-export const storeMultiServerTutorial = async (prepareRecordsOnly = false) => {
-    return storeGlobal(GLOBAL_IDENTIFIERS.MULTI_SERVER_TUTORIAL, 'true', prepareRecordsOnly);
-};
-
 export const storeOnboardingViewedValue = async (value = true) => {
     return storeGlobal(GLOBAL_IDENTIFIERS.ONBOARDING, value, false);
 };
 
+export const storeMultiServerTutorial = async (prepareRecordsOnly = false) => {
+    return storeGlobal(Tutorial.MULTI_SERVER, 'true', prepareRecordsOnly);
+};
+
 export const storeProfileLongPressTutorial = async (prepareRecordsOnly = false) => {
-    return storeGlobal(GLOBAL_IDENTIFIERS.PROFILE_LONG_PRESS_TUTORIAL, 'true', prepareRecordsOnly);
+    return storeGlobal(Tutorial.PROFILE_LONG_PRESS, 'true', prepareRecordsOnly);
+};
+
+export const storeSkinEmojiSelectorTutorial = async (prepareRecordsOnly = false) => {
+    return storeGlobal(Tutorial.EMOJI_SKIN_SELECTOR, 'true', prepareRecordsOnly);
 };
 
 export const storeDontAskForReview = async (prepareRecordsOnly = false) => {
