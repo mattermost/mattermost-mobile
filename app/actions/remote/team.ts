@@ -508,19 +508,13 @@ export async function getTeamMembersByIds(serverUrl: string, teamId: string, use
         if (!fetchOnly) {
             setTeamLoading(serverUrl, true);
 
-            const teamMemberships: TeamMembership[] = [];
-            const roles: Record<string, boolean> = {};
+            const roles = [];
 
-            for (const member of members) {
-                teamMemberships.push(member);
-                member.roles.split(' ').forEach((role) => {
-                    if (!roles[role]) {
-                        roles[role] = true;
-                    }
-                });
+            for (const {roles: memberRoles} of members) {
+                roles.push(...memberRoles.split(' '));
             }
 
-            fetchRolesIfNeeded(serverUrl, Object.getOwnPropertyNames(roles));
+            fetchRolesIfNeeded(serverUrl, Array.from(new Set(roles)));
 
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
 
@@ -529,7 +523,7 @@ export async function getTeamMembersByIds(serverUrl: string, teamId: string, use
 
                 const models: Model[] = (await Promise.all([
                     operator.handleTeam({teams: [team], prepareRecordsOnly: true}),
-                    operator.handleTeamMemberships({teamMemberships, prepareRecordsOnly: true}),
+                    operator.handleTeamMemberships({teamMemberships: members, prepareRecordsOnly: true}),
                 ])).flat();
 
                 await operator.batchRecords(models);

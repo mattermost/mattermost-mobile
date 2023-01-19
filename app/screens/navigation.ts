@@ -703,7 +703,7 @@ export function setButtons(componentId: string, buttons: NavButtons = {leftButto
     mergeNavigationOptions(componentId, options);
 }
 
-export function showOverlay(name: string, passProps = {}, options = {}) {
+export function showOverlay(name: string, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return;
     }

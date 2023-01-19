@@ -115,6 +115,7 @@ export default function Invite({
     const modalPosition = useModalPosition(mainView);
 
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
+    const retryTimeoutId = useRef<NodeJS.Timeout | null>(null);
 
     const [term, setTerm] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
@@ -137,7 +138,7 @@ export default function Invite({
             return;
         }
 
-        const {data} = await searchProfiles(serverUrl, searchTerm.toLowerCase(), {allow_inactive: true});
+        const {data} = await searchProfiles(serverUrl, searchTerm.toLowerCase());
         const results: SearchResult[] = data ?? [];
 
         if (!results.length && isEmail(searchTerm.trim())) {
@@ -193,7 +194,7 @@ export default function Invite({
         setSendError('');
         setStage(Stage.LOADING);
 
-        setTimeout(() => {
+        retryTimeoutId.current = setTimeout(() => {
             handleSend();
         }, TIMEOUT_MILLISECONDS);
     };
@@ -243,9 +244,9 @@ export default function Invite({
 
         for (const userId of userIds) {
             if (isGuest((selectedIds[userId] as UserProfile).roles)) {
-                notSent.push({userId, reason: formatMessage({id: 'invite.members.user-is-guest', defaultMessage: 'Contact your admin to make this guest a full member'})});
+                notSent.push({userId, reason: formatMessage({id: 'invite.members.user_is_guest', defaultMessage: 'Contact your admin to make this guest a full member'})});
             } else if (currentMemberIds[userId]) {
-                notSent.push({userId, reason: formatMessage({id: 'invite.members.already-member', defaultMessage: 'This person is already a team member'})});
+                notSent.push({userId, reason: formatMessage({id: 'invite.members.already_member', defaultMessage: 'This person is already a team member'})});
             } else {
                 usersToAdd.push(userId);
             }
@@ -337,6 +338,18 @@ export default function Invite({
             },
         });
     }, [componentId, locale, theme, stage]);
+
+    useEffect(() => {
+        return () => {
+            if (searchTimeoutId.current) {
+                clearTimeout(searchTimeoutId.current);
+            }
+
+            if (retryTimeoutId.current) {
+                clearTimeout(retryTimeoutId.current);
+            }
+        };
+    }, []);
 
     const handleRemoveItem = useCallback((id: string) => {
         const newSelectedIds = Object.assign({}, selectedIds);

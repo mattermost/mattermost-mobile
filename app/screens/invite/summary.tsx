@@ -262,18 +262,22 @@ export default function Summary({
                         </Text>
                     ) : (
                         <>
-                            <SummaryReport
-                                type={SummaryReportType.NOT_SENT}
-                                invites={notSent}
-                                selectedIds={selectedIds}
-                                testID='invite.summary_report'
-                            />
-                            <SummaryReport
-                                type={SummaryReportType.SENT}
-                                invites={sent}
-                                selectedIds={selectedIds}
-                                testID='invite.summary_report'
-                            />
+                            {notSent.length > 0 && (
+                                <SummaryReport
+                                    type={SummaryReportType.NOT_SENT}
+                                    invites={notSent}
+                                    selectedIds={selectedIds}
+                                    testID='invite.summary_report'
+                                />
+                            )}
+                            {sent.length > 0 && (
+                                <SummaryReport
+                                    type={SummaryReportType.SENT}
+                                    invites={sent}
+                                    selectedIds={selectedIds}
+                                    testID='invite.summary_report'
+                                />
+                            )}
                         </>
                     )}
                 </View>

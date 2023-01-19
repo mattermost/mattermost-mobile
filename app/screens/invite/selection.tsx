@@ -23,7 +23,6 @@ import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
-import {typography} from '@utils/typography';
 
 import {SearchResult} from './invite';
 import SelectedEmail from './selected_email';
@@ -55,54 +54,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             display: 'flex',
             flex: 1,
-        },
-        teamContainer: {
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            width: '100%',
-            paddingVertical: 16,
-            paddingHorizontal: 20,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.04),
-        },
-        iconContainer: {
-            width: 40,
-            height: 40,
-        },
-        textContainer: {
-            display: 'flex',
-            flexDirection: 'column',
-        },
-        teamText: {
-            color: theme.centerChannelColor,
-            marginLeft: 12,
-            ...typography('Body', 200, 'SemiBold'),
-        },
-        serverText: {
-            color: changeOpacity(theme.centerChannelColor, 0.72),
-            marginLeft: 12,
-            ...typography('Body', 75, 'Regular'),
-        },
-        shareLink: {
-            display: 'flex',
-            marginLeft: 'auto',
-        },
-        shareLinkButton: {
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            height: 40,
-            paddingHorizontal: 20,
-            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
-            borderRadius: 4,
-        },
-        shareLinkText: {
-            color: theme.buttonBg,
-            ...typography('Body', 100, 'SemiBold'),
-            paddingLeft: 7,
-        },
-        shareLinkIcon: {
-            color: theme.buttonBg,
         },
         searchList: {
             left: 20,

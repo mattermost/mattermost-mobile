@@ -14,9 +14,12 @@ import {typography} from '@utils/typography';
 import {SearchResult, InviteResult} from './invite';
 import TextItem, {TextItemType} from './text_item';
 
+const COLOR_SUCCESS = '#3db887';
+const COLOR_ERROR = '#d24b4e';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        summaryInvitationsContainer: {
+        container: {
             display: 'flex',
             flexDirection: 'column',
             borderWidth: 1,
@@ -25,29 +28,29 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginBottom: 16,
             paddingVertical: 8,
         },
-        summaryInvitationsTitle: {
+        title: {
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
             paddingHorizontal: 20,
             paddingVertical: 12,
         },
-        summaryInvitationsTitleText: {
+        titleText: {
             marginLeft: 12,
             ...typography('Heading', 300, 'SemiBold'),
             color: theme.centerChannelColor,
         },
-        summaryInvitationsItem: {
+        item: {
             display: 'flex',
             flexDirection: 'column',
             paddingVertical: 12,
         },
-        summaryInvitationsUser: {
+        user: {
             paddingTop: 0,
             paddingBottom: 0,
             height: 'auto',
         },
-        summaryInvitationsReason: {
+        reason: {
             paddingLeft: 56,
             paddingRight: 20,
             ...typography('Body', 75, 'Regular'),
@@ -80,10 +83,6 @@ export default function SummaryReport({
 
     const count = invites.length;
 
-    if (!count) {
-        return null;
-    }
-
     const sent = type === SummaryReportType.SENT;
     const message = sent ? (
         formatMessage(
@@ -105,16 +104,16 @@ export default function SummaryReport({
 
     return (
         <View
-            style={styles.summaryInvitationsContainer}
+            style={styles.container}
             testID={`${testID}.${type}`}
         >
-            <View style={styles.summaryInvitationsTitle}>
+            <View style={styles.title}>
                 <CompassIcon
                     name={sent ? 'check-circle' : 'close-circle'}
                     size={24}
-                    style={{color: sent ? '#3db887' : '#d24b4e'}}
+                    style={{color: sent ? COLOR_SUCCESS : COLOR_ERROR}}
                 />
-                <Text style={styles.summaryInvitationsTitleText}>
+                <Text style={styles.titleText}>
                     {message}
                 </Text>
             </View>
@@ -124,7 +123,7 @@ export default function SummaryReport({
                 return (
                     <View
                         key={userId}
-                        style={styles.summaryInvitationsItem}
+                        style={styles.item}
                     >
                         {typeof item === 'string' ? (
                             <TextItem
@@ -135,11 +134,11 @@ export default function SummaryReport({
                         ) : (
                             <UserItem
                                 user={item}
-                                containerStyle={styles.summaryInvitationsUser}
+                                containerStyle={styles.user}
                                 testID={`${testID}.user_item`}
                             />
                         )}
-                        <Text style={styles.summaryInvitationsReason}>
+                        <Text style={styles.reason}>
                             {reason}
                         </Text>
                     </View>
