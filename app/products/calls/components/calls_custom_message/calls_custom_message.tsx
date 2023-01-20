@@ -138,10 +138,11 @@ export const CallsCustomMessage = ({
         leaveAndJoinWithAlert(intl, serverUrl, post.channelId, leaveChannelName || '', joinChannelName || '', confirmToJoin, false, Boolean(joinChannelIsDMorGM));
     };
 
-    const title = post.props.title &&
+    const title = post.props.title ? (
         <Text style={style.title}>
             {post.props.title}
-        </Text>;
+        </Text>
+    ) : null;
 
     if (post.props.end_at) {
         return (
@@ -166,14 +167,12 @@ export const CallsCustomMessage = ({
                                 style={style.timeText}
                             />
                             <Text>{' '}</Text>
-                            {
-                                <FormattedTime
-                                    style={style.timeText}
-                                    value={post.props.end_at}
-                                    isMilitaryTime={isMilitaryTime}
-                                    timezone={timezone}
-                                />
-                            }
+                            <FormattedTime
+                                style={style.timeText}
+                                value={post.props.end_at}
+                                isMilitaryTime={isMilitaryTime}
+                                timezone={timezone}
+                            />
                             <Text style={style.separator}>{'•'}</Text>
                             <FormattedText
                                 id={'mobile.calls_lasted'}
