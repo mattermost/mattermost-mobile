@@ -32,7 +32,7 @@ import {getChannelById} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
-import {dismissAllModals, dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {logWarning} from '@utils/log';
 import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
@@ -286,7 +286,6 @@ export const leaveCallPopCallScreen = async () => {
     leaveCall();
 
     // Need to pop the call screen, if it's somewhere in the stack.
-    await dismissAllModals();
     if (NavigationStore.getScreensInStack().includes(Screens.CALL)) {
         await dismissAllModalsAndPopToScreen(Screens.CALL, 'Call');
         Navigation.pop(Screens.CALL).catch(() => null);
