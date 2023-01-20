@@ -8,7 +8,7 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import FileSystem from 'react-native-fs';
 
-import {DatabaseType, MIGRATION_EVENTS, MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
+import {DatabaseType, MIGRATION_EVENTS, MM_TABLES} from '@constants/database';
 import AppDatabaseMigrations from '@database/migration/app';
 import ServerDatabaseMigrations from '@database/migration/server';
 import {InfoModel, GlobalModel, ServersModel} from '@database/models/app';
@@ -22,13 +22,12 @@ import AppDataOperator from '@database/operator/app_data_operator';
 import ServerDataOperator from '@database/operator/server_data_operator';
 import {schema as appSchema} from '@database/schema/app';
 import {serverSchema} from '@database/schema/server';
+import {beforeUpgrade} from '@helpers/database/upgrade';
 import {getActiveServer, getServer, getServerByIdentifier} from '@queries/app/servers';
-import {querySystemValue} from '@queries/servers/system';
-import {deleteLegacyFileCache} from '@utils/file';
 import {emptyFunction} from '@utils/general';
 import {logDebug, logError} from '@utils/log';
 import {deleteIOSDatabase, getIOSAppGroupDetails, renameIOSDatabase} from '@utils/mattermost_managed';
-import {hashCode_DEPRECATED, urlSafeBase64Encode} from '@utils/security';
+import {urlSafeBase64Encode} from '@utils/security';
 import {removeProtocol} from '@utils/url';
 
 import type {AppDatabase, CreateServerDatabaseArgs, RegisterServerDatabaseArgs, Models, ServerDatabase, ServerDatabases} from '@typings/database/database';
@@ -63,14 +62,17 @@ class DatabaseManager {
     */
     public init = async (serverUrls: string[]): Promise<void> => {
         await this.createAppDatabase();
+        const buildNumber = DeviceInfo.getBuildNumber();
+        const versionNumber = DeviceInfo.getVersion();
+        await beforeUpgrade.call(this, serverUrls, versionNumber, buildNumber);
         for await (const serverUrl of serverUrls) {
             await this.initServerDatabase(serverUrl);
         }
         this.appDatabase?.operator.handleInfo({
             info: [{
-                build_number: DeviceInfo.getBuildNumber(),
+                build_number: buildNumber,
                 created_at: Date.now(),
-                version_number: DeviceInfo.getVersion(),
+                version_number: versionNumber,
             }],
             prepareRecordsOnly: false,
         });
@@ -129,12 +131,6 @@ class DatabaseManager {
         if (serverUrl) {
             try {
                 const databaseName = urlSafeBase64Encode(serverUrl);
-                const oldDatabaseName = hashCode_DEPRECATED(serverUrl);
-
-                // Remove any legacy database we may already have.
-                await this.renameDatabase(oldDatabaseName, databaseName);
-                deleteLegacyFileCache(serverUrl);
-
                 const databaseFilePath = this.getDatabaseFilePath(databaseName);
                 const migrations = ServerDatabaseMigrations;
                 const modelClasses = this.serverModels;
@@ -177,38 +173,13 @@ class DatabaseManager {
     * @returns {Promise<void>}
     */
     private initServerDatabase = async (serverUrl: string): Promise<void> => {
-        const serverDatabase = await this.createServerDatabase({
+        await this.createServerDatabase({
             config: {
                 dbName: serverUrl,
                 dbType: DatabaseType.SERVER,
                 serverUrl,
             },
         });
-
-        // Migration for config
-        if (serverDatabase) {
-            const {database, operator} = serverDatabase;
-            const oldConfigList = await querySystemValue(database, SYSTEM_IDENTIFIERS.CONFIG).fetch();
-            if (oldConfigList.length) {
-                const oldConfigModel = oldConfigList[0];
-                const oldConfig = oldConfigModel.value as ClientConfig;
-
-                const configs = [];
-                let k: keyof ClientConfig;
-                for (k in oldConfig) {
-                    // Check to silence eslint (guard-for-in)
-                    if (Object.prototype.hasOwnProperty.call(oldConfig, k)) {
-                        configs.push({
-                            id: k,
-                            value: oldConfig[k],
-                        });
-                    }
-                }
-                const models = await operator.handleConfigs({configs, configsToDelete: [], prepareRecordsOnly: true});
-
-                operator.batchRecords([...models, oldConfigModel.prepareDestroyPermanently()]);
-            }
-        }
     };
 
     /**
@@ -428,7 +399,7 @@ class DatabaseManager {
     */
     private deleteServerDatabaseFiles = async (serverUrl: string): Promise<void> => {
         const databaseName = urlSafeBase64Encode(serverUrl);
-        this.deleteServerDatabaseFilesByName(databaseName);
+        return this.deleteServerDatabaseFilesByName(databaseName);
     };
 
     /**
@@ -439,7 +410,7 @@ class DatabaseManager {
     private deleteServerDatabaseFilesByName = async (databaseName: string): Promise<void> => {
         if (Platform.OS === 'ios') {
             // On iOS, we'll delete the *.db file under the shared app-group/databases folder
-            deleteIOSDatabase({databaseName});
+            await deleteIOSDatabase({databaseName});
             return;
         }
 
@@ -449,14 +420,15 @@ class DatabaseManager {
         const databaseShm = `${androidFilesDir}${databaseName}.db-shm`;
         const databaseWal = `${androidFilesDir}${databaseName}.db-wal`;
 
-        FileSystem.unlink(databaseFile).catch(emptyFunction);
-        FileSystem.unlink(databaseShm).catch(emptyFunction);
-        FileSystem.unlink(databaseWal).catch(emptyFunction);
+        await FileSystem.unlink(databaseFile).catch(emptyFunction);
+        await FileSystem.unlink(databaseShm).catch(emptyFunction);
+        await FileSystem.unlink(databaseWal).catch(emptyFunction);
     };
 
     /**
-    * deleteServerDatabaseFilesByName: Removes the *.db file from the App-Group directory for iOS or the files directory for Android, given the database name
+    * renameDatabase: Renames the *.db file from the App-Group directory for iOS or the files directory for Android
     * @param {string} databaseName
+    * @param {string} newDBName
     * @returns {Promise<void>}
     */
     private renameDatabase = async (databaseName: string, newDBName: string): Promise<void> => {

@@ -7,6 +7,7 @@ import {View} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 type Props = {
     section: EmojiSection;
@@ -23,8 +24,8 @@ const getStyleSheetFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         },
         sectionTitle: {
             color: changeOpacity(theme.centerChannelColor, 0.2),
-            fontSize: 15,
-            fontWeight: '700',
+            textTransform: 'uppercase',
+            ...typography('Heading', 75, 'SemiBold'),
         },
     };
 });

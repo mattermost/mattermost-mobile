@@ -52,7 +52,6 @@ export const MIGRATION_EVENTS = keyMirror({
 });
 
 export const SYSTEM_IDENTIFIERS = {
-    CONFIG: 'config',
     CURRENT_CHANNEL_ID: 'currentChannelId',
     LAST_UNREAD_CHANNEL_ID: 'lastUnreadChannelId',
     CURRENT_TEAM_ID: 'currentTeamId',
@@ -78,8 +77,6 @@ export const GLOBAL_IDENTIFIERS = {
     DONT_ASK_FOR_REVIEW: 'dontAskForReview',
     FIRST_LAUNCH: 'firstLaunch',
     LAST_ASK_FOR_REVIEW: 'lastAskForReview',
-    MULTI_SERVER_TUTORIAL: 'multiServerTutorial',
-    PROFILE_LONG_PRESS_TUTORIAL: 'profileLongPressTutorial',
     ONBOARDING: 'onboarding',
 };
 

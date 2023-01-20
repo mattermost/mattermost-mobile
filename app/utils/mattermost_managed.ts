@@ -36,12 +36,12 @@ export const getIOSAppGroupDetails = (): IOSAppGroupDetails => {
  * e.g :
  * MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, (error: any, success: any) => {    });
  */
-export const deleteIOSDatabase = ({
+export const deleteIOSDatabase = async ({
     databaseName = undefined,
     shouldRemoveDirectory = false,
 }: IOSDeleteDatabase) => {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, () => null);
+    return MattermostManaged.deleteDatabaseDirectory(databaseName, shouldRemoveDirectory, () => null);
 };
 
 /**

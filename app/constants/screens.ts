@@ -144,21 +144,24 @@ export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     EDIT_POST,
     EDIT_PROFILE,
     EDIT_SERVER,
-    EMOJI_PICKER,
     FIND_CHANNELS,
     GALLERY,
     PERMALINK,
-    REACTIONS,
 ]);
 
 export const SCREENS_WITH_TRANSPARENT_BACKGROUND = new Set<string>([
+    PERMALINK,
+    REVIEW_APP,
+    SNACK_BAR,
+]);
+
+export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     BOTTOM_SHEET,
+    EMOJI_PICKER,
     POST_OPTIONS,
     POST_PRIORITY_PICKER,
     THREAD_OPTIONS,
-    PERMALINK,
     REACTIONS,
-    SNACK_BAR,
     USER_PROFILE,
 ]);
 

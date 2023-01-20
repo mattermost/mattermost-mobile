@@ -106,6 +106,7 @@ const ConnectionBanner = ({
         }
         return () => {
             clearTimeoutRef(openTimeout);
+            clearTimeoutRef(closeTimeout);
         };
     }, []);
 
@@ -125,7 +126,7 @@ const ConnectionBanner = ({
         }
     }, [isConnected]);
 
-    useEffect(() => {
+    useDidUpdate(() => {
         if (appState === 'active') {
             if (!isConnected && !visible) {
                 if (!openTimeout.current) {
@@ -138,22 +139,17 @@ const ConnectionBanner = ({
                 }
             }
         } else {
+            setVisible(false);
             clearTimeoutRef(openTimeout);
             clearTimeoutRef(closeTimeout);
         }
-    }, [appState]);
+    }, [appState === 'active']);
 
     useEffect(() => {
         height.value = withTiming(visible ? ANNOUNCEMENT_BAR_HEIGHT : 0, {
             duration: 200,
         });
     }, [visible]);
-
-    useEffect(() => {
-        return () => {
-            clearTimeoutRef(closeTimeout);
-        };
-    });
 
     const bannerStyle = useAnimatedStyle(() => ({
         height: height.value,
