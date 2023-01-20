@@ -96,7 +96,7 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
         justifyContent: 'space-between',
     },
     firstBox: {
-        width: '85%',
+        width: '85%', // ratio derived from the design
     },
 }));
 
