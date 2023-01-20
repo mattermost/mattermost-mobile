@@ -27,6 +27,14 @@ type NotifPrefOptions = {
     value: string;
 }
 
+const NOTIFY_OPTIONS_THREAD: Record<string, NotifPrefOptions> = {
+    THREAD_REPLIES: {
+        defaultMessage: 'Notify me about replies to threads I’m following in this channel',
+        id: t('channel_notification_preference.notification.thread_replies'),
+        testID: 'channel_notification_preference.notification.thread_replies',
+        value: 'thread_replies',
+    },
+};
 const NOTIFY_OPTIONS: Record<string, NotifPrefOptions> = {
     ALL: {
         defaultMessage: 'All new messages',
@@ -45,12 +53,6 @@ const NOTIFY_OPTIONS: Record<string, NotifPrefOptions> = {
         id: t('channel_notification_preference.notification.none'),
         testID: 'channel_notification_preference.notification.none',
         value: NotificationLevel.NONE,
-    },
-    THREAD_REPLIES: {
-        defaultMessage: 'Notify me about replies to threads I’m following in this channel',
-        id: t('channel_notification_preference.notification.thread_replies'),
-        testID: 'channel_notification_preference.notification.thread_replies',
-        value: 'thread_replies',
     },
 };
 const NOTIFY_ABOUT = {id: t('channel_notification_preference.notify_about'), defaultMessage: 'Notify me about...'};
@@ -194,10 +196,10 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
                         action={setThreadReplies}
                         key='notif_pref_option_thread_replies'
                         label={intl.formatMessage({
-                            id: NOTIFY_OPTIONS.THREAD_REPLIES.id,
-                            defaultMessage: NOTIFY_OPTIONS.THREAD_REPLIES.defaultMessage,
+                            id: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.id,
+                            defaultMessage: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.defaultMessage,
                         })}
-                        testID={NOTIFY_OPTIONS.THREAD_REPLIES.testID}
+                        testID={NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.testID}
                         type='toggle'
                         value={`${threadReplies}`}
                     />
