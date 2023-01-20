@@ -35,6 +35,7 @@ const NOTIFY_OPTIONS_THREAD: Record<string, NotifPrefOptions> = {
         value: 'thread_replies',
     },
 };
+
 const NOTIFY_OPTIONS: Record<string, NotifPrefOptions> = {
     ALL: {
         defaultMessage: 'All new messages',
@@ -55,13 +56,13 @@ const NOTIFY_OPTIONS: Record<string, NotifPrefOptions> = {
         value: NotificationLevel.NONE,
     },
 };
+
 const NOTIFY_ABOUT = {id: t('channel_notification_preference.notify_about'), defaultMessage: 'Notify me about...'};
 const THREAD_REPLIES = {id: t('channel_notification_preference.thread_replies'), defaultMessage: 'Thread replies'};
-
+const RESET_DEFAULT = {id: t('channel_notification_preference.reset_default'), defaultMessage: 'Reset to default'};
+const UNMUTE_CONTENT = {id: t('channel_notification_preference.unmute_content'), defaultMessage: 'Unmute channel'};
 const MUTED_TITLE = {id: t('channel_notification_preference.muted_title'), defaultMessage: 'This channel is muted'};
 const MUTED_CONTENT = {id: t('channel_notification_preference.muted_content'), defaultMessage: 'You can change the notification settings, but you will not receive notifications until the channel is unmuted.'};
-
-const UNMUTE_CONTENT = {id: t('channel_notification_preference.unmute_content'), defaultMessage: 'Unmute channel'};
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -103,6 +104,22 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Heading', 100),
             color: theme.buttonColor,
             marginLeft: 7,
+        },
+        resetIcon: {
+            color: theme.linkColor,
+            height: 18,
+            width: 18,
+        },
+        resetText: {
+            color: theme.linkColor,
+            marginLeft: 7,
+            ...typography('Heading', 100),
+        },
+        resetContainer: {
+            position: 'absolute',
+            flexDirection: 'row',
+            right: 20,
+            top: 15, //todo - see onlayout comment
         },
     };
 });
@@ -159,6 +176,21 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
         );
     }, []);
 
+    const renderResetDefault = useCallback(() => {
+        return (
+            <TouchableOpacity style={styles.resetContainer}>
+                <CompassIcon
+                    name='refresh'
+                    style={styles.resetIcon}
+                    size={20}
+                />
+                <Text style={styles.resetText}>
+                    {intl.formatMessage(RESET_DEFAULT)}
+                </Text>
+            </TouchableOpacity>
+        );
+    }, []);
+
     useBackNavigation(saveNotificationSettings);
 
     useAndroidHardwareBackHandler(componentId, saveNotificationSettings);
@@ -166,8 +198,9 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
     return (
         <SettingContainer testID='push_notification_settings'>
             {renderMutedBanner()}
+            {renderResetDefault()}
             <SettingBlock
-                headerText={NOTIFY_ABOUT}
+                headerText={NOTIFY_ABOUT}// TODO: add onLayout here
             >
                 { Object.keys(NOTIFY_OPTIONS).map((k: string) => {
                     const {id, defaultMessage, value, testID} = NOTIFY_OPTIONS[k];
