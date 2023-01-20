@@ -26,6 +26,8 @@ import LoadingUnreads from './loading_unreads';
 import PlusMenu from './plus_menu';
 import {SEPARATOR_HEIGHT} from './plus_menu/separator';
 
+const PLUS_BUTTON_SIZE = 28;
+
 type Props = {
     canCreateChannels: boolean;
     canJoinChannels: boolean;
@@ -60,9 +62,10 @@ const getStyles = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     plusButton: {
         backgroundColor: changeOpacity(theme.sidebarText, 0.08),
-        height: 28,
-        width: 28,
-        borderRadius: 14,
+        height: PLUS_BUTTON_SIZE,
+        width: PLUS_BUTTON_SIZE,
+        borderRadius: PLUS_BUTTON_SIZE / 2,
+        marginTop: PLUS_BUTTON_SIZE / 4,
         justifyContent: 'center',
         alignItems: 'center',
     },
