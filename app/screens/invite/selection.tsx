@@ -12,7 +12,7 @@ import {
     ListRenderItemInfo,
     ScrollView,
 } from 'react-native';
-import Animated, {useDerivedValue} from 'react-native-reanimated';
+import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import SelectedUser from '@components/selected_users/selected_user';
@@ -60,6 +60,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             right: 20,
             position: 'absolute',
             bottom: Platform.select({ios: 'auto', default: undefined}),
+            borderRadius: 4,
+            backgroundColor: theme.centerChannelBg,
         },
         searchListBorder: {
             borderWidth: 1,
@@ -194,15 +196,17 @@ export default function Selection({
         return Math.min(animatedAutocompleteAvailableSpace.value, defaultMaxHeight);
     }, [animatedAutocompleteAvailableSpace, defaultMaxHeight]);
 
+    const searchListContainerAnimatedStyle = useAnimatedStyle(() => ({
+        top: animatedAutocompletePosition.value,
+        maxHeight: maxHeight.value,
+    }), [animatedAutocompletePosition, maxHeight]);
+
     const searchListContainerStyle = useMemo(() => {
         const style = [];
 
         style.push(
             styles.searchList,
-            {
-                top: animatedAutocompletePosition.value,
-                maxHeight: maxHeight.value,
-            },
+            searchListContainerAnimatedStyle,
         );
 
         if (Platform.OS === 'ios') {
@@ -210,7 +214,7 @@ export default function Selection({
         }
 
         return style;
-    }, [searchResults, styles, animatedAutocompletePosition, maxHeight]);
+    }, [searchResults, styles, searchListContainerAnimatedStyle]);
 
     const searchListFlatListStyle = useMemo(() => {
         const style = [];

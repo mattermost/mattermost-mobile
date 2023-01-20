@@ -31,7 +31,6 @@ type Props = {
     canJoinChannels: boolean;
     canInvitePeople: boolean;
     displayName?: string;
-    inviteId?: string;
     iconPad?: boolean;
     onHeaderPress?: () => void;
     pushProxyStatus: string;

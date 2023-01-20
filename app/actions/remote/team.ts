@@ -119,47 +119,31 @@ export async function addUsersToTeam(serverUrl: string, teamId: string, userIds:
 
     try {
         client = NetworkManager.getClient(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         EphemeralStore.startAddingToTeam(teamId);
 
         const members = await client.addUsersToTeamGracefully(teamId, userIds);
 
         if (!fetchOnly) {
-            setTeamLoading(serverUrl, true);
-
             const teamMemberships: TeamMembership[] = [];
-            const roles: Record<string, boolean> = {};
+            const roles = [];
 
             for (const {member} of members) {
                 teamMemberships.push(member);
-                member.roles.split(' ').forEach((role) => {
-                    if (!roles[role]) {
-                        roles[role] = true;
-                    }
-                });
+                roles.push(...member.roles.split(' '));
             }
 
-            fetchRolesIfNeeded(serverUrl, Object.getOwnPropertyNames(roles));
-
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+            fetchRolesIfNeeded(serverUrl, Array.from(new Set(roles)));
 
             if (operator) {
-                const team = await client.getTeam(teamId);
-
-                const models: Model[] = (await Promise.all([
-                    operator.handleTeam({teams: [team], prepareRecordsOnly: true}),
-                    operator.handleTeamMemberships({teamMemberships, prepareRecordsOnly: true}),
-                ])).flat();
-
-                await operator.batchRecords(models);
+                await operator.handleTeamMemberships({teamMemberships, prepareRecordsOnly: true});
             }
-
-            setTeamLoading(serverUrl, false);
         }
 
         EphemeralStore.finishAddingToTeam(teamId);
         return {members};
     } catch (error) {
-        if (client) {
+        if (EphemeralStore.isAddingToTeam(teamId)) {
             EphemeralStore.finishAddingToTeam(teamId);
         }
 
@@ -503,11 +487,10 @@ export async function getTeamMembersByIds(serverUrl: string, teamId: string, use
 
     try {
         client = NetworkManager.getClient(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const members = await client.getTeamMembersByIds(teamId, userIds);
 
         if (!fetchOnly) {
-            setTeamLoading(serverUrl, true);
-
             const roles = [];
 
             for (const {roles: memberRoles} of members) {
@@ -516,20 +499,9 @@ export async function getTeamMembersByIds(serverUrl: string, teamId: string, use
 
             fetchRolesIfNeeded(serverUrl, Array.from(new Set(roles)));
 
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
             if (operator) {
-                const team = await client.getTeam(teamId);
-
-                const models: Model[] = (await Promise.all([
-                    operator.handleTeam({teams: [team], prepareRecordsOnly: true}),
-                    operator.handleTeamMemberships({teamMemberships: members, prepareRecordsOnly: true}),
-                ])).flat();
-
-                await operator.batchRecords(models);
+                await operator.handleTeamMemberships({teamMemberships: members, prepareRecordsOnly: true});
             }
-
-            setTeamLoading(serverUrl, false);
         }
 
         return {members};

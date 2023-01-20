@@ -223,7 +223,7 @@ export default function Invite({
             }
         }
 
-        const currentMemberIds: Record<string, boolean> = {};
+        const currentMemberIds = new Set();
 
         if (userIds.length) {
             const {members: currentTeamMembers = [], error: getTeamMembersByIdsError} = await getTeamMembersByIds(serverUrl, teamId, userIds);
@@ -234,7 +234,7 @@ export default function Invite({
             }
 
             for (const {user_id: currentMemberId} of currentTeamMembers) {
-                currentMemberIds[currentMemberId] = true;
+                currentMemberIds.add(currentMemberId);
             }
         }
 
@@ -245,7 +245,7 @@ export default function Invite({
         for (const userId of userIds) {
             if (isGuest((selectedIds[userId] as UserProfile).roles)) {
                 notSent.push({userId, reason: formatMessage({id: 'invite.members.user_is_guest', defaultMessage: 'Contact your admin to make this guest a full member'})});
-            } else if (currentMemberIds[userId]) {
+            } else if (currentMemberIds.has(userId)) {
                 notSent.push({userId, reason: formatMessage({id: 'invite.members.already_member', defaultMessage: 'This person is already a team member'})});
             } else {
                 usersToAdd.push(userId);
@@ -322,7 +322,7 @@ export default function Invite({
         };
 
         setButtons(componentId, buttons);
-    }, [theme, locale, componentId, selectedCount, stage, sendError]);
+    }, [theme, locale, componentId, selectedCount > 0, stage === Stage.SELECTION, sendError]);
 
     useEffect(() => {
         mergeNavigationOptions(componentId, {
