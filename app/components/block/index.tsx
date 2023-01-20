@@ -3,7 +3,7 @@
 
 import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React from 'react';
-import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
+import {StyleProp, TextStyle, View, ViewProps, ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
@@ -35,7 +35,7 @@ export type SectionText = {
     values?: MessageDescriptor;
 }
 
-export type BlockProps = {
+export type BlockProps = ViewProps & {
     children: React.ReactNode;
     disableFooter?: boolean;
     disableHeader?: boolean;
@@ -55,12 +55,16 @@ const Block = ({
     headerStyles,
     headerText,
     footerStyles,
+    ...props
 }: BlockProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     return (
-        <View style={styles.container}>
+        <View
+            style={styles.container}
+            {...props}
+        >
             {(headerText && !disableHeader) &&
                 <FormattedText
                     defaultMessage={headerText.defaultMessage}

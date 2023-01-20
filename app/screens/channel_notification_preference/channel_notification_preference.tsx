@@ -3,7 +3,7 @@
 
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {NotificationLevel} from '@constants';
@@ -26,6 +26,8 @@ type NotifPrefOptions = {
     testID: string;
     value: string;
 }
+
+const BLOCK_TITLE_HEIGHT = 13;
 
 const NOTIFY_OPTIONS_THREAD: Record<string, NotifPrefOptions> = {
     THREAD_REPLIES: {
@@ -119,7 +121,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             position: 'absolute',
             flexDirection: 'row',
             right: 20,
-            top: 15, //todo - see onlayout comment
+
+            // top: 15, //todo - see onlayout comment
         },
     };
 });
@@ -137,6 +140,7 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
+    const [top, setTop] = useState(0);
     const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(notifyLevel);
     const [threadReplies, setThreadReplies] = useState<boolean>(false); // TODO: get from server
     const close = () => popTopScreen(componentId);
@@ -178,7 +182,7 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
 
     const renderResetDefault = useCallback(() => {
         return (
-            <TouchableOpacity style={styles.resetContainer}>
+            <TouchableOpacity style={[styles.resetContainer, {top}]}>
                 <CompassIcon
                     name='refresh'
                     style={styles.resetIcon}
@@ -189,6 +193,11 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
                 </Text>
             </TouchableOpacity>
         );
+    }, [top]);
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        const {y} = e.nativeEvent.layout;
+        setTop(y + BLOCK_TITLE_HEIGHT);
     }, []);
 
     useBackNavigation(saveNotificationSettings);
@@ -200,7 +209,8 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
             {renderMutedBanner()}
             {renderResetDefault()}
             <SettingBlock
-                headerText={NOTIFY_ABOUT}// TODO: add onLayout here
+                headerText={NOTIFY_ABOUT}
+                onLayout={onLayout}
             >
                 { Object.keys(NOTIFY_OPTIONS).map((k: string) => {
                     const {id, defaultMessage, value, testID} = NOTIFY_OPTIONS[k];
