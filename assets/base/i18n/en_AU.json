@@ -267,7 +267,6 @@
     "mobile.post.delete_title": "Delete Post",
     "mobile.post.failed_delete": "Delete Message",
     "mobile.post.failed_retry": "Try Again",
-    "mobile.posts_view.moreMsg": "More New Messages Above",
     "mobile.privacy_link": "Privacy Policy",
     "mobile.push_notification_reply.button": "Send",
     "mobile.push_notification_reply.placeholder": "Write a reply...",
@@ -935,5 +934,8 @@
     "join_team.error.title": "Error joining a team",
     "join_team.error.message": "An error occurred while joining the team",
     "join_team.error.group_error": "You need to be a member of a linked group to join this team.",
-    "connection_banner.connecting": "Connecting..."
+    "connection_banner.connecting": "Connecting...",
+    "skintone_selector.tooltip.title": "Choose your default skin tone",
+    "skintone_selector.tooltip.description": "You can now choose the skin tone you prefer to use for your emojis.",
+    "default_skin_tone": "Default Skin Tone"
 }
