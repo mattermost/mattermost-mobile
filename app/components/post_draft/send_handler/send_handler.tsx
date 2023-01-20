@@ -190,7 +190,7 @@ export default function SendHandler({
         if (data?.goto_location && !value.startsWith('/leave')) {
             handleGotoLocation(serverUrl, intl, data.goto_location);
         }
-    }, [userIsOutOfOffice, currentUserId, intl, value, serverUrl, channelId, rootId, handleCallsSlashCommand]);
+    }, [userIsOutOfOffice, currentUserId, intl, value, serverUrl, channelId, rootId]);
 
     const sendMessage = useCallback(() => {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
