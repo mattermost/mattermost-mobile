@@ -14,7 +14,7 @@ import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
-import {dismissAllModalsAndPopToRoot, showModal} from '@screens/navigation';
+import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {errorBadChannel, errorUnkownUser} from '@utils/draft';
@@ -23,7 +23,8 @@ import {escapeRegex} from '@utils/markdown';
 import {addNewServer} from '@utils/server';
 import {removeProtocol} from '@utils/url';
 
-import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkPlugin, DeepLinkWithData, LaunchProps} from '@typings/launch';
+import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape, location?: string) {
     try {
@@ -88,21 +89,22 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
             }
             case DeepLink.Permalink: {
                 const deepLinkData = parsed.data as DeepLinkPermalink;
-                if (NavigationStore.hasModalsOpened() || ![Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD].includes(NavigationStore.getVisibleScreen())) {
+                if (NavigationStore.hasModalsOpened() ||
+                !([Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD] as AvailableScreens[]).includes(NavigationStore.getVisibleScreen())) {
                     await dismissAllModalsAndPopToRoot();
                 }
                 showPermalink(existingServerUrl, deepLinkData.teamName, deepLinkData.postId);
                 break;
             }
             case DeepLink.Plugin: {
-                const deepLinkData = parsed.data as DeepLinkPlugin;
-                showModal('PluginInternal', deepLinkData.id, {link: location});
+                // const deepLinkData = parsed.data as DeepLinkPlugin;
+                // showModal('PluginInternal', deepLinkData.id, {link: location});
                 break;
             }
         }
         return {error: false};
     } catch (error) {
-        logError('Failed to open channel from deeplink', error);
+        logError('Failed to open channel from deeplink', error, location);
         return {error: true};
     }
 }

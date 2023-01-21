@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Database from '@nozbe/watermelondb/Database';
 import React from 'react';
 
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import {CustomStatusDurationEnum} from '@constants/custom_status';
 import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
+
+import type Database from '@nozbe/watermelondb/Database';
 
 describe('components/custom_status/custom_status_emoji', () => {
     let database: Database | undefined;

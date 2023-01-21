@@ -11,19 +11,21 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {ssoLogin} from '@actions/remote/session';
 import ClientError from '@client/rest/error';
 import {Screens, Sso} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
-import {dismissModal, resetToHome, resetToTeams} from '@screens/navigation';
+import {dismissModal, popTopScreen, resetToHome, resetToTeams} from '@screens/navigation';
 import {logWarning} from '@utils/log';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
 
 import type {LaunchProps} from '@typings/launch';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 interface SSOProps extends LaunchProps {
     closeButtonId?: string;
-    componentId: string;
+    componentId: AvailableScreens;
     config: Partial<ClientConfig>;
     license: Partial<ClientLicense>;
     ssoType: string;
@@ -114,6 +116,13 @@ const SSO = ({
         resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
     };
 
+    const dismiss = () => {
+        if (serverUrl) {
+            NetworkManager.invalidateClient(serverUrl);
+        }
+        dismissModal({componentId});
+    };
+
     const transform = useAnimatedStyle(() => {
         const duration = Platform.OS === 'android' ? 250 : 350;
         return {
@@ -138,15 +147,21 @@ const SSO = ({
     useEffect(() => {
         const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
             if (closeButtonId && buttonId === closeButtonId) {
-                if (serverUrl) {
-                    NetworkManager.invalidateClient(serverUrl);
-                }
-                dismissModal({componentId});
+                dismiss();
             }
         });
 
         return () => navigationEvents.remove();
     }, []);
+
+    useAndroidHardwareBackHandler(componentId, () => {
+        if (closeButtonId) {
+            dismiss();
+            return;
+        }
+
+        popTopScreen(componentId);
+    });
 
     const props = {
         doSSOLogin,

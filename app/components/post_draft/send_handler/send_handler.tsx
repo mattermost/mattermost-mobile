@@ -11,7 +11,6 @@ import {createPost} from '@actions/remote/post';
 import {handleReactionToLatestPost} from '@actions/remote/reactions';
 import {setStatus} from '@actions/remote/user';
 import {canEndCall, endCall, getEndCallMessage} from '@calls/actions/calls';
-import ClientError from '@client/rest/error';
 import {Events, Screens} from '@constants';
 import {PostPriorityType} from '@constants/post';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
@@ -24,6 +23,7 @@ import {confirmOutOfOfficeDisabled} from '@utils/user';
 
 import DraftInput from '../draft_input';
 
+import type ClientError from '@client/rest/error';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
 
 type Props = {

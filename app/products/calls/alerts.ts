@@ -5,7 +5,6 @@ import {Alert} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {hasMicrophonePermission, joinCall, leaveCall, unmuteMyself} from '@calls/actions';
-import {LimitRestrictedInfo} from '@calls/observers';
 import {getCallsConfig, getCallsState, setMicPermissionsGranted} from '@calls/state';
 import {errorAlert} from '@calls/utils';
 import {Screens} from '@constants';
@@ -16,6 +15,7 @@ import NavigationStore from '@store/navigation_store';
 import {logError} from '@utils/log';
 import {isSystemAdmin} from '@utils/user';
 
+import type {LimitRestrictedInfo} from '@calls/observers';
 import type {IntlShape} from 'react-intl';
 
 // Only allow one recording alert per call.

@@ -3,7 +3,7 @@
 
 import React, {useMemo} from 'react';
 
-import {EmojiComponent, EmojiProps} from '@typings/components/emoji';
+import type {EmojiComponent, EmojiProps} from '@typings/components/emoji';
 
 let emojiComponent: EmojiComponent;
 

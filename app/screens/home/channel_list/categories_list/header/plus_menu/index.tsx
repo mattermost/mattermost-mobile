@@ -5,7 +5,6 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 import Share from 'react-native-share';
-import {ShareOptions} from 'react-native-share/lib/typescript/types';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
@@ -15,6 +14,8 @@ import {dismissBottomSheet, showModal} from '@screens/navigation';
 
 import PlusMenuItem from './item';
 import PlusMenuSeparator from './separator';
+
+import type {ShareOptions} from 'react-native-share/lib/typescript/types';
 
 type Props = {
     canCreateChannels: boolean;

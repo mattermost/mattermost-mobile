@@ -6,6 +6,7 @@ import {NativeModules, useWindowDimensions, Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import {Screens} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
 import {dismissOverlay} from '@screens/navigation';
@@ -62,6 +63,8 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Pr
     const onIndexChange = useCallback((index: number) => {
         setLocalIndex(index);
     }, []);
+
+    useAndroidHardwareBackHandler(Screens.GALLERY, close);
 
     return (
         <>

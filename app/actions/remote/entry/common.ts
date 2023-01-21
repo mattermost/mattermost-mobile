@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Model} from '@nozbe/watermelondb';
-
 import {dataRetentionCleanup} from '@actions/local/systems';
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
@@ -38,6 +36,7 @@ import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
 import type ClientError from '@client/rest/error';
+import type {Database, Model} from '@nozbe/watermelondb';
 
 export type AppEntryData = {
     initialTeamId: string;

@@ -16,10 +16,11 @@ import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {Screens} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import Background from '@screens/background';
-import {resetToTeams} from '@screens/navigation';
+import {popTopScreen, resetToTeams} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -180,6 +181,10 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
 
         return () => unsubscribe.remove();
     }, [dimensions]);
+
+    useAndroidHardwareBackHandler(Screens.MFA, () => {
+        popTopScreen(Screens.MFA);
+    });
 
     return (
         <View style={styles.flex}>

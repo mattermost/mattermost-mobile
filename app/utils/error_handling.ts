@@ -10,7 +10,6 @@ import {
 
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {dismissAllModals} from '@screens/navigation';
-import {ClientError} from '@utils/client_error';
 import {isBetaApp} from '@utils/general';
 import {
     captureException,
@@ -19,6 +18,8 @@ import {
 } from '@utils/sentry';
 
 import {logWarning} from './log';
+
+import type {ClientError} from '@utils/client_error';
 
 class JavascriptAndNativeErrorHandler {
     initializeErrorHandling = () => {

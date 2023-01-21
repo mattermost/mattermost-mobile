@@ -374,7 +374,7 @@ export const queryTeamDefaultChannel = (database: Database, teamId: string) => {
 };
 
 export const queryMyChannelsByTeam = (database: Database, teamId: string, includeDeleted = false) => {
-    const conditions: Q.Condition[] = [Q.where('team_id', Q.eq(teamId))];
+    const conditions: Q.Where[] = [Q.where('team_id', Q.eq(teamId))];
     if (!includeDeleted) {
         conditions.push(Q.where('delete_at', Q.eq(0)));
     }
@@ -453,7 +453,7 @@ export const queryEmptyDirectAndGroupChannels = (database: Database) => {
 };
 
 export function observeMyChannelMentionCount(database: Database, teamId?: string, columns = ['mentions_count', 'is_unread']): Observable<number> {
-    const conditions: Q.Condition[] = [
+    const conditions: Q.Where[] = [
         Q.where('delete_at', Q.eq(0)),
     ];
 
@@ -616,7 +616,7 @@ export const queryChannelsForAutocomplete = (database: Database, matchTerm: stri
             Q.experimentalNestedJoin(CHANNEL_MEMBERSHIP, USER),
         );
     }
-    const orConditions: Q.Condition[] = [
+    const orConditions: Q.Where[] = [
         Q.where('display_name', Q.like(matchTerm)),
         Q.where('name', Q.like(likeTerm)),
     ];
@@ -644,7 +644,7 @@ export const queryChannelsForAutocomplete = (database: Database, matchTerm: stri
         teamsToSearch.push('');
     }
 
-    const andConditions: Q.Condition[] = [
+    const andConditions: Q.Where[] = [
         Q.where('team_id', Q.oneOf(teamsToSearch)),
     ];
     if (!isSearch) {

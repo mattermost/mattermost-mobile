@@ -1,10 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Model from '@nozbe/watermelondb/Model';
-
 import {OperationType} from '@constants/database';
 
+import type Model from '@nozbe/watermelondb/Model';
 import type {TransformerArgs} from '@typings/database/database';
 
 /**
@@ -30,5 +29,5 @@ export const prepareBaseRecord = async ({
         return record.prepareUpdate(() => fieldsMapper!(record));
     }
 
-    return database.collections.get(tableName!).prepareCreate(fieldsMapper);
+    return database.collections.get(tableName!).prepareCreate(fieldsMapper!);
 };

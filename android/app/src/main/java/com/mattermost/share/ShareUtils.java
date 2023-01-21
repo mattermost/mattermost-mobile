@@ -90,22 +90,26 @@ public class ShareUtils {
     }
 
     private static Bitmap getBitmapAtTime(Context context, String filePath, int time) {
-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
-        if (URLUtil.isFileUrl(filePath)) {
-            String decodedPath;
-            try {
-                decodedPath = URLDecoder.decode(filePath, "UTF-8");
-            } catch (UnsupportedEncodingException e) {
-                decodedPath = filePath;
+        try {
+            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+            if (URLUtil.isFileUrl(filePath)) {
+                String decodedPath;
+                try {
+                    decodedPath = URLDecoder.decode(filePath, "UTF-8");
+                } catch (UnsupportedEncodingException e) {
+                    decodedPath = filePath;
+                }
+
+                retriever.setDataSource(decodedPath.replace("file://", ""));
+            } else if (filePath.contains("content://")) {
+                retriever.setDataSource(context, Uri.parse(filePath));
             }
 
-            retriever.setDataSource(decodedPath.replace("file://", ""));
-        } else if (filePath.contains("content://")) {
-            retriever.setDataSource(context, Uri.parse(filePath));
+            Bitmap image = retriever.getFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+            retriever.release();
+            return image;
+        } catch (Exception e) {
+            throw new IllegalStateException("File doesn't exist or not supported");
         }
-
-        Bitmap image = retriever.getFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
-        retriever.release();
-        return image;
     }
 }

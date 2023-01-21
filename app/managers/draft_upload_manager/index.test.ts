@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 import {AppState, AppStateStatus} from 'react-native';
 
 import {addFilesToDraft} from '@actions/local/draft';
 import {PROGRESS_TIME_TO_STORE} from '@constants/files';
 import DatabaseManager from '@database/manager';
-import ServerDataOperator from '@database/operator/server_data_operator';
 import {getDraft} from '@queries/servers/drafts';
 import TestHelper from '@test/test_helper';
 
 import {exportedForTesting} from '.';
+
+import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 
 const {DraftUploadManager} = exportedForTesting;
 

@@ -40,7 +40,7 @@ const TouchableWithFeedbackAndroid = ({borderlessRipple = false, children, rippl
                     {children}
                 </TouchableOpacity>
             );
-        case 'none':
+        default:
             return (
                 <TouchableWithoutFeedback
                     testID={testID}
@@ -50,8 +50,6 @@ const TouchableWithFeedbackAndroid = ({borderlessRipple = false, children, rippl
                 </TouchableWithoutFeedback>
             );
     }
-
-    return null;
 };
 
 export default memo(TouchableWithFeedbackAndroid);

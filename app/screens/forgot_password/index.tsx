@@ -14,6 +14,7 @@ import {sendPasswordResetEmail} from '@actions/remote/session';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import Background from '@screens/background';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -267,6 +268,8 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
 
         return () => unsubscribe.remove();
     }, [dimensions]);
+
+    useAndroidHardwareBackHandler(Screens.FORGOT_PASSWORD, onReturn);
 
     return (
         <View style={styles.flex}>

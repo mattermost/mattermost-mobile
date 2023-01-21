@@ -137,6 +137,8 @@ const CodeHighlightRenderer = ({defaultColor, digits, fontFamily, fontSize, rows
             <FlatList
                 data={rows}
                 renderItem={renderItem}
+
+                //@ts-expect-error key not defined in types
                 listKey={generateId()}
             />
         </ScrollView>

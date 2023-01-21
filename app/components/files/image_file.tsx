@@ -104,7 +104,8 @@ const ImageFile = ({
         const props: ProgressiveImageProps = {};
 
         if (file.localPath) {
-            props.defaultSource = {uri: file.localPath};
+            const prefix = file.localPath.startsWith('file://') ? '' : 'file://';
+            props.defaultSource = {uri: prefix + file.localPath};
         } else if (file.id) {
             if (file.mini_preview && file.mime_type) {
                 props.thumbnailUri = `data:${file.mime_type};base64,${file.mini_preview}`;

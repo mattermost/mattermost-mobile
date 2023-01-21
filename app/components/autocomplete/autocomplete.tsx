@@ -31,8 +31,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             elevation: 3,
         },
         shadow: {
-            shadowColor: '#000',
-            shadowOpacity: 0.12,
+            backgroundColor: theme.centerChannelBg,
+            shadowColor: 'red',
+            shadowOpacity: 1,
             shadowRadius: 6,
             shadowOffset: {
                 width: 0,

@@ -15,9 +15,11 @@ import SettingContainer from '../setting_container';
 import CustomTheme from './custom_theme';
 import {ThemeTiles} from './theme_tiles';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
-    componentId: string;
+    componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
 }
