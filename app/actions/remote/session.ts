@@ -21,7 +21,6 @@ import {scheduleExpiredNotification} from '@utils/notification';
 import {getCSRFFromCookie} from '@utils/security';
 
 import {loginEntry} from './entry';
-import {fetchDataRetentionPolicy} from './systems';
 
 import type ClientError from '@client/rest/error';
 import type {LoginArgs} from '@typings/database/database';
@@ -40,11 +39,6 @@ export const completeLogin = async (serverUrl: string) => {
 
     if (!Object.keys(config)?.length || !license || !Object.keys(license)?.length) {
         return null;
-    }
-
-    // Data retention
-    if (config?.DataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true') {
-        fetchDataRetentionPolicy(serverUrl);
     }
 
     await DatabaseManager.setActiveServerDatabase(serverUrl);
