@@ -8,7 +8,6 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
-import {observeCurrentUser} from '@queries/servers/user';
 import {isMinimumServerVersion} from '@utils/helpers';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -193,34 +192,6 @@ export const observeConfigBooleanValue = (database: Database, key: keyof ClientC
 export const observeConfigIntValue = (database: Database, key: keyof ClientConfig, defaultValue = 0) => {
     return observeConfigValue(database, key).pipe(
         switchMap((v) => of$((parseInt(v || '0', 10) || defaultValue))),
-    );
-};
-
-export const observeIsPostPriorityEnabled = (database: Database) => {
-    const featureFlag = observeConfigBooleanValue(database, 'FeatureFlagPostPriority');
-    const cfg = observeConfigBooleanValue(database, 'PostPriority');
-    return combineLatest([featureFlag, cfg]).pipe(
-        switchMap(([ff, c]) => of$(ff && c)),
-        distinctUntilChanged(),
-    );
-};
-
-export const observeIsPostAcknowledgementsEnabled = (database: Database) => {
-    return observeConfigBooleanValue(database, 'PostAcknowledgements');
-};
-
-export const observePersistentNotificationsEnabled = (database: Database) => {
-    const user = observeCurrentUser(database);
-    const enabledForAll = observeConfigBooleanValue(database, 'AllowPersistentNotifications');
-    const enabledForGuests = observeConfigBooleanValue(database, 'AllowPersistentNotificationsForGuests');
-    return combineLatest([user, enabledForAll, enabledForGuests]).pipe(
-        switchMap(([u, forAll, forGuests]) => {
-            if (u?.isGuest) {
-                return of$(forAll && forGuests);
-            }
-            return of$(forAll);
-        }),
-        distinctUntilChanged(),
     );
 };
 

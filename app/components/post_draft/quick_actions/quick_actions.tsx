@@ -22,8 +22,8 @@ type Props = {
     value: string;
     updateValue: (value: string) => void;
     addFiles: (file: FileInfo[]) => void;
-    postPriority: PostPriorityMetadata;
-    updatePostPriority: (postPriority: PostPriorityMetadata) => void;
+    postPriority: PostPriority;
+    updatePostPriority: (postPriority: PostPriority) => void;
     focus: () => void;
 }
 

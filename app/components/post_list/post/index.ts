@@ -8,9 +8,8 @@ import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions, Preferences, Screens} from '@constants';
-import {observePostAuthor, queryPostsBetween} from '@queries/servers/post';
+import {observePostAuthor, observeIsPostPriorityEnabled, queryPostsBetween} from '@queries/servers/post';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
-import {observeIsPostPriorityEnabled} from '@queries/servers/system';
 import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';

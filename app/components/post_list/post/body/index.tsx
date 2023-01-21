@@ -12,6 +12,7 @@ import {THREAD} from '@constants/screens';
 import {isEdited as postEdited, isPostFailed} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import Acknowledgements from './acknowledgements';
 import AddMembers from './add_members';
 import Content from './content';
 import Failed from './failed';
@@ -19,10 +20,12 @@ import Message from './message';
 import Reactions from './reactions';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type UserProfile from '@typings/database/models/servers/user';
 import type {SearchPattern} from '@typings/global/markdown';
 
 type BodyProps = {
     appsEnabled: boolean;
+    currentUser: UserProfile;
     hasFiles: boolean;
     hasReactions: boolean;
     highlight: boolean;
@@ -33,6 +36,7 @@ type BodyProps = {
     isJumboEmoji: boolean;
     isLastReply?: boolean;
     isPendingOrFailed: boolean;
+    isPostAcknowledgementEnabled?: boolean;
     isPostAddChannelMember: boolean;
     location: string;
     post: PostModel;
@@ -43,6 +47,13 @@ type BodyProps = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
+        ackAndReactionsContainer: {
+            flex: 1,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignContent: 'flex-start',
+            marginTop: 12,
+        },
         messageBody: {
             paddingVertical: 2,
             flex: 1,
@@ -75,8 +86,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Body = ({
-    appsEnabled, hasFiles, hasReactions, highlight, highlightReplyBar,
-    isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAddChannelMember,
+    appsEnabled, currentUser, hasFiles, hasReactions, highlight, highlightReplyBar,
+    isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAcknowledgementEnabled, isPostAddChannelMember,
     location, post, searchPatterns, showAddReaction, theme,
 }: BodyProps) => {
     const style = getStyleSheet(theme);
@@ -158,6 +169,8 @@ const Body = ({
         );
     }
 
+    const acknowledgementsVisible = isPostAcknowledgementEnabled && post.metadata?.priority?.requested_ack;
+    const reactionsVisible = hasReactions && showAddReaction;
     if (!hasBeenDeleted) {
         body = (
             <View style={style.messageBody}>
@@ -180,13 +193,25 @@ const Body = ({
                     isReplyPost={isReplyPost}
                 />
                 }
-                {hasReactions && showAddReaction &&
-                <Reactions
-                    location={location}
-                    post={post}
-                    theme={theme}
-                />
-                }
+                {(acknowledgementsVisible || reactionsVisible) && (
+                    <View style={style.ackAndReactionsContainer}>
+                        {acknowledgementsVisible && (
+                            <Acknowledgements
+                                currentUser={currentUser}
+                                hasReactions={hasReactions}
+                                post={post}
+                                theme={theme}
+                            />
+                        )}
+                        {reactionsVisible && (
+                            <Reactions
+                                location={location}
+                                post={post}
+                                theme={theme}
+                            />
+                        )}
+                    </View>
+                )}
             </View>
         );
     }

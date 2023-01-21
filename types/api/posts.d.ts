@@ -20,7 +20,13 @@ type PostType =
 
 type PostEmbedType = 'image' | 'message_attachment' | 'opengraph';
 
-type PostPriorityMetadata = {
+type PostAcknowledgement = {
+    post_id: string;
+    user_id: string;
+    acknowledged_at: number;
+}
+
+type PostPriority = {
     priority: '' | 'urgent' | 'important';
     requested_ack?: boolean;
     persistent_notifications?: boolean;
@@ -40,12 +46,13 @@ type PostImage = {
 };
 
 type PostMetadata = {
+    acknowledgements?: PostAcknowledgement[];
     embeds?: PostEmbed[];
     emojis?: CustomEmoji[];
     files?: FileInfo[];
     images?: Dictionary<PostImage>;
     reactions?: Reaction[];
-    priority?: PostPriorityMetadata;
+    priority?: PostPriority;
 };
 
 type Post = {

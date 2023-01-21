@@ -1129,3 +1129,51 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
         return {error};
     }
 }
+
+export async function acknowledgePost(serverUrl: string, postId: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const userId = await getCurrentUserId(operator.database);
+        const data = await client.acknowledgePost(postId, userId);
+        return {
+            data,
+        };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
+
+export async function unacknowledgePost(serverUrl: string, postId: string) {
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        return {error: `${serverUrl} database not found`};
+    }
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    try {
+        const userId = await getCurrentUserId(operator.database);
+        const data = await client.unacknowledgePost(postId, userId);
+        return {
+            data,
+        };
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}

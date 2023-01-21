@@ -85,3 +85,8 @@ export const getLastFetchedAtFromPosts = (posts?: Post[]) => {
         return Math.max(maxTimestamp, timestamp);
     }, 0) || 0;
 };
+
+export const moreThan5minAgo = (time: number) => {
+    const now = new Date().getTime();
+    return now - time > 5 * 60 * 1000;
+};

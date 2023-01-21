@@ -2,14 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query} from '@nozbe/watermelondb';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {of as of$, combineLatest} from 'rxjs';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 
+import {queryGroupsByNames} from './group';
 import {queryPreferencesByCategoryAndName} from './preference';
-import {observeUser} from './user';
+import {observeConfigBooleanValue} from './system';
+import {queryUsersByUsername, observeUser, observeCurrentUser} from './user';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -228,4 +230,43 @@ export const observeSavedPostsByIds = (database: Database, postIds: string[]) =>
         ).observeWithColumns(['name']).pipe(
             switchMap((prefs) => of$(new Set(prefs.map((p) => p.name)))),
         );
+};
+
+export const observeIsPostPriorityEnabled = (database: Database) => {
+    const featureFlag = observeConfigBooleanValue(database, 'FeatureFlagPostPriority');
+    const cfg = observeConfigBooleanValue(database, 'PostPriority');
+    return combineLatest([featureFlag, cfg]).pipe(
+        switchMap(([ff, c]) => of$(ff && c)),
+        distinctUntilChanged(),
+    );
+};
+
+export const observeIsPostAcknowledgementsEnabled = (database: Database) => {
+    return observeConfigBooleanValue(database, 'PostAcknowledgements');
+};
+
+export const observePersistentNotificationsEnabled = (database: Database) => {
+    const user = observeCurrentUser(database);
+    const enabledForAll = observeConfigBooleanValue(database, 'AllowPersistentNotifications');
+    const enabledForGuests = observeConfigBooleanValue(database, 'AllowPersistentNotificationsForGuests');
+    return combineLatest([user, enabledForAll, enabledForGuests]).pipe(
+        switchMap(([u, forAll, forGuests]) => {
+            if (u?.isGuest) {
+                return of$(forAll && forGuests);
+            }
+            return of$(forAll);
+        }),
+        distinctUntilChanged(),
+    );
+};
+
+export const getUsersCountFromMentions = async (database: Database, mentions: string[]) => {
+    const groupsQuery = queryGroupsByNames(database, mentions).fetch();
+    const usersQuery = queryUsersByUsername(database, mentions).fetchCount();
+    const [groups, usersCount] = await Promise.all([groupsQuery, usersQuery]);
+    let count = usersCount;
+    groups.forEach((group) => {
+        count += group.memberCount;
+    });
+    return count;
 };

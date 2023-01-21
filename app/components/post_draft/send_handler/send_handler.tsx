@@ -94,7 +94,7 @@ export default function SendHandler({
 
     const [channelTimezoneCount, setChannelTimezoneCount] = useState(0);
     const [sendingMessage, setSendingMessage] = useState(false);
-    const [postPriority, setPostPriority] = useState<PostPriorityMetadata>(INITIAL_PRIORITY);
+    const [postPriority, setPostPriority] = useState<PostPriority>(INITIAL_PRIORITY);
 
     const canSend = useCallback(() => {
         if (sendingMessage) {
@@ -130,7 +130,11 @@ export default function SendHandler({
             message: value,
         } as Post;
 
-        if (Object.keys(postPriority).length) {
+        if (!rootId && (
+            postPriority.priority ||
+            postPriority.requested_ack ||
+            postPriority.persistent_notifications)
+        ) {
             post.metadata = {
                 priority: postPriority,
             };

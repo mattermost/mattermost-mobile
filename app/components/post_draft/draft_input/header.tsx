@@ -11,7 +11,7 @@ import {PostPriorityColors} from '@constants/post';
 import {useTheme} from '@context/theme';
 
 type Props = {
-    postPriority: PostPriorityMetadata;
+    postPriority: PostPriority;
     noMentionsError: boolean;
 }
 
@@ -24,15 +24,18 @@ const style = StyleSheet.create({
             android: 10,
         }),
     },
+    labelContainer: {
+        marginRight: 7,
+    },
     ackContainer: {
-        marginLeft: 7,
+        marginRight: 7,
     },
     notificationsContainer: {
         flexDirection: 'row',
-        marginLeft: 7,
     },
     error: {
         color: PostPriorityColors.URGENT,
+        marginLeft: 7,
     },
 });
 
@@ -42,13 +45,13 @@ export default function DraftInputHeader({
 }: Props) {
     const theme = useTheme();
 
-    if (!postPriority?.priority) {
-        return null;
-    }
-
     return (
         <View style={style.container}>
-            <PostPriorityLabel label={postPriority!.priority}/>
+            {Boolean(postPriority?.priority) && (
+                <View style={style.labelContainer}>
+                    <PostPriorityLabel label={postPriority!.priority}/>
+                </View>
+            )}
             {postPriority.requested_ack && (
                 <View style={style.ackContainer}>
                     <CompassIcon
@@ -67,7 +70,7 @@ export default function DraftInputHeader({
                     />
                     {noMentionsError && (
                         <FormattedText
-                            id='persistent_notifications.error.no_mentions'
+                            id='persistent_notifications.error.no_mentions.title'
                             defaultMessage='Recipients must be @mentioned'
                             style={style.error}
                         />

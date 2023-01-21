@@ -8,7 +8,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {observeSavedPostsByIds} from '@queries/servers/post';
+import {observeSavedPostsByIds, observeIsPostAcknowledgementsEnabled} from '@queries/servers/post';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
@@ -33,6 +33,7 @@ const enhanced = withObservables(['posts'], ({database, posts}: {posts: PostMode
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
         ),
+        isPostAcknowledgementEnabled: observeIsPostAcknowledgementsEnabled(database),
     };
 });
 

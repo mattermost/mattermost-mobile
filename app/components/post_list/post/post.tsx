@@ -51,6 +51,7 @@ type PostProps = {
     isCRTEnabled?: boolean;
     isEphemeral: boolean;
     isFirstReply?: boolean;
+    isPostAcknowledgementEnabled?: boolean;
     isSaved?: boolean;
     isLastReply?: boolean;
     isPostAddChannelMember: boolean;
@@ -109,7 +110,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Post = ({
     appsEnabled, canDelete, currentUser, customEmojiNames, differentThreadSequence, hasFiles, hasReplies, highlight, highlightPinnedOrSaved = true, highlightReplyBar,
-    isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isLastReply, isPostAddChannelMember, isPostPriorityEnabled,
+    isCRTEnabled, isConsecutivePost, isEphemeral, isFirstReply, isSaved, isLastReply, isPostAcknowledgementEnabled, isPostAddChannelMember, isPostPriorityEnabled,
     location, post, rootId, hasReactions, searchPatterns, shouldRenderReplyButton, skipSavedHeader, skipPinnedHeader, showAddReaction = true, style,
     testID, thread, previousPost,
 }: PostProps) => {
@@ -302,6 +303,7 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
+                currentUser={currentUser}
                 hasFiles={hasFiles}
                 hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}
@@ -312,6 +314,7 @@ const Post = ({
                 isJumboEmoji={isJumboEmoji}
                 isLastReply={isLastReply}
                 isPendingOrFailed={isPendingOrFailed}
+                isPostAcknowledgementEnabled={isPostAcknowledgementEnabled}
                 isPostAddChannelMember={isPostAddChannelMember}
                 location={location}
                 post={post}

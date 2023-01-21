@@ -28,8 +28,8 @@ type Props = {
     componentId: string;
     isPostAcknowledgementEnabled: boolean;
     isPersistenNotificationsEnabled: boolean;
-    postPriority: PostPriorityMetadata;
-    updatePostPriority: (data: PostPriorityMetadata) => void;
+    postPriority: PostPriority;
+    updatePostPriority: (data: PostPriority) => void;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -86,15 +86,14 @@ const PostPriorityPicker = ({
 
     useNavButtonPressed(POST_PRIORITY_PICKER_BUTTON, componentId, close, []);
 
-    const [data, setData] = useState<PostPriorityMetadata>(postPriority);
+    const [data, setData] = useState<PostPriority>(postPriority);
 
-    const displayRequestAck = isPostAcknowledgementEnabled;
     const displayPersistentNotifications = isPersistenNotificationsEnabled && data.priority === PostPriorityType.URGENT;
 
     const snapPoints = useMemo(() => {
         let COMPONENT_HEIGHT = 280;
 
-        if (displayRequestAck) {
+        if (isPostAcknowledgementEnabled) {
             COMPONENT_HEIGHT += 75;
         }
 
@@ -103,9 +102,9 @@ const PostPriorityPicker = ({
         }
 
         return [1, bottomSheetSnapPoint(1, COMPONENT_HEIGHT, bottom)];
-    }, [displayRequestAck, displayPersistentNotifications]);
+    }, [displayPersistentNotifications, isPostAcknowledgementEnabled]);
 
-    const handleUpdatePriority = useCallback((priority: PostPriorityMetadata['priority']) => {
+    const handleUpdatePriority = useCallback((priority: PostPriority['priority']) => {
         setData((prevData) => ({
             ...prevData,
             priority,
@@ -126,121 +125,121 @@ const PostPriorityPicker = ({
         close();
     }, [data]);
 
-    const renderContent = () => {
-        return (
-            <View style={style.container}>
-                {!isTablet &&
-                    <View style={style.titleContainer}>
-                        <FormattedText
-                            id='post_priority.picker.title'
-                            defaultMessage='Message priority'
-                            style={style.title}
-                        />
-                        <View style={style.betaContainer}>
-                            <FormattedText
-                                id='post_priority.picker.beta'
-                                defaultMessage='BETA'
-                                style={style.beta}
-                            />
-                        </View>
-                    </View>
+    const renderAcknowledgementOption = () => (
+        <View style={style.toggleOptionContainer}>
+            <PickerOption
+                action={handleUpdateRequestedAck}
+                label={
+                    intl.formatMessage({
+                        id: 'post_priority.picker.label.request_ack',
+                        defaultMessage: 'Request acknowledgement',
+                    })
                 }
-                <View style={style.optionsContainer}>
-                    <PickerOption
-                        action={handleUpdatePriority}
-                        icon='message-text-outline'
-                        label={intl.formatMessage({
-                            id: 'post_priority.picker.label.standard',
-                            defaultMessage: 'Standard',
-                        })}
-                        selected={data.priority === ''}
-                        value={PostPriorityType.STANDARD}
-                    />
-                    <PickerOption
-                        action={handleUpdatePriority}
-                        icon='alert-circle-outline'
-                        iconColor={PostPriorityColors.IMPORTANT}
-                        label={intl.formatMessage({
-                            id: 'post_priority.picker.label.important',
-                            defaultMessage: 'Important',
-                        })}
-                        selected={data.priority === PostPriorityType.IMPORTANT}
-                        value={PostPriorityType.IMPORTANT}
-                    />
-                    <PickerOption
-                        action={handleUpdatePriority}
-                        icon='alert-outline'
-                        iconColor={PostPriorityColors.URGENT}
-                        label={intl.formatMessage({
-                            id: 'post_priority.picker.label.urgent',
-                            defaultMessage: 'Urgent',
-                        })}
-                        selected={data.priority === PostPriorityType.URGENT}
-                        value={PostPriorityType.URGENT}
-                    />
-                    {(displayRequestAck || displayPersistentNotifications) && (
-                        <>
-                            <View style={style.optionsSeparator}/>
-                            {displayRequestAck && (
-                                <View style={style.toggleOptionContainer}>
-                                    <PickerOption
-                                        action={handleUpdateRequestedAck}
-                                        label={
-                                            intl.formatMessage({
-                                                id: 'post_priority.picker.label.request_ack',
-                                                defaultMessage: 'Request acknowledgement',
-                                            })
-                                        }
-                                        description={
-                                            intl.formatMessage({
-                                                id: 'post_priority.picker.label.request_ack.description',
-                                                defaultMessage: 'An acknowledgement button appears with your message.',
-                                            })
-                                        }
-                                        icon='check-circle-outline'
-                                        type='toggle'
-                                        selected={data.requested_ack}
-                                    />
-                                </View>
-                            )}
-                            {displayPersistentNotifications && (
-                                <View style={style.toggleOptionContainer}>
-                                    <PickerOption
-                                        action={handleUpdatePersistentNotifications}
-                                        label={
-                                            intl.formatMessage({
-                                                id: 'post_priority.picker.label.persistent_notifications',
-                                                defaultMessage: 'Send persistent notifications',
-                                            })
-                                        }
-                                        description={
-                                            intl.formatMessage({
-                                                id: 'post_priority.picker.label.persistent_notifications.description',
-                                                defaultMessage: 'Recipients are notified every five minutes until they acknowledge or reply.',
-                                            })
-                                        }
-                                        icon='bell-ring-outline'
-                                        type='toggle'
-                                        selected={data.persistent_notifications}
-                                    />
-                                </View>
-                            )}
-                        </>
-                    )}
-                </View>
-            </View>
-        );
-    };
-
-    const renderFooter = (props: BottomSheetFooterProps) => {
-        return (
-            <Footer
-                {...props}
-                onCancel={close}
-                onSubmit={handleSubmit}
+                description={
+                    intl.formatMessage({
+                        id: 'post_priority.picker.label.request_ack.description',
+                        defaultMessage: 'An acknowledgement button appears with your message.',
+                    })
+                }
+                icon='check-circle-outline'
+                type='toggle'
+                selected={data.requested_ack}
             />
-        );
-    };
+        </View>
+    );
+
+    const renderPersistentNotificationsOption = () => (
+        <View style={style.toggleOptionContainer}>
+            <PickerOption
+                action={handleUpdatePersistentNotifications}
+                label={
+                    intl.formatMessage({
+                        id: 'post_priority.picker.label.persistent_notifications',
+                        defaultMessage: 'Send persistent notifications',
+                    })
+                }
+                description={
+                    intl.formatMessage({
+                        id: 'post_priority.picker.label.persistent_notifications.description',
+                        defaultMessage: 'Recipients are notified every five minutes until they acknowledge or reply.',
+                    })
+                }
+                icon='bell-ring-outline'
+                type='toggle'
+                selected={data.persistent_notifications}
+            />
+        </View>
+    );
+
+    const renderContent = () => (
+        <View style={style.container}>
+            {!isTablet &&
+                <View style={style.titleContainer}>
+                    <FormattedText
+                        id='post_priority.picker.title'
+                        defaultMessage='Message priority'
+                        style={style.title}
+                    />
+                    <View style={style.betaContainer}>
+                        <FormattedText
+                            id='post_priority.picker.beta'
+                            defaultMessage='BETA'
+                            style={style.beta}
+                        />
+                    </View>
+                </View>
+            }
+            <View style={style.optionsContainer}>
+                <PickerOption
+                    action={handleUpdatePriority}
+                    icon='message-text-outline'
+                    label={intl.formatMessage({
+                        id: 'post_priority.picker.label.standard',
+                        defaultMessage: 'Standard',
+                    })}
+                    selected={data.priority === ''}
+                    value={PostPriorityType.STANDARD}
+                />
+                <PickerOption
+                    action={handleUpdatePriority}
+                    icon='alert-circle-outline'
+                    iconColor={PostPriorityColors.IMPORTANT}
+                    label={intl.formatMessage({
+                        id: 'post_priority.picker.label.important',
+                        defaultMessage: 'Important',
+                    })}
+                    selected={data.priority === PostPriorityType.IMPORTANT}
+                    value={PostPriorityType.IMPORTANT}
+                />
+                <PickerOption
+                    action={handleUpdatePriority}
+                    icon='alert-outline'
+                    iconColor={PostPriorityColors.URGENT}
+                    label={intl.formatMessage({
+                        id: 'post_priority.picker.label.urgent',
+                        defaultMessage: 'Urgent',
+                    })}
+                    selected={data.priority === PostPriorityType.URGENT}
+                    value={PostPriorityType.URGENT}
+                />
+                {(isPostAcknowledgementEnabled || displayPersistentNotifications) && (
+                    <>
+                        <View style={style.optionsSeparator}/>
+                        {isPostAcknowledgementEnabled && renderAcknowledgementOption()}
+                        {displayPersistentNotifications && renderPersistentNotificationsOption()}
+                    </>
+                )}
+            </View>
+        </View>
+    );
+
+    const renderFooter = (props: BottomSheetFooterProps) => (
+        <Footer
+            {...props}
+            onCancel={close}
+            onSubmit={handleSubmit}
+        />
+    );
 
     return (
         <BottomSheet
