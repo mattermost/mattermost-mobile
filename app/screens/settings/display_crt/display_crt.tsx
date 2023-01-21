@@ -17,6 +17,11 @@ import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
+const crtDescription = {
+    id: t('settings_display.crt.desc'),
+    defaultMessage: 'When enabled, reply messages are not shown in the channel and you\'ll be notified about threads you\'re following in the "Threads" view.',
+};
+
 type Props = {
     componentId: string;
     currentUserId: string;
@@ -49,10 +54,7 @@ const DisplayCRT = ({componentId, currentUserId, isCRTEnabled}: Props) => {
     return (
         <SettingContainer testID='crt_display_settings'>
             <SettingBlock
-                footerText={{
-                    id: t('settings_display.crt.desc'),
-                    defaultMessage: 'When enabled, reply messages are not shown in the channel and you\'ll be notified about threads you\'re following in the "Threads" view.',
-                }}
+                footerText={crtDescription}
             >
                 <SettingOption
                     action={setIsEnabled}
