@@ -5,8 +5,7 @@ import {Animated, Pressable, Text} from 'react-native';
 
 import {useTheme} from '@app/context/theme';
 import {makeStyleSheetFromTheme} from '@app/utils/theme';
-
-import CompassIcon from '../compass_icon';
+import CompassIcon from '@components/compass_icon';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
