@@ -3,12 +3,11 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, Pressable, StyleProp, Text, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
 import {makeStyleSheetFromTheme} from '@app/utils/theme';
-import CompassIcon from '@components/compass_icon';
 import CombinedUserActivity from '@components/post_list/combined_user_activity';
 import DateSeparator from '@components/post_list/date_separator';
 import NewMessagesLine from '@components/post_list/new_message_line';
@@ -22,6 +21,7 @@ import {getDateForDateLine, preparePostList} from '@utils/post_list';
 import {INITIAL_BATCH_TO_RENDER, SCROLL_POSITION_CONFIG, VIEWABILITY_CONFIG} from './config';
 import MoreMessages from './more_messages';
 import PostListRefreshControl from './refresh_control';
+import ScrollToEndView from './scroll_to_end_view';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged, ViewableItemsChangedListenerEvent} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
@@ -70,7 +70,7 @@ const CONTENT_OFFSET_THRESHOLD = 160;
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const keyExtractor = (item: PostListItem | PostListOtherItem) => (item.type === 'post' ? item.value.id : item.value);
 
-const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+const getStyleFromTheme = makeStyleSheetFromTheme(() => {
     return {
         flex: {
             flex: 1,
@@ -85,40 +85,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
                     scaleY: -1,
                 },
             }),
-        },
-        scrollToEndBtn: {
-            position: 'absolute',
-            alignSelf: 'center',
-            width: 40,
-            height: 40,
-            borderRadius: 40,
-            top: 12,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexDirection: 'row',
-            backgroundColor: theme.buttonColor,
-            scaleY: -1,
-            elevation: 4,
-        },
-        scrollToEndBadge: {
-            position: 'absolute',
-            alignSelf: 'center',
-            height: 40,
-            borderRadius: 8,
-            top: 8,
-            paddingHorizontal: 8,
-            backgroundColor: theme.buttonBg,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexDirection: 'row',
-            scaleY: -1,
-            elevation: 4,
-        },
-        newMessagesText: {
-            color: '#fff',
-            paddingHorizontal: 8,
         },
     };
 });
@@ -154,7 +120,7 @@ const PostList = ({
     savedPostIds,
 }: Props) => {
     const listRef = useRef<FlatList<string | PostModel>>(null);
-    const isNewMessagesRef = useRef(false);
+    const [isNewMessages, setIsNewMessages] = useState(false);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
@@ -198,7 +164,7 @@ const PostList = ({
     }, []);
 
     useEffect(() => {
-        isNewMessagesRef.current = initialIndex > -1;
+        setIsNewMessages(initialIndex > -1);
     }, [initialIndex]);
 
     const onRefresh = useCallback(async () => {
@@ -377,24 +343,6 @@ const PostList = ({
         listRef.current?.scrollToOffset({animated: true, offset: 0});
     };
 
-    const ScrollToEndView = () => (
-        <Pressable
-            onPress={onScrollToEnd}
-            style={isNewMessagesRef.current ? styles.scrollToEndBadge : styles.scrollToEndBtn}
-        >
-            <CompassIcon
-                size={18}
-                name='arrow-down'
-                color={isNewMessagesRef.current ? theme.sidebarHeaderTextColor : theme.centerChannelColor}
-            />
-            {isNewMessagesRef.current && (
-                <Text style={styles.newMessagesText}>
-                    {location === Screens.THREAD ? 'New replies' : 'New messages'}
-                </Text>
-            )}
-        </Pressable>
-    );
-
     return (
         <>
             <PostListRefreshControl
@@ -414,6 +362,7 @@ const PostList = ({
                         keyboardShouldPersistTaps='handled'
                         keyExtractor={keyExtractor}
                         initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
+                        ListHeaderComponent={header}
                         ListFooterComponent={footer}
                         maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
                         maxToRenderPerBatch={10}
@@ -431,9 +380,12 @@ const PostList = ({
                         viewabilityConfig={VIEWABILITY_CONFIG}
                         testID={`${testID}.flat_list`}
                     />
-                    {showScrollToEndBtn && (
-                        <ScrollToEndView/>
-                    )}
+                    <ScrollToEndView
+                        onScrollToEnd={onScrollToEnd}
+                        isNewMessage={isNewMessages}
+                        showScrollToEndBtn={showScrollToEndBtn}
+                        message={location === Screens.THREAD ? 'New replies' : 'New messages'}
+                    />
                 </>
             </PostListRefreshControl>
             {showMoreMessages &&
