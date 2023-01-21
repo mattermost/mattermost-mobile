@@ -1,9 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
+import {switchToChannelById} from '@actions/remote/channel';
+import {useServerUrl} from '@app/context/server';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -37,14 +39,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type Props = {
+    channelId: ChannelModel['id'];
     channelName: ChannelModel['displayName'];
     teamName: TeamModel['displayName'];
     testID?: string;
 }
 
-function ChannelInfo({channelName, teamName, testID}: Props) {
+function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const serverUrl = useServerUrl();
+
+    const onChannelSwitch = useCallback(() => {
+        switchToChannelById(serverUrl, channelId);
+    }, [serverUrl]);
 
     return (
         <View
@@ -55,6 +63,7 @@ function ChannelInfo({channelName, teamName, testID}: Props) {
                 style={styles.channel}
                 testID='channel_display_name'
                 numberOfLines={1}
+                onPress={onChannelSwitch}
             >
                 {channelName}
             </Text>
