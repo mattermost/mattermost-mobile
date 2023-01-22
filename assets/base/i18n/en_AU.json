@@ -937,5 +937,7 @@
     "connection_banner.connecting": "Connecting...",
     "skintone_selector.tooltip.title": "Choose your default skin tone",
     "skintone_selector.tooltip.description": "You can now choose the skin tone you prefer to use for your emojis.",
-    "default_skin_tone": "Default Skin Tone"
+    "default_skin_tone": "Default Skin Tone",
+    "mobile.calls_rec": "rec",
+    "mobile.calls_host": "host"
 }
