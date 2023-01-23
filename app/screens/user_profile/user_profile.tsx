@@ -30,7 +30,7 @@ type Props = {
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
     isChannelAdmin: boolean;
-    canManageMembers?: boolean;
+    canManageAndRemoveMembers?: boolean;
     isCustomStatusEnabled: boolean;
     isDirectMessage: boolean;
     isDefaultChannel: boolean;
@@ -62,7 +62,7 @@ const messages = defineMessages({
 
 const UserProfile = ({
     canChangeMemberRoles, channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
-    isChannelAdmin, canManageMembers, isCustomStatusEnabled, isDirectMessage, isDefaultChannel, isMilitaryTime,
+    isChannelAdmin, canManageAndRemoveMembers, isCustomStatusEnabled, isDirectMessage, isDefaultChannel, isMilitaryTime,
     isSystemAdmin, isTeamAdmin, location, manageMode = false, teamId, teammateDisplayName,
     user, userIconOverride, usernameOverride,
 }: Props) => {
@@ -119,7 +119,9 @@ const UserProfile = ({
             if (canChangeMemberRoles) {
                 title += SINGLE_OPTION_HEIGHT; // roles button
             }
-            title += SINGLE_OPTION_HEIGHT; // remove button
+            if (canManageAndRemoveMembers) {
+                title += SINGLE_OPTION_HEIGHT; // roles button
+            }
         }
 
         const extraHeight = manageMode ? 0 : EXTRA_HEIGHT;
@@ -173,7 +175,7 @@ const UserProfile = ({
                         user={user}
                     />
                 }
-                {manageMode && channelId && canManageMembers &&
+                {manageMode && channelId && canManageAndRemoveMembers &&
                     <ManageUserOptions
                         canChangeMemberRoles={canChangeMemberRoles}
                         channelId={channelId}

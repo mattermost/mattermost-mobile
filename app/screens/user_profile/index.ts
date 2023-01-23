@@ -47,13 +47,14 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
     const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
 
     // can remove member
-    const canManageMembers = combineLatest([channel, user]).pipe(
+    const canManageAndRemoveMembers = combineLatest([channel, user]).pipe(
         switchMap(([c, u]) => (c && u ? observeCanManageChannelMembers(database, c.id, u) : of$(false))));
 
-    const canChangeMemberRoles = combineLatest([channel, user, canManageMembers]).pipe(
+    const canChangeMemberRoles = combineLatest([channel, user, canManageAndRemoveMembers]).pipe(
         switchMap(([c, u, m]) => (of$(c?.id) && of$(u) && of$(m) && observePermissionForChannel(database, c, u, Permissions.MANAGE_CHANNEL_ROLES, true))));
 
     return {
+        canManageAndRemoveMembers,
         currentUserId,
         enablePostIconOverride,
         enablePostUsernameOverride,
