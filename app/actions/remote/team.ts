@@ -115,10 +115,8 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
 }
 
 export async function addUsersToTeam(serverUrl: string, teamId: string, userIds: string[], fetchOnly = false) {
-    let client;
-
     try {
-        client = NetworkManager.getClient(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         EphemeralStore.startAddingToTeam(teamId);
 
@@ -153,11 +151,8 @@ export async function addUsersToTeam(serverUrl: string, teamId: string, userIds:
 }
 
 export async function sendEmailInvitesToTeam(serverUrl: string, teamId: string, emails: string[]) {
-    let client;
-
     try {
-        client = NetworkManager.getClient(serverUrl);
-
+        const client = NetworkManager.getClient(serverUrl);
         const members = await client.sendEmailInvitesToTeamGracefully(teamId, emails);
 
         return {members};
@@ -483,10 +478,8 @@ export async function handleKickFromTeam(serverUrl: string, teamId: string) {
 }
 
 export async function getTeamMembersByIds(serverUrl: string, teamId: string, userIds: string[], fetchOnly?: boolean) {
-    let client;
-
     try {
-        client = NetworkManager.getClient(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const members = await client.getTeamMembersByIds(teamId, userIds);
 
@@ -499,9 +492,7 @@ export async function getTeamMembersByIds(serverUrl: string, teamId: string, use
 
             fetchRolesIfNeeded(serverUrl, Array.from(new Set(roles)));
 
-            if (operator) {
-                await operator.handleTeamMemberships({teamMemberships: members, prepareRecordsOnly: true});
-            }
+            await operator.handleTeamMemberships({teamMemberships: members, prepareRecordsOnly: true});
         }
 
         return {members};
