@@ -116,7 +116,7 @@ const UserProfile = ({
 
         if (manageMode) {
             title += DIVIDER_MARGIN * 2;
-            if (canManageMembers) {
+            if (canChangeMemberRoles) {
                 title += SINGLE_OPTION_HEIGHT; // roles button
             }
             title += SINGLE_OPTION_HEIGHT; // remove button
