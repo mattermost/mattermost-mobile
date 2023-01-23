@@ -42,6 +42,9 @@ const OptionMenus = ({
 
     const handlePermalink = useCallback(() => {
         if (fileInfo.post_id) {
+            if (!isTablet) {
+                dismissBottomSheet();
+            }
             showPermalink(serverUrl, '', fileInfo.post_id);
             setAction('opening');
         }
