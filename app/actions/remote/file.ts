@@ -15,9 +15,9 @@ export const downloadFile = (serverUrl: string, fileId: string, desitnation: str
     return client.apiClient.download(client.getFileRoute(fileId), desitnation.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
 };
 
-export const downloadProfileImage = (serverUrl: string, userId: string, lastPictureUpdate: number, desitnation: string) => { // Let it throw and handle it accordingly
+export const downloadProfileImage = (serverUrl: string, userId: string, lastPictureUpdate: number, destination: string) => { // Let it throw and handle it accordingly
     const client = NetworkManager.getClient(serverUrl);
-    return client.apiClient.download(client.getProfilePictureUrl(userId, lastPictureUpdate), desitnation.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
+    return client.apiClient.download(client.getProfilePictureUrl(userId, lastPictureUpdate), destination.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
 };
 
 export const uploadFile = (

@@ -1,5 +1,340 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`components/categories_list should render channels error 1`] = `
+<View
+  animatedStyle={
+    {
+      "value": {
+        "maxWidth": "100%",
+      },
+    }
+  }
+  collapsable={false}
+  style={
+    {
+      "backgroundColor": "#1e325c",
+      "flex": 1,
+      "maxWidth": "100%",
+      "paddingLeft": 18,
+      "paddingRight": 20,
+      "paddingTop": 10,
+    }
+  }
+>
+  <View
+    animatedStyle={
+      {
+        "value": {
+          "marginLeft": 0,
+        },
+      }
+    }
+    collapsable={false}
+    style={
+      {
+        "marginLeft": 0,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "flexDirection": "row",
+          "justifyContent": "space-between",
+        }
+      }
+    >
+      <View
+        style={
+          {
+            "width": "85%",
+          }
+        }
+      >
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
+            }
+          }
+        >
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessible={true}
+            focusable={false}
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+              }
+            }
+          >
+            <Text
+              ellipsizeMode="tail"
+              numberOfLines={2}
+              style={
+                {
+                  "color": "#ffffff",
+                  "fontFamily": "Metropolis-SemiBold",
+                  "fontSize": 28,
+                  "fontWeight": "600",
+                  "lineHeight": 36,
+                }
+              }
+              testID="channel_list_header.team_display_name"
+            >
+              Test Team!
+            </Text>
+          </View>
+        </View>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingRight": 60,
+            }
+          }
+        >
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              {
+                "color": "rgba(255,255,255,0.64)",
+                "fontFamily": "OpenSans-SemiBold",
+                "fontSize": 11,
+                "fontWeight": "600",
+                "lineHeight": 16,
+              }
+            }
+            testID="channel_list_header.server_display_name"
+          />
+        </View>
+      </View>
+      <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        hitSlop={
+          {
+            "bottom": 30,
+            "left": 20,
+            "right": 20,
+            "top": 10,
+          }
+        }
+        onClick={[Function]}
+        onResponderGrant={[Function]}
+        onResponderMove={[Function]}
+        onResponderRelease={[Function]}
+        onResponderTerminate={[Function]}
+        onResponderTerminationRequest={[Function]}
+        onStartShouldSetResponder={[Function]}
+        style={
+          {
+            "alignItems": "center",
+            "backgroundColor": "rgba(255,255,255,0.08)",
+            "borderRadius": 14,
+            "height": 28,
+            "justifyContent": "center",
+            "marginTop": 7,
+            "opacity": 1,
+            "width": 28,
+          }
+        }
+        testID="channel_list_header.plus.button"
+      >
+        <Icon
+          name="plus"
+          style={
+            {
+              "color": "rgba(255,255,255,0.8)",
+              "fontSize": 18,
+            }
+          }
+        />
+      </View>
+    </View>
+  </View>
+  <View
+    style={
+      {
+        "alignItems": "center",
+        "flex": 1,
+        "justifyContent": "center",
+        "padding": 20,
+      }
+    }
+  >
+    <View
+      style={
+        {
+          "alignItems": "center",
+          "backgroundColor": "rgba(255,255,255,0.08)",
+          "borderRadius": 60,
+          "height": 120,
+          "justifyContent": "center",
+          "width": 120,
+        }
+      }
+    >
+      <Icon
+        name="alert-circle-outline"
+        style={
+          {
+            "color": "rgba(255,255,255,0.48)",
+            "fontSize": 72,
+            "lineHeight": 72,
+          }
+        }
+      />
+    </View>
+    <Text
+      style={
+        [
+          {
+            "fontFamily": "Metropolis-SemiBold",
+            "fontSize": 20,
+            "fontWeight": "600",
+            "lineHeight": 28,
+          },
+          {
+            "color": "#ffffff",
+            "marginTop": 20,
+            "textAlign": "center",
+          },
+        ]
+      }
+    >
+      Couldn't load Test Team!
+    </Text>
+    <Text
+      style={
+        [
+          {
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          {
+            "color": "#ffffff",
+            "marginTop": 4,
+            "textAlign": "center",
+          },
+        ]
+      }
+    >
+      There was a problem loading content for this team.
+    </Text>
+    <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
+      accessible={true}
+      collapsable={false}
+      focusable={true}
+      onClick={[Function]}
+      onResponderGrant={[Function]}
+      onResponderMove={[Function]}
+      onResponderRelease={[Function]}
+      onResponderTerminate={[Function]}
+      onResponderTerminationRequest={[Function]}
+      onStartShouldSetResponder={[Function]}
+      style={
+        {
+          "alignItems": "center",
+          "backgroundColor": "#ffffff",
+          "borderRadius": 4,
+          "flex": 0,
+          "height": 48,
+          "justifyContent": "center",
+          "marginTop": 24,
+          "opacity": 1,
+          "paddingHorizontal": 24,
+          "paddingVertical": 14,
+        }
+      }
+    >
+      <Text
+        style={
+          [
+            {
+              "alignItems": "center",
+              "fontFamily": "OpenSans-SemiBold",
+              "fontWeight": "600",
+              "justifyContent": "center",
+              "padding": 1,
+              "textAlignVertical": "center",
+            },
+            {
+              "fontSize": 16,
+              "lineHeight": 18,
+              "marginTop": 1,
+            },
+            {
+              "color": "#1c58d9",
+            },
+          ]
+        }
+      >
+        Retry
+      </Text>
+    </View>
+  </View>
+</View>
+`;
+
 exports[`components/categories_list should render team error 1`] = `
 <View
   animatedStyle={

@@ -29,9 +29,18 @@ import {typography} from '@utils/typography';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
+type SnackBarProps = {
+    componentId: AvailableScreens;
+    onAction?: () => void;
+    barType: keyof typeof SNACK_BAR_TYPE;
+    sourceScreen: AvailableScreens;
+}
+
 const SNACK_BAR_WIDTH = 96;
 const SNACK_BAR_HEIGHT = 56;
 const SNACK_BAR_BOTTOM_RATIO = 0.04;
+
+const caseScreens: AvailableScreens[] = [Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_MESSAGES];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -72,13 +81,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-type SnackBarProps = {
-    componentId: AvailableScreens;
-    onAction?: () => void;
-    barType: keyof typeof SNACK_BAR_TYPE;
-    sourceScreen: AvailableScreens;
-}
-
 const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
@@ -117,7 +119,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
                     width: (SNACK_BAR_WIDTH / 100) * diffWidth,
                 };
                 break;
-            case ([Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_MESSAGES] as AvailableScreens[]).includes(sourceScreen):
+            case caseScreens.includes(sourceScreen):
                 tabletStyle = {
                     marginBottom: 0,
                     marginLeft: 0,

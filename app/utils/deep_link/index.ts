@@ -26,6 +26,8 @@ import {removeProtocol} from '@utils/url';
 import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
+const deepLinkScreens: AvailableScreens[] = [Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD];
+
 export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape, location?: string) {
     try {
         const parsed = parseDeepLink(deepLinkUrl);
@@ -89,8 +91,10 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
             }
             case DeepLink.Permalink: {
                 const deepLinkData = parsed.data as DeepLinkPermalink;
-                if (NavigationStore.hasModalsOpened() ||
-                !([Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD] as AvailableScreens[]).includes(NavigationStore.getVisibleScreen())) {
+                if (
+                    NavigationStore.hasModalsOpened() ||
+                    !deepLinkScreens.includes(NavigationStore.getVisibleScreen())
+                ) {
                     await dismissAllModalsAndPopToRoot();
                 }
                 showPermalink(existingServerUrl, deepLinkData.teamName, deepLinkData.postId);

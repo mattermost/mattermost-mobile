@@ -24,7 +24,10 @@ import {typography} from '@utils/typography';
 
 import Inbox from './inbox.svg';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
+    componentId: AvailableScreens;
     serverUrl: string;
     theme: Theme;
 }
@@ -87,7 +90,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ForgotPassword = ({serverUrl, theme}: Props) => {
+const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
     const dimensions = useWindowDimensions();
     const translateX = useSharedValue(dimensions.width);
     const isTablet = useIsTablet();
@@ -264,12 +267,16 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
                 translateX.value = -dimensions.width;
             },
         };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.FORGOT_PASSWORD);
+        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
     }, [dimensions]);
 
-    useAndroidHardwareBackHandler(Screens.FORGOT_PASSWORD, onReturn);
+    useEffect(() => {
+        translateX.value = 0;
+    }, []);
+
+    useAndroidHardwareBackHandler(componentId, onReturn);
 
     return (
         <View style={styles.flex}>

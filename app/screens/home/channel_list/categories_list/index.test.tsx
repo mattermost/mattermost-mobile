@@ -42,7 +42,7 @@ describe('components/categories_list', () => {
         expect(wrapper.toJSON()).toBeTruthy();
     });
 
-    it('should render channel list with thread menu', async () => {
+    it('should render channel list with thread menu', () => {
         jest.useFakeTimers();
         const wrapper = renderWithEverything(
             <CategoriesList
@@ -101,6 +101,6 @@ describe('components/categories_list', () => {
         act(() => {
             jest.runAllTimers();
         });
-        expect(wrapper.toJSON()).toBeTruthy();
+        expect(wrapper.toJSON()).toMatchSnapshot();
     });
 });

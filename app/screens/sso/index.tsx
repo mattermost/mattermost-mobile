@@ -12,6 +12,7 @@ import {ssoLogin} from '@actions/remote/session';
 import ClientError from '@client/rest/error';
 import {Screens, Sso} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
 import {dismissModal, popTopScreen, resetToHome, resetToTeams} from '@screens/navigation';
@@ -145,15 +146,10 @@ const SSO = ({
     }, [dimensions]);
 
     useEffect(() => {
-        const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
-            if (closeButtonId && buttonId === closeButtonId) {
-                dismiss();
-            }
-        });
-
-        return () => navigationEvents.remove();
+        translateX.value = 0;
     }, []);
 
+    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
     useAndroidHardwareBackHandler(componentId, () => {
         if (closeButtonId) {
             dismiss();

@@ -4,7 +4,7 @@
 import {OperationType} from '@constants/database';
 
 import type Model from '@nozbe/watermelondb/Model';
-import type {TransformerArgs} from '@typings/database/database';
+import type {PrepareBaseRecordArgs} from '@typings/database/database';
 
 /**
  * prepareBaseRecord:  This is the last step for each operator and depending on the 'action', it will either prepare an
@@ -14,7 +14,7 @@ import type {TransformerArgs} from '@typings/database/database';
  * @param {Database} operatorBase.database
  * @param {string} operatorBase.tableName
  * @param {RecordPair} operatorBase.value
- * @param {((TransformerArgs) => void)} operatorBase.generator
+ * @param {((PrepareBaseRecordArgs) => void)} operatorBase.generator
  * @returns {Promise<Model>}
  */
 export const prepareBaseRecord = async ({
@@ -23,11 +23,11 @@ export const prepareBaseRecord = async ({
     tableName,
     value,
     fieldsMapper,
-}: TransformerArgs): Promise<Model> => {
+}: PrepareBaseRecordArgs): Promise<Model> => {
     if (action === OperationType.UPDATE) {
         const record = value.record as Model;
-        return record.prepareUpdate(() => fieldsMapper!(record));
+        return record.prepareUpdate(() => fieldsMapper(record));
     }
 
-    return database.collections.get(tableName!).prepareCreate(fieldsMapper!);
+    return database.collections.get(tableName!).prepareCreate(fieldsMapper);
 };

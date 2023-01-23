@@ -227,12 +227,12 @@ const SearchScreen = ({teamId, teams}: Props) => {
         handleSearch(newTeamId, lastSearchedValue);
     }, [lastSearchedValue, handleSearch]);
 
-    const initialContainerStyle = useMemo(() => {
+    const initialContainerStyle: ViewStyle = useMemo(() => {
         return {
             paddingTop: scrollPaddingTop,
             flexGrow: 1,
             justifyContent: (resultsLoading || loading) ? 'center' : 'flex-start',
-        } as ViewStyle;
+        };
     }, [loading, resultsLoading, scrollPaddingTop]);
 
     const renderInitialOrLoadingItem = useCallback(() => {

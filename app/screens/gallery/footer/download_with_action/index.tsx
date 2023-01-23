@@ -193,9 +193,9 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
         if (mounted.current) {
             try {
                 const applicationName = DeviceInfo.getApplicationName();
-                const type = item.type === 'avatar' ? 'image' : item.type;
+                const cameraType = item.type === 'avatar' ? 'image' : item.type;
                 await CameraRoll.save(path, {
-                    type: type === 'image' ? 'photo' : 'video',
+                    type: cameraType === 'image' ? 'photo' : 'video',
                     album: applicationName,
                 });
                 setSaved(true);

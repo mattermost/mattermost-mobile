@@ -50,6 +50,10 @@ export type TransformerArgs = {
   value: RecordPair;
 };
 
+export type PrepareBaseRecordArgs = TransformerArgs & {
+  fieldsMapper: (model: Model) => void;
+}
+
 export type OperationArgs = {
   tableName: string;
   createRaws?: RecordPair[];

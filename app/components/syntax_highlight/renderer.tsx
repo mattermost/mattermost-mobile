@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useRef} from 'react';
 import {FlatList, ListRenderItemInfo, ScrollView, StyleSheet, Text} from 'react-native';
 import {createStyleObject} from 'react-syntax-highlighter/create-element';
 
@@ -115,6 +115,7 @@ function createNativeElement({node, stylesheet, key, defaultColor, fontFamily, f
 }
 
 const CodeHighlightRenderer = ({defaultColor, digits, fontFamily, fontSize, rows, selectable, stylesheet}: Props) => {
+    const listKey = useRef(generateId()).current;
     const renderItem = useCallback(({item, index}: ListRenderItemInfo<any>) => {
         return createNativeElement({
             node: item,
@@ -139,7 +140,7 @@ const CodeHighlightRenderer = ({defaultColor, digits, fontFamily, fontSize, rows
                 renderItem={renderItem}
 
                 //@ts-expect-error key not defined in types
-                listKey={generateId()}
+                listKey={listKey}
             />
         </ScrollView>
     );

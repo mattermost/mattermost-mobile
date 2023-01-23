@@ -32,7 +32,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         },
         shadow: {
             backgroundColor: theme.centerChannelBg,
-            shadowColor: 'red',
+            shadowColor: '#000',
             shadowOpacity: 1,
             shadowRadius: 6,
             shadowOffset: {

@@ -5,7 +5,6 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {NativeModules, useWindowDimensions, Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
-import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
@@ -17,15 +16,17 @@ import Gallery, {GalleryRef} from './gallery';
 import Header from './header';
 
 import type {GalleryItemType} from '@typings/screens/gallery';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
+    componentId: AvailableScreens;
     galleryIdentifier: string;
     hideActions: boolean;
     initialIndex: number;
     items: GalleryItemType[];
 }
 
-const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Props) => {
+const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialIndex, items}: Props) => {
     const dim = useWindowDimensions();
     const isTablet = useIsTablet();
     const [localIndex, setLocalIndex] = useState(initialIndex);
@@ -56,7 +57,7 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Pr
         }
         freezeOtherScreens(false);
         requestAnimationFrame(async () => {
-            dismissOverlay(Screens.GALLERY);
+            dismissOverlay(componentId);
         });
     }, [isTablet]);
 
@@ -64,7 +65,7 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Pr
         setLocalIndex(index);
     }, []);
 
-    useAndroidHardwareBackHandler(Screens.GALLERY, close);
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <>

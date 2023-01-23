@@ -15,6 +15,7 @@ import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import {Screens, Launch} from '@constants';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
@@ -93,6 +94,11 @@ const Server = ({
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
     const additionalServer = launchType === Launch.AddServerFromDeepLink || launchType === Launch.AddServer;
 
+    const dismiss = () => {
+        NetworkManager.invalidateClient(url);
+        dismissModal({componentId});
+    };
+
     useEffect(() => {
         let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
         let serverUrl: string | undefined = defaultServerUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
@@ -158,17 +164,6 @@ const Server = ({
     }, [componentId, url, dimensions]);
 
     useEffect(() => {
-        const dismiss = () => {
-            NetworkManager.invalidateClient(url);
-            dismissModal({componentId});
-        };
-
-        const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
-            if (closeButtonId && buttonId === closeButtonId) {
-                dismiss();
-            }
-        });
-
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if (LocalConfig.ShowOnboarding && animated) {
                 popTopScreen(Screens.SERVER);
@@ -184,11 +179,10 @@ const Server = ({
 
         PushNotifications.registerIfNeeded();
 
-        return () => {
-            navigationEvents.remove();
-            backHandler.remove();
-        };
+        return () => backHandler.remove();
     }, []);
+
+    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
         const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
