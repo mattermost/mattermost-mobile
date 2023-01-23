@@ -23,6 +23,7 @@ import UserInfo from './user_info';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
+    canChangeMemberRoles: boolean;
     channelId?: string;
     closeButtonId: string;
     currentUserId: string;
@@ -60,7 +61,7 @@ const messages = defineMessages({
 });
 
 const UserProfile = ({
-    channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
+    canChangeMemberRoles, channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
     isChannelAdmin, canManageMembers, isCustomStatusEnabled, isDirectMessage, isDefaultChannel, isMilitaryTime,
     isSystemAdmin, isTeamAdmin, location, manageMode = false, teamId, teammateDisplayName,
     user, userIconOverride, usernameOverride,
@@ -174,6 +175,7 @@ const UserProfile = ({
                 }
                 {manageMode && channelId && canManageMembers &&
                     <ManageUserOptions
+                        canChangeMemberRoles={canChangeMemberRoles}
                         channelId={channelId}
                         isDefaultChannel={isDefaultChannel}
                         isChannelAdmin={isChannelAdmin}
