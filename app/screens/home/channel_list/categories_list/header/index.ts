@@ -52,9 +52,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         displayName: team.pipe(
             switchMap((t) => of$(t?.displayName)),
         ),
-        inviteId: team.pipe(
-            switchMap((t) => of$(t?.inviteId)),
-        ),
         pushProxyStatus: observePushVerificationStatus(database),
     };
 });
