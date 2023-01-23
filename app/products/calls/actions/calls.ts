@@ -307,7 +307,7 @@ export const sendReaction = (emoji: CallReactionEmoji) => {
 };
 
 export const setSpeakerphoneOn = (speakerphoneOn: boolean) => {
-    InCallManager.setSpeakerphoneOn(speakerphoneOn);
+    InCallManager.setForceSpeakerphoneOn(speakerphoneOn);
     setSpeakerPhone(speakerphoneOn);
 };
 
