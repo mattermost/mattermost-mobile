@@ -5,8 +5,10 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest, switchMap} from 'rxjs';
 
+import {Permissions} from '@constants';
 import {observeProfileLongPresTutorial} from '@queries/app/global';
-import {observeCanManageChannelMembers} from '@queries/servers/role';
+import {observeCurrentChannel} from '@queries/servers/channel';
+import {observeCanManageChannelMembers, observePermissionForChannel} from '@queries/servers/role';
 import {observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeCurrentUser, observeTeammateNameDisplay} from '@queries/servers/user';
 
@@ -17,8 +19,15 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
     const currentChannelId = observeCurrentChannelId(database);
-    const canManageMembers = combineLatest([currentChannelId, currentUser]).pipe(
-        switchMap(([cId, u]) => (cId && u ? observeCanManageChannelMembers(database, cId, u) : of$(false))));
+    const currentChannel = observeCurrentChannel(database);
+
+    // fixme: this needs polishing
+    const canManageMembers = combineLatest([currentChannelId, currentUser]).pipe(switchMap(([cId, u]) => (cId && u ? observeCanManageChannelMembers(database, cId, u) : of$(false))));
+
+    const canChangeMemberRoles = combineLatest([currentChannel, currentUser, canManageMembers]).pipe(
+        switchMap(([c, u, m]) => (of$(c) && of$(u) && of$(m) && observePermissionForChannel(database, c, u, Permissions.MANAGE_CHANNEL_ROLES, true))));
+
+    const canRemoveMember = canManageMembers;
 
     return {
         currentUserId: observeCurrentUserId(database),
@@ -26,6 +35,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         canManageMembers,
         teammateNameDisplay: observeTeammateNameDisplay(database),
         tutorialWatched: observeProfileLongPresTutorial(),
+        canChangeMemberRoles,
+        canRemoveMember,
     };
 });
 

@@ -28,10 +28,11 @@ type Props = {
     channelId: string;
     isDefaultChannel: boolean;
     isChannelAdmin: boolean;
+    canChangeMemberRoles: boolean;
     userId: string;
 }
 
-const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId}: Props) => {
+const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId, canChangeMemberRoles}: Props) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -40,13 +41,15 @@ const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId}
     return (
         <>
             <View style={styles.divider}/>
-            <ManageMembersLabel
-                channelId={channelId}
-                isDefaultChannel={isDefaultChannel}
-                manageOption={manageOption}
-                testID='channel.make_channel_admin'
-                userId={userId}
-            />
+            {canChangeMemberRoles &&
+                <ManageMembersLabel
+                    channelId={channelId}
+                    isDefaultChannel={isDefaultChannel}
+                    manageOption={manageOption}
+                    testID='channel.make_channel_admin'
+                    userId={userId}
+                />
+            }
             <ManageMembersLabel
                 channelId={channelId}
                 isDefaultChannel={isDefaultChannel}

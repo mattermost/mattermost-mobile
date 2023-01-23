@@ -3,13 +3,14 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
+import {of as of$, combineLatest} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
-import {General, Preferences} from '@constants';
+import {General, Permissions, Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {observeChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {observeCanManageChannelMembers, observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
 import {isSystemAdmin} from '@utils/user';
@@ -45,6 +46,13 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
     const isMilitaryTime = preferences.pipe(map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)));
     const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
 
+    // can remove member
+    const canManageMembers = combineLatest([channel, user]).pipe(
+        switchMap(([c, u]) => (c && u ? observeCanManageChannelMembers(database, c.id, u) : of$(false))));
+
+    const canChangeMemberRoles = combineLatest([channel, user, canManageMembers]).pipe(
+        switchMap(([c, u, m]) => (of$(c?.id) && of$(u) && of$(m) && observePermissionForChannel(database, c, u, Permissions.MANAGE_CHANNEL_ROLES, true))));
+
     return {
         currentUserId,
         enablePostIconOverride,
@@ -59,6 +67,7 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
         teamId,
         teammateDisplayName,
         user,
+        canChangeMemberRoles,
     };
 });
 
