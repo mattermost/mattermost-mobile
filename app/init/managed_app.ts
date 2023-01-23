@@ -78,7 +78,7 @@ class ManagedApp {
 
         const jailbreakProtection = config!.jailbreakProtection === 'true';
         if (jailbreakProtection && !this.isTrustedDevice()) {
-            this.alertDeviceIsUntrusted();
+            this.alertDeviceIsNotTrusted();
             return;
         }
 
@@ -88,14 +88,17 @@ class ManagedApp {
         }
     };
 
-    alertDeviceIsUntrusted = () => {
+    alertDeviceIsNotTrusted = () => {
         // We use the default device locale as this is an app wide setting
         // and does not require any server data
         const locale = DEFAULT_LOCALE;
         const translations = getTranslations(locale);
         Alert.alert(
             translations[t('mobile.managed.blocked_by')].replace('{vendor}', this.vendor),
-            translations[t('mobile.managed.jailbreak')].replace('{vendor}', this.vendor),
+            translations[t('mobile.managed.jailbreak')].
+                replace('{vendor}', this.vendor).
+                replace('{reason}', JailMonkey.jailBrokenMessage() || translations[t('mobile.managed.jailbreak_no_reason')]).
+                replace('{debug}', JSON.stringify(JailMonkey.androidRootedDetectionMethods || translations[t('mobile.managed.jailbreak_no_debug_info')])),
             [{
                 text: translations[t('mobile.managed.exit')],
                 style: 'destructive',
@@ -139,7 +142,7 @@ class ManagedApp {
     };
 
     isTrustedDevice = () => {
-        return __DEV__ || JailMonkey.trustFall();
+        return __DEV__ || !JailMonkey.isJailBroken();
     };
 
     onAppStateChange = async (appState: AppStateStatus) => {
