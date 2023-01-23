@@ -60,8 +60,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             right: 20,
             position: 'absolute',
             bottom: Platform.select({ios: 'auto', default: undefined}),
-            borderRadius: 4,
-            backgroundColor: theme.centerChannelBg,
         },
         searchListBorder: {
             borderWidth: 1,
@@ -80,6 +78,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
                 width: 0,
                 height: 6,
             },
+            borderRadius: 4,
+            backgroundColor: theme.centerChannelBg,
         },
         searchListFlatList: {
             backgroundColor: theme.centerChannelBg,
