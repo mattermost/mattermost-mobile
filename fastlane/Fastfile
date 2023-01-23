@@ -694,12 +694,6 @@ platform :android do
 
       sh "mv .#{beta_dir}* .#{release_dir}"
 
-      find_replace_string(
-          path_to_file: './android/app/BUCK',
-          old_string: 'package com.mattermost.rnbeta;',
-          new_string: "package #{package_id};"
-      )
-
       Dir.glob(".#{release_dir}*.java") do |item|
         find_replace_string(
             path_to_file: item[1..-1],
