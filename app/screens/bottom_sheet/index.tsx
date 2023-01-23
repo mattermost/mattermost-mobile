@@ -94,6 +94,10 @@ const BottomSheet = ({
     const styles = getStyleSheet(theme);
     const interaction = useRef<Handle>();
 
+    useEffect(() => {
+        interaction.current = InteractionManager.createInteractionHandle();
+    }, []);
+
     const bottomSheetBackgroundStyle = useMemo(() => [
         styles.bottomSheetBackground,
         {borderWidth: isTablet ? 0 : 1},
@@ -116,7 +120,9 @@ const BottomSheet = ({
     }, [close]);
 
     const handleAnimationStart = useCallback(() => {
-        interaction.current = InteractionManager.createInteractionHandle();
+        if (!interaction.current) {
+            interaction.current = InteractionManager.createInteractionHandle();
+        }
     }, []);
 
     const handleClose = useCallback(() => {

@@ -114,6 +114,7 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
         return {
             width: withDelay(isSearching.value ? 0 : 700, withTiming(isSearching.value ? 0 : 32, {duration: isSearching.value ? 50 : 300})),
             marginLeft: Platform.OS === 'android' ? 10 : undefined,
+            height: 34,
         };
     }, []);
 
