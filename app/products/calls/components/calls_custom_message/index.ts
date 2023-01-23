@@ -3,19 +3,16 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, of as of$} from 'rxjs';
+import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {CallsCustomMessage} from '@calls/components/calls_custom_message/calls_custom_message';
 import {observeIsCallLimitRestricted} from '@calls/observers';
 import {observeCurrentCall} from '@calls/state';
 import {Preferences} from '@constants';
-import DatabaseManager from '@database/manager';
 import {getPreferenceAsBool} from '@helpers/api/preference';
-import {observeChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeCurrentUser, observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
-import {isDMorGM} from '@utils/channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
@@ -43,27 +40,8 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
         };
     }
 
-    const ccDatabase = observeCurrentCall().pipe(
-        switchMap((call) => of$(call?.serverUrl || '')),
-        distinctUntilChanged(),
-        switchMap((url) => of$(DatabaseManager.serverDatabases[url]?.database)),
-    );
-    const currentCallChannelId = observeCurrentCall().pipe(
-        switchMap((call) => of$(call?.channelId || '')),
-        distinctUntilChanged(),
-    );
-    const leaveChannelName = combineLatest([ccDatabase, currentCallChannelId]).pipe(
-        switchMap(([db, id]) => (db && id ? observeChannel(db, id) : of$(undefined))),
-        switchMap((c) => of$(c ? c.displayName : '')),
-        distinctUntilChanged(),
-    );
-    const joinChannel = observeChannel(database, post.channelId);
-    const joinChannelName = joinChannel.pipe(
-        switchMap((chan) => of$(chan?.displayName || '')),
-        distinctUntilChanged(),
-    );
-    const joinChannelIsDMorGM = joinChannel.pipe(
-        switchMap((chan) => of$(chan ? isDMorGM(chan) : false)),
+    const ccChannelId = observeCurrentCall().pipe(
+        switchMap((call) => of$(call?.channelId)),
         distinctUntilChanged(),
     );
 
@@ -72,11 +50,8 @@ const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProp
         author,
         isMilitaryTime,
         teammateNameDisplay: observeTeammateNameDisplay(database),
-        currentCallChannelId,
-        leaveChannelName,
-        joinChannelName,
-        joinChannelIsDMorGM,
         limitRestrictedInfo: observeIsCallLimitRestricted(database, serverUrl, post.channelId),
+        ccChannelId,
     };
 });
 
