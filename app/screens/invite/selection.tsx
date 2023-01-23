@@ -15,6 +15,7 @@ import {
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import SelectedChip from '@components/selected_chip';
 import SelectedUser from '@components/selected_users/selected_user';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
 import UserItem from '@components/user_item';
@@ -25,7 +26,6 @@ import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 import {SearchResult} from './invite';
-import SelectedEmail from './selected_email';
 import SelectionSearchBar from './selection_search_bar';
 import SelectionTeamBar from './selection_team_bar';
 import TextItem, {TextItemType} from './text_item';
@@ -279,11 +279,12 @@ export default function Selection({
             const selectedItem = selectedIds[id];
 
             selectedItems.push(typeof selectedItem === 'string' ? (
-                <SelectedEmail
+                <SelectedChip
+                    id={id}
                     key={id}
-                    email={selectedItem}
+                    text={selectedItem}
                     onRemove={handleOnRemoveItem}
-                    testID='invite.selected_item'
+                    testID={`invite.selected_item.${selectedItem}`}
                 />
             ) : (
                 <SelectedUser

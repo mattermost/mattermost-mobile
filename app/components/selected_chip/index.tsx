@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Text, TouchableOpacity} from 'react-native';
+import {Text, TouchableOpacity, View} from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -10,8 +10,10 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-type Props = {
-    email: string;
+type SelectedChipProps = {
+    id: string;
+    text: string;
+    extra?: React.ReactNode;
     onRemove: (id: string) => void;
     testID?: string;
 }
@@ -33,49 +35,59 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginRight: 8,
             paddingHorizontal: 7,
         },
-        remove: {
-            justifyContent: 'center',
-            marginLeft: 7,
+        extraContent: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            color: theme.centerChannelColor,
         },
         text: {
             marginLeft: 8,
             color: theme.centerChannelColor,
             ...typography('Body', 100, 'SemiBold'),
         },
+        remove: {
+            justifyContent: 'center',
+            marginLeft: 7,
+        },
     };
 });
 
-export default function SelectedEmail({
-    email,
+export default function SelectedChip({
+    id,
+    text,
+    extra,
     onRemove,
     testID,
-}: Props) {
+}: SelectedChipProps) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
 
     const onPress = useCallback(() => {
-        onRemove(email);
-    }, [onRemove, email]);
-
-    const selectedEmailTestID = `${testID}.${email}`;
+        onRemove(id);
+    }, [onRemove, id]);
 
     return (
         <Animated.View
             entering={FadeIn.duration(FADE_DURATION)}
             exiting={FadeOut.duration(FADE_DURATION)}
             style={style.container}
-            testID={`${selectedEmailTestID}`}
+            testID={testID}
         >
+            {extra && (
+                <View style={style.extraContent}>
+                    {extra}
+                </View>
+            )}
             <Text
                 style={style.text}
-                testID={`${selectedEmailTestID}.display_name`}
+                testID={`${testID}.display_name`}
             >
-                {email}
+                {text}
             </Text>
             <TouchableOpacity
                 style={style.remove}
                 onPress={onPress}
-                testID={`${selectedEmailTestID}.remove.button`}
+                testID={`${testID}.remove.button`}
             >
                 <CompassIcon
                     name='close-circle'

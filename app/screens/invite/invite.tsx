@@ -337,7 +337,7 @@ export default function Invite({
                 },
             },
         });
-    }, [componentId, locale, theme, stage]);
+    }, [componentId, locale, theme, stage === Stage.RESULT]);
 
     useEffect(() => {
         return () => {
