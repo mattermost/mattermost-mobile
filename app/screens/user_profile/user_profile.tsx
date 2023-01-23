@@ -175,7 +175,7 @@ const UserProfile = ({
                         user={user}
                     />
                 }
-                {manageMode && channelId && canManageAndRemoveMembers &&
+                {manageMode && channelId && (canManageAndRemoveMembers || canChangeMemberRoles) &&
                     <ManageUserOptions
                         canChangeMemberRoles={canChangeMemberRoles}
                         channelId={channelId}
