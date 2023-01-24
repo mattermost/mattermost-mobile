@@ -136,6 +136,7 @@ export async function fetchChannelMemberships(serverUrl: string, channelId: stri
     const {users = []} = await fetchProfilesInChannel(serverUrl, channelId, undefined, options, fetchOnly);
     const userIds = users.map((u) => u.id);
 
+    // MM-49896 https://mattermost.atlassian.net/browse/MM-49896
     // We are not sure the getChannelMembers API returns the same members
     // from getProfilesInChannel.  This guarantees a 1:1 match of the
     // user IDs
