@@ -25,7 +25,7 @@ const HighlightItem = ({height, itemBounds, onDismiss, onLayout, borderRadius = 
     const pathD = useMemo(() => {
         const parent = {startX: 0, startY: 0, endX: width, endY: height};
         return constructRectangularPathWithBorderRadius(parent, itemBounds, borderRadius);
-    }, [itemBounds]);
+    }, [borderRadius, itemBounds, width, height]);
 
     return (
         <Svg
