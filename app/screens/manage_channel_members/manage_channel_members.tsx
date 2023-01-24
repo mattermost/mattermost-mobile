@@ -25,7 +25,7 @@ import {filterProfilesMatchingTerm} from '@utils/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    canManageMembers: boolean;
+    canManageAndRemoveMembers: boolean;
     channelId: string;
     componentId: AvailableScreens;
     currentTeamId: string;
@@ -64,7 +64,7 @@ const {USER_PROFILE} = Screens;
 const CLOSE_BUTTON_ID = 'close-user-profile';
 
 export default function ManageChannelMembers({
-    canManageMembers,
+    canManageAndRemoveMembers,
     channelId,
     componentId,
     currentTeamId,
@@ -119,12 +119,12 @@ export default function ManageChannelMembers({
             location: USER_PROFILE,
             manageMode: isManageMode,
             userId: profile.id,
-            canManageMembers,
+            canManageAndRemoveMembers,
         };
 
         Keyboard.dismiss();
         openAsBottomSheet({screen: USER_PROFILE, title, theme, closeButtonId: CLOSE_BUTTON_ID, props});
-    }, [canManageMembers, isManageMode]);
+    }, [canManageAndRemoveMembers, isManageMode]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
@@ -218,14 +218,14 @@ export default function ManageChannelMembers({
 
     useEffect(() => {
         mounted.current = true;
-        if (canManageMembers) {
+        if (canManageAndRemoveMembers) {
             updateNavigationButtons(false);
         }
         getProfiles();
         return () => {
             mounted.current = false;
         };
-    }, [canManageMembers]);
+    }, [canManageAndRemoveMembers]);
 
     useEffect(() => {
         const removeUserListener = DeviceEventEmitter.addListener(Events.REMOVE_USER_FROM_CHANNEL, handleRemoveUser);
@@ -266,8 +266,8 @@ export default function ManageChannelMembers({
                 profiles={data}
                 channelMembers={channelMembers}
                 selectedIds={EMPTY_IDS}
-                showManageMode={canManageMembers && isManageMode}
-                canManageMembers={canManageMembers}
+                showManageMode={canManageAndRemoveMembers && isManageMode}
+                canManageMembers={canManageAndRemoveMembers}
                 showNoResults={!loading}
                 teammateNameDisplay={teammateNameDisplay}
                 term={term}
