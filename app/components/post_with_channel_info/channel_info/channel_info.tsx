@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
+import TouchableWithFeedback from '@app/components/touchable_with_feedback';
 import {useServerUrl} from '@app/context/server';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -59,14 +60,18 @@ function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
             style={styles.container}
             testID={testID}
         >
-            <Text
-                style={styles.channel}
-                testID='channel_display_name'
-                numberOfLines={1}
+            <TouchableWithFeedback
                 onPress={onChannelSwitch}
+                type={'opacity'}
             >
-                {channelName}
-            </Text>
+                <Text
+                    style={styles.channel}
+                    testID='channel_display_name'
+                    numberOfLines={1}
+                >
+                    {channelName}
+                </Text>
+            </TouchableWithFeedback>
             {Boolean(teamName) && (
                 <View style={styles.teamContainer}>
                     <Text
