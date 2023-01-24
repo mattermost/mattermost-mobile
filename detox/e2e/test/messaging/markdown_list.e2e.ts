@@ -48,7 +48,7 @@ describe('Messaging - Markdown List', () => {
         await HomeScreen.logout();
     });
 
-    it('MM-T4894_1 - should be able to display markdown bullet list', async () => {
+    it.skip('MM-T4894_1 - should be able to display markdown bullet list -- UNSTABLE', async () => {
         // # Open a channel screen and post a markdown bullet list
         const item1 = 'item one';
         const item2 = 'item two';

@@ -5,7 +5,6 @@ import {Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
-import {AppStateStatus} from 'react-native';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
@@ -19,6 +18,7 @@ import {observeIsCRTEnabled} from '@queries/servers/thread';
 import ChannelPostList from './channel_post_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type {AppStateStatus} from 'react-native';
 
 const enhanced = withObservables(['channelId', 'forceQueryAfterAppState'], ({database, channelId}: {channelId: string; forceQueryAfterAppState: AppStateStatus} & WithDatabaseArgs) => {
     const isCRTEnabledObserver = observeIsCRTEnabled(database);

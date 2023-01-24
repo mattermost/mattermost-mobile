@@ -85,7 +85,7 @@ const Reactions = ({initialEmoji, location, reactions}: Props) => {
             closeButtonId='close-post-reactions'
             componentId={Screens.REACTIONS}
             initialSnapIndex={1}
-            snapPoints={[1, '50%', '90%']}
+            snapPoints={[1, '50%', '80%']}
             testID='reactions'
         />
     );

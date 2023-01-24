@@ -12,7 +12,7 @@ import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
-import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {bottomSheetModalOptions, openAsBottomSheet, showModal, showModalOverCurrentContext} from '@screens/navigation';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, location, postId, reactions, theme}: ReactionsProps) => {
-    const intl = useIntl();
+    const {formatMessage} = useIntl();
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const pressed = useRef(false);
@@ -112,16 +112,14 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     };
 
     const handleAddReaction = useCallback(preventDoubleTap(() => {
-        const title = intl.formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'});
-
-        const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
-        const passProps = {
-            closeButton,
-            onEmojiPress: handleAddReactionToPost,
-        };
-
-        showModal(Screens.EMOJI_PICKER, title, passProps);
-    }), [intl, theme]);
+        openAsBottomSheet({
+            closeButtonId: 'close-add-reaction',
+            screen: Screens.EMOJI_PICKER,
+            theme,
+            title: formatMessage({id: 'mobile.post_info.add_reaction', defaultMessage: 'Add Reaction'}),
+            props: {onEmojiPress: handleAddReactionToPost},
+        });
+    }), [formatMessage, theme]);
 
     const handleReactionPress = useCallback(async (emoji: string, remove: boolean) => {
         pressed.current = true;
@@ -143,7 +141,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
         };
 
         Keyboard.dismiss();
-        const title = isTablet ? intl.formatMessage({id: 'post.reactions.title', defaultMessage: 'Reactions'}) : '';
+        const title = isTablet ? formatMessage({id: 'post.reactions.title', defaultMessage: 'Reactions'}) : '';
 
         if (!pressed.current) {
             if (isTablet) {
@@ -152,7 +150,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
                 showModalOverCurrentContext(screen, passProps, bottomSheetModalOptions(theme));
             }
         }
-    }, [intl, isTablet, location, postId, theme]);
+    }, [formatMessage, isTablet, location, postId, theme]);
 
     let addMoreReactions = null;
     const {reactionsByName, highlightedReactions} = buildReactionsMap();

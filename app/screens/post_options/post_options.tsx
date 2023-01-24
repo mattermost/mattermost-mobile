@@ -28,6 +28,7 @@ import ReactionBar from './reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const POST_OPTIONS_BUTTON = 'close-post-options';
 
@@ -40,10 +41,10 @@ type PostOptionsProps = {
     canReply: boolean;
     combinedPost?: Post | PostModel;
     isSaved: boolean;
-    sourceScreen: typeof Screens[keyof typeof Screens];
+    sourceScreen: AvailableScreens;
     post: PostModel;
     thread?: ThreadModel;
-    componentId: string;
+    componentId: AvailableScreens;
     bindings: AppBinding[];
     serverUrl: string;
 };
@@ -84,7 +85,7 @@ const PostOptions = ({
         items.push(bottomSheetSnapPoint(optionsCount, ITEM_HEIGHT, bottom) + (canAddReaction ? REACTION_PICKER_HEIGHT + REACTION_PICKER_MARGIN : 0));
 
         if (shouldShowBindings) {
-            items.push('90%');
+            items.push('80%');
         }
 
         return items;
@@ -103,7 +104,7 @@ const PostOptions = ({
                         postId={post.id}
                     />
                 }
-                {canReply && sourceScreen !== Screens.THREAD &&
+                {canReply &&
                     <ReplyOption
                         bottomSheetId={Screens.POST_OPTIONS}
                         post={post}

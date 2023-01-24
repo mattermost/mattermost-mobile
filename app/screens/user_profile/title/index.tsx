@@ -108,8 +108,9 @@ const UserProfileTitle = ({
                 uri: imageUrl,
                 width: 400,
                 height: 400,
+                lastPictureUpdate: user.lastPictureUpdate,
                 name: displayName,
-                mime_type: 'images/png',
+                mime_type: 'image/png',
                 authorId: user.id,
                 type: 'avatar',
             };

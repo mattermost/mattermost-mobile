@@ -69,8 +69,9 @@ const ImagePreview = ({expandedLink, isReplyPost, layoutWidth, link, location, m
             width: imageProps.width,
             height: imageProps.height,
             name: extractFilenameFromUrl(imageUrl) || 'imagePreview.png',
-            mime_type: lookupMimeType(imageUrl) || 'images/png',
+            mime_type: lookupMimeType(imageUrl) || 'image/png',
             type: 'image',
+            lastPictureUpdate: 0,
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
     };

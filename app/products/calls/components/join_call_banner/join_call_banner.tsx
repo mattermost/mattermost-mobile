@@ -21,11 +21,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     channelId: string;
     serverUrl: string;
-    displayName: string;
-    channelIsDMorGM: boolean;
-    inACall: boolean;
     participants: UserModel[];
-    currentCallChannelName: string;
     channelCallStartTime: number;
     limitRestrictedInfo: LimitRestrictedInfo;
 }
@@ -86,11 +82,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const JoinCallBanner = ({
     channelId,
     serverUrl,
-    displayName,
-    channelIsDMorGM,
     participants,
-    inACall,
-    currentCallChannelName,
     channelCallStartTime,
     limitRestrictedInfo,
 }: Props) => {
@@ -104,7 +96,7 @@ const JoinCallBanner = ({
             showLimitRestrictedAlert(limitRestrictedInfo, intl);
             return;
         }
-        leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, inACall, false, channelIsDMorGM);
+        leaveAndJoinWithAlert(intl, serverUrl, channelId);
     };
 
     return (

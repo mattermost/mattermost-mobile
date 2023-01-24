@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import deepEqual from 'deep-equal';
 import merge from 'deepmerge';
 import {StatusBar, StyleSheet} from 'react-native';
 import tinyColor from 'tinycolor2';
 
 import {Preferences} from '@constants';
-import {MODAL_SCREENS_WITHOUT_BACK, SCREENS_WITH_TRANSPARENT_BACKGROUND} from '@constants/screens';
+import {MODAL_SCREENS_WITHOUT_BACK, SCREENS_AS_BOTTOM_SHEET, SCREENS_WITH_TRANSPARENT_BACKGROUND} from '@constants/screens';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {NamedStyles} from '@typings/global/styles';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 
+import type {NamedStyles} from '@typings/global/styles';
 import type {Options} from 'react-native-navigation';
 
 const rgbPattern = /^rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)$/;
@@ -99,13 +100,25 @@ export function setNavigatorStyles(componentId: string, theme: Theme, additional
         },
     };
 
-    if (!SCREENS_WITH_TRANSPARENT_BACKGROUND.has(componentId)) {
+    if (SCREENS_AS_BOTTOM_SHEET.has(componentId)) {
+        options.topBar = {
+            leftButtonColor: changeOpacity(theme.centerChannelColor, 0.56),
+            background: {
+                color: theme.centerChannelBg,
+            },
+            title: {
+                color: theme.centerChannelColor,
+            },
+        };
+    }
+
+    if (!SCREENS_WITH_TRANSPARENT_BACKGROUND.has(componentId) && !SCREENS_AS_BOTTOM_SHEET.has(componentId)) {
         options.layout = {
             componentBackgroundColor: theme.centerChannelBg,
         };
     }
 
-    if (!MODAL_SCREENS_WITHOUT_BACK.has(componentId) && options.topBar) {
+    if (!MODAL_SCREENS_WITHOUT_BACK.has(componentId) && !SCREENS_AS_BOTTOM_SHEET.has(componentId) && options.topBar) {
         options.topBar.backButton = {
             color: theme.sidebarHeaderTextColor,
         };
@@ -263,7 +276,8 @@ export function setThemeDefaults(theme: ExtendedTheme): Theme {
 }
 
 export const updateThemeIfNeeded = (theme: Theme, force = false) => {
-    if (theme !== EphemeralStore.theme || force) {
+    const storedTheme = EphemeralStore.theme;
+    if (!deepEqual(theme, storedTheme) || force) {
         EphemeralStore.theme = theme;
         requestAnimationFrame(() => {
             setNavigationStackStyles(theme);

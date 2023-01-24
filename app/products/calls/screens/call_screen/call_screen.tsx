@@ -31,7 +31,6 @@ import ReactionBar from '@calls/components/reaction_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
 import {useCallsConfig} from '@calls/state';
-import {CallParticipant, CurrentCall} from '@calls/types/calls';
 import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -40,6 +39,7 @@ import {Preferences, Screens, WebsocketEvents} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {
     bottomSheet,
     dismissAllModalsAndPopToScreen,
@@ -53,8 +53,11 @@ import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
+import type {CallParticipant, CurrentCall} from '@calls/types/calls';
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 export type Props = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentCall: CurrentCall | null;
     participantsDict: Dictionary<CallParticipant>;
     micPermissionsGranted: boolean;
@@ -414,6 +417,10 @@ const CallScreen = ({
     }, [bottom, intl, theme, isHost, EnableRecordings, waitingForRecording, recording, startRecording,
         recordOptionTitle, stopRecording, stopRecordingOptionTitle, style, switchToThread, callThreadOptionTitle,
         openChannelOptionTitle]);
+
+    useAndroidHardwareBackHandler(componentId, () => {
+        popTopScreen(componentId);
+    });
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {

@@ -9,7 +9,6 @@ import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';
-import CompassIcon from '@components/compass_icon';
 import TabletTitle from '@components/tablet_title';
 import {Events, Screens} from '@constants';
 import {CustomStatusDurationEnum, SET_CUSTOM_STATUS_FAILURE} from '@constants/custom_status';
@@ -18,7 +17,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {dismissModal, goToScreen, showModal} from '@screens/navigation';
+import {dismissModal, goToScreen, openAsBottomSheet, showModal} from '@screens/navigation';
 import {getCurrentMomentForTimezone, getRoundedTime} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {mergeNavigationOptions} from '@utils/navigation';
@@ -36,6 +35,7 @@ import CustomStatusSuggestions from './components/custom_status_suggestions';
 import RecentCustomStatuses from './components/recent_custom_statuses';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type NewStatusType = {
     emoji?: string;
@@ -48,7 +48,7 @@ type Props = {
     customStatusExpirySupported: boolean;
     currentUser: UserModel;
     recentCustomStatuses: UserCustomStatus[];
-    componentId: string;
+    componentId: AvailableScreens;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -285,12 +285,12 @@ const CustomStatus = ({
     }, [newStatus, isStatusSet, storedStatus, currentUser]);
 
     const openEmojiPicker = useCallback(preventDoubleTap(() => {
-        CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor).then((source) => {
-            const screen = Screens.EMOJI_PICKER;
-            const title = intl.formatMessage({id: 'mobile.custom_status.choose_emoji', defaultMessage: 'Choose an emoji'});
-            const passProps = {closeButton: source, onEmojiPress: handleEmojiClick};
-
-            showModal(screen, title, passProps);
+        openAsBottomSheet({
+            closeButtonId: 'close-emoji-picker',
+            screen: Screens.EMOJI_PICKER,
+            theme,
+            title: intl.formatMessage({id: 'mobile.custom_status.choose_emoji', defaultMessage: 'Choose an emoji'}),
+            props: {onEmojiPress: handleEmojiClick},
         });
     }), [theme, intl, handleEmojiClick]);
 

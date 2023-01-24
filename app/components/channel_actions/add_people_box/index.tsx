@@ -3,11 +3,12 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleProp, ViewStyle} from 'react-native';
 
 import OptionBox from '@components/option_box';
 import {Screens} from '@constants';
 import {dismissBottomSheet, goToScreen, showModal} from '@screens/navigation';
+
+import type {StyleProp, ViewStyle} from 'react-native';
 
 type Props = {
     channelId: string;

@@ -7,15 +7,15 @@ import {Alert} from 'react-native';
 
 import {deletePost} from '@actions/remote/post';
 import {BaseOption} from '@components/common_post_options';
-import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: typeof Screens[keyof typeof Screens];
+    bottomSheetId: AvailableScreens;
     combinedPost?: Post | PostModel;
     post: PostModel;
 }

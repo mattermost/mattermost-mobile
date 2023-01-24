@@ -21,6 +21,7 @@ import UserProfileTitle, {HEADER_TEXT_HEIGHT} from './title';
 import UserInfo from './user_info';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     canChangeMemberRoles: boolean;
@@ -37,8 +38,8 @@ type Props = {
     isMilitaryTime: boolean;
     isSystemAdmin: boolean;
     isTeamAdmin: boolean;
-    location: string;
     manageMode?: boolean;
+    location: AvailableScreens;
     teamId: string;
     teammateDisplayName: string;
     user: UserModel;
@@ -59,6 +60,7 @@ const messages = defineMessages({
         defaultMessage: 'Manage member',
     },
 });
+const channelContextScreens: AvailableScreens[] = [Screens.CHANNEL, Screens.THREAD];
 
 const UserProfile = ({
     canChangeMemberRoles, channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
@@ -69,7 +71,7 @@ const UserProfile = ({
     const {formatMessage, locale} = useIntl();
     const serverUrl = useServerUrl();
     const {bottom} = useSafeAreaInsets();
-    const channelContext = [Screens.CHANNEL, Screens.THREAD].includes(location);
+    const channelContext = channelContextScreens.includes(location);
     const showOptions: OptionsType = channelContext && !user.isBot ? 'all' : 'message';
     const override = Boolean(userIconOverride || usernameOverride);
     const timezone = getUserTimezone(user);

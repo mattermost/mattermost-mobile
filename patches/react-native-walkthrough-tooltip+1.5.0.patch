@@ -1,0 +1,25 @@
+diff --git a/node_modules/react-native-walkthrough-tooltip/src/tooltip.js b/node_modules/react-native-walkthrough-tooltip/src/tooltip.js
+index db612fd..0262d6d 100644
+--- a/node_modules/react-native-walkthrough-tooltip/src/tooltip.js
++++ b/node_modules/react-native-walkthrough-tooltip/src/tooltip.js
+@@ -212,7 +212,7 @@ class Tooltip extends Component {
+     this.setState(
+       {
+         windowDims: dims.window,
+-        contentSize: new Size(0, 0),
++        // contentSize: new Size(0, 0),
+         adjustedContentSize: new Size(0, 0),
+         anchorPoint: new Point(0, 0),
+         tooltipOrigin: new Point(0, 0),
+@@ -268,9 +268,9 @@ class Tooltip extends Component {
+           this.childWrapper.current &&
+           typeof this.childWrapper.current.measure === 'function'
+         ) {
+-          this.childWrapper.current.measure(
++          this.childWrapper.current.measureInWindow(
+             (x, y, width, height, pageX, pageY) => {
+-              const childRect = new Rect(pageX, pageY, width, height);
++              const childRect = new Rect(x, y, width, height);
+               if (
+                 Object.values(childRect).every(value => value !== undefined)
+               ) {

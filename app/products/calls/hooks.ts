@@ -11,11 +11,12 @@ import Permissions from 'react-native-permissions';
 import {initializeVoiceTrack} from '@calls/actions/calls';
 import {setMicPermissionsGranted} from '@calls/state';
 import {errorAlert} from '@calls/utils';
-import {Client} from '@client/rest';
-import ClientError from '@client/rest/error';
 import {useServerUrl} from '@context/server';
 import {useAppState} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
+
+import type {Client} from '@client/rest';
+import type ClientError from '@client/rest/error';
 
 export const useTryCallsFunction = (fn: () => void) => {
     const intl = useIntl();

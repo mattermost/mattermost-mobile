@@ -18,7 +18,10 @@ export interface ClientTeamsMix {
     getMyTeamMembers: () => Promise<TeamMembership[]>;
     getTeamMembers: (teamId: string, page?: number, perPage?: number) => Promise<TeamMembership[]>;
     getTeamMember: (teamId: string, userId: string) => Promise<TeamMembership>;
+    getTeamMembersByIds: (teamId: string, userIds: string[]) => Promise<TeamMembership[]>;
     addToTeam: (teamId: string, userId: string) => Promise<TeamMembership>;
+    addUsersToTeamGracefully: (teamId: string, userIds: string[]) => Promise<TeamMemberWithError[]>;
+    sendEmailInvitesToTeamGracefully: (teamId: string, emails: string[]) => Promise<TeamInviteWithError[]>;
     joinTeam: (inviteId: string) => Promise<TeamMembership>;
     removeFromTeam: (teamId: string, userId: string) => Promise<any>;
     getTeamStats: (teamId: string) => Promise<any>;
@@ -120,6 +123,13 @@ const ClientTeams = (superclass: any) => class extends superclass {
         );
     };
 
+    getTeamMembersByIds = (teamId: string, userIds: string[]) => {
+        return this.doFetch(
+            `${this.getTeamMembersRoute(teamId)}/ids`,
+            {method: 'post', body: userIds},
+        );
+    };
+
     addToTeam = async (teamId: string, userId: string) => {
         this.analytics.trackAPI('api_teams_invite_members', {team_id: teamId});
 
@@ -127,6 +137,27 @@ const ClientTeams = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getTeamMembersRoute(teamId)}`,
             {method: 'post', body: member},
+        );
+    };
+
+    addUsersToTeamGracefully = (teamId: string, userIds: string[]) => {
+        this.analytics.trackAPI('api_teams_batch_add_members', {team_id: teamId, count: userIds.length});
+
+        const members: Array<{team_id: string; user_id: string}> = [];
+        userIds.forEach((id) => members.push({team_id: teamId, user_id: id}));
+
+        return this.doFetch(
+            `${this.getTeamMembersRoute(teamId)}/batch?graceful=true`,
+            {method: 'post', body: members},
+        );
+    };
+
+    sendEmailInvitesToTeamGracefully = (teamId: string, emails: string[]) => {
+        this.analytics.trackAPI('api_teams_invite_members', {team_id: teamId});
+
+        return this.doFetch(
+            `${this.getTeamRoute(teamId)}/invite/email?graceful=true`,
+            {method: 'post', body: emails},
         );
     };
 

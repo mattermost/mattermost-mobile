@@ -3,10 +3,11 @@
 
 import React, {RefObject, useEffect, useRef, useState} from 'react';
 import {AppState, Keyboard, NativeModules, Platform, useWindowDimensions, View} from 'react-native';
-import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Device} from '@constants';
+
+import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
 const {MattermostManaged} = NativeModules;
 const isRunningInSplitView = MattermostManaged.isRunningInSplitView;

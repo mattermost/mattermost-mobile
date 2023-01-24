@@ -2,8 +2,6 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable max-lines */
-import {Model} from '@nozbe/watermelondb';
-import {IntlShape} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
 import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
@@ -42,7 +40,9 @@ import {fetchProfilesInChannel, fetchProfilesInGroupChannels, fetchProfilesPerCh
 
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
+import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type {IntlShape} from 'react-intl';
 
 export type MyChannelsRequest = {
     categories?: CategoryWithChannels[];

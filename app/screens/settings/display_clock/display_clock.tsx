@@ -16,13 +16,15 @@ import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 const CLOCK_TYPE = {
     NORMAL: 'NORMAL',
     MILITARY: 'MILITARY',
 } as const;
 
 type DisplayClockProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentUserId: string;
     hasMilitaryTimeFormat: boolean;
 }
