@@ -101,6 +101,7 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
                 break;
             }
             case DeepLink.Plugin: {
+                // https://mattermost.atlassian.net/browse/MM-49846
                 // const deepLinkData = parsed.data as DeepLinkPlugin;
                 // showModal('PluginInternal', deepLinkData.id, {link: location});
                 break;

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {StyleProp, Text, View, ViewStyle} from 'react-native';
 
@@ -81,7 +81,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             fontSize: 15,
             fontFamily: 'OpenSans',
-            flexShrink: 5,
         },
         icon: {
             marginLeft: 4,
@@ -113,6 +112,19 @@ const UserItem = ({
 
     const userItemTestId = `${testID}.${user?.id}`;
 
+    let rowUsernameFlexShrink = 1;
+    if (user) {
+        for (const rowInfoElem of [bot, guest, Boolean(name.length), isCurrentUser]) {
+            if (rowInfoElem) {
+                rowUsernameFlexShrink++;
+            }
+        }
+    }
+
+    const usernameTextStyle = useMemo(() => {
+        return [style.rowUsername, {flexShrink: rowUsernameFlexShrink}];
+    }, [user, rowUsernameFlexShrink]);
+
     return (
         <View
             style={[style.row, containerStyle]}
@@ -127,7 +139,7 @@ const UserItem = ({
                 />
             </View>
             <View
-                style={[style.rowInfo, {maxWidth: shared ? '75%' : '80%'}]}
+                style={[style.rowInfo, {maxWidth: shared ? '75%' : '85%'}]}
             >
                 {bot && <BotTag testID={`${userItemTestId}.bot.tag`}/>}
                 {guest && <GuestTag testID={`${userItemTestId}.guest.tag`}/>}
@@ -148,15 +160,15 @@ const UserItem = ({
                         testID={`${userItemTestId}.current_user_indicator`}
                     />
                 }
-                {Boolean(user) &&
-                <Text
-                    style={style.rowUsername}
-                    numberOfLines={1}
-                    testID={`${userItemTestId}.username`}
-                >
-                    {` @${user!.username}`}
-                </Text>
-                }
+                {Boolean(user) && (
+                    <Text
+                        style={usernameTextStyle}
+                        numberOfLines={1}
+                        testID={`${userItemTestId}.username`}
+                    >
+                        {` @${user!.username}`}
+                    </Text>
+                )}
             </View>
             {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji && !customStatusExpired) && (
                 <CustomStatusEmoji

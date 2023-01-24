@@ -100,6 +100,7 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
 describe('Actions.Calls', () => {
     const {newConnection} = require('@calls/connection/connection');
     InCallManager.setSpeakerphoneOn = jest.fn();
+    InCallManager.setForceSpeakerphoneOn = jest.fn();
     // eslint-disable-next-line
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;

@@ -6,6 +6,7 @@ import {LayoutChangeEvent, Platform, ScrollView, useWindowDimensions, View} from
 import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from '@components/selected_chip';
 import Toast from '@components/toast';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
@@ -13,7 +14,7 @@ import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import SelectedUser, {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from './selected_user';
+import SelectedUser from './selected_user';
 
 type Props = {
 
