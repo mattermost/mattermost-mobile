@@ -412,9 +412,7 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         // Plugins
         case WebsocketEvents.PLUGIN_STATUSES_CHANGED:
-        case WebsocketEvents.PLUGIN_ENABLED:
-        case WebsocketEvents.PLUGIN_DISABLED:
-            // Do nothing, these events don't need logic in the mobile app
+            // Do nothing, this event doesn't need logic in the mobile app
             break;
     }
 }
