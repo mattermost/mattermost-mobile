@@ -939,5 +939,21 @@
     "connection_banner.connecting": "Łączenie...",
     "skintone_selector.tooltip.title": "Wybierz swój domyślny odcień wyglądu",
     "skintone_selector.tooltip.description": "Możesz teraz wybrać odcień wyglądu, który wolisz używać dla swoich emojis.",
-    "default_skin_tone": "Domyślny odcień wyglądu"
+    "default_skin_tone": "Domyślny odcień wyglądu",
+    "invite.summary.report.sent": "{count} successful {count, plural, one {zaproszenie} other {zaproszeń}}",
+    "invite.summary.report.notSent": "{count} {count, plural, one {zaproszenie nie wysłane} other {zaproszeń nie wysłanych}}",
+    "invite.summary.not_sent": "{notSentCount, plural, one {Zaproszenie nie zostało wysłane} other {Zaproszeń nie zostało wysłanych}}",
+    "invite.summary.member_invite": "Zaproszony jako członek {teamDisplayName}",
+    "invite.summary.error": "{invitationsCount, plural, one {Zaproszenie} other {Zaproszeń}} nie mogło zostać wysłane z powodzeniem",
+    "invite.summary.email_invite": "Został wysłany e-mail z zaproszeniem",
+    "invite.summary.done": "Gotowe",
+    "invite.shareLink": "Udostępnij link",
+    "invite.sendInvitationsTo": "Wyślij zaproszenia do…",
+    "invite.send_invite": "Wyślij",
+    "invite.send_error": "Coś poszło nie tak podczas próby wysłania zaproszeń. Proszę sprawdzić połączenie sieciowe i spróbować ponownie.",
+    "invite.searchPlaceholder": "Wprowadź nazwę lub adres e-mail…",
+    "invite.search.no_results": "Nie znaleziono nikogo pasującego",
+    "invite.search.email_invite": "zaproś",
+    "invite.members.user_is_guest": "Skontaktuj się z administratorem, aby uczynić tego gościa pełnoprawnym członkiem",
+    "invite.members.already_member": "Ta osoba jest już członkiem zespołu"
 }
