@@ -3,11 +3,10 @@
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
 import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
-import {makeStyleSheetFromTheme} from '@app/utils/theme';
 import CombinedUserActivity from '@components/post_list/combined_user_activity';
 import DateSeparator from '@components/post_list/date_separator';
 import NewMessagesLine from '@components/post_list/new_message_line';
@@ -70,23 +69,21 @@ const CONTENT_OFFSET_THRESHOLD = 160;
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
 const keyExtractor = (item: PostListItem | PostListOtherItem) => (item.type === 'post' ? item.value.id : item.value);
 
-const getStyleFromTheme = makeStyleSheetFromTheme(() => {
-    return {
-        flex: {
-            flex: 1,
-        },
-        container: {
-            flex: 1,
-            scaleY: -1,
-        },
-        scale: {
-            ...Platform.select({
-                android: {
-                    scaleY: -1,
-                },
-            }),
-        },
-    };
+const styles = StyleSheet.create({
+    flex: {
+        flex: 1,
+    },
+    container: {
+        flex: 1,
+        scaleY: -1,
+    },
+    scale: {
+        ...Platform.select({
+            android: {
+                scaleY: -1,
+            },
+        }),
+    },
 });
 
 const PostList = ({
@@ -120,7 +117,6 @@ const PostList = ({
     savedPostIds,
 }: Props) => {
     const listRef = useRef<FlatList<string | PostModel>>(null);
-    const [isNewMessages, setIsNewMessages] = useState(false);
     const onScrollEndIndexListener = useRef<onScrollEndIndexListenerEvent>();
     const onViewableItemsChangedListener = useRef<ViewableItemsChangedListenerEvent>();
     const scrolledToHighlighted = useRef(false);
@@ -129,7 +125,6 @@ const PostList = ({
     const [showScrollToEndBtn, setShowScrollToEndBtn] = useState(false);
     const theme = useTheme();
     const serverUrl = useServerUrl();
-    const styles = getStyleFromTheme(theme);
     const orderedPosts = useMemo(() => {
         return preparePostList(posts, lastViewedAt, showNewMessageLine, currentUserId, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, currentTimezone, location === Screens.THREAD, savedPostIds);
     }, [posts, lastViewedAt, showNewMessageLine, currentTimezone, currentUsername, shouldShowJoinLeaveMessages, isTimezoneEnabled, location, savedPostIds]);
@@ -162,10 +157,6 @@ const PostList = ({
             scrollBottomListener.remove();
         };
     }, []);
-
-    useEffect(() => {
-        setIsNewMessages(initialIndex > -1);
-    }, [initialIndex]);
 
     const onRefresh = useCallback(async () => {
         setRefreshing(true);
@@ -382,7 +373,7 @@ const PostList = ({
                     />
                     <ScrollToEndView
                         onScrollToEnd={onScrollToEnd}
-                        isNewMessage={isNewMessages}
+                        isNewMessage={initialIndex > -1}
                         showScrollToEndBtn={showScrollToEndBtn}
                         message={location === Screens.THREAD ? 'New replies' : 'New messages'}
                     />
