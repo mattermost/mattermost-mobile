@@ -165,14 +165,17 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
     }
 
     const finalUrl = urlParse(urlToMatch);
-    if (parsedBase.pathname) {
+    const baseSubpath = parsedBase.pathname.replace('/', '');
+    const baseHostname = parsedBase.hostname;
+    const urlSubpath = finalUrl.pathname.split('/')[1];
+    const urlHostname = finalUrl.hostname;
+
+    if (baseSubpath) {
         // if the server is in a subpath
-        const baseSubpath = parsedBase.pathname.replace('/', '');
-        const urlSubpath = finalUrl.pathname.split('/')[1];
-        if (finalUrl.hostname === parsedBase.hostname && urlSubpath === baseSubpath) {
+        if (urlHostname === baseHostname && urlSubpath === baseSubpath) {
             return urlToMatch;
         }
-    } else if (finalUrl.hostname === parsedBase.hostname) {
+    } else if (urlHostname === baseHostname) {
         return urlToMatch;
     }
 
