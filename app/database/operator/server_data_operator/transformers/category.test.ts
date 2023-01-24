@@ -34,7 +34,7 @@ describe('*** CATEGORY Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords.collection.modelClass.name).toBe('CategoryModel');
+        expect(preparedRecords.collection.table).toBe('Category');
     });
 
     it('=> transformCategoryChannelRecord: should return an array of type CategoryChannelModel', async () => {
@@ -58,6 +58,6 @@ describe('*** CATEGORY Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords.collection.modelClass.name).toBe('CategoryChannelModel');
+        expect(preparedRecords.collection.table).toBe('CategoryChannel');
     });
 });

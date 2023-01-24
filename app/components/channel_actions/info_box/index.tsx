@@ -3,7 +3,6 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleProp, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import OptionBox from '@components/option_box';
@@ -11,6 +10,8 @@ import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
+
+import type {StyleProp, ViewStyle} from 'react-native';
 
 type Props = {
     channelId: string;

@@ -4,7 +4,6 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
-import {CameraOptions} from 'react-native-image-picker';
 
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem from '@components/slide_up_panel_item';
@@ -13,6 +12,8 @@ import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type {CameraOptions} from 'react-native-image-picker';
 
 type Props = {
     onPress: (options: CameraOptions) => void;

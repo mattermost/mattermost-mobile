@@ -7,10 +7,10 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import CallScreen from '@calls/screens/call_screen/call_screen';
 import {observeCurrentCall, observeGlobalCallsState} from '@calls/state';
-import {CallParticipant} from '@calls/types/calls';
 import DatabaseManager from '@database/manager';
 import {observeTeammateNameDisplay, queryUsersById} from '@queries/servers/user';
 
+import type {CallParticipant} from '@calls/types/calls';
 import type UserModel from '@typings/database/models/servers/user';
 
 const enhanced = withObservables([], () => {

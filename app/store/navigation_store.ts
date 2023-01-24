@@ -1,19 +1,21 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 class NavigationStore {
-    private screensInStack: string[] = [];
-    private modalsInStack: string[] = [];
+    private screensInStack: AvailableScreens[] = [];
+    private modalsInStack: AvailableScreens[] = [];
     private visibleTab = 'Home';
     private tosOpen = false;
 
-    addModalToStack = (modalId: string) => {
+    addModalToStack = (modalId: AvailableScreens) => {
         this.removeModalFromStack(modalId);
         this.addScreenToStack(modalId);
         this.modalsInStack.unshift(modalId);
     };
 
-    addScreenToStack = (screenId: string) => {
+    addScreenToStack = (screenId: AvailableScreens) => {
         this.removeScreenFromStack(screenId);
         this.screensInStack.unshift(screenId);
     };
@@ -36,21 +38,21 @@ class NavigationStore {
 
     isToSOpen = () => this.tosOpen;
 
-    popTo = (screenId: string) => {
+    popTo = (screenId: AvailableScreens) => {
         const index = this.screensInStack.indexOf(screenId);
         if (index > -1) {
             this.screensInStack.splice(0, index);
         }
     };
 
-    removeScreenFromStack = (screenId: string) => {
+    removeScreenFromStack = (screenId: AvailableScreens) => {
         const index = this.screensInStack.indexOf(screenId);
         if (index > -1) {
             this.screensInStack.splice(index, 1);
         }
     };
 
-    removeModalFromStack = (modalId: string) => {
+    removeModalFromStack = (modalId: AvailableScreens) => {
         const indexInStack = this.screensInStack.indexOf(modalId);
         if (indexInStack > -1) {
             // This removes all the screens that were on top of the modal
@@ -78,7 +80,7 @@ class NavigationStore {
      * and can easily run forever if the screen is never prevesented.
      * @param screenId string
      */
-    waitUntilScreenHasLoaded = async (screenId: string) => {
+    waitUntilScreenHasLoaded = async (screenId: AvailableScreens) => {
         let found = false;
         while (!found) {
             // eslint-disable-next-line no-await-in-loop
@@ -94,7 +96,7 @@ class NavigationStore {
      * this function will run until the screen is in the top
      * @param screenId string
      */
-    waitUntilScreenIsTop = async (screenId: string) => {
+    waitUntilScreenIsTop = async (screenId: AvailableScreens) => {
         let found = false;
         while (!found) {
             // eslint-disable-next-line no-await-in-loop
@@ -111,7 +113,7 @@ class NavigationStore {
      * and can easily run forever if the screen is never removed.
      * @param screenId string
      */
-    waitUntilScreensIsRemoved = async (screenId: string) => {
+    waitUntilScreensIsRemoved = async (screenId: AvailableScreens) => {
         let found = false;
         while (!found) {
             // eslint-disable-next-line no-await-in-loop

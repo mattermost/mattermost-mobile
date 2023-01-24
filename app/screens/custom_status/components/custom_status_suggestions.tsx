@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {IntlShape} from 'react-intl';
 import {View} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
@@ -10,6 +9,8 @@ import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import CustomStatusSuggestion from './custom_status_suggestion';
+
+import type {IntlShape} from 'react-intl';
 
 type Props = {
     intl: IntlShape;

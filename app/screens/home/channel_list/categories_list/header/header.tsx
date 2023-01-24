@@ -33,7 +33,6 @@ type Props = {
     canJoinChannels: boolean;
     canInvitePeople: boolean;
     displayName?: string;
-    inviteId?: string;
     iconPad?: boolean;
     onHeaderPress?: () => void;
     pushProxyStatus: string;
@@ -107,7 +106,6 @@ const ChannelListHeader = ({
     canJoinChannels,
     canInvitePeople,
     displayName,
-    inviteId,
     iconPad,
     onHeaderPress,
     pushProxyStatus,
@@ -134,8 +132,6 @@ const ChannelListHeader = ({
                     canCreateChannels={canCreateChannels}
                     canJoinChannels={canJoinChannels}
                     canInvitePeople={canInvitePeople}
-                    displayName={displayName}
-                    inviteId={inviteId}
                 />
             );
         };

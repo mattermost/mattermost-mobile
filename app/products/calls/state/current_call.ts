@@ -4,7 +4,7 @@
 import {useEffect, useState} from 'react';
 import {BehaviorSubject} from 'rxjs';
 
-import {CurrentCall} from '@calls/types/calls';
+import type {CurrentCall} from '@calls/types/calls';
 
 const currentCallSubject = new BehaviorSubject<CurrentCall | null>(null);
 

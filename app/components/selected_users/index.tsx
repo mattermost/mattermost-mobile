@@ -6,6 +6,7 @@ import {LayoutChangeEvent, Platform, ScrollView, useWindowDimensions, View} from
 import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from '@components/selected_chip';
 import Toast from '@components/toast';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
@@ -13,7 +14,7 @@ import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
 import Button from '@screens/bottom_sheet/button';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import SelectedUser, {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from './selected_user';
+import SelectedUser from './selected_user';
 
 type Props = {
 
@@ -95,6 +96,7 @@ const TOAST_BOTTOM_MARGIN = 24;
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
+            backgroundColor: theme.centerChannelBg,
             borderBottomWidth: 0,
             borderColor: changeOpacity(theme.centerChannelColor, 0.16),
             borderTopLeftRadius: 12,
@@ -231,10 +233,10 @@ export default function SelectedUsers({
     }, [showToast, keyboard]);
 
     const animatedViewStyle = useAnimatedStyle(() => ({
-        height: withTiming(totalPanelHeight.value, {duration: 250}),
+        height: withTiming(totalPanelHeight.value + insets.bottom, {duration: 250}),
         borderWidth: isVisible ? 1 : 0,
-        maxHeight: isVisible ? PANEL_MAX_HEIGHT + BUTTON_HEIGHT : 0,
-    }), [totalPanelHeight.value, isVisible]);
+        maxHeight: isVisible ? PANEL_MAX_HEIGHT + BUTTON_HEIGHT + insets.bottom : 0,
+    }), [isVisible, insets]);
 
     const animatedButtonStyle = useAnimatedStyle(() => ({
         opacity: withTiming(isVisible ? 1 : 0, {duration: isVisible ? 500 : 100}),

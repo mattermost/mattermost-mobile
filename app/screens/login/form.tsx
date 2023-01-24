@@ -6,7 +6,6 @@ import React, {MutableRefObject, useCallback, useEffect, useMemo, useRef, useSta
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, TextInput, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {login} from '@actions/remote/session';
 import CompassIcon from '@app/components/compass_icon';
@@ -24,6 +23,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type {LaunchProps} from '@typings/launch';
+import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 interface LoginProps extends LaunchProps {
     config: Partial<ClientConfig>;

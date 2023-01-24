@@ -6,12 +6,13 @@ import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
 
 import {useTheme} from '@context/theme';
-import {OnboardingItem} from '@typings/screens/onboarding';
 
 import CallsSvg from './illustrations/calls';
 import ChatSvg from './illustrations/chat';
 import IntegrationsSvg from './illustrations/integrations';
 import TeamCommunicationSvg from './illustrations/team_communication';
+
+import type {OnboardingItem} from '@typings/screens/onboarding';
 
 const styles = StyleSheet.create({
     image: {

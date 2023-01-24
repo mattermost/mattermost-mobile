@@ -6,13 +6,14 @@ import {useIntl} from 'react-intl';
 
 import {showPermalink} from '@actions/remote/permalink';
 import {BaseOption} from '@components/common_post_options';
-import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
-    bottomSheetId: typeof Screens[keyof typeof Screens];
+    bottomSheetId: AvailableScreens;
     threadId: string;
 }
 const OpenInChannelOption = ({bottomSheetId, threadId}: Props) => {

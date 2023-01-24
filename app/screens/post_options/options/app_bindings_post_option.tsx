@@ -9,19 +9,19 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {postEphemeralCallResponseForPost} from '@actions/remote/apps';
 import OptionItem from '@components/option_item';
-import {Screens} from '@constants';
 import {useAppBinding} from '@hooks/apps';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {dismissBottomSheet} from '@screens/navigation';
-import {WithDatabaseArgs} from '@typings/database/database';
 import {isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: typeof Screens[keyof typeof Screens];
+    bottomSheetId: AvailableScreens;
     bindings: AppBinding[];
     post: PostModel;
     serverUrl: string;
