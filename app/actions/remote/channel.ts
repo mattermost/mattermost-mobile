@@ -79,19 +79,15 @@ export async function fetchChannelMembersByIds(serverUrl: string, channelId: str
         if (!fetchOnly) {
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator && members.length) {
-                const modelPromises: Array<Promise<Model[]>> = [];
-                const membership = members.map((u) => ({
+                const memberships = members.map((u) => ({
                     channel_id: channelId,
                     user_id: u.user_id,
                     scheme_admin: u.scheme_admin,
                 }));
-                modelPromises.push(operator.handleChannelMembership({
-                    channelMemberships: membership,
-                    prepareRecordsOnly: true,
-                }));
-
-                const models = await Promise.all(modelPromises);
-                await operator.batchRecords(models.flat());
+                await operator.handleChannelMembership({
+                    channelMemberships: memberships,
+                    prepareRecordsOnly: false,
+                });
             }
         }
 
