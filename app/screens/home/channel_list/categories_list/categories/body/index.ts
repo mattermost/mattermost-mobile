@@ -9,7 +9,6 @@ import {map, switchMap, combineLatestWith} from 'rxjs/operators';
 
 import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
-import {MyChannelModel} from '@database/models/server';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {observeChannelsByCategoryChannelSortOrder, observeChannelsByLastPostAtInCategory} from '@queries/servers/categories';
 import {observeNotifyPropsByChannels, queryChannelsByNames, queryEmptyDirectAndGroupChannels} from '@queries/servers/channel';
@@ -22,6 +21,7 @@ import CategoryBody from './category_body';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type ChannelData = Pick<ChannelModel, 'id' | 'displayName'> & {

@@ -133,7 +133,7 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
-};
+} as const;
 
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     BROWSE_CHANNELS,

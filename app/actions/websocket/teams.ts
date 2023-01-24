@@ -1,15 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {removeUserFromTeam} from '@actions/local/team';
 import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchMyTeam, handleKickFromTeam, updateCanJoinTeams} from '@actions/remote/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
-import ServerDataOperator from '@database/operator/server_data_operator';
 import NetworkManager from '@managers/network_manager';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
@@ -18,6 +15,9 @@ import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {logDebug} from '@utils/log';
+
+import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Model} from '@nozbe/watermelondb';
 
 export async function handleTeamArchived(serverUrl: string, msg: WebSocketMessage) {
     try {

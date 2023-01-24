@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useMemo, useReducer, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard} from 'react-native';
-import {ImageResource} from 'react-native-navigation';
 
 import {createChannel, patchChannel as handlePatchChannel, switchToChannelById} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
@@ -12,6 +11,7 @@ import {General} from '@constants';
 import {MIN_CHANNEL_NAME_LENGTH} from '@constants/channel';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {buildNavigationButton, dismissModal, popTopScreen, setButtons} from '@screens/navigation';
 import {validateDisplayName} from '@utils/channel';
@@ -20,9 +20,11 @@ import ChannelInfoForm from './channel_info_form';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
+import type {AvailableScreens} from '@typings/screens/navigation';
+import type {ImageResource} from 'react-native-navigation';
 
 type Props = {
-    componentId: string;
+    componentId: AvailableScreens;
     channel?: ChannelModel;
     channelInfo?: ChannelInfoModel;
     headerOnly?: boolean;
@@ -49,7 +51,7 @@ interface RequestAction {
     error?: string;
 }
 
-const close = (componentId: string, isModal: boolean): void => {
+const close = (componentId: AvailableScreens, isModal: boolean): void => {
     Keyboard.dismiss();
     if (isModal) {
         dismissModal({componentId});
@@ -228,6 +230,7 @@ const CreateOrEditChannel = ({
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, handleClose, [handleClose]);
     useNavButtonPressed(CREATE_BUTTON_ID, componentId, onCreateChannel, [onCreateChannel]);
     useNavButtonPressed(EDIT_BUTTON_ID, componentId, onUpdateChannel, [onUpdateChannel]);
+    useAndroidHardwareBackHandler(componentId, handleClose);
 
     return (
         <ChannelInfoForm

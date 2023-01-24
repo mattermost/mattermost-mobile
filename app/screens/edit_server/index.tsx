@@ -5,10 +5,11 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import DatabaseManager from '@database/manager';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {getServerByDisplayName} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal} from '@screens/navigation';
@@ -18,10 +19,11 @@ import Form from './form';
 import Header from './header';
 
 import type ServersModel from '@typings/database/models/app/servers';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 interface ServerProps {
     closeButtonId?: string;
-    componentId: string;
+    componentId: AvailableScreens;
     server: ServersModel;
     theme: Theme;
 }
@@ -49,19 +51,13 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
     const [displayNameError, setDisplayNameError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
 
+    const close = () => {
+        dismissModal({componentId});
+    };
+
     useEffect(() => {
         setButtonDisabled(Boolean(!displayName || displayName === server.displayName));
     }, [displayName]);
-
-    useEffect(() => {
-        const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
-            if (closeButtonId && buttonId === closeButtonId) {
-                dismissModal({componentId});
-            }
-        });
-
-        return () => navigationEvents.remove();
-    }, []);
 
     const handleUpdate = useCallback(async () => {
         if (buttonDisabled) {
@@ -92,6 +88,9 @@ const EditServer = ({closeButtonId, componentId, server, theme}: ServerProps) =>
         setDisplayName(text);
         setDisplayNameError(undefined);
     }, []);
+
+    useNavButtonPressed(closeButtonId || '', componentId, close, []);
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <View style={styles.flex}>

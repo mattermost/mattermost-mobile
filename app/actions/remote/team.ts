@@ -1,11 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
-import {Client} from '@client/rest';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -27,7 +25,9 @@ import {fetchPostsForChannel, fetchPostsForUnreadChannels} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 
+import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
+import type {Model} from '@nozbe/watermelondb';
 
 export type MyTeamsRequest = {
     teams?: Team[];

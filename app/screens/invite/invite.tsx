@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useState, useRef} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {Keyboard, View, LayoutChangeEvent} from 'react-native';
-import {OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {getTeamMembersByIds, addUsersToTeam, sendEmailInvitesToTeam} from '@actions/remote/team';
@@ -25,7 +24,8 @@ import {isGuest} from '@utils/user';
 import Selection from './selection';
 import Summary from './summary';
 
-import type {NavButtons} from '@typings/screens/navigation';
+import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
+import type {OptionsTopBarButton} from 'react-native-navigation';
 
 const CLOSE_BUTTON_ID = 'close-invite';
 const SEND_BUTTON_ID = 'send-invite';
@@ -88,7 +88,7 @@ enum Stage {
 }
 
 type InviteProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     teamId: string;
     teamDisplayName: string;
     teamLastIconUpdate: number;

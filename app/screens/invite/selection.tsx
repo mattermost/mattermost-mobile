@@ -25,10 +25,11 @@ import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-import {SearchResult} from './invite';
 import SelectionSearchBar from './selection_search_bar';
 import SelectionTeamBar from './selection_team_bar';
 import TextItem, {TextItemType} from './text_item';
+
+import type {SearchResult} from './invite';
 
 const AUTOCOMPLETE_ADJUST = 5;
 const KEYBOARD_HEIGHT_ADJUST = 3;

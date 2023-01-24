@@ -96,6 +96,7 @@ const TOAST_BOTTOM_MARGIN = 24;
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         container: {
+            backgroundColor: theme.centerChannelBg,
             borderBottomWidth: 0,
             borderColor: changeOpacity(theme.centerChannelColor, 0.16),
             borderTopLeftRadius: 12,
@@ -232,10 +233,10 @@ export default function SelectedUsers({
     }, [showToast, keyboard]);
 
     const animatedViewStyle = useAnimatedStyle(() => ({
-        height: withTiming(totalPanelHeight.value, {duration: 250}),
+        height: withTiming(totalPanelHeight.value + insets.bottom, {duration: 250}),
         borderWidth: isVisible ? 1 : 0,
-        maxHeight: isVisible ? PANEL_MAX_HEIGHT + BUTTON_HEIGHT : 0,
-    }), [totalPanelHeight.value, isVisible]);
+        maxHeight: isVisible ? PANEL_MAX_HEIGHT + BUTTON_HEIGHT + insets.bottom : 0,
+    }), [isVisible, insets]);
 
     const animatedButtonStyle = useAnimatedStyle(() => ({
         opacity: withTiming(isVisible ? 1 : 0, {duration: isVisible ? 500 : 100}),

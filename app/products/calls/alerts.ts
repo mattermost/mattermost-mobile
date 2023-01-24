@@ -5,7 +5,6 @@ import {Alert} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, unmuteMyself} from '@calls/actions';
 import {leaveCallPopCallScreen} from '@calls/actions/calls';
-import {LimitRestrictedInfo} from '@calls/observers';
 import {
     getCallsConfig,
     getCallsState,
@@ -21,6 +20,7 @@ import {isDMorGM} from '@utils/channel';
 import {logError} from '@utils/log';
 import {isSystemAdmin} from '@utils/user';
 
+import type {LimitRestrictedInfo} from '@calls/observers';
 import type {IntlShape} from 'react-intl';
 
 // Only allow one recording alert per call.

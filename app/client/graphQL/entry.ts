@@ -1,10 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Client} from '@client/rest';
 import {MEMBERS_PER_PAGE} from '@constants/graphql';
 import NetworkManager from '@managers/network_manager';
 
 import QueryNames from './constants';
+
+import type {Client} from '@client/rest';
 
 const doGQLQuery = async (serverUrl: string, query: string, variables: {[name: string]: any}, operationName: string) => {
     let client: Client;

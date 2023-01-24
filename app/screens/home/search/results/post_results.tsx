@@ -76,6 +76,8 @@ const PostResults = ({
             data={orderedPosts}
             indicatorStyle='black'
             initialNumToRender={5}
+
+            //@ts-expect-error key not defined in types
             listKey={'posts'}
             maxToRenderPerBatch={5}
             nestedScrollEnabled={true}

@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, KeyboardType, LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
+import {Alert, Keyboard, LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
@@ -11,18 +11,19 @@ import Autocomplete from '@components/autocomplete';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
-import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EditPostInput, {EditPostInputRef} from './edit_post_input';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const AUTOCOMPLETE_SEPARATION = 8;
 
@@ -46,7 +47,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 const RIGHT_BUTTON = buildNavigationButton('edit-post', 'edit_post.save.button');
 
 type EditPostProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     closeButtonId: string;
     post: PostModel;
     maxPostSize: number;
@@ -54,7 +55,6 @@ type EditPostProps = {
     canDelete: boolean;
 }
 const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttached, canDelete}: EditPostProps) => {
-    const [keyboardType, setKeyboardType] = useState<KeyboardType>('default');
     const [postMessage, setPostMessage] = useState(post.message);
     const [cursorPosition, setCursorPosition] = useState(post.message.length);
     const [errorLine, setErrorLine] = useState<string | undefined>();
@@ -109,9 +109,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     }, []);
 
     const onTextSelectionChange = useCallback((curPos: number = cursorPosition) => {
-        if (Platform.OS === 'ios') {
-            setKeyboardType(switchKeyboardForCodeBlocks(postMessage, curPos));
-        }
         setCursorPosition(curPos);
     }, [cursorPosition, postMessage]);
 
@@ -197,13 +194,13 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
 
     useNavButtonPressed(RIGHT_BUTTON.id, componentId, onSavePostMessage, [postMessage]);
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
+    useAndroidHardwareBackHandler(componentId, onClose);
 
     const bottomSpace = (dimensions.height - containerHeight - modalPosition);
     const autocompletePosition = Platform.select({
-        ios: isTablet ?
-            Math.max(0, keyboardHeight - bottomSpace) :
-            keyboardHeight || insets.bottom,
-        default: 0}) + AUTOCOMPLETE_SEPARATION;
+        ios: isTablet ? Math.max(0, keyboardHeight - bottomSpace) : keyboardHeight || insets.bottom,
+        default: 0,
+    }) + AUTOCOMPLETE_SEPARATION;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
@@ -235,7 +232,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                     }
                     <EditPostInput
                         hasError={Boolean(errorLine)}
-                        keyboardType={keyboardType}
                         message={postMessage}
                         onChangeText={onChangeText}
                         onTextSelectionChange={onTextSelectionChange}

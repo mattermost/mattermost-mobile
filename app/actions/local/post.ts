@@ -255,8 +255,6 @@ export async function deletePosts(serverUrl: string, postIds: string[]) {
         const postsFormatted = `'${postIds.join("','")}'`;
 
         await database.write(() => {
-            // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-            // @ts-expect-error
             return database.adapter.unsafeExecute({
                 sqls: [
                     [`DELETE FROM ${POST} where id IN (${postsFormatted})`, []],

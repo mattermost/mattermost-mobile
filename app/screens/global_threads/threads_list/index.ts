@@ -3,7 +3,6 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {AppStateStatus} from 'react-native';
 import {switchMap} from 'rxjs/operators';
 
 import {observeCurrentTeamId} from '@queries/servers/system';
@@ -13,6 +12,7 @@ import {observeTeammateNameDisplay} from '@queries/servers/user';
 import ThreadsList from './threads_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type {AppStateStatus} from 'react-native';
 
 type Props = {
     tab: GlobalThreadsTab;

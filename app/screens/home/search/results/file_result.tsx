@@ -6,10 +6,11 @@ import {Dimensions, StyleSheet, View} from 'react-native';
 
 import File from '@components/files/file';
 import {useIsTablet} from '@hooks/device';
-import {GalleryAction} from '@typings/screens/gallery';
 import {getViewPortWidth} from '@utils/images';
 
 import TabletOptions from './file_options/tablet_options';
+
+import type {GalleryAction} from '@typings/screens/gallery';
 
 export type XyOffset = {x: number; y: number} | undefined;
 

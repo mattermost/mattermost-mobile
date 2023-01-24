@@ -17,8 +17,9 @@ import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {SearchResult, Result} from './invite';
 import SummaryReport, {SummaryReportType} from './summary_report';
+
+import type {SearchResult, Result} from './invite';
 
 const MAX_WIDTH_CONTENT = 480;
 

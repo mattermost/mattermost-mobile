@@ -11,8 +11,9 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {SearchResult, InviteResult} from './invite';
 import TextItem, {TextItemType} from './text_item';
+
+import type {SearchResult, InviteResult} from './invite';
 
 const COLOR_SUCCESS = '#3db887';
 const COLOR_ERROR = '#d24b4e';

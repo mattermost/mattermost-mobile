@@ -3,9 +3,10 @@
 
 import {useBottomSheet} from '@gorhom/bottom-sheet';
 import React, {useCallback} from 'react';
-import {NativeSyntheticEvent, TextInputFocusEventData} from 'react-native';
 
 import SearchBar, {SearchProps} from '@components/search';
+
+import type {NativeSyntheticEvent, TextInputFocusEventData} from 'react-native';
 
 const BottomSheetSearch = ({onFocus, ...props}: SearchProps) => {
     const {expand} = useBottomSheet();

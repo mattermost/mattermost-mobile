@@ -4,10 +4,12 @@ import {Screens} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {showOverlay} from '@screens/navigation';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type ShowSnackBarArgs = {
     barType: keyof typeof SNACK_BAR_TYPE;
     onAction?: () => void;
-    sourceScreen?: typeof Screens[keyof typeof Screens];
+    sourceScreen?: AvailableScreens;
 };
 
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {
