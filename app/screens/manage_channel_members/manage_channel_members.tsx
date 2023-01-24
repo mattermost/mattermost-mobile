@@ -170,7 +170,7 @@ export default function ManageChannelMembers({
                 text: formatMessage(manage ? messages.button_done : messages.button_manage),
             }],
         });
-    }, [theme]);
+    }, [theme.sidebarHeaderTextColor]);
 
     const toggleManageEnabled = useCallback(() => {
         updateNavigationButtons(!isManageMode);
