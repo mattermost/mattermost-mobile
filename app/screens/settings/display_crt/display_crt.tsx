@@ -17,13 +17,15 @@ import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 const crtDescription = {
     id: t('settings_display.crt.desc'),
     defaultMessage: 'When enabled, reply messages are not shown in the channel and you\'ll be notified about threads you\'re following in the "Threads" view.',
 };
 
 type Props = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentUserId: string;
     isCRTEnabled: boolean;
 }
