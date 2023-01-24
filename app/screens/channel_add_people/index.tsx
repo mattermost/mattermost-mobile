@@ -17,13 +17,9 @@ import ChannelAddPeople from './channel_add_people';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const currentChannel = observeCurrentChannel(database);
-    const isGroupConstrained = currentChannel.pipe(
-        switchMap((c) => of$(Boolean(c?.isGroupConstrained))),
-    );
-    const channelId = currentChannel.pipe(
-        switchMap((c) => of$(c?.id)),
-    );
+    const channel = observeCurrentChannel(database);
+    const isGroupConstrained = channel.pipe(switchMap((c) => of$(Boolean(c?.isGroupConstrained))));
+    const channelId = channel.pipe(switchMap((c) => of$(c?.id)));
 
     return {
         channelId,
