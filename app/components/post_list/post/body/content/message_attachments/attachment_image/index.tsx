@@ -72,8 +72,9 @@ const AttachmentImage = ({imageUrl, imageMetadata, layoutWidth, location, postId
             width: imageMetadata.width,
             height: imageMetadata.height,
             name: extractFilenameFromUrl(imageUrl) || 'attachmentImage.png',
-            mime_type: lookupMimeType(imageUrl) || 'images/png',
+            mime_type: lookupMimeType(imageUrl) || 'image/png',
             type: 'image',
+            lastPictureUpdate: 0,
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
     };

@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import emojiRegex from 'emoji-regex';
-import Fuse from 'fuse.js';
 
 import SystemModel from '@database/models/server/system';
 
 import {Emojis, EmojiIndicesByAlias, EmojiIndicesByUnicode} from '.';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type Fuse from 'fuse.js';
 
 const UNICODE_REGEX = /\p{Emoji}/u;
 

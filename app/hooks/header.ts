@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {NativeScrollEvent} from 'react-native';
 import Animated, {runOnJS, scrollTo, useAnimatedRef, useAnimatedScrollHandler, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import ViewConstants from '@constants/view';
 import {useIsTablet} from '@hooks/device';
+
+import type {NativeScrollEvent} from 'react-native';
 
 type HeaderScrollContext = {
     dragging?: boolean;

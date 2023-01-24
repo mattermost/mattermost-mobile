@@ -195,7 +195,7 @@ export const queryThreads = (database: Database, teamId?: string, onlyUnreads = 
     ];
 
     // Only get threads from available channel
-    const channelCondition: Q.Condition[] = [
+    const channelCondition: Q.Where[] = [
         Q.where('delete_at', 0),
     ];
 

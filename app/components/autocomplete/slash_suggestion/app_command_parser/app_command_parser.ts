@@ -1,9 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
-import {IntlShape} from 'react-intl';
-
 import {doAppFetchForm, doAppLookup} from '@actions/remote/apps';
 import {fetchChannelById, fetchChannelByName, searchChannels} from '@actions/remote/channel';
 import {fetchUsersByIds, fetchUsersByUsernames, searchUsers} from '@actions/remote/user';
@@ -17,8 +14,10 @@ import {createCallRequest, filterEmptyOptions} from '@utils/apps';
 
 import {getChannelSuggestions, getUserSuggestions, inTextMentionSuggestions} from './mentions';
 
+import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
+import type {IntlShape} from 'react-intl';
 
 /* eslint-disable max-lines */
 

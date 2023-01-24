@@ -74,6 +74,7 @@ exports[`components/channel_list_row should show no results 1`] = `
 >
   <View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -111,6 +112,7 @@ exports[`components/channel_list_row should show no results 1`] = `
       </View>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -129,6 +131,14 @@ exports[`components/channel_list_row should show no results 1`] = `
         onStartShouldSetResponderCapture={[Function]}
       >
         <View
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
           accessible={true}
           focusable={true}
           onClick={[Function]}
@@ -247,6 +257,7 @@ exports[`components/channel_list_row should show no results 1`] = `
       </View>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     />
@@ -346,6 +357,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
 >
   <View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -383,6 +395,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
       </View>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -401,6 +414,14 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
         onStartShouldSetResponderCapture={[Function]}
       >
         <View
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
           accessible={true}
           focusable={true}
           onClick={[Function]}
@@ -519,6 +540,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
       </View>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     />
@@ -618,6 +640,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
 >
   <View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -655,6 +678,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
       </View>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -673,6 +697,14 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
         onStartShouldSetResponderCapture={[Function]}
       >
         <View
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
           accessible={true}
           focusable={true}
           onClick={[Function]}
@@ -791,6 +823,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
       </View>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     />

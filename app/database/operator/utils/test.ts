@@ -7,8 +7,6 @@ import {sanitizeReactions} from '@database/operator/utils/reaction';
 
 import {mockedPosts, mockedReactions} from './mock';
 
-import type {WriterInterface} from '@nozbe/watermelondb/Database';
-
 describe('DataOperator: Utils tests', () => {
     it('=> sanitizePosts: should filter between ordered and unordered posts', () => {
         const {postsOrdered, postsUnordered} = sanitizePosts({
@@ -96,7 +94,7 @@ describe('DataOperator: Utils tests', () => {
 
         // Jest in not using the same database instance amongst the Singletons; hence, we are creating the reaction record here
         // eslint-disable-next-line max-nested-callbacks
-        await server.database.write(async (writer: WriterInterface) => {
+        await server.database.write(async (writer) => {
             await writer.batch(...prepareRecords);
         });
 

@@ -132,8 +132,6 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
             />
         </Button>
     );
-
-    return null;
 };
 
 const withTeamId = withObservables(['post'], ({post, database}: {post: PostModel} & WithDatabaseArgs) => ({

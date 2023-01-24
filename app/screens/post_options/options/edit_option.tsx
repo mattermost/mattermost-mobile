@@ -12,9 +12,10 @@ import {t} from '@i18n';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: typeof Screens[keyof typeof Screens];
+    bottomSheetId: AvailableScreens;
     post: PostModel;
     canDelete: boolean;
 }

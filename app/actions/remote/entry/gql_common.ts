@@ -1,10 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
-
 import {storeConfigAndLicense} from '@actions/local/systems';
-import {MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
@@ -25,7 +22,9 @@ import {processIsCRTEnabled} from '@utils/thread';
 
 import {teamsToRemove, FETCH_UNREADS_TIMEOUT, entryRest, EntryResponse, entryInitialChannelId, restDeferredAppEntryActions, getRemoveTeamIds} from './common';
 
+import type {MyChannelsRequest} from '@actions/remote/channel';
 import type ClientError from '@client/rest/error';
+import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 export async function deferredAppEntryGraphQLActions(

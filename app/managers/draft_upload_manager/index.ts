@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 import {AppState, AppStateStatus} from 'react-native';
 
 import {updateDraftFile} from '@actions/local/draft';
 import {uploadFile} from '@actions/remote/file';
 import {PROGRESS_TIME_TO_STORE} from '@constants/files';
+
+import type {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 
 type FileHandler = {
     [clientId: string]: {

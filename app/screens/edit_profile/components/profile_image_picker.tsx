@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {TouchableOpacity} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {Client} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -23,6 +22,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {Client} from '@client/rest';
 import type UserModel from '@typings/database/models/servers/user';
 
 const hitSlop = {top: 100, bottom: 20, right: 20, left: 100};

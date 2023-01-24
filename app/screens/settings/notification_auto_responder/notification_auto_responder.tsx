@@ -23,6 +23,7 @@ import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const label = {
     id: t('notification_settings.auto_responder.message'),
@@ -57,7 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type NotificationAutoResponderProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentUser: UserModel;
 }
 const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoResponderProps) => {
