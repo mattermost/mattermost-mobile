@@ -3,7 +3,6 @@
 
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import ServerDataOperator from '@database/operator/server_data_operator';
 
 import {prepareCategoriesAndCategoriesChannels} from './categories';
 import {prepareDeleteChannel, prepareMyChannelsForTeam} from './channel';
@@ -16,6 +15,7 @@ import type {MyChannelsRequest} from '@actions/remote/channel';
 import type {MyPreferencesRequest} from '@actions/remote/preference';
 import type {MyTeamsRequest} from '@actions/remote/team';
 import type {MyUserRequest} from '@actions/remote/user';
+import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type TeamModel from '@typings/database/models/servers/team';

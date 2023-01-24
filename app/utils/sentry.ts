@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
-import {Breadcrumb, Event} from '@sentry/types';
 import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
@@ -14,6 +12,9 @@ import {isBetaApp} from '@utils/general';
 
 import {ClientError} from './client_error';
 import {logError, logWarning} from './log';
+
+import type {Database} from '@nozbe/watermelondb';
+import type {Breadcrumb, Event} from '@sentry/types';
 
 export const BREADCRUMB_UNCAUGHT_APP_ERROR = 'uncaught-app-error';
 export const BREADCRUMB_UNCAUGHT_NON_ERROR = 'uncaught-non-error';

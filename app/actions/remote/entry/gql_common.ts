@@ -1,12 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
-
 import {storeConfigAndLicense} from '@actions/local/systems';
-import {MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
+import {fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, updateAllUsersSince} from '@actions/remote/user';
@@ -18,14 +16,16 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import {queryAllChannels, queryAllChannelsForTeam} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig} from '@queries/servers/system';
+import {getConfig, getIsDataRetentionEnabled} from '@queries/servers/system';
 import {filterAndTransformRoles, getMemberChannelsFromGQLQuery, getMemberTeamsFromGQLQuery, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientSidebarCategory, gqlToClientTeamMembership, gqlToClientUser} from '@utils/graphql';
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
 import {teamsToRemove, FETCH_UNREADS_TIMEOUT, entryRest, EntryResponse, entryInitialChannelId, restDeferredAppEntryActions, getRemoveTeamIds} from './common';
 
+import type {MyChannelsRequest} from '@actions/remote/channel';
 import type ClientError from '@client/rest/error';
+import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 export async function deferredAppEntryGraphQLActions(
@@ -263,6 +263,12 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
         }
     } else {
         result = entryRest(serverUrl, teamId, channelId, since);
+    }
+
+    // Fetch data retention policies
+    const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
+    if (isDataRetentionEnabled) {
+        fetchDataRetentionPolicy(serverUrl);
     }
 
     return result;

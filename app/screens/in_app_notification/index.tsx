@@ -20,8 +20,10 @@ import Icon from './icon';
 import Server from './server';
 import Title from './title';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type InAppNotificationProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     notification: NotificationWithData;
     serverName?: string;
     serverUrl: string;

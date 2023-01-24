@@ -251,5 +251,22 @@
     "user.settings.general.lastName": "Прізвище",
     "user.settings.general.nickname": "Псевдонім",
     "user.settings.general.position": "Посада",
-    "user.settings.general.username": "Ім'я користувача"
+    "user.settings.general.username": "Ім'я користувача",
+    "alert.push_proxy_error.title": "Сповіщення не можуть бути отримані з цього сервера",
+    "alert.push_proxy_error.description": "Через конфігурацію цього сервера сповіщення не можуть надходити в мобільний додаток. Щоб отримати додаткову інформацію, зверніться до свого системного адміністратора.",
+    "alert.channel_deleted.title": "Канал заархівований",
+    "alert.channel_deleted.description": "Канал {displayName} був заархівований.",
+    "account.your_profile": "Ваш профіль",
+    "account.settings": "Налаштування",
+    "account.logout_from": "Вийти з {serverName}",
+    "account.logout": "Вийти",
+    "announcment_banner.okay": "Добре",
+    "announcment_banner.dismiss": "Відхилити оголошення",
+    "alert.removed_from_team.title": "Видалено з команди",
+    "alert.removed_from_team.description": "Вас було видалино з команди {displayName}.",
+    "alert.removed_from_channel.title": "Видалено з каналу",
+    "alert.removed_from_channel.description": "Вас видалили з каналу {displayName}.",
+    "alert.push_proxy.button": "Добре",
+    "alert.push_proxy_unknown.title": "Сповіщення не може бути отримано з цього сервера",
+    "alert.push_proxy_unknown.description": "З невідомих причин цей сервер не зміг отримати push-нотифікацію. Це буде зроблено знову під час наступного підключення."
 }

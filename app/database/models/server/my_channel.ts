@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+import type {Relation} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModelInterface from '@typings/database/models/servers/my_channel';
 import type MyChannelSettingsModel from '@typings/database/models/servers/my_channel_settings';
@@ -66,7 +66,6 @@ export default class MyChannelModel extends Model implements MyChannelModelInter
     }
 
     resetPreparedState() {
-        // @ts-expect-error hack setting _preparedState
         this._preparedState = null;
     }
 }

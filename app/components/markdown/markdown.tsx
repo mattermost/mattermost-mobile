@@ -5,7 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
 import React, {ReactElement, useMemo, useRef} from 'react';
-import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
+import {Dimensions, GestureResponderEvent, Platform, StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
@@ -143,13 +143,15 @@ const Markdown = ({
         if (disableAtMentions) {
             return renderText({context, literal: `@${mentionName}`});
         }
+        const computedStyles = StyleSheet.flatten(computeTextStyle(textStyles, baseTextStyle, context));
+        const {fontFamily, fontSize, fontWeight} = computedStyles;
 
         return (
             <AtMention
                 channelId={channelId}
                 disableAtChannelMentionHighlight={disableAtChannelMentionHighlight}
-                mentionStyle={textStyles.mention}
-                textStyle={[computeTextStyle(textStyles, baseTextStyle, context), style.atMentionOpacity]}
+                mentionStyle={[textStyles.mention, {fontSize, fontWeight, fontFamily}]}
+                textStyle={[computedStyles, style.atMentionOpacity]}
                 isSearchResult={isSearchResult}
                 location={location}
                 mentionName={mentionName}

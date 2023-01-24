@@ -8,7 +8,6 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
-import {TeamModel} from '@database/models/server';
 import {useIsTablet} from '@hooks/device';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import TeamPickerIcon from '@screens/home/search/team_picker_icon';
@@ -20,6 +19,8 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
 import SelectButton from './header_button';
+
+import type TeamModel from '@typings/database/models/servers/team';
 
 type Props = {
     onTabSelect: (tab: TabType) => void;

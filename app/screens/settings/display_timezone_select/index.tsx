@@ -18,6 +18,8 @@ import {getTimezoneRegion} from '@utils/user';
 
 import TimezoneRow from './timezone_row';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
         flexGrow: {
@@ -54,7 +56,7 @@ const getItemLayout = (_data: string[], index: number) => ({
 });
 
 type SelectTimezonesProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     onBack: (tz: string) => void;
     currentTimezone: string;
 }

@@ -137,6 +137,9 @@ jest.doMock('react-native', () => {
     const Linking = {
         ...RNLinking,
         openURL: jest.fn(),
+        addEventListener: jest.fn(() => {
+            return {remove: jest.fn()};
+        }),
     };
 
     return Object.setPrototypeOf({
@@ -278,7 +281,7 @@ jest.mock('react-native-navigation', () => {
                     return {remove: jest.fn()};
                 }),
                 registerNavigationButtonPressedListener: jest.fn(() => {
-                    return {buttonId: 'buttonId'};
+                    return {remove: jest.fn()};
                 }),
             }),
             setRoot: jest.fn(),

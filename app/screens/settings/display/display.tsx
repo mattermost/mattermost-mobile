@@ -6,8 +6,9 @@ import {useIntl} from 'react-intl';
 
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {t} from '@i18n';
-import {goToScreen} from '@screens/navigation';
+import {goToScreen, popTopScreen} from '@screens/navigation';
 import {gotoSettingsScreen} from '@screens/settings/config';
 import {preventDoubleTap} from '@utils/tap';
 import {getUserTimezoneProps} from '@utils/user';
@@ -16,6 +17,7 @@ import SettingContainer from '../setting_container';
 import SettingItem from '../setting_item';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const CRT_FORMAT = [
     {
@@ -51,6 +53,7 @@ const TIMEZONE_FORMAT = [
 ];
 
 type DisplayProps = {
+    componentId: AvailableScreens;
     currentUser: UserModel;
     hasMilitaryTimeFormat: boolean;
     isCRTEnabled: boolean;
@@ -58,10 +61,8 @@ type DisplayProps = {
     isThemeSwitchingEnabled: boolean;
     isTimezoneEnabled: boolean;
 }
-const Display = ({
-    currentUser, hasMilitaryTimeFormat,
-    isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled, isTimezoneEnabled,
-}: DisplayProps) => {
+
+const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled, isTimezoneEnabled}: DisplayProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser.timezone]);
@@ -88,6 +89,10 @@ const Display = ({
         const screen = Screens.SETTINGS_DISPLAY_CRT;
         const title = intl.formatMessage({id: 'display_settings.crt', defaultMessage: 'Collapsed Reply Threads'});
         gotoSettingsScreen(screen, title);
+    });
+
+    useAndroidHardwareBackHandler(componentId, () => {
+        popTopScreen(componentId);
     });
 
     return (

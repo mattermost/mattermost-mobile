@@ -10,6 +10,7 @@ import {setGlobalThreadsTab} from '@actions/local/systems';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAppState, useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
@@ -17,8 +18,10 @@ import {popTopScreen} from '@screens/navigation';
 
 import ThreadsList from './threads_list';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
-    componentId?: string;
+    componentId?: AvailableScreens;
     globalThreadsTab: GlobalThreadsTab;
 };
 
@@ -63,6 +66,8 @@ const GlobalThreads = ({componentId, globalThreadsTab}: Props) => {
         Keyboard.dismiss();
         popTopScreen(componentId);
     }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, onBackPress);
 
     return (
         <SafeAreaView

@@ -23,6 +23,7 @@ import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const mentionHeaderText = {
     id: t('notification_settings.mentions.keywords_mention'),
@@ -72,7 +73,7 @@ const getMentionProps = (currentUser: UserModel) => {
 };
 
 type MentionSectionProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentUser: UserModel;
     isCRTEnabled: boolean;
 }

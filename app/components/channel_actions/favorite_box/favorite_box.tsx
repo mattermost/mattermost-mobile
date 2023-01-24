@@ -3,12 +3,13 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleProp, ViewStyle} from 'react-native';
 
 import {toggleFavoriteChannel} from '@actions/remote/category';
 import OptionBox from '@components/option_box';
 import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
+
+import type {StyleProp, ViewStyle} from 'react-native';
 
 type Props = {
     channelId: string;

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
@@ -24,6 +23,7 @@ import {isTablet} from '@utils/helpers';
 import {logError, logInfo} from '@utils/log';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
+import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 

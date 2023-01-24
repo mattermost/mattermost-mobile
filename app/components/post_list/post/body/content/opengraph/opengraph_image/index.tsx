@@ -98,8 +98,9 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
             width: imageDimensions.width,
             height: imageDimensions.height,
             name: extractFilenameFromUrl(imageUrl) || 'openGraph.png',
-            mime_type: lookupMimeType(imageUrl) || 'images/png',
+            mime_type: lookupMimeType(imageUrl) || 'image/png',
             type: 'image',
+            lastPictureUpdate: 0,
         };
         openGalleryAtIndex(galleryIdentifier, 0, [item]);
     };
