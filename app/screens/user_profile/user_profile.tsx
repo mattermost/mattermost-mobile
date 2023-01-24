@@ -63,10 +63,27 @@ const messages = defineMessages({
 const channelContextScreens: AvailableScreens[] = [Screens.CHANNEL, Screens.THREAD];
 
 const UserProfile = ({
-    canChangeMemberRoles, channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
-    isChannelAdmin, canManageAndRemoveMembers, isCustomStatusEnabled, isDirectMessage, isDefaultChannel, isMilitaryTime,
-    isSystemAdmin, isTeamAdmin, location, manageMode = false, teamId, teammateDisplayName,
-    user, userIconOverride, usernameOverride,
+    canChangeMemberRoles,
+    canManageAndRemoveMembers,
+    channelId,
+    closeButtonId,
+    currentUserId,
+    enablePostIconOverride,
+    enablePostUsernameOverride,
+    isChannelAdmin,
+    isCustomStatusEnabled,
+    isDefaultChannel,
+    isDirectMessage,
+    isMilitaryTime,
+    isSystemAdmin,
+    isTeamAdmin,
+    location,
+    manageMode = false,
+    teamId,
+    teammateDisplayName,
+    user,
+    userIconOverride,
+    usernameOverride,
 }: Props) => {
     const {formatMessage, locale} = useIntl();
     const serverUrl = useServerUrl();
