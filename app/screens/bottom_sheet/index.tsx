@@ -3,7 +3,7 @@
 
 import BottomSheetM, {BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import React, {ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, Keyboard, View} from 'react-native';
+import {DeviceEventEmitter, Handle, InteractionManager, Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
 import useNavButtonPressed from '@app/hooks/navigation_button_pressed';
 import {Events} from '@constants';
@@ -16,6 +16,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Indicator from './indicator';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
 import type {WithSpringConfig} from 'react-native-reanimated';
 
 export {default as BottomSheetButton, BUTTON_HEIGHT} from './button';
@@ -23,7 +24,8 @@ export {default as BottomSheetContent, TITLE_HEIGHT} from './content';
 
 type Props = {
     closeButtonId?: string;
-    componentId: string;
+    componentId: AvailableScreens;
+    contentStyle?: StyleProp<ViewStyle>;
     initialSnapIndex?: number;
     footerComponent?: React.FC<BottomSheetFooterProps>;
     renderContent: () => ReactNode;
@@ -37,6 +39,7 @@ const PADDING_TOP_TABLET = 8;
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         bottomSheet: {
+            backgroundColor: theme.centerChannelBg,
             borderTopStartRadius: 24,
             borderTopEndRadius: 24,
             shadowOffset: {
@@ -80,16 +83,18 @@ export const animatedConfig: Omit<WithSpringConfig, 'velocity'> = {
 const BottomSheet = ({
     closeButtonId,
     componentId,
+    contentStyle,
     initialSnapIndex = 1,
     footerComponent,
     renderContent,
-    snapPoints = [1, '50%', '90%'],
+    snapPoints = [1, '50%', '80%'],
     testID,
 }: Props) => {
     const sheetRef = useRef<BottomSheetM>(null);
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+    const interaction = useRef<Handle>();
 
     const bottomSheetBackgroundStyle = useMemo(() => [
         styles.bottomSheetBackground,
@@ -112,6 +117,10 @@ const BottomSheet = ({
         return () => listener.remove();
     }, [close]);
 
+    const handleAnimationStart = useCallback(() => {
+        interaction.current = InteractionManager.createInteractionHandle();
+    }, []);
+
     const handleClose = useCallback(() => {
         if (sheetRef.current) {
             sheetRef.current.close();
@@ -120,7 +129,14 @@ const BottomSheet = ({
         }
     }, []);
 
-    const handleDismissIfNeeded = useCallback((index: number) => {
+    const handleChange = useCallback((index: number) => {
+        setTimeout(() => {
+            if (interaction.current) {
+                InteractionManager.clearInteractionHandle(interaction.current);
+                interaction.current = undefined;
+            }
+        });
+
         if (index <= 0) {
             close();
         }
@@ -147,7 +163,7 @@ const BottomSheet = ({
 
     const renderContainerContent = () => (
         <View
-            style={[styles.content, isTablet && styles.contentTablet]}
+            style={[styles.content, isTablet && styles.contentTablet, contentStyle]}
             testID={`${testID}.screen`}
         >
             {renderContent()}
@@ -170,12 +186,15 @@ const BottomSheet = ({
             snapPoints={snapPoints}
             animateOnMount={true}
             backdropComponent={renderBackdrop}
-            onChange={handleDismissIfNeeded}
+            onAnimate={handleAnimationStart}
+            onChange={handleChange}
             animationConfigs={animatedConfig}
             handleComponent={Indicator}
             style={styles.bottomSheet}
             backgroundStyle={bottomSheetBackgroundStyle}
             footerComponent={footerComponent}
+            keyboardBehavior='extend'
+            keyboardBlurBehavior='restore'
         >
             {renderContainerContent()}
         </BottomSheetM>

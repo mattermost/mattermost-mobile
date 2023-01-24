@@ -5,6 +5,7 @@ type EmojiAlias = {
     aliases: string [];
     name: string;
     short_name: string;
+    category?: string;
 }
 
 type EmojiSection = {

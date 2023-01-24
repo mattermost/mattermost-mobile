@@ -1,11 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {removeUserFromTeam as localRemoveUserFromTeam} from '@actions/local/team';
-import {Client} from '@client/rest';
 import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import {Events} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -27,7 +25,9 @@ import {fetchPostsForChannel, fetchPostsForUnreadChannels} from './post';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 
+import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
+import type {Model} from '@nozbe/watermelondb';
 
 export type MyTeamsRequest = {
     teams?: Team[];
@@ -109,6 +109,54 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
             setTeamLoading(serverUrl, false);
         }
         EphemeralStore.finishAddingToTeam(teamId);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+}
+
+export async function addUsersToTeam(serverUrl: string, teamId: string, userIds: string[], fetchOnly = false) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        EphemeralStore.startAddingToTeam(teamId);
+
+        const members = await client.addUsersToTeamGracefully(teamId, userIds);
+
+        if (!fetchOnly) {
+            const teamMemberships: TeamMembership[] = [];
+            const roles = [];
+
+            for (const {member} of members) {
+                teamMemberships.push(member);
+                roles.push(...member.roles.split(' '));
+            }
+
+            fetchRolesIfNeeded(serverUrl, Array.from(new Set(roles)));
+
+            if (operator) {
+                await operator.handleTeamMemberships({teamMemberships, prepareRecordsOnly: true});
+            }
+        }
+
+        EphemeralStore.finishAddingToTeam(teamId);
+        return {members};
+    } catch (error) {
+        if (EphemeralStore.isAddingToTeam(teamId)) {
+            EphemeralStore.finishAddingToTeam(teamId);
+        }
+
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+}
+
+export async function sendEmailInvitesToTeam(serverUrl: string, teamId: string, emails: string[]) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const members = await client.sendEmailInvitesToTeamGracefully(teamId, emails);
+
+        return {members};
+    } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
@@ -426,5 +474,30 @@ export async function handleKickFromTeam(serverUrl: string, teamId: string) {
         // Resetting to team select handled by the home screen
     } catch (error) {
         logDebug('Failed to kick user from team', error);
+    }
+}
+
+export async function getTeamMembersByIds(serverUrl: string, teamId: string, userIds: string[], fetchOnly?: boolean) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const members = await client.getTeamMembersByIds(teamId, userIds);
+
+        if (!fetchOnly) {
+            const roles = [];
+
+            for (const {roles: memberRoles} of members) {
+                roles.push(...memberRoles.split(' '));
+            }
+
+            fetchRolesIfNeeded(serverUrl, Array.from(new Set(roles)));
+
+            await operator.handleTeamMemberships({teamMemberships: members, prepareRecordsOnly: true});
+        }
+
+        return {members};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
     }
 }

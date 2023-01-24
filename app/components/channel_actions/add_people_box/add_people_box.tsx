@@ -3,7 +3,6 @@
 
 import React, {useCallback} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {StyleProp, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import OptionBox from '@components/option_box';
@@ -12,6 +11,8 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {goToScreen, showModal} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
+
+import type {StyleProp, ViewStyle} from 'react-native';
 
 type Props = {
     channelId: string;

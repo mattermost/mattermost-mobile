@@ -24,13 +24,22 @@ import {TABLET_SIDEBAR_WIDTH} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {dismissOverlay} from '@screens/navigation';
-import {ShowSnackBarArgs} from '@utils/snack_bar';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
+import type {ShowSnackBarArgs} from '@utils/snack_bar';
+
+type SnackBarProps = {
+    componentId: AvailableScreens;
+    sourceScreen: AvailableScreens;
+} & ShowSnackBarArgs;
 
 const SNACK_BAR_WIDTH = 96;
 const SNACK_BAR_HEIGHT = 56;
 const SNACK_BAR_BOTTOM_RATIO = 0.04;
+
+const caseScreens: AvailableScreens[] = [Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_MESSAGES];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -71,11 +80,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-type SnackBarProps = {
-    componentId: string;
-    sourceScreen: typeof Screens[keyof typeof Screens];
-} & ShowSnackBarArgs;
-
 const SnackBar = ({barType, componentId, messageValues = {}, onAction, sourceScreen}: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const {formatMessage} = useIntl();
@@ -114,7 +118,7 @@ const SnackBar = ({barType, componentId, messageValues = {}, onAction, sourceScr
                     width: (SNACK_BAR_WIDTH / 100) * diffWidth,
                 };
                 break;
-            case [Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_MESSAGES].includes(sourceScreen):
+            case caseScreens.includes(sourceScreen):
                 tabletStyle = {
                     marginBottom: 0,
                     marginLeft: 0,

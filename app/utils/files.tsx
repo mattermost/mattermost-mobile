@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ChannelModel} from '@database/models/server';
 import {fileToGalleryItem} from '@utils/gallery';
+
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 export const getNumberFileMenuOptions = (canDownloadFiles: boolean, publicLinkEnabled: boolean) => {
     let numberItems = 1;
@@ -42,3 +43,7 @@ export const getOrderedGalleryItems = (orderedFileInfos: FileInfo[]) => {
     return orderedFileInfos.map((f) => fileToGalleryItem(f, f.user_id));
 };
 
+export const pathWithPrefix = (prefix: string, path: string) => {
+    const p = path.startsWith(prefix) ? '' : prefix;
+    return `${p}${path}`;
+};

@@ -6,7 +6,8 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeProfileLongPresTutorial} from '@queries/app/global';
+import {Tutorial} from '@constants';
+import {observeTutorialWatched} from '@queries/app/global';
 import {observeCurrentChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
@@ -29,7 +30,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         currentTeamId: observeCurrentTeamId(database),
         isGroupConstrained,
         teammateNameDisplay: observeTeammateNameDisplay(database),
-        tutorialWatched: observeProfileLongPresTutorial(),
+        tutorialWatched: observeTutorialWatched(Tutorial.PROFILE_LONG_PRESS),
     };
 });
 

@@ -82,7 +82,7 @@ const TeamPickerIcon = ({size = 24, divider = false, setTeamId, teams, teamId}: 
         ];
 
         if (teams.length > 3) {
-            snapPoints.push('90%');
+            snapPoints.push('80%');
         }
 
         bottomSheet({

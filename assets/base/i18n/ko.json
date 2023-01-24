@@ -267,7 +267,6 @@
     "mobile.post.delete_title": "게시글 삭제",
     "mobile.post.failed_delete": "메시지 삭제",
     "mobile.post.failed_retry": "다시 시도",
-    "mobile.posts_view.moreMsg": "새로운 메시지가 더 있습니다",
     "mobile.privacy_link": "개인정보 처리 방침",
     "mobile.push_notification_reply.button": "보내기",
     "mobile.push_notification_reply.placeholder": "댓글 작성하기...",
@@ -552,5 +551,7 @@
     "channel_info.edit_header": "제목글 편집",
     "channel_info.custom_status": "사용자 정의 상태:",
     "channel_info.copy_link": "링크 복사",
-    "general_settings.display": "화면"
+    "general_settings.display": "화면",
+    "intro.group_message": "여기에서 이 그룹과의 대화가 시작됩니다. 여기에 공유된 메시지와 파일은 다른 사람에게는 보이지 않습니다.",
+    "intro.direct_message": "이곳에서 {teammate}님과의 대화가 시작됩니다. 여기에 공유된 메시지와 파일은 다른 사람에게는 보이지 않습니다."
 }

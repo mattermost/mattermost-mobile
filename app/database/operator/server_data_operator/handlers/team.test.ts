@@ -14,7 +14,7 @@ import {
     transformTeamSearchHistoryRecord,
 } from '@database/operator/server_data_operator/transformers/team';
 
-import ServerDataOperator from '..';
+import type ServerDataOperator from '..';
 
 describe('*** Operator: Team Handlers tests ***', () => {
     let operator: ServerDataOperator;

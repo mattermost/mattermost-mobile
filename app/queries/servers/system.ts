@@ -158,6 +158,50 @@ export const getConfigValue = async (database: Database, key: keyof ClientConfig
     return list.length ? list[0].value : undefined;
 };
 
+export const getLastGlobalDataRetentionRun = async (database: Database) => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_DATA_RETENTION_RUN);
+        return data?.value || 0;
+    } catch {
+        return undefined;
+    }
+};
+
+export const getGlobalDataRetentionPolicy = async (database: Database) => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES);
+        return (data?.value || {}) as GlobalDataRetentionPolicy;
+    } catch {
+        return undefined;
+    }
+};
+
+export const getGranularDataRetentionPolicies = async (database: Database) => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.GRANULAR_DATA_RETENTION_POLICIES);
+        return (data?.value || {
+            team: [],
+            channel: [],
+        }) as {
+            team: TeamDataRetentionPolicy[];
+            channel: ChannelDataRetentionPolicy[];
+        };
+    } catch {
+        return undefined;
+    }
+};
+
+export const getIsDataRetentionEnabled = async (database: Database) => {
+    const license = await getLicense(database);
+    if (!license || !Object.keys(license)?.length) {
+        return null;
+    }
+
+    const dataRetentionEnableMessageDeletion = await getConfigValue(database, 'DataRetentionEnableMessageDeletion');
+
+    return dataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true';
+};
+
 export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {
     return database.get<ConfigModel>(CONFIG).query().observeWithColumns(['value']).pipe(
         switchMap((result) => of$(fromModelToClientConfig(result))),

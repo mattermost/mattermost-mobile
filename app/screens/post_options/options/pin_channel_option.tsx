@@ -5,13 +5,14 @@ import React, {useCallback} from 'react';
 
 import {togglePinPost} from '@actions/remote/post';
 import {BaseOption} from '@components/common_post_options';
-import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type PinChannelProps = {
-    bottomSheetId: typeof Screens[keyof typeof Screens];
+    bottomSheetId: AvailableScreens;
     isPostPinned: boolean;
     postId: string;
 }

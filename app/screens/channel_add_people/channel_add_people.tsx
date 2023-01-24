@@ -26,6 +26,8 @@ import {showAddChannelMembersSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -63,7 +65,7 @@ const messages = defineMessages({
 type Props = {
     channelId: string;
     closeButtonId: string;
-    componentId: string;
+    componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
     isGroupConstrained: boolean;

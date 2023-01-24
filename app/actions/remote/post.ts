@@ -436,7 +436,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
 
                 await operator.batchRecords(models);
             } catch (error) {
-                logError('FETCH AUTHORS ERROR', error);
+                logError('FETCH POSTS BEFORE ERROR', error);
             }
         }
 
@@ -444,7 +444,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         if (activeServerUrl === serverUrl) {
-            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, true);
+            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
         }
         return {error};
     }
@@ -544,9 +544,15 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
         }
 
         if (promises.length) {
-            const result = await Promise.all(promises);
-            const authors = result.flat();
+            const authorsResult = await Promise.allSettled(promises);
+            const result = authorsResult.reduce<UserProfile[][]>((acc, item) => {
+                if (item.status === 'fulfilled') {
+                    acc.push(item.value);
+                }
+                return acc;
+            }, []);
 
+            const authors = result.flat();
             if (!fetchOnly && authors.length) {
                 await operator.handleUsers({
                     users: authors,

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetProps} from '@gorhom/bottom-sheet';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleProp, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
@@ -20,6 +19,7 @@ import {typography} from '@utils/typography';
 import UserAvatar from './user_avatar';
 import UsersList from './users_list';
 
+import type {BottomSheetProps} from '@gorhom/bottom-sheet';
 import type UserModel from '@typings/database/models/servers/user';
 
 const OVERFLOW_DISPLAY_LIMIT = 99;
@@ -127,7 +127,7 @@ const UserAvatarsStack = ({breakAt = 3, channelId, location, style: baseContaine
 
         const snapPoints: BottomSheetProps['snapPoints'] = [1, bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT, bottom) + TITLE_HEIGHT];
         if (users.length > 5) {
-            snapPoints.push('90%');
+            snapPoints.push('80%');
         }
 
         bottomSheet({

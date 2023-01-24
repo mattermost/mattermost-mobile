@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetProps} from '@gorhom/bottom-sheet';
 import React, {useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet} from 'react-native';
@@ -20,6 +19,7 @@ import {sortServersByDisplayName} from '@utils/server';
 
 import ServerList, {AddServerButton} from './servers_list';
 
+import type {BottomSheetProps} from '@gorhom/bottom-sheet';
 import type ServersModel from '@typings/database/models/app/servers';
 import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
 
@@ -122,7 +122,7 @@ const Servers = React.forwardRef<ServersRef>((_, ref) => {
                 bottomSheetSnapPoint(Math.min(2.5, registeredServers.current.length), 72, bottom) + TITLE_HEIGHT + BUTTON_HEIGHT,
             ];
             if (registeredServers.current.length > 1) {
-                snapPoints.push('90%');
+                snapPoints.push('80%');
             }
 
             const closeButtonId = 'close-your-servers';

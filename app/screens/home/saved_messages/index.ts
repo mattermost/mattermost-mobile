@@ -8,7 +8,6 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {PreferenceModel} from '@database/models/server';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsById} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
@@ -20,6 +19,7 @@ import {getTimezone} from '@utils/user';
 import SavedMessagesScreen from './saved_messages';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type PreferenceModel from '@typings/database/models/servers/preference';
 
 function getPostIDs(preferences: PreferenceModel[]) {
     return preferences.map((preference) => preference.name);

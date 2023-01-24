@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {setLastServerVersionCheck} from '@actions/local/systems';
+import {dataRetentionCleanup, setLastServerVersionCheck} from '@actions/local/systems';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
 import {prepareCommonSystemValues, getCurrentTeamId, getWebSocketLastDisconnected, getCurrentChannelId, getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import {setTeamLoading} from '@store/team_load_store';
 import {deleteV1Data} from '@utils/file';
+import {isTablet} from '@utils/helpers';
 import {logInfo} from '@utils/log';
 
 import {handleEntryAfterLoadNavigation, registerDeviceToken, syncOtherServers, verifyPushProxy} from './common';
@@ -26,10 +27,13 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
         }
     }
 
+    // Run data retention cleanup
+    await dataRetentionCleanup(serverUrl);
+
     // clear lastUnreadChannelId
     const removeLastUnreadChannelId = await prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});
     if (removeLastUnreadChannelId) {
-        operator.batchRecords(removeLastUnreadChannelId);
+        await operator.batchRecords(removeLastUnreadChannelId);
     }
 
     const {database} = operator;
@@ -47,7 +51,12 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
 
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData, meData} = entryData;
     if (isUpgrade && meData?.user) {
-        const me = await prepareCommonSystemValues(operator, {currentUserId: meData.user.id});
+        const isTabletDevice = await isTablet();
+        const me = await prepareCommonSystemValues(operator, {
+            currentUserId: meData.user.id,
+            currentTeamId: initialTeamId,
+            currentChannelId: isTabletDevice ? initialChannelId : undefined,
+        });
         if (me?.length) {
             await operator.batchRecords(me);
         }
@@ -84,8 +93,8 @@ export async function upgradeEntry(serverUrl: string) {
         const error = configAndLicense.error || entryData.error;
 
         if (!error) {
-            DatabaseManager.updateServerIdentifier(serverUrl, configAndLicense.config!.DiagnosticId);
-            DatabaseManager.setActiveServerDatabase(serverUrl);
+            await DatabaseManager.updateServerIdentifier(serverUrl, configAndLicense.config!.DiagnosticId);
+            await DatabaseManager.setActiveServerDatabase(serverUrl);
             deleteV1Data();
         }
 

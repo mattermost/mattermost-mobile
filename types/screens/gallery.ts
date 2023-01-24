@@ -63,6 +63,7 @@ export type GalleryItemType = {
     width: number;
     height: number;
     uri: string;
+    lastPictureUpdate: number;
     name: string;
     posterUri?: string;
     extension?: string;

@@ -17,8 +17,8 @@ public struct ChannelMemberData: Codable {
         let container = try decoder.container(keyedBy: ChannelMemberKeys.self)
         channel_id = try container.decode(String.self, forKey: .channel_id)
         mention_count = try container.decode(Int.self, forKey: .mention_count)
-        let mentions_root = try? container.decode(Int?.self, forKey: .mention_count_root) ?? 0
-        mention_count_root = mentions_root!
+        let mentions_root = try? container.decode(Int?.self, forKey: .mention_count_root)
+        mention_count_root = mentions_root ?? 0
         user_id = try container.decode(String.self, forKey: .user_id)
         roles = try container.decode(String.self, forKey: .roles)
         last_update_at = try container.decode(Int64.self, forKey: .last_update_at)

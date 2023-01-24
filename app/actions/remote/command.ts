@@ -1,11 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {doAppSubmit, postEphemeralCallResponseForCommandArgs} from '@actions/remote/apps';
-import {Client} from '@client/rest';
 import {AppCommandParser} from '@components/autocomplete/slash_suggestion/app_command_parser/app_command_parser';
 import {AppCallResponseTypes} from '@constants/apps';
 import DatabaseManager from '@database/manager';
@@ -17,6 +15,9 @@ import {getConfig, getCurrentTeamId} from '@queries/servers/system';
 import {showAppForm} from '@screens/navigation';
 import {handleDeepLink, matchDeepLink} from '@utils/deep_link';
 import {tryOpenURL} from '@utils/url';
+
+import type {Client} from '@client/rest';
+import type {IntlShape} from 'react-intl';
 
 export const executeCommand = async (serverUrl: string, intl: IntlShape, message: string, channelId: string, rootId?: string): Promise<{data?: CommandResponse; error?: string | {message: string}}> => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;

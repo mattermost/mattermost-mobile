@@ -12,6 +12,7 @@ import {
     mediaDevices,
 } from 'react-native-webrtc';
 
+import {setSpeakerPhone} from '@calls/state';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
@@ -31,6 +32,7 @@ export async function newConnection(
     closeCb: () => void,
     setScreenShareURL: (url: string) => void,
     hasMicPermission: boolean,
+    title?: string,
 ) {
     let peer: Peer | null = null;
     let stream: MediaStream;
@@ -203,8 +205,8 @@ export async function newConnection(
             }
         }
 
-        InCallManager.start({media: 'audio'});
-        InCallManager.stopProximitySensor();
+        InCallManager.start({media: 'video'});
+        setSpeakerPhone(true);
 
         peer = new Peer(null, iceConfigs);
         peer.on('signal', (data: any) => {
@@ -249,6 +251,7 @@ export async function newConnection(
         } else {
             ws.send('join', {
                 channelID,
+                title,
             });
         }
     });

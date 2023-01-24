@@ -4,7 +4,7 @@
 import DatabaseManager from '@database/manager';
 import {transformThreadRecord, transformThreadParticipantRecord, transformThreadInTeamRecord, transformTeamThreadsSyncRecord} from '@database/operator/server_data_operator/transformers/thread';
 
-import ServerDataOperator from '..';
+import type ServerDataOperator from '..';
 
 jest.mock('@database/operator/utils/thread', () => {
     return {

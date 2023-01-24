@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
@@ -24,6 +23,7 @@ import {isTablet} from '@utils/helpers';
 import {logError, logInfo} from '@utils/log';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
+import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -76,7 +76,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                 }
 
                 models = (await Promise.all(modelPromises)).flat();
-                const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, true);
+                const {member: viewedAt} = await markChannelAsViewed(serverUrl, channelId, false, true);
                 if (viewedAt) {
                     models.push(viewedAt);
                 }
@@ -160,7 +160,7 @@ export async function selectAllMyChannelIds(serverUrl: string) {
     }
 }
 
-export async function markChannelAsViewed(serverUrl: string, channelId: string, prepareRecordsOnly = false) {
+export async function markChannelAsViewed(serverUrl: string, channelId: string, onlyCounts = false, prepareRecordsOnly = false) {
     try {
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const member = await getMyChannel(database, channelId);
@@ -172,8 +172,10 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
             m.isUnread = false;
             m.mentionsCount = 0;
             m.manuallyUnread = false;
-            m.viewedAt = member.lastViewedAt;
-            m.lastViewedAt = Date.now();
+            if (!onlyCounts) {
+                m.viewedAt = member.lastViewedAt;
+                m.lastViewedAt = Date.now();
+            }
         });
         PushNotifications.removeChannelNotifications(serverUrl, channelId);
         if (!prepareRecordsOnly) {
