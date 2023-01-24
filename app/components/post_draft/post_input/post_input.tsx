@@ -7,7 +7,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {
     Alert, AppState, AppStateStatus, DeviceEventEmitter, EmitterSubscription, Keyboard,
-    KeyboardTypeOptions, NativeSyntheticEvent, Platform, TextInputSelectionChangeEventData,
+    NativeSyntheticEvent, Platform, TextInputSelectionChangeEventData,
 } from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
@@ -20,8 +20,9 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import NavigationStore from '@store/navigation_store';
 import {extractFileInfo} from '@utils/file';
-import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     testID?: string;
@@ -125,7 +126,6 @@ export default function PostInput({
     const lastNativeValue = useRef('');
     const previousAppState = useRef(AppState.currentState);
 
-    const [keyboardType, setKeyboardType] = useState<KeyboardTypeOptions>('default');
     const [longMessageAlertShown, setLongMessageAlertShown] = useState(false);
 
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
@@ -180,11 +180,6 @@ export default function PostInput({
     const handlePostDraftSelectionChanged = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData> | null, fromHandleTextChange = false) => {
         const cp = fromHandleTextChange ? cursorPosition : event!.nativeEvent.selection.end;
 
-        if (Platform.OS === 'ios') {
-            const newKeyboardType = switchKeyboardForCodeBlocks(value, cp);
-            setKeyboardType(newKeyboardType);
-        }
-
         updateCursorPosition(cp);
     }, [updateCursorPosition, cursorPosition]);
 
@@ -193,11 +188,6 @@ export default function PostInput({
         lastNativeValue.current = newValue;
 
         checkMessageLength(newValue);
-
-        // Workaround to avoid iOS emdash autocorrect in Code Blocks
-        if (Platform.OS === 'ios') {
-            handlePostDraftSelectionChanged(null, true);
-        }
 
         if (
             newValue &&
@@ -211,7 +201,6 @@ export default function PostInput({
     }, [
         updateValue,
         checkMessageLength,
-        handlePostDraftSelectionChanged,
         timeBetweenUserTypingUpdatesMilliseconds,
         channelId,
         rootId,
@@ -228,7 +217,7 @@ export default function PostInput({
 
     const handleHardwareEnterPress = useCallback((keyEvent: {pressedKey: string}) => {
         const topScreen = NavigationStore.getVisibleScreen();
-        let sourceScreen = Screens.CHANNEL;
+        let sourceScreen: AvailableScreens = Screens.CHANNEL;
         if (rootId) {
             sourceScreen = Screens.THREAD;
         } else if (isTablet) {
@@ -307,24 +296,24 @@ export default function PostInput({
     return (
         <PasteableTextInput
             allowFontScaling={true}
-            testID={testID}
-            ref={inputRef}
             disableCopyPaste={disableCopyAndPaste}
-            style={pasteInputStyle}
+            disableFullscreenUI={true}
+            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+            multiline={true}
+            onBlur={onBlur}
             onChangeText={handleTextChange}
+            onFocus={onFocus}
+            onPaste={onPaste}
             onSelectionChange={handlePostDraftSelectionChanged}
             placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-            multiline={true}
-            onBlur={onBlur}
-            onFocus={onFocus}
-            blurOnSubmit={false}
+            ref={inputRef}
+            smartPunctuation='disable'
+            submitBehavior='newline'
+            style={pasteInputStyle}
+            testID={testID}
             underlineColorAndroid='transparent'
-            keyboardType={keyboardType}
-            onPaste={onPaste}
-            disableFullscreenUI={true}
             textContentType='none'
-            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
         />
     );
 }

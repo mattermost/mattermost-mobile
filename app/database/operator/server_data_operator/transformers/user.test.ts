@@ -22,7 +22,7 @@ describe('*** USER Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('PreferenceModel');
+        expect(preparedRecords!.collection.table).toBe('Preference');
     });
 
     it('=> transformUserRecord: should return an array of type User', async () => {
@@ -78,6 +78,6 @@ describe('*** USER Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('UserModel');
+        expect(preparedRecords!.collection.table).toBe('User');
     });
 });

@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import {Preferences} from '@constants';
+import {Preferences, Screens} from '@constants';
 import LaunchType from '@constants/launch';
 import {renderWithIntl} from '@test/intl-test-helper';
 
@@ -23,7 +23,7 @@ jest.mock('@utils/url', () => {
 
 describe('SSO', () => {
     const baseProps = {
-        componentId: 'SSO',
+        componentId: Screens.SSO,
         license: {
             IsLicensed: 'true',
         },

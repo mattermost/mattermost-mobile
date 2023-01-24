@@ -28,7 +28,7 @@ export const clampVelocity = (velocity: number, minVelocity: number, maxVelocity
     return Math.max(Math.min(velocity, -minVelocity), -maxVelocity);
 };
 
-export const fileToGalleryItem = (file: FileInfo, authorId?: string): GalleryItemType => {
+export const fileToGalleryItem = (file: FileInfo, authorId?: string, lastPictureUpdate = 0): GalleryItemType => {
     let type: GalleryItemType['type'] = 'file';
     if (isVideo(file)) {
         type = 'video';
@@ -41,6 +41,7 @@ export const fileToGalleryItem = (file: FileInfo, authorId?: string): GalleryIte
         extension: file.extension,
         height: file.height,
         id: file.id || generateId('uid'),
+        lastPictureUpdate,
         mime_type: file.mime_type,
         name: file.name,
         posterUri: type === 'video' ? file.mini_preview : undefined, // set the video poster to the mini_preview
@@ -105,10 +106,10 @@ export function measureItem(ref: React.RefObject<any>, sharedValues: GalleryMana
     try {
         const measurements = measure(ref);
 
-        sharedValues.x.value = measurements.pageX;
-        sharedValues.y.value = measurements.pageY;
-        sharedValues.width.value = measurements.width;
-        sharedValues.height.value = measurements.height;
+        sharedValues.x.value = measurements?.pageX || 999999;
+        sharedValues.y.value = measurements?.pageY || 999999;
+        sharedValues.width.value = measurements?.width || 0;
+        sharedValues.height.value = measurements?.height || 0;
     } catch (err) {
         sharedValues.x.value = 999999;
         sharedValues.y.value = 999999;

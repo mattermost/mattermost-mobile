@@ -10,12 +10,12 @@ import {useGallery} from '@context/gallery';
 import {freezeOtherScreens, measureItem} from '@utils/gallery';
 
 import DocumentRenderer from './document_renderer';
-import {ImageRendererProps} from './image_renderer';
 import LightboxSwipeout, {LightboxSwipeoutRef, RenderItemInfo} from './lightbox_swipeout';
 import Backdrop, {BackdropProps} from './lightbox_swipeout/backdrop';
 import VideoRenderer from './video_renderer';
 import GalleryViewer from './viewer';
 
+import type {ImageRendererProps} from './image_renderer';
 import type {GalleryItemType} from '@typings/screens/gallery';
 
 // @ts-expect-error FastImage does work with Animated.createAnimatedComponent

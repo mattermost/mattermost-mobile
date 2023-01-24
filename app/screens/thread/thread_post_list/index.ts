@@ -3,7 +3,6 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {AppStateStatus} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -16,6 +15,7 @@ import ThreadPostList from './thread_post_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
+import type {AppStateStatus} from 'react-native';
 
 type Props = WithDatabaseArgs & {
     forceQueryAfterAppState: AppStateStatus;

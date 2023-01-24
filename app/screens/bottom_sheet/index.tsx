@@ -16,6 +16,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Indicator from './indicator';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
 import type {WithSpringConfig} from 'react-native-reanimated';
 
 export {default as BottomSheetButton, BUTTON_HEIGHT} from './button';
@@ -23,7 +24,7 @@ export {default as BottomSheetContent, TITLE_HEIGHT} from './content';
 
 type Props = {
     closeButtonId?: string;
-    componentId: string;
+    componentId: AvailableScreens;
     contentStyle?: StyleProp<ViewStyle>;
     initialSnapIndex?: number;
     footerComponent?: React.FC<BottomSheetFooterProps>;
@@ -38,6 +39,7 @@ const PADDING_TOP_TABLET = 8;
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         bottomSheet: {
+            backgroundColor: theme.centerChannelBg,
             borderTopStartRadius: 24,
             borderTopEndRadius: 24,
             shadowOffset: {
@@ -94,6 +96,10 @@ const BottomSheet = ({
     const styles = getStyleSheet(theme);
     const interaction = useRef<Handle>();
 
+    useEffect(() => {
+        interaction.current = InteractionManager.createInteractionHandle();
+    }, []);
+
     const bottomSheetBackgroundStyle = useMemo(() => [
         styles.bottomSheetBackground,
         {borderWidth: isTablet ? 0 : 1},
@@ -116,7 +122,9 @@ const BottomSheet = ({
     }, [close]);
 
     const handleAnimationStart = useCallback(() => {
-        interaction.current = InteractionManager.createInteractionHandle();
+        if (!interaction.current) {
+            interaction.current = InteractionManager.createInteractionHandle();
+        }
     }, []);
 
     const handleClose = useCallback(() => {

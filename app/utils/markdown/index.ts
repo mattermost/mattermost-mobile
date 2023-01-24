@@ -30,6 +30,7 @@ export const getMarkdownTextStyles = makeStyleSheetFromTheme((theme: Theme) => {
         },
         strong: {
             fontFamily: 'OpenSans-SemiBold',
+            fontWeight: '600',
         },
         del: {
             textDecorationLine: 'line-through',
@@ -211,30 +212,6 @@ export function getHighlightLanguageName(language: string): string {
 
 export function escapeRegex(text: string) {
     return text.replace(/[-/\\^$*+?.()|[\]{}]/g, '\\$&');
-}
-
-export function switchKeyboardForCodeBlocks(value: string, cursorPosition: number) {
-    if (Platform.OS === 'ios' && parseInt(Platform.Version, 10) >= 12) {
-        const regexForCodeBlock = /^```$(.*?)^```$|^```$(.*)/gms;
-
-        const matches = [];
-        let nextMatch;
-        while ((nextMatch = regexForCodeBlock.exec(value)) !== null) {
-            matches.push({
-                startOfMatch: regexForCodeBlock.lastIndex - nextMatch[0].length,
-                endOfMatch: regexForCodeBlock.lastIndex + 1,
-            });
-        }
-
-        const cursorIsInsideCodeBlock = matches.some((match) => cursorPosition >= match.startOfMatch && cursorPosition <= match.endOfMatch);
-
-        // 'email-address' keyboardType prevents iOS emdash autocorrect
-        if (cursorIsInsideCodeBlock) {
-            return 'email-address';
-        }
-    }
-
-    return 'default';
 }
 
 export const getMarkdownImageSize = (

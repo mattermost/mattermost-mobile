@@ -31,7 +31,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('MyTeamModel');
+        expect(preparedRecords!.collection.table).toBe('MyTeam');
     });
 
     it('=> transformTeamRecord: should return an array of type Team', async () => {
@@ -67,7 +67,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('TeamModel');
+        expect(preparedRecords!.collection.table).toBe('Team');
     });
 
     it('=> transformTeamChannelHistoryRecord: should return an array of type Team', async () => {
@@ -89,7 +89,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('TeamChannelHistoryModel');
+        expect(preparedRecords!.collection.table).toBe('TeamChannelHistory');
     });
 
     it('=> transformTeamSearchHistoryRecord: should return an array of type TeamSearchHistory', async () => {
@@ -113,7 +113,7 @@ describe('*** TEAM Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('TeamSearchHistoryModel');
+        expect(preparedRecords!.collection.table).toBe('TeamSearchHistory');
     });
 
     it('=> transformTeamMembershipRecord: should return an array of type TeamMembership', async () => {
@@ -141,6 +141,6 @@ describe('*** TEAM Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('TeamMembershipModel');
+        expect(preparedRecords!.collection.table).toBe('TeamMembership');
     });
 });

@@ -14,6 +14,7 @@ import {General, View as ViewConstants} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import {
@@ -28,6 +29,8 @@ import ChannelListRow from './channel_list_row';
 import CustomList from './custom_list';
 import OptionListRow from './option_list_row';
 import SelectedOptions from './selected_options';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type DataType = DialogOption | Channel | UserProfile;
 type DataTypeList = DialogOption[] | Channel[] | UserProfile[];
@@ -115,7 +118,7 @@ export type Props = {
     selected: SelectedDialogValue;
     theme: Theme;
     teammateNameDisplay: string;
-    componentId: string;
+    componentId: AvailableScreens;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -344,6 +347,7 @@ function IntegrationSelector(
 
     // Effects
     useNavButtonPressed(SUBMIT_BUTTON_ID, componentId, onHandleMultiselectSubmit, [onHandleMultiselectSubmit]);
+    useAndroidHardwareBackHandler(componentId, close);
 
     useEffect(() => {
         return () => {

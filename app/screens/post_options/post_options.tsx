@@ -29,6 +29,7 @@ import ReactionBar from './reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const POST_OPTIONS_BUTTON = 'close-post-options';
 
@@ -41,10 +42,10 @@ type PostOptionsProps = {
     canReply: boolean;
     combinedPost?: Post | PostModel;
     isSaved: boolean;
-    sourceScreen: typeof Screens[keyof typeof Screens];
+    sourceScreen: AvailableScreens;
     post: PostModel;
     thread?: ThreadModel;
-    componentId: string;
+    componentId: AvailableScreens;
     bindings: AppBinding[];
     serverUrl: string;
 };

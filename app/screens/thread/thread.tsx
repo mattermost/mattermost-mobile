@@ -3,7 +3,6 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {LayoutChangeEvent, StyleSheet, View} from 'react-native';
-import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CurrentCallBar from '@calls/components/current_call_bar';
@@ -13,6 +12,7 @@ import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useKeyboardTrackingPaused} from '@hooks/keyboard_tracking';
@@ -22,9 +22,11 @@ import EphemeralStore from '@store/ephemeral_store';
 import ThreadPostList from './thread_post_list';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
+import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
 type ThreadProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     rootPost?: PostModel;
     isInACall: boolean;
 };
@@ -42,7 +44,12 @@ const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
     const [containerHeight, setContainerHeight] = useState(0);
     const rootId = rootPost?.id || '';
 
+    const close = () => {
+        popTopScreen(componentId);
+    };
+
     useKeyboardTrackingPaused(postDraftRef, rootId, trackKeyboardForScreens);
+    useAndroidHardwareBackHandler(componentId, close);
 
     useEffect(() => {
         return () => {
@@ -52,7 +59,7 @@ const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
 
     useDidUpdate(() => {
         if (!rootPost) {
-            popTopScreen(componentId);
+            close();
         }
     }, [componentId, rootPost]);
 

@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {KeyboardTypeOptions} from 'react-native';
 
 import AutocompleteSelector from '@components/autocomplete_selector';
 import BoolSetting from '@components/settings/bool_setting';
 import RadioSetting from '@components/settings/radio_setting';
 import TextSetting from '@components/settings/text_setting';
 import {selectKeyboardType as selectKB} from '@utils/integrations';
+
+import type {KeyboardTypeOptions} from 'react-native';
 
 const TEXT_DEFAULT_MAX_LENGTH = 150;
 const TEXTAREA_DEFAULT_MAX_LENGTH = 3000;

@@ -1,11 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {useManagedConfig} from '@mattermost/react-native-emm';
+import PasteInput, {PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {KeyboardType, NativeSyntheticEvent, Platform, TextInput, TextInputSelectionChangeEventData, useWindowDimensions, View} from 'react-native';
+import {NativeSyntheticEvent, Platform, TextInputSelectionChangeEventData, useWindowDimensions, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
+import {emptyFunction} from '@utils/general';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -29,7 +32,6 @@ export type EditPostInputRef = {
 }
 
 type PostInputProps = {
-    keyboardType: KeyboardType;
     message: string;
     hasError: boolean;
     onTextSelectionChange: (curPos: number) => void;
@@ -37,15 +39,17 @@ type PostInputProps = {
 }
 
 const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
-    keyboardType, message, onChangeText, onTextSelectionChange, hasError,
+    message, onChangeText, onTextSelectionChange, hasError,
 }: PostInputProps, ref) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const {height} = useWindowDimensions();
+    const managedConfig = useManagedConfig<ManagedConfig>();
     const textInputHeight = (height / 2) - HEIGHT_DIFF;
+    const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
 
-    const inputRef = useRef<TextInput>(null);
+    const inputRef = useRef<PasteInputRef>();
 
     const inputStyle = useMemo(() => {
         return [styles.input, {height: textInputHeight}];
@@ -68,17 +72,20 @@ const EditPostInput = forwardRef<EditPostInputRef, PostInputProps>(({
 
     return (
         <View style={containerStyle}>
-            <TextInput
-                ref={inputRef}
-                blurOnSubmit={false}
+            <PasteInput
+                allowFontScaling={true}
+                disableCopyPaste={disableCopyAndPaste}
                 disableFullscreenUI={true}
                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                keyboardType={keyboardType}
                 multiline={true}
                 onChangeText={onChangeText}
+                onPaste={emptyFunction}
                 onSelectionChange={onSelectionChange}
                 placeholder={intl.formatMessage({id: 'edit_post.editPost', defaultMessage: 'Edit the post...'})}
-                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.4)}
+                placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                ref={inputRef}
+                smartPunctuation='disable'
+                submitBehavior='newline'
                 style={inputStyle}
                 testID='edit_post.message.input'
                 underlineColorAndroid='transparent'

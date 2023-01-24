@@ -12,11 +12,12 @@ import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    bottomSheetId: typeof Screens[keyof typeof Screens];
+    bottomSheetId: AvailableScreens;
     isCRTEnabled: boolean;
-    sourceScreen: typeof Screens[keyof typeof Screens];
+    sourceScreen: AvailableScreens;
     post: PostModel;
     teamId: string;
 }

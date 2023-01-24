@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StatusBar, StatusBarStyle, StyleSheet, TouchableOpacity, View} from 'react-native';
@@ -21,6 +20,7 @@ import {emptyFunction} from '@utils/general';
 import FileIcon from './file_icon';
 
 import type {Client} from '@client/rest';
+import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 
 export type DocumentFileRef = {
     handlePreviewPress: () => void;

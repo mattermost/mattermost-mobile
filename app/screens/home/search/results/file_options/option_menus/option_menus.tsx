@@ -8,7 +8,8 @@ import OptionItem from '@components/option_item';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
 import {dismissBottomSheet} from '@screens/navigation';
-import {GalleryAction} from '@typings/screens/gallery';
+
+import type {GalleryAction} from '@typings/screens/gallery';
 
 type Props = {
     canDownloadFiles?: boolean;
@@ -42,6 +43,9 @@ const OptionMenus = ({
 
     const handlePermalink = useCallback(() => {
         if (fileInfo.post_id) {
+            if (!isTablet) {
+                dismissBottomSheet();
+            }
             showPermalink(serverUrl, '', fileInfo.post_id);
             setAction('opening');
         }

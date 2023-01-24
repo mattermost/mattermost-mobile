@@ -3,7 +3,13 @@
 
 import {buildQueryString} from '@utils/helpers';
 
+import {PER_PAGE_DEFAULT} from './constants';
 import ClientError from './error';
+
+type PoliciesResponse<T> = {
+    policies: T[];
+    total_count: number;
+}
 
 export interface ClientGeneralMix {
     getOpenGraphMetadata: (url: string) => Promise<any>;
@@ -12,7 +18,9 @@ export interface ClientGeneralMix {
     getClientConfigOld: () => Promise<ClientConfig>;
     getClientLicenseOld: () => Promise<ClientLicense>;
     getTimezones: () => Promise<string[]>;
-    getDataRetentionPolicy: () => Promise<any>;
+    getGlobalDataRetentionPolicy: () => Promise<GlobalDataRetentionPolicy>;
+    getTeamDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<PoliciesResponse<TeamDataRetentionPolicy>>;
+    getChannelDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<PoliciesResponse<ChannelDataRetentionPolicy>>;
     getRolesByNames: (rolesNames: string[]) => Promise<Role[]>;
     getRedirectLocation: (urlParam: string) => Promise<Record<string, string>>;
 }
@@ -74,9 +82,23 @@ const ClientGeneral = (superclass: any) => class extends superclass {
         );
     };
 
-    getDataRetentionPolicy = () => {
+    getGlobalDataRetentionPolicy = () => {
         return this.doFetch(
-            `${this.getDataRetentionRoute()}/policy`,
+            `${this.getGlobalDataRetentionRoute()}/policy`,
+            {method: 'get'},
+        );
+    };
+
+    getTeamDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+        return this.doFetch(
+            `${this.getGranularDataRetentionRoute(userId)}/team_policies${buildQueryString({page, per_page: perPage})}`,
+            {method: 'get'},
+        );
+    };
+
+    getChannelDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+        return this.doFetch(
+            `${this.getGranularDataRetentionRoute(userId)}/channel_policies${buildQueryString({page, per_page: perPage})}`,
             {method: 'get'},
         );
     };

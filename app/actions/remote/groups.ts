@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client} from '@client/rest';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getTeamById} from '@queries/servers/team';
 
 import {forceLogoutIfNecessary} from './session';
+
+import type {Client} from '@client/rest';
 
 export const fetchGroup = async (serverUrl: string, id: string, fetchOnly = false) => {
     try {

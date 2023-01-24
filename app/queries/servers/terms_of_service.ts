@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {observeLicense, observeConfigBooleanValue, observeConfigValue, observeConfigIntValue} from './system';
 import {observeCurrentUser} from './user';
+
+import type {Database} from '@nozbe/watermelondb';
 
 export const observeShowToS = (database: Database) => {
     const isLicensed = observeLicense(database).pipe(
