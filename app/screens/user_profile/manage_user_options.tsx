@@ -36,8 +36,6 @@ const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId,
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const manageOption = isChannelAdmin ? MAKE_CHANNEL_MEMBER : MAKE_CHANNEL_ADMIN;
-
     return (
         <>
             <View style={styles.divider}/>
@@ -45,7 +43,7 @@ const ManageUserOptions = ({channelId, isChannelAdmin, isDefaultChannel, userId,
                 <ManageMembersLabel
                     channelId={channelId}
                     isDefaultChannel={isDefaultChannel}
-                    manageOption={manageOption}
+                    manageOption={isChannelAdmin ? MAKE_CHANNEL_MEMBER : MAKE_CHANNEL_ADMIN}
                     testID='channel.make_channel_admin'
                     userId={userId}
                 />
