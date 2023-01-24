@@ -8,11 +8,12 @@ import {Alert, DeviceEventEmitter} from 'react-native';
 import {fetchChannelStats, removeMemberFromChannel, updateChannelMemberSchemeRoles} from '@actions/remote/channel';
 import OptionItem from '@components/option_item';
 import {Events, Members} from '@constants';
-import {ManageOptionsTypes} from '@constants/members';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
+
+import type {ManageOptionsTypes} from '@constants/members';
 
 const {MAKE_CHANNEL_ADMIN, MAKE_CHANNEL_MEMBER, REMOVE_USER} = Members.ManageOptions;
 

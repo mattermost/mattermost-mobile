@@ -5,8 +5,8 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest, switchMap} from 'rxjs';
 
-import {Permissions} from '@constants';
-import {observeProfileLongPresTutorial} from '@queries/app/global';
+import {Permissions, Tutorial} from '@constants';
+import {observeTutorialWatched} from '@queries/app/global';
 import {observeCurrentChannel} from '@queries/servers/channel';
 import {observeCanManageChannelMembers, observePermissionForChannel} from '@queries/servers/role';
 import {observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
@@ -34,7 +34,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         currentTeamId: observeCurrentTeamId(database),
         canManageMembers,
         teammateNameDisplay: observeTeammateNameDisplay(database),
-        tutorialWatched: observeProfileLongPresTutorial(),
+        tutorialWatched: observeTutorialWatched(Tutorial.PROFILE_LONG_PRESS),
         canChangeMemberRoles,
         canRemoveMember,
     };

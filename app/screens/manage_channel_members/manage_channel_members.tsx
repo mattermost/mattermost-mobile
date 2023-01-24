@@ -22,10 +22,12 @@ import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     canManageMembers: boolean;
     channelId: string;
-    componentId: string;
+    componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
     teammateNameDisplay: string;

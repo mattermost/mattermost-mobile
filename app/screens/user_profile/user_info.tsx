@@ -3,11 +3,12 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
 
-import {UserModel} from '@database/models/server';
 import {getUserCustomStatus} from '@utils/user';
 
 import UserProfileCustomStatus from './custom_status';
 import UserProfileLabel from './label';
+
+import type {UserModel} from '@database/models/server';
 
 type Props = {
     localTime?: string;
