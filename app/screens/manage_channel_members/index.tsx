@@ -21,7 +21,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentChannelId = observeCurrentChannelId(database);
     const currentChannel = observeCurrentChannel(database);
 
-    // fixme: this needs polishing
     const canManageMembers = combineLatest([currentChannelId, currentUser]).pipe(switchMap(([cId, u]) => (cId && u ? observeCanManageChannelMembers(database, cId, u) : of$(false))));
 
     const canChangeMemberRoles = combineLatest([currentChannel, currentUser, canManageMembers]).pipe(
