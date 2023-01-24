@@ -62,7 +62,7 @@ export async function removeMemberFromChannel(serverUrl: string, channelId: stri
         const client = NetworkManager.getClient(serverUrl);
 
         await client.removeFromChannel(userId, channelId);
-        await deleteChannelMembership(operator, userId, channelId);
+        deleteChannelMembership(operator, userId, channelId);
 
         return {error: undefined};
     } catch (error) {
@@ -105,7 +105,7 @@ export async function updateChannelMemberSchemeRoles(serverUrl: string, channelI
         await client.updateChannelMemberSchemeRoles(channelId, userId, isSchemeUser, isSchemeAdmin);
 
         if (!fetchOnly) {
-            return await getMemberInChannel(serverUrl, channelId, userId);
+            return getMemberInChannel(serverUrl, channelId, userId);
         }
 
         return {error: undefined};
@@ -122,7 +122,7 @@ export async function getMemberInChannel(serverUrl: string, channelId: string, u
         const member = await client.getMemberInChannel(channelId, userId);
 
         if (!fetchOnly) {
-            await updateLocalUser(serverUrl, member, userId);
+            updateLocalUser(serverUrl, member, userId);
         }
         return {member, error: undefined};
     } catch (error) {
