@@ -66,6 +66,7 @@ export async function removeMemberFromChannel(serverUrl: string, channelId: stri
 
         return {error: undefined};
     } catch (error) {
+        logError('removeMemberFromChannel', error);
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
@@ -93,6 +94,7 @@ export async function fetchChannelMembersByIds(serverUrl: string, channelId: str
 
         return {members};
     } catch (error) {
+        logError('fetchChannelMembersByIds', error);
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
@@ -108,6 +110,7 @@ export async function updateChannelMemberSchemeRoles(serverUrl: string, channelI
 
         return {error: undefined};
     } catch (error) {
+        logError('updateChannelMemberSchemeRoles', error);
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
@@ -123,6 +126,7 @@ export async function getMemberInChannel(serverUrl: string, channelId: string, u
         }
         return {member, error: undefined};
     } catch (error) {
+        logError('getMemberInChannel', error);
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }

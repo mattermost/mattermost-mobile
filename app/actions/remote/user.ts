@@ -108,6 +108,7 @@ export async function fetchProfilesInChannel(serverUrl: string, channelId: strin
 
         return {channelId, users: filteredUsers};
     } catch (error) {
+        logError('fetchProfilesInChannel', error);
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {channelId, error};
     }
@@ -563,6 +564,7 @@ export const searchProfiles = async (serverUrl: string, term: string, options: S
 
         return {data: users};
     } catch (error) {
+        logError('searchProfiles', error);
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
