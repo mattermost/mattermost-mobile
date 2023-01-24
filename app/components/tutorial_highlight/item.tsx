@@ -14,22 +14,24 @@ type Props = {
     height: number;
     itemBounds: TutorialItemBounds;
     onDismiss: () => void;
+    onLayout: () => void;
     width: number;
 }
 
-const HighlightItem = ({height, itemBounds, onDismiss, borderRadius = 0, width}: Props) => {
+const HighlightItem = ({height, itemBounds, onDismiss, onLayout, borderRadius = 0, width}: Props) => {
     const theme = useTheme();
     const isDark = tinyColor(theme.centerChannelBg).isDark();
 
     const pathD = useMemo(() => {
         const parent = {startX: 0, startY: 0, endX: width, endY: height};
         return constructRectangularPathWithBorderRadius(parent, itemBounds, borderRadius);
-    }, [borderRadius, itemBounds, width]);
+    }, [borderRadius, itemBounds, width, height]);
 
     return (
         <Svg
             style={StyleSheet.absoluteFill}
             onPress={onDismiss}
+            onLayout={onLayout}
         >
             <G>
                 <Defs>
