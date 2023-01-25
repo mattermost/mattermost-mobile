@@ -7,6 +7,10 @@ import {isMinimumServerVersion} from '@utils/helpers';
 
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
+export function processIsCRTAllowed(configValue?: string): boolean {
+    return Boolean(configValue) && configValue !== Config.DISABLED;
+}
+
 export function processIsCRTEnabled(preferences: PreferenceModel[]|PreferenceType[], configValue?: string, featureFlag?: string, version?: string): boolean {
     let preferenceDefault = Preferences.COLLAPSED_REPLY_THREADS_OFF;
     if (configValue === Config.DEFAULT_ON) {
