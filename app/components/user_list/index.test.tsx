@@ -38,6 +38,33 @@ describe('components/channel_list_row', () => {
             push_status: 'away',
         },
     };
+    const user2: UserProfile = {
+        id: '2',
+        create_at: 1111,
+        update_at: 1111,
+        delete_at: 0,
+        username: 'rocky',
+        auth_service: '',
+        email: 'rocky@doe.com',
+        nickname: '',
+        first_name: '',
+        last_name: '',
+        position: '',
+        roles: '',
+        locale: '',
+        notify_props: {
+            channel: 'true',
+            comments: 'never',
+            desktop: 'mention',
+            desktop_sound: 'true',
+            email: 'true',
+            first_name: 'true',
+            mention_keys: '',
+            push: 'mention',
+            push_status: 'away',
+        },
+    };
+
     beforeAll(async () => {
         const server = await TestHelper.setupServerDatabase();
         database = server.database;
@@ -46,7 +73,7 @@ describe('components/channel_list_row', () => {
     it('should show no results', () => {
         const wrapper = renderWithEverything(
             <UserList
-                profiles={[user]}
+                profiles={[user, user2]}
                 testID='UserListRow'
                 currentUserId={'1'}
                 teammateNameDisplay={'johndoe'}
@@ -70,7 +97,7 @@ describe('components/channel_list_row', () => {
     it('should show results no tutorial', () => {
         const wrapper = renderWithEverything(
             <UserList
-                profiles={[user]}
+                profiles={[user, user2]}
                 testID='UserListRow'
                 currentUserId={'1'}
                 teammateNameDisplay={'johndoe'}
@@ -94,7 +121,7 @@ describe('components/channel_list_row', () => {
     it('should show results and tutorial', () => {
         const wrapper = renderWithEverything(
             <UserList
-                profiles={[user]}
+                profiles={[user, user2]}
                 testID='UserListRow'
                 currentUserId={'1'}
                 teammateNameDisplay={'johndoe'}
