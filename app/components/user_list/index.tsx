@@ -147,7 +147,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 type Props = {
     profiles: UserProfile[];
-    canManageMembers?: boolean;
     channelMembers?: ChannelMember[];
     currentUserId: string;
     teammateNameDisplay: string;
@@ -166,7 +165,6 @@ type Props = {
 export default function UserList({
     profiles,
     channelMembers,
-    canManageMembers,
     selectedIds,
     currentUserId,
     teammateNameDisplay,
@@ -246,7 +244,7 @@ export default function UserList({
                 user={item}
             />
         );
-    }, [selectedIds, canManageMembers, handleSelectProfile, showManageMode, manageMode, teammateNameDisplay, tutorialWatched]);
+    }, [selectedIds, handleSelectProfile, showManageMode, manageMode, teammateNameDisplay, tutorialWatched]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {

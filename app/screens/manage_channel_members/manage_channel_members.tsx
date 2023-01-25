@@ -266,7 +266,6 @@ export default function ManageChannelMembers({
                 channelMembers={channelMembers}
                 selectedIds={EMPTY_IDS}
                 showManageMode={canManageAndRemoveMembers && isManageMode}
-                canManageMembers={canManageAndRemoveMembers}
                 showNoResults={!loading}
                 teammateNameDisplay={teammateNameDisplay}
                 term={term}
