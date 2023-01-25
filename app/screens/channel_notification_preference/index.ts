@@ -8,9 +8,10 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeChannelSettings} from '@queries/servers/channel';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
-import {WithDatabaseArgs} from '@typings/database/database';
 
 import ChannelNotificationPreference from './channel_notification_preference';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 type CNFProps = WithDatabaseArgs & {
     channelId: string;

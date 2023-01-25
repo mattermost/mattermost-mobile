@@ -20,6 +20,8 @@ import SettingSeparator from '@screens/settings/settings_separator';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type NotifPrefOptions = {
     defaultMessage: string;
     id: string;
@@ -39,19 +41,19 @@ const NOTIFY_OPTIONS_THREAD: Record<string, NotifPrefOptions> = {
 };
 
 const NOTIFY_OPTIONS: Record<string, NotifPrefOptions> = {
-    ALL: {
+    [NotificationLevel.ALL]: {
         defaultMessage: 'All new messages',
         id: t('channel_notification_preference.notification.all'),
         testID: 'channel_notification_preference.notification.all',
         value: NotificationLevel.ALL,
     },
-    MENTION: {
-        defaultMessage: 'Mentions, direct messages only(default)',
+    [NotificationLevel.MENTION]: {
+        defaultMessage: 'Mentions, direct messages only (default)',
         id: t('channel_notification_preference.notification.mention'),
         testID: 'channel_notification_preference.notification.mention',
         value: NotificationLevel.MENTION,
     },
-    NONE: {
+    [NotificationLevel.NONE]: {
         defaultMessage: 'Nothing',
         id: t('channel_notification_preference.notification.none'),
         testID: 'channel_notification_preference.notification.none',
@@ -121,29 +123,33 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             position: 'absolute',
             flexDirection: 'row',
             right: 20,
-
-            // top: 15, //todo - see onlayout comment
         },
     };
 });
 
+type NotifyPrefType = typeof NotificationLevel[keyof typeof NotificationLevel];
+
 type ChannelNotificationPreferenceProps = {
-    componentId: string;
-    notifyLevel?: NotificationLevel;
-
+    componentId: AvailableScreens;
+    notifyLevel?: NotifyPrefType;
     isCRTEnabled: boolean;
-
 };
 const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}: ChannelNotificationPreferenceProps) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
     const [top, setTop] = useState(0);
-    const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(notifyLevel);
-    const [threadReplies, setThreadReplies] = useState<boolean>(false); // TODO: get from server
+    const GLOBAL_DEFAULT = notifyLevel === NotificationLevel.DEFAULT ? NotificationLevel.MENTION : notifyLevel; // fixme: this is value right...what is the value of global default ( from settings ) ?
+    const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(GLOBAL_DEFAULT);
+    const [threadReplies, setThreadReplies] = useState<boolean>(false); // TODO: get from db
+    const [resetDefaultVisible, setResetDefaultVisible] = useState<boolean>(false);
     const close = () => popTopScreen(componentId);
+
+    const onSetNotifyAbout = useCallback((notifyValue: NotifyPrefType) => {
+        setNotifyAbout(notifyValue);
+        setResetDefaultVisible(notifyValue !== GLOBAL_DEFAULT);
+    }, [GLOBAL_DEFAULT]);
 
     const canSaveSettings = useCallback(() => notifyAbout !== notifyLevel, [notifyAbout, notifyLevel]);
 
@@ -181,8 +187,18 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
     }, []);
 
     const renderResetDefault = useCallback(() => {
+        const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
+
+        const onPress = () => {
+            setNotifyAbout(GLOBAL_DEFAULT);
+            setResetDefaultVisible(false);
+        };
         return (
-            <TouchableOpacity style={[styles.resetContainer, {top}]}>
+            <TouchableOpacity
+                style={[styles.resetContainer, {top}, {backgroundColor: 'red'}]}
+                onPress={onPress}
+                hitSlop={hitSlop}
+            >
                 <CompassIcon
                     name='refresh'
                     style={styles.resetIcon}
@@ -193,7 +209,7 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
                 </Text>
             </TouchableOpacity>
         );
-    }, [top]);
+    }, [top, GLOBAL_DEFAULT]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         const {y} = e.nativeEvent.layout;
@@ -207,7 +223,7 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
     return (
         <SettingContainer testID='push_notification_settings'>
             {renderMutedBanner()}
-            {renderResetDefault()}
+            {resetDefaultVisible && renderResetDefault()}
             <SettingBlock
                 headerText={NOTIFY_ABOUT}
                 onLayout={onLayout}
@@ -215,33 +231,29 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
                 { Object.keys(NOTIFY_OPTIONS).map((k: string) => {
                     const {id, defaultMessage, value, testID} = NOTIFY_OPTIONS[k];
                     return (
-                        <>
+                        <View key={`notif_pref_option${k}`}>
                             <SettingOption
-                                action={setNotifyAbout}
-                                key={`notif_pref_option${k}`}
+                                action={onSetNotifyAbout}
                                 label={intl.formatMessage({id, defaultMessage})}
                                 selected={notifyAbout === k}
                                 testID={testID}
                                 type='select'
                                 value={value}
                             />
-                            <SettingSeparator key={`notif_pref_option_separator${k}`}/>
-                        </>
+                            <SettingSeparator/>
+                        </View>
                     );
                 })
                 }
             </SettingBlock>
-            {isCRTEnabled && (
+            {(isCRTEnabled || notifyAbout !== NotificationLevel.NONE) && (
                 <SettingBlock
                     headerText={THREAD_REPLIES}
                 >
                     <SettingOption
                         action={setThreadReplies}
                         key='notif_pref_option_thread_replies'
-                        label={intl.formatMessage({
-                            id: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.id,
-                            defaultMessage: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.defaultMessage,
-                        })}
+                        label={intl.formatMessage({id: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.id, defaultMessage: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.defaultMessage})}
                         testID={NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.testID}
                         type='toggle'
                         value={`${threadReplies}`}
