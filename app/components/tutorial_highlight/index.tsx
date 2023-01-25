@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useState} from 'react';
+import React, {useCallback} from 'react';
 import {Modal, StyleSheet, useWindowDimensions, View} from 'react-native';
 
 import HighlightItem from './item';
@@ -11,45 +11,43 @@ type Props = {
     itemBounds: TutorialItemBounds;
     itemBorderRadius?: number;
     onDismiss: () => void;
+    onLayout: () => void;
     onShow?: () => void;
 }
 
-const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, onShow}: Props) => {
+const TutorialHighlight = ({children, itemBounds, itemBorderRadius, onDismiss, onLayout, onShow}: Props) => {
     const {width, height} = useWindowDimensions();
-    const [visible, setIsVisible] = useState(false);
-    const isLandscape = width > height;
-    const supportedOrientations = isLandscape ? 'landscape' : 'portrait';
 
-    useEffect(() => {
-        const t = setTimeout(() => {
-            setIsVisible(true);
-        }, 500);
-
-        return () => clearTimeout(t);
-    }, []);
+    const handleShowTutorial = useCallback(() => {
+        if (onShow) {
+            setTimeout(onShow, 1000);
+        }
+    }, [itemBounds]);
 
     return (
         <Modal
-            visible={visible}
+            visible={true}
             transparent={true}
             animationType='fade'
-            onShow={onShow}
             onDismiss={onDismiss}
             onRequestClose={onDismiss}
-            supportedOrientations={[supportedOrientations]}
             testID='tutorial_highlight'
         >
             <View
                 style={StyleSheet.absoluteFill}
                 pointerEvents='box-none'
+                onLayout={onLayout}
             />
+            {itemBounds.endX > 0 &&
             <HighlightItem
                 borderRadius={itemBorderRadius}
                 itemBounds={itemBounds}
                 height={height}
                 onDismiss={onDismiss}
                 width={width}
+                onLayout={handleShowTutorial}
             />
+            }
             {children}
         </Modal>
     );

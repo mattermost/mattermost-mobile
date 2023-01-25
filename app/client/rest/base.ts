@@ -177,8 +177,12 @@ export default class ClientBase {
         return `${this.getEmojisRoute()}/${emojiId}`;
     }
 
-    getDataRetentionRoute() {
+    getGlobalDataRetentionRoute() {
         return `${this.urlVersion}/data_retention`;
+    }
+
+    getGranularDataRetentionRoute(userId: string) {
+        return `${this.getUserRoute(userId)}/data_retention`;
     }
 
     getRolesRoute() {

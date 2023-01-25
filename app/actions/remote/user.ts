@@ -3,7 +3,6 @@
 
 /* eslint-disable max-lines */
 
-import {Model} from '@nozbe/watermelondb';
 import {chunk} from 'lodash';
 
 import {updateChannelsDisplayName} from '@actions/local/channel';
@@ -26,6 +25,7 @@ import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
+import type {Model} from '@nozbe/watermelondb';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type MyUserRequest = {

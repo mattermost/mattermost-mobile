@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import DatabaseManager from '@database/manager';
-import ServerDataOperator from '@database/operator/server_data_operator';
 import {buildPreferenceKey} from '@database/operator/server_data_operator/comparators';
 import {
     transformPreferenceRecord,
     transformUserRecord,
 } from '@database/operator/server_data_operator/transformers/user';
+
+import type ServerDataOperator from '@database/operator/server_data_operator';
 
 describe('*** Operator: User Handlers tests ***', () => {
     let operator: ServerDataOperator;

@@ -19,10 +19,11 @@ import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type DisplayTimezoneProps = {
     currentUser: UserModel;
-    componentId: string;
+    componentId: AvailableScreens;
 }
 const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
     const intl = useIntl();

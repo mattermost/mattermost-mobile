@@ -46,7 +46,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         animatedContainer: {
             position: 'absolute',
             margin: 8,
-            backgroundColor: theme.buttonBg,
         },
         cancelContainer: {
             alignItems: 'center',
@@ -55,6 +54,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
         },
         container: {
+            backgroundColor: theme.buttonBg,
             flexDirection: 'row',
             justifyContent: 'space-evenly',
             alignItems: 'center',

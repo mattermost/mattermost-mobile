@@ -11,7 +11,6 @@ import {
 } from '@database/operator/utils/general';
 import {logWarning} from '@utils/log';
 
-import type {WriterInterface} from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
 import type {
     HandleRecordsArgs,
@@ -186,7 +185,7 @@ export default class BaseDataOperator {
     async batchRecords(models: Model[]): Promise<void> {
         try {
             if (models.length > 0) {
-                await this.database.write(async (writer: WriterInterface) => {
+                await this.database.write(async (writer) => {
                     await writer.batch(...models);
                 });
             }

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {
@@ -14,6 +13,7 @@ import {sanitizeThreadParticipants} from '@database/operator/utils/thread';
 import {logWarning} from '@utils/log';
 
 import type Database from '@nozbe/watermelondb/Database';
+import type Model from '@nozbe/watermelondb/Model';
 import type {HandleThreadsArgs, HandleThreadParticipantsArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';

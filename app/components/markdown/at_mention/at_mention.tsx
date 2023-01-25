@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import {Database} from '@nozbe/watermelondb';
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
@@ -21,6 +20,7 @@ import {bottomSheet, dismissBottomSheet, openAsBottomSheet} from '@screens/navig
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {displayUsername, getUsersByUsername} from '@utils/user';
 
+import type {Database} from '@nozbe/watermelondb';
 import type GroupModelType from '@typings/database/models/servers/group';
 import type GroupMembershipModel from '@typings/database/models/servers/group_membership';
 import type UserModelType from '@typings/database/models/servers/user';
@@ -34,7 +34,7 @@ type AtMentionProps = {
     location: string;
     mentionKeys?: Array<{key: string }>;
     mentionName: string;
-    mentionStyle: TextStyle;
+    mentionStyle: StyleProp<TextStyle>;
     onPostPress?: (e: GestureResponderEvent) => void;
     teammateNameDisplay: string;
     textStyle?: StyleProp<TextStyle>;
@@ -203,7 +203,7 @@ const AtMention = ({
         }
     }, [managedConfig, intl, theme, bottom]);
 
-    const mentionTextStyle = [];
+    const mentionTextStyle: StyleProp<TextStyle> = [];
 
     let backgroundColor;
     let canPress = false;

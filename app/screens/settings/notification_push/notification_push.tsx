@@ -19,9 +19,10 @@ import MobilePushStatus from './push_status';
 import MobilePushThread from './push_thread';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type NotificationMobileProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentUser: UserModel;
     isCRTEnabled: boolean;
     sendPushNotifications: boolean;

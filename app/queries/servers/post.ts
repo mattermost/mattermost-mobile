@@ -20,23 +20,16 @@ const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, PREFERENCE}} = MM_TABLE
 
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
-    const relations: Array<Query<Model>> = [post.drafts, post.postsInThread];
-    for await (const relation of relations) {
+    const relations: Array<Query<Model>> = [post.drafts, post.postsInThread, post.files, post.reactions];
+    for await (const models of relations) {
         try {
-            const model = await relation.fetch();
-            if (model) {
-                model.forEach((m) => preparedModels.push(m.prepareDestroyPermanently()));
-            }
+            models.forEach((m) => {
+                preparedModels.push(m.prepareDestroyPermanently());
+            });
         } catch {
             // Record not found, do nothing
         }
     }
-
-    const associatedChildren: Array<Query<Model>|undefined> = [post.files, post.reactions];
-    await Promise.all(associatedChildren.map(async (children) => {
-        const models = await children?.fetch();
-        models?.forEach((model) => preparedModels.push(model.prepareDestroyPermanently()));
-    }));
 
     // If thread exists, delete thread, participants and threadsInTeam
     try {
@@ -141,7 +134,7 @@ export const getLastPostInThread = async (database: Database, rootId: string) =>
 };
 
 export const queryPostsChunk = (database: Database, id: string, earliest: number, latest: number, inThread = false, includeDeleted = false, limit = 0) => {
-    const conditions: Q.Condition[] = [Q.where('create_at', Q.between(earliest, latest))];
+    const conditions: Q.Where[] = [Q.where('create_at', Q.between(earliest, latest))];
     if (inThread) {
         conditions.push(Q.where('root_id', id));
     } else {

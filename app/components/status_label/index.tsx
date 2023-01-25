@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, TextStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {General} from '@constants';
@@ -10,6 +9,8 @@ import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type {StyleProp, TextStyle} from 'react-native';
 
 type StatusLabelProps = {
     status?: string;

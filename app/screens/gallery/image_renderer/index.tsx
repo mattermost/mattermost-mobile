@@ -3,10 +3,10 @@
 
 import React, {useMemo} from 'react';
 
-import {PagerProps} from '../pager';
-import {RenderPageProps} from '../pager/page';
-
 import ImageTransformer, {ImageTransformerProps} from './transformer';
+
+import type {PagerProps} from '../pager';
+import type {RenderPageProps} from '../pager/page';
 
 export interface Handlers {
     onTap?: ImageTransformerProps['onTap'];

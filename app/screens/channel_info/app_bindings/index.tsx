@@ -11,8 +11,9 @@ import {AppBindingLocations} from '@constants/apps';
 import {useAppBinding} from '@hooks/apps';
 import AppsManager from '@managers/apps_manager';
 import {observeCurrentTeamId} from '@queries/servers/system';
-import {WithDatabaseArgs} from '@typings/database/database';
 import {preventDoubleTap} from '@utils/tap';
+
+import type {WithDatabaseArgs} from '@typings/database/database';
 
 type Props = {
     channelId: string;

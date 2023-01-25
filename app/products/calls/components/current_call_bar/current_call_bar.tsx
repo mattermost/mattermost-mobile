@@ -4,7 +4,6 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
-import {Options} from 'react-native-navigation';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
 import {recordingAlert, recordingWillBePostedAlert} from '@calls/alerts';
@@ -12,7 +11,6 @@ import CallAvatar from '@calls/components/call_avatar';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
-import {CurrentCall} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
@@ -21,7 +19,9 @@ import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
+import type {CurrentCall} from '@calls/types/calls';
 import type UserModel from '@typings/database/models/servers/user';
+import type {Options} from 'react-native-navigation';
 
 type Props = {
     displayName: string;

@@ -6,6 +6,7 @@ import {Q} from '@nozbe/watermelondb';
 import {Database} from '@constants';
 import {getPostListEdges} from '@database//operator/utils/post';
 import {transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
+import {emptyFunction} from '@utils/general';
 import {logWarning} from '@utils/log';
 
 import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
@@ -42,7 +43,7 @@ const PostsInChannelHandler = (superclass: any) => class extends superclass {
         for (const chunk of existingChunks) {
             if (newChunk.earliest <= chunk.earliest && newChunk.latest >= chunk.latest) {
                 if (!prepareRecordsOnly) {
-                    newChunk.prepareUpdate();
+                    newChunk.prepareUpdate(emptyFunction);
                 }
                 result.push(newChunk);
                 result.push(chunk.prepareDestroyPermanently());
