@@ -96,13 +96,16 @@ export function createProfilesSections(intl: IntlShape, profiles: UserProfile[],
     }
 
     const results = [];
+    let index = 0;
     for (const [k, v] of sections) {
         if (v) {
             results.push({
+                first: index === 0,
                 id: k,
                 data: v,
             });
         }
+        index++;
     }
     return results;
 }

@@ -322,6 +322,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             "username": "johndoe",
           },
         ],
+        "first": true,
         "id": "J",
       },
     ]
