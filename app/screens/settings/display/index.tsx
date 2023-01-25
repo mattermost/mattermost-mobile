@@ -10,6 +10,7 @@ import {Preferences} from '@constants';
 import {getPreferenceAsBool} from '@helpers/api/preference';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeAllowedThemesKeys, observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCRTUserPreferenceDisplay, observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import DisplaySettings from './display';
@@ -31,6 +32,8 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         isTimezoneEnabled,
         isThemeSwitchingEnabled,
+        isCRTEnabled: observeIsCRTEnabled(database),
+        isCRTSwitchEnabled: observeCRTUserPreferenceDisplay(database),
         hasMilitaryTimeFormat: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
             observeWithColumns(['value']).pipe(
                 switchMap(

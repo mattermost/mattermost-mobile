@@ -3,19 +3,24 @@
 
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
+import {Keyboard} from 'react-native';
 
 import {doAppFetchForm, doAppLookup, doAppSubmit, postEphemeralCallResponseForContext} from '@actions/remote/apps';
 import {handleGotoLocation} from '@actions/remote/command';
 import {AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {dismissModal} from '@screens/navigation';
 import {createCallRequest, makeCallErrorResponse} from '@utils/apps';
 
 import AppsFormComponent from './apps_form_component';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 export type Props = {
     form?: AppForm;
     context?: AppContext;
-    componentId: string;
+    componentId: AvailableScreens;
 };
 
 function AppsFormContainer({
@@ -188,6 +193,13 @@ function AppsFormContainer({
 
         return doAppLookup<AppLookupResponse>(serverUrl, creq, intl);
     }, [context, serverUrl, intl]);
+
+    const close = useCallback(() => {
+        Keyboard.dismiss();
+        dismissModal({componentId});
+    }, [componentId]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     if (!currentForm?.submit || !context) {
         return null;

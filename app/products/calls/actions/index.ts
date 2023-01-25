@@ -12,6 +12,7 @@ export {
     raiseHand,
     unraiseHand,
     setSpeakerphoneOn,
+    handleCallsSlashCommand,
 } from './calls';
 
 export {hasMicrophonePermission} from './permissions';

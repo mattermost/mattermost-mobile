@@ -35,6 +35,7 @@ import CustomStatusSuggestions from './components/custom_status_suggestions';
 import RecentCustomStatuses from './components/recent_custom_statuses';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type NewStatusType = {
     emoji?: string;
@@ -47,7 +48,7 @@ type Props = {
     customStatusExpirySupported: boolean;
     currentUser: UserModel;
     recentCustomStatuses: UserCustomStatus[];
-    componentId: string;
+    componentId: AvailableScreens;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {

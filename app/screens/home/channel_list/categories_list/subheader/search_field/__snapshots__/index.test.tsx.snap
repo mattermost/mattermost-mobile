@@ -2,6 +2,14 @@
 
 exports[`Search Field should match snapshot 1`] = `
 <View
+  accessibilityValue={
+    {
+      "max": undefined,
+      "min": undefined,
+      "now": undefined,
+      "text": undefined,
+    }
+  }
   accessible={true}
   focusable={true}
   onClick={[Function]}

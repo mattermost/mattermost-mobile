@@ -8,7 +8,7 @@ import {
     transformCategoryChannelRecord,
 } from '@database/operator/server_data_operator/transformers/category';
 
-import ServerDataOperator from '..';
+import type ServerDataOperator from '..';
 
 describe('*** Operator: Category Handlers tests ***', () => {
     let operator: ServerDataOperator;

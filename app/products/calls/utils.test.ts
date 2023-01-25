@@ -3,10 +3,11 @@
 
 import assert from 'assert';
 
-import {CallsConfig} from '@calls/types/calls';
 import {License} from '@constants';
 
 import {getICEServersConfigs} from './utils';
+
+import type {CallsConfig} from '@calls/types/calls';
 
 describe('getICEServersConfigs', () => {
     it('backwards compatible case, no ICEServersConfigs present', () => {

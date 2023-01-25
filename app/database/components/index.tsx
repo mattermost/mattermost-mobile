@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import React, {ComponentType, useEffect, useState} from 'react';
 
@@ -11,6 +10,7 @@ import UserLocaleProvider from '@context/user_locale';
 import DatabaseManager from '@database/manager';
 import {subscribeActiveServers} from '@database/subscription/servers';
 
+import type {Database} from '@nozbe/watermelondb';
 import type ServersModel from '@typings/database/models/app/servers';
 
 type State = {

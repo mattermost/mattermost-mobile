@@ -15,7 +15,7 @@ import {
     transformMyChannelSettingsRecord,
 } from '@database/operator/server_data_operator/transformers/channel';
 
-import ServerDataOperator from '..';
+import type ServerDataOperator from '..';
 
 describe('*** Operator: Channel Handlers tests ***', () => {
     let operator: ServerDataOperator;

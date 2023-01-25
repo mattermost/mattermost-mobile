@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
-import {ImageResource} from 'react-native-navigation';
 
 import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, searchChannels} from '@actions/remote/channel';
 import {General} from '@constants';
@@ -12,11 +11,13 @@ import useDidUpdate from '@hooks/did_update';
 import BrowseChannels, {ARCHIVED, PUBLIC, SHARED} from './browse_channels';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type {AvailableScreens} from '@typings/screens/navigation';
+import type {ImageResource} from 'react-native-navigation';
 
 type Props = {
 
     // Screen Props (do not change during the lifetime of the screen)
-    componentId: string;
+    componentId: AvailableScreens;
     categoryId?: string;
     closeButton: ImageResource;
 

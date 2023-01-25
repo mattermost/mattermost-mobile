@@ -10,10 +10,12 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
-import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
+import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -23,10 +25,11 @@ import LoginOptionsSeparator from './login_options_separator';
 import SsoOptions from './sso_options';
 
 import type {LaunchProps} from '@typings/launch';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 export interface LoginOptionsProps extends LaunchProps {
     closeButtonId?: string;
-    componentId: string;
+    componentId: AvailableScreens;
     config: ClientConfig;
     hasLoginForm: boolean;
     license: ClientLicense;
@@ -132,6 +135,14 @@ const LoginOptions = ({
         };
     }, []);
 
+    const dismiss = () => {
+        dismissModal({componentId});
+    };
+
+    const pop = () => {
+        popTopScreen(componentId);
+    };
+
     useEffect(() => {
         const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
             if (closeButtonId && buttonId === closeButtonId) {
@@ -160,6 +171,9 @@ const LoginOptions = ({
 
         return () => unsubscribe.remove();
     }, [dimensions]);
+
+    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
+    useAndroidHardwareBackHandler(componentId, pop);
 
     let additionalContainerStyle;
     if (numberSSOs < 3 || !hasLoginForm || (isTablet && dimensions.height > dimensions.width)) {

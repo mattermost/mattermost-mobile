@@ -4,7 +4,6 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, StyleSheet} from 'react-native';
-import {CameraOptions} from 'react-native-image-picker';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
@@ -22,6 +21,7 @@ import {changeOpacity} from '@utils/theme';
 import CameraType from './camera_type';
 
 import type {QuickActionAttachmentProps} from '@typings/components/post_draft_quick_action';
+import type {CameraOptions} from 'react-native-image-picker';
 
 const style = StyleSheet.create({
     icon: {
