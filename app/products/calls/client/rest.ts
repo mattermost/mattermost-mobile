@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RTCIceServer} from 'react-native-webrtc';
-
 import type {
     ServerChannelState,
     ServerCallsConfig,
     ApiResp,
     RecordingState,
 } from '@calls/types/calls';
+import type {RTCIceServer} from 'react-native-webrtc';
 
 export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;

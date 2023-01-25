@@ -12,9 +12,9 @@ import {
     RTCRtpSender,
     RTCSessionDescription,
 } from 'react-native-webrtc';
-import RTCTrackEvent from 'react-native-webrtc/lib/typescript/RTCTrackEvent';
 
-import {RTCPeerConfig} from './types';
+import type {RTCPeerConfig} from './types';
+import type RTCTrackEvent from 'react-native-webrtc/lib/typescript/RTCTrackEvent';
 
 const rtcConnFailedErr = new Error('rtc connection failed');
 
