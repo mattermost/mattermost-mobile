@@ -17,7 +17,7 @@ import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {isSystemMessage} from '@utils/post';
+import {isFromWebhook, isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 import {isSystemAdmin} from '@utils/user';
 
@@ -132,7 +132,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     );
 
     const canMarkAsUnread = combineLatest([currentUser, channelIsArchived]).pipe(
-        switchMap(([user, isArchived]) => of$(!isArchived && user?.id !== post.userId && !isSystemMessage(post))),
+        switchMap(([user, isArchived]) => of$((!isArchived && user?.id !== post.userId && !isSystemMessage(post)) || isFromWebhook(post))),
     );
 
     const canAddReaction = combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived]).pipe(
