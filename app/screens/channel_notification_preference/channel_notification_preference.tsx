@@ -209,6 +209,29 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
         );
     }, [top, GLOBAL_DEFAULT]);
 
+    const renderThreadReplies = useCallback(() => {
+        const isHidden = [NotificationLevel.NONE, NotificationLevel.ALL].includes(notifyAbout);
+        if (isHidden) {
+            return null;
+        }
+
+        return (
+            <SettingBlock
+                headerText={THREAD_REPLIES}
+            >
+                <SettingOption
+                    action={setThreadReplies}
+                    key='notif_pref_option_thread_replies'
+                    label={intl.formatMessage({id: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.id, defaultMessage: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.defaultMessage})}
+                    testID={NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.testID}
+                    type='toggle'
+                    value={`${threadReplies}`}
+                />
+                <SettingSeparator/>
+            </SettingBlock>
+        );
+    }, [notifyAbout]);
+
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         const {y} = e.nativeEvent.layout;
         setTop(y + BLOCK_TITLE_HEIGHT);
@@ -244,20 +267,7 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
                 })
                 }
             </SettingBlock>
-            {(isCRTEnabled || notifyAbout !== NotificationLevel.NONE) && (
-                <SettingBlock
-                    headerText={THREAD_REPLIES}
-                >
-                    <SettingOption
-                        action={setThreadReplies}
-                        key='notif_pref_option_thread_replies'
-                        label={intl.formatMessage({id: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.id, defaultMessage: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.defaultMessage})}
-                        testID={NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.testID}
-                        type='toggle'
-                        value={`${threadReplies}`}
-                    />
-                    <SettingSeparator/>
-                </SettingBlock>)}
+            {isCRTEnabled && renderThreadReplies()}
         </SettingContainer>
     );
 };
