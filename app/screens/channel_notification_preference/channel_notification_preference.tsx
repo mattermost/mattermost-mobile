@@ -123,6 +123,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             position: 'absolute',
             flexDirection: 'row',
             right: 20,
+            zIndex: 1,
         },
     };
 });
@@ -187,17 +188,14 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
     }, []);
 
     const renderResetDefault = useCallback(() => {
-        const hitSlop = {top: 20, bottom: 20, left: 20, right: 20};
-
         const onPress = () => {
             setNotifyAbout(GLOBAL_DEFAULT);
             setResetDefaultVisible(false);
         };
         return (
             <TouchableOpacity
-                style={[styles.resetContainer, {top}, {backgroundColor: 'red'}]}
+                style={[styles.resetContainer, {top}]}
                 onPress={onPress}
-                hitSlop={hitSlop}
             >
                 <CompassIcon
                     name='refresh'
