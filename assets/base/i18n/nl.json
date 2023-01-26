@@ -950,5 +950,6 @@
     "invite.search.no_results": "Niemand gevonden",
     "invite.search.email_invite": "uitnodiging",
     "invite.members.user_is_guest": "Neem contact op met jouw beheerder om van deze gast een volwaardig lid te maken",
-    "invite.members.already_member": "Deze persoon is reeds een teamlid"
+    "invite.members.already_member": "Deze persoon is reeds een teamlid",
+    "display_settings.crt": "Ingeklapte antwoorddraadjes"
 }
