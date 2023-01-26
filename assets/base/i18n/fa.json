@@ -342,5 +342,6 @@
     "user.settings.general.lastName": "نام خانوادگی",
     "user.settings.general.nickname": "کنیه",
     "user.settings.general.position": "موقعیت",
-    "user.settings.general.username": "نام کاربری"
+    "user.settings.general.username": "نام کاربری",
+    "login.forgot": "فراموشی رمز عبور؟"
 }
