@@ -224,7 +224,7 @@
     "mobile.link.error.title": "Hata",
     "mobile.managed.blocked_by": "{vendor} tarafından engellenmiş",
     "mobile.managed.exit": "Çık",
-    "mobile.managed.jailbreak": "Jailbreak uygulanmış aygıtlara {vendor} tarafından güvenilmiyor. Lütfen uygulamadan çıkın.",
+    "mobile.managed.jailbreak": "Jailbreak uygulanmış aygıtlara {vendor} tarafından güvenilmiyor. \n\nNedeni: {reason}\n\n\n\nHata ayıklama bilgileri: {debug}\n\nLütfen uygulamadan çıkın.",
     "mobile.managed.not_secured.android": "Bu aygıtta Mattermost kullanılabilmesi için ekran kilidi güvenliğinin etkinleştirilmesi gerekir.",
     "mobile.managed.not_secured.ios": "Bu aygıtta Mattermost kullanılabilmesi için parola güvenliğinin etkinleştirilmesi gerekir.\n\nAyarlar > Face ID ve Parola bölümünden ayarlayabilirsiniz.",
     "mobile.managed.not_secured.ios.touchId": "Bu aygıtta Mattermost kullanılabilmesi için parola güvenliğinin etkinleştirilmesi gerekir.\n\nAyarlar > Touch ID ve Parola bölümünden ayarlayabilirsiniz.",
@@ -398,7 +398,7 @@
     "channel_info.copied": "Kopyalandı",
     "channel_info.convert_private_title": "{displayName} kanalı özel kanala dönüştürülsün mü?",
     "channel_info.convert_private_success": "{displayName} özel bir kanala dönüştürüldü.",
-    "channel_info.convert_private_description": "{displayName} özel bir kanala dönüştürüldüğünde, geçmiş iletiler ve üyelikler korunur. Herkese açık olarak paylaşılmış dosyalara bağlantıya sahip olan herkes erişmeye devam edebilir. Özel kanallara yalnız çağrı ile üye olunabilir. \n \nBu değişiklik kalıcıdır ve geri alınamaz.\n\n{displayName} kanalını özel kanala dönüştürmek istediğinize emin misiniz?",
+    "channel_info.convert_private_description": "{displayName} özel bir kanala dönüştürüldüğünde, geçmiş iletiler ve üyelikler korunur. Herkese açık olarak paylaşılmış dosyalara bağlantıya sahip olan herkes erişmeye devam edebilir. Özel kanallara yalnızca çağrı ile üye olunabilir. \n \nBu değişiklik kalıcıdır ve geri alınamaz.\n\n{displayName} kanalını özel kanala dönüştürmek istediğinize emin misiniz?",
     "channel_info.convert_private": "Özel kanala dönüştür",
     "channel_info.convert_failed": "{displayName} özel kanala dönüştürülemedi.",
     "channel_info.close_dm_channel": "Bu doğrudan iletiyi kapatmak istediğinize emin misiniz? Bu işlem iletiyi giriş sayfanızdan kaldıracak, ancak istediğiniz zaman yeniden açabilirsiniz.",
@@ -963,5 +963,13 @@
     "invite.search.no_results": "Eşleşen kimse bulunamadı",
     "invite.search.email_invite": "çağır",
     "invite.members.user_is_guest": "Bu konuğu bir tam üyeye dönüştürmesi için yöneticiniz ile görüşün",
-    "invite.members.already_member": "Bu kişi zaten takımın bir üyesi"
+    "invite.members.already_member": "Bu kişi zaten takımın bir üyesi",
+    "settings_display.crt.label": "Daraltılmış yanıt konuları",
+    "settings_display.crt.desc": "Bu seçenek etkinleştirildiğinde, yanıt iletileri kanalda görüntülenmez. Takip ettiğiniz konular ile ilgili bildirimler \"Konular\" bölümünde görüntülenir.",
+    "mobile.managed.jailbreak_no_reason": "Kullanılamaz",
+    "mobile.managed.jailbreak_no_debug_info": "Kullanılamaz",
+    "mobile.display_settings.crt": "Daraltılmış yanıt konuları",
+    "display_settings.crt.on": "Aç",
+    "display_settings.crt.off": "Kapat",
+    "display_settings.crt": "Daraltılmış yanıt konuları"
 }
