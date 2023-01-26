@@ -78,7 +78,7 @@ export async function fetchChannelMembersByIds(serverUrl: string, channelId: str
         const members = await client.getChannelMembersByIds(channelId, userIds);
 
         if (!fetchOnly) {
-            const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+            const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
             if (operator && members.length) {
                 const memberships = members.map((u) => ({
                     channel_id: channelId,
