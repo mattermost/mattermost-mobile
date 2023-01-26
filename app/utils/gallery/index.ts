@@ -7,7 +7,7 @@ import {Navigation, Options, OptionsLayout} from 'react-native-navigation';
 import {measure} from 'react-native-reanimated';
 
 import {Events, Screens} from '@constants';
-import {showOverlay} from '@screens/navigation';
+import {allOrientations, showOverlay} from '@screens/navigation';
 import {isImage, isVideo} from '@utils/file';
 import {generateId} from '@utils/general';
 
@@ -127,7 +127,7 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
         items,
     };
     const layout: OptionsLayout = {
-        orientation: ['portrait', 'landscape'],
+        orientation: allOrientations,
     };
     const options: Options = {
         layout,
@@ -155,7 +155,7 @@ export function openGalleryAtIndex(galleryIdentifier: string, initialIndex: numb
     if (Platform.OS === 'ios') {
         // on iOS we need both the navigation & the module
         Navigation.setDefaultOptions({layout});
-        NativeModules.MattermostManaged.unlockOrientation();
+        NativeModules.SplitView.unlockOrientation();
     }
     showOverlay(Screens.GALLERY, props, options);
 

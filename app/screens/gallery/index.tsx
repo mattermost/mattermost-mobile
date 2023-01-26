@@ -3,12 +3,11 @@
 
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {NativeModules, useWindowDimensions, Platform} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
-import {dismissOverlay} from '@screens/navigation';
+import {dismissOverlay, setScreensOrientation} from '@screens/navigation';
 import {freezeOtherScreens} from '@utils/gallery';
 
 import Footer from './footer';
@@ -46,14 +45,10 @@ const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialInde
     }, []);
 
     const close = useCallback(() => {
+        setScreensOrientation(isTablet);
         if (Platform.OS === 'ios' && !isTablet) {
             // We need both the navigation & the module
-            Navigation.setDefaultOptions({
-                layout: {
-                    orientation: ['portrait'],
-                },
-            });
-            NativeModules.MattermostManaged.lockPortrait();
+            NativeModules.SplitView.lockPortrait();
         }
         freezeOtherScreens(false);
         requestAnimationFrame(async () => {

@@ -5,7 +5,7 @@
 
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
-import {ComponentWillAppearEvent, ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton, ScreenPoppedEvent} from 'react-native-navigation';
+import {ComponentWillAppearEvent, ImageResource, LayoutOrientation, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton, ScreenPoppedEvent} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -21,14 +21,17 @@ import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {LaunchProps} from '@typings/launch';
 import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
 
-const {MattermostManaged} = NativeModules;
-const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
+const {SplitView} = NativeModules;
+const {isRunningInSplitView} = SplitView;
 
 const alpha = {
     from: 0,
     to: 1,
     duration: 150,
 };
+
+export const allOrientations: LayoutOrientation[] = ['sensor', 'sensorLandscape', 'sensorPortrait', 'landscape', 'portrait'];
+export const portraitOrientation: LayoutOrientation[] = ['portrait'];
 
 export function registerNavigationListeners() {
     Navigation.events().registerScreenPoppedListener(onPoppedListener);
@@ -185,7 +188,7 @@ Navigation.setDefaultOptions({
         },
     },
     layout: {
-        orientation: Device.IS_TABLET ? undefined : ['portrait'],
+        orientation: Device.IS_TABLET ? allOrientations : portraitOrientation,
     },
     topBar: {
         title: {
@@ -217,6 +220,19 @@ Appearance.addChangeListener(() => {
         }
     }
 });
+
+export function setScreensOrientation(allowRotation: boolean) {
+    const options: Options = {
+        layout: {
+            orientation: allowRotation ? allOrientations : portraitOrientation,
+        },
+    };
+    Navigation.setDefaultOptions(options);
+    const screens = NavigationStore.getScreensInStack();
+    for (const s of screens) {
+        Navigation.mergeOptions(s, options);
+    }
+}
 
 export function getThemeFromState(): Theme {
     return EphemeralStore.theme || getDefaultThemeByAppearance();
