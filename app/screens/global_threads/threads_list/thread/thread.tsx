@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableHighlight, View} from 'react-native';
 
@@ -131,6 +131,16 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
     const textStyles = getMarkdownTextStyles(theme);
     const serverUrl = useServerUrl();
 
+    const [isChannelNamePressed, setIsChannelNamePressed] = useState<Boolean>(false);
+
+    const channelNameStyle = useMemo(() => (
+        [styles.channelName, isChannelNamePressed ? {color: theme.buttonBg} : null]
+    ), [isChannelNamePressed]);
+
+    const togglePressed = useCallback(() => {
+        setIsChannelNamePressed(!isChannelNamePressed);
+    }, [isChannelNamePressed]);
+
     const showThread = useCallback(preventDoubleTap(() => {
         fetchAndSwitchToThread(serverUrl, thread.id);
     }), [serverUrl, thread.id]);
@@ -241,9 +251,11 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                                         onPress={onChannelSwitch}
                                         type={'native'}
                                         underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+                                        onPressIn={togglePressed}
+                                        onPressOut={togglePressed}
                                     >
                                         <Text
-                                            style={styles.channelName}
+                                            style={channelNameStyle}
                                             numberOfLines={1}
                                             testID={`${threadItemTestId}.thread_starter.channel_display_name`}
                                         >

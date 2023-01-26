@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
@@ -54,9 +54,19 @@ function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
 
+    const [isPressed, setIsPressed] = useState<Boolean>(false);
+
+    const channelNameStyle = useMemo(() => (
+        [styles.channel, isPressed ? {color: theme.buttonBg} : null]
+    ), [isPressed]);
+
     const onChannelSwitch = useCallback(() => {
         switchToChannelById(serverUrl, channelId);
     }, [serverUrl]);
+
+    const togglePressed = useCallback(() => {
+        setIsPressed(!isPressed);
+    }, [isPressed]);
 
     return (
         <View
@@ -65,11 +75,13 @@ function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
         >
             <TouchableWithFeedback
                 onPress={onChannelSwitch}
+                onPressIn={togglePressed}
+                onPressOut={togglePressed}
                 type={'native'}
                 underlayColor={changeOpacity(theme.buttonBg, 0.08)}
             >
                 <Text
-                    style={styles.channel}
+                    style={channelNameStyle}
                     testID='channel_display_name'
                     numberOfLines={1}
                 >
