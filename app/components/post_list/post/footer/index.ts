@@ -16,7 +16,7 @@ const enhanced = withObservables(
     ({database, thread}: WithDatabaseArgs & {thread: ThreadModel}) => {
         return {
             participants: queryThreadParticipants(database, thread.id).observe(),
-            teamId: observeTeamIdByThread(thread),
+            teamId: observeTeamIdByThread(database, thread),
         };
     },
 );

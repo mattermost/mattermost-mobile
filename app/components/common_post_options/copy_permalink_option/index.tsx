@@ -6,6 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
+import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {observeTeam} from '@queries/servers/team';
 
@@ -17,7 +18,7 @@ import type TeamModel from '@typings/database/models/servers/team';
 
 const enhanced = withObservables(['post'], ({post, database}: WithDatabaseArgs & { post: PostModel }) => {
     const currentTeamId = observeCurrentTeamId(database);
-    const channel = post.channel.observe();
+    const channel = observeChannel(database, post.id);
 
     const teamName = combineLatest([channel, currentTeamId]).pipe(
         switchMap(([c, tid]) => {

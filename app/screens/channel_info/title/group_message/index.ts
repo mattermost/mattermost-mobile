@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeChannel} from '@queries/servers/channel';
+import {observeChannel, observeChannelMembers} from '@queries/servers/channel';
 import {observeCurrentUserId} from '@queries/servers/system';
 
 import GroupMessage from './group_message';
@@ -20,7 +20,7 @@ type Props = WithDatabaseArgs & {
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
     const currentUserId = observeCurrentUserId(database);
     const channel = observeChannel(database, channelId);
-    const members = channel.pipe(switchMap((c) => (c ? c.members.observe() : of$([]))));
+    const members = channel.pipe(switchMap((c) => (c ? observeChannelMembers(database, channelId) : of$([]))));
 
     return {
         currentUserId,
