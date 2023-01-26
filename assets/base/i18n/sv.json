@@ -224,7 +224,7 @@
     "mobile.link.error.title": "Fel",
     "mobile.managed.blocked_by": "Blockerad av {vendor}",
     "mobile.managed.exit": "Redigera",
-    "mobile.managed.jailbreak": "Din jailbrejkade enhet är inte betrodd av {vendor}. Avsluta appen.",
+    "mobile.managed.jailbreak": "Din jailbrejkade enhet är inte betrodd av {vendor}.\n\nReason {reason}\n\n\n\nDebug info: {debug}\n\nAvsluta appen.",
     "mobile.managed.not_secured.android": "Enheten behöver säkras med skärmlås för att använda Mattermost.",
     "mobile.managed.not_secured.ios": "Enheten behöver säkras med en passcode för att använda Mattermost.\n\nGå till Inställningar > Face ID & Passcode.",
     "mobile.managed.not_secured.ios.touchId": "Enheten behöver säkras med en passcode för att använda Mattermost.\n\nGå till Inställningar > Touch ID & Passcode.",
@@ -960,5 +960,16 @@
     "invite.members.already_member": "Denna person är redan en teammedlem",
     "display_settings.crt.on": "På",
     "display_settings.crt.off": "Av",
-    "display_settings.crt": "Sammanfällda svarstrådar"
+    "display_settings.crt": "Sammanfällda svarstrådar",
+    "settings_display.crt.label": "Sammanfällda svarstrådar",
+    "settings_display.crt.desc": "När aktiverad visas inte svarsmeddelanden i kanalvyn och du blir notifierad om trådar du följer i vyn \"Trådar\".",
+    "mobile.managed.jailbreak_no_reason": "Inte tillgänglig",
+    "mobile.managed.jailbreak_no_debug_info": "Inte tillgänglig",
+    "mobile.display_settings.crt": "Sammanfällda svarstrådar",
+    "mobile.calls_start_call_exists": "Ett samtal pågår redan i kanalen.",
+    "mobile.calls_not_connected": "Du är inte ansluten till ett samtal i den aktuella kanalen.",
+    "invite.title.summary": "Sammanfattning av inbjudan",
+    "invite.title": "Bjud in",
+    "invite.summary.try_again": "Försök igen",
+    "invite.summary.some_not_sent": "{notSentCount, plural, one {En inbjudan} other {Några inbjudningar}} skickades inte"
 }
