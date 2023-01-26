@@ -41,7 +41,7 @@ const TouchableWithFeedbackIOS = ({testID, children, type = 'native', cancelTouc
                     {children}
                 </TouchableOpacity>
             );
-        case 'none':
+        default:
             return (
                 <TouchableWithoutFeedback
                     testID={testID}
@@ -51,8 +51,6 @@ const TouchableWithFeedbackIOS = ({testID, children, type = 'native', cancelTouc
                 </TouchableWithoutFeedback>
             );
     }
-
-    return null;
 };
 
 export default memo(TouchableWithFeedbackIOS);

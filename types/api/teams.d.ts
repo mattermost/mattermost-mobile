@@ -19,6 +19,11 @@ type TeamMemberWithError = {
     error: ApiError;
 }
 
+type TeamInviteWithError = {
+    email: string;
+    error: ApiError;
+}
+
 type TeamType = 'O' | 'I';
 
 type Team = {

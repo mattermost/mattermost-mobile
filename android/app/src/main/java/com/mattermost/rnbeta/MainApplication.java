@@ -1,10 +1,9 @@
 package com.mattermost.rnbeta;
 
-import com.facebook.react.bridge.JSIModuleSpec;
-
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
@@ -23,11 +22,12 @@ import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
 
 import com.facebook.react.PackageList;
-import com.facebook.react.ReactInstanceManager;
 import com.facebook.react.ReactPackage;
-import com.facebook.react.config.ReactFeatureFlags;
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
+import com.facebook.react.defaults.DefaultReactNativeHost;
 import com.facebook.react.ReactNativeHost;
 import com.facebook.react.TurboReactPackage;
+import com.facebook.react.bridge.JSIModuleSpec;
 import com.facebook.react.bridge.NativeModule;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.JSIModulePackage;
@@ -36,17 +36,16 @@ import com.facebook.react.module.model.ReactModuleInfoProvider;
 import com.facebook.react.modules.network.OkHttpClientProvider;
 import com.facebook.soloader.SoLoader;
 
+import com.mattermost.flipper.ReactNativeFlipper;
 import com.mattermost.networkclient.RCTOkHttpClientFactory;
-import com.mattermost.newarchitecture.MainApplicationReactNativeHost;
 import com.nozbe.watermelondb.jsi.WatermelonDBJSIPackage;
 
 public class MainApplication extends NavigationApplication implements INotificationsApplication {
   public static MainApplication instance;
 
   public Boolean sharedExtensionIsOpened = false;
-
   private final ReactNativeHost mReactNativeHost =
-    new ReactNativeHost(this) {
+    new DefaultReactNativeHost(this) {
       @Override
       public boolean getUseDeveloperSupport() {
         return BuildConfig.DEBUG;
@@ -71,6 +70,8 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return ShareModule.getInstance(reactContext);
                   case "Notifications":
                     return NotificationsModule.getInstance(instance, reactContext);
+                  case "SplitView":
+                      return SplitViewModule.Companion.getInstance(reactContext);
                   default:
                     throw new IllegalArgumentException("Could not find module " + name);
                   }
@@ -83,6 +84,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put("MattermostManaged", new ReactModuleInfo("MattermostManaged", "com.mattermost.rnbeta.MattermostManagedModule", false, false, false, false, false));
                     map.put("MattermostShare", new ReactModuleInfo("MattermostShare", "com.mattermost.share.ShareModule", false, false, true, false, false));
                     map.put("Notifications", new ReactModuleInfo("Notifications", "com.mattermost.rnbeta.NotificationsModule", false, false, false, false, false));
+                    map.put("SplitView", new ReactModuleInfo("SplitView", "com.mattermost.rnbeta.SplitViewModule", false, false, false, false, false));
                     return map;
                   };
                 }
@@ -106,30 +108,26 @@ public class MainApplication extends NavigationApplication implements INotificat
       protected String getJSMainModuleName() {
         return "index";
       }
+
+        @Override
+        protected boolean isNewArchEnabled() {
+            return BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
+        }
+        @Override
+        protected Boolean isHermesEnabled() {
+            return BuildConfig.IS_HERMES_ENABLED;
+        }
     };
-  
-  private final ReactNativeHost mNewArchitectureNativeHost =
-      new MainApplicationReactNativeHost(this);
 
   @Override
   public ReactNativeHost getReactNativeHost() {
-    if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
-      return mNewArchitectureNativeHost;
-    } else {
-      return mReactNativeHost;
-    }
+    return mReactNativeHost;
   }
 
   @Override
   public void onCreate() {
     super.onCreate();
     instance = this;
-
-    // If you opted-in for the New Architecture, we enable the TurboModule system
-    ReactFeatureFlags.useTurboModules = BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
-    SoLoader.init(this, /* native exopackage */ false);
-    initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
-
     Context context = getApplicationContext();
 
     // Delete any previous temp files created by the app
@@ -141,6 +139,13 @@ public class MainApplication extends NavigationApplication implements INotificat
     // with a cookie jar defined in APIClientModule and an interceptor to intercept all
     // requests that originate from React Native's OKHttpClient
     OkHttpClientProvider.setOkHttpClientFactory(new RCTOkHttpClientFactory());
+
+      SoLoader.init(this, /* native exopackage */ false);
+      if (BuildConfig.IS_NEW_ARCHITECTURE_ENABLED) {
+          // If you opted-in for the New Architecture, we load the native entry point for this app.
+          DefaultNewArchitectureEntryPoint.load();
+      }
+      ReactNativeFlipper.initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
   }
 
   @Override
@@ -152,27 +157,5 @@ public class MainApplication extends NavigationApplication implements INotificat
             defaultAppLaunchHelper,
             new JsIOHelper()
     );
-  }
-
-  /**
-   * Loads Flipper in React Native templates. Call this in the onCreate method with something like
-   * initializeFlipper(this, getReactNativeHost().getReactInstanceManager());
-   */
-  private static void initializeFlipper(
-      Context context, ReactInstanceManager reactInstanceManager) {
-    if (BuildConfig.DEBUG) {
-      try {
-        /*
-         We use reflection here to pick up the class that initializes Flipper,
-        since Flipper library is not available in release mode
-        */
-        Class<?> aClass = Class.forName("com.rn.ReactNativeFlipper");
-        aClass
-            .getMethod("initializeFlipper", Context.class, ReactInstanceManager.class)
-            .invoke(null, context, reactInstanceManager);
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
   }
 }

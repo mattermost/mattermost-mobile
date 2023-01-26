@@ -27,6 +27,7 @@ import OtherMentionsBadge from './other_mentions_badge';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
 import type {HeaderRightButton} from '@components/navigation_header/header';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type ChannelProps = {
     channelId: string;
@@ -34,7 +35,7 @@ type ChannelProps = {
     customStatus?: UserCustomStatus;
     isCustomStatusEnabled: boolean;
     isCustomStatusExpired: boolean;
-    componentId?: string;
+    componentId?: AvailableScreens;
     displayName: string;
     isOwnDirectMessage: boolean;
     memberCount?: number;
@@ -97,7 +98,7 @@ const ChannelHeader = ({
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
         popTopScreen(componentId);
-    }, []);
+    }, [componentId]);
 
     const onTitlePress = useCallback(preventDoubleTap(() => {
         let title;

@@ -20,11 +20,12 @@ import EmptyState from './empty';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     appsEnabled: boolean;
     channelId: string;
-    componentId: string;
+    componentId: AvailableScreens;
     currentTimezone: string | null;
     customEmojiNames: string[];
     isCRTEnabled: boolean;

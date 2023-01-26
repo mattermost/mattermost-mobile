@@ -14,12 +14,14 @@ import {dismissModal, popToRoot} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {preventDoubleTap} from '@utils/tap';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     canArchive: boolean;
     canUnarchive: boolean;
     canViewArchivedChannels: boolean;
     channelId: string;
-    componentId: string;
+    componentId: AvailableScreens;
     displayName: string;
     type?: ChannelType;
 }

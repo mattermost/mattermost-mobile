@@ -10,8 +10,10 @@ import BottomSheet from '@screens/bottom_sheet';
 import Picker from './picker';
 import PickerFooter from './picker/footer';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
-    componentId: string;
+    componentId: AvailableScreens;
     onEmojiPress: (emoji: string) => void;
     closeButtonId: string;
 };

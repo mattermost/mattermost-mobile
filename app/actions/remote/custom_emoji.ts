@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
-import {Client} from '@client/rest';
 import {Emoji, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
+
+import type {Client} from '@client/rest';
 
 export const fetchCustomEmojis = async (serverUrl: string, page = 0, perPage = General.PAGE_SIZE_DEFAULT, sort = Emoji.SORT_BY_NAME) => {
     let client: Client;

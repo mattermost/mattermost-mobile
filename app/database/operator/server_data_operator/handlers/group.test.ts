@@ -8,7 +8,7 @@ import {
     transformGroupRecord,
 } from '@database/operator/server_data_operator/transformers/group';
 
-import ServerDataOperator from '..';
+import type ServerDataOperator from '..';
 
 describe('*** Operator: Group Handlers tests ***', () => {
     let operator: ServerDataOperator;

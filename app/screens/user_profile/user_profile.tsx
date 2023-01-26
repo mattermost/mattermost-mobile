@@ -21,6 +21,7 @@ import UserProfileOptions, {OptionsType} from './options';
 import UserProfileTitle from './title';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     channelId?: string;
@@ -34,7 +35,7 @@ type Props = {
     isMilitaryTime: boolean;
     isSystemAdmin: boolean;
     isTeamAdmin: boolean;
-    location: string;
+    location: AvailableScreens;
     teamId: string;
     teammateDisplayName: string;
     user: UserModel;
@@ -46,6 +47,7 @@ const TITLE_HEIGHT = 118;
 const OPTIONS_HEIGHT = 82;
 const SINGLE_OPTION_HEIGHT = 68;
 const LABEL_HEIGHT = 58;
+const channelContextScreens: AvailableScreens[] = [Screens.CHANNEL, Screens.THREAD];
 
 const UserProfile = ({
     channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
@@ -56,7 +58,7 @@ const UserProfile = ({
     const {formatMessage, locale} = useIntl();
     const serverUrl = useServerUrl();
     const {bottom} = useSafeAreaInsets();
-    const channelContext = [Screens.CHANNEL, Screens.THREAD].includes(location);
+    const channelContext = channelContextScreens.includes(location);
     const showOptions: OptionsType = channelContext && !user.isBot ? 'all' : 'message';
     const override = Boolean(userIconOverride || usernameOverride);
     const timezone = getUserTimezone(user);

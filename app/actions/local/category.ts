@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
 import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
@@ -11,6 +9,7 @@ import {queryMyTeams} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
 import {logError} from '@utils/log';
 
+import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 export const deleteCategory = async (serverUrl: string, categoryId: string) => {

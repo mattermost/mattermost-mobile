@@ -9,9 +9,11 @@ import {General} from '@constants';
 import Archive from './archive';
 import ConvertPrivate from './convert_private';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     channelId: string;
-    componentId: string;
+    componentId: AvailableScreens;
     type?: ChannelType;
 }
 

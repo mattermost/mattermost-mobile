@@ -70,7 +70,7 @@ export function isSupportedServerCalls(serverVersion?: string) {
 }
 
 export function isCallsCustomMessage(post: PostModel | Post): boolean {
-    return Boolean(post.type && post.type?.startsWith(Post.POST_TYPES.CUSTOM_CALLS));
+    return Boolean(post.type && post.type === Post.POST_TYPES.CUSTOM_CALLS);
 }
 
 export function idsAreEqual(a: string[], b: string[]) {

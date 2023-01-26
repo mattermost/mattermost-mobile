@@ -5,8 +5,9 @@ import React, {Dispatch, RefObject, SetStateAction, useCallback} from 'react';
 import {Platform, StyleSheet} from 'react-native';
 
 import OptionItem from '@components/option_item';
-import {SearchRef} from '@components/search';
 import {preventDoubleTap} from '@utils/tap';
+
+import type {SearchRef} from '@components/search';
 
 const styles = StyleSheet.create({
     container: {

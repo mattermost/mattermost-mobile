@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type {AvailableScreens} from './navigation';
 import type {FloatingTextInputRef} from '@components/floating_text_input_label';
 import type {FieldProps} from '@screens/edit_profile/components/field';
 import type UserModel from '@typings/database/models/servers/user';
@@ -16,7 +17,7 @@ export interface UserInfo extends Record<string, string | undefined | null| bool
 }
 
 export type EditProfileProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentUser: UserModel;
     isModal?: boolean;
     isTablet?: boolean;

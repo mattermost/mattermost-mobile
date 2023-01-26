@@ -183,7 +183,6 @@ const ChannelListScreen = (props: ChannelProps) => {
                         <CategoriesList
                             iconPad={canAddOtherServers && props.teamsCount <= 1}
                             isCRTEnabled={props.isCRTEnabled}
-                            isTablet={isTablet}
                             teamsCount={props.teamsCount}
                             channelsCount={props.channelsCount}
                         />

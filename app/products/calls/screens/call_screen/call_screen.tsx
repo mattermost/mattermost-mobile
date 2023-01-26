@@ -31,7 +31,6 @@ import ReactionBar from '@calls/components/reaction_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
 import {useCallsConfig} from '@calls/state';
-import {CallParticipant, CurrentCall} from '@calls/types/calls';
 import {sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -40,12 +39,15 @@ import {Preferences, Screens, WebsocketEvents} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useIsTablet} from '@hooks/device';
 import {
     bottomSheet,
     dismissAllModalsAndPopToScreen,
     dismissBottomSheet,
     goToScreen,
     popTopScreen,
+    setScreensOrientation,
 } from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {bottomSheetSnapPoint} from '@utils/helpers';
@@ -53,8 +55,11 @@ import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
+import type {CallParticipant, CurrentCall} from '@calls/types/calls';
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 export type Props = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentCall: CurrentCall | null;
     participantsDict: Dictionary<CallParticipant>;
     micPermissionsGranted: boolean;
@@ -258,6 +263,7 @@ const CallScreen = ({
     const theme = useTheme();
     const {bottom} = useSafeAreaInsets();
     const {width, height} = useWindowDimensions();
+    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const {EnableRecordings} = useCallsConfig(serverUrl);
     usePermissionsChecker(micPermissionsGranted);
@@ -415,6 +421,10 @@ const CallScreen = ({
         recordOptionTitle, stopRecording, stopRecordingOptionTitle, style, switchToThread, callThreadOptionTitle,
         openChannelOptionTitle]);
 
+    useAndroidHardwareBackHandler(componentId, () => {
+        popTopScreen(componentId);
+    });
+
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
             if (channelId === currentCall?.channelId && NavigationStore.getVisibleScreen() === componentId) {
@@ -424,6 +434,16 @@ const CallScreen = ({
 
         return () => listener.remove();
     }, []);
+
+    useEffect(() => {
+        const didDismissListener = Navigation.events().registerComponentDidDisappearListener(async ({componentId: screen}) => {
+            if (componentId === screen) {
+                setScreensOrientation(isTablet);
+            }
+        });
+
+        return () => didDismissListener.remove();
+    }, [isTablet]);
 
     if (!currentCall || !myParticipant) {
         // Note: this happens because the screen is "rendered", even after the screen has been popped, and the

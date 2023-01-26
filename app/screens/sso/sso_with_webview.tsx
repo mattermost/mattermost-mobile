@@ -6,18 +6,19 @@ import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Platform, Text, View} from 'react-native';
 import {WebView} from 'react-native-webview';
-import {
-    WebViewErrorEvent,
-    WebViewMessageEvent,
-    WebViewNavigation,
-    WebViewNavigationEvent,
-} from 'react-native-webview/lib/WebViewTypes';
 import urlParse from 'url-parse';
 
 import Loading from '@components/loading';
 import {Sso} from '@constants';
 import {popTopScreen} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {
+    WebViewErrorEvent,
+    WebViewMessageEvent,
+    WebViewNavigation,
+    WebViewNavigationEvent,
+} from 'react-native-webview/lib/WebViewTypes';
 
 interface SSOWithWebViewProps {
     completeUrlPath: string;

@@ -30,6 +30,6 @@ describe('*** REACTION Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('ReactionModel');
+        expect(preparedRecords!.collection.table).toBe('Reaction');
     });
 });

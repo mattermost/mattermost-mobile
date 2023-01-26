@@ -12,12 +12,15 @@ import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DialogElement from './dialog_element';
 import DialogIntroductionText from './dialog_introduction_text';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -40,7 +43,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 type Props = {
     config: InteractiveDialogConfig;
-    componentId: string;
+    componentId: AvailableScreens;
 }
 
 const close = () => {
@@ -216,6 +219,8 @@ function InteractiveDialog({
             unsubscribe.remove();
         };
     }, [serverUrl, url, callbackId, state, handleSubmit, submitting]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <SafeAreaView

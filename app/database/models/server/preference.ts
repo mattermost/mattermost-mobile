@@ -1,12 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Relation} from '@nozbe/watermelondb';
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
 import Model, {Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 
+import type {Relation} from '@nozbe/watermelondb';
 import type PreferenceModelInterface from '@typings/database/models/servers/preference';
 import type UserModel from '@typings/database/models/servers/user';
 

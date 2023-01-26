@@ -5,7 +5,7 @@ exports[`components/categories_list should render channels error 1`] = `
   animatedStyle={
     {
       "value": {
-        "maxWidth": "100%",
+        "maxWidth": 750,
       },
     }
   }
@@ -14,7 +14,7 @@ exports[`components/categories_list should render channels error 1`] = `
     {
       "backgroundColor": "#1e325c",
       "flex": 1,
-      "maxWidth": "100%",
+      "maxWidth": 750,
       "paddingLeft": 18,
       "paddingRight": 20,
       "paddingTop": 10,
@@ -39,46 +39,115 @@ exports[`components/categories_list should render channels error 1`] = `
     <View
       style={
         {
-          "alignItems": "center",
           "flexDirection": "row",
           "justifyContent": "space-between",
         }
       }
     >
       <View
-        accessible={true}
-        focusable={false}
-        onClick={[Function]}
-        onResponderGrant={[Function]}
-        onResponderMove={[Function]}
-        onResponderRelease={[Function]}
-        onResponderTerminate={[Function]}
-        onResponderTerminationRequest={[Function]}
-        onStartShouldSetResponder={[Function]}
         style={
           {
-            "alignItems": "center",
-            "flexDirection": "row",
-            "justifyContent": "space-between",
+            "width": "85%",
           }
         }
       >
-        <Text
+        <View
           style={
             {
-              "color": "#ffffff",
-              "fontFamily": "Metropolis-SemiBold",
-              "fontSize": 28,
-              "fontWeight": "600",
-              "lineHeight": 36,
+              "alignItems": "center",
+              "flexDirection": "row",
+              "justifyContent": "space-between",
             }
           }
-          testID="channel_list_header.team_display_name"
         >
-          Test Team!
-        </Text>
+          <View
+            accessibilityState={
+              {
+                "busy": undefined,
+                "checked": undefined,
+                "disabled": undefined,
+                "expanded": undefined,
+                "selected": undefined,
+              }
+            }
+            accessible={true}
+            focusable={false}
+            onClick={[Function]}
+            onResponderGrant={[Function]}
+            onResponderMove={[Function]}
+            onResponderRelease={[Function]}
+            onResponderTerminate={[Function]}
+            onResponderTerminationRequest={[Function]}
+            onStartShouldSetResponder={[Function]}
+            style={
+              {
+                "alignItems": "center",
+                "flexDirection": "row",
+                "justifyContent": "space-between",
+              }
+            }
+          >
+            <Text
+              ellipsizeMode="tail"
+              numberOfLines={2}
+              style={
+                {
+                  "color": "#ffffff",
+                  "fontFamily": "Metropolis-SemiBold",
+                  "fontSize": 28,
+                  "fontWeight": "600",
+                  "lineHeight": 36,
+                }
+              }
+              testID="channel_list_header.team_display_name"
+            >
+              Test Team!
+            </Text>
+          </View>
+        </View>
+        <View
+          style={
+            {
+              "alignItems": "center",
+              "flexDirection": "row",
+              "paddingRight": 60,
+            }
+          }
+        >
+          <Text
+            ellipsizeMode="tail"
+            numberOfLines={1}
+            style={
+              {
+                "color": "rgba(255,255,255,0.64)",
+                "fontFamily": "OpenSans-SemiBold",
+                "fontSize": 11,
+                "fontWeight": "600",
+                "lineHeight": 16,
+              }
+            }
+            testID="channel_list_header.server_display_name"
+          />
+        </View>
       </View>
       <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
         accessible={true}
         collapsable={false}
         focusable={true}
@@ -104,6 +173,7 @@ exports[`components/categories_list should render channels error 1`] = `
             "borderRadius": 14,
             "height": 28,
             "justifyContent": "center",
+            "marginTop": 7,
             "opacity": 1,
             "width": 28,
           }
@@ -120,30 +190,6 @@ exports[`components/categories_list should render channels error 1`] = `
           }
         />
       </View>
-    </View>
-    <View
-      style={
-        {
-          "alignItems": "center",
-          "flexDirection": "row",
-          "paddingRight": 60,
-        }
-      }
-    >
-      <Text
-        ellipsizeMode="tail"
-        numberOfLines={1}
-        style={
-          {
-            "color": "rgba(255,255,255,0.64)",
-            "fontFamily": "OpenSans-SemiBold",
-            "fontSize": 11,
-            "fontWeight": "600",
-            "lineHeight": 16,
-          }
-        }
-        testID="channel_list_header.server_display_name"
-      />
     </View>
   </View>
   <View
@@ -218,6 +264,23 @@ exports[`components/categories_list should render channels error 1`] = `
       There was a problem loading content for this team.
     </Text>
     <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
       accessible={true}
       collapsable={false}
       focusable={true}
@@ -277,7 +340,7 @@ exports[`components/categories_list should render team error 1`] = `
   animatedStyle={
     {
       "value": {
-        "maxWidth": "100%",
+        "maxWidth": 750,
       },
     }
   }
@@ -286,7 +349,7 @@ exports[`components/categories_list should render team error 1`] = `
     {
       "backgroundColor": "#1e325c",
       "flex": 1,
-      "maxWidth": "100%",
+      "maxWidth": 750,
       "paddingLeft": 18,
       "paddingRight": 20,
       "paddingTop": 10,
@@ -349,6 +412,23 @@ exports[`components/categories_list should render team error 1`] = `
         />
       </View>
       <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
         accessible={true}
         collapsable={false}
         focusable={true}
@@ -410,6 +490,23 @@ exports[`components/categories_list should render team error 1`] = `
       }
     >
       <View
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": undefined,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
         accessible={true}
         collapsable={false}
         focusable={true}
@@ -451,6 +548,14 @@ exports[`components/categories_list should render team error 1`] = `
       </View>
     </View>
     <View
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
       accessible={true}
       focusable={true}
       onClick={[Function]}
@@ -573,6 +678,23 @@ exports[`components/categories_list should render team error 1`] = `
       There was a problem loading content for this server.
     </Text>
     <View
+      accessibilityState={
+        {
+          "busy": undefined,
+          "checked": undefined,
+          "disabled": undefined,
+          "expanded": undefined,
+          "selected": undefined,
+        }
+      }
+      accessibilityValue={
+        {
+          "max": undefined,
+          "min": undefined,
+          "now": undefined,
+          "text": undefined,
+        }
+      }
       accessible={true}
       collapsable={false}
       focusable={true}

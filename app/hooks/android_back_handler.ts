@@ -6,7 +6,9 @@ import {BackHandler} from 'react-native';
 
 import NavigationStore from '@store/navigation_store';
 
-const useAndroidHardwareBackHandler = (componentId: string, callback: () => void) => {
+import type {AvailableScreens} from '@typings/screens/navigation';
+
+const useAndroidHardwareBackHandler = (componentId: AvailableScreens | undefined, callback: () => void) => {
     useEffect(() => {
         const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
             if (NavigationStore.getVisibleScreen() === componentId) {

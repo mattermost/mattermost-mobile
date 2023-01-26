@@ -1,16 +1,3 @@
-diff --git a/node_modules/react-native-walkthrough-tooltip/src/tooltip.d.ts b/node_modules/react-native-walkthrough-tooltip/src/tooltip.d.ts
-index 5a7ef59..305d794 100644
---- a/node_modules/react-native-walkthrough-tooltip/src/tooltip.d.ts
-+++ b/node_modules/react-native-walkthrough-tooltip/src/tooltip.d.ts
-@@ -129,6 +129,8 @@ declare module 'react-native-walkthrough-tooltip' {
- 
-     /** Will use given component instead of default react-native Modal component **/
-     modalComponent?: object;
-+
-+    children: React.ReactNode;
-   }
- 
-   /**
 diff --git a/node_modules/react-native-walkthrough-tooltip/src/tooltip.js b/node_modules/react-native-walkthrough-tooltip/src/tooltip.js
 index db612fd..0262d6d 100644
 --- a/node_modules/react-native-walkthrough-tooltip/src/tooltip.js

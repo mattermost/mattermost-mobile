@@ -127,6 +127,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.INTEGRATION_SELECTOR:
             screen = withServerDatabase(require('@screens/integration_selector').default);
             break;
+        case Screens.INVITE:
+            screen = withServerDatabase(require('@screens/invite').default);
+            break;
         case Screens.IN_APP_NOTIFICATION: {
             const notificationScreen = require('@screens/in_app_notification').default;
             Navigation.registerComponent(Screens.IN_APP_NOTIFICATION, () =>
@@ -178,6 +181,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.SETTINGS_DISPLAY_CLOCK:
             screen = withServerDatabase(require('@screens/settings/display_clock').default);
+            break;
+        case Screens.SETTINGS_DISPLAY_CRT:
+            screen = withServerDatabase(require('@screens/settings/display_crt').default);
             break;
         case Screens.SETTINGS_DISPLAY_THEME:
             screen = withServerDatabase(require('@screens/settings/display_theme').default);
