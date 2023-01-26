@@ -256,6 +256,7 @@ export default function ManageChannelMembers({
             </View>
 
             {/* TODO: https://mattermost.atlassian.net/browse/MM-48830 */}
+            {/* fix flashing No Results page when results are present */}
             <UserList
                 currentUserId={currentUserId}
                 fetchMore={getProfiles}
