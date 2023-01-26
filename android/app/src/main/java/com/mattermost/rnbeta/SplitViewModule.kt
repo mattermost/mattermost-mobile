@@ -36,11 +36,11 @@ class SplitViewModule(private var reactContext: ReactApplicationContext) : React
                 .emit(eventName, params)
     }
 
-    private fun getSplitViewResults() : WritableMap? {
+    private fun getSplitViewResults(folded: Boolean) : WritableMap? {
         if (currentActivity != null) {
             val deviceResolver = DeviceTypeResolver(this.reactContext)
             val map = Arguments.createMap()
-            map.putBoolean("isSplitView", currentActivity!!.isInMultiWindowMode || isDeviceFolded)
+            map.putBoolean("isSplitView", currentActivity!!.isInMultiWindowMode || folded)
             map.putBoolean("isTablet", deviceResolver.isTablet)
             return map
         }
@@ -49,16 +49,16 @@ class SplitViewModule(private var reactContext: ReactApplicationContext) : React
     }
 
     fun setDeviceFolded(folded: Boolean) {
-        isDeviceFolded = folded
-        val map = getSplitViewResults()
-        if (listenerCount > 0) {
+        val map = getSplitViewResults(folded)
+        if (listenerCount > 0 && isDeviceFolded != folded) {
             sendEvent("SplitViewChanged", map)
         }
+        isDeviceFolded = folded
     }
 
     @ReactMethod
     fun isRunningInSplitView(promise: Promise) {
-        promise.resolve(getSplitViewResults())
+        promise.resolve(getSplitViewResults(isDeviceFolded))
     }
 
     @ReactMethod

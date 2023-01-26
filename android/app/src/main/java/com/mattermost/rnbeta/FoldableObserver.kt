@@ -19,7 +19,9 @@ class FoldableObserver(private val activity: Activity) {
     }
 
     public fun onStart() {
-        disposable?.dispose()
+        if (disposable?.isDisposed == true) {
+            onCreate()
+        }
         disposable = observable.observeOn(AndroidSchedulers.mainThread())
                 .subscribe { layoutInfo ->
                     val splitViewModule = SplitViewModule.getInstance()
@@ -44,12 +46,12 @@ class FoldableObserver(private val activity: Activity) {
         disposable?.dispose()
     }
 
-    fun isTableTopPosture(foldFeature : FoldingFeature?) : Boolean {
+    private fun isTableTopPosture(foldFeature : FoldingFeature?) : Boolean {
         return foldFeature?.state == FoldingFeature.State.HALF_OPENED &&
                 foldFeature.orientation == FoldingFeature.Orientation.HORIZONTAL
     }
 
-    fun isBookPosture(foldFeature : FoldingFeature?) : Boolean {
+    private fun isBookPosture(foldFeature : FoldingFeature?) : Boolean {
         return foldFeature?.state == FoldingFeature.State.HALF_OPENED &&
                 foldFeature.orientation == FoldingFeature.Orientation.VERTICAL
     }
