@@ -132,7 +132,11 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     );
 
     const canMarkAsUnread = combineLatest([currentUser, channelIsArchived]).pipe(
-        switchMap(([user, isArchived]) => of$((!isArchived && user?.id !== post.userId && !isSystemMessage(post)) || isFromWebhook(post))),
+        switchMap(([user, isArchived]) => of$(
+            !isArchived && (
+                (user?.id !== post.userId && !isSystemMessage(post)) || isFromWebhook(post)
+            ),
+        )),
     );
 
     const canAddReaction = combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived]).pipe(
