@@ -6,7 +6,9 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeChannel, observeChannelSettings} from '@queries/servers/channel';
+import {observeChannel} from '@queries/servers/channel';
+import {observeCurrentUser} from '@queries/servers/user';
+import {getNotificationProps} from '@utils/user';
 
 import NotificationPreference from './notification_preference';
 
@@ -17,12 +19,11 @@ type Props = WithDatabaseArgs & {
 }
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: Props) => {
-    const settings = observeChannelSettings(database, channelId);
-    const notifyLevel = settings.pipe(
-        switchMap((s) => of$(s?.notifyProps.push)),
-    );
     const channel = observeChannel(database, channelId);
     const displayName = channel.pipe(switchMap((c) => of$(c?.displayName)));
+    const notifyLevel = observeCurrentUser(database).pipe(
+        switchMap((u) => of$(u ? getNotificationProps(u).push : 'default')),
+    );
 
     return {
         displayName,
