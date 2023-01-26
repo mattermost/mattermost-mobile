@@ -134,22 +134,20 @@ type NotifyPrefType = typeof NotificationLevel[keyof typeof NotificationLevel];
 
 type ChannelNotificationPreferenceProps = {
     componentId: AvailableScreens;
-    notifyLevel?: NotifyPrefType;
-    isCRTEnabled: boolean;
     currentUser: UserModel;
+    isCRTEnabled: boolean;
+    isChannelMuted: boolean;
+    notifyLevel?: NotifyPrefType;
 };
-const ChannelNotificationPreference = ({componentId, currentUser, isCRTEnabled, notifyLevel}: ChannelNotificationPreferenceProps) => {
+const ChannelNotificationPreference = ({componentId, currentUser, isCRTEnabled, isChannelMuted, notifyLevel}: ChannelNotificationPreferenceProps) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const globalDefault = useMemo(() => {
-        const n = getNotificationProps(currentUser);
-        return n.push;
-    }, [currentUser.notifyProps]);
-
     const [top, setTop] = useState(0);
+
+    const globalDefault = useMemo(() => getNotificationProps(currentUser).push, [currentUser.notifyProps]);
     const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(globalDefault);
     const [threadReplies, setThreadReplies] = useState<boolean>(false); // TODO: get from db
     const [resetDefaultVisible, setResetDefaultVisible] = useState<boolean>(false);
@@ -251,7 +249,7 @@ const ChannelNotificationPreference = ({componentId, currentUser, isCRTEnabled, 
 
     return (
         <SettingContainer testID='push_notification_settings'>
-            {renderMutedBanner()}
+            {isChannelMuted && renderMutedBanner()}
             {resetDefaultVisible && renderResetDefault()}
             <SettingBlock
                 headerText={NOTIFY_ABOUT}

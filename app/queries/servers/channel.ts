@@ -664,3 +664,8 @@ export const queryChannelsForAutocomplete = (database: Database, matchTerm: stri
 
     return database.get<ChannelModel>(CHANNEL).query(...clauses);
 };
+
+export const observeIsMutedSetting = (database: Database, channelId: string) => observeChannelSettings(database, channelId).
+    pipe(
+        switchMap((s) => of$(s?.notifyProps?.mark_unread === General.MENTION)),
+    );

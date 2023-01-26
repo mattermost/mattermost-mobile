@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeChannelSettings} from '@queries/servers/channel';
+import {observeChannelSettings, observeIsMutedSetting} from '@queries/servers/channel';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 
@@ -26,6 +26,7 @@ const enhanced = withObservables([], ({channelId, database}: CNFProps) => {
     return {
         currentUser: observeCurrentUser(database),
         isCRTEnabled: observeIsCRTEnabled(database),
+        isChannelMuted: observeIsMutedSetting(database, channelId),
         notifyLevel,
     };
 });
