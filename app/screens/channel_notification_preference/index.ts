@@ -8,6 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeChannelSettings} from '@queries/servers/channel';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
+import {observeCurrentUser} from '@queries/servers/user';
 
 import ChannelNotificationPreference from './channel_notification_preference';
 
@@ -23,11 +24,9 @@ const enhanced = withObservables([], ({channelId, database}: CNFProps) => {
     );
 
     return {
+        currentUser: observeCurrentUser(database),
         isCRTEnabled: observeIsCRTEnabled(database),
         notifyLevel,
-
-        // currentUser: observeCurrentUser(database),
-        // sendPushNotifications: observeConfigBooleanValue(database, 'SendPushNotifications'),
     };
 });
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
 
@@ -19,7 +19,9 @@ import SettingOption from '@screens/settings/setting_option';
 import SettingSeparator from '@screens/settings/settings_separator';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+import {getNotificationProps} from '@utils/user';
 
+import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type NotifPrefOptions = {
@@ -48,7 +50,7 @@ const NOTIFY_OPTIONS: Record<string, NotifPrefOptions> = {
         value: NotificationLevel.ALL,
     },
     [NotificationLevel.MENTION]: {
-        defaultMessage: 'Mentions, direct messages only (default)',
+        defaultMessage: 'Mentions, direct messages only',
         id: t('channel_notification_preference.notification.mention'),
         testID: 'channel_notification_preference.notification.mention',
         value: NotificationLevel.MENTION,
@@ -134,23 +136,29 @@ type ChannelNotificationPreferenceProps = {
     componentId: AvailableScreens;
     notifyLevel?: NotifyPrefType;
     isCRTEnabled: boolean;
+    currentUser: UserModel;
 };
-const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}: ChannelNotificationPreferenceProps) => {
+const ChannelNotificationPreference = ({componentId, currentUser, isCRTEnabled, notifyLevel}: ChannelNotificationPreferenceProps) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
+
+    const globalDefault = useMemo(() => {
+        const n = getNotificationProps(currentUser);
+        return n.push;
+    }, [currentUser.notifyProps]);
+
     const [top, setTop] = useState(0);
-    const GLOBAL_DEFAULT = notifyLevel === NotificationLevel.DEFAULT ? NotificationLevel.MENTION : notifyLevel; // fixme: this is value right...what is the value of global default ( from settings ) ?
-    const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(GLOBAL_DEFAULT);
+    const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(globalDefault);
     const [threadReplies, setThreadReplies] = useState<boolean>(false); // TODO: get from db
     const [resetDefaultVisible, setResetDefaultVisible] = useState<boolean>(false);
     const close = () => popTopScreen(componentId);
 
     const onSetNotifyAbout = useCallback((notifyValue: NotifyPrefType) => {
         setNotifyAbout(notifyValue);
-        setResetDefaultVisible(notifyValue !== GLOBAL_DEFAULT);
-    }, [GLOBAL_DEFAULT]);
+        setResetDefaultVisible(notifyValue !== globalDefault);
+    }, [globalDefault]);
 
     const canSaveSettings = useCallback(() => notifyAbout !== notifyLevel, [notifyAbout, notifyLevel]);
 
@@ -189,7 +197,7 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
 
     const renderResetDefault = useCallback(() => {
         const onPress = () => {
-            setNotifyAbout(GLOBAL_DEFAULT);
+            setNotifyAbout(globalDefault);
             setResetDefaultVisible(false);
         };
         return (
@@ -207,7 +215,7 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
                 </Text>
             </TouchableOpacity>
         );
-    }, [top, GLOBAL_DEFAULT]);
+    }, [top, globalDefault]);
 
     const renderThreadReplies = useCallback(() => {
         const isHidden = [NotificationLevel.NONE, NotificationLevel.ALL].includes(notifyAbout);
@@ -251,11 +259,13 @@ const ChannelNotificationPreference = ({componentId, notifyLevel, isCRTEnabled}:
             >
                 { Object.keys(NOTIFY_OPTIONS).map((k: string) => {
                     const {id, defaultMessage, value, testID} = NOTIFY_OPTIONS[k];
+                    const defaultOption = k === globalDefault ? ' (default)' : '';
+                    const label = `${intl.formatMessage({id, defaultMessage})}${defaultOption}`;
                     return (
                         <View key={`notif_pref_option${k}`}>
                             <SettingOption
                                 action={onSetNotifyAbout}
-                                label={intl.formatMessage({id, defaultMessage})}
+                                label={label}
                                 selected={notifyAbout === k}
                                 testID={testID}
                                 type='select'
