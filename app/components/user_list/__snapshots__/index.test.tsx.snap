@@ -191,7 +191,7 @@ exports[`components/channel_list_row should show no results 1`] = `
                 "paddingHorizontal": 20,
               }
             }
-            testID="user_list.user_item.1"
+            testID="create_direct_message.user_list.user_item.1"
           >
             <View
               style={
@@ -215,7 +215,7 @@ exports[`components/channel_list_row should show no results 1`] = `
                     "width": 42,
                   }
                 }
-                testID="user_list.user_item.1.profile_picture"
+                testID="create_direct_message.user_list.user_item.1.profile_picture"
               >
                 <Icon
                   name="account-outline"
@@ -264,7 +264,7 @@ exports[`components/channel_list_row should show no results 1`] = `
                       "maxWidth": "80%",
                     }
                   }
-                  testID="user_list.user_item.1.display_name"
+                  testID="create_direct_message.user_list.user_item.1.display_name"
                 >
                   johndoe
                 </Text>
@@ -379,7 +379,7 @@ exports[`components/channel_list_row should show no results 1`] = `
                 "paddingHorizontal": 20,
               }
             }
-            testID="user_list.user_item.2"
+            testID="create_direct_message.user_list.user_item.2"
           >
             <View
               style={
@@ -403,7 +403,7 @@ exports[`components/channel_list_row should show no results 1`] = `
                     "width": 42,
                   }
                 }
-                testID="user_list.user_item.2.profile_picture"
+                testID="create_direct_message.user_list.user_item.2.profile_picture"
               >
                 <Icon
                   name="account-outline"
@@ -452,7 +452,7 @@ exports[`components/channel_list_row should show no results 1`] = `
                       "maxWidth": "80%",
                     }
                   }
-                  testID="user_list.user_item.2.display_name"
+                  testID="create_direct_message.user_list.user_item.2.display_name"
                 >
                   rocky
                 </Text>
@@ -694,7 +694,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                 "paddingHorizontal": 20,
               }
             }
-            testID="user_list.user_item.1"
+            testID="create_direct_message.user_list.user_item.1"
           >
             <View
               style={
@@ -718,7 +718,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                     "width": 42,
                   }
                 }
-                testID="user_list.user_item.1.profile_picture"
+                testID="create_direct_message.user_list.user_item.1.profile_picture"
               >
                 <Icon
                   name="account-outline"
@@ -767,7 +767,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                       "maxWidth": "80%",
                     }
                   }
-                  testID="user_list.user_item.1.display_name"
+                  testID="create_direct_message.user_list.user_item.1.display_name"
                 >
                   johndoe
                 </Text>
@@ -962,7 +962,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                 "paddingHorizontal": 20,
               }
             }
-            testID="user_list.user_item.2"
+            testID="create_direct_message.user_list.user_item.2"
           >
             <View
               style={
@@ -986,7 +986,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                     "width": 42,
                   }
                 }
-                testID="user_list.user_item.2.profile_picture"
+                testID="create_direct_message.user_list.user_item.2.profile_picture"
               >
                 <Icon
                   name="account-outline"
@@ -1035,7 +1035,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
                       "maxWidth": "80%",
                     }
                   }
-                  testID="user_list.user_item.2.display_name"
+                  testID="create_direct_message.user_list.user_item.2.display_name"
                 >
                   rocky
                 </Text>
@@ -1277,7 +1277,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                 "paddingHorizontal": 20,
               }
             }
-            testID="user_list.user_item.1"
+            testID="create_direct_message.user_list.user_item.1"
           >
             <View
               style={
@@ -1301,7 +1301,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                     "width": 42,
                   }
                 }
-                testID="user_list.user_item.1.profile_picture"
+                testID="create_direct_message.user_list.user_item.1.profile_picture"
               >
                 <Icon
                   name="account-outline"
@@ -1350,7 +1350,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                       "maxWidth": "80%",
                     }
                   }
-                  testID="user_list.user_item.1.display_name"
+                  testID="create_direct_message.user_list.user_item.1.display_name"
                 >
                   johndoe
                 </Text>
@@ -1465,7 +1465,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                 "paddingHorizontal": 20,
               }
             }
-            testID="user_list.user_item.2"
+            testID="create_direct_message.user_list.user_item.2"
           >
             <View
               style={
@@ -1489,7 +1489,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                     "width": 42,
                   }
                 }
-                testID="user_list.user_item.2.profile_picture"
+                testID="create_direct_message.user_list.user_item.2.profile_picture"
               >
                 <Icon
                   name="account-outline"
@@ -1538,7 +1538,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
                       "maxWidth": "80%",
                     }
                   }
-                  testID="user_list.user_item.2.display_name"
+                  testID="create_direct_message.user_list.user_item.2.display_name"
                 >
                   rocky
                 </Text>

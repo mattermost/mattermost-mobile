@@ -238,7 +238,7 @@ export default function UserList({
                 disabled={!canAdd}
                 selected={selected}
                 showManageMode={showManageMode}
-                testID='user_list.user_item'
+                testID='create_direct_message.user_list.user_item'
                 teammateNameDisplay={teammateNameDisplay}
                 tutorialWatched={tutorialWatched}
                 user={item}
