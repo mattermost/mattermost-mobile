@@ -92,6 +92,11 @@ jest.doMock('react-native', () => {
                 },
             }),
         },
+        SplitView: {
+            addListener: jest.fn(),
+            removeListeners: jest.fn(),
+            isRunningInSplitView: jest.fn().mockResolvedValue(() => ({isSplitView: false, isTablet: false})),
+        },
         Notifications: {
             getDeliveredNotifications: jest.fn().mockResolvedValue([]),
             removeChannelNotifications: jest.fn().mockImplementation(),

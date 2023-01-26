@@ -187,7 +187,7 @@ export const queryAllMyChannel = (database: Database) => {
 };
 
 export const queryAllMyChannelsForTeam = (database: Database, teamId: string) => {
-    return database.get<ChannelModel>(MY_CHANNEL).query(
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(CHANNEL, Q.where('team_id', Q.oneOf([teamId, '']))),
     );
 };
