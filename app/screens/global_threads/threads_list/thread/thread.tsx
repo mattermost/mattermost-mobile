@@ -5,7 +5,9 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableHighlight, View} from 'react-native';
 
+import {switchToChannelById} from '@actions/remote/channel';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
+import TouchableWithFeedback from '@app/components/touchable_with_feedback';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
 import RemoveMarkdown from '@components/remove_markdown';
@@ -133,6 +135,12 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
         fetchAndSwitchToThread(serverUrl, thread.id);
     }), [serverUrl, thread.id]);
 
+    const onChannelSwitch = useCallback(() => {
+        if (channel?.id) {
+            switchToChannelById(serverUrl, channel?.id);
+        }
+    }, [serverUrl]);
+
     const showThreadOptions = useCallback(() => {
         const passProps = {thread};
         const title = isTablet ? intl.formatMessage({id: 'thread.options.title', defaultMessage: 'Thread Actions'}) : '';
@@ -229,13 +237,19 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                             {name}
                             {threadStarterName !== channel?.displayName && (
                                 <View style={styles.channelNameContainer}>
-                                    <Text
-                                        style={styles.channelName}
-                                        numberOfLines={1}
-                                        testID={`${threadItemTestId}.thread_starter.channel_display_name`}
+                                    <TouchableWithFeedback
+                                        onPress={onChannelSwitch}
+                                        type={'native'}
+                                        underlayColor={changeOpacity(theme.buttonBg, 0.08)}
                                     >
-                                        {channel?.displayName}
-                                    </Text>
+                                        <Text
+                                            style={styles.channelName}
+                                            numberOfLines={1}
+                                            testID={`${threadItemTestId}.thread_starter.channel_display_name`}
+                                        >
+                                            {channel?.displayName}
+                                        </Text>
+                                    </TouchableWithFeedback>
                                 </View>
                             )}
                         </View>

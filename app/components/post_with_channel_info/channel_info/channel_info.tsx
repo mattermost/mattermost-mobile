@@ -8,7 +8,7 @@ import {switchToChannelById} from '@actions/remote/channel';
 import TouchableWithFeedback from '@app/components/touchable_with_feedback';
 import {useServerUrl} from '@app/context/server';
 import {useTheme} from '@context/theme';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -18,14 +18,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         flexDirection: 'row',
+        alignItems: 'center',
         marginVertical: 8,
-        paddingHorizontal: 16,
+        paddingHorizontal: 8,
     },
     channel: {
         ...typography('Body', 75, 'SemiBold'),
         color: theme.centerChannelColor,
         marginRight: 5,
         flexShrink: 1,
+        paddingHorizontal: 8,
+        paddingVertical: 4,
     },
     teamContainer: {
         borderColor: theme.centerChannelColor,
@@ -62,7 +65,8 @@ function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
         >
             <TouchableWithFeedback
                 onPress={onChannelSwitch}
-                type={'opacity'}
+                type={'native'}
+                underlayColor={changeOpacity(theme.buttonBg, 0.08)}
             >
                 <Text
                     style={styles.channel}
