@@ -31,6 +31,8 @@
 		7F537B2928A517580086D6B3 /* NotificationHelper.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F537B2828A517580086D6B3 /* NotificationHelper.swift */; };
 		7F581D35221ED5C60099E66B /* NotificationService.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F581D34221ED5C60099E66B /* NotificationService.swift */; };
 		7F581D39221ED5C60099E66B /* NotificationService.appex in Embed App Extensions */ = {isa = PBXBuildFile; fileRef = 7F581D32221ED5C60099E66B /* NotificationService.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		7F59882B29827F2200C8C108 /* SplitViewModule.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F59882A29827F2200C8C108 /* SplitViewModule.swift */; };
+		7F59882E2982850000C8C108 /* SplitViewModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 7F59882D2982850000C8C108 /* SplitViewModule.m */; };
 		7F7E9F462864E6C60064BFAF /* Color.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7E9F442864E6C60064BFAF /* Color.swift */; };
 		7F7E9F472864E6C60064BFAF /* View.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7E9F452864E6C60064BFAF /* View.swift */; };
 		7F7E9F4C2864E6EC0064BFAF /* AttachmentModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7F7E9F492864E6EB0064BFAF /* AttachmentModel.swift */; };
@@ -197,6 +199,8 @@
 		7F581D34221ED5C60099E66B /* NotificationService.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NotificationService.swift; sourceTree = "<group>"; };
 		7F581D36221ED5C60099E66B /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		7F581F77221EEA5A0099E66B /* NotificationService.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = NotificationService.entitlements; sourceTree = "<group>"; };
+		7F59882A29827F2200C8C108 /* SplitViewModule.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; name = SplitViewModule.swift; path = Mattermost/Modules/SplitViewModule.swift; sourceTree = "<group>"; };
+		7F59882D2982850000C8C108 /* SplitViewModule.m */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.objc; name = SplitViewModule.m; path = Mattermost/Modules/SplitViewModule.m; sourceTree = "<group>"; };
 		7F63D2C21E6DD98A001FAE12 /* Mattermost.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; name = Mattermost.entitlements; path = Mattermost/Mattermost.entitlements; sourceTree = "<group>"; };
 		7F7E9F442864E6C60064BFAF /* Color.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Color.swift; sourceTree = "<group>"; };
 		7F7E9F452864E6C60064BFAF /* View.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = View.swift; sourceTree = "<group>"; };
@@ -467,6 +471,8 @@
 				7FEB109A1F61019C0039A015 /* MattermostManaged.m */,
 				7FEC870428A44A7B00DE96CB /* NotificationsModule.h */,
 				7FEC870028A4325D00DE96CB /* NotificationsModule.m */,
+				7F59882A29827F2200C8C108 /* SplitViewModule.swift */,
+				7F59882D2982850000C8C108 /* SplitViewModule.m */,
 			);
 			name = Modules;
 			sourceTree = "<group>";
@@ -803,8 +809,8 @@
 			);
 			mainGroup = 83CBB9F61A601CBA00E9B192;
 			packageReferences = (
-				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */,
-				27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */,
+				7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */,
+				27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */,
 			);
 			productRefGroup = 83CBBA001A601CBA00E9B192 /* Products */;
 			projectDirPath = "";
@@ -1011,12 +1017,14 @@
 			buildActionMask = 2147483647;
 			files = (
 				7FEC870128A4325D00DE96CB /* NotificationsModule.m in Sources */,
+				7F59882E2982850000C8C108 /* SplitViewModule.m in Sources */,
 				7F1EB88527FDE361002E7EEC /* GekidouWrapper.swift in Sources */,
 				7FCEFB9326B7934F006DC1DE /* SDWebImageDownloaderOperation+Swizzle.m in Sources */,
 				13B07FBC1A68108700A75B9A /* AppDelegate.mm in Sources */,
 				7F151D3E221B062700FAD8F3 /* RuntimeUtils.swift in Sources */,
 				7F537B2928A517580086D6B3 /* NotificationHelper.swift in Sources */,
 				13B07FC11A68108700A75B9A /* main.m in Sources */,
+				7F59882B29827F2200C8C108 /* SplitViewModule.swift in Sources */,
 				7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */,
 				536CC6C323E79287002C478C /* RNNotificationEventHandler+HandleReplyAction.m in Sources */,
 			);
@@ -1527,7 +1535,7 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */ = {
+		27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/getsentry/sentry-cocoa.git";
 			requirement = {
@@ -1535,7 +1543,7 @@
 				kind = branch;
 			};
 		};
-		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */ = {
+		7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/satoshi-takano/OpenGraph.git";
 			requirement = {
@@ -1548,12 +1556,12 @@
 /* Begin XCSwiftPackageProductDependency section */
 		27C667A229523ECA00E590D5 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */;
+			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = Sentry;
 		};
 		27C667A429523F0A00E590D5 /* Sentry */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa.git" */;
+			package = 27C667A129523ECA00E590D5 /* XCRemoteSwiftPackageReference "sentry-cocoa" */;
 			productName = Sentry;
 		};
 		49AE370026D4455D00EF4E52 /* Gekidou */ = {
@@ -1570,7 +1578,7 @@
 		};
 		7FD4822B2864D73300A5B18B /* OpenGraph */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = 7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph.git" */;
+			package = 7FD4822A2864D73300A5B18B /* XCRemoteSwiftPackageReference "OpenGraph" */;
 			productName = OpenGraph;
 		};
 /* End XCSwiftPackageProductDependency section */

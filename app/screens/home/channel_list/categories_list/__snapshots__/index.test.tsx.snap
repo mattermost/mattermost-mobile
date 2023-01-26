@@ -5,7 +5,7 @@ exports[`components/categories_list should render channels error 1`] = `
   animatedStyle={
     {
       "value": {
-        "maxWidth": "100%",
+        "maxWidth": 750,
       },
     }
   }
@@ -14,7 +14,7 @@ exports[`components/categories_list should render channels error 1`] = `
     {
       "backgroundColor": "#1e325c",
       "flex": 1,
-      "maxWidth": "100%",
+      "maxWidth": 750,
       "paddingLeft": 18,
       "paddingRight": 20,
       "paddingTop": 10,
@@ -320,7 +320,7 @@ exports[`components/categories_list should render team error 1`] = `
   animatedStyle={
     {
       "value": {
-        "maxWidth": "100%",
+        "maxWidth": 750,
       },
     }
   }
@@ -329,7 +329,7 @@ exports[`components/categories_list should render team error 1`] = `
     {
       "backgroundColor": "#1e325c",
       "flex": 1,
-      "maxWidth": "100%",
+      "maxWidth": 750,
       "paddingLeft": 18,
       "paddingRight": 20,
       "paddingTop": 10,
