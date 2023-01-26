@@ -29,6 +29,10 @@ class FoldableObserver(private val activity: Activity) {
                     when {
                         foldingFeature?.state === FoldingFeature.State.FLAT ->
                             splitViewModule?.setDeviceFolded(false)
+                        isTableTopPosture(foldingFeature) ->
+                            splitViewModule?.setDeviceFolded(false)
+                        isBookPosture(foldingFeature) ->
+                            splitViewModule?.setDeviceFolded(false)
                         else -> {
                             splitViewModule?.setDeviceFolded(true)
                         }
@@ -38,5 +42,15 @@ class FoldableObserver(private val activity: Activity) {
 
     public fun onStop() {
         disposable?.dispose()
+    }
+
+    fun isTableTopPosture(foldFeature : FoldingFeature?) : Boolean {
+        return foldFeature?.state == FoldingFeature.State.HALF_OPENED &&
+                foldFeature.orientation == FoldingFeature.Orientation.HORIZONTAL
+    }
+
+    fun isBookPosture(foldFeature : FoldingFeature?) : Boolean {
+        return foldFeature?.state == FoldingFeature.State.HALF_OPENED &&
+                foldFeature.orientation == FoldingFeature.Orientation.VERTICAL
     }
 }
