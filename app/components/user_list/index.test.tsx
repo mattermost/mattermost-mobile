@@ -38,6 +38,7 @@ describe('components/channel_list_row', () => {
             push_status: 'away',
         },
     };
+
     const user2: UserProfile = {
         id: '2',
         create_at: 1111,
@@ -98,6 +99,30 @@ describe('components/channel_list_row', () => {
         const wrapper = renderWithEverything(
             <UserList
                 profiles={[user]}
+                testID='UserListRow'
+                currentUserId={'1'}
+                teammateNameDisplay={'johndoe'}
+                handleSelectProfile={() => {
+                    // noop
+                }}
+                fetchMore={() => {
+                    // noop
+                }}
+                loading={true}
+                selectedIds={{}}
+                showNoResults={true}
+                tutorialWatched={true}
+            />,
+            {database},
+        );
+
+        expect(wrapper.toJSON()).toMatchSnapshot();
+    });
+
+    it('should show results no tutorial 2 users', () => {
+        const wrapper = renderWithEverything(
+            <UserList
+                profiles={[user, user2]}
                 testID='UserListRow'
                 currentUserId={'1'}
                 teammateNameDisplay={'johndoe'}
