@@ -27,24 +27,24 @@ const OptionMenus = ({
     const isTablet = useIsTablet();
     const intl = useIntl();
 
-    const handleDownload = useCallback(() => {
+    const handleDownload = useCallback(async () => {
         if (!isTablet) {
-            dismissBottomSheet();
+            await dismissBottomSheet();
         }
         setAction('downloading');
     }, [setAction]);
 
-    const handleCopyLink = useCallback(() => {
+    const handleCopyLink = useCallback(async () => {
         if (!isTablet) {
-            dismissBottomSheet();
+            await dismissBottomSheet();
         }
         setAction('copying');
     }, [setAction]);
 
-    const handlePermalink = useCallback(() => {
+    const handlePermalink = useCallback(async () => {
         if (fileInfo.post_id) {
             if (!isTablet) {
-                dismissBottomSheet();
+                await dismissBottomSheet();
             }
             showPermalink(serverUrl, '', fileInfo.post_id);
             setAction('opening');
