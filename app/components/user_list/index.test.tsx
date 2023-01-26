@@ -73,7 +73,7 @@ describe('components/channel_list_row', () => {
     it('should show no results', () => {
         const wrapper = renderWithEverything(
             <UserList
-                profiles={[user, user2]}
+                profiles={[user]}
                 testID='UserListRow'
                 currentUserId={'1'}
                 teammateNameDisplay={'johndoe'}
@@ -97,7 +97,7 @@ describe('components/channel_list_row', () => {
     it('should show results no tutorial', () => {
         const wrapper = renderWithEverything(
             <UserList
-                profiles={[user, user2]}
+                profiles={[user]}
                 testID='UserListRow'
                 currentUserId={'1'}
                 teammateNameDisplay={'johndoe'}
@@ -121,7 +121,7 @@ describe('components/channel_list_row', () => {
     it('should show results and tutorial', () => {
         const wrapper = renderWithEverything(
             <UserList
-                profiles={[user, user2]}
+                profiles={[user]}
                 testID='UserListRow'
                 currentUserId={'1'}
                 teammateNameDisplay={'johndoe'}
