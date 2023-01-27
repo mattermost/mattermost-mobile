@@ -181,7 +181,7 @@ public class CustomPushNotificationHelper {
         setNotificationGroup(notification, groupId, createSummary);
         setNotificationBadgeType(notification);
 
-        setNotificationChannel(notification, bundle);
+        setNotificationChannel(context, notification, bundle);
         setNotificationDeleteIntent(context, notification, bundle, notificationId);
         addNotificationReplyAction(context, notification, bundle, notificationId);
 
@@ -363,12 +363,15 @@ public class CustomPushNotificationHelper {
         }
     }
 
-    private static void setNotificationChannel(NotificationCompat.Builder notification, Bundle bundle) {
+    private static void setNotificationChannel(Context context, NotificationCompat.Builder notification, Bundle bundle) {
         // If Android Oreo or above we need to register a channel
         if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) {
             return;
         }
 
+        if (mHighImportanceChannel == null) {
+            createNotificationChannels(context);
+        }
         NotificationChannel notificationChannel = mHighImportanceChannel;
         notification.setChannelId(notificationChannel.getId());
     }
