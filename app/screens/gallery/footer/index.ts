@@ -43,7 +43,8 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
 
     const channel = combineLatest([currentChannelId, post]).pipe(
         switchMap(([cId, p]) => {
-            return p?.channel.observe() || observeChannel(database, cId);
+            const id = p?.channelId || cId;
+            return observeChannel(database, id);
         }),
     );
     const enablePostUsernameOverride = observeConfigBooleanValue(database, 'EnablePostUsernameOverride');
