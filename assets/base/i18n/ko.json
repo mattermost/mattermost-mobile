@@ -553,5 +553,9 @@
     "channel_info.copy_link": "링크 복사",
     "general_settings.display": "화면",
     "intro.group_message": "여기에서 이 그룹과의 대화가 시작됩니다. 여기에 공유된 메시지와 파일은 다른 사람에게는 보이지 않습니다.",
-    "intro.direct_message": "이곳에서 {teammate}님과의 대화가 시작됩니다. 여기에 공유된 메시지와 파일은 다른 사람에게는 보이지 않습니다."
+    "intro.direct_message": "이곳에서 {teammate}님과의 대화가 시작됩니다. 여기에 공유된 메시지와 파일은 다른 사람에게는 보이지 않습니다.",
+    "display_settings.crt.on": "켜기",
+    "display_settings.crt.off": "끄기",
+    "display_settings.crt": "축소된 응답 스레드",
+    "default_skin_tone": "기본 피부색"
 }
