@@ -158,7 +158,7 @@ export default function ManageChannelMembers({
         }, General.SEARCH_TIMEOUT_MILLISECONDS);
     }, [searchUsers, clearSearch]);
 
-    const updateNavigationButtons = useCallback(async (manage: boolean) => {
+    const updateNavigationButtons = useCallback((manage: boolean) => {
         setButtons(componentId, {
             rightButtons: [{
                 color: theme.sidebarHeaderTextColor,
