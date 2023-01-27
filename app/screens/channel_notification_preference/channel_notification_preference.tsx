@@ -5,6 +5,7 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
 
+import {toggleMuteChannel} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import {NotificationLevel} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -133,13 +134,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 type NotifyPrefType = typeof NotificationLevel[keyof typeof NotificationLevel];
 
 type ChannelNotificationPreferenceProps = {
+    channelId: string;
     componentId: AvailableScreens;
     currentUser: UserModel;
     isCRTEnabled: boolean;
     isChannelMuted: boolean;
     notifyLevel?: NotifyPrefType;
 };
-const ChannelNotificationPreference = ({componentId, currentUser, isCRTEnabled, isChannelMuted, notifyLevel}: ChannelNotificationPreferenceProps) => {
+const ChannelNotificationPreference = ({channelId, componentId, currentUser, isCRTEnabled, isChannelMuted, notifyLevel}: ChannelNotificationPreferenceProps) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const theme = useTheme();
@@ -170,6 +172,9 @@ const ChannelNotificationPreference = ({componentId, currentUser, isCRTEnabled, 
     }, [canSaveSettings, close, serverUrl]);
 
     const renderMutedBanner = useCallback(() => {
+        const onPress = async () => {
+            return toggleMuteChannel(serverUrl, channelId, false);
+        };
         return (
             <View style={styles.mutedBanner}>
                 <View style={styles.mutedBannerTitle}>
@@ -181,7 +186,10 @@ const ChannelNotificationPreference = ({componentId, currentUser, isCRTEnabled, 
                     <Text style={styles.mutedTextTitle}>{intl.formatMessage(MUTED_TITLE)}</Text>
                 </View>
                 <Text style={styles.mutedText}>{intl.formatMessage(MUTED_CONTENT)}</Text>
-                <TouchableOpacity style={styles.unMuteButton}>
+                <TouchableOpacity
+                    style={styles.unMuteButton}
+                    onPress={onPress}
+                >
                     <CompassIcon
                         name='bell-outline'
                         size={18}
