@@ -5,7 +5,7 @@ import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
 
-import {toggleMuteChannel} from '@actions/remote/channel';
+import {toggleMuteChannel, updateChannelNotifyProps} from '@actions/remote/channel';
 import CompassIcon from '@components/compass_icon';
 import {NotificationLevel} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -139,9 +139,8 @@ type ChannelNotificationPreferenceProps = {
     currentUser: UserModel;
     isCRTEnabled: boolean;
     isChannelMuted: boolean;
-    notifyLevel?: NotifyPrefType;
 };
-const ChannelNotificationPreference = ({channelId, componentId, currentUser, isCRTEnabled, isChannelMuted, notifyLevel}: ChannelNotificationPreferenceProps) => {
+const ChannelNotificationPreference = ({channelId, componentId, currentUser, isCRTEnabled, isChannelMuted}: ChannelNotificationPreferenceProps) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const theme = useTheme();
@@ -166,16 +165,16 @@ const ChannelNotificationPreference = ({channelId, componentId, currentUser, isC
         setThreadReplies((prev) => !prev);
     }, []);
 
-    const canSaveSettings = useCallback(() => notifyAbout !== notifyLevel, [notifyAbout, notifyLevel]);
-
-    const saveNotificationSettings = useCallback(() => {
-        const canSave = canSaveSettings();
-        if (canSave) {
-            // const notify_props: UserNotifyProps = {};
-            // updateMe(serverUrl, {notify_props});
+    const saveChannelNotificationPref = useCallback(() => {
+        if (resetDefaultVisible) {
+            const props: Partial<ChannelNotifyProps> = {
+                mark_unread: threadReplies ? 'all' : 'mention',
+                push: notifyAbout,
+            };
+            updateChannelNotifyProps(serverUrl, channelId, props);
         }
         close();
-    }, [canSaveSettings, close, serverUrl]);
+    }, [channelId, close, notifyAbout, resetDefaultVisible, serverUrl, threadReplies]);
 
     const renderMutedBanner = useCallback(() => {
         const onPress = async () => {
@@ -256,9 +255,9 @@ const ChannelNotificationPreference = ({channelId, componentId, currentUser, isC
         setTop(y + BLOCK_TITLE_HEIGHT);
     }, []);
 
-    useBackNavigation(saveNotificationSettings);
+    useBackNavigation(saveChannelNotificationPref);
 
-    useAndroidHardwareBackHandler(componentId, saveNotificationSettings);
+    useAndroidHardwareBackHandler(componentId, saveChannelNotificationPref);
 
     return (
         <SettingContainer testID='push_notification_settings'>
