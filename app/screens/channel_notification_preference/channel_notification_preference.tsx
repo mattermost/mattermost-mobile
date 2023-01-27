@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
 
 import {toggleMuteChannel, updateChannelNotifyProps} from '@actions/remote/channel';
-import {updateMe} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import {NotificationLevel} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -172,15 +171,12 @@ const ChannelNotificationPreference = ({channelId, componentId, currentUser, isC
         if (resetDefaultVisible) {
             const props: Partial<ChannelNotifyProps> = {
                 push: notifyAbout,
-            };
-            updateChannelNotifyProps(serverUrl, channelId, props);
 
-            // updates threads
-            const notify_props: UserNotifyProps = {
-                ...notifyProps,
+                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
+                // @ts-ignore
                 push_threads: threadReplies ? 'all' : 'mention',
             };
-            updateMe(serverUrl, {notify_props});
+            updateChannelNotifyProps(serverUrl, channelId, props);
         }
         close();
     }, [channelId, close, notifyAbout, resetDefaultVisible, serverUrl, threadReplies]);
