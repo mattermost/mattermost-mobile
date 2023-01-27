@@ -7,6 +7,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {General} from '@constants';
+import {observeChannelMembers} from '@queries/servers/channel';
 import {observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 import {getUserIdFromChannelName} from '@utils/user';
@@ -21,7 +22,7 @@ const observeIsBot = (user: UserModel | undefined) => of$(Boolean(user?.isBot));
 
 const enhanced = withObservables([], ({channel, database}: {channel: ChannelModel} & WithDatabaseArgs) => {
     const currentUserId = observeCurrentUserId(database);
-    const members = channel.members.observe();
+    const members = observeChannelMembers(database, channel.id);
     let isBot = of$(false);
 
     if (channel.type === General.DM_CHANNEL) {
