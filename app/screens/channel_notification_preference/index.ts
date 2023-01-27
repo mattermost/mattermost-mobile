@@ -3,8 +3,10 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
-import {observeIsMutedSetting} from '@queries/servers/channel';
+import {observeChannelSettings, observeIsMutedSetting} from '@queries/servers/channel';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 
@@ -16,11 +18,20 @@ type CNFProps = WithDatabaseArgs & {
     channelId: string;
 }
 const enhanced = withObservables([], ({channelId, database}: CNFProps) => {
+    const settings = observeChannelSettings(database, channelId);
+    const notifyLevel = settings.pipe(
+        switchMap((s) => of$(s?.notifyProps.push)),
+    );
+
     return {
         currentUser: observeCurrentUser(database),
         isCRTEnabled: observeIsCRTEnabled(database),
         isChannelMuted: observeIsMutedSetting(database, channelId),
+        notifyLevel,
     };
 });
 
+//fixme: this is a workaround for the issue with typescript
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 export default withDatabase(enhanced(ChannelNotificationPreference));

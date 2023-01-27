@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
 
 import {toggleMuteChannel, updateChannelNotifyProps} from '@actions/remote/channel';
+import {updateMe} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import {NotificationLevel} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -139,39 +140,47 @@ type ChannelNotificationPreferenceProps = {
     currentUser: UserModel;
     isCRTEnabled: boolean;
     isChannelMuted: boolean;
+    notifyLevel: string;
 };
-const ChannelNotificationPreference = ({channelId, componentId, currentUser, isCRTEnabled, isChannelMuted}: ChannelNotificationPreferenceProps) => {
+const ChannelNotificationPreference = ({channelId, componentId, currentUser, isCRTEnabled, isChannelMuted, notifyLevel}: ChannelNotificationPreferenceProps) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     const [top, setTop] = useState(0);
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
 
-    const userNotificationProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
-    const globalDefault = useRef(userNotificationProps.push);
-    const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(userNotificationProps.push);
-    const [threadReplies, setThreadReplies] = useState<boolean>(userNotificationProps?.push_threads === 'all');
+    const globalDefault = notifyLevel;
+    const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(notifyLevel);
+    const [threadReplies, setThreadReplies] = useState<boolean>(notifyProps.push_threads === 'all');
 
     const [resetDefaultVisible, setResetDefaultVisible] = useState<boolean>(false);
-    const close = () => popTopScreen(componentId);
 
     const onSetNotifyAbout = useCallback((notifyValue: NotifyPrefType) => {
         setNotifyAbout(notifyValue);
-        setResetDefaultVisible(notifyValue !== globalDefault?.current);
+        setResetDefaultVisible(notifyValue !== globalDefault);
     }, [globalDefault]);
 
     const onSetThreadReplies = useCallback(() => {
         setThreadReplies((prev) => !prev);
     }, []);
 
+    const close = () => popTopScreen(componentId);
+
     const saveChannelNotificationPref = useCallback(() => {
         if (resetDefaultVisible) {
             const props: Partial<ChannelNotifyProps> = {
-                mark_unread: threadReplies ? 'all' : 'mention',
                 push: notifyAbout,
             };
             updateChannelNotifyProps(serverUrl, channelId, props);
+
+            // updates threads
+            const notify_props: UserNotifyProps = {
+                ...notifyProps,
+                push_threads: threadReplies ? 'all' : 'mention',
+            };
+            updateMe(serverUrl, {notify_props});
         }
         close();
     }, [channelId, close, notifyAbout, resetDefaultVisible, serverUrl, threadReplies]);
@@ -269,7 +278,7 @@ const ChannelNotificationPreference = ({channelId, componentId, currentUser, isC
             >
                 { Object.keys(NOTIFY_OPTIONS).map((k: string) => {
                     const {id, defaultMessage, value, testID} = NOTIFY_OPTIONS[k];
-                    const defaultOption = k === globalDefault?.current ? ' (default)' : '';
+                    const defaultOption = k === globalDefault ? ' (default)' : '';
                     const label = `${intl.formatMessage({id, defaultMessage})}${defaultOption}`;
                     return (
                         <View key={`notif_pref_option${k}`}>
