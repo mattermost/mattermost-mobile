@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
 
@@ -149,15 +149,17 @@ const ChannelNotificationPreference = ({channelId, componentId, currentUser, isC
 
     const [top, setTop] = useState(0);
 
-    const globalDefault = useMemo(() => getNotificationProps(currentUser).push, [currentUser.notifyProps]);
-    const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(globalDefault);
-    const [threadReplies, setThreadReplies] = useState<boolean>(false); // TODO: get from db
+    const userNotificationProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
+    const globalDefault = useRef(userNotificationProps.push);
+    const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(userNotificationProps.push);
+    const [threadReplies, setThreadReplies] = useState<boolean>(userNotificationProps?.push_threads === 'all');
+
     const [resetDefaultVisible, setResetDefaultVisible] = useState<boolean>(false);
     const close = () => popTopScreen(componentId);
 
     const onSetNotifyAbout = useCallback((notifyValue: NotifyPrefType) => {
         setNotifyAbout(notifyValue);
-        setResetDefaultVisible(notifyValue !== globalDefault);
+        setResetDefaultVisible(notifyValue !== globalDefault?.current);
     }, [globalDefault]);
 
     const canSaveSettings = useCallback(() => notifyAbout !== notifyLevel, [notifyAbout, notifyLevel]);
@@ -199,7 +201,7 @@ const ChannelNotificationPreference = ({channelId, componentId, currentUser, isC
                 </TouchableOpacity>
             </View>
         );
-    }, []);
+    }, [intl, styles, serverUrl, channelId]);
 
     const renderResetDefault = useCallback(() => {
         const onPress = () => {
@@ -265,7 +267,7 @@ const ChannelNotificationPreference = ({channelId, componentId, currentUser, isC
             >
                 { Object.keys(NOTIFY_OPTIONS).map((k: string) => {
                     const {id, defaultMessage, value, testID} = NOTIFY_OPTIONS[k];
-                    const defaultOption = k === globalDefault ? ' (default)' : '';
+                    const defaultOption = k === globalDefault?.current ? ' (default)' : '';
                     const label = `${intl.formatMessage({id, defaultMessage})}${defaultOption}`;
                     return (
                         <View key={`notif_pref_option${k}`}>
