@@ -442,7 +442,6 @@
     "channel_info.close": "Cerrar",
     "channel_info.archive_title": "Archivar {term}",
     "channel_info.archive_failed": "Ocurió un error al intentar archivar el canal {displayName}",
-    "channel_info.archive_description": "¿Estás seguro que quieres archivar el {term}{name}?",
     "channel_info.archive": "Canal de archivo",
     "channel_info.alertYes": "Sí",
     "channel_info.alertNo": "No",

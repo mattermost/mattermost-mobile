@@ -495,7 +495,6 @@
     "channel_info.close": "닫기",
     "channel_info.archive_title": "{term} 채널 보관",
     "channel_info.archive_failed": "{displayName} 채널을 보관하는 중에 오류가 발생했습니다",
-    "channel_info.archive_description": "{term} {name} 채널을 보관하시겠어요?",
     "channel_info.archive": "채널 보관",
     "channel_info.alertYes": "네",
     "channel_info.alertNo": "아니오",

@@ -791,7 +791,6 @@
     "channel_info.close": "閉じる",
     "channel_info.archive_title": "{term} をアーカイブする",
     "channel_info.archive_failed": "チャンネル {displayName} をアーカイブする際にエラーが発生しました",
-    "channel_info.archive_description": "{term} {name} を本当にアーカイブしますか?",
     "channel_info.archive": "チャンネルをアーカイブする",
     "channel_info.alertYes": "はい",
     "channel_info.alertNo": "いいえ",

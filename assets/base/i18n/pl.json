@@ -446,7 +446,6 @@
     "channel_info.close": "Zamknij",
     "channel_info.archive_title": "Archiwizuj {term}",
     "channel_info.archive_failed": "Wystąpił błąd podczas próby archiwizacji kanału {displayName}",
-    "channel_info.archive_description": "Jesteś pewien, że chcesz zarchiwizować {term} {name}?",
     "channel_info.archive": "Archiwizuj Kanał",
     "channel_info.alertYes": "Tak",
     "channel_info.alertNo": "Nie",

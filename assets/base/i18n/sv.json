@@ -512,7 +512,6 @@
     "channel_info.close": "Stäng",
     "channel_info.archive_title": "Arkivera {term}",
     "channel_info.archive_failed": "Ett fel inträffade när kanalen {displayName} skulle arkiveras",
-    "channel_info.archive_description": "Är du säker på att du vill arkivera {term} {name}?",
     "channel_info.archive": "Arkivera kanalen",
     "channel_info.alertYes": "Ja",
     "channel_info.alertNo": "Nej",
