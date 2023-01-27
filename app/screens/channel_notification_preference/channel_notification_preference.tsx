@@ -162,6 +162,10 @@ const ChannelNotificationPreference = ({channelId, componentId, currentUser, isC
         setResetDefaultVisible(notifyValue !== globalDefault?.current);
     }, [globalDefault]);
 
+    const onSetThreadReplies = useCallback(() => {
+        setThreadReplies((prev) => !prev);
+    }, []);
+
     const canSaveSettings = useCallback(() => notifyAbout !== notifyLevel, [notifyAbout, notifyLevel]);
 
     const saveNotificationSettings = useCallback(() => {
@@ -236,17 +240,16 @@ const ChannelNotificationPreference = ({channelId, componentId, currentUser, isC
                 headerText={THREAD_REPLIES}
             >
                 <SettingOption
-                    action={setThreadReplies}
-                    key='notif_pref_option_thread_replies'
+                    action={onSetThreadReplies}
                     label={intl.formatMessage({id: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.id, defaultMessage: NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.defaultMessage})}
                     testID={NOTIFY_OPTIONS_THREAD.THREAD_REPLIES.testID}
                     type='toggle'
-                    value={`${threadReplies}`}
+                    selected={threadReplies}
                 />
                 <SettingSeparator/>
             </SettingBlock>
         );
-    }, [notifyAbout]);
+    }, [notifyAbout, threadReplies, intl, onSetThreadReplies]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         const {y} = e.nativeEvent.layout;
