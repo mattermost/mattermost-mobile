@@ -7,7 +7,7 @@ import React from 'react';
 import {of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {observeChannel} from '@queries/servers/channel';
+import {observeChannel, observeChannelInfo} from '@queries/servers/channel';
 import {observeConfigBooleanValue, observeConfigIntValue} from '@queries/servers/system';
 
 import PostInput from './post_input';
@@ -31,7 +31,7 @@ const enhanced = withObservables(['channelId'], ({database, channelId}: WithData
     );
 
     const membersInChannel = channel.pipe(
-        switchMap((c) => (c ? c.info.observe() : of$({memberCount: 0}))),
+        switchMap((c) => (c ? observeChannelInfo(database, c.id) : of$({memberCount: 0}))),
         switchMap((i: ChannelInfoModel) => of$(i.memberCount)),
         distinctUntilChanged(),
     );
