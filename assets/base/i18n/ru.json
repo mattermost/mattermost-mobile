@@ -939,5 +939,20 @@
     "connection_banner.connecting": "Подключение...",
     "skintone_selector.tooltip.title": "Выберите свой стандартный тон темы",
     "skintone_selector.tooltip.description": "Теперь вы можете выбрать тон темы, который вы предпочитаете использовать для своих эмодзи.",
-    "default_skin_tone": "Оттенок темы по умолчанию"
+    "default_skin_tone": "Оттенок темы по умолчанию",
+    "invite.summary.member_invite": "Приглашен в качестве участника {teamDisplayName}",
+    "invite.summary.error": "{invitationsCount, plural, one {Invitation} other {Invitations}} не удалось успешно отправить",
+    "invite.summary.email_invite": "Письмо с приглашением отправлено",
+    "invite.summary.done": "Сделано",
+    "invite.shareLink": "Поделиться ссылкой",
+    "invite.sendInvitationsTo": "Отправить приглашения…",
+    "invite.send_invite": "Отправить",
+    "invite.send_error": "Что-то пошло не так при попытке отправить приглашения. Пожалуйста, проверьте ваше сетевое подключение и повторите попытку.",
+    "invite.searchPlaceholder": "Напишите имя или адрес электронной почты",
+    "invite.search.no_results": "Совпадений не найдено",
+    "invite.search.email_invite": "приглашение",
+    "invite.members.user_is_guest": "Свяжитесь со своим администратором, чтобы сделать этого гостя полноправным участником",
+    "invite.members.already_member": "Этот человек уже является членом команды",
+    "display_settings.crt.on": "Включить",
+    "display_settings.crt.off": "Выключить"
 }
