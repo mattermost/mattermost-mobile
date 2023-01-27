@@ -83,14 +83,14 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
         );
     }, [handleRemoveUser]);
 
-    const updateChannelMemberSchemeRole = async (schemeAdmin: boolean) => {
+    const updateChannelMemberSchemeRole = useCallback(async (schemeAdmin: boolean) => {
         const result = await updateChannelMemberSchemeRoles(serverUrl, channelId, userId, true, schemeAdmin);
         if (result.error) {
             alertErrorWithFallback(intl, result.error, messages.role_change_error);
         }
         await dismissBottomSheet();
         DeviceEventEmitter.emit(Events.MANAGE_USER_CHANGE_ROLE, {userId, schemeAdmin});
-    };
+    }, [channelId, userId, intl, serverUrl]);
 
     const onAction = useCallback(() => {
         switch (manageOption) {
@@ -106,7 +106,7 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
             default:
                 break;
         }
-    }, [manageOption, removeFromChannel]);
+    }, [manageOption, removeFromChannel, updateChannelMemberSchemeRole]);
 
     let actionText;
     let icon;
