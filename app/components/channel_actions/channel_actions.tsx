@@ -24,12 +24,12 @@ type Props = {
     testID?: string;
 }
 
-const OPTIONS_HEIGHT = 62;
+export const CHANNEL_ACTIONS_OPTIONS_HEIGHT = 62;
 
 const styles = StyleSheet.create({
     wrapper: {
         flexDirection: 'row',
-        height: OPTIONS_HEIGHT,
+        height: CHANNEL_ACTIONS_OPTIONS_HEIGHT,
     },
     separator: {
         width: 8,

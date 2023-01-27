@@ -9,7 +9,6 @@ import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {useImageAttachments} from '@hooks/files';
-import {GalleryAction} from '@typings/screens/gallery';
 import {
     getChannelNamesWithID,
     getFileInfosIndexes,
@@ -26,6 +25,7 @@ import Toasts from './file_options/toasts';
 import FileResult from './file_result';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type {GalleryAction} from '@typings/screens/gallery';
 
 type Props = {
     canDownloadFiles: boolean;
@@ -94,6 +94,7 @@ const FileResults = ({
                 channelName={channelNames[item.channel_id!]}
                 fileInfo={item}
                 index={fileInfosIndexes[item.id!] || 0}
+                key={`${item.id}-${item.name}`}
                 numOptions={numOptions}
                 onOptionsPress={onOptionsPress}
                 onPress={onPreviewPress}
@@ -127,6 +128,8 @@ const FileResults = ({
                 data={orderedFileInfos}
                 indicatorStyle='black'
                 initialNumToRender={10}
+
+                //@ts-expect-error key not defined in types
                 listKey={'files'}
                 maxToRenderPerBatch={5}
                 nestedScrollEnabled={true}

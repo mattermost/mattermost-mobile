@@ -6,10 +6,10 @@ import {NativeModules, Platform} from 'react-native';
 
 import {Device} from '@constants';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
-import {IOS_STATUS_BAR_HEIGHT} from '@constants/view';
+import {STATUS_BAR_HEIGHT} from '@constants/view';
 
-const {MattermostManaged} = NativeModules;
-const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
+const {SplitView} = NativeModules;
+const {isRunningInSplitView} = SplitView;
 const ShareModule: NativeShareExtension|undefined = Platform.select({android: NativeModules.MattermostShare});
 
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than
@@ -141,12 +141,9 @@ export async function isTablet() {
 
 export const pluckUnique = (key: string) => (array: Array<{[key: string]: unknown}>) => Array.from(new Set(array.map((obj) => obj[key])));
 
-export function bottomSheetSnapPoint(itemsCount: number, itemHeight: number, bottomInset = 0) {
-    let bottom = bottomInset;
-    if (!bottom && Platform.OS === 'ios') {
-        bottom = IOS_STATUS_BAR_HEIGHT;
-    }
-    return ((itemsCount + Platform.select({android: 1, default: 0})) * itemHeight) + (bottom * 2.5);
+export function bottomSheetSnapPoint(itemsCount: number, itemHeight: number, bottomInset: number) {
+    const bottom = Platform.select({ios: bottomInset, default: 0}) + STATUS_BAR_HEIGHT;
+    return (itemsCount * itemHeight) + bottom;
 }
 
 export function hasTrailingSpaces(term: string) {

@@ -29,6 +29,6 @@ describe('*** GROUP Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords.collection.modelClass.name).toBe('GroupModel');
+        expect(preparedRecords.collection.table).toBe('Group');
     });
 });

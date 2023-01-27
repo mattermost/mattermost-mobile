@@ -34,6 +34,7 @@ import ServerErrors from './server_errors';
 import SnackBar from './snack_bar';
 import Sso from './sso';
 import SupportedServer from './supported_server';
+import Tutorial from './tutorial';
 import View from './view';
 import WebsocketEvents from './websocket';
 
@@ -71,6 +72,7 @@ export {
     SnackBar,
     Sso,
     SupportedServer,
+    Tutorial,
     View,
     WebsocketEvents,
 };

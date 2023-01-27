@@ -4,7 +4,6 @@
 import React, {useCallback, useMemo, useState} from 'react';
 import {Platform, View} from 'react-native';
 
-import {Client} from '@client/rest';
 import ProfileImage from '@components/profile_picture';
 import {ACCOUNT_OUTLINE_IMAGE} from '@constants/profile';
 import {useServerUrl} from '@context/server';
@@ -15,6 +14,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ProfileImagePicker from './profile_image_picker';
 
+import type {Client} from '@client/rest';
 import type UserModel from '@typings/database/models/servers/user';
 
 type ChangeProfilePictureProps = {

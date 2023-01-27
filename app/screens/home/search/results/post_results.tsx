@@ -8,12 +8,15 @@ import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
 import PostWithChannelInfo from '@components/post_with_channel_info';
 import {Screens} from '@constants';
-import {getDateForDateLine, isDateLine, selectOrderedPosts} from '@utils/post_list';
+import {getDateForDateLine, selectOrderedPosts} from '@utils/post_list';
 import {TabTypes} from '@utils/search';
 
+import type {PostListItem, PostListOtherItem} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
+    appsEnabled: boolean;
+    customEmojiNames: string[];
     currentTimezone: string;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
@@ -22,7 +25,9 @@ type Props = {
 }
 
 const PostResults = ({
+    appsEnabled,
     currentTimezone,
+    customEmojiNames,
     isTimezoneEnabled,
     posts,
     paddingTop,
@@ -31,30 +36,31 @@ const PostResults = ({
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
     const containerStyle = useMemo(() => ({top: posts.length ? 4 : 8}), [posts]);
 
-    const renderItem = useCallback(({item}: ListRenderItemInfo<string|PostModel>) => {
-        if (typeof item === 'string') {
-            if (isDateLine(item)) {
+    const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
+        switch (item.type) {
+            case 'date':
                 return (
                     <DateSeparator
-                        date={getDateForDateLine(item)}
+                        key={item.value}
+                        date={getDateForDateLine(item.value)}
                         timezone={isTimezoneEnabled ? currentTimezone : null}
                     />
                 );
-            }
-            return null;
+            case 'post':
+                return (
+                    <PostWithChannelInfo
+                        appsEnabled={appsEnabled}
+                        customEmojiNames={customEmojiNames}
+                        key={item.value.id}
+                        location={Screens.SEARCH}
+                        post={item.value}
+                        testID='search_results.post_list'
+                    />
+                );
+            default:
+                return null;
         }
-
-        if ('message' in item) {
-            return (
-                <PostWithChannelInfo
-                    location={Screens.SEARCH}
-                    post={item}
-                    testID='search_results.post_list'
-                />
-            );
-        }
-        return null;
-    }, []);
+    }, [appsEnabled, customEmojiNames]);
 
     const noResults = useMemo(() => (
         <NoResultsWithTerm
@@ -70,6 +76,8 @@ const PostResults = ({
             data={orderedPosts}
             indicatorStyle='black'
             initialNumToRender={5}
+
+            //@ts-expect-error key not defined in types
             listKey={'posts'}
             maxToRenderPerBatch={5}
             nestedScrollEnabled={true}

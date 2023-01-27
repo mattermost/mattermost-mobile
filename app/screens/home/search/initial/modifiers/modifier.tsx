@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {Dispatch, RefObject, SetStateAction, useCallback} from 'react';
-import {StyleSheet} from 'react-native';
+import {Platform, StyleSheet} from 'react-native';
 
 import OptionItem from '@components/option_item';
-import {SearchRef} from '@components/search';
 import {preventDoubleTap} from '@utils/tap';
+
+import type {SearchRef} from '@components/search';
 
 const styles = StyleSheet.create({
     container: {
@@ -33,6 +34,12 @@ const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {
         addModifierTerm(item.term);
     }, [item.term, searchValue]);
 
+    const setNativeCursorPositionProp = (position?: number) => {
+        setTimeout(() => {
+            searchRef.current?.setNativeProps({selection: {start: position, end: position}});
+        }, 50);
+    };
+
     const addModifierTerm = preventDoubleTap((modifierTerm) => {
         let newValue = '';
         if (!searchValue) {
@@ -46,9 +53,16 @@ const Modifier = ({item, searchRef, searchValue, setSearchValue}: Props) => {
         setSearchValue(newValue);
         if (item.cursorPosition) {
             const position = newValue.length + item.cursorPosition;
-            setTimeout(() => {
-                searchRef.current?.setNativeProps({selection: {start: position, end: position}});
-            }, 50);
+            setNativeCursorPositionProp(position);
+
+            if (Platform.OS === 'android') {
+                // on Android the selection set by setNativeProps is permanent thus the caret returns to the same
+                // position after we stop typing for a few ms. By setting the position to undefined,
+                // then the caret remains in place.
+                setTimeout(() => {
+                    setNativeCursorPositionProp(undefined);
+                }, 50);
+            }
         }
     });
 

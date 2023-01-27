@@ -6,22 +6,24 @@ import {useIntl} from 'react-intl';
 
 import {showPermalink} from '@actions/remote/permalink';
 import {BaseOption} from '@components/common_post_options';
-import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
+    bottomSheetId: AvailableScreens;
     threadId: string;
 }
-const OpenInChannelOption = ({threadId}: Props) => {
+const OpenInChannelOption = ({bottomSheetId, threadId}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
     const onHandlePress = useCallback(async () => {
-        await dismissBottomSheet(Screens.THREAD_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         showPermalink(serverUrl, '', threadId);
-    }, [intl, serverUrl, threadId]);
+    }, [bottomSheetId, intl, serverUrl, threadId]);
 
     return (
         <BaseOption

@@ -2,9 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {ColorValue, StyleProp} from 'react-native';
 import FastImage, {ImageStyle, Source} from 'react-native-fast-image';
 import Animated, {SharedValue} from 'react-native-reanimated';
+
+import type {ColorValue, StyleProp} from 'react-native';
 
 // @ts-expect-error FastImage does work with Animated.createAnimatedComponent
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);

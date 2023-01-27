@@ -2,13 +2,13 @@
 // See LICENSE.txt for license information.
 
 import emojiRegex from 'emoji-regex';
-import Fuse from 'fuse.js';
 
 import SystemModel from '@database/models/server/system';
 
 import {Emojis, EmojiIndicesByAlias, EmojiIndicesByUnicode} from '.';
 
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type Fuse from 'fuse.js';
 
 const UNICODE_REGEX = /\p{Emoji}/u;
 
@@ -108,7 +108,7 @@ export function getEmojiName(emoji: string, customEmojiNames: string[]) {
     if (matchUnicodeEmoji) {
         const index = EmojiIndicesByUnicode.get(matchUnicodeEmoji[0]);
         if (index != null) {
-            return fillEmoji(Emojis[index]).name;
+            return fillEmoji('', Emojis[index]).name;
         }
         return undefined;
     }
@@ -212,6 +212,10 @@ export function getEmojiByName(emojiName: string, customEmojis: CustomEmojiModel
     return customEmojis.find((e) => e.name === emojiName);
 }
 
+export function mapCustomEmojiNames(customEmois: CustomEmojiModel[]) {
+    return customEmois.map((c) => c.name);
+}
+
 // Since there is no shared logic between the web and mobile app
 // this is copied from the webapp as custom sorting logic for emojis
 
@@ -306,11 +310,12 @@ export const isCustomEmojiEnabled = (config: ClientConfig | SystemModel) => {
     return config?.EnableCustomEmoji === 'true';
 };
 
-export function fillEmoji(index: number) {
+export function fillEmoji(category: string, index: number) {
     const emoji = Emojis[index];
     return {
         name: 'short_name' in emoji ? emoji.short_name : emoji.name,
         aliases: 'short_names' in emoji ? emoji.short_names : [],
+        category,
     };
 }
 

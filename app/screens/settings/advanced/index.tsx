@@ -17,6 +17,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
 import type {ReadDirItem} from 'react-native-fs';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -31,7 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const EMPTY_FILES: ReadDirItem[] = [];
 
 type AdvancedSettingsProps = {
-    componentId: string;
+    componentId: AvailableScreens;
 };
 const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const theme = useTheme();
@@ -65,7 +66,7 @@ const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
                             style: 'destructive',
                             onPress: async () => {
                                 await deleteFileCache(serverUrl);
-                                await getAllCachedFiles();
+                                getAllCachedFiles();
                             },
                         },
                     ],

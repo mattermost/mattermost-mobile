@@ -19,7 +19,7 @@ import IntegrationsManager from '@managers/integrations_manager';
 import {AppCommandParser} from './app_command_parser/app_command_parser';
 import SlashSuggestionItem from './slash_suggestion_item';
 
-// TODO: Remove when all below commands have been implemented
+// TODO: Remove when all below commands have been implemented https://mattermost.atlassian.net/browse/MM-43478
 const COMMANDS_TO_IMPLEMENT_LATER = ['collapse', 'expand', 'logout'];
 const NON_MOBILE_COMMANDS = ['shortcuts', 'search', 'settings'];
 

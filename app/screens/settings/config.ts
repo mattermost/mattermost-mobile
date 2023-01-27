@@ -5,6 +5,7 @@ import {t} from '@i18n';
 import {goToScreen} from '@screens/navigation';
 import {typography} from '@utils/typography';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
 import type {IntlShape} from 'react-intl';
 
 export const getSaveButton = (buttonId: string, intl: IntlShape, color: string) => ({
@@ -17,7 +18,7 @@ export const getSaveButton = (buttonId: string, intl: IntlShape, color: string) 
     ...typography('Body', 100, 'SemiBold'),
 });
 
-export const gotoSettingsScreen = (screen: string, title: string) => {
+export const gotoSettingsScreen = (screen: AvailableScreens, title: string) => {
     const passProps = {};
     const options = {
         topBar: {
@@ -105,6 +106,12 @@ export const DisplayOptionConfig: Record<string, SettingConfigDetails> = {
         i18nId: t('mobile.display_settings.clockDisplay'),
         icon: 'clock-outline',
         testID: 'display_settings.clock',
+    },
+    crt: {
+        defaultMessage: 'Collapsed Reply Threads',
+        i18nId: t('mobile.display_settings.crt'),
+        icon: 'message-text-outline',
+        testID: 'display_settings.crt',
     },
     theme: {
         defaultMessage: 'Theme',

@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {TouchableOpacity} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {Client} from '@client/rest';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -14,6 +13,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
+import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import PanelItem from '@screens/edit_profile/components/panel_item';
 import {bottomSheet} from '@screens/navigation';
 import PickerUtil from '@utils/file/file_picker';
@@ -22,6 +22,7 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {Client} from '@client/rest';
 import type UserModel from '@typings/database/models/servers/user';
 
 const hitSlop = {top: 100, bottom: 20, right: 20, left: 100};
@@ -121,13 +122,12 @@ const ProfileImagePicker = ({
             );
         };
 
-        const snapPointsCount = canRemovePicture ? 5 : 4;
-        const snapPoint = bottomSheetSnapPoint(snapPointsCount, ITEM_HEIGHT, bottom);
+        const snapPoint = bottomSheetSnapPoint(4, ITEM_HEIGHT, bottom) + TITLE_HEIGHT;
 
         return bottomSheet({
             closeButtonId: 'close-edit-profile',
             renderContent,
-            snapPoints: [snapPoint, 10],
+            snapPoints: [1, snapPoint],
             title: 'Change profile photo',
             theme,
         });

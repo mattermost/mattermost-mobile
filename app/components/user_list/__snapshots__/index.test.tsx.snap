@@ -74,6 +74,7 @@ exports[`components/channel_list_row should show no results 1`] = `
 >
   <View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -111,6 +112,7 @@ exports[`components/channel_list_row should show no results 1`] = `
       </View>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -129,6 +131,14 @@ exports[`components/channel_list_row should show no results 1`] = `
         onStartShouldSetResponderCapture={[Function]}
       >
         <View
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
           accessible={true}
           focusable={true}
           onClick={[Function]}
@@ -233,6 +243,7 @@ exports[`components/channel_list_row should show no results 1`] = `
       </View>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     />
@@ -332,6 +343,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
 >
   <View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -369,6 +381,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
       </View>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -387,6 +400,14 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
         onStartShouldSetResponderCapture={[Function]}
       >
         <View
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
           accessible={true}
           focusable={true}
           onClick={[Function]}
@@ -489,8 +510,89 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
           </View>
         </View>
       </View>
+      <Modal
+        animationType="fade"
+        hardwareAccelerated={false}
+        onDismiss={[Function]}
+        onRequestClose={[Function]}
+        testID="tutorial_highlight"
+        transparent={true}
+        visible={true}
+      >
+        <View
+          onLayout={[Function]}
+          pointerEvents="box-none"
+          style={
+            {
+              "bottom": 0,
+              "left": 0,
+              "position": "absolute",
+              "right": 0,
+              "top": 0,
+            }
+          }
+        />
+        <View
+          pointerEvents="none"
+          style={
+            [
+              {
+                "alignItems": "center",
+                "bottom": 0,
+                "justifyContent": "center",
+                "left": 0,
+                "position": "absolute",
+                "right": 0,
+                "top": 0,
+              },
+              undefined,
+            ]
+          }
+          testID="tutorial_swipe_left"
+        >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "backgroundColor": "#ffffff",
+                  "borderRadius": 8,
+                  "height": 161,
+                  "padding": 16,
+                  "width": 247,
+                },
+                {
+                  "top": -74,
+                },
+              ]
+            }
+          >
+            <long_press_illustration.svg />
+            <Text
+              style={
+                [
+                  {
+                    "color": "#3f4350",
+                    "fontFamily": "Metropolis-SemiBold",
+                    "fontSize": 16,
+                    "fontWeight": "600",
+                    "lineHeight": 24,
+                    "marginTop": 8,
+                    "paddingHorizontal": 12,
+                    "textAlign": "center",
+                  },
+                  undefined,
+                ]
+              }
+            >
+              Long-press on an item to view a user's profile
+            </Text>
+          </View>
+        </View>
+      </Modal>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     />
@@ -590,6 +692,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
 >
   <View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -627,6 +730,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
       </View>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     >
@@ -645,6 +749,14 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
         onStartShouldSetResponderCapture={[Function]}
       >
         <View
+          accessibilityValue={
+            {
+              "max": undefined,
+              "min": undefined,
+              "now": undefined,
+              "text": undefined,
+            }
+          }
           accessible={true}
           focusable={true}
           onClick={[Function]}
@@ -749,6 +861,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
       </View>
     </View>
     <View
+      onFocusCapture={[Function]}
       onLayout={[Function]}
       style={null}
     />

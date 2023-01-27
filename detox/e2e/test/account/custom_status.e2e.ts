@@ -154,7 +154,7 @@ describe('Account - Custom Status', () => {
         await AccountScreen.customStatusClearButton.tap();
 
         // * Verify custom status is cleared from account screen
-        const defaultStatusText = 'Set a Status';
+        const defaultStatusText = 'Set a custom status';
         const {accountCustomStatusEmoji, accountCustomStatusText, accountCustomStatusExpiry} = AccountScreen.getCustomStatus(customStatusEmojiName, customStatusDuration);
         await expect(accountCustomStatusEmoji).not.toExist();
         await expect(accountCustomStatusText).toHaveText(defaultStatusText);

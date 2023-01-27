@@ -7,11 +7,11 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {queryMyTeams} from '@queries/servers/team';
-import MyTeamModel from '@typings/database/models/servers/my_team';
 
 import JoinTeam from './join_team';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type MyTeamModel from '@typings/database/models/servers/my_team';
 
 const membershipsToIdSet = (mm: MyTeamModel[]) => {
     return new Set(mm.map((m) => m.id));

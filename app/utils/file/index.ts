@@ -1,16 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {PastedFile} from '@mattermost/react-native-paste-input';
 import Model from '@nozbe/watermelondb/Model';
 import mimeDB from 'mime-db';
-import {IntlShape} from 'react-intl';
 import {Alert, Platform} from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DeviceInfo from 'react-native-device-info';
-import {DocumentPickerResponse} from 'react-native-document-picker';
 import FileSystem from 'react-native-fs';
-import {Asset} from 'react-native-image-picker';
 import Permissions, {PERMISSIONS} from 'react-native-permissions';
 
 import {Files} from '@constants';
@@ -18,9 +14,13 @@ import {generateId} from '@utils/general';
 import keyMirror from '@utils/key_mirror';
 import {logError} from '@utils/log';
 import {deleteEntititesFile, getIOSAppGroupDetails} from '@utils/mattermost_managed';
-import {hashCode_DEPRECATED, urlSafeBase64Encode} from '@utils/security';
+import {urlSafeBase64Encode} from '@utils/security';
 
+import type {PastedFile} from '@mattermost/react-native-paste-input';
 import type FileModel from '@typings/database/models/servers/file';
+import type {IntlShape} from 'react-intl';
+import type {DocumentPickerResponse} from 'react-native-document-picker';
+import type {Asset} from 'react-native-image-picker';
 
 const EXTRACT_TYPE_REGEXP = /^\s*([^;\s]*)(?:;|\s|$)/;
 const CONTENT_DISPOSITION_REGEXP = /inline;filename=".*\.([a-z]+)";/i;
@@ -166,32 +166,36 @@ export async function deleteV1Data() {
 
 export async function deleteFileCache(serverUrl: string) {
     const serverDir = urlSafeBase64Encode(serverUrl);
-    deleteFileCacheByDir(serverDir);
-}
-
-export async function deleteLegacyFileCache(serverUrl: string) {
-    const serverDir = hashCode_DEPRECATED(serverUrl);
-    deleteFileCacheByDir(serverDir);
+    return deleteFileCacheByDir(serverDir);
 }
 
 export async function deleteFileCacheByDir(dir: string) {
+    if (Platform.OS === 'ios') {
+        const appGroupCacheDir = `${getIOSAppGroupDetails().appGroupSharedDirectory}/Library/Caches/${dir}`;
+        await deleteFilesInDir(appGroupCacheDir);
+    }
+
     const cacheDir = `${FileSystem.CachesDirectoryPath}/${dir}`;
-    if (cacheDir) {
-        const cacheDirInfo = await FileSystem.exists(cacheDir);
+    await deleteFilesInDir(cacheDir);
+
+    return true;
+}
+
+async function deleteFilesInDir(directory: string) {
+    if (directory) {
+        const cacheDirInfo = await FileSystem.exists(directory);
         if (cacheDirInfo) {
             if (Platform.OS === 'ios') {
-                await FileSystem.unlink(cacheDir);
-                await FileSystem.mkdir(cacheDir);
+                await FileSystem.unlink(directory);
+                await FileSystem.mkdir(directory);
             } else {
-                const lstat = await FileSystem.readDir(cacheDir);
+                const lstat = await FileSystem.readDir(directory);
                 lstat.forEach((stat: FileSystem.ReadDirItem) => {
                     FileSystem.unlink(stat.path);
                 });
             }
         }
     }
-
-    return true;
 }
 
 export function lookupMimeType(filename: string) {
@@ -473,60 +477,70 @@ export const fileExists = async (path: string) => {
 };
 
 export const hasWriteStoragePermission = async (intl: IntlShape) => {
-    if (Platform.OS === 'ios') {
-        return true;
-    }
-
-    const storagePermission = PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
-    let permissionRequest;
-    const hasPermissionToStorage = await Permissions.check(storagePermission);
-    switch (hasPermissionToStorage) {
-        case Permissions.RESULTS.DENIED:
-            permissionRequest = await Permissions.request(storagePermission);
-            return permissionRequest === Permissions.RESULTS.GRANTED;
-        case Permissions.RESULTS.BLOCKED: {
-            const applicationName = DeviceInfo.getApplicationName();
-            const title = intl.formatMessage(
-                {
-                    id: 'mobile.storage_permission_denied_title',
+    if (Platform.OS === 'android' && Platform.Version < 33) {
+        const storagePermission = PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
+        let permissionRequest;
+        const hasPermissionToStorage = await Permissions.check(storagePermission);
+        switch (hasPermissionToStorage) {
+            case Permissions.RESULTS.DENIED:
+                permissionRequest = await Permissions.request(storagePermission);
+                return permissionRequest === Permissions.RESULTS.GRANTED;
+            case Permissions.RESULTS.BLOCKED: {
+                const applicationName = DeviceInfo.getApplicationName();
+                const title = intl.formatMessage(
+                    {
+                        id: 'mobile.storage_permission_denied_title',
+                        defaultMessage:
+                            '{applicationName} would like to access your files',
+                    },
+                    {applicationName},
+                );
+                const text = intl.formatMessage({
+                    id: 'mobile.write_storage_permission_denied_description',
                     defaultMessage:
-                        '{applicationName} would like to access your files',
-                },
-                {applicationName},
-            );
-            const text = intl.formatMessage({
-                id: 'mobile.write_storage_permission_denied_description',
-                defaultMessage:
-                    'Save files to your device. Open Settings to grant {applicationName} write access to files on this device.',
-            });
+                        'Save files to your device. Open Settings to grant {applicationName} write access to files on this device.',
+                });
 
-            Alert.alert(title, text, [
-                {
-                    text: intl.formatMessage({
-                        id: 'mobile.permission_denied_dismiss',
-                        defaultMessage: "Don't Allow",
-                    }),
-                },
-                {
-                    text: intl.formatMessage({
-                        id: 'mobile.permission_denied_retry',
-                        defaultMessage: 'Settings',
-                    }),
-                    onPress: () => AndroidOpenSettings.appDetailsSettings(),
-                },
-            ]);
-            return false;
+                Alert.alert(title, text, [
+                    {
+                        text: intl.formatMessage({
+                            id: 'mobile.permission_denied_dismiss',
+                            defaultMessage: "Don't Allow",
+                        }),
+                    },
+                    {
+                        text: intl.formatMessage({
+                            id: 'mobile.permission_denied_retry',
+                            defaultMessage: 'Settings',
+                        }),
+                        onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                    },
+                ]);
+                return false;
+            }
+            default: return true;
         }
-        default: return true;
     }
+
+    return true;
 };
 
 export const getAllFilesInCachesDirectory = async (serverUrl: string) => {
     try {
         const files: FileSystem.ReadDirItem[][] = [];
 
-        const directoryFiles = await FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${urlSafeBase64Encode(serverUrl)}`);
-        files.push(directoryFiles);
+        const promises = [FileSystem.readDir(`${FileSystem.CachesDirectoryPath}/${urlSafeBase64Encode(serverUrl)}`)];
+        if (Platform.OS === 'ios') {
+            const cacheDir = `${getIOSAppGroupDetails().appGroupSharedDirectory}/Library/Caches/${urlSafeBase64Encode(serverUrl)}`;
+            promises.push(FileSystem.readDir(cacheDir));
+        }
+
+        const dirs = await Promise.allSettled(promises);
+        dirs.forEach((p) => {
+            if (p.status === 'fulfilled') {
+                files.push(p.value);
+            }
+        });
 
         const flattenedFiles = files.flat();
         const totalSize = flattenedFiles.reduce((acc, file) => acc + file.size, 0);

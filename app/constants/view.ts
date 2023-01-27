@@ -12,7 +12,7 @@ export const TEAM_SIDEBAR_WIDTH = 72;
 export const TABLET_HEADER_HEIGHT = 44;
 export const TABLET_SIDEBAR_WIDTH = 320;
 
-export const IOS_STATUS_BAR_HEIGHT = 20;
+export const STATUS_BAR_HEIGHT = 20;
 export const DEFAULT_HEADER_HEIGHT = Platform.select({android: 56, default: 44});
 export const LARGE_HEADER_TITLE_HEIGHT = 60;
 export const SUBTITLE_HEIGHT = 24;
@@ -24,8 +24,6 @@ export const SEARCH_INPUT_MARGIN = 5;
 export const JOIN_CALL_BAR_HEIGHT = 38;
 export const CURRENT_CALL_BAR_HEIGHT = 74;
 export const CALL_ERROR_BAR_HEIGHT = 62;
-
-export const QUICK_OPTIONS_HEIGHT = 270;
 
 export const ANNOUNCEMENT_BAR_HEIGHT = 40;
 
@@ -41,11 +39,10 @@ export default {
     TABLET_SIDEBAR_WIDTH,
     TEAM_SIDEBAR_WIDTH,
     TABLET_HEADER_HEIGHT,
-    IOS_STATUS_BAR_HEIGHT,
+    STATUS_BAR_HEIGHT,
     DEFAULT_HEADER_HEIGHT,
     LARGE_HEADER_TITLE_HEIGHT,
     SUBTITLE_HEIGHT,
     KEYBOARD_TRACKING_OFFSET,
-    QUICK_OPTIONS_HEIGHT,
 };
 

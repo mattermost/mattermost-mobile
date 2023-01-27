@@ -17,6 +17,7 @@ import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useModalPosition} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
@@ -25,6 +26,8 @@ import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const messages = defineMessages({
     dm: {
@@ -48,7 +51,7 @@ const messages = defineMessages({
 const CLOSE_BUTTON = 'close-dms';
 
 type Props = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
     restrictDirectMessage: boolean;
@@ -326,6 +329,7 @@ export default function CreateDirectMessage({
     }, [intl.locale, theme]);
 
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
+    useAndroidHardwareBackHandler(componentId, close);
 
     useEffect(() => {
         mounted.current = true;

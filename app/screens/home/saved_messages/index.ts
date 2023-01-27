@@ -8,16 +8,18 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {PreferenceModel} from '@database/models/server';
+import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsById} from '@queries/servers/post';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
+import {mapCustomEmojiNames} from '@utils/emoji/helpers';
 import {getTimezone} from '@utils/user';
 
 import SavedMessagesScreen from './saved_messages';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type PreferenceModel from '@typings/database/models/servers/preference';
 
 function getPostIDs(preferences: PreferenceModel[]) {
     return preferences.map((preference) => preference.name);
@@ -39,6 +41,9 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
             }),
         ),
         currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
+        customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
+            switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
+        ),
         isTimezoneEnabled: observeConfigBooleanValue(database, 'ExperimentalTimezone'),
     };
 });

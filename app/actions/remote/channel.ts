@@ -2,8 +2,6 @@
 // See LICENSE.txt for license information.
 
 /* eslint-disable max-lines */
-import {Model} from '@nozbe/watermelondb';
-import {IntlShape} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
 import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
@@ -40,7 +38,9 @@ import {addCurrentUserToTeam, fetchTeamByName, removeCurrentUserFromTeam} from '
 import {fetchProfilesInGroupChannels, fetchProfilesPerChannels, fetchUsersByIds, updateUsersNoLongerVisible} from './user';
 
 import type {Client} from '@client/rest';
+import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type {IntlShape} from 'react-intl';
 
 export type MyChannelsRequest = {
     categories?: CategoryWithChannels[];
@@ -1264,7 +1264,7 @@ export const unarchiveChannel = async (serverUrl: string, channelId: string) => 
     try {
         EphemeralStore.addArchivingChannel(channelId);
         await client.unarchiveChannel(channelId);
-        await setChannelDeleteAt(serverUrl, channelId, Date.now());
+        await setChannelDeleteAt(serverUrl, channelId, 0);
         return {error: undefined};
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);

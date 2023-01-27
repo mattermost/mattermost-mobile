@@ -4,6 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
+    InteractionManager,
     Platform,
     Text,
     View,
@@ -122,13 +123,12 @@ function UserListRow({
     const startTutorial = () => {
         viewRef.current?.measureInWindow((x, y, w, h) => {
             const bounds: TutorialItemBounds = {
-                startX: x - 20,
+                startX: x,
                 startY: y,
                 endX: x + w,
                 endY: y + h,
             };
             if (viewRef.current) {
-                setShowTutorial(true);
                 setItemBounds(bounds);
             }
         });
@@ -140,12 +140,16 @@ function UserListRow({
     }, []);
 
     useEffect(() => {
-        let time: NodeJS.Timeout;
         if (highlight && !tutorialWatched) {
-            time = setTimeout(startTutorial, 650);
+            if (isTablet) {
+                setShowTutorial(true);
+                return;
+            }
+            InteractionManager.runAfterInteractions(() => {
+                setShowTutorial(true);
+            });
         }
-        return () => clearTimeout(time);
-    }, [highlight, tutorialWatched]);
+    }, [highlight, tutorialWatched, isTablet]);
 
     const handlePress = useCallback(() => {
         onPress?.(user);
@@ -154,6 +158,10 @@ function UserListRow({
     const handleLongPress = useCallback(() => {
         onLongPress?.(user);
     }, [onLongPress, user]);
+
+    const onLayout = useCallback(() => {
+        startTutorial();
+    }, []);
 
     const icon = useMemo(() => {
         if (!selectable) {
@@ -256,6 +264,7 @@ function UserListRow({
             <TutorialHighlight
                 itemBounds={itemBounds}
                 onDismiss={handleDismissTutorial}
+                onLayout={onLayout}
             >
                 <TutorialLongPress
                     message={intl.formatMessage({id: 'user.tutorial.long_press', defaultMessage: "Long-press on an item to view a user's profile"})}

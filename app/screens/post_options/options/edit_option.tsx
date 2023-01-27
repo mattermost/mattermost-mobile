@@ -12,17 +12,19 @@ import {t} from '@i18n';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
+    bottomSheetId: AvailableScreens;
     post: PostModel;
     canDelete: boolean;
 }
-const EditOption = ({post, canDelete}: Props) => {
+const EditOption = ({bottomSheetId, post, canDelete}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
 
     const onPress = useCallback(async () => {
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
 
         const title = intl.formatMessage({id: 'mobile.edit_post.title', defaultMessage: 'Editing Message'});
         const closeButton = CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor);
@@ -38,7 +40,7 @@ const EditOption = ({post, canDelete}: Props) => {
             },
         };
         showModal(Screens.EDIT_POST, title, passProps, options);
-    }, [post]);
+    }, [bottomSheetId, post]);
 
     return (
         <BaseOption

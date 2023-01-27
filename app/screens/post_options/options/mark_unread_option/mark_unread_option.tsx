@@ -12,26 +12,28 @@ import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
+    bottomSheetId: AvailableScreens;
     isCRTEnabled: boolean;
-    sourceScreen: typeof Screens[keyof typeof Screens];
+    sourceScreen: AvailableScreens;
     post: PostModel;
     teamId: string;
 }
 
-const MarkAsUnreadOption = ({isCRTEnabled, sourceScreen, post, teamId}: Props) => {
+const MarkAsUnreadOption = ({bottomSheetId, isCRTEnabled, sourceScreen, post, teamId}: Props) => {
     const serverUrl = useServerUrl();
 
     const onPress = useCallback(async () => {
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
         if (sourceScreen === Screens.THREAD && isCRTEnabled) {
             const threadId = post.rootId || post.id;
             markThreadAsUnread(serverUrl, teamId, threadId, post.id);
         } else {
             markPostAsUnread(serverUrl, post.id);
         }
-    }, [sourceScreen, post, serverUrl, teamId]);
+    }, [bottomSheetId, sourceScreen, post, serverUrl, teamId]);
 
     return (
         <BaseOption

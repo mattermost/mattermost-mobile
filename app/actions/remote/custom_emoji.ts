@@ -2,12 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
-import {Client} from '@client/rest';
 import {Emoji, General} from '@constants';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {queryCustomEmojisByName} from '@queries/servers/custom_emoji';
+
+import type {Client} from '@client/rest';
 
 export const fetchCustomEmojis = async (serverUrl: string, page = 0, perPage = General.PAGE_SIZE_DEFAULT, sort = Emoji.SORT_BY_NAME) => {
     let client: Client;
@@ -87,10 +88,17 @@ const debouncedFetchEmojiByNames = debounce(async (serverUrl: string) => {
         promises.push(client.getCustomEmojiByName(name));
     }
 
-    const emojis = await Promise.all(promises);
-
     try {
-        await operator.handleCustomEmojis({emojis, prepareRecordsOnly: false});
+        const emojisResult = await Promise.allSettled(promises);
+        const emojis = emojisResult.reduce<CustomEmoji[]>((result, e) => {
+            if (e.status === 'fulfilled') {
+                result.push(e.value);
+            }
+            return result;
+        }, []);
+        if (emojis.length) {
+            await operator.handleCustomEmojis({emojis, prepareRecordsOnly: false});
+        }
         return {error: undefined};
     } catch (error) {
         return {error};

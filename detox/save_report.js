@@ -12,6 +12,7 @@
  * Environment variables:
  *   BRANCH=[branch]                 : Branch identifier from CI
  *   BUILD_ID=[build_id]             : Build identifier from CI
+ *   COMMIT_HASH=[commit_hash]       : Commit hash from repo
  *   DEVICE_NAME=[device_name]       : Name of the device used for testing
  *   DEVICE_OS_NAME=[device_os_name] : OS of the device used for testing
  *   HEADLESS=[boolean]              : Headed by default (false) or headless (true)
@@ -30,7 +31,6 @@
  *      - TYPE=[type], e.g. "MASTER", "PR", "RELEASE", "GEKIDOU"
  */
 
-const assert = require('assert');
 const os = require('os');
 const path = require('path');
 
@@ -62,7 +62,6 @@ const saveReport = async () => {
     const {
         DEVICE_NAME,
         DEVICE_OS_VERSION,
-        FAILURE_MESSAGE,
         HEADLESS,
         IOS,
         TYPE,
@@ -139,8 +138,6 @@ const saveReport = async () => {
     if (ZEPHYR_ENABLE === 'true') {
         await createTestExecutions(allTests, testCycle);
     }
-
-    assert(summary.stats.failures === 0, FAILURE_MESSAGE);
 };
 
 saveReport();

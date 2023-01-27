@@ -6,7 +6,8 @@ import {StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import EmojiPill from '@calls/components/emoji_pill';
-import {ReactionStreamEmoji} from '@calls/types/calls';
+
+import type {ReactionStreamEmoji} from '@calls/types/calls';
 
 const styles = StyleSheet.create({
     container: {

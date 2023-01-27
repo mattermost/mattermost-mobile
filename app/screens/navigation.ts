@@ -5,7 +5,7 @@
 
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
-import {ComponentWillAppearEvent, ImageResource, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton, ScreenPoppedEvent} from 'react-native-navigation';
+import {ComponentWillAppearEvent, ImageResource, LayoutOrientation, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton, ScreenPoppedEvent} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -17,17 +17,21 @@ import NavigationStore from '@store/navigation_store';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, setNavigatorStyles} from '@utils/theme';
 
+import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {LaunchProps} from '@typings/launch';
-import type {NavButtons} from '@typings/screens/navigation';
+import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
 
-const {MattermostManaged} = NativeModules;
-const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
+const {SplitView} = NativeModules;
+const {isRunningInSplitView} = SplitView;
 
 const alpha = {
     from: 0,
     to: 1,
     duration: 150,
 };
+
+export const allOrientations: LayoutOrientation[] = ['sensor', 'sensorLandscape', 'sensorPortrait', 'landscape', 'portrait'];
+export const portraitOrientation: LayoutOrientation[] = ['portrait'];
 
 export function registerNavigationListeners() {
     Navigation.events().registerScreenPoppedListener(onPoppedListener);
@@ -66,7 +70,7 @@ function onCommandListener(name: string, params: any) {
 
 function onPoppedListener({componentId}: ScreenPoppedEvent) {
     // screen pop does not trigger registerCommandListener, but does trigger screenPoppedListener
-    NavigationStore.removeScreenFromStack(componentId);
+    NavigationStore.removeScreenFromStack(componentId as AvailableScreens);
 }
 
 function onScreenWillAppear(event: ComponentWillAppearEvent) {
@@ -184,7 +188,7 @@ Navigation.setDefaultOptions({
         },
     },
     layout: {
-        orientation: Device.IS_TABLET ? undefined : ['portrait'],
+        orientation: Device.IS_TABLET ? allOrientations : portraitOrientation,
     },
     topBar: {
         title: {
@@ -217,18 +221,27 @@ Appearance.addChangeListener(() => {
     }
 });
 
-export function getThemeFromState(): Theme {
-    if (EphemeralStore.theme) {
-        return EphemeralStore.theme;
+export function setScreensOrientation(allowRotation: boolean) {
+    const options: Options = {
+        layout: {
+            orientation: allowRotation ? allOrientations : portraitOrientation,
+        },
+    };
+    Navigation.setDefaultOptions(options);
+    const screens = NavigationStore.getScreensInStack();
+    for (const s of screens) {
+        Navigation.mergeOptions(s, options);
     }
+}
 
-    return getDefaultThemeByAppearance();
+export function getThemeFromState(): Theme {
+    return EphemeralStore.theme || getDefaultThemeByAppearance();
 }
 
 // This is a temporary helper function to avoid
 // crashes when trying to load a screen that does
 // NOT exists, this should be removed for GA
-function isScreenRegistered(screen: string) {
+function isScreenRegistered(screen: AvailableScreens) {
     const notImplemented = NOT_READY.includes(screen) || !Object.values(Screens).includes(screen);
     if (notImplemented) {
         Alert.alert(
@@ -428,7 +441,7 @@ export function resetToTeams() {
     });
 }
 
-export function goToScreen(name: string, title: string, passProps = {}, options = {}) {
+export function goToScreen(name: AvailableScreens, title: string, passProps = {}, options = {}) {
     if (!isScreenRegistered(name)) {
         return '';
     }
@@ -478,12 +491,17 @@ export function goToScreen(name: string, title: string, passProps = {}, options 
     });
 }
 
-export function popTopScreen(screenId?: string) {
-    if (screenId) {
-        Navigation.pop(screenId);
-    } else {
-        const componentId = NavigationStore.getVisibleScreen();
-        Navigation.pop(componentId);
+export async function popTopScreen(screenId?: AvailableScreens) {
+    try {
+        if (screenId) {
+            await Navigation.pop(screenId);
+        } else {
+            const componentId = NavigationStore.getVisibleScreen();
+            await Navigation.pop(componentId);
+        }
+    } catch (error) {
+        // RNN returns a promise rejection if there are no screens
+        // atop the root screen to pop. We'll do nothing in this case.
     }
 }
 
@@ -511,7 +529,7 @@ export async function dismissAllModalsAndPopToRoot() {
  * @param passProps Props to pass to the screen
  * @param options Navigation options
  */
-export async function dismissAllModalsAndPopToScreen(screenId: string, title: string, passProps = {}, options = {}) {
+export async function dismissAllModalsAndPopToScreen(screenId: AvailableScreens, title: string, passProps = {}, options = {}) {
     await dismissAllModals();
     if (NavigationStore.getScreensInStack().includes(screenId)) {
         let mergeOptions = options;
@@ -537,7 +555,7 @@ export async function dismissAllModalsAndPopToScreen(screenId: string, title: st
     }
 }
 
-export function showModal(name: string, title: string, passProps = {}, options: Options = {}) {
+export function showModal(name: AvailableScreens, title: string, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return;
     }
@@ -589,7 +607,7 @@ export function showModal(name: string, title: string, passProps = {}, options: 
     });
 }
 
-export function showModalOverCurrentContext(name: string, passProps = {}, options: Options = {}) {
+export function showModalOverCurrentContext(name: AvailableScreens, passProps = {}, options: Options = {}) {
     const title = '';
     let animations;
     switch (Platform.OS) {
@@ -648,7 +666,7 @@ export function showModalOverCurrentContext(name: string, passProps = {}, option
     showModal(name, title, passProps, mergeOptions);
 }
 
-export async function dismissModal(options?: Options & { componentId: string}) {
+export async function dismissModal(options?: Options & { componentId: AvailableScreens}) {
     if (!NavigationStore.hasModalsOpened()) {
         return;
     }
@@ -691,7 +709,7 @@ export const buildNavigationButton = (id: string, testID: string, icon?: ImageRe
     text,
 });
 
-export function setButtons(componentId: string, buttons: NavButtons = {leftButtons: [], rightButtons: []}) {
+export function setButtons(componentId: AvailableScreens, buttons: NavButtons = {leftButtons: [], rightButtons: []}) {
     const options = {
         topBar: {
             ...buttons,
@@ -701,7 +719,7 @@ export function setButtons(componentId: string, buttons: NavButtons = {leftButto
     mergeNavigationOptions(componentId, options);
 }
 
-export function showOverlay(name: string, passProps = {}, options: Options = {}) {
+export function showOverlay(name: AvailableScreens, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return;
     }
@@ -726,7 +744,7 @@ export function showOverlay(name: string, passProps = {}, options: Options = {})
     });
 }
 
-export async function dismissOverlay(componentId: string) {
+export async function dismissOverlay(componentId: AvailableScreens) {
     try {
         await Navigation.dismissOverlay(componentId);
     } catch (error) {
@@ -738,13 +756,14 @@ export async function dismissOverlay(componentId: string) {
 type BottomSheetArgs = {
     closeButtonId: string;
     initialSnapIndex?: number;
+    footerComponent?: React.FC<BottomSheetFooterProps>;
     renderContent: () => JSX.Element;
     snapPoints: Array<number | string>;
     theme: Theme;
     title: string;
 }
 
-export async function bottomSheet({title, renderContent, snapPoints, initialSnapIndex = 0, theme, closeButtonId}: BottomSheetArgs) {
+export async function bottomSheet({title, renderContent, footerComponent, snapPoints, initialSnapIndex = 1, theme, closeButtonId}: BottomSheetArgs) {
     const {isSplitView} = await isRunningInSplitView();
     const isTablet = Device.IS_TABLET && !isSplitView;
 
@@ -753,18 +772,20 @@ export async function bottomSheet({title, renderContent, snapPoints, initialSnap
             closeButtonId,
             initialSnapIndex,
             renderContent,
+            footerComponent,
             snapPoints,
         }, bottomSheetModalOptions(theme, closeButtonId));
     } else {
         showModalOverCurrentContext(Screens.BOTTOM_SHEET, {
             initialSnapIndex,
             renderContent,
+            footerComponent,
             snapPoints,
         }, bottomSheetModalOptions(theme));
     }
 }
 
-export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEET) {
+export async function dismissBottomSheet(alternativeScreen: AvailableScreens = Screens.BOTTOM_SHEET) {
     DeviceEventEmitter.emit(Events.CLOSE_BOTTOM_SHEET);
     await NavigationStore.waitUntilScreensIsRemoved(alternativeScreen);
 }
@@ -772,7 +793,7 @@ export async function dismissBottomSheet(alternativeScreen = Screens.BOTTOM_SHEE
 type AsBottomSheetArgs = {
     closeButtonId: string;
     props?: Record<string, any>;
-    screen: typeof Screens[keyof typeof Screens];
+    screen: AvailableScreens;
     theme: Theme;
     title: string;
 }

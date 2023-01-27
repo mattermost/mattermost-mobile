@@ -19,6 +19,7 @@ import {typography} from '@utils/typography';
 import UserAvatar from './user_avatar';
 import UsersList from './users_list';
 
+import type {BottomSheetProps} from '@gorhom/bottom-sheet';
 import type UserModel from '@typings/database/models/servers/user';
 
 const OVERFLOW_DISPLAY_LIMIT = 99;
@@ -123,12 +124,17 @@ const UserAvatarsStack = ({breakAt = 3, channelId, location, style: baseContaine
                 />
             </>
         );
-        const snap = bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT, bottom);
+
+        const snapPoints: BottomSheetProps['snapPoints'] = [1, bottomSheetSnapPoint(Math.min(users.length, 5), USER_ROW_HEIGHT, bottom) + TITLE_HEIGHT];
+        if (users.length > 5) {
+            snapPoints.push('80%');
+        }
+
         bottomSheet({
             closeButtonId: 'close-set-user-status',
             renderContent,
             initialSnapIndex: 1,
-            snapPoints: ['90%', TITLE_HEIGHT + snap, 10],
+            snapPoints,
             title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
             theme,
         });

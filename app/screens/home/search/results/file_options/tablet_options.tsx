@@ -5,12 +5,12 @@ import {Overlay} from 'react-native-elements';
 
 import {ITEM_HEIGHT} from '@components/option_item';
 import {useTheme} from '@context/theme';
-import {GalleryAction} from '@typings/screens/gallery';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import {XyOffset} from '../file_result';
-
 import OptionMenus from './option_menus';
+
+import type {XyOffset} from '../file_result';
+import type {GalleryAction} from '@typings/screens/gallery';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     tablet: {

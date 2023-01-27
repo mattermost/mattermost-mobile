@@ -9,25 +9,26 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {postEphemeralCallResponseForPost} from '@actions/remote/apps';
 import OptionItem from '@components/option_item';
-import {Screens} from '@constants';
 import {useAppBinding} from '@hooks/apps';
 import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {dismissBottomSheet} from '@screens/navigation';
-import {WithDatabaseArgs} from '@typings/database/database';
 import {isSystemMessage} from '@utils/post';
 import {preventDoubleTap} from '@utils/tap';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
+    bottomSheetId: AvailableScreens;
     bindings: AppBinding[];
     post: PostModel;
     serverUrl: string;
     teamId: string;
 }
 
-const AppBindingsPostOptions = ({serverUrl, post, teamId, bindings}: Props) => {
+const AppBindingsPostOptions = ({bottomSheetId, serverUrl, post, teamId, bindings}: Props) => {
     const onCallResponse = useCallback((callResp: AppCallResponse, message: string) => {
         postEphemeralCallResponseForPost(serverUrl, callResp, message, post);
     }, [serverUrl, post]);
@@ -48,11 +49,11 @@ const AppBindingsPostOptions = ({serverUrl, post, teamId, bindings}: Props) => {
 
     const onPress = useCallback(async (binding: AppBinding) => {
         const submitPromise = handleBindingSubmit(binding);
-        await dismissBottomSheet(Screens.POST_OPTIONS);
+        await dismissBottomSheet(bottomSheetId);
 
         const finish = await submitPromise;
         await finish();
-    }, [handleBindingSubmit]);
+    }, [bottomSheetId, handleBindingSubmit]);
 
     if (isSystemMessage(post)) {
         return null;

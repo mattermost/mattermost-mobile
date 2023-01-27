@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {addChannelToDefaultCategory} from '@actions/local/category';
 import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
@@ -21,6 +19,8 @@ import {getConfig, getCurrentChannelId} from '@queries/servers/system';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {logDebug} from '@utils/log';
+
+import type {Model} from '@nozbe/watermelondb';
 
 // Received when current user created a channel in a different client
 export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
@@ -128,7 +128,7 @@ export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
         const currentChannelId = await getCurrentChannelId(database);
 
         if (activeServerUrl !== serverUrl || (currentChannelId !== channelId && !EphemeralStore.isSwitchingToChannel(channelId))) {
-            await markChannelAsViewed(serverUrl, channelId, false);
+            await markChannelAsViewed(serverUrl, channelId);
         }
     } catch {
         // do nothing

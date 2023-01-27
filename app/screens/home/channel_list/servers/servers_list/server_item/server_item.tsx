@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Animated, DeviceEventEmitter, Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
+import {Animated, DeviceEventEmitter, InteractionManager, Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import {Navigation} from 'react-native-navigation';
@@ -171,7 +171,7 @@ const ServerItem = ({
         let isUnread = Boolean(threadUnreads);
         for (const myChannel of myChannels) {
             const isMuted = settings?.[myChannel.id]?.mark_unread === 'mention';
-            mentions += myChannel.mentionsCount;
+            mentions += isMuted ? 0 : myChannel.mentionsCount;
             isUnread = isUnread || (myChannel.isUnread && !isMuted);
         }
         mentions += threadMentionCount;
@@ -200,18 +200,22 @@ const ServerItem = ({
     const startTutorial = () => {
         viewRef.current?.measureInWindow((x, y, w, h) => {
             const bounds: TutorialItemBounds = {
-                startX: x - 20,
+                startX: x,
                 startY: y,
-                endX: x + w + 20,
+                endX: x + w,
                 endY: y + h,
             };
 
             if (viewRef.current) {
-                setShowTutorial(true);
                 setItemBounds(bounds);
             }
         });
     };
+
+    const onLayout = useCallback(() => {
+        swipeable.current?.close();
+        startTutorial();
+    }, []);
 
     const containerStyle = useMemo(() => {
         const style: StyleProp<ViewStyle> = [styles.container];
@@ -344,12 +348,16 @@ const ServerItem = ({
     }, [server.lastActiveAt, isActive]);
 
     useEffect(() => {
-        let time: NodeJS.Timeout;
         if (highlight && !tutorialWatched) {
-            time = setTimeout(startTutorial, 650);
+            if (isTablet) {
+                setShowTutorial(true);
+                return;
+            }
+            InteractionManager.runAfterInteractions(() => {
+                setShowTutorial(true);
+            });
         }
-        return () => clearTimeout(time);
-    }, [highlight, tutorialWatched]);
+    }, [highlight, tutorialWatched, isTablet]);
 
     const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
     const serverItemTestId = isActive ? `${serverItem}.active` : `${serverItem}.inactive`;
@@ -466,6 +474,8 @@ const ServerItem = ({
                 itemBounds={itemBounds}
                 onDismiss={handleDismissTutorial}
                 onShow={handleShowTutorial}
+                onLayout={onLayout}
+                itemBorderRadius={8}
             >
                 <TutorialSwipeLeft
                     message={intl.formatMessage({id: 'server.tutorial.swipe', defaultMessage: 'Swipe left on a server to see more actions'})}

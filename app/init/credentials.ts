@@ -94,7 +94,7 @@ export const getServerCredentials = async (serverUrl: string): Promise<ServerCre
         if (credentials) {
             // TODO: Pre-Gekidou we were concatenating the deviceToken and the userId in
             // credentials.username so we need to check the length of credentials.username.split(',').
-            // This check should be removed at some point.
+            // This check should be removed at some point. https://mattermost.atlassian.net/browse/MM-43483
             const parts = credentials.username.split(',');
             const userId = parts[parts.length - 1];
 

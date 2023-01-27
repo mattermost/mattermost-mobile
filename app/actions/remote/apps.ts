@@ -1,16 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
-
 import {sendEphemeralPost} from '@actions/local/post';
-import ClientError from '@client/rest/error';
 import {AppCallResponseTypes} from '@constants/apps';
 import NetworkManager from '@managers/network_manager';
 import {cleanForm, createCallRequest, makeCallErrorResponse} from '@utils/apps';
 
 import type {Client} from '@client/rest';
+import type ClientError from '@client/rest/error';
 import type PostModel from '@typings/database/models/servers/post';
+import type {IntlShape} from 'react-intl';
 
 export async function handleBindingClick<Res=unknown>(serverUrl: string, binding: AppBinding, context: AppContext, intl: IntlShape): Promise<{data?: AppCallResponse<Res>; error?: AppCallResponse<Res>}> {
     // Fetch form

@@ -43,6 +43,7 @@ const Image = ({author, forwardRef, iconSize, size, source, url}: Props) => {
     const style = getStyleSheet(theme);
     const fIStyle = useMemo(() => ({
         borderRadius: size / 2,
+        backgroundColor: theme.centerChannelBg,
         height: size,
         width: size,
     }), [size]);
