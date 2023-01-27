@@ -224,7 +224,7 @@
     "mobile.link.error.title": "Ошибка",
     "mobile.managed.blocked_by": "Заблокирован {vendor}",
     "mobile.managed.exit": "Выход",
-    "mobile.managed.jailbreak": "Устройства с джейлбрейком не являются доверенными {vendor}, выйдите из приложения.",
+    "mobile.managed.jailbreak": "Устройства с джейлбрейком не являются доверенными {vendor}, выйдите из приложения..\n\nПричина {reason}\n\n\n\nОтладочная информация: {debug}\n\nПожалуйста, выйдите из приложения.",
     "mobile.managed.not_secured.android": "Это устройство должно быть защищено с помощью блокировки экрана, чтобы использовать Mattermost.",
     "mobile.managed.not_secured.ios": "Это устройство должно быть защищено паролем для использования Mattermost. \n\nПерейдите в Настройки > Face ID и пароль.",
     "mobile.managed.not_secured.ios.touchId": "Это устройство должно быть защищено паролем для использования Mattermost.\n\nПерейдите в Настройки > Touch ID и пароль.",
