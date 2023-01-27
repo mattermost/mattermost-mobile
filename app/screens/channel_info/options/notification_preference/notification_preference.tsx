@@ -35,6 +35,9 @@ const NotificationPreference = ({channelId, displayName, notifyLevel}: Props) =>
                     color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
                     text: displayName,
                 },
+                backButton: {
+                    popStackOnPress: false,
+                },
             },
         };
         goToScreen(Screens.CHANNEL_NOTIFICATION_PREFERENCE, title, {channelId}, options);
