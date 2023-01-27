@@ -951,5 +951,10 @@
     "invite.search.email_invite": "uitnodiging",
     "invite.members.user_is_guest": "Neem contact op met jouw beheerder om van deze gast een volwaardig lid te maken",
     "invite.members.already_member": "Deze persoon is reeds een teamlid",
-    "display_settings.crt": "Ingeklapte antwoorddraadjes"
+    "display_settings.crt": "Ingeklapte antwoorddraadjes",
+    "invite.summary.report.sent": "{count} verzonden {count, plural, one {uitnodiging} other {uitnodigingen}}",
+    "invite.summary.report.notSent": "{count} niet verzonden {count, plural, one {uitnodiging} other {uitnodigingen}}",
+    "invite.summary.not_sent": "{notSentCount, plural, one {Uitnodiging werd niet} other {Uitnodigingen werden niet}} verzonden",
+    "display_settings.crt.on": "Ingeschakeld",
+    "display_settings.crt.off": "Uitgeschakeld"
 }
