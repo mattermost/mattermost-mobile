@@ -217,13 +217,15 @@ export default function ManageChannelMembers({
 
     useEffect(() => {
         mounted.current = true;
-        if (canManageAndRemoveMembers) {
-            updateNavigationButtons(false);
-        }
-        getProfiles();
         return () => {
             mounted.current = false;
         };
+    }, []);
+
+    useEffect(() => {
+        if (canManageAndRemoveMembers) {
+            updateNavigationButtons(false);
+        }
     }, [canManageAndRemoveMembers]);
 
     useEffect(() => {
