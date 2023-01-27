@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo, useState} from 'react';
+import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {LayoutChangeEvent, Text, TouchableOpacity, View} from 'react-native';
 
@@ -20,9 +20,7 @@ import SettingOption from '@screens/settings/setting_option';
 import SettingSeparator from '@screens/settings/settings_separator';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {getNotificationProps} from '@utils/user';
 
-import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type NotifPrefOptions = {
@@ -132,27 +130,34 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type NotifyPrefType = typeof NotificationLevel[keyof typeof NotificationLevel];
-
+type ChannelNotifyPropsPushThread = ChannelNotifyProps['push_threads'];
+type ChannelNotifyPropsPush = ChannelNotifyProps['push'];
 type ChannelNotificationPreferenceProps = {
     channelId: string;
     componentId: AvailableScreens;
-    currentUser: UserModel;
     isCRTEnabled: boolean;
     isChannelMuted: boolean;
-    notifyLevel: string;
+    notifyLevel: ChannelNotifyPropsPush;
+    notifyThreadReplies: ChannelNotifyPropsPushThread;
 };
-const ChannelNotificationPreference = ({channelId, componentId, currentUser, isCRTEnabled, isChannelMuted, notifyLevel}: ChannelNotificationPreferenceProps) => {
+const ChannelNotificationPreference = ({
+    channelId,
+    componentId,
+    isCRTEnabled,
+    isChannelMuted,
+    notifyLevel,
+    notifyThreadReplies,
+}: ChannelNotificationPreferenceProps) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-
     const [top, setTop] = useState(0);
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
 
-    const globalDefault = notifyLevel;
+    // fixme: is this how we should set the default global?
+    const globalDefault = notifyLevel === 'default' ? 'all' : notifyLevel;
     const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(notifyLevel);
-    const [threadReplies, setThreadReplies] = useState<boolean>(notifyProps.push_threads === 'all');
+    const [threadReplies, setThreadReplies] = useState<boolean>(notifyThreadReplies === 'all');
 
     const [resetDefaultVisible, setResetDefaultVisible] = useState<boolean>(false);
 
@@ -171,9 +176,6 @@ const ChannelNotificationPreference = ({channelId, componentId, currentUser, isC
         if (resetDefaultVisible) {
             const props: Partial<ChannelNotifyProps> = {
                 push: notifyAbout,
-
-                // eslint-disable-next-line @typescript-eslint/ban-ts-comment
-                // @ts-ignore
                 push_threads: threadReplies ? 'all' : 'mention',
             };
             updateChannelNotifyProps(serverUrl, channelId, props);

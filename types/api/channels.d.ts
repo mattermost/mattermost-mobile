@@ -13,9 +13,10 @@ type NotificationLevel = 'default' | 'all' | 'mention' | 'none';
 type ChannelNotifyProps = {
     desktop: NotificationLevel;
     email: NotificationLevel;
+    ignore_channel_mentions: 'default' | 'off' | 'on';
     mark_unread: 'all' | 'mention';
     push: NotificationLevel;
-    ignore_channel_mentions: 'default' | 'off' | 'on';
+    push_threads: 'all' | 'mention';
 };
 type Channel = {
     id: string;

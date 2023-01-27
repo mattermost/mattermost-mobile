@@ -8,7 +8,6 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeChannelSettings, observeIsMutedSetting} from '@queries/servers/channel';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
-import {observeCurrentUser} from '@queries/servers/user';
 
 import ChannelNotificationPreference from './channel_notification_preference';
 
@@ -22,16 +21,15 @@ const enhanced = withObservables([], ({channelId, database}: CNFProps) => {
     const notifyLevel = settings.pipe(
         switchMap((s) => of$(s?.notifyProps.push)),
     );
+    const notifyThreadReplies = settings.pipe(
+        switchMap((s) => of$(s?.notifyProps.push_threads)),
+    );
 
     return {
-        currentUser: observeCurrentUser(database),
         isCRTEnabled: observeIsCRTEnabled(database),
         isChannelMuted: observeIsMutedSetting(database, channelId),
         notifyLevel,
+        notifyThreadReplies,
     };
 });
-
-//fixme: this is a workaround for the issue with typescript
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
 export default withDatabase(enhanced(ChannelNotificationPreference));
