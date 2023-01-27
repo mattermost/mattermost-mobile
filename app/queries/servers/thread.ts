@@ -9,6 +9,8 @@ import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {processIsCRTEnabled} from '@utils/thread';
 
+import {observeChannel} from './channel';
+import {observePost} from './post';
 import {queryPreferencesByCategoryAndName} from './preference';
 import {getConfig, observeConfigValue} from './system';
 
@@ -61,13 +63,13 @@ export const observeThreadById = (database: Database, threadId: string) => {
     );
 };
 
-export const observeTeamIdByThread = (thread: ThreadModel) => {
-    return thread.post.observe().pipe(
+export const observeTeamIdByThread = (database: Database, thread: ThreadModel) => {
+    return observePost(database, thread.id).pipe(
         switchMap((post) => {
             if (!post) {
                 return of$(undefined);
             }
-            return post.channel.observe().pipe(
+            return observeChannel(database, post.channelId).pipe(
                 switchMap((channel) => of$(channel?.teamId)),
             );
         }),

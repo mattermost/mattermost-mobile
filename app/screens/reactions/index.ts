@@ -7,6 +7,7 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observePost} from '@queries/servers/post';
+import {observeReactionsForPost} from '@queries/servers/reaction';
 
 import Reactions from './reactions';
 
@@ -21,7 +22,7 @@ const enhanced = withObservables([], ({postId, database}: EnhancedProps) => {
 
     return {
         reactions: post.pipe(
-            switchMap((p) => (p ? p.reactions.observe() : of$(undefined))),
+            switchMap((p) => (p ? observeReactionsForPost(database, postId) : of$(undefined))),
         ),
     };
 });

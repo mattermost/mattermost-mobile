@@ -10,11 +10,11 @@ import {postEphemeralCallResponseForPost} from '@actions/remote/apps';
 import AutocompleteSelector from '@components/autocomplete_selector';
 import {useServerUrl} from '@context/server';
 import {useAppBinding} from '@hooks/apps';
+import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {logDebug} from '@utils/log';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
@@ -79,7 +79,7 @@ const MenuBinding = ({binding, currentTeamId, post, teamID}: Props) => {
 };
 
 const withTeamId = withObservables(['post'], ({post, database}: {post: PostModel} & WithDatabaseArgs) => ({
-    teamID: post.channel.observe().pipe(map((channel: ChannelModel) => channel.teamId)),
+    teamID: observeChannel(database, post.channelId).pipe(map((channel) => channel?.teamId)),
     currentTeamId: observeCurrentTeamId(database),
 }));
 

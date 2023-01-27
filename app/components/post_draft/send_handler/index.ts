@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
-import {observeChannel, observeCurrentChannel} from '@queries/servers/channel';
+import {observeChannel, observeChannelInfo, observeCurrentChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeConfigIntValue, observeCurrentUserId} from '@queries/servers/system';
@@ -56,7 +56,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         }),
     );
 
-    const channelInfo = channel.pipe(switchMap((c) => (c ? c.info.observe() : of$(undefined))));
+    const channelInfo = channel.pipe(switchMap((c) => (c ? observeChannelInfo(database, c.id) : of$(undefined))));
     const membersCount = channelInfo.pipe(
         switchMap((i) => (i ? of$(i.memberCount) : of$(0))),
     );

@@ -10,7 +10,9 @@ import {General, Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import AppsManager from '@managers/apps_manager';
+import {observeChannel} from '@queries/servers/channel';
 import {observePost, observePostSaved} from '@queries/servers/post';
+import {observeReactionsForPost} from '@queries/servers/reaction';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeConfigIntValue, observeConfigValue, observeLicense} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
@@ -74,7 +76,7 @@ const withPost = withObservables([], ({post, database}: {post: Post | PostModel}
 });
 
 const enhanced = withObservables([], ({combinedPost, post, showAddReaction, location, database, serverUrl}: EnhancedProps) => {
-    const channel = post.channel.observe();
+    const channel = observeChannel(database, post.channelId);
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = observeCurrentUser(database);
     const isLicensed = observeLicense(database).pipe(switchMap((lcs) => of$(lcs?.IsLicensed === 'true')));
@@ -95,7 +97,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         return of$(c?.name === General.DEFAULT_CHANNEL && (u && !isSystemAdmin(u.roles)) && readOnly);
     }));
 
-    const isUnderMaxAllowedReactions = post.reactions.observe().pipe(
+    const isUnderMaxAllowedReactions = observeReactionsForPost(database, post.id).pipe(
         // eslint-disable-next-line max-nested-callbacks
         switchMap((reactions: ReactionModel[]) => of$(new Set(reactions.map((r) => r.emojiName)).size < MAX_ALLOWED_REACTIONS)),
     );
