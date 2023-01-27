@@ -134,19 +134,6 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
     }
 
     @ReactMethod
-    public void isRunningInSplitView(final Promise promise) {
-        WritableMap result = Arguments.createMap();
-        Activity current = getCurrentActivity();
-        if (current != null) {
-            result.putBoolean("isSplitView", current.isInMultiWindowMode());
-        } else {
-            result.putBoolean("isSplitView", false);
-        }
-
-        promise.resolve(result);
-    }
-
-    @ReactMethod
     public void saveFile(String path, final Promise promise) {
         Uri contentUri;
         String filename = "";

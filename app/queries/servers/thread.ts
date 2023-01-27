@@ -5,9 +5,9 @@ import {Database, Q, Query} from '@nozbe/watermelondb';
 import {combineLatest, of as of$, Observable} from 'rxjs';
 import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
+import {Config, Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
-import {processIsCRTEnabled} from '@utils/thread';
+import {processIsCRTAllowed, processIsCRTEnabled} from '@utils/thread';
 
 import {queryPreferencesByCategoryAndName} from './preference';
 import {getConfig, observeConfigValue} from './system';
@@ -38,6 +38,12 @@ export const getThreadById = async (database: Database, threadId: string) => {
 export const getTeamThreadsSyncData = async (database: Database, teamId: string): Promise<TeamThreadsSyncModel | undefined> => {
     const result = await queryTeamThreadsSync(database, teamId).fetch();
     return result?.[0];
+};
+
+export const observeCRTUserPreferenceDisplay = (database: Database) => {
+    return observeConfigValue(database, 'CollapsedThreads').pipe(
+        switchMap((value) => of$(processIsCRTAllowed(value) && value !== Config.ALWAYS_ON)),
+    );
 };
 
 export const observeIsCRTEnabled = (database: Database) => {

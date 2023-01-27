@@ -15,7 +15,7 @@ import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
-import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import {allOrientations, dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {displayUsername} from '@utils/user';
 
@@ -105,7 +105,7 @@ const CurrentCallBar = ({
             layout: {
                 backgroundColor: '#000',
                 componentBackgroundColor: '#000',
-                orientation: ['portrait', 'landscape'],
+                orientation: allOrientations,
             },
             topBar: {
                 background: {

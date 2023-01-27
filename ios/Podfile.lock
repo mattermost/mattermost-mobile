@@ -85,6 +85,7 @@ PODS:
   - HMSegmentedControl (1.5.6)
   - jail-monkey (2.8.0):
     - React-Core
+  - JitsiWebRTC (106.0.0)
   - libevent (2.1.12)
   - libwebp (1.2.4):
     - libwebp/demux (= 1.2.4)
@@ -334,7 +335,7 @@ PODS:
     - glog
   - react-native-background-timer (2.4.1):
     - React-Core
-  - react-native-cameraroll (5.2.2):
+  - react-native-cameraroll (5.2.3):
     - React-Core
   - react-native-cookies (6.2.1):
     - React-Core
@@ -359,7 +360,7 @@ PODS:
     - SwiftyJSON (~> 5.0)
   - react-native-notifications (4.3.3):
     - React-Core
-  - react-native-paste-input (0.6.0):
+  - react-native-paste-input (0.6.1):
     - React-Core
     - Swime (= 3.0.6)
   - react-native-safe-area-context (4.5.0):
@@ -376,8 +377,9 @@ PODS:
     - react-native-video/Video (= 5.2.1)
   - react-native-video/Video (5.2.1):
     - React-Core
-  - react-native-webrtc (1.75.3):
-    - React
+  - react-native-webrtc (106.0.4):
+    - JitsiWebRTC (~> 106.0.0)
+    - React-Core
   - react-native-webview (11.26.0):
     - React-Core
   - React-perflogger (0.71.1)
@@ -535,7 +537,7 @@ PODS:
   - RNScreens (3.19.0):
     - React-Core
     - React-RCTImage
-  - RNSentry (4.13.0):
+  - RNSentry (4.14.0):
     - React-Core
     - Sentry/HybridSDK (= 7.31.5)
   - RNShare (8.1.0):
@@ -692,6 +694,7 @@ SPEC REPOS:
     - FlipperKit
     - fmt
     - HMSegmentedControl
+    - JitsiWebRTC
     - libevent
     - libwebp
     - OpenSSL-Universal
@@ -905,6 +908,7 @@ SPEC CHECKSUMS:
   hermes-engine: 922ccd744f50d9bfde09e9677bf0f3b562ea5fb9
   HMSegmentedControl: 34c1f54d822d8308e7b24f5d901ec674dfa31352
   jail-monkey: a71b35d482a70ecba844a90f002994012cf12a5d
+  JitsiWebRTC: f441eb0e2d67f0588bf24e21c5162e97342714fb
   libevent: 4049cae6c81cdb3654a443be001fb9bdceff7913
   libwebp: f62cb61d0a484ba548448a4bd52aabf150ff6eef
   mattermost-react-native-turbo-log: 3c56c4e6e1d706b70d652e5509d1254eef914153
@@ -929,7 +933,7 @@ SPEC CHECKSUMS:
   React-jsinspector: ff56004b0c974b688a6548c156d5830ad751ae07
   React-logger: 60a0b5f8bed667ecf9e24fecca1f30d125de6d75
   react-native-background-timer: 17ea5e06803401a379ebf1f20505b793ac44d0fe
-  react-native-cameraroll: 71d68167beb6fc7216aa564abb6d86f1d666a2c6
+  react-native-cameraroll: 5b25d0be40185d02e522bf2abf8a1ba4e8faa107
   react-native-cookies: f54fcded06bb0cda05c11d86788020b43528a26c
   react-native-create-thumbnail: e022bcdcba8a0b4529a50d3fa1a832ec921be39d
   react-native-document-picker: 958e2bc82e128be69055be261aeac8d872c8d34c
@@ -940,11 +944,11 @@ SPEC CHECKSUMS:
   react-native-netinfo: 2517ad504b3d303e90d7a431b0fcaef76d207983
   react-native-network-client: 88b7ef8ef937352db3cfdbea939dc55397c64b9f
   react-native-notifications: 83b4fd4a127a6c918fc846cae90da60f84819e44
-  react-native-paste-input: 5182843692fd2ec72be50f241a38a49796e225d7
+  react-native-paste-input: fb7156dc75960c9895ddd9b9d68eeb874c9f323a
   react-native-safe-area-context: 39c2d8be3328df5d437ac1700f4f3a4f75716acc
   react-native-turbo-mailer: fa3f18b5a274fa32ebe43af125caf041f7cc4cbf
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
-  react-native-webrtc: 86d841823e66d68cc1f86712db1c2956056bf0c2
+  react-native-webrtc: 4522d420ead45fff83c4ecc7e5a706797857a185
   react-native-webview: 994b9f8fbb504d6314dc40d83f94f27c6831b3bf
   React-perflogger: ec8eef2a8f03ecfa6361c2c5fb9197ef4a29cc85
   React-RCTActionSheet: a0c023b86cf4c862fa9c4eb0f6f91fbe878fb2de
@@ -977,7 +981,7 @@ SPEC CHECKSUMS:
   RNReanimated: cc5e3aa479cb9170bcccf8204291a6950a3be128
   RNRudderSdk: 07f732edfe473ef67b8cc6ad1800ddb81b78286f
   RNScreens: ea4cd3a853063cda19a4e3c28d2e52180c80f4eb
-  RNSentry: acebe4104a6f5915ae871eb59dc73f13dcc92ef7
+  RNSentry: 7e90aec2633d2fdad8aeb839c9915e4376fd27d1
   RNShare: 48b3113cd089a2be8ff0515c3ae7a46a4db8a76b
   RNSVG: d787d64ca06b9158e763ad2638a8c4edce00782a
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
