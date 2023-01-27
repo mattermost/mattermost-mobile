@@ -550,7 +550,6 @@
     "channel_info.close": "Sluiten",
     "channel_info.archive_title": "Archiveer {term}",
     "channel_info.archive_failed": "Er is een fout opgetreden bij het archiveren van het kanaal {displayName}",
-    "channel_info.archive_description": "Weet je zeker dat je deze {term} {name} wil archiveren?",
     "channel_info.archive": "Kanaal archiveren",
     "channel_info.alertYes": "Ja",
     "channel_info.alertNo": "Nee",

@@ -408,7 +408,6 @@
     "channel_info.close": "Kapat",
     "channel_info.archive_title": "{term} kanalını arşivle",
     "channel_info.archive_failed": "{displayName} kanalı arşivlenmeye çalışılırken bir sorun çıktı",
-    "channel_info.archive_description": "{term} {name} kanalını arşivlemek istediğinize emin misiniz?",
     "channel_info.archive": "Kanalı arşivle",
     "channel_info.alertYes": "Evet",
     "channel_info.alertNo": "Hayır",

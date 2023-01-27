@@ -493,7 +493,6 @@
     "channel_info.convert_private_description": "Wenn du **{displayName}**** in einen privaten Kanal umwandelst, bleiben Verlauf und Mitgliedschaft erhalten. Öffentlich freigegebene Dateien bleiben für jeden mit dem Link zugänglich. Die Mitgliedschaft in einem privaten Kanal ist nur auf Einladung möglich. \n\nDie Änderung ist dauerhaft und kann nicht rückgängig gemacht werden.\n\nBist du sicher, dass du **{displayName}**** in einen privaten Kanal umwandeln möchtest?",
     "channel_info.convert_private": "In einen privaten Kanal umwandeln",
     "channel_info.convert_failed": "Wir konnten {displayName} nicht in einen privaten Kanal umwandeln.",
-    "channel_info.archive_description": "Bist Du sicher, dass Du den {term} {name} archivieren möchtest?",
     "channel_info.archive": "Kanal archivieren",
     "channel_info.alertYes": "Ja",
     "channel_info.alertNo": "Nein",

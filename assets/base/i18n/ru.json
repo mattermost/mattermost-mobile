@@ -377,7 +377,6 @@
     "channel_info.close": "Закрыть",
     "channel_info.archive_title": "Архивировать {term}",
     "channel_info.archive_failed": "Произошла ошибка при попытке архивирования канала {displayName}",
-    "channel_info.archive_description": "Вы действительно хотите покинуть {term} {name}?",
     "channel_info.archive": "Архивировать канал",
     "channel_info.alertYes": "Да",
     "channel_info.alertNo": "Нет",
