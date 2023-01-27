@@ -22,23 +22,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginVertical: 8,
         paddingHorizontal: 8,
     },
+    channelContainer: {
+        borderRadius: 4,
+        overflow: 'hidden',
+    },
     channel: {
         ...typography('Body', 75, 'SemiBold'),
-        color: theme.centerChannelColor,
-        marginRight: 5,
+        color: changeOpacity(theme.centerChannelColor, 0.72),
         flexShrink: 1,
         paddingHorizontal: 8,
         paddingVertical: 4,
     },
     teamContainer: {
         borderColor: theme.centerChannelColor,
-        borderLeftWidth: StyleSheet.hairlineWidth,
         flexShrink: 1,
     },
     team: {
-        ...typography('Body', 75, 'Light'),
-        color: theme.centerChannelColor,
-        marginLeft: 5,
+        ...typography('Body', 75, 'Regular'),
+        color: changeOpacity(theme.centerChannelColor, 0.72),
+        marginLeft: 8,
     },
 }));
 
@@ -60,6 +62,10 @@ function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
         [styles.channel, isPressed ? {color: theme.buttonBg} : null]
     ), [isPressed]);
 
+    const teamContainerStyle = useMemo(() => (
+        [styles.teamContainer, isPressed ? null : {borderLeftWidth: StyleSheet.hairlineWidth}]
+    ), [isPressed]);
+
     const onChannelSwitch = useCallback(() => {
         switchToChannelById(serverUrl, channelId);
     }, [serverUrl]);
@@ -73,23 +79,25 @@ function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
             style={styles.container}
             testID={testID}
         >
-            <TouchableWithFeedback
-                onPress={onChannelSwitch}
-                onPressIn={togglePressed}
-                onPressOut={togglePressed}
-                type={'native'}
-                underlayColor={changeOpacity(theme.buttonBg, 0.08)}
-            >
-                <Text
-                    style={channelNameStyle}
-                    testID='channel_display_name'
-                    numberOfLines={1}
+            <View style={styles.channelContainer}>
+                <TouchableWithFeedback
+                    onPress={onChannelSwitch}
+                    type={'native'}
+                    underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+                    onPressIn={togglePressed}
+                    onPressOut={togglePressed}
                 >
-                    {channelName}
-                </Text>
-            </TouchableWithFeedback>
+                    <Text
+                        style={channelNameStyle}
+                        testID='channel_display_name'
+                        numberOfLines={1}
+                    >
+                        {channelName}
+                    </Text>
+                </TouchableWithFeedback>
+            </View>
             {Boolean(teamName) && (
-                <View style={styles.teamContainer}>
+                <View style={teamContainerStyle}>
                     <Text
                         style={styles.team}
                         testID='team_display_name'
