@@ -1154,7 +1154,7 @@ export async function searchAllChannels(serverUrl: string, term: string, archive
     }
 }
 
-export const updateChannelNotifyProps = async (serverUrl: string, channelId: string, props: Partial<ChannelNotifyProps>) => {
+export const updateChannelNotifyProps = async (serverUrl: string, channelId: string, props: Partial<ChannelNotifyProps>, updateLocally? = false) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -1172,7 +1172,20 @@ export const updateChannelNotifyProps = async (serverUrl: string, channelId: str
         const notifyProps = {...props, channel_id: channelId, user_id: userId} as ChannelNotifyProps & {channel_id: string; user_id: string};
 
         await client.updateChannelNotifyProps(notifyProps);
+        if (updateLocally) {
+            const channelSettings = await queryMyChannelSettingsByIds(database, [channelId]).fetch();
+            const myChannelSetting = channelSettings?.[0];
 
+            if (myChannelSetting) {
+                const updatedProps: Partial<ChannelNotifyProps> = {...myChannelSetting.notifyProps, ...notifyProps};
+
+                await database.write(async () => {
+                    await myChannelSetting.update((c) => {
+                        c.notifyProps = updatedProps;
+                    });
+                });
+            }
+        }
         return {
             notifyProps,
         };
@@ -1191,6 +1204,10 @@ export const toggleMuteChannel = async (serverUrl: string, channelId: string, sh
     try {
         const channelSettings = await queryMyChannelSettingsByIds(database, [channelId]).fetch();
         const myChannelSetting = channelSettings?.[0];
+        if (!myChannelSetting) {
+            return {error: 'Channel setting not found'};
+        }
+
         const mark_unread = myChannelSetting.notifyProps?.mark_unread === 'mention' ? 'all' : 'mention';
 
         const notifyProps: Partial<ChannelNotifyProps> = {...myChannelSetting.notifyProps, mark_unread};
