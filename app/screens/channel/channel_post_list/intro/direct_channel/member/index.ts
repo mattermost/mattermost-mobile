@@ -4,12 +4,15 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
+import {observeUser} from '@queries/servers/user';
+
 import Member from './member';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
 
-const enhanced = withObservables([], ({member}: {member: ChannelMembershipModel}) => ({
-    user: member.memberUser.observe(),
+const enhanced = withObservables([], ({member, database}: {member: ChannelMembershipModel} & WithDatabaseArgs) => ({
+    user: observeUser(database, member.userId),
 }));
 
 export default withDatabase(enhanced(Member));
