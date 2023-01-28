@@ -970,5 +970,7 @@
     "mobile.display_settings.crt": "Daraltılmış yanıt konuları",
     "display_settings.crt.on": "Aç",
     "display_settings.crt.off": "Kapat",
-    "display_settings.crt": "Daraltılmış yanıt konuları"
+    "display_settings.crt": "Daraltılmış yanıt konuları",
+    "channel_info.archive_description.cannot_view_archived": "Bu işlem kanalı takımdan arşivleyecek ve içeriğine hiç bir kullanıcı erişemeyecek.\n\n{term} {name} kanalını arşivlemek istediğinize emin misiniz?",
+    "channel_info.archive_description.can_view_archived": "Bu işlem takım kanalını arşivleyecek. Kanal üyeleri kanal içeriğini görmeye devam edebilecek.\n\n{term} {name} kanalını arşivlemek istediğinize emin misiniz?"
 }
