@@ -15,8 +15,6 @@ extension ShareExtension: URLSessionDataDelegate {
         config.waitsForConnectivity = true
         config.httpAdditionalHeaders = ["X-Requested-With": "XMLHttpRequest"]
         config.allowsCellularAccess = true
-        config.timeoutIntervalForRequest = 10
-        config.timeoutIntervalForResource = 10
         config.httpMaximumConnectionsPerHost = 10
 
         self.backgroundSession = URLSession.init(
