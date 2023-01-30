@@ -8,6 +8,8 @@ import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type Preference = PreferenceModel | PreferenceType;
 
+const categoriesToKeep = new Set(Object.values(CATEGORIES_TO_KEEP));
+
 export function getPreferenceValue<T>(preferences: Preference[], category: string, name: string, defaultValue = '' as unknown) {
     const pref = preferences.find((p) => p.category === category && p.name === name);
 
@@ -55,6 +57,6 @@ export function filterPreferences(preferences?: PreferenceType[]) {
     if (!preferences?.length) {
         return preferences;
     }
-    const categories = new Set(Object.values(CATEGORIES_TO_KEEP));
-    return preferences.filter((p) => categories.has(p.category));
+
+    return preferences.filter((p) => categoriesToKeep.has(p.category));
 }

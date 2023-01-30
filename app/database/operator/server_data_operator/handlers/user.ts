@@ -46,7 +46,7 @@ const UserHandler = (superclass: any) => class extends superclass {
         // WE NEED TO SYNC THE PREFS FROM WHAT WE GOT AND WHAT WE HAVE
         const deleteValues: PreferenceModel[] = [];
         const stored = await this.database.get(PREFERENCE).query().fetch() as PreferenceModel[];
-        const storedPreferesMap = new Map(stored.map((p) => {
+        const storedPreferencesMap = new Map(stored.map((p) => {
             return [`${p.category}-${p.name}`, p];
         }));
         if (sync) {
@@ -62,7 +62,7 @@ const UserHandler = (superclass: any) => class extends superclass {
 
         const createOrUpdateRawValues = filtered.reduce((res: PreferenceType[], p) => {
             const id = `${p.category}-${p.name}`;
-            const exist = storedPreferesMap.get(id);
+            const exist = storedPreferencesMap.get(id);
             if (!exist) {
                 res.push(p);
                 return res;
