@@ -224,6 +224,10 @@ const contactAdminAlert = ({formatMessage}: IntlShape) => {
     );
 };
 
+export const needsRecordingAlert = () => {
+    recordingAlertLock = false;
+};
+
 export const recordingAlert = (isHost: boolean, intl: IntlShape) => {
     if (recordingAlertLock) {
         return;
