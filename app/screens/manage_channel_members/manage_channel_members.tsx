@@ -143,8 +143,7 @@ export default function ManageChannelMembers({
     }, [searchUsers, term]);
 
     const onSearch = useCallback((text: string) => {
-        const hasText = Boolean(text);
-        if (!hasText) {
+        if (!text) {
             clearSearch();
             return;
         }
