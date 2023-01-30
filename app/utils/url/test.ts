@@ -128,9 +128,11 @@ describe('UrlUtils', () => {
     });
 
     describe('matchDeepLink', () => {
-        const URL_NO_PROTOCOL = 'localhost:8065/subdir';
+        const URL_NO_PROTOCOL = 'localhost:8065';
+        const URL_PATH_NO_PROTOCOL = 'localhost:8065/subpath';
         const SITE_URL = `http://${URL_NO_PROTOCOL}`;
         const SERVER_URL = `http://${URL_NO_PROTOCOL}`;
+        const SERVER_WITH_SUBPATH = `http://${URL_PATH_NO_PROTOCOL}`;
         const DEEPLINK_URL_ROOT = `mattermost://${URL_NO_PROTOCOL}`;
 
         const tests = [
@@ -233,19 +235,46 @@ describe('UrlUtils', () => {
                 },
             },
             {
-                name: 'should match permalink with depplink prefix',
+                name: 'should match permalink with deeplink prefix on a Server hosted in a Subpath',
                 input: {
-                    url: DEEPLINK_URL_ROOT + '/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsgy',
-                    serverURL: SERVER_URL,
-                    siteURL: SITE_URL,
+                    url: DEEPLINK_URL_ROOT + '/subpath/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsrr',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
                 },
                 expected: {
                     data: {
-                        postId: 'qe93kkfd7783iqwuwfcwcxbsgy',
-                        serverUrl: URL_NO_PROTOCOL,
+                        postId: 'qe93kkfd7783iqwuwfcwcxbsrr',
+                        serverUrl: URL_PATH_NO_PROTOCOL,
                         teamName: 'ad-1',
                     },
                     type: 'permalink',
+                },
+            },
+            {
+                name: 'should match permalink on a Server hosted in a Subpath',
+                input: {
+                    url: SERVER_WITH_SUBPATH + '/ad-1/pl/qe93kkfd7783iqwuwfcwcxbsrr',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: {
+                    data: {
+                        postId: 'qe93kkfd7783iqwuwfcwcxbsrr',
+                        serverUrl: URL_PATH_NO_PROTOCOL,
+                        teamName: 'ad-1',
+                    },
+                    type: 'permalink',
+                },
+            },
+            {
+                name: 'should not match url',
+                input: {
+                    url: 'https://github.com/mattermost/mattermost-mobile/issues/new',
+                    serverURL: SERVER_WITH_SUBPATH,
+                    siteURL: SERVER_WITH_SUBPATH,
+                },
+                expected: {
+                    type: 'invalid',
                 },
             },
         ];

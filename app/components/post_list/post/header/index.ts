@@ -7,10 +7,10 @@ import {of as of$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
-import {observePostAuthor, queryPostReplies} from '@queries/servers/post';
+import {observePost, observePostAuthor, queryPostReplies} from '@queries/servers/post';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeConfigBooleanValue} from '@queries/servers/system';
-import {observeTeammateNameDisplay} from '@queries/servers/user';
+import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
 import Header from './header';
 
@@ -34,9 +34,9 @@ const withHeaderProps = withObservables(
         const teammateNameDisplay = observeTeammateNameDisplay(database);
         const commentCount = queryPostReplies(database, post.rootId || post.id).observeCount();
         const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
-        const rootPostAuthor = differentThreadSequence ? post.root.observe().pipe(switchMap((root) => {
-            if (root.length) {
-                return root[0].author.observe();
+        const rootPostAuthor = differentThreadSequence ? observePost(database, post.rootId).pipe(switchMap((root) => {
+            if (root) {
+                return observeUser(database, root.userId);
             }
 
             return of$(null);

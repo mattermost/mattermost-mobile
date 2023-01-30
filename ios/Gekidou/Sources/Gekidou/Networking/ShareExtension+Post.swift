@@ -10,7 +10,7 @@ import os.log
 
 extension ShareExtension {
     public func uploadFiles(serverUrl: String, channelId: String, message: String,
-files: [String], completionHandler: @escaping () -> Void) {
+files: [String], completionHandler: @escaping () -> Void) -> String? {
         let id = "mattermost-share-upload-\(UUID().uuidString)"
         
         createUploadSessionData(
@@ -18,6 +18,8 @@ files: [String], completionHandler: @escaping () -> Void) {
             channelId: channelId, message: message,
             files: files
         )
+        
+        guard let token = try? Keychain.default.getToken(for: serverUrl) else {return "Could not retrieve the session token from the KeyChain"}
 
         if !files.isEmpty {
             createBackroundSession(id: id)
@@ -26,8 +28,7 @@ files: [String], completionHandler: @escaping () -> Void) {
                    fileUrl.isFileURL {
                     let filename = fileUrl.lastPathComponent
                     
-                    if let url = URL(string: "\(serverUrl)/api/v4/files?channel_id=\(channelId)&filename=\(filename)"),
-                       let token = try? Keychain.default.getToken(for: serverUrl) {
+                    if let url = URL(string: "\(serverUrl)/api/v4/files?channel_id=\(channelId)&filename=\(filename)") {
                         var uploadRequest = URLRequest(url: url)
                         uploadRequest.httpMethod = "POST"
                         uploadRequest.addValue("Bearer \(token)", forHTTPHeaderField: "Authorization")
@@ -39,7 +40,6 @@ files: [String], completionHandler: @escaping () -> Void) {
                             task.resume()
                         }
                     }
-                    
                 }
             }
             completionHandler()
@@ -51,6 +51,8 @@ files: [String], completionHandler: @escaping () -> Void) {
             )
             self.postMessageForSession(withId: id, completionHandler: completionHandler)
         }
+        
+        return nil
     }
     
     func postMessageForSession(withId id: String, completionHandler: (() -> Void)? = nil) {

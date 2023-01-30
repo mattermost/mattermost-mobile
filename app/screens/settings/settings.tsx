@@ -108,9 +108,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
     });
 
     const openHelp = preventDoubleTap(() => {
-        const link = helpLink ? helpLink.toLowerCase() : '';
-
-        if (link) {
+        if (helpLink) {
             const onError = () => {
                 Alert.alert(
                     intl.formatMessage({id: 'mobile.link.error.title', defaultMessage: 'Error'}),
@@ -118,7 +116,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
                 );
             };
 
-            tryOpenURL(link, onError);
+            tryOpenURL(helpLink, onError);
         }
     });
 

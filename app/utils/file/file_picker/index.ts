@@ -227,10 +227,10 @@ export default class FilePickerUtil {
         let uri: string = doc.uri;
 
         if (Platform.OS === 'android') {
-            // For android we need to retrieve the realPath in case the file being imported is from the cloud
             if (doc.fileCopyUri) {
                 uri = doc.fileCopyUri;
             } else {
+                // For android we need to retrieve the realPath in case the file being imported is from the cloud
                 const newUri = await MattermostManaged.getFilePath(doc.uri);
                 uri = newUri?.filePath;
                 if (uri === undefined) {

@@ -33,7 +33,6 @@ describe('components/categories_list', () => {
     it('should render', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
-                isTablet={false}
                 teamsCount={1}
                 channelsCount={1}
             />,
@@ -47,7 +46,6 @@ describe('components/categories_list', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 isCRTEnabled={true}
-                isTablet={false}
                 teamsCount={1}
                 channelsCount={1}
             />,
@@ -69,7 +67,6 @@ describe('components/categories_list', () => {
         jest.useFakeTimers();
         const wrapper = renderWithEverything(
             <CategoriesList
-                isTablet={false}
                 teamsCount={0}
                 channelsCount={1}
             />,
@@ -92,7 +89,6 @@ describe('components/categories_list', () => {
         jest.useFakeTimers();
         const wrapper = renderWithEverything(
             <CategoriesList
-                isTablet={false}
                 teamsCount={1}
                 channelsCount={0}
             />,

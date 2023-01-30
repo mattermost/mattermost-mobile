@@ -5,9 +5,12 @@ import {Database, Q, Query} from '@nozbe/watermelondb';
 import {combineLatest, of as of$, Observable} from 'rxjs';
 import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
+import {Config} from '@constants';
 import {MM_TABLES} from '@constants/database';
-import {processIsCRTEnabled} from '@utils/thread';
+import {processIsCRTAllowed, processIsCRTEnabled} from '@utils/thread';
 
+import {observeChannel} from './channel';
+import {observePost} from './post';
 import {queryDisplayNamePreferences} from './preference';
 import {getConfig, observeConfigValue} from './system';
 
@@ -39,6 +42,12 @@ export const getTeamThreadsSyncData = async (database: Database, teamId: string)
     return result?.[0];
 };
 
+export const observeCRTUserPreferenceDisplay = (database: Database) => {
+    return observeConfigValue(database, 'CollapsedThreads').pipe(
+        switchMap((value) => of$(processIsCRTAllowed(value) && value !== Config.ALWAYS_ON)),
+    );
+};
+
 export const observeIsCRTEnabled = (database: Database) => {
     const cfgValue = observeConfigValue(database, 'CollapsedThreads');
     const featureFlag = observeConfigValue(database, 'FeatureFlagCollapsedThreads');
@@ -60,13 +69,13 @@ export const observeThreadById = (database: Database, threadId: string) => {
     );
 };
 
-export const observeTeamIdByThread = (thread: ThreadModel) => {
-    return thread.post.observe().pipe(
+export const observeTeamIdByThread = (database: Database, thread: ThreadModel) => {
+    return observePost(database, thread.id).pipe(
         switchMap((post) => {
             if (!post) {
                 return of$(undefined);
             }
-            return post.channel.observe().pipe(
+            return observeChannel(database, post.channelId).pipe(
                 switchMap((channel) => of$(channel?.teamId)),
             );
         }),

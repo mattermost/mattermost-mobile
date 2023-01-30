@@ -107,6 +107,12 @@ export const DisplayOptionConfig: Record<string, SettingConfigDetails> = {
         icon: 'clock-outline',
         testID: 'display_settings.clock',
     },
+    crt: {
+        defaultMessage: 'Collapsed Reply Threads',
+        i18nId: t('mobile.display_settings.crt'),
+        icon: 'message-text-outline',
+        testID: 'display_settings.crt',
+    },
     theme: {
         defaultMessage: 'Theme',
         i18nId: t('mobile.display_settings.theme'),
