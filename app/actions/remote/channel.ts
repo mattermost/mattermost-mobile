@@ -62,7 +62,7 @@ export async function removeMemberFromChannel(serverUrl: string, channelId: stri
         const client = NetworkManager.getClient(serverUrl);
 
         await client.removeFromChannel(userId, channelId);
-        deleteChannelMembership(operator, userId, channelId);
+        await deleteChannelMembership(operator, userId, channelId);
 
         return {error: undefined};
     } catch (error) {
