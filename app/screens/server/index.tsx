@@ -182,6 +182,10 @@ const Server = ({
         return () => backHandler.remove();
     }, []);
 
+    useEffect(() => {
+        translateX.value = 0;
+    }, []);
+
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
