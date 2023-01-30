@@ -154,7 +154,6 @@ const ChannelNotificationPreference = ({
     const styles = getStyleSheet(theme);
     const [top, setTop] = useState(0);
 
-    // fixme: is this how we should set the default global?
     const globalDefault = notifyLevel === 'default' ? 'all' : notifyLevel;
     const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(notifyLevel);
     const [threadReplies, setThreadReplies] = useState<boolean>(notifyThreadReplies === 'all');
