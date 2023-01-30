@@ -7,8 +7,8 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {getPreferenceAsBool} from '@helpers/api/preference';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
+import {querySidebarPreferences} from '@queries/servers/preference';
 
 import SubHeader from './subheader';
 
@@ -16,10 +16,10 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
+    const unreadsOnTop = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
         observeWithColumns(['value']).
         pipe(
-            switchMap((prefs: PreferenceModel[]) => of$(getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false))),
+            switchMap((prefs: PreferenceModel[]) => of$(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
         );
 
     return {
