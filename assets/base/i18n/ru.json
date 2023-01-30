@@ -5,7 +5,7 @@
     "about.enterpriseEditionSt": "Современное общение в вашей внутренней сети.",
     "about.hash": "Хэш сборки:",
     "about.hashee": "Хэш сборки EE:",
-    "about.teamEditionLearn": "Присоединяйтесь к сообществу Mattermost на ",
+    "about.teamEditionLearn": "Присоединяйтесь к сообществу Mattermost на",
     "about.teamEditionSt": "Всё общение вашей команды собрано в одном месте, с мгновенным поиском и доступом отовсюду.",
     "about.teamEditiont0": "Командная редакция",
     "about.teamEditiont1": "Корпоративная редакция",
@@ -970,5 +970,7 @@
     "invite.summary.report.sent": "{count} {count, plural, one {приглашение} few {приглашения} other {приглашений}} успешно отправлено",
     "invite.summary.report.notSent": "{count} {count, plural, one {приглашение} few {приглашения} other {приглашений}} не было отправлено",
     "invite.summary.not_sent": "{notSentCount, plural, one {приглашение} few {приглашения} other {приглашений}} не было отправлено",
-    "display_settings.crt": "Свернутые цепочки обсуждений"
+    "display_settings.crt": "Свернутые цепочки обсуждений",
+    "channel_info.archive_description.cannot_view_archived": "Это архивирует канал из команды и удаляет его из пользовательского интерфейса. Заархивированные каналы могут быть разархивированы при необходимости.\n\nВы уверены, что хотите архивировать {term} {name}?",
+    "channel_info.archive_description.can_view_archived": "Это приведет к архивации канала из команды. Содержимое канала по-прежнему будет доступно участникам канала.\n\nВы уверены, что хотите архивировать {term} {name}?"
 }
