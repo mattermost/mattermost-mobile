@@ -5,7 +5,7 @@
     "about.enterpriseEditionSt": "Współczesna komunikacja zza twojego firewalla.",
     "about.hash": "Hash Kompilacji:",
     "about.hashee": "Hash Kompilacji Enterprise:",
-    "about.teamEditionLearn": "Dołącz do społeczności Mattermost na ",
+    "about.teamEditionLearn": "Dołącz do społeczności Mattermost",
     "about.teamEditionSt": "Cała komunikacja Twojego zespołu w jednym miejscu, z natychmiastowym przeszukiwaniem i dostępna z każdego miejsca.",
     "about.teamEditiont0": "Edycja Zespołowa",
     "about.teamEditiont1": "Edycja Enterprise",
@@ -964,5 +964,13 @@
     "invite.summary.try_again": "Spróbuj ponownie",
     "invite.summary.some_not_sent": "{notSentCount, plural, one {Zaproszenie nie zostało wysłane} other {Zaproszeń nie zostało wysłanych}}",
     "invite.summary.smtp_failure": "SMTP nie jest skonfigurowany w Konsoli Systemowej",
-    "invite.summary.sent": "Your {sentCount, plural, one {zaproszenie zostało wysłane} other {zaproszeń zostało wysłanych}}"
+    "invite.summary.sent": "Your {sentCount, plural, one {zaproszenie zostało wysłane} other {zaproszeń zostało wysłanych}}",
+    "settings_display.crt.label": "Zawijanie Odpowiedzi w Wątkach",
+    "settings_display.crt.desc": "Po włączeniu tej opcji odpowiedzi nie są wyświetlane na kanale, a o śledzonych wątkach będziesz informowany w widoku \"Wątki\".",
+    "mobile.display_settings.crt": "Zawijanie Odpowiedzi w Wątkach",
+    "display_settings.crt.on": "Włącz",
+    "display_settings.crt.off": "Wyłącz",
+    "display_settings.crt": "Zawijanie Odpowiedzi w Wątkach",
+    "channel_info.archive_description.cannot_view_archived": "Spowoduje to zarchiwizowanie kanału z zespołu i usunięcie go z interfejsu użytkownika. Zarchiwizowane kanały mogą zostać odarchiwizowane, jeśli będą ponownie potrzebne.\n\nCzy na pewno chcesz zarchiwizować kanał {term} {name}?",
+    "channel_info.archive_description.can_view_archived": "Spowoduje to zarchiwizowanie kanału z zespołu. Zawartość kanału będzie nadal dostępna dla jego członków.\n\nCzy na pewno chcesz zarchiwizować kanał {term} {name}?"
 }
