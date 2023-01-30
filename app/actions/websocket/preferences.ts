@@ -107,7 +107,7 @@ async function handleSavePostAdded(serverUrl: string, preferences: PreferenceTyp
         return;
     }
 
-    const savedPosts = preferences.filter((p) => p.category === Preferences.CATEGORY_SAVED_POST);
+    const savedPosts = preferences.filter((p) => p.category === Preferences.CATEGORIES.SAVED_POST);
     for await (const saved of savedPosts) {
         const post = await getPostById(database, saved.name);
         if (!post) {

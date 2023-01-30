@@ -87,12 +87,14 @@ class ShareViewModel: ObservableObject {
   
   func downloadProfileImage(serverUrl: String, userId: String, imageBinding: Binding<UIImage?>) {
     guard let _ = URL(string: serverUrl) else {
-      fatalError("Missing or Malformed URL")
+      debugPrint("Missing or Malformed URL")
+      return
     }
     
     Gekidou.Network.default.fetchUserProfilePicture(userId: userId, withServerUrl: serverUrl, completionHandler: {data, response, error in
       guard (response as? HTTPURLResponse)?.statusCode == 200 else {
-        fatalError("Error while fetching image \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
+        debugPrint("Error while fetching image \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
+        return
       }
       
       if let data = data {

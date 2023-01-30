@@ -12,9 +12,9 @@ import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule;
 import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
 import com.facebook.react.defaults.DefaultReactActivityDelegate;
 
-
 public class MainActivity extends NavigationActivity {
     private boolean HWKeyboardConnected = false;
+    private FoldableObserver foldableObserver = new FoldableObserver(this);
 
     @Override
     protected String getMainComponentName() {
@@ -43,6 +43,19 @@ public class MainActivity extends NavigationActivity {
         super.onCreate(null);
         setContentView(R.layout.launch_screen);
         setHWKeyboardConnected();
+        foldableObserver.onCreate();
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        foldableObserver.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        foldableObserver.onStop();
     }
 
     @Override

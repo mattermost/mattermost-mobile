@@ -7,9 +7,9 @@ import {of as of$, combineLatest} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
 import {General, Permissions, Preferences} from '@constants';
-import {getPreferenceAsBool} from '@helpers/api/preference';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
 import {observeChannel} from '@queries/servers/channel';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
@@ -41,9 +41,9 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
     const systemAdmin = user.pipe(switchMap((u) => of$(u?.roles ? isSystemAdmin(u.roles) : false)));
     const enablePostIconOverride = observeConfigBooleanValue(database, 'EnablePostIconOverride');
     const enablePostUsernameOverride = observeConfigBooleanValue(database, 'EnablePostUsernameOverride');
-    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
+    const preferences = queryDisplayNamePreferences(database).
         observeWithColumns(['value']);
-    const isMilitaryTime = preferences.pipe(map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)));
+    const isMilitaryTime = preferences.pipe(map((prefs) => getDisplayNamePreferenceAsBool(prefs, Preferences.USE_MILITARY_TIME)));
     const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
 
     // can remove member

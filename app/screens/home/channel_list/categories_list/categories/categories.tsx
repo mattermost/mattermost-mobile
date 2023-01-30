@@ -46,7 +46,19 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
     const isTablet = useIsTablet();
     const switchingTeam = useTeamSwitch();
     const teamId = categories[0]?.teamId;
-    const [initiaLoad, setInitialLoad] = useState(true);
+    const categoriesToShow = useMemo(() => {
+        if (onlyUnreads && !unreadsOnTop) {
+            return ['UNREADS' as const];
+        }
+        const orderedCategories = [...categories];
+        orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
+        if (unreadsOnTop) {
+            return ['UNREADS' as const, ...orderedCategories];
+        }
+        return orderedCategories;
+    }, [categories, onlyUnreads, unreadsOnTop]);
+
+    const [initiaLoad, setInitialLoad] = useState(!categoriesToShow.length);
 
     const onChannelSwitch = useCallback(async (channelId: string) => {
         switchToChannelById(serverUrl, channelId);
@@ -75,18 +87,6 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
             </>
         );
     }, [teamId, intl.locale, isTablet, onChannelSwitch, onlyUnreads]);
-
-    const categoriesToShow = useMemo(() => {
-        if (onlyUnreads && !unreadsOnTop) {
-            return ['UNREADS' as const];
-        }
-        const orderedCategories = [...categories];
-        orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
-        if (unreadsOnTop) {
-            return ['UNREADS' as const, ...orderedCategories];
-        }
-        return orderedCategories;
-    }, [categories, onlyUnreads, unreadsOnTop]);
 
     useEffect(() => {
         const t = setTimeout(() => {

@@ -6,9 +6,8 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
 import {observePost, queryPostReplies} from '@queries/servers/post';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {querySavedPostsPreferences} from '@queries/servers/preference';
 
 import ThreadOverview from './thread_overview';
 
@@ -19,7 +18,7 @@ const enhanced = withObservables(
     ({database, rootId}: WithDatabaseArgs & {rootId: string}) => {
         return {
             rootPost: observePost(database, rootId),
-            isSaved: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, rootId).
+            isSaved: querySavedPostsPreferences(database, rootId).
                 observeWithColumns(['value']).
                 pipe(
                     switchMap((pref) => of$(Boolean(pref[0]?.value === 'true'))),

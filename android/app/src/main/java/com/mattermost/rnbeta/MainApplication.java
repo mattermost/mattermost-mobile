@@ -1,7 +1,9 @@
 package com.mattermost.rnbeta;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
+
 import java.io.File;
 import java.util.Collections;
 import java.util.HashMap;
@@ -42,7 +44,6 @@ public class MainApplication extends NavigationApplication implements INotificat
   public static MainApplication instance;
 
   public Boolean sharedExtensionIsOpened = false;
-
   private final ReactNativeHost mReactNativeHost =
     new DefaultReactNativeHost(this) {
       @Override
@@ -69,6 +70,8 @@ public class MainApplication extends NavigationApplication implements INotificat
                     return ShareModule.getInstance(reactContext);
                   case "Notifications":
                     return NotificationsModule.getInstance(instance, reactContext);
+                  case "SplitView":
+                      return SplitViewModule.Companion.getInstance(reactContext);
                   default:
                     throw new IllegalArgumentException("Could not find module " + name);
                   }
@@ -81,6 +84,7 @@ public class MainApplication extends NavigationApplication implements INotificat
                     map.put("MattermostManaged", new ReactModuleInfo("MattermostManaged", "com.mattermost.rnbeta.MattermostManagedModule", false, false, false, false, false));
                     map.put("MattermostShare", new ReactModuleInfo("MattermostShare", "com.mattermost.share.ShareModule", false, false, true, false, false));
                     map.put("Notifications", new ReactModuleInfo("Notifications", "com.mattermost.rnbeta.NotificationsModule", false, false, false, false, false));
+                    map.put("SplitView", new ReactModuleInfo("SplitView", "com.mattermost.rnbeta.SplitViewModule", false, false, false, false, false));
                     return map;
                   };
                 }

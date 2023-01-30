@@ -6,7 +6,7 @@ import React, {ComponentType, createContext, useEffect, useState} from 'react';
 import {Appearance} from 'react-native';
 
 import {Preferences} from '@constants';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryThemePreferences} from '@queries/servers/preference';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
@@ -97,7 +97,7 @@ export function useTheme(): Theme {
 
 const enhancedThemeProvider = withObservables([], ({database}: {database: Database}) => ({
     currentTeamId: observeCurrentTeamId(database),
-    themes: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME).observeWithColumns(['value']),
+    themes: queryThemePreferences(database).observeWithColumns(['value']),
 }));
 
 export default enhancedThemeProvider(ThemeProvider);

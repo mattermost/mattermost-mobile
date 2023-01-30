@@ -131,7 +131,7 @@ describe('*** Operator: User Handlers tests ***', () => {
             },
             {
                 user_id: '9ciscaqbrpd6d8s68k76xb9bte',
-                category: 'tutorial_step',
+                category: 'tutorial_step', // we aren't using this category in the app, should be filtered
                 name: '9ciscaqbrpd6d8s68k76xb9bte',
                 value: '2',
             },
@@ -140,12 +140,13 @@ describe('*** Operator: User Handlers tests ***', () => {
         await operator.handlePreferences({
             preferences,
             prepareRecordsOnly: false,
+            sync: false,
         });
 
         expect(spyOnHandleRecords).toHaveBeenCalledTimes(1);
         expect(spyOnHandleRecords).toHaveBeenCalledWith({
             fieldName: 'user_id',
-            createOrUpdateRawValues: preferences,
+            createOrUpdateRawValues: preferences.filter((p) => p.category !== 'tutorial_step'),
             tableName: 'Preference',
             prepareRecordsOnly: true,
             buildKeyRecordBy: buildPreferenceKey,

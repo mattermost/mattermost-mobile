@@ -5,18 +5,16 @@ import {Database, Model, Q, Query} from '@nozbe/watermelondb';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 
-import {queryPreferencesByCategoryAndName} from './preference';
+import {querySavedPostsPreferences} from './preference';
 import {observeUser} from './user';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type PostInChannelModel from '@typings/database/models/servers/posts_in_channel';
 import type PostsInThreadModel from '@typings/database/models/servers/posts_in_thread';
-import type PreferenceModel from '@typings/database/models/servers/preference';
 
-const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD, PREFERENCE}} = MM_TABLES;
+const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
 
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
@@ -72,7 +70,7 @@ export const observePostAuthor = (database: Database, post: PostModel) => {
 };
 
 export const observePostSaved = (database: Database, postId: string) => {
-    return queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, postId).
+    return querySavedPostsPreferences(database, postId).
         observeWithColumns(['value']).pipe(
             switchMap(
                 (pref) => of$(Boolean(pref[0]?.value === 'true')),
@@ -212,13 +210,9 @@ export const observePinnedPostsInChannel = (database: Database, channelId: strin
 };
 
 export const observeSavedPostsByIds = (database: Database, postIds: string[]) => {
-    return database.get<PreferenceModel>(PREFERENCE).
-        query(
-            Q.and(
-                Q.where('category', Preferences.CATEGORY_SAVED_POST),
-                Q.where('name', Q.oneOf(postIds)),
-            ),
-        ).observeWithColumns(['name']).pipe(
-            switchMap((prefs) => of$(new Set(prefs.map((p) => p.name)))),
-        );
+    return querySavedPostsPreferences(database).extend(
+        Q.where('name', Q.oneOf(postIds)),
+    ).observeWithColumns(['name']).pipe(
+        switchMap((prefs) => of$(new Set(prefs.map((p) => p.name)))),
+    );
 };

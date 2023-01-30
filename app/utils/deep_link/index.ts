@@ -152,8 +152,10 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
 
     let urlToMatch = url;
     const urlBase = serverURL || siteURL || '';
+    const parsedUrl = urlParse(url);
+    const parsedBase = urlParse(urlBase);
 
-    if (!url.startsWith('mattermost://')) {
+    if (!parsedUrl.protocol) {
         // If url doesn't contain site or server URL, tack it on.
         // e.g. <jump to convo> URLs from autolink plugin.
         const match = new RegExp(escapeRegex(urlBase)).exec(url);
@@ -162,7 +164,18 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
         }
     }
 
-    if (urlParse(urlToMatch).hostname === urlParse(urlBase).hostname) {
+    const finalUrl = urlParse(urlToMatch);
+    const baseSubpath = parsedBase.pathname.replace('/', '');
+    const baseHostname = parsedBase.hostname;
+    const urlSubpath = finalUrl.pathname.split('/')[1];
+    const urlHostname = finalUrl.hostname;
+
+    if (baseSubpath) {
+        // if the server is in a subpath
+        if (urlHostname === baseHostname && urlSubpath === baseSubpath) {
+            return urlToMatch;
+        }
+    } else if (urlHostname === baseHostname) {
         return urlToMatch;
     }
 

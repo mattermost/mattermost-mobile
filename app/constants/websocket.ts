@@ -44,6 +44,8 @@ const WebsocketEvents = {
     EMOJI_ADDED: 'emoji_added',
     LICENSE_CHANGED: 'license_changed',
     CONFIG_CHANGED: 'config_changed',
+    PLUGIN_ENABLED: 'plugin_enabled',
+    PLUGIN_DISABLED: 'plugin_disabled',
     PLUGIN_STATUSES_CHANGED: 'plugin_statuses_changed',
     OPEN_DIALOG: 'open_dialog',
     INCREASE_POST_VISIBILITY_BY_ONE: 'increase_post_visibility_by_one',

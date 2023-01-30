@@ -8,6 +8,7 @@ import {map, switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
+import {observeReactionsForPost} from '@queries/servers/reaction';
 import {observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
@@ -42,7 +43,7 @@ const withReactions = withObservables(['post'], ({database, post}: WithReactions
         currentUserId,
         disabled,
         postId: of$(post.id),
-        reactions: post.reactions.observe(),
+        reactions: observeReactionsForPost(database, post.id),
     };
 });
 
