@@ -108,6 +108,7 @@ export default function ManageChannelMembers({
             if (users.length) {
                 loadedProfiles(users, members);
             }
+            setLoading(false);
         }
     }, 100), [channelId, loading, serverUrl, term]);
 
