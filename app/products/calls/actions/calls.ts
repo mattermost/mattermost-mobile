@@ -481,6 +481,73 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
                     defaultMessage: 'You\'re not connected to a call in the current channel.',
                 }),
             };
+        case 'recording': {
+            if (tokens.length < 3) {
+                return {handled: false};
+            }
+
+            const action = tokens[2];
+            const currentCall = getCurrentCall();
+            const recording = currentCall?.recState;
+            const isHost = currentCall?.hostId === currentUserId;
+
+            if (currentCall?.channelId !== channelId) {
+                return {
+                    error: intl.formatMessage({
+                        id: 'mobile.calls_not_connected',
+                        defaultMessage: 'You\'re not connected to a call in the current channel.',
+                    }),
+                };
+            }
+
+            if (action === 'start') {
+                if (recording && recording.start_at > recording.end_at) {
+                    return {
+                        error: intl.formatMessage({
+                            id: 'mobile.calls_recording_start_in_progress',
+                            defaultMessage: 'A recording is already in progress.',
+                        }),
+                    };
+                }
+
+                if (!isHost) {
+                    return {
+                        error: intl.formatMessage({
+                            id: 'mobile.calls_recording_start_no_permissions',
+                            defaultMessage: 'You don\'t have permissions to start a recording. Please ask the call host to start a recording.',
+                        }),
+                    };
+                }
+
+                await startCallRecording(currentCall.serverUrl, currentCall.channelId);
+
+                return {handled: true};
+            }
+
+            if (action === 'stop') {
+                if (!recording || recording.end_at > recording.start_at) {
+                    return {
+                        error: intl.formatMessage({
+                            id: 'mobile.calls_recording_stop_none_in_progress',
+                            defaultMessage: 'No recording is in progress.',
+                        }),
+                    };
+                }
+
+                if (!isHost) {
+                    return {
+                        error: intl.formatMessage({
+                            id: 'mobile.calls_recording_stop_no_permissions',
+                            defaultMessage: 'You don\'t have permissions to stop the recording. Please ask the call host to stop the recording.',
+                        }),
+                    };
+                }
+
+                await stopCallRecording(currentCall.serverUrl, currentCall.channelId);
+
+                return {handled: true};
+            }
+        }
     }
 
     return {handled: false};
