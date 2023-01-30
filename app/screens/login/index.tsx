@@ -133,6 +133,10 @@ const LoginOptions = ({
     }, []);
 
     useEffect(() => {
+        translateX.value = 0;
+    }, []);
+
+    useEffect(() => {
         const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
             if (closeButtonId && buttonId === closeButtonId) {
                 NetworkManager.invalidateClient(serverUrl);
