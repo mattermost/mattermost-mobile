@@ -145,9 +145,9 @@ public class NotificationHelper {
             for (final StatusBarNotification status : statusNotifications) {
                 Bundle bundle = status.getNotification().extras;
                 if (isThreadNotification) {
-                    hasMore = bundle.getString("root_id").equals(rootId);
+                    hasMore = bundle.containsKey("root_id") && bundle.getString("root_id").equals(rootId);
                 } else {
-                    hasMore = bundle.getString("channel_id").equals(channelId);
+                    hasMore = bundle.containsKey("channel_id") && bundle.getString("channel_id").equals(channelId);
                 }
                 if (hasMore) break;
             }

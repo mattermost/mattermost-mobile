@@ -105,6 +105,7 @@
 		7FD482692864DC5900A5B18B /* OpenSans-SemiBoldItalic.ttf in Resources */ = {isa = PBXBuildFile; fileRef = 0DB14DFDF6E04FA69FE769DC /* OpenSans-SemiBoldItalic.ttf */; };
 		7FEB109D1F61019C0039A015 /* MattermostManaged.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEB109A1F61019C0039A015 /* MattermostManaged.m */; };
 		7FEC870128A4325D00DE96CB /* NotificationsModule.m in Sources */ = {isa = PBXBuildFile; fileRef = 7FEC870028A4325D00DE96CB /* NotificationsModule.m */; };
+		7FF9C03D2983E7C6005CDCF5 /* ErrorSharingView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7FF9C03C2983E7C6005CDCF5 /* ErrorSharingView.swift */; };
 		A94508A396424B2DB778AFE9 /* OpenSans-SemiBold.ttf in Resources */ = {isa = PBXBuildFile; fileRef = E5C16B14E1CE4868886A1A00 /* OpenSans-SemiBold.ttf */; };
 /* End PBXBuildFile section */
 
@@ -251,6 +252,7 @@
 		7FEB109A1F61019C0039A015 /* MattermostManaged.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = MattermostManaged.m; path = Mattermost/MattermostManaged.m; sourceTree = "<group>"; };
 		7FEC870028A4325D00DE96CB /* NotificationsModule.m */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.objc; name = NotificationsModule.m; path = Mattermost/NotificationsModule.m; sourceTree = "<group>"; };
 		7FEC870428A44A7B00DE96CB /* NotificationsModule.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = NotificationsModule.h; path = Mattermost/NotificationsModule.h; sourceTree = "<group>"; };
+		7FF9C03C2983E7C6005CDCF5 /* ErrorSharingView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ErrorSharingView.swift; sourceTree = "<group>"; };
 		7FFE32B51FD9CCAA0038C7A0 /* FLAnimatedImage.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = FLAnimatedImage.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FFE32B61FD9CCAA0038C7A0 /* KSCrash.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = KSCrash.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		7FFE32B71FD9CCAA0038C7A0 /* KSCrash.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; path = KSCrash.framework; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -604,6 +606,7 @@
 				7F93AAA528761F2E0047B89F /* NoServersView.swift */,
 				7F93AAA728761FA10047B89F /* NoMembershipView.swift */,
 				7F93AAAB28771E3F0047B89F /* ErrorLabelView.swift */,
+				7FF9C03C2983E7C6005CDCF5 /* ErrorSharingView.swift */,
 			);
 			path = ErrorViews;
 			sourceTree = "<group>";
@@ -1046,6 +1049,7 @@
 				7F7E9F5E2864E76D0064BFAF /* SingleAttachmentView.swift in Sources */,
 				7F7E9F472864E6C60064BFAF /* View.swift in Sources */,
 				7F93AAAE287725660047B89F /* Int64.swift in Sources */,
+				7FF9C03D2983E7C6005CDCF5 /* ErrorSharingView.swift in Sources */,
 				7F93AAB8287778090047B89F /* Publishers.swift in Sources */,
 				7F7E9F732864E8060064BFAF /* CompassIcons.swift in Sources */,
 				7F93AABA28777A390047B89F /* Notification.swift in Sources */,
@@ -1124,7 +1128,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 453;
+				CURRENT_PROJECT_VERSION = 454;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
@@ -1168,7 +1172,7 @@
 				CODE_SIGN_ENTITLEMENTS = Mattermost/Mattermost.entitlements;
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
-				CURRENT_PROJECT_VERSION = 453;
+				CURRENT_PROJECT_VERSION = 454;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				ENABLE_BITCODE = NO;
 				HEADER_SEARCH_PATHS = (
@@ -1311,7 +1315,7 @@
 				CODE_SIGN_IDENTITY = "iPhone Developer";
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 453;
+				CURRENT_PROJECT_VERSION = 454;
 				DEBUG_INFORMATION_FORMAT = dwarf;
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				GCC_C_LANGUAGE_STANDARD = gnu11;
@@ -1362,7 +1366,7 @@
 				"CODE_SIGN_IDENTITY[sdk=iphoneos*]" = "iPhone Developer";
 				CODE_SIGN_STYLE = Automatic;
 				COPY_PHASE_STRIP = NO;
-				CURRENT_PROJECT_VERSION = 453;
+				CURRENT_PROJECT_VERSION = 454;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
 				DEVELOPMENT_TEAM = UQ8HT4Q2XM;
 				GCC_C_LANGUAGE_STANDARD = gnu11;

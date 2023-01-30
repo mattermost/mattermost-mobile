@@ -42,6 +42,7 @@ extension Color {
 struct ColorTheme {
   let awayIndicator = Color("awayIndicator")
   let buttonBg = Color("buttonBg")
+  let buttonColor = Color("buttonColor")
   let centerChannelBg = Color("centerChannelBg")
   let centerChannelColor = Color("centerChannelColor")
   let dndIndicator = Color("dndIndicator")

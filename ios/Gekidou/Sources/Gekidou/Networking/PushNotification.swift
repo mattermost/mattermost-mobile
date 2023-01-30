@@ -87,25 +87,22 @@ extension Network {
     
     private func matchUsername(in message: String) -> [String] {
         let specialMentions = Set(["all", "here", "channel"])
-        do {
-            let regex = try NSRegularExpression(pattern: "\\B@(([a-z0-9-._]*[a-z0-9_])[.-]*)", options: [.caseInsensitive])
+        if let regex = try? NSRegularExpression(pattern: "\\B@(([a-z0-9-._]*[a-z0-9_])[.-]*)", options: [.caseInsensitive]) {
             let results = regex.matches(in: message, range: _NSRange(message.startIndex..., in: message))
-            return results.map{ String(message[Range($0.range, in: message)!]).removePrefix("@") }.filter{ !specialMentions.contains($0)}
-        } catch let error {
-            print("invalid regex: \(error.localizedDescription)")
-                    return []
+            if !results.isEmpty {
+                let username = results.map({ String(message[Range($0.range, in: message)!]).removePrefix("@") }).filter({ !specialMentions.contains($0)})
+                return username
+            }
         }
+        return []
     }
     
-    public func fetchProfileImageSync(_ serverUrl: String, senderId: String, overrideIconUrl: String?) -> Data? {
-        var imgData: Data?
-        let semaphore = DispatchSemaphore(value: 0)
-        
+    public func fetchProfileImageSync(_ serverUrl: String, senderId: String, overrideIconUrl: String?, completionHandler: @escaping (_ data: Data?) -> Void) {
         func processResponse(data: Data?, response: URLResponse?, error: Error?) {
             if let httpResponse = response as? HTTPURLResponse {
                 if (httpResponse.statusCode == 200 && error == nil) {
-                    imgData = data
                     FileCache.default.saveProfileImage(serverUrl: serverUrl, userId: senderId, imageData: data)
+                    completionHandler(data)
                 } else {
                     os_log(
                         OSLogType.default,
@@ -115,7 +112,6 @@ extension Network {
                     )
                 }
             }
-            semaphore.signal()
         }
         
         if let overrideUrl = overrideIconUrl,
@@ -124,16 +120,12 @@ extension Network {
         } else {
             if let image = FileCache.default.getProfileImage(serverUrl: serverUrl, userId: senderId) {
                 os_log(OSLogType.default, "Mattermost Notifications: cached image")
-                imgData = image.pngData()
-                semaphore.signal()
+                completionHandler(image.pngData())
             } else {
                 os_log(OSLogType.default, "Mattermost Notifications: image not cached")
                 fetchUserProfilePicture(userId: senderId, withServerUrl: serverUrl, completionHandler: processResponse)
             }
         }
-        
-        semaphore.wait()
-        return imgData
     }
     
     public func postNotificationReceipt(_ ackNotification: AckNotification, completionHandler: @escaping ResponseHandler) {
@@ -152,13 +144,19 @@ extension Network {
         let operation = BlockOperation {
             let group = DispatchGroup()
             
-            let channelId = notification.userInfo["channel_id"] as! String
-            let rootId = notification.userInfo.index(forKey: "root_id") != nil ? notification.userInfo["root_id"] as! String : ""
-            let serverUrl =  notification.userInfo["server_url"] as! String
-            let isCRTEnabled = notification.userInfo["is_crt_enabled"] as! Bool
-            let currentUser = try! Database.default.queryCurrentUser(serverUrl)
+            let channelId = notification.userInfo["channel_id"] as? String
+            let rootId = notification.userInfo["root_id"] as? String ?? ""
+            let serverUrl =  notification.userInfo["server_url"] as? String
+            let isCRTEnabled = notification.userInfo["is_crt_enabled"] as? Bool ?? false
+            
+            guard let serverUrl = serverUrl,
+                  let channelId = channelId
+            else { return }
+
+            let currentUser = try? Database.default.queryCurrentUser(serverUrl)
             let currentUserId = currentUser?[Expression<String>("id")]
             let currentUsername = currentUser?[Expression<String>("username")]
+            
             
             var postData: PostData? = nil
             var myChannelData: ChannelMemberData? = nil
@@ -196,9 +194,10 @@ extension Network {
             group.enter()
             let since = try? Database.default.queryPostsSinceForChannel(withId: channelId, withServerUrl: serverUrl)
             self.fetchPostsForChannel(withId: channelId, withSince: since, withServerUrl: serverUrl, withIsCRTEnabled: isCRTEnabled, withRootId: rootId) { data, response, error in
-                if self.responseOK(response), let data = data {
-                   postData = try! JSONDecoder().decode(PostData.self, from: data)
-                    if postData?.posts.count ?? 0 > 0 {
+                if self.responseOK(response), let data = data,
+                   let jsonData = try? JSONDecoder().decode(PostData.self, from: data) {
+                    postData = jsonData
+                    if jsonData.posts.count > 0 {
                         var authorIds: Set<String> = Set()
                         var usernames: Set<String> = Set()
 
@@ -206,7 +205,7 @@ extension Network {
                         var threadParticipantUsernames: Set<String> = Set() // Used to exclude the "usernames" present in the thread participants
                         var threadParticipantUsers = [String: User]() // All unique users from thread participants are stored here
 
-                        postData!.posts.forEach{post in
+                        jsonData.posts.forEach{post in
                             if (currentUserId != nil && post.user_id != currentUserId) {
                                 authorIds.insert(post.user_id)
                             }
@@ -304,27 +303,28 @@ extension Network {
             group.wait()
 
             group.enter()
-            if (postData != nil && postData?.posts != nil && postData!.posts.count > 0) {
-                if let db = try? Database.default.getDatabaseForServer(serverUrl) {
-                    let receivingThreads = isCRTEnabled && !rootId.isEmpty
-                    try? db.transaction {
-                        try? Database.default.handlePostData(db, postData!, channelId, since != nil, receivingThreads)
-                        
-                        if threads.count > 0 {
-                            try? Database.default.handleThreads(db, threads)
-                        }
-                        
-                        if users.count > 0 {
-                            try? Database.default.insertUsers(db, users)
-                        }
-                        
-                        if myChannelData != nil {
-                            try? Database.default.handleMyChannelMentions(db, myChannelData!, withCRTEnabled: isCRTEnabled)
-                        }
-                        
-                        if threadData != nil {
-                            try? Database.default.handleThreadMentions(db, threadData!)
-                        }
+            if let data = postData,
+               let posts = data.posts as [Post]?,
+               let db = try? Database.default.getDatabaseForServer(serverUrl),
+               posts.count > 0 {
+                let receivingThreads = isCRTEnabled && !rootId.isEmpty
+                try? db.transaction {
+                    try? Database.default.handlePostData(db, data, channelId, since != nil, receivingThreads)
+                    
+                    if threads.count > 0 {
+                        try? Database.default.handleThreads(db, threads)
+                    }
+                    
+                    if users.count > 0 {
+                        try? Database.default.insertUsers(db, users)
+                    }
+                    
+                    if let myChannel = myChannelData {
+                        try? Database.default.handleMyChannelMentions(db, myChannel, withCRTEnabled: isCRTEnabled)
+                    }
+                    
+                    if let threads = threadData {
+                        try? Database.default.handleThreadMentions(db, threads)
                     }
                 }
             }
