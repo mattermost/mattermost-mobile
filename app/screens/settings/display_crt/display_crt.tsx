@@ -40,7 +40,7 @@ const DisplayCRT = ({componentId, currentUserId, isCRTEnabled}: Props) => {
     const saveCRTPreference = useCallback(() => {
         if (isCRTEnabled !== isEnabled) {
             const crtPreference: PreferenceType = {
-                category: Preferences.CATEGORY_DISPLAY_SETTINGS,
+                category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
                 name: Preferences.COLLAPSED_REPLY_THREADS,
                 user_id: currentUserId,
                 value: isEnabled ? Preferences.COLLAPSED_REPLY_THREADS_ON : Preferences.COLLAPSED_REPLY_THREADS_OFF,

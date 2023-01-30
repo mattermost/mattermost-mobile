@@ -129,7 +129,7 @@ export const ThemeTiles = ({allowedThemeKeys, onThemeChange, selectedTheme}: The
     return (
         <View style={styles.tilesContainer}>
             {
-                allowedThemeKeys.map((themeKey: string) => {
+                allowedThemeKeys.map((themeKey: ThemeKey) => {
                     if (!Preferences.THEMES[themeKey] || !selectedTheme) {
                         return null;
                     }

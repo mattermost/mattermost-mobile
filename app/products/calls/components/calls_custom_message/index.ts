@@ -10,8 +10,8 @@ import {CallsCustomMessage} from '@calls/components/calls_custom_message/calls_c
 import {observeIsCallLimitRestricted} from '@calls/observers';
 import {observeCurrentCall} from '@calls/state';
 import {Preferences} from '@constants';
-import {getPreferenceAsBool} from '@helpers/api/preference';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCurrentUser, observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
@@ -25,9 +25,9 @@ type OwnProps = {
 const enhanced = withObservables(['post'], ({serverUrl, post, database}: OwnProps & WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
     const author = observeUser(database, post.userId);
-    const isMilitaryTime = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).observeWithColumns(['value']).pipe(
+    const isMilitaryTime = queryDisplayNamePreferences(database).observeWithColumns(['value']).pipe(
         switchMap(
-            (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
+            (preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME)),
         ),
     );
 

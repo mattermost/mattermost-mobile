@@ -42,7 +42,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
     const saveClockDisplayPreference = useCallback(() => {
         if (hasMilitaryTimeFormat !== isMilitaryTimeFormat) {
             const timePreference: PreferenceType = {
-                category: Preferences.CATEGORY_DISPLAY_SETTINGS,
+                category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
                 name: 'use_military_time',
                 user_id: currentUserId,
                 value: `${isMilitaryTimeFormat}`,

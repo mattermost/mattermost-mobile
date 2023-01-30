@@ -7,10 +7,9 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsById} from '@queries/servers/post';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
@@ -29,7 +28,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
 
     return {
-        posts: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, undefined, 'true').observeWithColumns(['name']).pipe(
+        posts: querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
             switchMap((rows) => {
                 if (!rows.length) {
                     return of$([]);
