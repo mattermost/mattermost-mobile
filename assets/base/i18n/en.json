@@ -414,6 +414,8 @@
   "mobile.calls_error_title": "Error",
   "mobile.calls_host": "host",
   "mobile.calls_host_rec": "You are recording this meeting. Consider letting everyone know that this meeting is being recorded.",
+  "mobile.calls_host_rec_error": "Please try to record again. You can also contact your system admin for troubleshooting help.",
+  "mobile.calls_host_rec_error_title": "Something went wrong with the recording",
   "mobile.calls_host_rec_stopped": "You can find the recording in this call's chat thread once it's finished processing.",
   "mobile.calls_host_rec_stopped_title": "Recording has stopped. Processing...",
   "mobile.calls_host_rec_title": "You are recording",

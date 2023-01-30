@@ -9,6 +9,7 @@ import InCallManager from 'react-native-incall-manager';
 import * as CallsActions from '@calls/actions';
 import {getConnectionForTesting} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
+import {needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import * as State from '@calls/state';
 import {
     myselfLeftCall,
@@ -63,6 +64,8 @@ const mockClient = {
         ]
     )),
     enableChannelCalls: jest.fn(),
+    startCallRecording: jest.fn(),
+    stopCallRecording: jest.fn(),
 };
 
 jest.mock('@calls/connection/connection', () => ({
@@ -73,6 +76,8 @@ jest.mock('@calls/connection/connection', () => ({
         waitForPeerConnection: jest.fn(() => Promise.resolve()),
     })),
 }));
+
+jest.mock('@calls/alerts');
 
 const addFakeCall = (serverUrl: string, channelId: string) => {
     const call = {
@@ -338,5 +343,24 @@ describe('Actions.Calls', () => {
         });
         expect(mockClient.enableChannelCalls).toBeCalledWith('channel-1', false);
         assert.equal(result.current.enabled['channel-1'], false);
+    });
+
+    it('startCallRecording', async () => {
+        await act(async () => {
+            await CallsActions.startCallRecording('server1', 'channel-id');
+        });
+
+        expect(mockClient.startCallRecording).toBeCalledWith('channel-id');
+        expect(needsRecordingErrorAlert).toBeCalled();
+    });
+
+    it('stopCallRecording', async () => {
+        await act(async () => {
+            await CallsActions.stopCallRecording('server1', 'channel-id');
+        });
+
+        expect(mockClient.stopCallRecording).toBeCalledWith('channel-id');
+        expect(needsRecordingErrorAlert).toBeCalled();
+        expect(needsRecordingWillBePostedAlert).toBeCalled();
     });
 });

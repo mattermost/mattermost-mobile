@@ -7,7 +7,7 @@ import {Navigation} from 'react-native-navigation';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchUsersByIds} from '@actions/remote/user';
-import {leaveAndJoinWithAlert, needsRecordingWillBePostedAlert} from '@calls/alerts';
+import {leaveAndJoinWithAlert, needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {
     getCallsConfig,
     getCallsState,
@@ -411,6 +411,8 @@ export const endCall = async (serverUrl: string, channelId: string) => {
 };
 
 export const startCallRecording = async (serverUrl: string, callId: string) => {
+    needsRecordingErrorAlert();
+
     const client = NetworkManager.getClient(serverUrl);
 
     let data: ApiResp | RecordingState;
@@ -427,6 +429,7 @@ export const startCallRecording = async (serverUrl: string, callId: string) => {
 
 export const stopCallRecording = async (serverUrl: string, callId: string) => {
     needsRecordingWillBePostedAlert();
+    needsRecordingErrorAlert();
 
     const client = NetworkManager.getClient(serverUrl);
 

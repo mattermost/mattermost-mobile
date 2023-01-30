@@ -6,7 +6,7 @@ import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
-import {recordingAlert, recordingWillBePostedAlert} from '@calls/alerts';
+import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
@@ -156,6 +156,11 @@ const CurrentCallBar = ({
     // - Is the host, recording has started, and recording has ended
     if (isHost && currentCall?.recState?.start_at && currentCall.recState.end_at) {
         recordingWillBePostedAlert(intl);
+    }
+
+    // The host should receive an alert in case of unexpected error.
+    if (isHost && currentCall?.recState?.err) {
+        recordingErrorAlert(intl);
     }
 
     return (
