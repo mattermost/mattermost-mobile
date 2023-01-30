@@ -791,5 +791,6 @@
     "screen.search.results.filter.documents": "اسناد",
     "screen.search.results.filter.code": "کد",
     "edit_server.save": "ذخیره",
-    "edit_server.display_help": "سرور: {url}"
+    "edit_server.display_help": "سرور: {url}",
+    "mobile.post_info.unsave": "عدم‌ذخیره"
 }
