@@ -111,6 +111,10 @@ const Onboarding = ({
         };
     }, []);
 
+    useEffect(() => {
+        translateX.value = 0;
+    }, []);
+
     return (
         <View
             style={styles.onBoardingContainer}

@@ -181,6 +181,10 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
         return () => unsubscribe.remove();
     }, [dimensions]);
 
+    useEffect(() => {
+        translateX.value = 0;
+    }, []);
+
     return (
         <View style={styles.flex}>
             <Background theme={theme}/>

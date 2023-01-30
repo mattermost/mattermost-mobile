@@ -320,6 +320,10 @@ const Server = ({
         };
     }, []);
 
+    useEffect(() => {
+        translateX.value = 0;
+    }, []);
+
     return (
         <View
             style={styles.flex}
