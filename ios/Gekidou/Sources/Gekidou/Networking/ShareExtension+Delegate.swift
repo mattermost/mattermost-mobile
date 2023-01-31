@@ -119,7 +119,7 @@ extension ShareExtension: URLSessionDataDelegate {
             else {
                 os_log(
                     OSLogType.default,
-                    "Mattermost BackgroundSession: didCompleteWithError failed to getUploadSessionData identifier=%{public}@",
+                    "Mattermost BackgroundSession: didCompleteWithError delegate failed to getUploadSessionData identifier=%{public}@",
                     session.configuration.identifier ?? "no identifier"
                 )
                 return
@@ -130,7 +130,7 @@ extension ShareExtension: URLSessionDataDelegate {
             let count = data.fileIds.count
             os_log(
                 OSLogType.default,
-                "Mattermost BackgroundSession: didCompleteWithError for identifier=%{public}@ total files %{public}@ of %{public}@",
+                "Mattermost BackgroundSession: didCompleteWithError delegate for identifier=%{public}@ total files %{public}@ of %{public}@",
                 id,
                 "\(count)",
                 "\(total)"
@@ -150,7 +150,7 @@ extension ShareExtension: URLSessionDataDelegate {
         } else if error != nil {
             os_log(
                 OSLogType.default,
-                "Mattermost BackgroundSession: didCompleteWithError failed identifier=%{public}@ with error %{public}@",
+                "Mattermost BackgroundSession: didCompleteWithError delegate failed identifier=%{public}@ with error %{public}@",
                 session.configuration.identifier ?? "no identifier",
                 error?.localizedDescription ?? "no error description available"
             )

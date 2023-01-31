@@ -23,11 +23,16 @@ files: [String], completionHandler: @escaping () -> Void) -> String? {
 
         if !files.isEmpty {
             createBackroundSession(id: id)
+            os_log(
+                OSLogType.default,
+                "Mattermost BackgroundSession: uploading %{public}@ files for identifier=%{public}@",
+                files.count,
+                id
+            )
             for file in files {
                 if let fileUrl = URL(string: file),
                    fileUrl.isFileURL {
                     let filename = fileUrl.lastPathComponent
-                    
                     if let url = URL(string: "\(serverUrl)/api/v4/files?channel_id=\(channelId)&filename=\(filename)") {
                         var uploadRequest = URLRequest(url: url)
                         uploadRequest.httpMethod = "POST"
@@ -37,6 +42,12 @@ files: [String], completionHandler: @escaping () -> Void) -> String? {
                             with: uploadRequest,
                             fromFile: fileUrl
                         ) {
+                            os_log(
+                                OSLogType.default,
+                                "Mattermost BackgroundSession: Start uploading file %{public}@ for identifier=%{public}@",
+                                filename,
+                                id
+                            )
                             task.resume()
                         }
                     }
