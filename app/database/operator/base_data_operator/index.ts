@@ -9,7 +9,7 @@ import {
     getValidRecordsForUpdate,
     retrieveRecords,
 } from '@database/operator/utils/general';
-import {logWarning} from '@utils/log';
+import {logDebug, logWarning} from '@utils/log';
 
 import type Model from '@nozbe/watermelondb/Model';
 import type {
@@ -184,7 +184,11 @@ export default class BaseDataOperator {
      */
     async batchRecords(models: Model[]): Promise<void> {
         try {
-            if (models.length > 0) {
+            const modelsToBatch = models.filter((m) => m._preparedState);
+            if (modelsToBatch.length !== models.length) {
+                logDebug('removing unprepared models');
+            }
+            if (modelsToBatch.length > 0) {
                 await this.database.write(async (writer) => {
                     await writer.batch(...models);
                 });

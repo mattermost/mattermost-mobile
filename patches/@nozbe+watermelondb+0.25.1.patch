@@ -73,27 +73,32 @@ index 43cd902..baefb53 100644
    prepareMarkAsDeleted(): this
  
 diff --git a/node_modules/@nozbe/watermelondb/Model/index.js b/node_modules/@nozbe/watermelondb/Model/index.js
-index b0e3a83..47313d4 100644
+index b0e3a83..56924aa 100644
 --- a/node_modules/@nozbe/watermelondb/Model/index.js
 +++ b/node_modules/@nozbe/watermelondb/Model/index.js
-@@ -81,7 +81,7 @@ var Model = /*#__PURE__*/function () {
+@@ -81,7 +81,12 @@ var Model = /*#__PURE__*/function () {
    _proto.prepareUpdate = function prepareUpdate(recordUpdater = _noop.default) {
      var _this = this;
  
 -    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes");
-+    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes in table " + _this.table);
++    //(0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes in table " + _this.table);
++    if (this._preparedState) {
++      console.debug("Updating a record with pending changes in table " + _this.table)
++    } else {
++      this.__original = Object.assign({}, this._raw);
++    }
  
      this.__ensureNotDisposable("Model.prepareUpdate()");
  
-@@ -92,6 +92,7 @@ var Model = /*#__PURE__*/function () {
+@@ -91,7 +96,6 @@ var Model = /*#__PURE__*/function () {
+       this._setRaw((0, _Schema.columnName)('updated_at'), Date.now());
      } // Perform updates
  
- 
-+    this.__original = Object.assign({}, this._raw);
+-
      (0, _ensureSync.default)(recordUpdater(this));
      this._isEditing = false;
      this._preparedState = 'update'; // TODO: `process.nextTick` doesn't work on React Native
-@@ -107,6 +108,18 @@ var Model = /*#__PURE__*/function () {
+@@ -107,6 +111,18 @@ var Model = /*#__PURE__*/function () {
      return this;
    };
  
