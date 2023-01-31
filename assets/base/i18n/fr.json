@@ -595,7 +595,6 @@
     "channel_info.close": "Fermer",
     "channel_info.archive_title": "Archiver {term}",
     "channel_info.archive_failed": "Une erreur s'est produite lors de la tentative d'archiver le canal {displayName}",
-    "channel_info.archive_description": "Voulez-vous vraiment archiver le {term} {name} ?",
     "channel_info.archive": "Archiver le canal",
     "channel_info.alertYes": "Oui",
     "channel_info.alertNo": "Non",
