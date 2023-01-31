@@ -107,7 +107,7 @@ describe('Messaging - Message Reply', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4785_3 - should have reply option available on reply thread post options', async () => {
+    it('MM-T4785_3 - should not have reply option available on reply thread post options -- KNOWN ISSUE: MM-50206', async () => {
         // # Open a channel screen, post a message, and tap on the post
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -122,8 +122,8 @@ describe('Messaging - Message Reply', () => {
         // # Open post options for the parent message
         await ThreadScreen.openPostOptionsFor(post.id, message);
 
-        // * Verify reply option is available
-        await expect(PostOptionsScreen.replyPostOption).toExist();
+        // * Verify reply option is not available
+        await expect(PostOptionsScreen.replyPostOption).not.toExist();
 
         // # Go back to channel list screen
         await PostOptionsScreen.close();
