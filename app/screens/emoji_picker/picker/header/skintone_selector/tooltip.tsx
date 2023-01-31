@@ -52,11 +52,13 @@ const SkinSelectorTooltip = ({onClose}: Props) => {
                     id='skintone_selector.tooltip.title'
                     defaultMessage='Choose your default skin tone'
                     style={styles.title}
+                    testID='skin_selector.tooltip.title'
                 />
                 <TouchableOpacity
                     style={styles.close}
                     hitSlop={hitSlop}
                     onPress={onClose}
+                    testID='skin_selector.tooltip.close.button'
                 >
                     <CompassIcon
                         color={changeOpacity(Preferences.THEMES.denim.centerChannelColor, 0.56)}
@@ -70,6 +72,7 @@ const SkinSelectorTooltip = ({onClose}: Props) => {
                     id='skintone_selector.tooltip.description'
                     defaultMessage='You can now choose the skin tone you prefer to use for your emojis.'
                     style={styles.description}
+                    testID='skin_selector.tooltip.description'
                 />
             </View>
         </View>

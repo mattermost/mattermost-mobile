@@ -20,7 +20,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Custom Status', () => {
@@ -108,9 +108,10 @@ describe('Account - Custom Status', () => {
         const customStatusText = `Status ${getRandomId()}`;
         const customStatusDuration = 'today';
         await CustomStatusScreen.open();
-        await CustomStatusScreen.openEmojiPicker('default');
+        await CustomStatusScreen.openEmojiPicker('default', true);
         await EmojiPickerScreen.searchInput.replaceText(customStatusEmojiName);
         await element(by.text('🤡')).tap();
+        await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
 
