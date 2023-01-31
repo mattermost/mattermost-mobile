@@ -96,7 +96,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
 
             if (notifyInterval !== initialInterval) {
                 const emailIntervalPreference = {
-                    category: Preferences.CATEGORY_NOTIFICATIONS,
+                    category: Preferences.CATEGORIES.NOTIFICATIONS,
                     name: Preferences.EMAIL_INTERVAL,
                     user_id: currentUser.id,
                     value: notifyInterval,

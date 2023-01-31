@@ -12,6 +12,7 @@ import com.mattermost.networkclient.APIClientModule;
 import com.mattermost.networkclient.enums.RetryTypes;
 
 import okhttp3.HttpUrl;
+import okhttp3.Response;
 
 
 public class Network {
@@ -33,6 +34,16 @@ public class Network {
     public static void post(String baseUrl, String endpoint, ReadableMap options, Promise promise) {
         createClientIfNeeded(baseUrl);
         clientModule.post(baseUrl, endpoint, options, promise);
+    }
+
+    public static Response getSync(String baseUrl, String endpoint, ReadableMap options) {
+        createClientIfNeeded(baseUrl);
+        return clientModule.getSync(baseUrl, endpoint, options);
+    }
+
+    public static Response postSync(String baseUrl, String endpoint, ReadableMap options) {
+        createClientIfNeeded(baseUrl);
+        return clientModule.postSync(baseUrl, endpoint, options);
     }
 
     private static void createClientOptions() {

@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryEmojiPreferences} from '@queries/servers/preference';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 
 import EmojiSuggestion from './emoji_suggestion';
@@ -21,12 +21,9 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const isCustomEmojisEnabled = observeConfigBooleanValue(database, 'EnableCustomEmoji');
     return {
         customEmojis: isCustomEmojisEnabled.pipe(
-            switchMap((enabled) => (enabled ?
-                queryAllCustomEmojis(database).observe() :
-                of$(emptyEmojiList)),
-            ),
+            switchMap((enabled) => (enabled ? queryAllCustomEmojis(database).observe() : of$(emptyEmojiList))),
         ),
-        skinTone: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_EMOJI, Preferences.EMOJI_SKINTONE).
+        skinTone: queryEmojiPreferences(database, Preferences.EMOJI_SKINTONE).
             observeWithColumns(['value']).pipe(
                 switchMap((prefs) => of$(prefs?.[0]?.value ?? 'default')),
             ),
