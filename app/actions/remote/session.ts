@@ -7,16 +7,14 @@ import {DeviceEventEmitter, Platform} from 'react-native';
 import {Database, Events} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getServerCredentials} from '@init/credentials';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
-import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getServerDisplayName} from '@queries/app/servers';
-import {getCurrentUserId, getExpiredSession, getConfig, getLicense} from '@queries/servers/system';
+import {getCurrentUserId, getExpiredSession} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
-import {logWarning, logError} from '@utils/log';
+import {logWarning, logError, logDebug} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
 import {getCSRFFromCookie} from '@utils/security';
 
@@ -28,46 +26,28 @@ import type {LoginArgs} from '@typings/database/database';
 const HTTP_UNAUTHORIZED = 401;
 
 export const completeLogin = async (serverUrl: string) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    const {database} = operator;
-    const license = await getLicense(database);
-    const config = await getConfig(database);
-
-    if (!Object.keys(config)?.length || !license || !Object.keys(license)?.length) {
-        return null;
-    }
-
     await DatabaseManager.setActiveServerDatabase(serverUrl);
-
-    const systems: IdValue[] = [];
-
-    // Set push proxy verification
-    const ppVerification = EphemeralStore.getPushProxyVerificationState(serverUrl);
-    if (ppVerification) {
-        systems.push({id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: ppVerification});
-    }
-
-    // Start websocket
-    const credentials = await getServerCredentials(serverUrl);
-    if (credentials?.token) {
-        WebsocketManager.createClient(serverUrl, credentials.token);
-        systems.push({
-            id: SYSTEM_IDENTIFIERS.WEBSOCKET,
-            value: 0,
-        });
-    }
-
-    if (systems.length) {
-        operator.handleSystem({systems, prepareRecordsOnly: false});
-    }
-
-    return null;
 };
 
+export const addPushProxyVerificationStateFromLogin = async (serverUrl: string) => {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const systems: IdValue[] = [];
+
+        // Set push proxy verification
+        const ppVerification = EphemeralStore.getPushProxyVerificationState(serverUrl);
+        if (ppVerification) {
+            systems.push({id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: ppVerification});
+        }
+
+        if (systems.length) {
+            await operator.handleSystem({systems, prepareRecordsOnly: false});
+        }
+    } catch (error) {
+        logDebug('error setting the push proxy verification state on login', error);
+    }
+};
 export const forceLogoutIfNecessary = async (serverUrl: string, err: ClientErrorProps) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
@@ -151,11 +131,12 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 
     try {
-        const {error, hasTeams, time} = await loginEntry({serverUrl, user});
-        completeLogin(serverUrl);
-        return {error: error as ClientError, failed: false, hasTeams, time};
+        await addPushProxyVerificationStateFromLogin(serverUrl);
+        const {error} = await loginEntry({serverUrl});
+        await completeLogin(serverUrl);
+        return {error: error as ClientError, failed: false};
     } catch (error) {
-        return {error: error as ClientError, failed: false, time: 0};
+        return {error: error as ClientError, failed: false};
     }
 };
 
@@ -251,7 +232,6 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
 };
 
 export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string): Promise<LoginActionResponse> => {
-    let deviceToken;
     let user;
 
     const database = DatabaseManager.appDatabase?.database;
@@ -279,7 +259,6 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
                 displayName: serverDisplayName,
             },
         });
-        deviceToken = await getDeviceToken();
         user = await client.getMe();
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await server?.operator.handleSystem({
@@ -294,11 +273,12 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
     }
 
     try {
-        const {error, hasTeams, time} = await loginEntry({serverUrl, user, deviceToken});
-        completeLogin(serverUrl);
-        return {error: error as ClientError, failed: false, hasTeams, time};
+        await addPushProxyVerificationStateFromLogin(serverUrl);
+        const {error} = await loginEntry({serverUrl});
+        await completeLogin(serverUrl);
+        return {error: error as ClientError, failed: false};
     } catch (error) {
-        return {error: error as ClientError, failed: false, time: 0};
+        return {error: error as ClientError, failed: false};
     }
 };
 

@@ -8,15 +8,15 @@ import {Keyboard, Platform, TextInput, TouchableOpacity, useWindowDimensions, Vi
 import Button from 'react-native-button';
 
 import {login} from '@actions/remote/session';
-import CompassIcon from '@app/components/compass_icon';
 import ClientError from '@client/rest/error';
+import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
-import {goToScreen, loginAnimationOptions, resetToHome, resetToTeams} from '@screens/navigation';
+import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {isServerError} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
@@ -131,17 +131,13 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     const signIn = async () => {
         const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
-            if (!result.hasTeams && !result.error) {
-                resetToTeams();
-                return;
-            }
-            goToHome(result.time || 0, result.error as never);
+            goToHome(result.error as never);
         }
     };
 
-    const goToHome = (time: number, loginError?: never) => {
+    const goToHome = (loginError?: never) => {
         const hasError = launchError || Boolean(loginError);
-        resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
+        resetToHome({extra, launchError: hasError, launchType, serverUrl});
     };
 
     const checkLoginResponse = (data: LoginActionResponse) => {

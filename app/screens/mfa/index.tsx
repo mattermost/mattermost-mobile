@@ -19,7 +19,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import Background from '@screens/background';
-import {popTopScreen, resetToTeams} from '@screens/navigation';
+import {popTopScreen} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -32,7 +32,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 type MFAProps = {
     componentId: AvailableScreens;
     config: Partial<ClientConfig>;
-    goToHome: (time: number, error?: never) => void;
+    goToHome: (error?: never) => void;
     license: Partial<ClientLicense>;
     loginId: string;
     password: string;
@@ -156,11 +156,7 @@ const MFA = ({componentId, config, goToHome, license, loginId, password, serverD
             setError(result.error.message);
             return;
         }
-        if (!result.hasTeams && !result.error) {
-            resetToTeams();
-            return;
-        }
-        goToHome(result.time || 0, result.error as never);
+        goToHome(result.error as never);
     }), [token]);
 
     const transform = useAnimatedStyle(() => {

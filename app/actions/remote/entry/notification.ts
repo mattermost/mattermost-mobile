@@ -6,21 +6,15 @@ import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {Preferences, Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
+import WebsocketManager from '@managers/websocket_manager';
 import {getMyChannel} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {getConfig, getCurrentTeamId, getLicense, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getCurrentTeamId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
-import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {setTeamLoading} from '@store/team_load_store';
-import {isTablet} from '@utils/helpers';
-import {emitNotificationError} from '@utils/notification';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
-
-import {syncOtherServers} from './common';
-import {deferredAppEntryActions, entry} from './gql_common';
 
 export async function pushNotificationEntry(serverUrl: string, notification: NotificationWithData) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -34,7 +28,6 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     const {database} = operator;
     const currentTeamId = await getCurrentTeamId(database);
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
 
     let isDirectChannel = false;
 
@@ -82,52 +75,46 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         switchedToScreen = true;
     }
 
-    setTeamLoading(serverUrl, true);
-    const entryData = await entry(serverUrl, teamId, channelId);
-    if ('error' in entryData) {
-        setTeamLoading(serverUrl, false);
-        return {error: entryData.error};
-    }
-    const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
+    WebsocketManager.initializeClient(serverUrl, switchedToScreen ? null : {serverUrl, channelId, teamId});
 
-    // There is a chance that after the above request returns
-    // the user is no longer part of the team or channel
-    // that triggered the notification (rare but possible)
-    let selectedTeamId = teamId;
-    let selectedChannelId = channelId;
-    if (initialTeamId !== teamId) {
-        // We are no longer a part of the team that the notification belongs to
-        // Immediately set the new team as the current team in the database so that the UI
-        // renders the correct team.
-        selectedTeamId = initialTeamId;
-        if (!isDirectChannel) {
-            selectedChannelId = initialChannelId;
-        }
-    }
+    // // There is a chance that after the above request returns
+    // // the user is no longer part of the team or channel
+    // // that triggered the notification (rare but possible)
+    // let selectedTeamId = teamId;
+    // let selectedChannelId = channelId;
+    // if (initialTeamId !== teamId) {
+    //     // We are no longer a part of the team that the notification belongs to
+    //     // Immediately set the new team as the current team in the database so that the UI
+    //     // renders the correct team.
+    //     selectedTeamId = initialTeamId;
+    //     if (!isDirectChannel) {
+    //         selectedChannelId = initialChannelId;
+    //     }
+    // }
 
-    if (!switchedToScreen) {
-        const isTabletDevice = await isTablet();
-        if (isTabletDevice || (channelId === selectedChannelId)) {
-            // Make switch again to get the missing data and make sure the team is the correct one
-            switchedToScreen = true;
-            if (isThreadNotification) {
-                await fetchAndSwitchToThread(serverUrl, rootId, true);
-            } else {
-                switchedToChannel = true;
-                await switchToChannelById(serverUrl, channelId, teamId);
-            }
-        } else if (teamId !== selectedTeamId || channelId !== selectedChannelId) {
-            // If in the end the selected team or channel is different than the one from the notification
-            // we switch again
-            await setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
-        }
-    }
+    // if (!switchedToScreen) {
+    //     const isTabletDevice = await isTablet();
+    //     if (isTabletDevice || (channelId === selectedChannelId)) {
+    //         // Make switch again to get the missing data and make sure the team is the correct one
+    //         switchedToScreen = true;
+    //         if (isThreadNotification) {
+    //             await fetchAndSwitchToThread(serverUrl, rootId, true);
+    //         } else {
+    //             switchedToChannel = true;
+    //             await switchToChannelById(serverUrl, channelId, teamId);
+    //         }
+    //     } else if (teamId !== selectedTeamId || channelId !== selectedChannelId) {
+    //         // If in the end the selected team or channel is different than the one from the notification
+    //         // we switch again
+    //         await setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
+    //     }
+    // }
 
-    if (teamId !== selectedTeamId) {
-        emitNotificationError('Team');
-    } else if (channelId !== selectedChannelId) {
-        emitNotificationError('Channel');
-    }
+    // if (teamId !== selectedTeamId) {
+    //     emitNotificationError('Team');
+    // } else if (channelId !== selectedChannelId) {
+    //     emitNotificationError('Channel');
+    // }
 
     // Waiting for the screen to display fixes a race condition when fetching and storing data
     if (switchedToChannel) {
@@ -136,16 +123,5 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         await NavigationStore.waitUntilScreenHasLoaded(Screens.THREAD);
     }
 
-    await operator.batchRecords(models);
-    setTeamLoading(serverUrl, false);
-
-    const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(operator.database))!;
-    const config = await getConfig(database);
-    const license = await getLicense(database);
-
-    await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, selectedTeamId, selectedChannelId);
-
-    syncOtherServers(serverUrl);
-
-    return {userId: currentUserId};
+    return {};
 }

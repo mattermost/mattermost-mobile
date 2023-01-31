@@ -33,7 +33,6 @@ type ChannelProps = {
     channelsCount: number;
     isCRTEnabled: boolean;
     teamsCount: number;
-    time?: number;
     isLicensed: boolean;
     showToS: boolean;
     launchType: LaunchType;

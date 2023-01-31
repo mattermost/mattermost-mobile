@@ -3,8 +3,8 @@
 
 import React, {useMemo} from 'react';
 
-import {useEmojiSkinTone} from '@app/hooks/emoji_category_bar';
 import Emoji from '@components/emoji';
+import {useEmojiSkinTone} from '@hooks/emoji_category_bar';
 import {skinCodes} from '@utils/emoji';
 import {isValidNamedEmoji} from '@utils/emoji/helpers';
 

@@ -36,7 +36,6 @@ enableFreeze(true);
 
 type HomeProps = LaunchProps & {
     componentId: string;
-    time?: number;
 };
 
 const Tab = createBottomTabNavigator();

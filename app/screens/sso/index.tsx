@@ -15,7 +15,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
-import {dismissModal, popTopScreen, resetToHome, resetToTeams} from '@screens/navigation';
+import {dismissModal, popTopScreen, resetToHome} from '@screens/navigation';
 import {logWarning} from '@utils/log';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
@@ -105,16 +105,12 @@ const SSO = ({
             onLoadEndError(result.error);
             return;
         }
-        if (!result.hasTeams && !result.error) {
-            resetToTeams();
-            return;
-        }
-        goToHome(result.time || 0, result.error as never);
+        goToHome(result.error as never);
     };
 
-    const goToHome = (time: number, error?: never) => {
+    const goToHome = (error?: never) => {
         const hasError = launchError || Boolean(error);
-        resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
+        resetToHome({extra, launchError: hasError, launchType, serverUrl});
     };
 
     const dismiss = () => {

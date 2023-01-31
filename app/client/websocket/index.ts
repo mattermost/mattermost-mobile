@@ -7,6 +7,7 @@ import {Platform} from 'react-native';
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getConfig} from '@queries/servers/system';
+import {hasReliableWebsocket} from '@utils/config';
 import {logError, logInfo, logWarning} from '@utils/log';
 
 const MAX_WEBSOCKET_FAILS = 7;
@@ -98,7 +99,7 @@ export default class WebSocketClient {
 
         this.url = connectionUrl;
 
-        const reliableWebSockets = config.EnableReliableWebSockets === 'true';
+        const reliableWebSockets = hasReliableWebsocket(config);
         if (reliableWebSockets) {
             // Add connection id, and last_sequence_number to the query param.
             // We cannot also send it as part of the auth_challenge, because the session cookie is already sent with the request.
