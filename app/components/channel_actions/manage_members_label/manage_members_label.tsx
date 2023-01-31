@@ -81,7 +81,7 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
                 onPress: handleRemoveUser,
             }], {cancelable: false},
         );
-    }, [handleRemoveUser]);
+    }, [formatMessage, handleRemoveUser]);
 
     const updateChannelMemberSchemeRole = useCallback(async (schemeAdmin: boolean) => {
         const result = await updateChannelMemberSchemeRoles(serverUrl, channelId, userId, true, schemeAdmin);
