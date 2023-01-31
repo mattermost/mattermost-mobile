@@ -7,7 +7,6 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
-import androidx.annotation.Nullable;
 import androidx.core.app.NotificationCompat;
 
 import java.util.Objects;
@@ -17,7 +16,6 @@ import com.mattermost.helpers.DatabaseHelper;
 import com.mattermost.helpers.Network;
 import com.mattermost.helpers.NotificationHelper;
 import com.mattermost.helpers.PushNotificationDataHelper;
-import com.mattermost.helpers.ResolvePromise;
 import com.mattermost.share.ShareModule;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
@@ -56,27 +54,31 @@ public class CustomPushNotification extends PushNotification {
         boolean isReactInit = mAppLifecycleFacade.isReactInitialized();
 
         if (ackId != null && serverUrl != null) {
-            notificationReceiptDelivery(ackId, serverUrl, postId, type, isIdLoaded, new ResolvePromise() {
-                @Override
-                public void resolve(@Nullable Object value) {
-                    if (isIdLoaded) {
-                        Bundle response = (Bundle) value;
-                        if (value != null) {
-                            response.putString("server_url", serverUrl);
-                            Bundle current = mNotificationProps.asBundle();
-                            current.putAll(response);
-                            mNotificationProps = createProps(current);
-                        }
-                    }
+            Bundle response = ReceiptDelivery.send(ackId, serverUrl, postId, type, isIdLoaded);
+            if (isIdLoaded && response != null) {
+                Bundle current = mNotificationProps.asBundle();
+                if (!current.containsKey("server_url")) {
+                    response.putString("server_url", serverUrl);
                 }
-
-                @Override
-                public void reject(String code, String message) {
-                    Log.e("ReactNative", code + ": " + message);
-                }
-            });
+                current.putAll(response);
+                mNotificationProps = createProps(current);
+            }
         }
 
+        finishProcessingNotification(serverUrl, type, channelId, notificationId, isReactInit);
+    }
+
+    @Override
+    public void onOpened() {
+        if (mNotificationProps != null) {
+            digestNotification();
+
+            Bundle data = mNotificationProps.asBundle();
+            NotificationHelper.clearChannelOrThreadNotifications(mContext, data);
+        }
+    }
+
+    private void finishProcessingNotification(String serverUrl, String type, String channelId, int notificationId, Boolean isReactInit) {
         switch (type) {
             case CustomPushNotificationHelper.PUSH_TYPE_MESSAGE:
             case CustomPushNotificationHelper.PUSH_TYPE_SESSION:
@@ -117,16 +119,6 @@ public class CustomPushNotification extends PushNotification {
         }
     }
 
-    @Override
-    public void onOpened() {
-        if (mNotificationProps != null) {
-            digestNotification();
-
-            Bundle data = mNotificationProps.asBundle();
-            NotificationHelper.clearChannelOrThreadNotifications(mContext, data);
-        }
-    }
-
     private void buildNotification(Integer notificationId, boolean createSummary) {
         final PendingIntent pendingIntent = NotificationIntentAdapter.createPendingNotificationIntent(mContext, mNotificationProps);
         final Notification notification = buildNotification(pendingIntent);
@@ -146,10 +138,6 @@ public class CustomPushNotification extends PushNotification {
     protected NotificationCompat.Builder getNotificationSummaryBuilder(PendingIntent intent) {
         Bundle bundle = mNotificationProps.asBundle();
         return CustomPushNotificationHelper.createNotificationBuilder(mContext, intent, bundle, true);
-    }
-
-    private void notificationReceiptDelivery(String ackId, String serverUrl, String postId, String type, boolean isIdLoaded, ResolvePromise promise) {
-        ReceiptDelivery.send(mContext, ackId, serverUrl, postId, type, isIdLoaded, promise);
     }
 
     private void notifyReceivedToJS() {
