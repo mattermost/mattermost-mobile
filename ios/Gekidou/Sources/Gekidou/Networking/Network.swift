@@ -24,8 +24,6 @@ public class Network: NSObject {
         let config = URLSessionConfiguration.default
         config.httpAdditionalHeaders = ["X-Requested-With": "XMLHttpRequest"]
         config.allowsCellularAccess = true
-        config.timeoutIntervalForRequest = 10
-        config.timeoutIntervalForResource = 10
         config.httpMaximumConnectionsPerHost = 10
         
         self.session = URLSession.init(
