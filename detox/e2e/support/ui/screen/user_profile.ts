@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ProfilePicture} from '@support/ui/component';
-import {isIos, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class UserProfileScreen {
@@ -47,12 +47,7 @@ class UserProfileScreen {
     };
 
     close = async () => {
-        if (isIos()) {
-            await this.userProfileScreen.swipe('down');
-        } else {
-            await device.pressBack();
-        }
-        await wait(timeouts.ONE_SEC);
+        await this.userProfileScreen.swipe('down');
         await expect(this.userProfileScreen).not.toBeVisible();
         await wait(timeouts.ONE_SEC);
     };

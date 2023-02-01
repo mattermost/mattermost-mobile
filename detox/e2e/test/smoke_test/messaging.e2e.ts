@@ -139,7 +139,7 @@ describe('Smoke Test - Messaging', () => {
 
         // # Open post options for message, open emoji picker screen, and add a reaction
         await ChannelScreen.openPostOptionsFor(post.id, resolvedMessage);
-        await EmojiPickerScreen.open();
+        await EmojiPickerScreen.open(true);
         await EmojiPickerScreen.searchInput.replaceText('clown_face');
         await element(by.text('🤡')).tap();
 

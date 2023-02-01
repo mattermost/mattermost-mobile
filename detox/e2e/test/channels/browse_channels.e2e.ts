@@ -26,6 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Browse Channels', () => {
@@ -145,6 +146,7 @@ describe('Channels - Browse Channels', () => {
         await Channel.apiDeleteChannel(siteOneUrl, archivedChannel.id);
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
         await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
 

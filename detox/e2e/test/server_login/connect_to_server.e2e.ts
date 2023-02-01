@@ -12,7 +12,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Server Login - Connect to Server', () => {
@@ -73,7 +73,8 @@ describe('Server Login - Connect to Server', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify invalid url error
-        await expect(serverUrlInputError).toHaveText('Can’t find this server. Check spelling and URL format.');
+        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
+        await expect(serverUrlInputError).toHaveText('Cannot connect to the server.');
     });
 
     it('MM-T4676_4 - should show connection error on invalid ssl or invalid host', async () => {
@@ -85,6 +86,7 @@ describe('Server Login - Connect to Server', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify connection error
+        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(serverUrlInputError).toHaveText(connectionError);
 
         // # Connect with invalid host and valid server display name
@@ -95,7 +97,7 @@ describe('Server Login - Connect to Server', () => {
         await wait(timeouts.ONE_SEC);
 
         // * Verify connection error
-        await wait(timeouts.ONE_SEC);
+        await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
         await expect(serverUrlInputError).toHaveText(connectionError);
     });
 

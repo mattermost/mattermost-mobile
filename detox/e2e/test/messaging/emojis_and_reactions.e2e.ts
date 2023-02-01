@@ -151,8 +151,8 @@ describe('Messaging - Emojis and Reactions', () => {
 
         // * Verify emojis exist in recently used section
         await expect(element(by.text('RECENTLY USED'))).toExist();
-        await expect(element(by.text('🦊')).atIndex(0)).toExist();
-        await expect(element(by.text('🐶')).atIndex(0)).toExist();
+        await expect(element(by.text('🦊'))).toExist();
+        await expect(element(by.text('🐶'))).toExist();
 
         // # Go back to channel list screen
         await EmojiPickerScreen.close();

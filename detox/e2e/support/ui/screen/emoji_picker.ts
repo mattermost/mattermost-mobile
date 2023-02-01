@@ -3,7 +3,7 @@
 
 import {SearchBar} from '@support/ui/component';
 import {PostOptionsScreen} from '@support/ui/screen';
-import {isIos, timeouts, wait} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class EmojiPickerScreen {
@@ -42,12 +42,7 @@ class EmojiPickerScreen {
     };
 
     close = async () => {
-        if (isIos()) {
-            await this.emojiPickerScreen.swipe('down');
-        } else {
-            await device.pressBack();
-        }
-        await wait(timeouts.ONE_SEC);
+        await this.emojiPickerScreen.swipe('down');
         await expect(this.emojiPickerScreen).not.toBeVisible();
         await wait(timeouts.ONE_SEC);
     };
