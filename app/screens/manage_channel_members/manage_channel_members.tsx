@@ -7,7 +7,7 @@ import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-na
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchChannelMemberships} from '@actions/remote/channel';
-import {searchProfiles} from '@actions/remote/user';
+import {fetchUsersByIds, searchProfiles} from '@actions/remote/user';
 import Search from '@components/search';
 import UserList from '@components/user_list';
 import {Events, General, Screens} from '@constants';
@@ -104,7 +104,7 @@ export default function ManageChannelMembers({
         if (!loading && !hasTerm && mounted.current) {
             setLoading(true);
             const options = {sort: 'admin', active: true};
-            const {users, members} = await fetchChannelMemberships(serverUrl, channelId, options);
+            const {users, members} = await fetchChannelMemberships(serverUrl, channelId, options, true);
             if (users.length) {
                 loadedProfiles(users, members);
             }
@@ -113,6 +113,7 @@ export default function ManageChannelMembers({
     }, 100), [channelId, loading, serverUrl, term]);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
+        await fetchUsersByIds(serverUrl, [profile.id]);
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const props = {
             channelId,
