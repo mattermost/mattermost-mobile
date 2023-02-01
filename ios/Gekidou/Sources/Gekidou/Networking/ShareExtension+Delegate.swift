@@ -72,15 +72,17 @@ extension ShareExtension: URLSessionDataDelegate {
             if let fileInfos = json.object(forKey: "file_infos") as? NSArray,
                fileInfos.count > 0 {
                 let fileData = fileInfos[0] as! NSDictionary
-                let fileId = fileData.object(forKey: "id") as! String
+                let fileId = fileData.object(forKey: "id") as? String ?? "no file id"
+                let filename = fileData.object(forKey: "name") as? String ?? "no file name"
                 appendCompletedUploadToSession(id: id, fileId: fileId)
                 let total = uploadData.totalFiles
                 let count = uploadData.fileIds.count + 1
                 
                 os_log(
                     OSLogType.default,
-                    "Mattermost BackgroundSession: identifier=%{public}@ did upload file %{public}@ total files %{public}@ of %{public}@",
+                    "Mattermost BackgroundSession: identifier=%{public}@ did upload file %{public}@ with ID %{public}@ total files %{public}@ of %{public}@",
                     id,
+                    filename,
                     fileId,
                     "\(count)",
                     "\(total)"
@@ -88,8 +90,9 @@ extension ShareExtension: URLSessionDataDelegate {
                 
                 os_log(
                     OSLogType.default,
-                    "Mattermost BackgroundSession: Append file to session identifier=%{public}@ file=%{public}@",
+                    "Mattermost BackgroundSession: Append file to session identifier=%{public}@ file=%{public}@ with ID %{public}@",
                     id,
+                    filename,
                     fileId
                 )
             } else {
