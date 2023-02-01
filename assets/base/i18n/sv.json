@@ -5,7 +5,7 @@
     "about.enterpriseEditionSt": "Modern kommunikation innanför din brandvägg.",
     "about.hash": "Bygg-hash:",
     "about.hashee": "EE bygg-hash:",
-    "about.teamEditionLearn": "Bli medlem i Mattermost community på ",
+    "about.teamEditionLearn": "Bli medlem i Mattermost community på",
     "about.teamEditionSt": "Hela gruppens kommunikation på ett ställe, direkt sökbart och tillgänglig överallt.",
     "about.teamEditiont0": "Team-utgåva",
     "about.teamEditiont1": "Enterprise-utgåva",
@@ -970,5 +970,7 @@
     "invite.title.summary": "Sammanfattning av inbjudan",
     "invite.title": "Bjud in",
     "invite.summary.try_again": "Försök igen",
-    "invite.summary.some_not_sent": "{notSentCount, plural, one {En inbjudan} other {Några inbjudningar}} skickades inte"
+    "invite.summary.some_not_sent": "{notSentCount, plural, one {En inbjudan} other {Några inbjudningar}} skickades inte",
+    "channel_info.archive_description.cannot_view_archived": "Detta kommer att arkivera kanalen från teamet och ta bort den från användargränssnittet. Arkiverade kanaler kan hämtas från arkivet om de behövs igen.\n\nÄr du säker på att du vill arkivera {term} {name}?",
+    "channel_info.archive_description.can_view_archived": "Detta kommer att arkivera kanalen från teamet. Kanalens innehåll kommer fortfarande att vara tillgängligt för medlemmarna i kanalen.\n\nÄr du säker på att du vill arkivera {term} {name}?"
 }
