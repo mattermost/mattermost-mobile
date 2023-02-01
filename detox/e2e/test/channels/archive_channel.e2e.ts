@@ -25,6 +25,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Archive Channel', () => {
@@ -71,6 +72,7 @@ describe('Channels - Archive Channel', () => {
         await ChannelScreen.postDraftArchivedCloseChannelButton.tap();
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
         await BrowseChannelsScreen.searchInput.replaceText(publicChannel.name);
 
@@ -116,6 +118,7 @@ describe('Channels - Archive Channel', () => {
         await ChannelScreen.postDraftArchivedCloseChannelButton.tap();
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
         await BrowseChannelsScreen.searchInput.replaceText(privateChannel.name);
 

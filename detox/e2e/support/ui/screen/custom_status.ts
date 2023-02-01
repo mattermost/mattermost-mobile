@@ -5,7 +5,7 @@ import {
     AccountScreen,
     EmojiPickerScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class CustomStatusScreen {
@@ -82,8 +82,12 @@ class CustomStatusScreen {
         return this.toBeVisible();
     };
 
-    openEmojiPicker = async (emojiName: string) => {
+    openEmojiPicker = async (emojiName: string, closeToolTip = false) => {
         await this.getCustomStatusEmoji(emojiName).tap();
+        if (closeToolTip) {
+            await wait(timeouts.ONE_SEC);
+            await EmojiPickerScreen.toolTipCloseButton.tap();
+        }
         await EmojiPickerScreen.toBeVisible();
     };
 

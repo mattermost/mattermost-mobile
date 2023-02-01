@@ -9,7 +9,6 @@ import {queryMyTeams} from '@queries/servers/team';
 import {isDMorGM} from '@utils/channel';
 import {logError} from '@utils/log';
 
-import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 export const deleteCategory = async (serverUrl: string, categoryId: string) => {
@@ -80,7 +79,6 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
             return {error: 'no current user id'};
         }
 
-        const models: Model[] = [];
         const categoriesWithChannels: CategoryWithChannels[] = [];
 
         if (isDMorGM(channel)) {
@@ -100,10 +98,9 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
                 cwc.channel_ids.unshift(channel.id);
                 categoriesWithChannels.push(cwc);
             }
-
-            const ccModels = await prepareCategoryChannels(operator, categoriesWithChannels);
-            models.push(...ccModels);
         }
+
+        const models = await prepareCategoryChannels(operator, categoriesWithChannels);
 
         if (models.length && !prepareRecordsOnly) {
             await operator.batchRecords(models);
