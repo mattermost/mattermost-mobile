@@ -104,7 +104,7 @@ export default function ManageChannelMembers({
         if (!loading && !hasTerm && mounted.current) {
             setLoading(true);
             const options = {sort: 'admin', active: true};
-            const {users, members} = await fetchChannelMemberships(serverUrl, channelId, options, true);
+            const {users, members} = await fetchChannelMemberships(serverUrl, channelId, options);
             if (users.length) {
                 loadedProfiles(users, members);
             }
