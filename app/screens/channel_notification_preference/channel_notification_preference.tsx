@@ -137,16 +137,20 @@ type ChannelNotificationPreferenceProps = {
     componentId: AvailableScreens;
     isCRTEnabled: boolean;
     isChannelMuted: boolean;
-    notifyLevel: ChannelNotifyPropsPush;
+    globalDefault: ChannelNotifyPropsPush;
     notifyThreadReplies: ChannelNotifyPropsPushThread;
+    channelNotifyLevel: ChannelNotifyPropsPush;
+    channelNotifyThreadReplies: ChannelNotifyPropsPushThread;
 };
 const ChannelNotificationPreference = ({
     channelId,
     componentId,
     isCRTEnabled,
     isChannelMuted,
-    notifyLevel,
+    globalDefault,
     notifyThreadReplies,
+    channelNotifyLevel,
+    channelNotifyThreadReplies,
 }: ChannelNotificationPreferenceProps) => {
     const serverUrl = useServerUrl();
     const intl = useIntl();
@@ -154,9 +158,9 @@ const ChannelNotificationPreference = ({
     const styles = getStyleSheet(theme);
     const [top, setTop] = useState(0);
 
-    const globalDefault = notifyLevel === 'default' ? 'all' : notifyLevel;
-    const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(notifyLevel);
-    const [threadReplies, setThreadReplies] = useState<boolean>(notifyThreadReplies === 'all');
+    // const globalDefault = notifyLevel === 'default' ? 'all' : notifyLevel;
+    const [notifyAbout, setNotifyAbout] = useState<UserNotifyPropsPush>(channelNotifyLevel === 'default' ? 'all' : channelNotifyLevel);
+    const [threadReplies, setThreadReplies] = useState<boolean>((channelNotifyThreadReplies || notifyThreadReplies) === 'all');
 
     const [resetDefaultVisible, setResetDefaultVisible] = useState<boolean>(false);
 

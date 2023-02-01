@@ -1154,7 +1154,7 @@ export async function searchAllChannels(serverUrl: string, term: string, archive
     }
 }
 
-export const updateChannelNotifyProps = async (serverUrl: string, channelId: string, props: Partial<ChannelNotifyProps>, updateLocally? = false) => {
+export const updateChannelNotifyProps = async (serverUrl: string, channelId: string, props: Partial<ChannelNotifyProps>, updateLocally = false) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);

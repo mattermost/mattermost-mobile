@@ -8,6 +8,8 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeChannelSettings, observeIsMutedSetting} from '@queries/servers/channel';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
+import {observeCurrentUser} from '@queries/servers/user';
+import {getNotificationProps} from '@utils/user';
 
 import ChannelNotificationPreference from './channel_notification_preference';
 
@@ -18,18 +20,30 @@ type CNFProps = WithDatabaseArgs & {
 }
 const enhanced = withObservables([], ({channelId, database}: CNFProps) => {
     const settings = observeChannelSettings(database, channelId);
-    const notifyLevel = settings.pipe(
+    const channelNotifyLevel = settings.pipe(
         switchMap((s) => of$(s?.notifyProps.push)),
     );
-    const notifyThreadReplies = settings.pipe(
+    const channelNotifyThreadReplies = settings.pipe(
         switchMap((s) => of$(s?.notifyProps.push_threads)),
+    );
+
+    const notifyProps = observeCurrentUser(database).pipe(
+        switchMap((u) => of$(u?.notifyProps ? getNotificationProps(u) : undefined)),
+    );
+    const globalDefault = notifyProps.pipe(
+        switchMap((n) => of$(n?.push)),
+    );
+    const notifyThreadReplies = notifyProps.pipe(
+        switchMap((n) => of$(n?.push_threads)),
     );
 
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
         isChannelMuted: observeIsMutedSetting(database, channelId),
-        notifyLevel,
+        globalDefault,
         notifyThreadReplies,
+        channelNotifyLevel,
+        channelNotifyThreadReplies,
     };
 });
 export default withDatabase(enhanced(ChannelNotificationPreference));
