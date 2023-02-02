@@ -102,6 +102,7 @@ detox/detox_pixel_*
 
 # Bundle artifact
 *.jsbundle
+.bundle
 
 #editor-settings
 .vscode
