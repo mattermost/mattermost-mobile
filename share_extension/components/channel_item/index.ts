@@ -8,7 +8,7 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {General} from '@constants';
 import {withServerUrl} from '@context/server';
-import {observeMyChannel} from '@queries/servers/channel';
+import {observeMyChannel, queryChannelMembers} from '@queries/servers/channel';
 import {observeCurrentUserId} from '@queries/servers/system';
 import {observeTeam} from '@queries/servers/team';
 
@@ -37,7 +37,7 @@ const enhance = withObservables(['channel', 'showTeamName'], ({channel, showTeam
 
     let membersCount = of$(0);
     if (channel.type === General.GM_CHANNEL) {
-        membersCount = channel.members.observeCount(false);
+        membersCount = queryChannelMembers(database, channel.id).observeCount(false);
     }
 
     const hasMember = myChannel.pipe(

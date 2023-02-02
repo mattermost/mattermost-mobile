@@ -21,7 +21,7 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
     const teamIds = queryJoinedTeams(database).observe().pipe(
         map((ts) => ts.map((t) => ({id: t.id, displayName: t.displayName}))),
     );
-    const order = queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER).
+    const order = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.TEAMS_ORDER).
         observeWithColumns(['value']).pipe(
             switchMap((p) => (p.length ? of$(p[0].value.split(',')) : of$([]))),
         );

@@ -7,9 +7,10 @@ import {combineLatest, of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {getPreferenceAsBool} from '@helpers/api/preference';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeAllowedThemesKeys, observeConfigBooleanValue} from '@queries/servers/system';
+import {observeCRTUserPreferenceDisplay, observeIsCRTEnabled} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 
 import DisplaySettings from './display';
@@ -31,10 +32,12 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         isTimezoneEnabled,
         isThemeSwitchingEnabled,
-        hasMilitaryTimeFormat: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
+        isCRTEnabled: observeIsCRTEnabled(database),
+        isCRTSwitchEnabled: observeCRTUserPreferenceDisplay(database),
+        hasMilitaryTimeFormat: queryDisplayNamePreferences(database).
             observeWithColumns(['value']).pipe(
                 switchMap(
-                    (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
+                    (preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME)),
                 ),
             ),
         currentUser: observeCurrentUser(database),

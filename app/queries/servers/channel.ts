@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {of as of$, Observable} from 'rxjs';
 import {map as map$, switchMap, distinctUntilChanged} from 'rxjs/operators';
@@ -187,7 +189,7 @@ export const queryAllMyChannel = (database: Database) => {
 };
 
 export const queryAllMyChannelsForTeam = (database: Database, teamId: string) => {
-    return database.get<ChannelModel>(MY_CHANNEL).query(
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(CHANNEL, Q.where('team_id', Q.oneOf([teamId, '']))),
     );
 };
@@ -663,4 +665,14 @@ export const queryChannelsForAutocomplete = (database: Database, matchTerm: stri
     );
 
     return database.get<ChannelModel>(CHANNEL).query(...clauses);
+};
+
+export const queryChannelMembers = (database: Database, channelId: string) => {
+    return database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(
+        Q.where('channel_id', channelId),
+    );
+};
+
+export const observeChannelMembers = (database: Database, channelId: string) => {
+    return queryChannelMembers(database, channelId).observe();
 };

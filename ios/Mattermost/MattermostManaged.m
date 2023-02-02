@@ -6,7 +6,6 @@
 // See License.txt for license information.
 //
 
-#import "AppDelegate.h"
 #import "MattermostManaged.h"
 #import "CreateThumbnail.h"
 #import "Mattermost-Swift.h"
@@ -52,21 +51,6 @@ RCT_EXPORT_MODULE();
            };
 }
 
-RCT_EXPORT_METHOD(isRunningInSplitView:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject) {
-  dispatch_block_t splitViewCheck = ^{
-    BOOL isRunningInFullScreen = CGRectEqualToRect(
-                                                   [UIApplication sharedApplication].delegate.window.frame,
-                                                   [UIApplication sharedApplication].delegate.window.screen.bounds);
-    resolve(@{
-              @"isSplitView": @(!isRunningInFullScreen)
-              });
-  };
-  if (dispatch_queue_get_label(DISPATCH_CURRENT_QUEUE_LABEL) == dispatch_queue_get_label(dispatch_get_main_queue())) {
-    splitViewCheck();
-  } else {
-    dispatch_async(dispatch_get_main_queue(), splitViewCheck);
-  }
-}
 
 RCT_EXPORT_METHOD(deleteDatabaseDirectory: (NSString *)databaseName  shouldRemoveDirectory: (BOOL) shouldRemoveDirectory callback: (RCTResponseSenderBlock)callback){
   @try {
@@ -169,37 +153,6 @@ RCT_EXPORT_METHOD(removeListeners:(double)count) {
   // Keep: Required for RN built in Event Emitter Calls.
 }
 
-RCT_EXPORT_METHOD(unlockOrientation)
-{
-  dispatch_async(dispatch_get_main_queue(), ^{
-      AppDelegate * appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-
-      appDelegate.allowRotation = YES;
-         NSNumber *resetOrientationTarget = [NSNumber numberWithInt:UIInterfaceOrientationUnknown];
-
-           [[UIDevice currentDevice] setValue:resetOrientationTarget forKey:@"orientation"];
-   });
-
-}
-
-RCT_EXPORT_METHOD(lockPortrait)
-{
-  dispatch_async(dispatch_get_main_queue(), ^{
-      AppDelegate * appDelegate = (AppDelegate *)[UIApplication sharedApplication].delegate;
-
-      appDelegate.allowRotation = NO;
-           NSNumber *resetOrientationTarget = [NSNumber numberWithInt:UIInterfaceOrientationUnknown];
-
-                [[UIDevice currentDevice] setValue:resetOrientationTarget forKey:@"orientation"];
-
-         
-
-                NSNumber *orientationTarget = [NSNumber numberWithInt:UIInterfaceOrientationPortrait];
-
-                [[UIDevice currentDevice] setValue:orientationTarget forKey:@"orientation"];
-   });
-
-}
 
 RCT_EXPORT_METHOD(createThumbnail:(NSDictionary *)config findEventsWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject)
 {

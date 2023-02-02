@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 
-import {observePostSaved} from '@queries/servers/post';
+import {observePost, observePostSaved} from '@queries/servers/post';
 import {observeCurrentTeam} from '@queries/servers/team';
 
 import ThreadOptions from './thread_options';
@@ -19,7 +19,7 @@ type Props = WithDatabaseArgs & {
 const enhanced = withObservables(['thread'], ({database, thread}: Props) => {
     return {
         isSaved: observePostSaved(database, thread.id),
-        post: thread.post.observe(),
+        post: observePost(database, thread.id),
         team: observeCurrentTeam(database),
     };
 });

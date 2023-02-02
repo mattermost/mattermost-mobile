@@ -2,18 +2,17 @@
 // See LICENSE.txt for license information.
 
 import {ProfilePicture} from '@support/ui/component';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ReactionsScreen {
     testID = {
         reactorItemPrefix: 'reactions.reactor_item.',
         reactionsScreen: 'reactions.screen',
-        reactionsBackdrop: 'reactions.backdrop',
         flatReactorsList: 'reactions.reactors_list.flat_list',
     };
 
     reactionsScreen = element(by.id(this.testID.reactionsScreen));
-    reactionsBackdrop = element(by.id(this.testID.reactionsBackdrop));
     flatReactorsList = element(by.id(this.testID.flatReactorsList));
 
     toBeVisible = async () => {
@@ -23,8 +22,9 @@ class ReactionsScreen {
     };
 
     close = async () => {
-        await this.reactionsBackdrop.tap({x: 5, y: 10});
+        await this.reactionsScreen.swipe('down');
         await expect(this.reactionsScreen).not.toBeVisible();
+        await wait(timeouts.ONE_SEC);
     };
 
     getReactorItem = (userId: string, emojiName: string) => {

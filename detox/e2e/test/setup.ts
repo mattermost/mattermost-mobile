@@ -12,7 +12,7 @@ beforeAll(async () => {
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
 
     await device.launchApp({
-        newInstance: false,
+        newInstance: true,
         launchArgs: {detoxPrintBusyIdleResources: 'YES'},
         permissions: {
             notifications: 'YES',

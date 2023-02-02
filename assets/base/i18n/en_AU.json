@@ -665,7 +665,6 @@
     "channel_info.close": "Close",
     "channel_info.archive_title": "Archive {term}",
     "channel_info.archive_failed": "An error occurred trying to archive the channel {displayName}",
-    "channel_info.archive_description": "Are you sure you want to archive the {term} {name}?",
     "channel_info.archive": "Archive Channel",
     "channel_info.alertYes": "Yes",
     "channel_info.alertNo": "No",

@@ -51,11 +51,10 @@ public class FileCache: NSObject {
   }
     
   public func saveProfileImage(serverUrl: String, userId: String, imageData: Data?) {
-    guard let data = imageData,
-    let url = getUrlImageFor(serverUrl: serverUrl, userId: userId)
-    else { return }
-    
     do {
+      guard let data = imageData,
+      let url = getUrlImageFor(serverUrl: serverUrl, userId: userId)
+      else { return }
       try data.write(to: url)
     } catch let error {
       print("Erro saving image. \(error)")

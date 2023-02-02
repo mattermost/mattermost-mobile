@@ -40,10 +40,10 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
         }
 
         const pref: PreferenceType = {
-            category: Preferences.CATEGORY_THEME,
+            category: Preferences.CATEGORIES.THEME,
             name: currentTeamId,
             user_id: currentUserId,
-            value: JSON.stringify(Preferences.THEMES[allowedTheme]),
+            value: JSON.stringify(Preferences.THEMES[allowedTheme as ThemeKey]),
         };
         savePreference(serverUrl, [pref]);
     }, [allowedThemeKeys, currentTeamId, initialTheme, serverUrl]);

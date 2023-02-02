@@ -20,13 +20,18 @@ class DatabaseHelper {
 
     val onlyServerUrl: String?
         get() {
-            val query = "SELECT url FROM Servers WHERE last_active_at != 0 AND identifier != ''"
-            val cursor = defaultDatabase!!.rawQuery(query)
-            if (cursor.count == 1) {
-                cursor.moveToFirst()
-                val url = cursor.getString(0)
-                cursor.close()
-                return url
+            try {
+                val query = "SELECT url FROM Servers WHERE last_active_at != 0 AND identifier != ''"
+                val cursor = defaultDatabase!!.rawQuery(query)
+                if (cursor.count == 1) {
+                    cursor.moveToFirst()
+                    val url = cursor.getString(0)
+                    cursor.close()
+                    return url
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                // let it fall to return null
             }
             return null
         }
@@ -38,14 +43,19 @@ class DatabaseHelper {
     }
 
     fun getServerUrlForIdentifier(identifier: String): String? {
-        val args: Array<Any?> = arrayOf(identifier)
-        val query = "SELECT url FROM Servers WHERE identifier=?"
-        val cursor = defaultDatabase!!.rawQuery(query, args)
-        if (cursor.count == 1) {
-            cursor.moveToFirst()
-            val url = cursor.getString(0)
-            cursor.close()
-            return url
+        try {
+            val args: Array<Any?> = arrayOf(identifier)
+            val query = "SELECT url FROM Servers WHERE identifier=?"
+            val cursor = defaultDatabase!!.rawQuery(query, args)
+            if (cursor.count == 1) {
+                cursor.moveToFirst()
+                val url = cursor.getString(0)
+                cursor.close()
+                return url
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // let it fall to return null
         }
         return null
     }
@@ -63,19 +73,25 @@ class DatabaseHelper {
                 return resultMap
             }
         } catch (e: Exception) {
+            e.printStackTrace()
             return null
         }
     }
 
     fun getDatabaseForServer(context: Context?, serverUrl: String): Database? {
-        val args: Array<Any?> = arrayOf(serverUrl)
-        val query = "SELECT db_path FROM Servers WHERE url=?"
-        val cursor = defaultDatabase!!.rawQuery(query, args)
-        if (cursor.count == 1) {
-            cursor.moveToFirst()
-            val databasePath = cursor.getString(0)
-            cursor.close()
-            return Database(databasePath, context!!)
+        try {
+            val args: Array<Any?> = arrayOf(serverUrl)
+            val query = "SELECT db_path FROM Servers WHERE url=?"
+            val cursor = defaultDatabase!!.rawQuery(query, args)
+            if (cursor.count == 1) {
+                cursor.moveToFirst()
+                val databasePath = cursor.getString(0)
+                cursor.close()
+                return Database(databasePath, context!!)
+            }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // let it fall to return null
         }
         return null
     }
@@ -148,18 +164,23 @@ class DatabaseHelper {
     }
 
     fun queryPostSinceForChannel(db: Database?, channelId: String): Double? {
-        if (db != null) {
-            val postsInChannelQuery = "SELECT last_fetched_at FROM MyChannel WHERE id=? LIMIT 1"
-            val cursor1 = db.rawQuery(postsInChannelQuery, arrayOf(channelId))
-            if (cursor1.count == 1) {
-                cursor1.moveToFirst()
-                val lastFetchedAt = cursor1.getDouble(0)
-                cursor1.close()
-                if (lastFetchedAt == 0.0) {
-                    return queryLastPostCreateAt(db, channelId)
+        try {
+            if (db != null) {
+                val postsInChannelQuery = "SELECT last_fetched_at FROM MyChannel WHERE id=? LIMIT 1"
+                val cursor1 = db.rawQuery(postsInChannelQuery, arrayOf(channelId))
+                if (cursor1.count == 1) {
+                    cursor1.moveToFirst()
+                    val lastFetchedAt = cursor1.getDouble(0)
+                    cursor1.close()
+                    if (lastFetchedAt == 0.0) {
+                        return queryLastPostCreateAt(db, channelId)
+                    }
+                    return lastFetchedAt
                 }
-                return lastFetchedAt
             }
+        } catch (e: Exception) {
+            e.printStackTrace()
+            // let it fall to return null
         }
         return null
     }

@@ -81,67 +81,79 @@ class NotificationService: UNNotificationServiceExtension {
     }
   }
   
-  func sendMessageIntent(notification: UNNotificationContent) {
-    if #available(iOSApplicationExtension 15.0, *) {
-      let isCRTEnabled = notification.userInfo["is_crt_enabled"] as! Bool
-      let channelId = notification.userInfo["channel_id"] as! String
-      let rootId = notification.userInfo.index(forKey: "root_id") != nil ? notification.userInfo["root_id"] as! String : ""
+  func sendMessageIntentCompletion(_ notification: UNNotificationContent, _ avatarData: Data?) {
+    if #available(iOSApplicationExtension 15.0, *),
+       let imgData = avatarData,
+       let channelId = notification.userInfo["channel_id"] as? String {
+      os_log(OSLogType.default, "Mattermost Notifications: creating intent")
+
+      let isCRTEnabled = notification.userInfo["is_crt_enabled"] as? Bool ?? false
+      let rootId = notification.userInfo["root_id"] as? String ?? ""
       let senderId = notification.userInfo["sender_id"] as? String ?? ""
       let channelName = notification.userInfo["channel_name"] as? String ?? ""
-      let overrideIconUrl = notification.userInfo["override_icon_url"] as? String
-      let serverUrl = notification.userInfo["server_url"] as? String ?? ""
       let message = (notification.userInfo["message"] as? String ?? "")
+      let avatar = INImage(imageData: imgData) as INImage?
 
-      if senderId != "" && serverUrl != "" {
-        os_log(OSLogType.default, "Mattermost Notifications: Fetching profile Image in server %{public}@ for sender %{public}@", serverUrl, senderId)
-        let avatarData = Network.default.fetchProfileImageSync(serverUrl, senderId: senderId, overrideIconUrl: overrideIconUrl)
-        if let imgData = avatarData,
-           let avatar = INImage(imageData: imgData) as INImage? {
-          os_log(OSLogType.default, "Mattermost Notifications: creating intent")
-          var conversationId = channelId
-          if isCRTEnabled && rootId != "" {
-            conversationId = rootId
-          }
+      var conversationId = channelId
+      if isCRTEnabled && !rootId.isEmpty {
+        conversationId = rootId
+      }
 
-          let handle = INPersonHandle(value: senderId, type: .unknown)
-          let sender = INPerson(personHandle: handle,
-                                nameComponents: nil,
-                                displayName: channelName,
-                                image: avatar,
-                                contactIdentifier: nil,
-                                customIdentifier: nil)
+      let handle = INPersonHandle(value: senderId, type: .unknown)
+      let sender = INPerson(personHandle: handle,
+                            nameComponents: nil,
+                            displayName: channelName,
+                            image: avatar,
+                            contactIdentifier: nil,
+                            customIdentifier: nil)
 
-          let intent = INSendMessageIntent(recipients: nil,
-                                           outgoingMessageType: .outgoingMessageText,
-                                           content: message,
-                                           speakableGroupName: nil,
-                                           conversationIdentifier: conversationId,
-                                           serviceName: nil,
-                                           sender: sender,
-                                           attachments: nil)
+      let intent = INSendMessageIntent(recipients: nil,
+                                       outgoingMessageType: .outgoingMessageText,
+                                       content: message,
+                                       speakableGroupName: nil,
+                                       conversationIdentifier: conversationId,
+                                       serviceName: nil,
+                                       sender: sender,
+                                       attachments: nil)
 
-          let interaction = INInteraction(intent: intent, response: nil)
-          interaction.direction = .incoming
-          interaction.donate { error in
-            if error != nil {
-              self.contentHandler?(notification)
-              os_log(OSLogType.default, "Mattermost Notifications: sendMessageIntent intent error %{public}@", error! as CVarArg)
-            }
-
-            do {
-              let updatedContent = try notification.updating(from: intent)
-              os_log(OSLogType.default, "Mattermost Notifications: present updated notification")
-              self.contentHandler?(updatedContent)
-            } catch {
-              os_log(OSLogType.default, "Mattermost Notifications: something failed updating the notification %{public}@", error as CVarArg)
-              self.contentHandler?(notification)
-            }
-          }
+      let interaction = INInteraction(intent: intent, response: nil)
+      interaction.direction = .incoming
+      interaction.donate { error in
+        if error != nil {
+          self.contentHandler?(notification)
+          os_log(OSLogType.default, "Mattermost Notifications: sendMessageIntent intent error %{public}@", error! as CVarArg)
+        }
+        
+        do {
+          let updatedContent = try notification.updating(from: intent)
+          os_log(OSLogType.default, "Mattermost Notifications: present updated notification")
+          self.contentHandler?(updatedContent)
+        } catch {
+          os_log(OSLogType.default, "Mattermost Notifications: something failed updating the notification %{public}@", error as CVarArg)
+          self.contentHandler?(notification)
         }
       }
     } else {
-      os_log(OSLogType.default, "Mattermost Notifications: No intent created. will call contentHandler to present notification")
       self.contentHandler?(notification)
+    }
+  }
+  
+  func sendMessageIntent(notification: UNNotificationContent) {
+    if #available(iOSApplicationExtension 15.0, *) {
+      guard let serverUrl = notification.userInfo["server_url"] as? String,
+            let senderId = notification.userInfo["sender_id"] as? String
+      else {
+        os_log(OSLogType.default, "Mattermost Notifications: No intent created. will call contentHandler to present notification")
+        self.contentHandler?(notification)
+        return
+      }
+
+      os_log(OSLogType.default, "Mattermost Notifications: Fetching profile Image in server %{public}@ for sender %{public}@", serverUrl, senderId)
+      let overrideIconUrl = notification.userInfo["override_icon_url"] as? String
+        
+      Network.default.fetchProfileImageSync(serverUrl, senderId: senderId, overrideIconUrl: overrideIconUrl) {[weak self] data in
+        self?.sendMessageIntentCompletion(notification, data)
+      }
     }
   }
   

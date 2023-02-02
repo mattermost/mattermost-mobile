@@ -9,9 +9,8 @@ import {map} from 'rxjs/operators';
 
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
-import {Preferences} from '@constants';
-import {getPreferenceAsBool} from '@helpers/api/preference';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -80,11 +79,11 @@ const SystemHeader = ({isMilitaryTime, isTimezoneEnabled, createAt, theme, user}
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
-    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time').
+    const preferences = queryDisplayNamePreferences(database, 'use_military_time').
         observeWithColumns(['value']);
     const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
     const isMilitaryTime = preferences.pipe(
-        map((prefs) => getPreferenceAsBool(prefs, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
+        map((prefs) => getDisplayNamePreferenceAsBool(prefs, 'use_military_time')),
     );
     const user = observeCurrentUser(database);
 
