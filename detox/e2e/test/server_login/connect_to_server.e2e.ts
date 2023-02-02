@@ -17,7 +17,6 @@ import {expect} from 'detox';
 
 describe('Server Login - Connect to Server', () => {
     const {
-        connectButton,
         connectButtonDisabled,
         displayHelp,
         headerDescription,
@@ -26,6 +25,7 @@ describe('Server Login - Connect to Server', () => {
         serverDisplayNameInput,
         serverUrlInput,
         serverUrlInputError,
+        tapConnectButton,
     } = ServerScreen;
 
     beforeEach(async () => {
@@ -69,7 +69,7 @@ describe('Server Login - Connect to Server', () => {
         const invalidServerUrl = 'invalid';
         await serverUrlInput.replaceText(invalidServerUrl);
         await serverDisplayNameInput.replaceText('Server 1');
-        await connectButton.tap();
+        await tapConnectButton();
 
         // * Verify invalid url error
         await expect(serverUrlInputError).toHaveText('Can’t find this server. Check spelling and URL format.');
@@ -80,7 +80,7 @@ describe('Server Login - Connect to Server', () => {
         const connectionError = 'Cannot connect to the server.';
         await serverUrlInput.replaceText('expired.badssl.com');
         await serverDisplayNameInput.replaceText('Server 1');
-        await connectButton.tap();
+        await tapConnectButton();
 
         // * Verify connection error
         await expect(serverUrlInputError).toHaveText(connectionError);
@@ -89,7 +89,7 @@ describe('Server Login - Connect to Server', () => {
         await device.reloadReactNative();
         await serverUrlInput.replaceText('wrong.host.badssl.com');
         await serverDisplayNameInput.replaceText('Server 1');
-        await connectButton.tap();
+        await tapConnectButton();
 
         // * Verify connection error
         await wait(timeouts.ONE_SEC);
@@ -100,7 +100,7 @@ describe('Server Login - Connect to Server', () => {
         // # Connect to server with valid server url and non-empty server display name
         await serverUrlInput.replaceText(serverOneUrl);
         await serverDisplayNameInput.replaceText('Server 1');
-        await connectButton.tap();
+        await tapConnectButton();
 
         // * Verify on login screen
         await LoginScreen.toBeVisible();

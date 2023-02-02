@@ -59,7 +59,7 @@ describe('Messaging - Markdown Latex', () => {
         // * Verify markdown latex code block is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemLatexCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
-        await ChannelScreen.getFlatPostList().scrollTo('bottom');
+        await waitFor(postListPostItemLatexCodeBlock).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
         await expect(postListPostItemLatexCodeBlock).toBeVisible();
 
         // # Go back to channel list screen
