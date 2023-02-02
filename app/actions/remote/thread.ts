@@ -360,7 +360,7 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
             const allNewThreads = await fetchThreads(
                 serverUrl,
                 teamId,
-                {deleted: true, since: syncData.latest},
+                {deleted: true, since: syncData.latest + 1},
             );
             if (allNewThreads.error) {
                 return {error: allNewThreads.error};
