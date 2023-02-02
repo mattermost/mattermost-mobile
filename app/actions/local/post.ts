@@ -244,3 +244,69 @@ export async function getPosts(serverUrl: string, ids: string[]) {
         return [];
     }
 }
+
+export async function addPostAcknowledgement(serverUrl: string, postId: string, userId: string, acknowledgedAt: number, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const post = await getPostById(database, postId);
+        if (!post) {
+            throw new Error('Post not found');
+        }
+
+        // Check if the post has already been acknowledged by the user
+        const isAckd = post.metadata?.acknowledgements?.find((a) => a.user_id === userId);
+        if (isAckd) {
+            return {error: false};
+        }
+
+        const acknowledgements = [...(post.metadata?.acknowledgements || []), {
+            user_id: userId,
+            acknowledged_at: acknowledgedAt,
+            post_id: postId,
+        }];
+
+        const model = post.prepareUpdate((p) => {
+            p.metadata = {
+                ...p.metadata,
+                acknowledgements,
+            };
+        });
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([model]);
+        }
+
+        return {model};
+    } catch (error) {
+        logError('Failed addPostAcknowledgement', error);
+        return {error};
+    }
+}
+
+export async function removePostAcknowledgement(serverUrl: string, postId: string, userId: string, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const post = await getPostById(database, postId);
+        if (!post) {
+            throw new Error('Post not found');
+        }
+
+        const model = post.prepareUpdate((record) => {
+            record.metadata = {
+                ...post.metadata,
+                acknowledgements: post.metadata?.acknowledgements?.filter(
+                    (a) => a.user_id !== userId,
+                ) || [],
+            };
+        });
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([model]);
+        }
+
+        return {model};
+    } catch (error) {
+        logError('Failed removePostAcknowledgement', error);
+        return {error};
+    }
+}

@@ -11,7 +11,7 @@ import {Screens} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
-import {bottomSheetModalOptions, showModal, showModalOverCurrentContext} from '@screens/navigation';
+import {openAsBottomSheet} from '@screens/navigation';
 import {POST_PRIORITY_PICKER_BUTTON} from '@screens/post_priority_picker';
 import {changeOpacity} from '@utils/theme';
 
@@ -40,17 +40,19 @@ export default function PostPriorityAction({
 
     const onPress = useCallback(() => {
         Keyboard.dismiss();
-        const passProps = {
-            postPriority,
-            updatePostPriority,
-        };
+
         const title = isTablet ? intl.formatMessage({id: 'post_priority.picker.title', defaultMessage: 'Message priority'}) : '';
 
-        if (isTablet) {
-            showModal(Screens.POST_PRIORITY_PICKER, title, passProps, bottomSheetModalOptions(theme, POST_PRIORITY_PICKER_BUTTON));
-        } else {
-            showModalOverCurrentContext(Screens.POST_PRIORITY_PICKER, passProps, bottomSheetModalOptions(theme));
-        }
+        openAsBottomSheet({
+            closeButtonId: POST_PRIORITY_PICKER_BUTTON,
+            screen: Screens.POST_PRIORITY_PICKER,
+            theme,
+            title,
+            props: {
+                postPriority,
+                updatePostPriority,
+            },
+        });
     }, [intl, postPriority, updatePostPriority, theme]);
 
     const iconName = 'alert-circle-outline';

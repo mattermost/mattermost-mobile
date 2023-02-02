@@ -41,7 +41,12 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs):
         post.updateAt = raw.update_at;
         post.isPinned = Boolean(raw.is_pinned);
         post.message = raw.message;
-        post.metadata = raw.metadata && Object.keys(raw.metadata).length ? raw.metadata : null;
+
+        // When we extract the posts from the threads, we don't get the metadata
+        // So, it might not be present in the raw post, so we use the one from the record
+        const metadata = raw.metadata ?? post.metadata;
+        post.metadata = metadata && Object.keys(metadata).length ? metadata : null;
+
         post.userId = raw.user_id;
         post.originalId = raw.original_id;
         post.pendingPostId = raw.pending_post_id;

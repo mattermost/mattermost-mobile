@@ -5,11 +5,12 @@ import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
-import {markPostAsDeleted} from '@actions/local/post';
+import {addPostAcknowledgement, markPostAsDeleted, removePostAcknowledgement} from '@actions/local/post';
 import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
 import {fetchChannelStats, fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
+import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import {ActionType, Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
@@ -305,5 +306,26 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
         const delta = postNumber ? postNumber - messages : messages;
 
         markChannelAsUnread(serverUrl, channelId, delta, mentions, lastViewedAt);
+    }
+}
+
+export async function handlePostAcknowledgementAdded(serverUrl: string, msg: WebSocketMessage) {
+    try {
+        const acknowledgement = JSON.parse(msg.data.acknowledgement);
+        const {user_id, post_id, acknowledged_at} = acknowledgement;
+        addPostAcknowledgement(serverUrl, post_id, user_id, acknowledged_at);
+        fetchMissingProfilesByIds(serverUrl, [user_id]);
+    } catch (error) {
+        // Do nothing
+    }
+}
+
+export async function handlePostAcknowledgementRemoved(serverUrl: string, msg: WebSocketMessage) {
+    try {
+        const acknowledgement = JSON.parse(msg.data.acknowledgement);
+        const {user_id, post_id} = acknowledgement;
+        await removePostAcknowledgement(serverUrl, post_id, user_id);
+    } catch (error) {
+        // Do nothing
     }
 }

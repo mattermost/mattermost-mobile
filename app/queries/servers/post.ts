@@ -10,7 +10,7 @@ import {MM_TABLES} from '@constants/database';
 
 import {queryGroupsByNames} from './group';
 import {queryPreferencesByCategoryAndName} from './preference';
-import {observeConfigBooleanValue} from './system';
+import {getConfigValue, observeConfigBooleanValue} from './system';
 import {queryUsersByUsername, observeUser, observeCurrentUser} from './user';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -230,6 +230,17 @@ export const observeSavedPostsByIds = (database: Database, postIds: string[]) =>
         ).observeWithColumns(['name']).pipe(
             switchMap((prefs) => of$(new Set(prefs.map((p) => p.name)))),
         );
+};
+
+export const getIsPostPriorityEnabled = async (database: Database) => {
+    const featureFlag = await getConfigValue(database, 'FeatureFlagPostPriority');
+    const cfg = await getConfigValue(database, 'PostPriority');
+    return featureFlag === 'true' && cfg === 'true';
+};
+
+export const getIsPostAcknowledgementsEnabled = async (database: Database) => {
+    const cfg = await getConfigValue(database, 'PostAcknowledgements');
+    return cfg === 'true';
 };
 
 export const observeIsPostPriorityEnabled = (database: Database) => {

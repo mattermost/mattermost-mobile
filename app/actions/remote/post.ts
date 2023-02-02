@@ -19,7 +19,7 @@ import {extractRecordsForTable} from '@helpers/database';
 import NetworkManager from '@managers/network_manager';
 import {getMyChannel, prepareMissingChannelsForAllTeams, queryAllMyChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
-import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
+import {getIsPostAcknowledgementsEnabled, getIsPostPriorityEnabled, getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
@@ -511,8 +511,9 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
         return {error};
     }
 
-    const currentUserId = await getCurrentUserId(operator.database);
-    const users = await queryAllUsers(operator.database).fetch();
+    const {database} = operator;
+    const currentUserId = await getCurrentUserId(database);
+    const users = await queryAllUsers(database).fetch();
     const existingUserIds = new Set<string>();
     const existingUserNames = new Set<string>();
     let excludeUsername;
@@ -524,12 +525,23 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
         }
     });
 
+    const isPostPriorityEnabled = await getIsPostPriorityEnabled(database);
+    const isPostAcknowledgementsEnabled = await getIsPostAcknowledgementsEnabled(database);
+    const fetchAckUsers = isPostPriorityEnabled && isPostAcknowledgementsEnabled;
+
     const usernamesToLoad = getNeededAtMentionedUsernames(existingUserNames, posts, excludeUsername);
     const userIdsToLoad = new Set<string>();
     for (const p of posts) {
         const {user_id} = p;
         if (user_id !== currentUserId) {
             userIdsToLoad.add(user_id);
+        }
+        if (fetchAckUsers) {
+            p.metadata?.acknowledgements?.forEach((ack) => {
+                if (ack.user_id !== currentUserId && !existingUserIds.has(ack.user_id)) {
+                    userIdsToLoad.add(ack.user_id);
+                }
+            });
         }
     }
 

@@ -199,6 +199,7 @@ const Body = ({
                             <Acknowledgements
                                 currentUser={currentUser}
                                 hasReactions={hasReactions}
+                                location={location}
                                 post={post}
                                 theme={theme}
                             />

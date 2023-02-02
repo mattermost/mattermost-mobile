@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {ReactNode} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {StyleProp, Text, View, ViewStyle} from 'react-native';
 
@@ -19,10 +19,12 @@ import {getUserCustomStatus, isBot, isCustomStatusExpired, isGuest, isShared} fr
 import type UserModel from '@typings/database/models/servers/user';
 
 type AtMentionItemProps = {
+    FooterComponent?: ReactNode;
     user?: UserProfile | UserModel;
     containerStyle?: StyleProp<ViewStyle>;
     currentUserId: string;
     showFullName: boolean;
+    size?: number;
     testID?: string;
     isCustomStatusEnabled: boolean;
     pictureContainerStyle?: StyleProp<ViewStyle>;
@@ -66,6 +68,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             justifyContent: 'center',
         },
+        rowInfoBaseContainer: {
+            flex: 1,
+        },
+        rowInfoContainer: {
+            flex: 1,
+            flexDirection: 'row',
+        },
         rowInfo: {
             flexDirection: 'row',
             overflow: 'hidden',
@@ -91,9 +100,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 
 const UserItem = ({
     containerStyle,
+    FooterComponent,
     user,
     currentUserId,
     showFullName,
+    size = 24,
     testID,
     isCustomStatusEnabled,
     pictureContainerStyle,
@@ -121,63 +132,68 @@ const UserItem = ({
             <View style={[style.rowPicture, pictureContainerStyle]}>
                 <ProfilePicture
                     author={user}
-                    size={24}
+                    size={size}
                     showStatus={false}
                     testID={`${userItemTestId}.profile_picture`}
                 />
             </View>
-            <View
-                style={[style.rowInfo, {maxWidth: shared ? '75%' : '80%'}]}
-            >
-                {bot && <BotTag testID={`${userItemTestId}.bot.tag`}/>}
-                {guest && <GuestTag testID={`${userItemTestId}.guest.tag`}/>}
-                {Boolean(name.length) &&
-                    <Text
-                        style={style.rowFullname}
-                        numberOfLines={1}
-                        testID={`${userItemTestId}.display_name`}
+            <View style={style.rowInfoBaseContainer}>
+                <View style={style.rowInfoContainer}>
+                    <View
+                        style={[style.rowInfo, {maxWidth: shared ? '75%' : '80%'}]}
                     >
-                        {name}
-                    </Text>
-                }
-                {isCurrentUser &&
-                    <FormattedText
-                        id='suggestion.mention.you'
-                        defaultMessage=' (you)'
-                        style={style.rowUsername}
-                        testID={`${userItemTestId}.current_user_indicator`}
-                    />
-                }
-                {Boolean(user) &&
-                <Text
-                    style={style.rowUsername}
-                    numberOfLines={1}
-                    testID={`${userItemTestId}.username`}
-                >
-                    {` @${user!.username}`}
-                </Text>
-                }
+                        {bot && <BotTag testID={`${userItemTestId}.bot.tag`}/>}
+                        {guest && <GuestTag testID={`${userItemTestId}.guest.tag`}/>}
+                        {Boolean(name.length) &&
+                            <Text
+                                style={style.rowFullname}
+                                numberOfLines={1}
+                                testID={`${userItemTestId}.display_name`}
+                            >
+                                {name}
+                            </Text>
+                        }
+                        {isCurrentUser &&
+                            <FormattedText
+                                id='suggestion.mention.you'
+                                defaultMessage=' (you)'
+                                style={style.rowUsername}
+                                testID={`${userItemTestId}.current_user_indicator`}
+                            />
+                        }
+                        {Boolean(user) &&
+                        <Text
+                            style={style.rowUsername}
+                            numberOfLines={1}
+                            testID={`${userItemTestId}.username`}
+                        >
+                            {` @${user!.username}`}
+                        </Text>
+                        }
+                    </View>
+                    {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji && !customStatusExpired) && (
+                        <CustomStatusEmoji
+                            customStatus={customStatus!}
+                            style={style.icon}
+                            testID={userItemTestId}
+                        />
+                    )}
+                    {shared && (
+                        <ChannelIcon
+                            name={name}
+                            isActive={false}
+                            isArchived={false}
+                            isInfo={true}
+                            isUnread={false}
+                            size={18}
+                            shared={true}
+                            type={General.DM_CHANNEL}
+                            style={style.icon}
+                        />
+                    )}
+                </View>
+                {FooterComponent}
             </View>
-            {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji && !customStatusExpired) && (
-                <CustomStatusEmoji
-                    customStatus={customStatus!}
-                    style={style.icon}
-                    testID={userItemTestId}
-                />
-            )}
-            {shared && (
-                <ChannelIcon
-                    name={name}
-                    isActive={false}
-                    isArchived={false}
-                    isInfo={true}
-                    isUnread={false}
-                    size={18}
-                    shared={true}
-                    type={General.DM_CHANNEL}
-                    style={style.icon}
-                />
-            )}
         </View>
     );
 };
