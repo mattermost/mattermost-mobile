@@ -421,8 +421,6 @@ export async function handleEntryAfterLoadNavigation(
     currentChannelId: string,
     initialTeamId: string,
     initialChannelId: string,
-    notificationTeamId?: string,
-    notificationChannelId?: string,
 ) {
     try {
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);

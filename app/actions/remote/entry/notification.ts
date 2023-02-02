@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {switchToChannelById} from '@actions/remote/channel';
+import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
+import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
@@ -14,7 +15,12 @@ import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
+import {emitNotificationError} from '@utils/notification';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
+
+import type ClientError from '@client/rest/error';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
+import type MyTeamModel from '@typings/database/models/servers/my_team';
 
 export async function pushNotificationEntry(serverUrl: string, notification: NotificationWithData) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -29,12 +35,9 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     const currentTeamId = await getCurrentTeamId(database);
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();
 
-    let isDirectChannel = false;
-
     let teamId = notification.payload?.team_id;
     if (!teamId) {
         // If the notification payload does not have a teamId we assume is a DM/GM
-        isDirectChannel = true;
         teamId = currentTeamId;
     }
 
@@ -57,8 +60,34 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
 
     // To make the switch faster we determine if we already have the team & channel
-    const myChannel = await getMyChannel(database, channelId);
-    const myTeam = await getMyTeamById(database, teamId);
+    let myChannel: MyChannelModel | ChannelMembership | undefined = await getMyChannel(database, channelId);
+    let myTeam: MyTeamModel | TeamMembership | undefined = await getMyTeamById(database, teamId);
+
+    if (!myTeam) {
+        const resp = await fetchMyTeam(serverUrl, teamId);
+        if (resp.error) {
+            if ((resp.error as ClientError).status_code === '403') {
+                emitNotificationError('Team');
+            } else {
+                emitNotificationError('Connection');
+            }
+        } else {
+            myTeam = resp.memberships?.[0];
+        }
+    }
+
+    if (!myChannel) {
+        const resp = await fetchMyChannel(serverUrl, teamId, channelId);
+        if (resp.error) {
+            if ((resp.error as ClientError).status_code === '403') {
+                emitNotificationError('Channel');
+            } else {
+                emitNotificationError('Connection');
+            }
+        } else {
+            myChannel = resp.memberships?.[0];
+        }
+    }
 
     const isCRTEnabled = await getIsCRTEnabled(database);
     const isThreadNotification = isCRTEnabled && Boolean(rootId);
@@ -75,46 +104,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         switchedToScreen = true;
     }
 
-    WebsocketManager.initializeClient(serverUrl, switchedToScreen ? null : {serverUrl, channelId, teamId});
-
-    // // There is a chance that after the above request returns
-    // // the user is no longer part of the team or channel
-    // // that triggered the notification (rare but possible)
-    // let selectedTeamId = teamId;
-    // let selectedChannelId = channelId;
-    // if (initialTeamId !== teamId) {
-    //     // We are no longer a part of the team that the notification belongs to
-    //     // Immediately set the new team as the current team in the database so that the UI
-    //     // renders the correct team.
-    //     selectedTeamId = initialTeamId;
-    //     if (!isDirectChannel) {
-    //         selectedChannelId = initialChannelId;
-    //     }
-    // }
-
-    // if (!switchedToScreen) {
-    //     const isTabletDevice = await isTablet();
-    //     if (isTabletDevice || (channelId === selectedChannelId)) {
-    //         // Make switch again to get the missing data and make sure the team is the correct one
-    //         switchedToScreen = true;
-    //         if (isThreadNotification) {
-    //             await fetchAndSwitchToThread(serverUrl, rootId, true);
-    //         } else {
-    //             switchedToChannel = true;
-    //             await switchToChannelById(serverUrl, channelId, teamId);
-    //         }
-    //     } else if (teamId !== selectedTeamId || channelId !== selectedChannelId) {
-    //         // If in the end the selected team or channel is different than the one from the notification
-    //         // we switch again
-    //         await setCurrentTeamAndChannelId(operator, selectedTeamId, selectedChannelId);
-    //     }
-    // }
-
-    // if (teamId !== selectedTeamId) {
-    //     emitNotificationError('Team');
-    // } else if (channelId !== selectedChannelId) {
-    //     emitNotificationError('Channel');
-    // }
+    WebsocketManager.openAll();
 
     // Waiting for the screen to display fixes a race condition when fetching and storing data
     if (switchedToChannel) {

@@ -3,9 +3,8 @@
 
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import DatabaseManager from '@database/manager';
+import {getServerCredentials} from '@init/credentials';
 import WebsocketManager from '@managers/websocket_manager';
-
-import type {Client} from '@client/rest';
 
 type AfterLoginArgs = {
     serverUrl: string;
@@ -23,7 +22,11 @@ export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: 
             return {error: clData.error};
         }
 
-        WebsocketManager.initializeClient(serverUrl);
+        const credentials = await getServerCredentials(serverUrl);
+        if (credentials?.token) {
+            WebsocketManager.createClient(serverUrl, credentials.token);
+            WebsocketManager.initializeClient(serverUrl);
+        }
 
         return {};
     } catch (error) {

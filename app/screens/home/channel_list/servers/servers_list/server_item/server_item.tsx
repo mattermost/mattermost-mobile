@@ -9,7 +9,6 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 import {Navigation} from 'react-native-navigation';
 
 import {storeMultiServerTutorial} from '@actions/app/global';
-import {appEntry} from '@actions/remote/entry';
 import {doPing} from '@actions/remote/general';
 import {logout} from '@actions/remote/session';
 import {fetchConfigAndLicense} from '@actions/remote/systems';

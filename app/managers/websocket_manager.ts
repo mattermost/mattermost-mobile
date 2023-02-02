@@ -33,7 +33,7 @@ class WebsocketManager {
     private previousActiveState: boolean;
     private statusUpdatesIntervalIDs: Record<string, NodeJS.Timer> = {};
     private backgroundIntervalId: number | undefined;
-    private notificationEntryInfo: NotificationEntryInfo = null;
+    private firstConnectionSynced: Record<string, boolean> = {};
 
     constructor() {
         this.previousActiveState = AppState.currentState === 'active';
@@ -41,21 +41,19 @@ class WebsocketManager {
 
     public init = async (serverCredentials: ServerCredential[]) => {
         this.netConnected = Boolean((await NetInfo.fetch()).isConnected);
-        await Promise.all(
-            serverCredentials.map(
-                async ({serverUrl, token}) => {
-                    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-                    if (!operator) {
-                        return;
-                    }
+        serverCredentials.forEach(
+            ({serverUrl, token}) => {
+                const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+                if (!operator) {
+                    return;
+                }
 
-                    try {
-                        this.createClient(serverUrl, token, 0);
-                    } catch (error) {
-                        logError('WebsocketManager init error', error);
-                    }
-                },
-            ),
+                try {
+                    this.createClient(serverUrl, token, 0);
+                } catch (error) {
+                    logError('WebsocketManager init error', error);
+                }
+            },
         );
 
         AppState.addEventListener('change', this.onAppStateChange);
@@ -68,10 +66,8 @@ class WebsocketManager {
         if (this.connectionTimerIDs[serverUrl]) {
             this.connectionTimerIDs[serverUrl].cancel();
         }
-        if (this.notificationEntryInfo?.serverUrl === serverUrl) {
-            this.notificationEntryInfo = null;
-        }
         delete this.clients[serverUrl];
+        delete this.firstConnectionSynced[serverUrl];
 
         this.getConnectedSubject(serverUrl).next('not_connected');
         delete this.connectedSubjects[serverUrl];
@@ -144,12 +140,13 @@ class WebsocketManager {
         }
     };
 
-    public initializeClient = (serverUrl: string, notificationEntryInfo: NotificationEntryInfo = null) => {
-        if (notificationEntryInfo?.serverUrl === serverUrl) {
-            this.notificationEntryInfo = notificationEntryInfo;
-        }
+    public initializeClient = (serverUrl: string) => {
         const client: WebSocketClient = this.clients[serverUrl];
         if (!client?.isConnected()) {
+            if (!this.firstConnectionSynced[serverUrl]) {
+                handleFirstConnect(serverUrl);
+                this.firstConnectionSynced[serverUrl] = true;
+            }
             client.initialize();
         }
         this.connectionTimerIDs[serverUrl]?.cancel();
@@ -159,8 +156,6 @@ class WebsocketManager {
     private onFirstConnect = (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
         this.getConnectedSubject(serverUrl).next('connected');
-        handleFirstConnect(serverUrl, this.notificationEntryInfo);
-        this.notificationEntryInfo = null;
     };
 
     private onReconnect = async (serverUrl: string) => {
@@ -181,7 +176,6 @@ class WebsocketManager {
 
             this.stopPeriodicStatusUpdates(serverUrl);
         }
-        this.notificationEntryInfo = null;
     };
 
     private startPeriodicStatusUpdates(serverUrl: string) {

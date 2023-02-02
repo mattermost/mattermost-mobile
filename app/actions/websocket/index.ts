@@ -71,10 +71,10 @@ import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent,
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
 import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
-export async function handleFirstConnect(serverUrl: string, notificationEntryInfo: NotificationEntryInfo) {
+export async function handleFirstConnect(serverUrl: string) {
     registerDeviceToken(serverUrl);
     autoUpdateTimezone(serverUrl);
-    doReconnect(serverUrl, notificationEntryInfo);
+    doReconnect(serverUrl);
 }
 
 export async function handleReconnect(serverUrl: string) {
@@ -97,7 +97,7 @@ export async function handleClose(serverUrl: string, lastDisconnect: number) {
     });
 }
 
-async function doReconnect(serverUrl: string, notificationEntryInfo: NotificationEntryInfo = null) {
+async function doReconnect(serverUrl: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return;
@@ -124,7 +124,7 @@ async function doReconnect(serverUrl: string, notificationEntryInfo: Notificatio
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
 
-    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId, notificationEntryInfo?.teamId, notificationEntryInfo?.channelId);
+    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId);
 
     const dt = Date.now();
     await operator.batchRecords(models);

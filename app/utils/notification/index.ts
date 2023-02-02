@@ -45,7 +45,7 @@ export const convertToNotificationData = (notification: Notification, tapped = t
     return notificationData;
 };
 
-export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel') => {
+export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel' | 'Connection') => {
     const title = intl.formatMessage({id: 'notification.message_not_found', defaultMessage: 'Message not found'});
     let message;
     switch (type) {
@@ -61,13 +61,19 @@ export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel') => 
                 defaultMessage: 'This message belongs to a team where you are not a member.',
             });
             break;
+        case 'Connection':
+            message = intl.formatMessage({
+                id: 'notification.no_connection',
+                defaultMessage: 'The server is unreachable and we were not able to retrieve the notification channel / team.',
+            });
+            break;
     }
 
     Alert.alert(title, message);
     popToRoot();
 };
 
-export const emitNotificationError = (type: 'Team' | 'Channel') => {
+export const emitNotificationError = (type: 'Team' | 'Channel' | 'Connection') => {
     const req = setTimeout(() => {
         DeviceEventEmitter.emit(Events.NOTIFICATION_ERROR, type);
         clearTimeout(req);

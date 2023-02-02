@@ -45,7 +45,7 @@ export default function HomeScreen(props: HomeProps) {
     const intl = useIntl();
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel') => {
+        const listener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel' | 'Connection') => {
             notificationError(intl, value);
         });
 
