@@ -21,5 +21,4 @@ beforeAll(async () => {
             photos: 'YES',
         },
     });
-    await device.reloadReactNative();
 });
