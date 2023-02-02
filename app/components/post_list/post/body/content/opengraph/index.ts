@@ -6,8 +6,8 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest} from 'rxjs';
 
 import {Preferences} from '@constants';
-import {getPreferenceAsBool} from '@helpers/api/preference';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 
 import Opengraph from './opengraph';
@@ -22,10 +22,10 @@ const enhance = withObservables(
         }
 
         const linkPreviewsConfig = observeConfigBooleanValue(database, 'EnableLinkPreviews');
-        const linkPreviewPreference = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY).
+        const linkPreviewPreference = queryDisplayNamePreferences(database, Preferences.LINK_PREVIEW_DISPLAY).
             observeWithColumns(['value']);
         const showLinkPreviews = combineLatest([linkPreviewsConfig, linkPreviewPreference], (cfg, pref) => {
-            const previewsEnabled = getPreferenceAsBool(pref, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.LINK_PREVIEW_DISPLAY, true);
+            const previewsEnabled = getDisplayNamePreferenceAsBool(pref, Preferences.LINK_PREVIEW_DISPLAY, true);
             return of$(previewsEnabled && cfg);
         });
 

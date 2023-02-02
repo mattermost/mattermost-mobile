@@ -217,7 +217,7 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
     if (!teamData.teams.length) {
         initialTeamId = '';
     } else if (!initialTeamId || !teamData.teams.find((t) => t.id === currentTeamId && t.delete_at === 0)) {
-        const teamOrderPreference = getPreferenceValue(prefData.preferences || [], Preferences.TEAMS_ORDER, '', '') as string;
+        const teamOrderPreference = getPreferenceValue<string>(prefData.preferences || [], Preferences.CATEGORIES.TEAMS_ORDER, '', '');
         initialTeamId = selectDefaultTeam(teamData.teams, meData.user.locale, teamOrderPreference, config.ExperimentalPrimaryTeam)?.id || '';
     }
     const gqlRoles = [

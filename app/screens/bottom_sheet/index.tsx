@@ -95,6 +95,7 @@ const BottomSheet = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const interaction = useRef<Handle>();
+    const timeoutRef = useRef<NodeJS.Timeout>();
 
     useEffect(() => {
         interaction.current = InteractionManager.createInteractionHandle();
@@ -136,7 +137,7 @@ const BottomSheet = ({
     }, []);
 
     const handleChange = useCallback((index: number) => {
-        setTimeout(() => {
+        timeoutRef.current = setTimeout(() => {
             if (interaction.current) {
                 InteractionManager.clearInteractionHandle(interaction.current);
                 interaction.current = undefined;
@@ -154,6 +155,16 @@ const BottomSheet = ({
     useEffect(() => {
         hapticFeedback();
         Keyboard.dismiss();
+
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+
+            if (interaction.current) {
+                InteractionManager.clearInteractionHandle(interaction.current);
+            }
+        };
     }, []);
 
     const renderBackdrop = useCallback((props: BottomSheetBackdropProps) => {
@@ -201,6 +212,7 @@ const BottomSheet = ({
             footerComponent={footerComponent}
             keyboardBehavior='extend'
             keyboardBlurBehavior='restore'
+            onClose={close}
         >
             {renderContainerContent()}
         </BottomSheetM>

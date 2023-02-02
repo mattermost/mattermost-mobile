@@ -168,7 +168,7 @@ export const getLastTeam = async (database: Database, ignoreIdForDefault?: strin
 export const getDefaultTeamId = async (database: Database, ignoreId?: string) => {
     const user = await getCurrentUser(database);
     const config = await getConfig(database);
-    const teamOrderPreferences = await queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER, '').fetch();
+    const teamOrderPreferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.TEAMS_ORDER, '').fetch();
     let teamOrderPreference = '';
     if (teamOrderPreferences.length) {
         teamOrderPreference = teamOrderPreferences[0].value;
@@ -368,9 +368,9 @@ export const getAvailableTeamIds = async (database: Database, excludeTeamId: str
     if (teams) {
         let teamOrderPreference;
         if (preferences) {
-            teamOrderPreference = getPreferenceValue(preferences, Preferences.TEAMS_ORDER, '', '') as string;
+            teamOrderPreference = getPreferenceValue<string>(preferences, Preferences.CATEGORIES.TEAMS_ORDER, '', '');
         } else {
-            const dbPreferences = await queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER, '').fetch();
+            const dbPreferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.TEAMS_ORDER, '').fetch();
             teamOrderPreference = dbPreferences[0].value;
         }
 

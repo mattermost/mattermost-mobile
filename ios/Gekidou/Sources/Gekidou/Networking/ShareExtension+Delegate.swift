@@ -15,8 +15,6 @@ extension ShareExtension: URLSessionDataDelegate {
         config.waitsForConnectivity = true
         config.httpAdditionalHeaders = ["X-Requested-With": "XMLHttpRequest"]
         config.allowsCellularAccess = true
-        config.timeoutIntervalForRequest = 10
-        config.timeoutIntervalForResource = 10
         config.httpMaximumConnectionsPerHost = 10
 
         self.backgroundSession = URLSession.init(
@@ -74,15 +72,17 @@ extension ShareExtension: URLSessionDataDelegate {
             if let fileInfos = json.object(forKey: "file_infos") as? NSArray,
                fileInfos.count > 0 {
                 let fileData = fileInfos[0] as! NSDictionary
-                let fileId = fileData.object(forKey: "id") as! String
+                let fileId = fileData.object(forKey: "id") as? String ?? "no file id"
+                let filename = fileData.object(forKey: "name") as? String ?? "no file name"
                 appendCompletedUploadToSession(id: id, fileId: fileId)
                 let total = uploadData.totalFiles
                 let count = uploadData.fileIds.count + 1
                 
                 os_log(
                     OSLogType.default,
-                    "Mattermost BackgroundSession: identifier=%{public}@ did upload file %{public}@ total files %{public}@ of %{public}@",
+                    "Mattermost BackgroundSession: identifier=%{public}@ did upload file %{public}@ with ID %{public}@ total files %{public}@ of %{public}@",
                     id,
+                    filename,
                     fileId,
                     "\(count)",
                     "\(total)"
@@ -90,8 +90,9 @@ extension ShareExtension: URLSessionDataDelegate {
                 
                 os_log(
                     OSLogType.default,
-                    "Mattermost BackgroundSession: Append file to session identifier=%{public}@ file=%{public}@",
+                    "Mattermost BackgroundSession: Append file to session identifier=%{public}@ file=%{public}@ with ID %{public}@",
                     id,
+                    filename,
                     fileId
                 )
             } else {
@@ -121,7 +122,7 @@ extension ShareExtension: URLSessionDataDelegate {
             else {
                 os_log(
                     OSLogType.default,
-                    "Mattermost BackgroundSession: didCompleteWithError failed to getUploadSessionData identifier=%{public}@",
+                    "Mattermost BackgroundSession: didCompleteWithError delegate failed to getUploadSessionData identifier=%{public}@",
                     session.configuration.identifier ?? "no identifier"
                 )
                 return
@@ -132,7 +133,7 @@ extension ShareExtension: URLSessionDataDelegate {
             let count = data.fileIds.count
             os_log(
                 OSLogType.default,
-                "Mattermost BackgroundSession: didCompleteWithError for identifier=%{public}@ total files %{public}@ of %{public}@",
+                "Mattermost BackgroundSession: didCompleteWithError delegate for identifier=%{public}@ total files %{public}@ of %{public}@",
                 id,
                 "\(count)",
                 "\(total)"
@@ -152,7 +153,7 @@ extension ShareExtension: URLSessionDataDelegate {
         } else if error != nil {
             os_log(
                 OSLogType.default,
-                "Mattermost BackgroundSession: didCompleteWithError failed identifier=%{public}@ with error %{public}@",
+                "Mattermost BackgroundSession: didCompleteWithError delegate failed identifier=%{public}@ with error %{public}@",
                 session.configuration.identifier ?? "no identifier",
                 error?.localizedDescription ?? "no error description available"
             )

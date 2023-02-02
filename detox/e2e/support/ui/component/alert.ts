@@ -41,11 +41,16 @@ class Alert {
     deleteButton = isAndroid() ? element(by.text('DELETE')) : element(by.label('Delete')).atIndex(0);
     leaveButton = isAndroid() ? element(by.text('LEAVE')) : element(by.label('Leave')).atIndex(0);
     logoutButton = isAndroid() ? element(by.text('LOG OUT')) : element(by.label('Log out')).atIndex(1);
+    logoutButton2 = isAndroid() ? element(by.text('LOG OUT')) : element(by.label('Log out')).atIndex(2);
+    logoutButton3 = isAndroid() ? element(by.text('LOG OUT')) : element(by.label('Log out')).atIndex(3);
     markReadButton = isAndroid() ? element(by.text('MARK READ')) : element(by.label('Mark read')).atIndex(1);
     noButton = isAndroid() ? element(by.text('NO')) : element(by.label('No')).atIndex(0);
     noButton2 = isAndroid() ? element(by.text('NO')) : element(by.label('No')).atIndex(1);
     okButton = isAndroid() ? element(by.text('OK')) : element(by.label('OK')).atIndex(1);
-    removeButton = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(1);
+    removeButton = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(0);
+    removeButton1 = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(1);
+    removeButton2 = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(2);
+    removeButton3 = isAndroid() ? element(by.text('REMOVE')) : element(by.label('Remove')).atIndex(3);
     yesButton = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(0);
     yesButton2 = isAndroid() ? element(by.text('YES')) : element(by.label('Yes')).atIndex(1);
 }
