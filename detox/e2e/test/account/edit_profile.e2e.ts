@@ -82,11 +82,11 @@ describe('Account - Edit Profile', () => {
         await EditProfileScreen.firstNameInput.replaceText(`${testUser.first_name}${suffix}`);
         await EditProfileScreen.lastNameInput.replaceText(`${testUser.last_name}${suffix}`);
         await EditProfileScreen.scrollView.tap({x: 1, y: 1});
-        await EditProfileScreen.scrollView.scroll(100, 'down');
+        await waitFor(EditProfileScreen.usernameInput).toBeVisible().whileElement(by.id(EditProfileScreen.testID.scrollView)).scroll(50, 'down');
         await EditProfileScreen.usernameInput.clearText();
         await EditProfileScreen.usernameInput.typeText(`${testUser.username}${suffix}`);
         await EditProfileScreen.scrollView.tap({x: 1, y: 1});
-        await EditProfileScreen.scrollView.scroll(100, 'down');
+        await waitFor(EditProfileScreen.nicknameInput).toBeVisible().whileElement(by.id(EditProfileScreen.testID.scrollView)).scroll(50, 'down');
         await EditProfileScreen.nicknameInput.replaceText(`${testUser.nickname}${suffix}`);
         await EditProfileScreen.scrollView.tap({x: 1, y: 1});
         await EditProfileScreen.positionInput.replaceText(`${testUser.position}${suffix}`);
