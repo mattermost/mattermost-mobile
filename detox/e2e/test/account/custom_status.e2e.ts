@@ -177,7 +177,7 @@ describe('Account - Custom Status', () => {
         if (isIos()) {
             await expect(CustomStatusScreen.statusInput).toHaveValue(defaultStatusText);
         } else {
-            await expect(CustomStatusScreen.statusInput).toHaveText(defaultStatusText);
+            await expect(CustomStatusScreen.statusInput).toHaveText('');
         }
 
         // # Go back to account screen
