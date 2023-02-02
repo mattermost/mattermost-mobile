@@ -19,6 +19,7 @@ import {bottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {alertPushProxyError, alertPushProxyUnknown} from '@utils/push_proxy';
 import {alertServerLogout} from '@utils/server';
+import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -117,7 +118,7 @@ const ChannelListHeader = ({
         marginLeft.value = iconPad ? 50 : 0;
     }, [iconPad]);
 
-    const onPress = useCallback(() => {
+    const onPress = useCallback(preventDoubleTap(() => {
         const renderContent = () => {
             return (
                 <PlusMenu
@@ -154,7 +155,7 @@ const ChannelListHeader = ({
             theme,
             title: intl.formatMessage({id: 'home.header.plus_menu', defaultMessage: 'Options'}),
         });
-    }, [intl, bottom, isTablet, theme]);
+    }), [intl, bottom, isTablet, theme]);
 
     const onPushAlertPress = useCallback(() => {
         if (pushProxyStatus === PUSH_PROXY_STATUS_NOT_AVAILABLE) {
