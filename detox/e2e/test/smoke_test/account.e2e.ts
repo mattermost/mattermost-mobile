@@ -29,7 +29,7 @@ import {
     SettingsScreen,
     ThemeDisplaySettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId, timeouts, wait} from '@support/utils';
+import {getRandomId, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Smoke Test - Account', () => {
@@ -140,7 +140,11 @@ describe('Smoke Test - Account', () => {
         await MentionNotificationSettingsScreen.open();
 
         // * Verify keywords are saved
-        await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveValue(keywords.toLowerCase());
+        if (isIos()) {
+            await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveValue(keywords.toLowerCase());
+        } else {
+            await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveText(keywords.toLowerCase());
+        }
 
         // # Go back to notification settings screen, open push notification settings screen, tap on mentions only option, tap on mobile away option, tap on back button, and go back to notification settings screen
         await MentionNotificationSettingsScreen.back();

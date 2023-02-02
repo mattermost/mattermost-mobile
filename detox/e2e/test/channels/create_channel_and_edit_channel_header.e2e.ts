@@ -20,7 +20,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Create Channel and Edit Channel Header', () => {
@@ -85,7 +85,11 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await ChannelScreen.introSetHeaderAction.tap();
 
         // * Verify channel header is correct
-        await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(header);
+        if (isIos()) {
+            await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(header);
+        } else {
+            await expect(CreateOrEditChannelScreen.headerInput).toHaveText(header);
+        }
 
         // # Edit the channel header, save, and re-open edit channel header screen
         await CreateOrEditChannelScreen.headerInput.replaceText(`${header} edit`);
@@ -93,7 +97,11 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await CreateOrEditChannelScreen.openEditChannelHeader();
 
         // * Verify channel header has new value
-        await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(`${header} edit`);
+        if (isIos()) {
+            await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(`${header} edit`);
+        } else {
+            await expect(CreateOrEditChannelScreen.headerInput).toHaveText(`${header} edit`);
+        }
 
         // # Go back to channel list screen
         await CreateOrEditChannelScreen.close();
@@ -122,7 +130,11 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await ChannelScreen.introSetHeaderAction.tap();
 
         // * Verify channel header is correct
-        await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(header);
+        if (isIos()) {
+            await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(header);
+        } else {
+            await expect(CreateOrEditChannelScreen.headerInput).toHaveText(header);
+        }
 
         // # Edit the channel header, save, and re-open edit channel header screen
         await CreateOrEditChannelScreen.headerInput.replaceText(`${header} edit`);
@@ -130,7 +142,11 @@ describe('Channels - Create Channel and Edit Channel Header', () => {
         await CreateOrEditChannelScreen.openEditChannelHeader();
 
         // * Verify channel header has new value
-        await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(`${header} edit`);
+        if (isIos()) {
+            await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(`${header} edit`);
+        } else {
+            await expect(CreateOrEditChannelScreen.headerInput).toHaveText(`${header} edit`);
+        }
 
         // # Go back to channel list screen
         await CreateOrEditChannelScreen.close();
