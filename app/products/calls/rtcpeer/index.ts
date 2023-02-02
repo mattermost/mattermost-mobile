@@ -13,7 +13,6 @@ import {
     RTCRtpSender,
     RTCSessionDescription,
 } from 'react-native-webrtc';
-import RTCTrackEvent from 'react-native-webrtc/lib/typescript/RTCTrackEvent';
 
 import {logDebug, logError} from '@utils/log';
 
