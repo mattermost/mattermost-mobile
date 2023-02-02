@@ -135,7 +135,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
                 transformer: transformSystemRecord,
                 createOrUpdateRawValues: [{id: 'tos-1', value: '1'}],
                 prepareRecordsOnly: false,
-            }),
+            }, 'test'),
         ).rejects.toThrow(Error);
     });
 });

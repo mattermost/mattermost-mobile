@@ -395,7 +395,7 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
 
             if (!prepareRecordsOnly && models?.length) {
                 try {
-                    await operator.batchRecords(models);
+                    await operator.batchRecords(models, 'syncTeamThreads');
                 } catch (err) {
                     if (__DEV__) {
                         throw err;
@@ -460,7 +460,7 @@ export const loadEarlierThreads = async (serverUrl: string, teamId: string, last
 
             if (!prepareRecordsOnly && models?.length) {
                 try {
-                    await operator.batchRecords(models);
+                    await operator.batchRecords(models, 'loadEarlierThreads');
                 } catch (err) {
                     if (__DEV__) {
                         throw err;

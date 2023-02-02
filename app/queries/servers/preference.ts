@@ -60,7 +60,7 @@ export async function deletePreferences(database: ServerDatabase, preferences: P
             }
         }
         if (preparedModels.length) {
-            await database.operator.batchRecords(preparedModels);
+            await database.operator.batchRecords(preparedModels, 'deletePreferences');
         }
         return true;
     } catch (error) {

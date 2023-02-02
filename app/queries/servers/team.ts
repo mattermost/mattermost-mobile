@@ -214,7 +214,7 @@ export async function deleteMyTeams(operator: ServerDataOperator, myTeams: MyTea
         }
 
         if (preparedModels.length) {
-            await operator.batchRecords(preparedModels);
+            await operator.batchRecords(preparedModels, 'deleteMyTeams');
         }
         return {};
     } catch (error) {

@@ -319,7 +319,7 @@ export async function deleteChannelMembership(operator: ServerDataOperator, user
             models.push(membership.prepareDestroyPermanently());
         }
         if (models.length && !prepareRecordsOnly) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'deleteChannelMembership');
         }
         return {models};
     } catch (error) {

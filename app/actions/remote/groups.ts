@@ -83,7 +83,7 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
         ]);
 
         if (!fetchOnly) {
-            await operator.batchRecords([...groups, ...groupChannels]);
+            await operator.batchRecords([...groups, ...groupChannels], 'fetchGroupsForChannel');
         }
 
         return {groups, groupChannels};
@@ -110,7 +110,7 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetc
         ]);
 
         if (!fetchOnly) {
-            await operator.batchRecords([...groups, ...groupTeams]);
+            await operator.batchRecords([...groups, ...groupTeams], 'fetchGroupsForTeam');
         }
 
         return {groups, groupTeams};
@@ -136,7 +136,7 @@ export const fetchGroupsForMember = async (serverUrl: string, userId: string, fe
         ]);
 
         if (!fetchOnly) {
-            await operator.batchRecords([...groups, ...groupMemberships]);
+            await operator.batchRecords([...groups, ...groupMemberships], 'fetchGroupsForMember');
         }
 
         return {groups, groupMemberships};

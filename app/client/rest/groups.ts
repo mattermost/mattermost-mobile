@@ -5,6 +5,8 @@ import {buildQueryString} from '@utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
+import type ClientBase from './base';
+
 export interface ClientGroupsMix {
     getGroup: (id: string) => Promise<Group>;
     getGroups: (params: {query?: string; filterAllowReference?: boolean; page?: number; perPage?: number; since?: number; includeMemberCount?: boolean}) => Promise<Group[]>;
@@ -16,7 +18,7 @@ export interface ClientGroupsMix {
     getAllTeamsAssociatedToGroup: (groupId: string, filterAllowReference?: boolean) => Promise<{groupTeams: GroupTeam[]}>;
 }
 
-const ClientGroups = (superclass: any) => class extends superclass {
+const ClientGroups = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     getGroup = async (id: string) => {
         return this.doFetch(
             `${this.urlVersion}/groups/${id}`,

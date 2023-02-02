@@ -117,7 +117,7 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
             ),
         ])).flat();
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'retryInitialTeamAndChannel');
 
         const directChannels = chData!.channels!.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
@@ -196,7 +196,7 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
             prepareCommonSystemValues(operator, {currentChannelId: initialChannel?.id}),
         ])).flat();
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'retryInitialChannel');
 
         const directChannels = chData!.channels!.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);

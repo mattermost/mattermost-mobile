@@ -68,7 +68,7 @@ export async function loginEntry({serverUrl, user, deviceToken}: AfterLoginArgs)
             setCurrentTeamAndChannelId(operator, initialTeamId, '');
         }
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'loginEntry');
         setTeamLoading(serverUrl, false);
 
         const config = clData.config || {} as ClientConfig;

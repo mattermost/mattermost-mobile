@@ -5,6 +5,8 @@ import {buildQueryString, isMinimumServerVersion} from '@utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
+import type ClientBase from './base';
+
 export interface ClientThreadsMix {
     getThreads: (userId: string, teamId: string, before?: string, after?: string, pageSize?: number, deleted?: boolean, unread?: boolean, since?: number, totalsOnly?: boolean, serverVersion?: string) => Promise<GetUserThreadsResponse>;
     getThread: (userId: string, teamId: string, threadId: string, extended?: boolean) => Promise<any>;
@@ -14,7 +16,7 @@ export interface ClientThreadsMix {
     updateThreadFollow: (userId: string, teamId: string, threadId: string, state: boolean) => Promise<any>;
 }
 
-const ClientThreads = (superclass: any) => class extends superclass {
+const ClientThreads = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     getThreads = async (userId: string, teamId: string, before = '', after = '', pageSize = PER_PAGE_DEFAULT, deleted = false, unread = false, since = 0, totalsOnly = false, serverVersion = '') => {
         const queryStringObj: Record<string, any> = {
             extended: 'true',

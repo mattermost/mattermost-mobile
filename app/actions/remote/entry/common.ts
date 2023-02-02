@@ -431,7 +431,7 @@ const graphQLSyncAllChannelMembers = async (serverUrl: string) => {
         const modelPromises = await prepareMyChannelsForTeam(operator, '', channels, memberships, undefined, true);
         const models = (await Promise.all(modelPromises)).flat();
         if (models.length) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'graphQLSyncAllChannelMembers');
         }
     }
 

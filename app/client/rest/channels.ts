@@ -5,6 +5,8 @@ import {buildQueryString} from '@utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
+import type ClientBase from './base';
+
 export interface ClientChannelsMix {
     getAllChannels: (page?: number, perPage?: number, notAssociatedToGroup?: string, excludeDefaultChannels?: boolean, includeTotalCount?: boolean) => Promise<any>;
     createChannel: (channel: Channel) => Promise<Channel>;
@@ -42,7 +44,7 @@ export interface ClientChannelsMix {
     searchAllChannels: (term: string, teamIds: string[], archivedOnly?: boolean) => Promise<Channel[]>;
 }
 
-const ClientChannels = (superclass: any) => class extends superclass {
+const ClientChannels = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     getAllChannels = async (page = 0, perPage = PER_PAGE_DEFAULT, notAssociatedToGroup = '', excludeDefaultChannels = false, includeTotalCount = false) => {
         const queryData = {
             page,
@@ -58,7 +60,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     createChannel = async (channel: Channel) => {
-        this.analytics.trackAPI('api_channels_create', {team_id: channel.team_id});
+        this.analytics?.trackAPI('api_channels_create', {team_id: channel.team_id});
 
         return this.doFetch(
             `${this.getChannelsRoute()}`,
@@ -67,7 +69,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     createDirectChannel = async (userIds: string[]) => {
-        this.analytics.trackAPI('api_channels_create_direct');
+        this.analytics?.trackAPI('api_channels_create_direct');
 
         return this.doFetch(
             `${this.getChannelsRoute()}/direct`,
@@ -76,7 +78,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     createGroupChannel = async (userIds: string[]) => {
-        this.analytics.trackAPI('api_channels_create_group');
+        this.analytics?.trackAPI('api_channels_create_group');
 
         return this.doFetch(
             `${this.getChannelsRoute()}/group`,
@@ -85,7 +87,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     deleteChannel = async (channelId: string) => {
-        this.analytics.trackAPI('api_channels_delete', {channel_id: channelId});
+        this.analytics?.trackAPI('api_channels_delete', {channel_id: channelId});
 
         return this.doFetch(
             `${this.getChannelRoute(channelId)}`,
@@ -94,7 +96,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     unarchiveChannel = async (channelId: string) => {
-        this.analytics.trackAPI('api_channels_unarchive', {channel_id: channelId});
+        this.analytics?.trackAPI('api_channels_unarchive', {channel_id: channelId});
 
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/restore`,
@@ -103,7 +105,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     updateChannel = async (channel: Channel) => {
-        this.analytics.trackAPI('api_channels_update', {channel_id: channel.id});
+        this.analytics?.trackAPI('api_channels_update', {channel_id: channel.id});
 
         return this.doFetch(
             `${this.getChannelRoute(channel.id)}`,
@@ -116,7 +118,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     updateChannelPrivacy = async (channelId: string, privacy: any) => {
-        this.analytics.trackAPI('api_channels_update_privacy', {channel_id: channelId, privacy});
+        this.analytics?.trackAPI('api_channels_update_privacy', {channel_id: channelId, privacy});
 
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/privacy`,
@@ -125,7 +127,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     patchChannel = async (channelId: string, channelPatch: Partial<Channel>) => {
-        this.analytics.trackAPI('api_channels_patch', {channel_id: channelId});
+        this.analytics?.trackAPI('api_channels_patch', {channel_id: channelId});
 
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/patch`,
@@ -134,7 +136,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     updateChannelNotifyProps = async (props: ChannelNotifyProps & {channel_id: string; user_id: string}) => {
-        this.analytics.trackAPI('api_users_update_channel_notifications', {channel_id: props.channel_id});
+        this.analytics?.trackAPI('api_users_update_channel_notifications', {channel_id: props.channel_id});
 
         return this.doFetch(
             `${this.getChannelMemberRoute(props.channel_id, props.user_id)}/notify_props`,
@@ -143,7 +145,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     getChannel = async (channelId: string) => {
-        this.analytics.trackAPI('api_channel_get', {channel_id: channelId});
+        this.analytics?.trackAPI('api_channel_get', {channel_id: channelId});
 
         return this.doFetch(
             `${this.getChannelRoute(channelId)}`,
@@ -159,7 +161,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     getChannelByNameAndTeamName = async (teamName: string, channelName: string, includeDeleted = false) => {
-        this.analytics.trackAPI('api_channel_get_by_name_and_teamName', {channel_name: channelName, team_name: teamName, include_deleted: includeDeleted});
+        this.analytics?.trackAPI('api_channel_get_by_name_and_teamName', {channel_name: channelName, team_name: teamName, include_deleted: includeDeleted});
 
         return this.doFetch(
             `${this.getTeamNameRoute(teamName)}/channels/name/${channelName}?include_deleted=${includeDeleted}`,
@@ -241,7 +243,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     addToChannel = async (userId: string, channelId: string, postRootId = '') => {
-        this.analytics.trackAPI('api_channels_add_member', {channel_id: channelId});
+        this.analytics?.trackAPI('api_channels_add_member', {channel_id: channelId});
 
         const member = {user_id: userId, channel_id: channelId, post_root_id: postRootId};
         return this.doFetch(
@@ -251,7 +253,7 @@ const ClientChannels = (superclass: any) => class extends superclass {
     };
 
     removeFromChannel = async (userId: string, channelId: string) => {
-        this.analytics.trackAPI('api_channels_remove_member', {channel_id: channelId});
+        this.analytics?.trackAPI('api_channels_remove_member', {channel_id: channelId});
 
         return this.doFetch(
             `${this.getChannelMemberRoute(channelId, userId)}`,

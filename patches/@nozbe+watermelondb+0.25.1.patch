@@ -1,8 +1,19 @@
 diff --git a/node_modules/@nozbe/watermelondb/Database/index.js b/node_modules/@nozbe/watermelondb/Database/index.js
-index 8d71c6f..9ad75d6 100644
+index 8d71c6f..30832c8 100644
 --- a/node_modules/@nozbe/watermelondb/Database/index.js
 +++ b/node_modules/@nozbe/watermelondb/Database/index.js
-@@ -126,6 +126,10 @@ var Database = /*#__PURE__*/function () {
+@@ -91,7 +91,9 @@ var Database = /*#__PURE__*/function () {
+ 
+         if (!preparedState) {
+           (0, _common.invariant)('disposable' !== record._raw._status, "Cannot batch a disposable record");
+-          throw new Error("Cannot batch a record that doesn't have a prepared create/update/delete");
++          //throw new Error("Cannot batch a record that doesn't have a prepared create/update/delete");
++          console.debug('Trying to batch a record with no prepared state on table', record.constructor.table)
++          return;
+         }
+ 
+         var raw = record._raw;
+@@ -126,6 +128,10 @@ var Database = /*#__PURE__*/function () {
            // subsequent changes to the record don't trip up the invariant
            // TODO: What if this fails?
            record._preparedState = null;
@@ -73,15 +84,20 @@ index 43cd902..baefb53 100644
    prepareMarkAsDeleted(): this
  
 diff --git a/node_modules/@nozbe/watermelondb/Model/index.js b/node_modules/@nozbe/watermelondb/Model/index.js
-index b0e3a83..56924aa 100644
+index b0e3a83..eec0874 100644
 --- a/node_modules/@nozbe/watermelondb/Model/index.js
 +++ b/node_modules/@nozbe/watermelondb/Model/index.js
-@@ -81,7 +81,12 @@ var Model = /*#__PURE__*/function () {
+@@ -81,7 +81,17 @@ var Model = /*#__PURE__*/function () {
    _proto.prepareUpdate = function prepareUpdate(recordUpdater = _noop.default) {
      var _this = this;
  
 -    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes");
-+    //(0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes in table " + _this.table);
++    if ('deleted' === this._raw._status) {
++      console.debug("Updating a deleted record in table " + _this.table)
++      return this;
++    }
++
++    //(0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes");
 +    if (this._preparedState) {
 +      console.debug("Updating a record with pending changes in table " + _this.table)
 +    } else {
@@ -90,7 +106,7 @@ index b0e3a83..56924aa 100644
  
      this.__ensureNotDisposable("Model.prepareUpdate()");
  
-@@ -91,7 +96,6 @@ var Model = /*#__PURE__*/function () {
+@@ -91,7 +101,6 @@ var Model = /*#__PURE__*/function () {
        this._setRaw((0, _Schema.columnName)('updated_at'), Date.now());
      } // Perform updates
  
@@ -98,7 +114,7 @@ index b0e3a83..56924aa 100644
      (0, _ensureSync.default)(recordUpdater(this));
      this._isEditing = false;
      this._preparedState = 'update'; // TODO: `process.nextTick` doesn't work on React Native
-@@ -107,6 +111,18 @@ var Model = /*#__PURE__*/function () {
+@@ -107,6 +116,18 @@ var Model = /*#__PURE__*/function () {
      return this;
    };
  
@@ -116,6 +132,18 @@ index b0e3a83..56924aa 100644
 +
    _proto.prepareMarkAsDeleted = function prepareMarkAsDeleted() {
      (0, _invariant.default)(!this._preparedState, "Cannot mark a record with pending changes as deleted");
+ 
+@@ -118,7 +139,10 @@ var Model = /*#__PURE__*/function () {
+   };
+ 
+   _proto.prepareDestroyPermanently = function prepareDestroyPermanently() {
+-    (0, _invariant.default)(!this._preparedState, "Cannot destroy permanently a record with pending changes");
++    //(0, _invariant.default)(!this._preparedState, "Cannot destroy permanently a record with pending changes");
++    if (this._preparedState) {
++      console.debug("Deleting a record with pending changes in table " + this.table);
++    }
+ 
+     this.__ensureNotDisposable("Model.prepareDestroyPermanently()");
  
 diff --git a/node_modules/@nozbe/watermelondb/Query/index.d.ts b/node_modules/@nozbe/watermelondb/Query/index.d.ts
 index eb2bd84..eb02824 100644
