@@ -9,6 +9,7 @@ import type ServerDataOperator from '@database/operator/server_data_operator';
 import type {Database} from '@nozbe/watermelondb';
 import type Model from '@nozbe/watermelondb/Model';
 import type {Clause} from '@nozbe/watermelondb/QueryDescription';
+import type {Class} from '@nozbe/watermelondb/types';
 import type System from '@typings/database/models/servers/system';
 
 export type WithDatabaseArgs = { database: Database }
@@ -62,7 +63,7 @@ export type OperationArgs<T extends Model> = {
   transformer: (args: TransformerArgs) => Promise<T>;
 };
 
-export type Models = Model[];
+export type Models = Array<Class<Model>>;
 
 // The elements needed to create a new database
 export type CreateServerDatabaseArgs = {
