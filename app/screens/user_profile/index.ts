@@ -12,7 +12,7 @@ import {observeChannel} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCanManageChannelMembers, observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
-import {observeTeammateNameDisplay, observeUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
+import {observeTeammateNameDisplay, observeCurrentUser, observeUser, observeUserIsChannelAdmin, observeUserIsTeamAdmin} from '@queries/servers/user';
 import {isSystemAdmin} from '@utils/user';
 
 import UserProfile from './user_profile';
@@ -25,6 +25,7 @@ type EnhancedProps = WithDatabaseArgs & {
 }
 
 const enhanced = withObservables([], ({channelId, database, userId}: EnhancedProps) => {
+    const currentUser = observeCurrentUser(database);
     const currentUserId = observeCurrentUserId(database);
     const channel = channelId ? observeChannel(database, channelId) : of$(undefined);
     const user = observeUser(database, userId);
@@ -47,10 +48,10 @@ const enhanced = withObservables([], ({channelId, database, userId}: EnhancedPro
     const isCustomStatusEnabled = observeConfigBooleanValue(database, 'EnableCustomUserStatuses');
 
     // can remove member
-    const canManageAndRemoveMembers = combineLatest([channel, user]).pipe(
+    const canManageAndRemoveMembers = combineLatest([channel, currentUser]).pipe(
         switchMap(([c, u]) => (c && u ? observeCanManageChannelMembers(database, c.id, u) : of$(false))));
 
-    const canChangeMemberRoles = combineLatest([channel, user, canManageAndRemoveMembers]).pipe(
+    const canChangeMemberRoles = combineLatest([channel, currentUser, canManageAndRemoveMembers]).pipe(
         switchMap(([c, u, m]) => (of$(c?.id) && of$(u) && of$(m) && observePermissionForChannel(database, c, u, Permissions.MANAGE_CHANNEL_ROLES, true))));
 
     return {
