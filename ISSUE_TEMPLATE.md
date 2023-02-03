@@ -1,4 +1,4 @@
-Submit feature requests to https://portal.productboard.com/mattermost/33-what-matters-to-you. File non-security related bugs here in the following format: 
+Submit feature requests to https://mattermost.com/suggestions/. File non-security related bugs here in the following format: 
 
 #### Summary
 Issue in one concise sentence.
