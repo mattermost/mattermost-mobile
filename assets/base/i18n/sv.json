@@ -972,5 +972,20 @@
     "invite.summary.try_again": "Försök igen",
     "invite.summary.some_not_sent": "{notSentCount, plural, one {En inbjudan} other {Några inbjudningar}} skickades inte",
     "channel_info.archive_description.cannot_view_archived": "Detta kommer att arkivera kanalen från teamet och ta bort den från användargränssnittet. Arkiverade kanaler kan hämtas från arkivet om de behövs igen.\n\nÄr du säker på att du vill arkivera {term} {name}?",
-    "channel_info.archive_description.can_view_archived": "Detta kommer att arkivera kanalen från teamet. Kanalens innehåll kommer fortfarande att vara tillgängligt för medlemmarna i kanalen.\n\nÄr du säker på att du vill arkivera {term} {name}?"
+    "channel_info.archive_description.can_view_archived": "Detta kommer att arkivera kanalen från teamet. Kanalens innehåll kommer fortfarande att vara tillgängligt för medlemmarna i kanalen.\n\nÄr du säker på att du vill arkivera {term} {name}?",
+    "snack.bar.remove.user": "1 medlem togs bort från kanalen",
+    "mobile.manage_members.section_title_members": "MEDLEMMAR",
+    "mobile.manage_members.section_title_admins": "KANALADMINISTRATÖRER",
+    "mobile.manage_members.remove_member": "Ta bort från kanalen",
+    "mobile.manage_members.remove": "Ta bort",
+    "mobile.manage_members.message": "Är du säker på att du vill ta bort den valda medlemmen från kanalen?",
+    "mobile.manage_members.member": "Medlem",
+    "mobile.manage_members.manage_member": "Hantera medlem",
+    "mobile.manage_members.manage": "Hantera",
+    "mobile.manage_members.make_channel_member": "Gör till kanal medlem",
+    "mobile.manage_members.make_channel_admin": "Gör till kanaladministratör",
+    "mobile.manage_members.done": "Klar",
+    "mobile.manage_members.change_role.error": "Ett fel inträffade när du försökte uppdatera rollen. Kontrollera din anslutning och försök igen.",
+    "mobile.manage_members.cancel": "Avbryt",
+    "mobile.manage_members.admin": "Administratör"
 }
