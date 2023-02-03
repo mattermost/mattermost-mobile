@@ -44,3 +44,10 @@ export const showAddChannelMembersSnackbar = (ids: string[]) => {
         messageValues: {numMembers: ids.length},
     });
 };
+
+export const showRemoveChannelUserSnackbar = () => {
+    return showSnackBar({
+        barType: SNACK_BAR_TYPE.REMOVE_CHANNEL_USER,
+        sourceScreen: Screens.MANAGE_CHANNEL_MEMBERS,
+    });
+};

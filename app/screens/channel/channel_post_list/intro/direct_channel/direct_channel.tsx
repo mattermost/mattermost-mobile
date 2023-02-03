@@ -74,7 +74,7 @@ const DirectChannel = ({channel, currentUserId, isBot, members, theme}: Props) =
     useEffect(() => {
         const channelMembers = members?.filter((m) => m.userId !== currentUserId);
         if (!channelMembers?.length) {
-            fetchProfilesInChannel(serverUrl, channel.id, currentUserId, false);
+            fetchProfilesInChannel(serverUrl, channel.id, currentUserId, undefined, false);
         }
     }, []);
 

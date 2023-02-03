@@ -136,7 +136,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         await NavigationStore.waitUntilScreenHasLoaded(Screens.THREAD);
     }
 
-    await operator.batchRecords(models);
+    await operator.batchRecords(models, 'pushNotificationEntry');
     setTeamLoading(serverUrl, false);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(operator.database))!;

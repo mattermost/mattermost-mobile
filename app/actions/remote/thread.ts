@@ -360,7 +360,7 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
             const allNewThreads = await fetchThreads(
                 serverUrl,
                 teamId,
-                {deleted: true, since: syncData.latest},
+                {deleted: true, since: syncData.latest + 1},
             );
             if (allNewThreads.error) {
                 return {error: allNewThreads.error};
@@ -395,7 +395,7 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
 
             if (!prepareRecordsOnly && models?.length) {
                 try {
-                    await operator.batchRecords(models);
+                    await operator.batchRecords(models, 'syncTeamThreads');
                 } catch (err) {
                     if (__DEV__) {
                         throw err;
@@ -460,7 +460,7 @@ export const loadEarlierThreads = async (serverUrl: string, teamId: string, last
 
             if (!prepareRecordsOnly && models?.length) {
                 try {
-                    await operator.batchRecords(models);
+                    await operator.batchRecords(models, 'loadEarlierThreads');
                 } catch (err) {
                     if (__DEV__) {
                         throw err;

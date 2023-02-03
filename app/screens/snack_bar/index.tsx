@@ -39,7 +39,7 @@ const SNACK_BAR_WIDTH = 96;
 const SNACK_BAR_HEIGHT = 56;
 const SNACK_BAR_BOTTOM_RATIO = 0.04;
 
-const caseScreens: AvailableScreens[] = [Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_MESSAGES];
+const caseScreens: AvailableScreens[] = [Screens.PERMALINK, Screens.MANAGE_CHANNEL_MEMBERS, Screens.MENTIONS, Screens.SAVED_MESSAGES];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {

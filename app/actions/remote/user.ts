@@ -74,7 +74,7 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
     }
 };
 
-export async function fetchProfilesInChannel(serverUrl: string, channelId: string, excludeUserId?: string, fetchOnly = false): Promise<ProfilesInChannelRequest> {
+export async function fetchProfilesInChannel(serverUrl: string, channelId: string, excludeUserId?: string, options?: GetUsersOptions, fetchOnly = false): Promise<ProfilesInChannelRequest> {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -83,7 +83,7 @@ export async function fetchProfilesInChannel(serverUrl: string, channelId: strin
     }
 
     try {
-        const users = await client.getProfilesInChannel(channelId);
+        const users = await client.getProfilesInChannel(channelId, options);
         const uniqueUsers = Array.from(new Set(users));
         const filteredUsers = uniqueUsers.filter((u) => u.id !== excludeUserId);
         if (!fetchOnly) {
@@ -102,12 +102,13 @@ export async function fetchProfilesInChannel(serverUrl: string, channelId: strin
                 modelPromises.push(prepare);
 
                 const models = await Promise.all(modelPromises);
-                await operator.batchRecords(models.flat());
+                await operator.batchRecords(models.flat(), 'fetchProfilesInChannel');
             }
         }
 
         return {channelId, users: filteredUsers};
     } catch (error) {
+        logError('fetchProfilesInChannel', error);
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {channelId, error};
     }
@@ -177,7 +178,7 @@ export async function fetchProfilesInGroupChannels(serverUrl: string, groupChann
             }
 
             const models = await Promise.all(modelPromises);
-            await operator.batchRecords(models.flat());
+            await operator.batchRecords(models.flat(), 'fetchProfilesInGroupChannels');
         }
 
         return {data};
@@ -198,7 +199,7 @@ export async function fetchProfilesPerChannels(serverUrl: string, channelIds: st
         const data: ProfilesInChannelRequest[] = [];
 
         for await (const cIds of channels) {
-            const requests = cIds.map((id) => fetchProfilesInChannel(serverUrl, id, excludeUserId, true));
+            const requests = cIds.map((id) => fetchProfilesInChannel(serverUrl, id, excludeUserId, undefined, true));
             const response = await Promise.all(requests);
             data.push(...response);
         }
@@ -229,7 +230,7 @@ export async function fetchProfilesPerChannels(serverUrl: string, channelIds: st
             }
 
             const models = await Promise.all(modelPromises);
-            await operator.batchRecords(models.flat());
+            await operator.batchRecords(models.flat(), 'fetchProfilesPerChannels');
         }
 
         return {data};
@@ -365,7 +366,7 @@ export async function fetchStatusByIds(serverUrl: string, userIds: string[], fet
                     user.prepareStatus(status?.status || General.OFFLINE);
                 }
 
-                await operator.batchRecords(users);
+                await operator.batchRecords(users, 'fetchStatusByIds');
             }
         }
 
@@ -560,7 +561,7 @@ export const fetchProfilesNotInChannel = async (
     }
 };
 
-export const searchProfiles = async (serverUrl: string, term: string, options: any = {}, fetchOnly = false) => {
+export const searchProfiles = async (serverUrl: string, term: string, options: SearchUserOptions, fetchOnly = false) => {
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -593,6 +594,7 @@ export const searchProfiles = async (serverUrl: string, term: string, options: a
 
         return {data: users};
     } catch (error) {
+        logError('searchProfiles', error);
         forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error};
     }
@@ -669,7 +671,7 @@ export async function updateAllUsersSince(serverUrl: string, since: number, fetc
                 modelsToBatch.push(...models);
             }
 
-            await operator.batchRecords(modelsToBatch);
+            await operator.batchRecords(modelsToBatch, 'updateAllUsersSince');
         }
     } catch {
         // Do nothing
@@ -705,7 +707,7 @@ export async function updateUsersNoLongerVisible(serverUrl: string, prepareRecor
             }
         }
         if (models.length && !prepareRecordsOnly) {
-            serverDatabase.operator.batchRecords(models);
+            serverDatabase.operator.batchRecords(models, 'updateUsersNoLongerVisible');
         }
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
@@ -945,7 +947,7 @@ export const fetchTeamAndChannelMembership = async (serverUrl: string, userId: s
         }
 
         const models = await Promise.all(modelPromises);
-        await operator.batchRecords(models.flat());
+        await operator.batchRecords(models.flat(), 'fetchTeamAndChannelMembership');
         return {error: undefined};
     } catch (error) {
         return {error};

@@ -420,7 +420,7 @@ export async function setCurrentChannelId(operator: ServerDataOperator, channelI
     try {
         const models = await prepareCommonSystemValues(operator, {currentChannelId: channelId});
         if (models) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'setCurrentChannelId');
         }
 
         return {currentChannelId: channelId};
@@ -436,7 +436,7 @@ export async function setCurrentTeamAndChannelId(operator: ServerDataOperator, t
             currentTeamId: teamId,
         });
         if (models) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'setCurrentTeamAndChannelId');
         }
 
         return {currentTeamId: teamId, currentChannelId: channelId};
