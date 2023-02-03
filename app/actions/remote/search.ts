@@ -103,7 +103,7 @@ export const searchPosts = async (serverUrl: string, teamId: string, params: Pos
             return mdls;
         });
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'searchPosts');
         return {
             order,
             posts: postsArray,

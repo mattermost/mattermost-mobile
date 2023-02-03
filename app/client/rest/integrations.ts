@@ -5,6 +5,8 @@ import {buildQueryString} from '@utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
+import type ClientBase from './base';
+
 export interface ClientIntegrationsMix {
     getCommandsList: (teamId: string) => Promise<Command[]>;
     getCommandAutocompleteSuggestionsList: (userInput: string, teamId: string, channelId: string, rootId?: string) => Promise<AutocompleteSuggestion[]>;
@@ -14,7 +16,7 @@ export interface ClientIntegrationsMix {
     submitInteractiveDialog: (data: DialogSubmission) => Promise<any>;
 }
 
-const ClientIntegrations = (superclass: any) => class extends superclass {
+const ClientIntegrations = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     getCommandsList = async (teamId: string) => {
         return this.doFetch(
             `${this.getCommandsRoute()}?team_id=${teamId}`,
@@ -37,7 +39,7 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
     };
 
     executeCommand = async (command: string, commandArgs = {}) => {
-        this.analytics.trackAPI('api_integrations_used');
+        this.analytics?.trackAPI('api_integrations_used');
 
         return this.doFetch(
             `${this.getCommandsRoute()}/execute`,
@@ -46,7 +48,7 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
     };
 
     addCommand = async (command: Command) => {
-        this.analytics.trackAPI('api_integrations_created');
+        this.analytics?.trackAPI('api_integrations_created');
 
         return this.doFetch(
             `${this.getCommandsRoute()}`,
@@ -55,7 +57,7 @@ const ClientIntegrations = (superclass: any) => class extends superclass {
     };
 
     submitInteractiveDialog = async (data: DialogSubmission) => {
-        this.analytics.trackAPI('api_interactive_messages_dialog_submitted');
+        this.analytics?.trackAPI('api_interactive_messages_dialog_submitted');
         return this.doFetch(
             `${this.urlVersion}/actions/dialogs/submit`,
             {method: 'post', body: data},

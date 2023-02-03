@@ -26,6 +26,7 @@ export default class ClientBase {
     requestHeaders: {[x: string]: string} = {};
     serverVersion = '';
     urlVersion = '/api/v4';
+    enableLogging = false;
 
     constructor(apiClient: APIClientInterface, serverUrl: string, bearerToken?: string, csrfToken?: string) {
         this.apiClient = apiClient;
@@ -43,6 +44,10 @@ export default class ClientBase {
         if (this.apiClient) {
             this.apiClient.invalidate();
         }
+    }
+
+    getBaseRoute() {
+        return this.apiClient.baseUrl || '';
     }
 
     getAbsoluteUrl(baseUrl?: string) {
@@ -303,7 +308,7 @@ export default class ClientBase {
         }
 
         if (response.ok) {
-            return returnDataOnly ? response.data : response;
+            return returnDataOnly ? (response.data || {}) : response;
         }
 
         throw new ClientError(this.apiClient.baseUrl, {

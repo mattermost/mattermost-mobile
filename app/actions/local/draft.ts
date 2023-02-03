@@ -26,7 +26,7 @@ export async function updateDraftFile(serverUrl: string, channelId: string, root
         });
 
         if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft]);
+            await operator.batchRecords([draft], 'updateDraftFile');
         }
 
         return {draft};
@@ -58,7 +58,7 @@ export async function removeDraftFile(serverUrl: string, channelId: string, root
         }
 
         if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft]);
+            await operator.batchRecords([draft], 'removeDraftFile');
         }
 
         return {draft};
@@ -99,7 +99,7 @@ export async function updateDraftMessage(serverUrl: string, channelId: string, r
         }
 
         if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft]);
+            await operator.batchRecords([draft], 'updateDraftMessage');
         }
 
         return {draft};
@@ -129,7 +129,7 @@ export async function addFilesToDraft(serverUrl: string, channelId: string, root
         });
 
         if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft]);
+            await operator.batchRecords([draft], 'addFilesToDraft');
         }
 
         return {draft};

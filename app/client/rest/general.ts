@@ -6,6 +6,8 @@ import {buildQueryString} from '@utils/helpers';
 import {PER_PAGE_DEFAULT} from './constants';
 import ClientError from './error';
 
+import type ClientBase from './base';
+
 type PoliciesResponse<T> = {
     policies: T[];
     total_count: number;
@@ -25,7 +27,7 @@ export interface ClientGeneralMix {
     getRedirectLocation: (urlParam: string) => Promise<Record<string, string>>;
 }
 
-const ClientGeneral = (superclass: any) => class extends superclass {
+const ClientGeneral = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     getOpenGraphMetadata = async (url: string) => {
         return this.doFetch(
             `${this.urlVersion}/opengraph`,
@@ -49,7 +51,7 @@ const ClientGeneral = (superclass: any) => class extends superclass {
         const url = `${this.urlVersion}/logs`;
 
         if (!this.enableLogging) {
-            throw new ClientError(this.client.baseUrl, {
+            throw new ClientError(this.apiClient.baseUrl, {
                 message: 'Logging disabled.',
                 url,
             });

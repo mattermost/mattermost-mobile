@@ -82,7 +82,7 @@ export async function deferredAppEntryGraphQLActions(
             modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
         }
         const models = (await Promise.all(modelPromises)).flat();
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'deferredAppEntryActions');
 
         setTimeout(() => {
             if (result.chData?.channels?.length && result.chData.memberships?.length) {

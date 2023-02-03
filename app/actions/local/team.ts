@@ -22,7 +22,7 @@ export async function removeUserFromTeam(serverUrl: string, teamId: string) {
                 models.push(...system);
             }
             if (models.length) {
-                await operator.batchRecords(models);
+                await operator.batchRecords(models, 'removeUserFromTeam');
             }
         }
 
@@ -61,7 +61,7 @@ export async function addSearchToTeamSearchHistory(serverUrl: string, teamId: st
             }
         }
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'addSearchToTeamHistory');
         return {searchModel};
     } catch (error) {
         logError('Failed addSearchToTeamSearchHistory', error);
