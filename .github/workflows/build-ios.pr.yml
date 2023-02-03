@@ -1,0 +1,16 @@
+---
+name: build
+# TODO: define these conditions afterwards
+on:
+  push:
+    branches:
+
+jobs:
+  test:
+    uses: ./.github/workflows/.test.yml
+  build-ios-pr:
+    uses: ./.github/workflows/.build-ios.yml
+    with:
+      is_pr: true
+      branch_to_build: "${{ github.ref_name }}"
+    needs: [test]
