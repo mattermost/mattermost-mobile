@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ServerListScreen {
@@ -66,7 +66,12 @@ class ServerListScreen {
     };
 
     close = async () => {
-        await this.serverListScreen.swipe('down');
+        if (isIos()) {
+            await this.serverListScreen.swipe('down');
+        } else {
+            await device.pressBack();
+        }
+        await wait(timeouts.ONE_SEC);
         await expect(this.serverListScreen).not.toBeVisible();
         await wait(timeouts.ONE_SEC);
     };
