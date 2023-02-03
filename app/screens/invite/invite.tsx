@@ -138,7 +138,7 @@ export default function Invite({
             return;
         }
 
-        const {data} = await searchProfiles(serverUrl, searchTerm.toLowerCase());
+        const {data} = await searchProfiles(serverUrl, searchTerm.toLowerCase(), {});
         const results: SearchResult[] = data ?? [];
 
         if (!results.length && isEmail(searchTerm.trim())) {

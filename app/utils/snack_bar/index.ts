@@ -30,3 +30,10 @@ export const showFavoriteChannelSnackbar = (favorited: boolean, onAction: () => 
         barType: favorited ? SNACK_BAR_TYPE.FAVORITE_CHANNEL : SNACK_BAR_TYPE.UNFAVORITE_CHANNEL,
     });
 };
+
+export const showRemoveChannelUserSnackbar = () => {
+    return showSnackBar({
+        barType: SNACK_BAR_TYPE.REMOVE_CHANNEL_USER,
+        sourceScreen: Screens.MANAGE_CHANNEL_MEMBERS,
+    });
+};
