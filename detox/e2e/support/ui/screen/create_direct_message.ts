@@ -78,7 +78,7 @@ class CreateDirectMessageScreen {
     };
 
     closeTutorial = async () => {
-        await expect(this.tutorialHighlight).toExist();
+        await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
         await this.tutorialSwipeLeft.tap();
         await expect(this.tutorialHighlight).not.toExist();
     };

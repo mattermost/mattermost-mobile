@@ -105,10 +105,7 @@ describe('Channels - Edit Channel', () => {
         // # Edit channel info and save changes
         await CreateOrEditChannelScreen.displayNameInput.typeText(' name');
         await CreateOrEditChannelScreen.purposeInput.typeText(' purpose');
-        await CreateOrEditChannelScreen.headerInput.tapReturnKey();
-        await CreateOrEditChannelScreen.headerInput.typeText('header1');
-        await CreateOrEditChannelScreen.headerInput.tapReturnKey();
-        await CreateOrEditChannelScreen.headerInput.typeText('header2');
+        await CreateOrEditChannelScreen.headerInput.typeText('\nheader1\nheader2');
         await CreateOrEditChannelScreen.saveButton.tap();
 
         // * Verify on channel info screen and changes have been saved

@@ -110,6 +110,7 @@ describe('Channels - Channel List', () => {
         await ChannelListScreen.getCategoryExpanded(channelsCategory).tap();
 
         // * Verify category is collapsed and channels are not listed
+        await wait(timeouts.ONE_SEC);
         await expect(ChannelListScreen.getCategoryCollapsed(channelsCategory)).toBeVisible();
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).not.toBeVisible();
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).not.toBeVisible();
@@ -119,6 +120,7 @@ describe('Channels - Channel List', () => {
         await ChannelListScreen.getCategoryCollapsed(channelsCategory).tap();
 
         // * Verify category is expanded and all channels are listed
+        await wait(timeouts.ONE_SEC);
         await expect(ChannelListScreen.getCategoryExpanded(channelsCategory)).toBeVisible();
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).toBeVisible();
