@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ProfilePicture} from '@support/ui/component';
-import {timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ReactionsScreen {
@@ -22,7 +22,12 @@ class ReactionsScreen {
     };
 
     close = async () => {
-        await this.reactionsScreen.swipe('down');
+        if (isIos()) {
+            await this.reactionsScreen.swipe('down');
+        } else {
+            await device.pressBack();
+        }
+        await wait(timeouts.ONE_SEC);
         await expect(this.reactionsScreen).not.toBeVisible();
         await wait(timeouts.ONE_SEC);
     };
