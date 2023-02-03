@@ -4,37 +4,41 @@
 import moment from 'moment';
 import mtz from 'moment-timezone';
 import React, {useEffect, useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {defineMessages, useIntl} from 'react-intl';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchTeamAndChannelMembership} from '@actions/remote/user';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
-import {getLocaleFromLanguage} from '@i18n';
+import {getLocaleFromLanguage, t} from '@i18n';
 import BottomSheet from '@screens/bottom_sheet';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
-import UserProfileCustomStatus from './custom_status';
-import UserProfileLabel from './label';
+import ManageUserOptions, {DIVIDER_MARGIN} from './manage_user_options';
 import UserProfileOptions, {OptionsType} from './options';
-import UserProfileTitle from './title';
+import UserProfileTitle, {HEADER_TEXT_HEIGHT} from './title';
+import UserInfo from './user_info';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
+    canChangeMemberRoles: boolean;
     channelId?: string;
     closeButtonId: string;
     currentUserId: string;
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
     isChannelAdmin: boolean;
+    canManageAndRemoveMembers?: boolean;
     isCustomStatusEnabled: boolean;
     isDirectMessage: boolean;
+    isDefaultChannel: boolean;
     isMilitaryTime: boolean;
     isSystemAdmin: boolean;
     isTeamAdmin: boolean;
+    manageMode?: boolean;
     location: AvailableScreens;
     teamId: string;
     teammateDisplayName: string;
@@ -47,13 +51,39 @@ const TITLE_HEIGHT = 118;
 const OPTIONS_HEIGHT = 82;
 const SINGLE_OPTION_HEIGHT = 68;
 const LABEL_HEIGHT = 58;
+const EXTRA_HEIGHT = 60;
+const MANAGE_ICON_HEIGHT = 72;
+
+const messages = defineMessages({
+    manageMember: {
+        id: t('mobile.manage_members.manage_member'),
+        defaultMessage: 'Manage member',
+    },
+});
 const channelContextScreens: AvailableScreens[] = [Screens.CHANNEL, Screens.THREAD];
 
 const UserProfile = ({
-    channelId, closeButtonId, currentUserId, enablePostIconOverride, enablePostUsernameOverride,
-    isChannelAdmin, isCustomStatusEnabled, isDirectMessage, isMilitaryTime, isSystemAdmin, isTeamAdmin,
-    location, teamId, teammateDisplayName,
-    user, userIconOverride, usernameOverride,
+    canChangeMemberRoles,
+    canManageAndRemoveMembers,
+    channelId,
+    closeButtonId,
+    currentUserId,
+    enablePostIconOverride,
+    enablePostUsernameOverride,
+    isChannelAdmin,
+    isCustomStatusEnabled,
+    isDefaultChannel,
+    isDirectMessage,
+    isMilitaryTime,
+    isSystemAdmin,
+    isTeamAdmin,
+    location,
+    manageMode = false,
+    teamId,
+    teammateDisplayName,
+    user,
+    userIconOverride,
+    usernameOverride,
 }: Props) => {
     const {formatMessage, locale} = useIntl();
     const serverUrl = useServerUrl();
@@ -76,37 +106,48 @@ const UserProfile = ({
     }
 
     const showCustomStatus = isCustomStatusEnabled && Boolean(customStatus) && !user.isBot && !isCustomStatusExpired(user);
-    const showUserProfileOptions = (!isDirectMessage || !channelContext) && !override;
-    const showNickname = Boolean(user.nickname) && !override && !user.isBot;
-    const showPosition = Boolean(user.position) && !override && !user.isBot;
-    const showLocalTime = Boolean(localTime) && !override && !user.isBot;
+    const showUserProfileOptions = (!isDirectMessage || !channelContext) && !override && !manageMode;
+    const showNickname = Boolean(user.nickname) && !override && !user.isBot && !manageMode;
+    const showPosition = Boolean(user.position) && !override && !user.isBot && !manageMode;
+    const showLocalTime = Boolean(localTime) && !override && !user.isBot && !manageMode;
+
+    const headerText = manageMode ? formatMessage(messages.manageMember) : undefined;
 
     const snapPoints = useMemo(() => {
         let title = TITLE_HEIGHT;
+
+        if (headerText) {
+            title += HEADER_TEXT_HEIGHT;
+        }
+
         if (showUserProfileOptions) {
             title += showOptions === 'all' ? OPTIONS_HEIGHT : SINGLE_OPTION_HEIGHT;
         }
 
-        let labels = 0;
-        if (showCustomStatus) {
-            labels += 1;
+        const optionsCount = [
+            showCustomStatus,
+            showNickname,
+            showPosition,
+            showLocalTime,
+        ].reduce((acc, v) => {
+            return v ? acc + 1 : acc;
+        }, 0);
+
+        if (manageMode) {
+            title += DIVIDER_MARGIN * 2;
+            if (canChangeMemberRoles) {
+                title += SINGLE_OPTION_HEIGHT; // roles button
+            }
+            if (canManageAndRemoveMembers) {
+                title += SINGLE_OPTION_HEIGHT; // roles button
+            }
         }
 
-        if (showNickname) {
-            labels += 1;
-        }
-
-        if (showPosition) {
-            labels += 1;
-        }
-
-        if (showLocalTime) {
-            labels += 1;
-        }
+        const extraHeight = manageMode ? 0 : EXTRA_HEIGHT;
 
         return [
             1,
-            bottomSheetSnapPoint(labels, LABEL_HEIGHT, bottom) + title,
+            bottomSheetSnapPoint(optionsCount, LABEL_HEIGHT, bottom) + title + extraHeight,
         ];
     }, [
         showUserProfileOptions, showCustomStatus, showNickname,
@@ -125,6 +166,8 @@ const UserProfile = ({
                 <UserProfileTitle
                     enablePostIconOverride={enablePostIconOverride}
                     enablePostUsernameOverride={enablePostUsernameOverride}
+                    headerText={headerText}
+                    imageSize={manageMode ? MANAGE_ICON_HEIGHT : undefined}
                     isChannelAdmin={isChannelAdmin}
                     isSystemAdmin={isSystemAdmin}
                     isTeamAdmin={isTeamAdmin}
@@ -141,27 +184,24 @@ const UserProfile = ({
                         userId={user.id}
                     />
                 }
-                {showCustomStatus && <UserProfileCustomStatus customStatus={customStatus!}/>}
-                {showNickname &&
-                <UserProfileLabel
-                    description={user.nickname}
-                    testID='user_profile.nickname'
-                    title={formatMessage({id: 'channel_info.nickname', defaultMessage: 'Nickname'})}
-                />
+                {!manageMode &&
+                    <UserInfo
+                        localTime={localTime}
+                        showCustomStatus={showCustomStatus}
+                        showNickname={showNickname}
+                        showPosition={showPosition}
+                        showLocalTime={showLocalTime}
+                        user={user}
+                    />
                 }
-                {showPosition &&
-                <UserProfileLabel
-                    description={user.position}
-                    testID='user_profile.position'
-                    title={formatMessage({id: 'channel_info.position', defaultMessage: 'Position'})}
-                />
-                }
-                {showLocalTime &&
-                <UserProfileLabel
-                    description={localTime!}
-                    testID='user_profile.local_time'
-                    title={formatMessage({id: 'channel_info.local_time', defaultMessage: 'Local Time'})}
-                />
+                {manageMode && channelId && (canManageAndRemoveMembers || canChangeMemberRoles) &&
+                    <ManageUserOptions
+                        canChangeMemberRoles={canChangeMemberRoles}
+                        channelId={channelId}
+                        isDefaultChannel={isDefaultChannel}
+                        isChannelAdmin={isChannelAdmin}
+                        userId={user.id}
+                    />
                 }
             </>
         );

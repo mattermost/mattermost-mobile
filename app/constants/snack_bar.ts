@@ -9,6 +9,7 @@ export const SNACK_BAR_TYPE = keyMirror({
     LINK_COPIED: null,
     MESSAGE_COPIED: null,
     MUTE_CHANNEL: null,
+    REMOVE_CHANNEL_USER: null,
     UNFAVORITE_CHANNEL: null,
     UNMUTE_CHANNEL: null,
 });
@@ -43,6 +44,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         id: t('snack.bar.mute.channel'),
         defaultMessage: 'This channel was muted',
         iconName: 'bell-off-outline',
+        canUndo: true,
+    },
+    REMOVE_CHANNEL_USER: {
+        id: t('snack.bar.remove.user'),
+        defaultMessage: '1 member was removed from the channel',
+        iconName: 'check',
         canUndo: true,
     },
     UNFAVORITE_CHANNEL: {
