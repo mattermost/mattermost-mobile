@@ -7,20 +7,32 @@ import {Platform} from 'react-native';
 
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity} from '@utils/theme';
 
 type Props = {
     channelId: string;
+    displayName: string;
     count: number;
 }
 
-const Members = ({channelId, count}: Props) => {
+const Members = ({displayName, channelId, count}: Props) => {
     const {formatMessage} = useIntl();
+    const theme = useTheme();
     const title = formatMessage({id: 'channel_info.members', defaultMessage: 'Members'});
-
     const goToChannelMembers = preventDoubleTap(() => {
-        goToScreen(Screens.CHANNEL_ADD_PEOPLE, title, {channelId});
+        const options = {
+            topBar: {
+                subtitle: {
+                    color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
+                    text: displayName,
+                },
+            },
+        };
+
+        goToScreen(Screens.MANAGE_CHANNEL_MEMBERS, title, {channelId}, options);
     });
 
     return (
