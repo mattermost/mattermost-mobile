@@ -46,7 +46,7 @@ describe('*** Operator: Category Handlers tests ***', () => {
             tableName: MM_TABLES.SERVER.CATEGORY,
             prepareRecordsOnly: false,
             transformer: transformCategoryRecord,
-        });
+        }, 'handleCategories');
     });
 
     it('=> handleCategoryChannels: should write to the CATEGORY_CHANNEL table', async () => {
@@ -74,6 +74,6 @@ describe('*** Operator: Category Handlers tests ***', () => {
             tableName: MM_TABLES.SERVER.CATEGORY_CHANNEL,
             prepareRecordsOnly: false,
             transformer: transformCategoryChannelRecord,
-        });
+        }, 'handleCategoryChannels');
     });
 });
