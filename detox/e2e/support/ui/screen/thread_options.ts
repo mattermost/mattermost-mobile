@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {timeouts} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ThreadOptionsScreen {
     testID = {
         threadOptionsScreen: 'thread_options.screen',
-        threadOptionsBackdrop: 'thread_options.backdrop',
         replyThreadOption: 'post_options.reply_post.option',
         followThreadOption: 'post_options.follow_thread.option',
         followingThreadOption: 'post_options.following_thread.option',
@@ -20,7 +19,6 @@ class ThreadOptionsScreen {
     };
 
     threadOptionsScreen = element(by.id(this.testID.threadOptionsScreen));
-    threadOptionsBackdrop = element(by.id(this.testID.threadOptionsBackdrop));
     replyThreadOption = element(by.id(this.testID.replyThreadOption));
     followThreadOption = element(by.id(this.testID.followThreadOption));
     followingThreadOption = element(by.id(this.testID.followingThreadOption));
@@ -38,8 +36,14 @@ class ThreadOptionsScreen {
     };
 
     close = async () => {
-        await this.threadOptionsBackdrop.tap({x: 5, y: 10});
+        if (isIos()) {
+            await this.threadOptionsScreen.swipe('down');
+        } else {
+            await device.pressBack();
+        }
+        await wait(timeouts.ONE_SEC);
         await expect(this.threadOptionsScreen).not.toBeVisible();
+        await wait(timeouts.ONE_SEC);
     };
 }
 

@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from '@support/ui/component';
-import {timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class PostOptionsScreen {
     testID = {
         reactionEmojiPrefix: 'post_options.reaction_bar.reaction.',
         postOptionsScreen: 'post_options.screen',
-        postOptionsBackdrop: 'post_options.backdrop',
         pickReactionButton: 'post_options.reaction_bar.pick_reaction.button',
         replyPostOption: 'post_options.reply_post.option',
         followThreadOption: 'post_options.follow_thread.option',
@@ -26,7 +25,6 @@ class PostOptionsScreen {
     };
 
     postOptionsScreen = element(by.id(this.testID.postOptionsScreen));
-    postOptionsBackdrop = element(by.id(this.testID.postOptionsBackdrop));
     pickReactionButton = element(by.id(this.testID.pickReactionButton));
     replyPostOption = element(by.id(this.testID.replyPostOption));
     followThreadOption = element(by.id(this.testID.followThreadOption));
@@ -52,8 +50,14 @@ class PostOptionsScreen {
     };
 
     close = async () => {
-        await this.postOptionsBackdrop.tap({x: 5, y: 10});
+        if (isIos()) {
+            await this.postOptionsScreen.swipe('down');
+        } else {
+            await device.pressBack();
+        }
+        await wait(timeouts.ONE_SEC);
         await expect(this.postOptionsScreen).not.toBeVisible();
+        await wait(timeouts.ONE_SEC);
     };
 
     deletePost = async ({confirm = true} = {}) => {
