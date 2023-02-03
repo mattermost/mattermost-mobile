@@ -135,21 +135,21 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
 
     const channelNameStyle = useMemo(() => (
         [styles.channelName, isChannelNamePressed ? {color: theme.buttonBg} : null]
-    ), [isChannelNamePressed]);
+    ), [isChannelNamePressed, styles, theme]);
 
     const togglePressed = useCallback(() => {
-        setIsChannelNamePressed(!isChannelNamePressed);
-    }, [isChannelNamePressed]);
+        setIsChannelNamePressed((prevState) => !prevState);
+    }, []);
 
     const showThread = useCallback(preventDoubleTap(() => {
         fetchAndSwitchToThread(serverUrl, thread.id);
     }), [serverUrl, thread.id]);
 
-    const onChannelSwitch = useCallback(() => {
+    const onChannelNamePressed = useCallback(() => {
         if (channel?.id) {
             switchToChannelById(serverUrl, channel?.id);
         }
-    }, [serverUrl]);
+    }, [serverUrl, channel?.id]);
 
     const showThreadOptions = useCallback(() => {
         const passProps = {thread};
@@ -248,7 +248,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                             {threadStarterName !== channel?.displayName && (
                                 <View style={styles.channelNameContainer}>
                                     <TouchableWithFeedback
-                                        onPress={onChannelSwitch}
+                                        onPress={onChannelNamePressed}
                                         type={'native'}
                                         underlayColor={changeOpacity(theme.buttonBg, 0.08)}
                                         onPressIn={togglePressed}

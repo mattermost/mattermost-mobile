@@ -60,19 +60,19 @@ function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
 
     const channelNameStyle = useMemo(() => (
         [styles.channel, isPressed ? {color: theme.buttonBg} : null]
-    ), [isPressed]);
+    ), [isPressed, styles, theme]);
 
     const teamContainerStyle = useMemo(() => (
         [styles.teamContainer, isPressed ? null : {borderLeftWidth: StyleSheet.hairlineWidth}]
-    ), [isPressed]);
+    ), [isPressed, styles]);
 
-    const onChannelSwitch = useCallback(() => {
+    const onChannelNamePressed = useCallback(() => {
         switchToChannelById(serverUrl, channelId);
-    }, [serverUrl]);
+    }, [serverUrl, channelId]);
 
     const togglePressed = useCallback(() => {
-        setIsPressed(!isPressed);
-    }, [isPressed]);
+        setIsPressed((prevState) => !prevState);
+    }, []);
 
     return (
         <View
@@ -81,7 +81,7 @@ function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
         >
             <View style={styles.channelContainer}>
                 <TouchableWithFeedback
-                    onPress={onChannelSwitch}
+                    onPress={onChannelNamePressed}
                     type={'native'}
                     underlayColor={changeOpacity(theme.buttonBg, 0.08)}
                     onPressIn={togglePressed}
