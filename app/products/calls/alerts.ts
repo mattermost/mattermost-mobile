@@ -27,13 +27,13 @@ import type {IntlShape} from 'react-intl';
 // - Joining a new call.
 // - A new recording has started.
 // - Host has changed to current user.
-let recordingAlertLock = false;
+let recordingAlertLock = true;
 
 // Only unlock if/when the user starts a recording.
 let recordingWillBePostedLock = true;
 
 // Only unlock when starting/stopping a recording.
-let recordingErrorLock = false;
+let recordingErrorLock = true;
 
 export const showLimitRestrictedAlert = (info: LimitRestrictedInfo, intl: IntlShape) => {
     const title = intl.formatMessage({
