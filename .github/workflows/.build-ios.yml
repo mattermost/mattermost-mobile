@@ -1,0 +1,47 @@
+---
+name: build-ios
+on:
+  workflow_call:
+    inputs:
+      is_pr:
+        required: true
+        type: boolean
+      branch_to_build:
+        required: false
+        type: string
+        default: "main"
+      build_artifact_name:
+        required: false
+        type: string
+        default: "ios-build-${{ github.run_id }}"
+
+env:
+  BUILD_PR: "${{ inputs.is_pr }}"
+  BRANCH_TO_BUILD: "${{ inputs.branch_to_build }}"
+
+jobs:
+  build-ios:
+    runs-on: macos-12
+    steps:
+    - name: ci/checkout-repo
+      uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+    - name: ci/node-prepare
+      uses: ./.github/actions/node-prepare
+    - name: ci/pods-dependencies
+      uses: ./.github/actions/pods-dependencies
+    - name: ci/generate-assets
+      uses: ./.github/actions/generate-assets
+    - name: ci/fastlane-dependencies
+      uses: ./.github/actions/fastlane-dependencies
+      with:
+        os: ios
+    - name: ci/build-ios
+      run: |
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
+        export TERM=xterm && bundle exec fastlane ios build
+      working-directory: ./fastlane
+    - name: ci/upload-ios-buld
+      uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+      with:
+        name: "${{ inputs.build_artifact_name }}"
+        path: "*.ipa"

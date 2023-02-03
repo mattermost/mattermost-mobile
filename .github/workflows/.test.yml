@@ -1,11 +1,7 @@
 ---
-name: build
+name: test
 on:
-  push:
-    branches:
-  # TODO: uncomment the following after testing
-  #    - main
-  #pull_request:
+  workflow_call:
 
 jobs:
   test:
@@ -25,17 +21,3 @@ jobs:
       run: npm test
     - name: ci/check-i18n
       run: ./scripts/precommit/i18n.sh
-  #build-android-release:
-  #  needs: [test]
-  #build-android-beta:
-  #deploy-android-beta:
-  #build-ios-release:
-  #deploy-ios-release:
-  #build-ios-beta:
-  #deploy-ios-beta:
-  #build-android-pr:
-  #build-ios-pr:
-  #build-android-unsigned:
-  #build-ios-unsigned:
-  #build-ios-simulator:
-  #github-release:
