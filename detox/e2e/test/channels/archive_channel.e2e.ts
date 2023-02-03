@@ -75,6 +75,7 @@ describe('Channels - Archive Channel', () => {
         await BrowseChannelsScreen.searchInput.replaceText(publicChannel.name);
 
         // * Verify search returns the archived public channel item
+        await wait(timeouts.ONE_SEC);
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(publicChannel.name)).toHaveText(publicChannel.display_name);
 
         // # Go back to channel list screen
@@ -120,6 +121,7 @@ describe('Channels - Archive Channel', () => {
         await BrowseChannelsScreen.searchInput.replaceText(privateChannel.name);
 
         // * Verify search returns the archived private channel item
+        await wait(timeouts.ONE_SEC);
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(privateChannel.name)).toHaveText(privateChannel.display_name);
 
         // # Go back to channel list screen

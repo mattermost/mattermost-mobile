@@ -79,6 +79,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(channel.name);
 
         // * Verify search returns the new public channel item
+        await wait(timeouts.ONE_SEC);
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(channel.name)).toHaveText(channel.display_name);
 
         // # Tap on the new public channel item
@@ -104,6 +105,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(searchTerm);
 
         // * Verify empty search state for browse channels
+        await wait(timeouts.ONE_SEC);
         await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();
         await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
 
@@ -123,6 +125,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(testOtherUser1.username);
 
         // * Verify empty search state for browse channels
+        await wait(timeouts.ONE_SEC);
         await expect(element(by.text(`No matches found for “${testOtherUser1.username}”`))).toBeVisible();
 
         // # Search for the group message channel
@@ -146,6 +149,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(archivedChannel.name);
 
         // * Verify search returns the archived channel item
+        await wait(timeouts.ONE_SEC);
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(archivedChannel.name)).toHaveText(archivedChannel.display_name);
 
         // # Go back to channel list screen
@@ -160,6 +164,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(joinedPublicChannel.name);
 
         // * Verify empty search state for browse channels
+        await wait(timeouts.ONE_SEC);
         await expect(element(by.text(`No matches found for “${joinedPublicChannel.name}”`))).toBeVisible();
 
         // # Go back to channel list screen
@@ -181,6 +186,7 @@ describe('Channels - Browse Channels', () => {
         await BrowseChannelsScreen.searchInput.replaceText(unjoinedPrivateChannel.name);
 
         // * Verify empty search state for browse channels
+        await wait(timeouts.ONE_SEC);
         await expect(element(by.text(`No matches found for “${unjoinedPrivateChannel.name}”`))).toBeVisible();
 
         // # Go back to channel list screen
