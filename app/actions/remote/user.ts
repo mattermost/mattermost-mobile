@@ -102,7 +102,7 @@ export async function fetchProfilesInChannel(serverUrl: string, channelId: strin
                 modelPromises.push(prepare);
 
                 const models = await Promise.all(modelPromises);
-                await operator.batchRecords(models.flat());
+                await operator.batchRecords(models.flat(), 'fetchProfilesInChannel');
             }
         }
 
@@ -178,7 +178,7 @@ export async function fetchProfilesInGroupChannels(serverUrl: string, groupChann
             }
 
             const models = await Promise.all(modelPromises);
-            await operator.batchRecords(models.flat());
+            await operator.batchRecords(models.flat(), 'fetchProfilesInGroupChannels');
         }
 
         return {data};
@@ -230,7 +230,7 @@ export async function fetchProfilesPerChannels(serverUrl: string, channelIds: st
             }
 
             const models = await Promise.all(modelPromises);
-            await operator.batchRecords(models.flat());
+            await operator.batchRecords(models.flat(), 'fetchProfilesPerChannels');
         }
 
         return {data};
@@ -366,7 +366,7 @@ export async function fetchStatusByIds(serverUrl: string, userIds: string[], fet
                     user.prepareStatus(status?.status || General.OFFLINE);
                 }
 
-                await operator.batchRecords(users);
+                await operator.batchRecords(users, 'fetchStatusByIds');
             }
         }
 
@@ -641,7 +641,7 @@ export async function updateAllUsersSince(serverUrl: string, since: number, fetc
                 modelsToBatch.push(...models);
             }
 
-            await operator.batchRecords(modelsToBatch);
+            await operator.batchRecords(modelsToBatch, 'updateAllUsersSince');
         }
     } catch {
         // Do nothing
@@ -677,7 +677,7 @@ export async function updateUsersNoLongerVisible(serverUrl: string, prepareRecor
             }
         }
         if (models.length && !prepareRecordsOnly) {
-            serverDatabase.operator.batchRecords(models);
+            serverDatabase.operator.batchRecords(models, 'updateUsersNoLongerVisible');
         }
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientError);
@@ -917,7 +917,7 @@ export const fetchTeamAndChannelMembership = async (serverUrl: string, userId: s
         }
 
         const models = await Promise.all(modelPromises);
-        await operator.batchRecords(models.flat());
+        await operator.batchRecords(models.flat(), 'fetchTeamAndChannelMembership');
         return {error: undefined};
     } catch (error) {
         return {error};

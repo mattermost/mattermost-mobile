@@ -150,7 +150,7 @@ async function doReconnect(serverUrl: string) {
     await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeam?.id || '', currentChannel?.id || '', initialTeamId, initialChannelId);
 
     const dt = Date.now();
-    await operator.batchRecords(models);
+    await operator.batchRecords(models, 'doReconnect');
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
     setTeamLoading(serverUrl, false);
 

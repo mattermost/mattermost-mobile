@@ -61,7 +61,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
             createOrUpdateRawValues: drafts,
             tableName: 'Draft',
             prepareRecordsOnly: false,
-        });
+        }, 'handleDraft');
     });
 
     it('=> HandlePosts: should write to the Post and its sub-child tables', async () => {

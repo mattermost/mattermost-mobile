@@ -49,6 +49,6 @@ describe('*** Operator: Group Handlers tests ***', () => {
             tableName: MM_TABLES.SERVER.GROUP,
             prepareRecordsOnly: false,
             transformer: transformGroupRecord,
-        });
+        }, 'handleGroups');
     });
 });

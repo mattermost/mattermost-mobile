@@ -22,7 +22,7 @@ export async function setCurrentUserStatusOffline(serverUrl: string) {
         }
 
         user.prepareStatus(General.OFFLINE);
-        await operator.batchRecords([user]);
+        await operator.batchRecords([user], 'setCurrentUserStatusOffline');
         return null;
     } catch (error) {
         logError('Failed setCurrentUserStatusOffline', error);
@@ -54,7 +54,7 @@ export async function updateLocalCustomStatus(serverUrl: string, user: UserModel
             }
         }
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'updateLocalCustomStatus');
 
         return {};
     } catch (error) {

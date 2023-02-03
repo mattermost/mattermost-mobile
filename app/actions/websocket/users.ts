@@ -71,7 +71,7 @@ export async function handleUserUpdatedEvent(serverUrl: string, msg: WebSocketMe
     modelsToBatch.push(...userModel);
 
     try {
-        await operator.batchRecords(modelsToBatch);
+        await operator.batchRecords(modelsToBatch, 'handleUserUpdatedEvent');
     } catch {
         // do nothing
     }

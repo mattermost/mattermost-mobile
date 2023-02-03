@@ -102,7 +102,7 @@ describe('*** Operator: User Handlers tests ***', () => {
             tableName: 'User',
             prepareRecordsOnly: false,
             transformer: transformUserRecord,
-        });
+        }, 'handleUsers');
     });
 
     it('=> HandlePreferences: should write to the PREFERENCE table', async () => {
@@ -151,6 +151,6 @@ describe('*** Operator: User Handlers tests ***', () => {
             prepareRecordsOnly: true,
             buildKeyRecordBy: buildPreferenceKey,
             transformer: transformPreferenceRecord,
-        });
+        }, 'handlePreferences(NEVER)');
     });
 });

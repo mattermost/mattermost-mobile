@@ -174,7 +174,7 @@ export async function addMembersToChannel(serverUrl: string, channelId: string, 
             }));
 
             const models = await Promise.all(modelPromises);
-            await operator.batchRecords(models.flat());
+            await operator.batchRecords(models.flat(), 'addMembersToChannel');
         }
         return {channelMemberships};
     } catch (error) {
@@ -251,7 +251,7 @@ export async function createChannel(serverUrl: string, displayName: string, purp
             models.push(...categoriesModels.models);
         }
         if (models.length) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'createChannel');
         }
         fetchChannelStats(serverUrl, channelData.id, false);
         EphemeralStore.creatingChannel = false;
@@ -296,7 +296,7 @@ export async function patchChannel(serverUrl: string, channelPatch: Partial<Chan
             models.push(channel);
         }
         if (models?.length) {
-            await operator.batchRecords(models.flat());
+            await operator.batchRecords(models.flat(), 'patchChannel');
         }
         return {channel: channelData};
     } catch (error) {
@@ -343,7 +343,7 @@ export async function leaveChannel(serverUrl: string, channelId: string) {
             models.push(...removeUserModels);
         }
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'leaveChannel');
 
         if (isTabletDevice) {
             switchToLastChannel(serverUrl);
@@ -393,7 +393,7 @@ export async function fetchChannelCreator(serverUrl: string, channelId: string, 
                 }));
 
                 const models = await Promise.all(modelPromises);
-                await operator.batchRecords(models.flat());
+                await operator.batchRecords(models.flat(), 'fetchChannelCreator');
             }
 
             return {user};
@@ -484,7 +484,7 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
             const {models: catModels} = await storeCategories(serverUrl, categories, true, true); // Re-sync
             const models = (chModels || []).concat(catModels || []);
             if (models.length) {
-                await operator.batchRecords(models);
+                await operator.batchRecords(models, 'fetchMyChannelsForTeam');
             }
             setTeamLoading(serverUrl, false);
         }
@@ -609,7 +609,7 @@ export async function fetchMissingDirectChannelsInfo(serverUrl: string, directCh
             }
 
             const models = await Promise.all(modelPromises);
-            await operator.batchRecords(models.flat());
+            await operator.batchRecords(models.flat(), 'fetchMissingDirectChannelInfo');
         }
 
         return {directChannels: updatedChannelsArray, users};
@@ -687,7 +687,7 @@ export async function joinChannel(serverUrl: string, teamId: string, channelId?:
                 }
                 if (flattenedModels?.length > 0) {
                     try {
-                        await operator.batchRecords(flattenedModels);
+                        await operator.batchRecords(flattenedModels, 'joinChannel');
                     } catch {
                         logError('FAILED TO BATCH CHANNELS');
                     }
@@ -913,7 +913,7 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
             models.push(...userModels);
         }
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'createDirectChannel');
         EphemeralStore.creatingDMorGMTeammates = [];
         fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
         return {data: created};
@@ -1047,7 +1047,7 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
                 }
 
                 models.push(...userModels);
-                operator.batchRecords(models);
+                operator.batchRecords(models, 'createGroupChannel');
             }
         }
         EphemeralStore.creatingDMorGMTeammates = [];
@@ -1392,7 +1392,7 @@ export const convertChannelToPrivate = async (serverUrl: string, channelId: stri
             channel.prepareUpdate((c) => {
                 c.type = General.PRIVATE_CHANNEL;
             });
-            await operator.batchRecords([channel]);
+            await operator.batchRecords([channel], 'convertChannelToPrivate');
         }
         return {error: undefined};
     } catch (error) {

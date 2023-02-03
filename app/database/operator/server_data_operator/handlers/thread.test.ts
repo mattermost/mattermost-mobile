@@ -59,7 +59,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
             createOrUpdateRawValues: threads,
             tableName: 'Thread',
             prepareRecordsOnly: true,
-        });
+        }, 'handleThreads(NEVER)');
 
         // Should handle participants
         expect(spyOnHandleThreadParticipants).toHaveBeenCalledWith({
