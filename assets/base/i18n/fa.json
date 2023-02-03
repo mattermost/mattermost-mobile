@@ -838,5 +838,7 @@
     "mobile.calls_lasted": "{duration} طول کشید",
     "channel_modal.nameEx": "مشکلات، بازاریابی",
     "terms_of_service.alert_cancel": "لغو",
-    "notification_settings.mentions..keywordsDescription": "کلمات دیگری که اشاره‌ها را به کار می‌اندازد"
+    "notification_settings.mentions..keywordsDescription": "کلمات دیگری که اشاره‌ها را به کار می‌اندازد",
+    "alert.push_proxy_unknown.description": "این سرور قادر به دریافت اعلان‌های پوش نیست. دفعه‌ی بعد که متصل شدید، مجددا سعی می‌شود.",
+    "alert.push_proxy_error.description": "به خاطر پیکربندی این سرور، قابلیت دریافت اعلان‌ها روی تلفن همراه نیست. برای اطلاعات بیشتر با مدیر سامانه تماس بگیرید."
 }
