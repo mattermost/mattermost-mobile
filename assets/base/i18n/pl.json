@@ -972,5 +972,20 @@
     "display_settings.crt.off": "Wyłącz",
     "display_settings.crt": "Zawijanie Odpowiedzi w Wątkach",
     "channel_info.archive_description.cannot_view_archived": "Spowoduje to zarchiwizowanie kanału z zespołu i usunięcie go z interfejsu użytkownika. Zarchiwizowane kanały mogą zostać odarchiwizowane, jeśli będą ponownie potrzebne.\n\nCzy na pewno chcesz zarchiwizować kanał {term} {name}?",
-    "channel_info.archive_description.can_view_archived": "Spowoduje to zarchiwizowanie kanału z zespołu. Zawartość kanału będzie nadal dostępna dla jego członków.\n\nCzy na pewno chcesz zarchiwizować kanał {term} {name}?"
+    "channel_info.archive_description.can_view_archived": "Spowoduje to zarchiwizowanie kanału z zespołu. Zawartość kanału będzie nadal dostępna dla jego członków.\n\nCzy na pewno chcesz zarchiwizować kanał {term} {name}?",
+    "snack.bar.remove.user": "1 uczestnik został usunięty z kanału",
+    "mobile.manage_members.section_title_members": "CZŁONKOWIE",
+    "mobile.manage_members.section_title_admins": "ADMINISTRATORZY KANAŁU",
+    "mobile.manage_members.remove_member": "Usuń z kanału",
+    "mobile.manage_members.remove": "Usuń",
+    "mobile.manage_members.message": "Czy na pewno chcesz usunąć wybranych użytkowników z kanału?",
+    "mobile.manage_members.member": "Członek",
+    "mobile.manage_members.manage_member": "Zarządzaj członkiem",
+    "mobile.manage_members.manage": "Zarządzaj",
+    "mobile.manage_members.make_channel_member": "Uczyń Użytkownikiem Kanału",
+    "mobile.manage_members.make_channel_admin": "Uczyń Administratorem Kanału",
+    "mobile.manage_members.done": "Gotowe",
+    "mobile.manage_members.change_role.error": "Wystąpił błąd podczas próby aktualizacji roli. Proszę sprawdzić swoje połączenie i spróbować ponownie.",
+    "mobile.manage_members.cancel": "Anuluj",
+    "mobile.manage_members.admin": "Administrator"
 }
