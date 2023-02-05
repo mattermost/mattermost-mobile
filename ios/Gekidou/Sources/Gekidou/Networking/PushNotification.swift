@@ -98,10 +98,11 @@ extension Network {
     }
     
     public func fetchProfileImageSync(_ serverUrl: String, senderId: String, overrideIconUrl: String?, completionHandler: @escaping (_ data: Data?) -> Void) {
+        var updatedAt: Double = 0
         func processResponse(data: Data?, response: URLResponse?, error: Error?) {
             if let httpResponse = response as? HTTPURLResponse {
                 if (httpResponse.statusCode == 200 && error == nil) {
-                    FileCache.default.saveProfileImage(serverUrl: serverUrl, userId: senderId, imageData: data)
+                    ImageCache.default.insertImage(data, for: senderId, updatedAt: updatedAt, onServer: serverUrl)
                     completionHandler(data)
                 } else {
                     os_log(
@@ -118,12 +119,16 @@ extension Network {
            let url = URL(string: overrideUrl) {
             request(url, withMethod: "GET", withServerUrl: "", completionHandler: processResponse)
         } else {
-            if let image = FileCache.default.getProfileImage(serverUrl: serverUrl, userId: senderId) {
+            if let lastUpdateAt = Database.default.getUserLastPictureAt(for: senderId, withServerUrl: serverUrl) {
+                updatedAt = lastUpdateAt
+            }
+            if let image = ImageCache.default.image(for: senderId, updatedAt: updatedAt, onServer: serverUrl) {
                 os_log(OSLogType.default, "Mattermost Notifications: cached image")
-                completionHandler(image.pngData())
+                completionHandler(image)
             } else {
+                ImageCache.default.removeImage(for: senderId, onServer: serverUrl)
                 os_log(OSLogType.default, "Mattermost Notifications: image not cached")
-                fetchUserProfilePicture(userId: senderId, withServerUrl: serverUrl, completionHandler: processResponse)
+                fetchUserProfilePicture(userId: senderId, lastUpdateAt: updatedAt, withServerUrl: serverUrl, completionHandler: processResponse)
             }
         }
     }

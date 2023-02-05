@@ -89,9 +89,11 @@ class NotificationService: UNNotificationServiceExtension {
 
       let isCRTEnabled = notification.userInfo["is_crt_enabled"] as? Bool ?? false
       let rootId = notification.userInfo["root_id"] as? String ?? ""
-      let senderId = notification.userInfo["sender_id"] as? String ?? ""
       let channelName = notification.userInfo["channel_name"] as? String ?? ""
       let message = (notification.userInfo["message"] as? String ?? "")
+      let overrideUsername = notification.userInfo["override_username"] as? String
+      let senderId = notification.userInfo["sender_id"] as? String
+      let senderIdentifier = overrideUsername ?? senderId
       let avatar = INImage(imageData: imgData) as INImage?
 
       var conversationId = channelId
@@ -99,7 +101,7 @@ class NotificationService: UNNotificationServiceExtension {
         conversationId = rootId
       }
 
-      let handle = INPersonHandle(value: senderId, type: .unknown)
+      let handle = INPersonHandle(value: senderIdentifier, type: .unknown)
       let sender = INPerson(personHandle: handle,
                             nameComponents: nil,
                             displayName: channelName,
@@ -140,18 +142,22 @@ class NotificationService: UNNotificationServiceExtension {
   
   func sendMessageIntent(notification: UNNotificationContent) {
     if #available(iOSApplicationExtension 15.0, *) {
+      let overrideUsername = notification.userInfo["override_username"] as? String
+      let senderId = notification.userInfo["sender_id"] as? String
+      let sender = overrideUsername ?? senderId
+
       guard let serverUrl = notification.userInfo["server_url"] as? String,
-            let senderId = notification.userInfo["sender_id"] as? String
+              let sender = sender
       else {
         os_log(OSLogType.default, "Mattermost Notifications: No intent created. will call contentHandler to present notification")
         self.contentHandler?(notification)
         return
       }
 
-      os_log(OSLogType.default, "Mattermost Notifications: Fetching profile Image in server %{public}@ for sender %{public}@", serverUrl, senderId)
       let overrideIconUrl = notification.userInfo["override_icon_url"] as? String
+      os_log(OSLogType.default, "Mattermost Notifications: Fetching profile Image in server %{public}@ for sender %{public}@", serverUrl, sender)
         
-      Network.default.fetchProfileImageSync(serverUrl, senderId: senderId, overrideIconUrl: overrideIconUrl) {[weak self] data in
+      Network.default.fetchProfileImageSync(serverUrl, senderId: sender, overrideIconUrl: overrideIconUrl) {[weak self] data in
         self?.sendMessageIntentCompletion(notification, data)
       }
     }
