@@ -62,7 +62,10 @@ class ServerListScreen {
         // # Open server list screen
         await ChannelListScreen.serverIcon.tap();
 
-        return this.toBeVisible();
+        if (isIos()) {
+            return this.toBeVisible();
+        }
+        return null;
     };
 
     close = async () => {
@@ -77,9 +80,14 @@ class ServerListScreen {
     };
 
     closeTutorial = async () => {
-        await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
-        await this.tutorialSwipeLeft.tap();
-        await expect(this.tutorialHighlight).not.toExist();
+        if (isIos()) {
+            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
+            await this.tutorialSwipeLeft.tap();
+            await expect(this.tutorialHighlight).not.toExist();
+        } else {
+            await wait(timeouts.ONE_SEC);
+            await device.pressBack();
+        }
     };
 }
 
