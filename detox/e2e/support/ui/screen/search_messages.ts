@@ -72,6 +72,7 @@ class SearchMessagesScreen {
     };
 
     toBeVisible = async () => {
+        await wait(timeouts.ONE_SEC);
         await waitFor(this.searchMessagesScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.searchMessagesScreen;
