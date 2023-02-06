@@ -33,7 +33,7 @@ import {
     TeamDropdownMenuScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Search Messages', () => {
@@ -228,6 +228,7 @@ describe('Search - Search Messages', () => {
         const {atMentionItem} = Autocomplete.getAtMentionItem(testUser.id);
         await atMentionItem.tap();
         await SearchMessagesScreen.searchModifierIn.tap();
+        await wait(timeouts.ONE_SEC);
         await SearchMessagesScreen.searchInput.typeText(testChannel.name);
         const {channelMentionItem} = Autocomplete.getChannelMentionItem(testChannel.name);
         await channelMentionItem.tap();
