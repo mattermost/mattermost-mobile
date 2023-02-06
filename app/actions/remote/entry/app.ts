@@ -33,7 +33,7 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
     // clear lastUnreadChannelId
     const removeLastUnreadChannelId = await prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});
     if (removeLastUnreadChannelId) {
-        await operator.batchRecords(removeLastUnreadChannelId);
+        await operator.batchRecords(removeLastUnreadChannelId, 'appEntry - removeLastUnreadChannelId');
     }
 
     const {database} = operator;
@@ -58,14 +58,14 @@ export async function appEntry(serverUrl: string, since = 0, isUpgrade = false) 
             currentChannelId: isTabletDevice ? initialChannelId : undefined,
         });
         if (me?.length) {
-            await operator.batchRecords(me);
+            await operator.batchRecords(me, 'appEntry - upgrade store me');
         }
     }
 
     await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId, currentChannelId, initialTeamId, initialChannelId);
 
     const dt = Date.now();
-    await operator.batchRecords(models);
+    await operator.batchRecords(models, 'appEntry');
     logInfo('ENTRY MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
     setTeamLoading(serverUrl, false);
 

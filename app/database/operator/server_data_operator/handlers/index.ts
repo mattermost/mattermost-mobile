@@ -12,13 +12,17 @@ import {
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {logWarning} from '@utils/log';
 
+import {sanitizeReactions} from '../../utils/reaction';
+import {transformReactionRecord} from '../transformers/reaction';
+
 import type {Model} from '@nozbe/watermelondb';
-import type {HandleConfigArgs, HandleCustomEmojiArgs, HandleRoleArgs, HandleSystemArgs, OperationArgs} from '@typings/database/database';
+import type {HandleConfigArgs, HandleCustomEmojiArgs, HandleReactionsArgs, HandleRoleArgs, HandleSystemArgs, OperationArgs} from '@typings/database/database';
 import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji';
+import type ReactionModel from '@typings/database/models/servers/reaction';
 import type RoleModel from '@typings/database/models/servers/role';
 import type SystemModel from '@typings/database/models/servers/system';
 
-const {SERVER: {CONFIG, CUSTOM_EMOJI, ROLE, SYSTEM}} = MM_TABLES;
+const {SERVER: {CONFIG, CUSTOM_EMOJI, ROLE, SYSTEM, REACTION}} = MM_TABLES;
 
 export default class ServerDataOperatorBase extends BaseDataOperator {
     handleRole = async ({roles, prepareRecordsOnly = true}: HandleRoleArgs) => {
@@ -35,7 +39,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: roles, key: 'id'}),
             tableName: ROLE,
-        }) as Promise<RoleModel[]>;
+        }, 'handleRole') as Promise<RoleModel[]>;
     };
 
     handleCustomEmojis = async ({emojis, prepareRecordsOnly = true}: HandleCustomEmojiArgs) => {
@@ -52,7 +56,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: emojis, key: 'name'}),
             tableName: CUSTOM_EMOJI,
-        }) as Promise<CustomEmojiModel[]>;
+        }, 'handleCustomEmojis') as Promise<CustomEmojiModel[]>;
     };
 
     handleSystem = async ({systems, prepareRecordsOnly = true}: HandleSystemArgs) => {
@@ -69,7 +73,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             prepareRecordsOnly,
             createOrUpdateRawValues: getUniqueRawsBy({raws: systems, key: 'id'}),
             tableName: SYSTEM,
-        }) as Promise<SystemModel[]>;
+        }, 'handleSystem') as Promise<SystemModel[]>;
     };
 
     handleConfigs = async ({configs, configsToDelete, prepareRecordsOnly = true}: HandleConfigArgs) => {
@@ -87,7 +91,64 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
             createOrUpdateRawValues: getUniqueRawsBy({raws: configs, key: 'id'}),
             tableName: CONFIG,
             deleteRawValues: configsToDelete,
-        });
+        }, 'handleConfigs');
+    };
+
+    /**
+     * handleReactions: Handler responsible for the Create/Update operations occurring on the Reaction table from the 'Server' schema
+     * @param {HandleReactionsArgs} handleReactions
+     * @param {ReactionsPerPost[]} handleReactions.postsReactions
+     * @param {boolean} handleReactions.prepareRecordsOnly
+     * @param {boolean} handleReactions.skipSync
+     * @returns {Promise<Array<(ReactionModel | CustomEmojiModel)>>}
+     */
+    handleReactions = async ({postsReactions, prepareRecordsOnly, skipSync}: HandleReactionsArgs): Promise<ReactionModel[]> => {
+        const batchRecords: ReactionModel[] = [];
+
+        if (!postsReactions?.length) {
+            logWarning(
+                'An empty or undefined "postsReactions" array has been passed to the handleReactions method',
+            );
+            return [];
+        }
+
+        for await (const postReactions of postsReactions) {
+            const {post_id, reactions} = postReactions;
+            const {
+                createReactions,
+                deleteReactions,
+            } = await sanitizeReactions({
+                database: this.database,
+                post_id,
+                rawReactions: reactions,
+                skipSync,
+            });
+
+            if (createReactions?.length) {
+                // Prepares record for model Reactions
+                const reactionsRecords = (await this.prepareRecords({
+                    createRaws: createReactions,
+                    transformer: transformReactionRecord,
+                    tableName: REACTION,
+                })) as ReactionModel[];
+                batchRecords.push(...reactionsRecords);
+            }
+
+            if (deleteReactions?.length && !skipSync) {
+                deleteReactions.forEach((outCast) => outCast.prepareDestroyPermanently());
+                batchRecords.push(...deleteReactions);
+            }
+        }
+
+        if (prepareRecordsOnly) {
+            return batchRecords;
+        }
+
+        if (batchRecords?.length) {
+            await this.batchRecords(batchRecords, 'handleReactions');
+        }
+
+        return batchRecords;
     };
 
     /**
@@ -99,7 +160,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
      * @param {(TransformerArgs) => Promise<Model>} execute.recordOperator
      * @returns {Promise<void>}
      */
-    async execute({createRaws, transformer, tableName, updateRaws}: OperationArgs): Promise<Model[]> {
+    async execute<T extends Model>({createRaws, transformer, tableName, updateRaws}: OperationArgs<T>, description: string): Promise<T[]> {
         const models = await this.prepareRecords({
             tableName,
             createRaws,
@@ -108,7 +169,7 @@ export default class ServerDataOperatorBase extends BaseDataOperator {
         });
 
         if (models?.length > 0) {
-            await this.batchRecords(models);
+            await this.batchRecords(models, description);
         }
 
         return models;

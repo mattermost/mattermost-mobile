@@ -11,6 +11,7 @@ import {
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {logWarning} from '@utils/log';
 
+import type ServerDataOperatorBase from '.';
 import type {
     HandleCategoryChannelArgs,
     HandleCategoryArgs,
@@ -28,7 +29,7 @@ export interface CategoryHandlerMix {
     handleCategories: ({categories, prepareRecordsOnly}: HandleCategoryArgs) => Promise<CategoryModel[]>;
 }
 
-const CategoryHandler = (superclass: any) => class extends superclass {
+const CategoryHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
      * handleCategories: Handler responsible for the Create/Update operations occurring on the Category table from the 'Server' schema
      * @param {HandleCategoryArgs} categoriesArgs
@@ -78,7 +79,7 @@ const CategoryHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: CATEGORY,
             prepareRecordsOnly,
-        });
+        }, 'handleCategories');
     };
 
     /**
@@ -88,7 +89,7 @@ const CategoryHandler = (superclass: any) => class extends superclass {
      * @param {boolean} categoriesArgs.prepareRecordsOnly
      * @returns {Promise<CategoryChannelModel[]>}
      */
-    handleCategoryChannels = async ({categoryChannels, prepareRecordsOnly = true}: HandleCategoryChannelArgs): Promise<CategoryModel[]> => {
+    handleCategoryChannels = async ({categoryChannels, prepareRecordsOnly = true}: HandleCategoryChannelArgs): Promise<CategoryChannelModel[]> => {
         if (!categoryChannels?.length) {
             logWarning(
                 'An empty or undefined "categoryChannels" array has been passed to the handleCategories method',
@@ -105,7 +106,7 @@ const CategoryHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: CATEGORY_CHANNEL,
             prepareRecordsOnly,
-        });
+        }, 'handleCategoryChannels');
     };
 };
 

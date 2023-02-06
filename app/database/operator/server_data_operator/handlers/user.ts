@@ -11,6 +11,7 @@ import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {filterPreferences} from '@helpers/api/preference';
 import {logWarning} from '@utils/log';
 
+import type ServerDataOperatorBase from '.';
 import type {
     HandlePreferencesArgs,
     HandleUsersArgs,
@@ -25,7 +26,7 @@ export interface UserHandlerMix {
     handleUsers: ({users, prepareRecordsOnly}: HandleUsersArgs) => Promise<UserModel[]>;
 }
 
-const UserHandler = (superclass: any) => class extends superclass {
+const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
      * handlePreferences: Handler responsible for the Create/Update operations occurring on the PREFERENCE table from the 'Server' schema
      * @param {HandlePreferencesArgs} preferencesArgs
@@ -87,7 +88,7 @@ const UserHandler = (superclass: any) => class extends superclass {
                 prepareRecordsOnly: true,
                 createOrUpdateRawValues,
                 tableName: PREFERENCE,
-            });
+            }, 'handlePreferences(NEVER)');
             records.push(...createOrUpdate);
         }
 
@@ -96,7 +97,7 @@ const UserHandler = (superclass: any) => class extends superclass {
         }
 
         if (records.length && !prepareRecordsOnly) {
-            await this.batchRecords(records);
+            await this.batchRecords(records, 'handlePreferences');
         }
 
         return records;
@@ -125,7 +126,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: USER,
             prepareRecordsOnly,
-        });
+        }, 'handleUsers');
     };
 };
 

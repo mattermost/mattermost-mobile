@@ -3,13 +3,15 @@
 
 import {buildQueryString} from '@utils/helpers';
 
+import type ClientBase from './base';
+
 export interface ClientAppsMix {
     executeAppCall: <Res = unknown>(call: AppCallRequest, trackAsSubmit: boolean) => Promise<AppCallResponse<Res>>;
     getAppsBindings: (userID: string, channelID: string, teamID: string) => Promise<AppBinding[]>;
 }
 
-const ClientApps = (superclass: any) => class extends superclass {
-    executeAppCall = async <Res = unknown>(call: AppCallRequest, trackAsSubmit: boolean): Promise<AppCallResponse<Res>> => {
+const ClientApps = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
+    executeAppCall = async (call: AppCallRequest, trackAsSubmit: boolean) => {
         const callCopy = {
             ...call,
             context: {

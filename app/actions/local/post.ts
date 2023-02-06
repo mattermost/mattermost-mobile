@@ -127,14 +127,14 @@ export async function removePost(serverUrl: string, post: PostModel | Post) {
             }
 
             if (removeModels.length) {
-                await operator.batchRecords(removeModels);
+                await operator.batchRecords(removeModels, 'removePost (combined user activity)');
             }
         } else {
             const postModel = await getPostById(database, post.id);
             if (postModel) {
                 const preparedPost = await prepareDeletePost(postModel);
                 if (preparedPost.length) {
-                    await operator.batchRecords(preparedPost);
+                    await operator.batchRecords(preparedPost, 'removePost');
                 }
             }
         }
@@ -162,7 +162,7 @@ export async function markPostAsDeleted(serverUrl: string, post: Post, prepareRe
         });
 
         if (!prepareRecordsOnly) {
-            await operator.batchRecords([dbPost]);
+            await operator.batchRecords([dbPost], 'markPostAsDeleted');
         }
         return {model};
     } catch (error) {
@@ -229,7 +229,7 @@ export async function storePostsForChannel(
         }
 
         if (models.length && !prepareRecordsOnly) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'storePostsForChannel');
         }
 
         return {models};

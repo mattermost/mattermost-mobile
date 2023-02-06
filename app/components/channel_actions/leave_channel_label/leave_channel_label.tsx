@@ -23,7 +23,7 @@ type Props = {
     testID?: string;
 }
 
-const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, type, testID}: Props) => {
+const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
@@ -183,4 +183,4 @@ const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, type,
     );
 };
 
-export default LeaveChanelLabel;
+export default LeaveChannelLabel;

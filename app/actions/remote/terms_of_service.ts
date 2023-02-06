@@ -43,7 +43,7 @@ export async function updateTermsOfServiceStatus(serverUrl: string, id: string, 
                     u.termsOfServiceId = '';
                 }
             });
-            operator.batchRecords([currentUser]);
+            operator.batchRecords([currentUser], 'updateTermsOfServiceStatus');
         }
         return {resp};
     } catch (error) {

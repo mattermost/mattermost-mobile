@@ -22,7 +22,7 @@ export async function setCurrentUserStatusOffline(serverUrl: string) {
         }
 
         user.prepareStatus(General.OFFLINE);
-        await operator.batchRecords([user]);
+        await operator.batchRecords([user], 'setCurrentUserStatusOffline');
         return null;
     } catch (error) {
         logError('Failed setCurrentUserStatusOffline', error);
@@ -54,7 +54,7 @@ export async function updateLocalCustomStatus(serverUrl: string, user: UserModel
             }
         }
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'updateLocalCustomStatus');
 
         return {};
     } catch (error) {
@@ -97,27 +97,37 @@ export const updateRecentCustomStatuses = async (serverUrl: string, customStatus
 export const updateLocalUser = async (
     serverUrl: string,
     userDetails: Partial<UserProfile> & { status?: string},
+    userId?: string,
 ) => {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        const user = await getCurrentUser(database);
+
+        let user: UserModel | undefined;
+
+        if (userId) {
+            user = await getUserById(database, userId);
+        } else {
+            user = await getCurrentUser(database);
+        }
+
         if (user) {
+            const u = user;
             await database.write(async () => {
-                await user.update((userRecord: UserModel) => {
-                    userRecord.authService = userDetails.auth_service ?? user.authService;
-                    userRecord.email = userDetails.email ?? user.email;
-                    userRecord.firstName = userDetails.first_name ?? user.firstName;
-                    userRecord.lastName = userDetails.last_name ?? user.lastName;
-                    userRecord.lastPictureUpdate = userDetails.last_picture_update ?? user.lastPictureUpdate;
-                    userRecord.locale = userDetails.locale ?? user.locale;
-                    userRecord.nickname = userDetails.nickname ?? user.nickname;
-                    userRecord.notifyProps = userDetails.notify_props ?? user.notifyProps;
-                    userRecord.position = userDetails?.position ?? user.position;
-                    userRecord.props = userDetails.props ?? user.props;
-                    userRecord.roles = userDetails.roles ?? user.roles;
-                    userRecord.status = userDetails?.status ?? user.status;
-                    userRecord.timezone = userDetails.timezone ?? user.timezone;
-                    userRecord.username = userDetails.username ?? user.username;
+                await u.update((userRecord: UserModel) => {
+                    userRecord.authService = userDetails.auth_service ?? u.authService;
+                    userRecord.email = userDetails.email ?? u.email;
+                    userRecord.firstName = userDetails.first_name ?? u.firstName;
+                    userRecord.lastName = userDetails.last_name ?? u.lastName;
+                    userRecord.lastPictureUpdate = userDetails.last_picture_update ?? u.lastPictureUpdate;
+                    userRecord.locale = userDetails.locale ?? u.locale;
+                    userRecord.nickname = userDetails.nickname ?? u.nickname;
+                    userRecord.notifyProps = userDetails.notify_props ?? u.notifyProps;
+                    userRecord.position = userDetails?.position ?? u.position;
+                    userRecord.props = userDetails.props ?? u.props;
+                    userRecord.roles = userDetails.roles ?? u.roles;
+                    userRecord.status = userDetails?.status ?? u.status;
+                    userRecord.timezone = userDetails.timezone ?? u.timezone;
+                    userRecord.username = userDetails.username ?? u.username;
                 });
             });
         }
