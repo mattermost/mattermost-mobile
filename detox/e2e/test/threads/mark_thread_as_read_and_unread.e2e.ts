@@ -135,6 +135,7 @@ describe('Threads - Mark Thread as Read and Unread', () => {
         await ThreadOptionsScreen.markAsUnreadOption.tap();
 
         // * Verify thread is displayed as unread in all your threads section with unread dot badge and footer unread replies
+        await wait(timeouts.ONE_SEC);
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).toBeVisible();
         await expect(GlobalThreadsScreen.getThreadItemUnreadDotBadge(parentPost.id)).toBeVisible();
         await expect(GlobalThreadsScreen.getThreadItemFooterUnreadReplies(parentPost.id)).toHaveText('1 new reply');
