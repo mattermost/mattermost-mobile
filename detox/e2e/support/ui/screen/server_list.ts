@@ -87,6 +87,7 @@ class ServerListScreen {
         } else {
             await wait(timeouts.ONE_SEC);
             await device.pressBack();
+            await wait(timeouts.ONE_SEC);
         }
     };
 }
