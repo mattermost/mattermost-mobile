@@ -5,7 +5,7 @@
     "about.enterpriseEditionSt": "Comunicazioni moderne da dietro il tuo firewall.",
     "about.hash": "Hash di compilazione:",
     "about.hashee": "Hash di compilazione EE:",
-    "about.teamEditionLearn": "Entra nella comunità Mattermost su ",
+    "about.teamEditionLearn": "Entra nella comunità Mattermost su",
     "about.teamEditionSt": "Tutte le tue comunicazioni in un posto, istantaneamente ricercabili e accessibili ovunque.",
     "about.teamEditiont0": "Edizione squadra",
     "about.teamEditiont1": "Edizione Enterprise",
@@ -235,5 +235,10 @@
     "user.settings.general.lastName": "Cognome",
     "user.settings.general.nickname": "Soprannome",
     "user.settings.general.position": "Posizione",
-    "user.settings.general.username": "Nome utente"
+    "user.settings.general.username": "Nome utente",
+    "alert.channel_deleted.description": "Il canale {displayName} è stato archiviato.",
+    "account.your_profile": "Il vostro profilo",
+    "account.settings": "Impostazioni",
+    "account.logout_from": "Esci da {serverName}",
+    "account.logout": "Disconnettersi"
 }
