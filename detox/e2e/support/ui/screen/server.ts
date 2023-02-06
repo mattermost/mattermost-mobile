@@ -58,6 +58,7 @@ class ServerScreen {
     tapConnectButton = async () => {
         if (isAndroid()) {
             await device.pressBack();
+            await wait(timeouts.ONE_SEC);
         }
         await this.connectButton.tap();
         await wait(timeouts.ONE_SEC);
