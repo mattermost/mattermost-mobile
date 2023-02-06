@@ -13,12 +13,12 @@ class FoldableObserver(private val activity: Activity) {
     private var disposable: Disposable? = null
     private lateinit var observable: Observable<WindowLayoutInfo>
 
-    public fun onCreate() {
+    fun onCreate() {
         observable = WindowInfoTracker.getOrCreate(activity)
                 .windowLayoutInfoObservable(activity)
     }
 
-    public fun onStart() {
+    fun onStart() {
         if (disposable?.isDisposed == true) {
             onCreate()
         }
@@ -42,7 +42,7 @@ class FoldableObserver(private val activity: Activity) {
                 }
     }
 
-    public fun onStop() {
+    fun onStop() {
         disposable?.dispose()
     }
 
