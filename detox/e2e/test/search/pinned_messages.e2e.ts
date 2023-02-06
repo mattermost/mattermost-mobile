@@ -29,7 +29,7 @@ import {
     ThreadScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Search - Pinned Messages', () => {
@@ -83,6 +83,7 @@ describe('Search - Pinned Messages', () => {
         await PostOptionsScreen.pinPostOption.tap();
 
         // * Verify pinned text is displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItemPreHeaderText).toHaveText(pinnedText);
 
@@ -195,6 +196,7 @@ describe('Search - Pinned Messages', () => {
         await PostOptionsScreen.unpinPostOption.tap();
 
         // * Verify pinned message is not displayed anymore
+        await wait(timeouts.ONE_SEC);
         const {postListPostItem} = PinnedMessagesScreen.getPostListPostItem(pinnedPost.id, message);
         await expect(postListPostItem).not.toExist();
 
