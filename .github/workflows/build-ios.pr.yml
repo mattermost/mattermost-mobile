@@ -11,6 +11,32 @@ jobs:
   build-ios-pr:
     uses: ./.github/workflows/.build-ios.yml
     with:
-      is_pr: true
       branch_to_build: "${{ github.ref_name }}"
+      app_name: "Mattermost Beta"
+      aws_bucket_name: "pr-builds.mattermost.com"
+      aws_folder_name: "mattermost-mobile"
+      aws_region: "us-east-1"
+      is_beta: true
+      is_pr: true
+      extension_app_identifier: "com.mattermost.rnbeta.MattermostShare"
+      build_for_release: true
+      ios_app_group: "group.com.mattermost.rnbeta"
+      ios_build_export_method: "ad-hoc"
+      ios_icloud_container: "iCloud.com.mattermost.rnbeta"
+      main_app_identifier: "com.mattermost.rnbeta"
+      match_app_identifier: "com.mattermost.rnbeta.NotificationService,com.mattermost.rnbeta.MattermostShare,com.mattermost.rnbeta"
+      match_type: "adhoc"
+      notification_service_identifier: "com.mattermost.rnbeta.NotificationService"
+      replace_assets: false
+      sentry_enabled: false
+    secrets:
+      aws_access_key_id: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
+      aws_secret_access_key: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
+      fastlane_team_id : "${{ secrets.MM_MOBILE_FASTLANE_TEAM_ID }}"
+      ios_api_issuer_id:
+      ios_api_key:
+      ios_api_key_id:
+      match_git_url: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
+      match_password: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
+      mattermost_webhook_url: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
     needs: [test]

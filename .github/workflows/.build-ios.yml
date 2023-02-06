@@ -3,9 +3,30 @@ name: build-ios
 on:
   workflow_call:
     inputs:
+      app_name:
+        required: true
+        type: string
+      aws_bucket_name:
+        required: true
+        type: string
+      aws_folder_name:
+        required: true
+        type: string
+      aws_region:
+        required: true
+        type: string
+      is_beta:
+        required: true
+        type: boolean
+      build_for_release:
+        required: true
+        type: boolean
       is_pr:
         required: true
         type: boolean
+      extension_app_identifier:
+        required: true
+        type: string
       branch_to_build:
         required: false
         type: string
@@ -14,10 +35,121 @@ on:
         required: false
         type: string
         default: "ios-build-${{ github.run_id }}"
+      ios_app_group:
+        required: true
+        type: string
+      ios_build_export_method:
+        required: true
+        type: string
+      ios_icloud_container:
+        required: true
+        type: string
+      main_app_identifier:
+        required: true
+        type: string
+      match_app_identifier:
+        required: true
+        type: string
+      match_type:
+        required: true
+        type: string
+      notification_service_identifier:
+        required: true 
+        type: string
+      pilot_skip_waiting_for_build_processing:
+        required: false
+        type: boolean
+        # To match the upstream default:
+        # https://github.com/fastlane/fastlane/blob/be7d70a923fcde0655b8632de2088de9e3a743fe/pilot/lib/pilot/options.rb#L168
+        default: false
+      replace_assets:
+        required: false
+        type: boolean
+        default: true
+      sentry_enabled:
+        required: false
+        type: boolean
+        default: false
+    secrets:
+      aws_access_key_id:
+        required: true
+        type: string
+      aws_secret_access_key:
+        required: true
+        type: string
+      fastlane_team_id:
+        required: true
+        type: string
+      ios_api_issuer_id:
+        required: true
+        type: string
+      ios_api_key:
+        required: true
+        type: string
+      ios_api_key_id:
+        required: true
+        type: string
+      match_git_url:
+        required: true
+        type: string
+      match_password:
+        required: true
+        type: string
+      mattermost_webhook_url:
+        required: true
+        type: string
+      sentry_auth_token:
+        required: false
+        type: string
+      sentry_dsn_ios:
+        required: false
+        type: string
+      sentry_org:
+        required: false
+        type: string
+      sentry_project_ios:
+        required: false
+        type: string
 
 env:
-  BUILD_PR: "${{ inputs.is_pr }}"
   BRANCH_TO_BUILD: "${{ inputs.branch_to_build }}"
+  APP_NAME: "${{ inputs.app_name }}"
+  APP_SCHEME: "mattermost"
+  AWS_ACCESS_KEY_ID: "${{ secrets.aws_access_key_id }}"
+  AWS_SECRET_ACCESS_KEY: "${{ secrets.aws_secret_access_key }}"
+  AWS_BUCKET_NAME: "${{ inputs.aws_bucket_name }}"
+  AWS_FOLDER_NAME: "${{ inputs.aws_folder_name }}"
+  AWS_REGION: "${{ inputs.aws_region }}"
+  BETA_BUILD: "${{ inputs.is_beta }}"
+  BUILD_FOR_RELEASE: "${{ inputs.build_for_release }}"
+  BUILD_PR: "${{ inputs.is_pr }}"
+  EXTENSION_APP_IDENTIFIER: "${{ inputs.extension_app_identifier }}"
+  FASTLANE_TEAM_ID: "${{ secrets.fastlane_team_id }}"
+  IOS_API_ISSUER_ID: "${{ secrets.ios_api_issuer_id }}"
+  IOS_API_KEY: "${{ secrets.ios_api_key }}"
+  IOS_API_KEY_ID: "${{ secrets.ios_api_key_id }}"
+  IOS_APP_GROUP: "${{ inputs.ios_app_group }}"
+  IOS_BUILD_EXPORT_METHOD: "${{ inputs.ios_build_export_method }}"
+  IOS_ICLOUD_CONTAINER: "${{ inputs.ios_icloud_container }}"
+  MAIN_APP_IDENTIFIER: "${{ inputs.main_app_identifier }}"
+  MATCH_APP_IDENTIFIER: "${{ inputs.match_app_identifier }}"
+  MATCH_GIT_URL: "${{ secrets.match_git_url }}"
+  MATCH_PASSWORD: "${{ secrets.match_password }}"
+  MATCH_READONLY: "true"
+  MATCH_SHALLOW_CLONE: "true"
+  MATCH_SKIP_DOCS: "true"
+  MATCH_TYPE: "${{ inputs.match_type }}"
+  MATTERMOST_WEBHOOK_URL: "${{ secrets.mattermost_webhook_url }}"
+  NOTIFICATION_SERVICE_IDENTIFIER: "${{ inputs.notification_service_identifier }}"
+  PILOT_SKIP_WAITING_FOR_BUILD_PROCESSING: "${{ inputs.pilot_skip_waiting_for_build_processing }}"
+  REPLACE_ASSETS: "${{ inputs.replace_assets }}"
+  SENTRY_AUTH_TOKEN: "${{ secrets.sentry_auth_token }}"
+  SENTRY_DSN_IOS: "${{ secrets.sentry_dsn_ios }}"
+  SENTRY_ENABLED: "${{ inputs.sentry_enabled }}"
+  SENTRY_ORG: "${{ secrets.sentry_org }}"
+  SENTRY_PROJECT_IOS: "${{ secrets.sentry_project_ios }}"
+  SHOW_ONBOARDING: "true"
+  SYNC_PROVISIONING_PROFILES: "true"
 
 jobs:
   build-ios:
