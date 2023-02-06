@@ -110,6 +110,7 @@ class ChannelScreen {
     };
 
     toBeVisible = async () => {
+        await wait(timeouts.ONE_SEC);
         await waitFor(this.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.channelScreen;
