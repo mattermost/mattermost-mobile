@@ -13,14 +13,12 @@ export const DefaultGlobalCallsState: GlobalCallsState = {
 };
 
 export type CallsState = {
-    serverUrl: string;
     myUserId: string;
     calls: Dictionary<Call>;
     enabled: Dictionary<boolean>;
 }
 
 export const DefaultCallsState: CallsState = {
-    serverUrl: '',
     myUserId: '',
     calls: {},
     enabled: {},
