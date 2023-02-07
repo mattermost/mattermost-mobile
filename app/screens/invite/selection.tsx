@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState, useMemo} from 'react';
+import React, {useCallback, useState, useMemo, useEffect} from 'react';
+import {useIntl} from 'react-intl';
 import {
     Keyboard,
     Platform,
@@ -25,11 +26,13 @@ import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
+import FooterButton from './footer_button';
+import SelectionInviteAs from './selection_invite_as';
 import SelectionSearchBar from './selection_search_bar';
 import SelectionTeamBar from './selection_team_bar';
 import TextItem, {TextItemType} from './text_item';
 
-import type {SearchResult} from './invite';
+import type {SearchResult} from './invite_types';
 
 const AUTOCOMPLETE_ADJUST = 5;
 const KEYBOARD_HEIGHT_ADJUST = 3;
@@ -55,6 +58,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             display: 'flex',
             flex: 1,
+        },
+        selection: {
+            display: 'flex',
         },
         searchList: {
             left: 20,
@@ -87,15 +93,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderRadius: 4,
         },
         selectedItems: {
-            display: 'flex',
-            flexGrowth: 1,
-        },
-        selectedItemsContainer: {
             alignItems: 'flex-start',
             flexDirection: 'row',
             flexWrap: 'wrap',
             marginHorizontal: 20,
-            marginVertical: 16,
+            marginTop: 16,
+            marginBottom: 8,
         },
     };
 });
@@ -113,11 +116,19 @@ type SelectionProps = {
     modalPosition: number;
     wrapperHeight: number;
     loading: boolean;
+    guestEnabled: boolean;
+    customMessage: string;
+    selectedChannelsCount: number;
     testID: string;
     onSearchChange: (text: string) => void;
     onSelectItem: (item: SearchResult) => void;
     onRemoveItem: (id: string) => void;
     onClose: () => Promise<void>;
+    onSend: () => Promise<void>;
+    onGetFooterButton: (button: React.ReactNode) => void;
+    onOpenSelectChannels: () => void;
+    onGuestChange: (enabled: boolean) => void;
+    onCustomMessageChange: (text: string) => void;
 }
 
 export default function Selection({
@@ -133,12 +144,21 @@ export default function Selection({
     modalPosition,
     wrapperHeight,
     loading,
+    guestEnabled,
+    customMessage,
+    selectedChannelsCount,
     testID,
     onSearchChange,
     onSelectItem,
     onRemoveItem,
     onClose,
+    onSend,
+    onGetFooterButton,
+    onOpenSelectChannels,
+    onGuestChange,
+    onCustomMessageChange,
 }: SelectionProps) {
+    const {formatMessage, locale} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const dimensions = useWindowDimensions();
@@ -148,6 +168,19 @@ export default function Selection({
 
     const [teamBarHeight, setTeamBarHeight] = useState(0);
     const [searchBarHeight, setSearchBarHeight] = useState(0);
+
+    const selectedCount = Object.keys(selectedIds).length;
+
+    useEffect(() => {
+        onGetFooterButton(
+            <FooterButton
+                text={formatMessage({id: 'invite.selection.send_invitations', defaultMessage: 'Send invitations'})}
+                disabled={!selectedCount || (selectedCount !== 0 && guestEnabled && !selectedChannelsCount)}
+                onPress={onSend}
+                testID='send_invite'
+            />,
+        );
+    }, [selectedCount, guestEnabled, selectedChannelsCount, locale]);
 
     const onLayoutSelectionTeamBar = useCallback((e: LayoutChangeEvent) => {
         setTeamBarHeight(e.nativeEvent.layout.height);
@@ -302,33 +335,44 @@ export default function Selection({
     }, [selectedIds]);
 
     return (
-        <View
-            style={styles.container}
-            testID={testID}
-        >
-            <SelectionTeamBar
-                teamId={teamId}
-                teamDisplayName={teamDisplayName}
-                teamLastIconUpdate={teamLastIconUpdate}
-                teamInviteId={teamInviteId}
-                serverUrl={serverUrl}
-                onLayoutContainer={onLayoutSelectionTeamBar}
-                onClose={onClose}
-            />
-            <SelectionSearchBar
-                term={term}
-                onSearchChange={onSearchChange}
-                onLayoutContainer={onLayoutSearchBar}
-            />
-            {Object.keys(selectedIds).length > 0 && (
-                <ScrollView
-                    style={styles.selectedItems}
-                    contentContainerStyle={styles.selectedItemsContainer}
-                    testID='invite.selected_items'
-                >
-                    {renderSelectedItems}
-                </ScrollView>
-            )}
+        <>
+            <ScrollView
+                style={styles.selection}
+                testID={testID}
+            >
+                <SelectionTeamBar
+                    teamId={teamId}
+                    teamDisplayName={teamDisplayName}
+                    teamLastIconUpdate={teamLastIconUpdate}
+                    teamInviteId={teamInviteId}
+                    serverUrl={serverUrl}
+                    onLayoutContainer={onLayoutSelectionTeamBar}
+                    onClose={onClose}
+                />
+                <SelectionSearchBar
+                    term={term}
+                    onSearchChange={onSearchChange}
+                    onLayoutContainer={onLayoutSearchBar}
+                />
+                {selectedCount > 0 && (
+                    <>
+                        <View
+                            style={styles.selectedItems}
+                            testID='invite.selected_items'
+                        >
+                            {renderSelectedItems}
+                        </View>
+                        <SelectionInviteAs
+                            guestEnabled={guestEnabled}
+                            selectedChannelsCount={selectedChannelsCount}
+                            customMessage={customMessage}
+                            onGuestChange={onGuestChange}
+                            onSelectChannels={onOpenSelectChannels}
+                            onCustomMessageChange={onCustomMessageChange}
+                        />
+                    </>
+                )}
+            </ScrollView>
             <Animated.View style={searchListContainerStyle}>
                 <FlatList
                     data={searchResults}
@@ -344,6 +388,6 @@ export default function Selection({
                     style={searchListFlatListStyle}
                 />
             </Animated.View>
-        </View>
+        </>
     );
 }

@@ -162,6 +162,18 @@ export async function sendEmailInvitesToTeam(serverUrl: string, teamId: string, 
     }
 }
 
+export async function sendEmailGuestInvitesToChannels(serverUrl: string, teamId: string, channelIds: string[], emails: string[], message?: string) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const members = await client.sendEmailGuestInvitesToChannelsGracefully(teamId, channelIds, emails, message);
+
+        return {members};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+}
+
 export async function fetchMyTeams(serverUrl: string, fetchOnly = false): Promise<MyTeamsRequest> {
     let client;
     try {

@@ -24,6 +24,7 @@ export interface ClientTeamsMix {
     addToTeam: (teamId: string, userId: string) => Promise<TeamMembership>;
     addUsersToTeamGracefully: (teamId: string, userIds: string[]) => Promise<TeamMemberWithError[]>;
     sendEmailInvitesToTeamGracefully: (teamId: string, emails: string[]) => Promise<TeamInviteWithError[]>;
+    sendEmailGuestInvitesToChannelsGracefully: (teamId: string, channelIds: string[], emails: string[], message?: string) => Promise<TeamInviteWithError[]>;
     joinTeam: (inviteId: string) => Promise<TeamMembership>;
     removeFromTeam: (teamId: string, userId: string) => Promise<any>;
     getTeamStats: (teamId: string) => Promise<any>;
@@ -160,6 +161,15 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/invite/email?graceful=true`,
             {method: 'post', body: emails},
+        );
+    };
+
+    sendEmailGuestInvitesToChannelsGracefully = (teamId: string, channelIds: string[], emails: string[], message?: string) => {
+        this.analytics?.trackAPI('api_teams_invite_guests', {team_id: teamId, channel_ids: channelIds, message});
+
+        return this.doFetch(
+            `${this.getTeamRoute(teamId)}/invite-guests/email?graceful=true`,
+            {method: 'post', body: {emails, channels: channelIds, message}},
         );
     };
 

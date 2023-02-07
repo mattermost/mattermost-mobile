@@ -14,7 +14,7 @@ import {
 
 } from '@utils/theme';
 
-import {ARCHIVED, PUBLIC, SHARED} from './browse_channels';
+import {ARCHIVED, PUBLIC, SHARED} from './';
 
 type Props = {
     onPress: (channelType: string) => void;

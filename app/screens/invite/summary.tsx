@@ -1,13 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
-import {useIntl} from 'react-intl';
-import {View, Text, ScrollView} from 'react-native';
-import Button from 'react-native-button';
+import React, {useCallback, useEffect, useMemo} from 'react';
+import {MessageDescriptor, useIntl} from 'react-intl';
+import {View, Text, ScrollView, StyleProp, TextStyle, ViewStyle} from 'react-native';
 
-import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
 import AlertSvg from '@components/illustrations/alert';
 import ErrorSvg from '@components/illustrations/error';
 import SuccessSvg from '@components/illustrations/success';
@@ -17,18 +14,15 @@ import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import FooterButton from './footer_button';
 import SummaryReport, {SummaryReportType} from './summary_report';
 
-import type {SearchResult, Result} from './invite';
+import type {SearchResult, Result} from './invite_types';
 
 const MAX_WIDTH_CONTENT = 480;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        container: {
-            display: 'flex',
-            flex: 1,
-        },
         summary: {
             display: 'flex',
             flex: 1,
@@ -65,30 +59,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 200, 'Regular'),
             textAlign: 'center',
         },
-        footer: {
-            display: 'flex',
-            flexDirection: 'row',
-            justifyContent: 'center',
-            borderTopWidth: 1,
-            borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
-            padding: 20,
-        },
-        summaryButtonContainer: {
-            flexGrow: 1,
-            flexDirection: 'row',
-            justifyContent: 'center',
-        },
-        summaryButtonTextContainer: {
-            display: 'flex',
-            flexDirection: 'row',
-            alignItems: 'center',
-            height: 24,
-        },
-        summaryButtonIcon: {
-            marginRight: 7,
-            color: theme.buttonColor,
-
-        },
     };
 });
 
@@ -106,6 +76,7 @@ type SummaryProps = {
     onClose: () => void;
     onRetry: () => void;
     onBack: () => void;
+    onGetFooterButton: (button: React.ReactNode) => void;
 }
 
 export default function Summary({
@@ -116,6 +87,7 @@ export default function Summary({
     onClose,
     onRetry,
     onBack,
+    onGetFooterButton,
 }: SummaryProps) {
     const {formatMessage, locale} = useIntl();
     const theme = useTheme();
@@ -181,11 +153,10 @@ export default function Summary({
     const renderButton = useCallback((type: SummaryButtonType) => {
         let onPress;
         let iconName = '';
-        let text;
-        let styleButtonText = buttonTextStyle(theme, 'lg', 'primary');
-        let styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
-        const styleButtonIcon = [];
-        styleButtonIcon.push(styles.summaryButtonIcon);
+        let text: MessageDescriptor;
+        let styleButtonText: StyleProp<TextStyle> = {};
+        let styleButtonBackground: StyleProp<ViewStyle> = [];
+        let styleButtonIcon: StyleProp<TextStyle> = {};
 
         switch (type) {
             case SummaryButtonType.BACK:
@@ -197,7 +168,7 @@ export default function Summary({
                 };
                 styleButtonText = buttonTextStyle(theme, 'lg', 'tertiary');
                 styleButtonBackground = [buttonBackgroundStyle(theme, 'lg', 'tertiary'), {marginRight: 8}];
-                styleButtonIcon.push({color: theme.buttonBg});
+                styleButtonIcon = {color: theme.buttonBg};
                 break;
             case SummaryButtonType.RETRY:
                 onPress = onRetry;
@@ -218,83 +189,69 @@ export default function Summary({
         }
 
         return (
-            <Button
-                containerStyle={[styleButtonBackground, {flexGrow: 1}]}
+            <FooterButton
+                text={formatMessage(text)}
+                textStyle={styleButtonText}
+                containerStyle={styleButtonBackground}
+                iconName={iconName}
+                iconStyle={styleButtonIcon}
                 onPress={onPress}
-                testID={`invite.summary_button.${SummaryButtonType.RETRY}`}
-            >
-                <View style={styles.summaryButtonTextContainer}>
-                    {iconName && (
-                        <CompassIcon
-                            name={iconName}
-                            size={24}
-                            style={styleButtonIcon}
-                        />
-                    )}
-                    <FormattedText
-                        {...text}
-                        style={styleButtonText}
-                    />
-                </View>
-            </Button>
+                testID={type}
+            />
         );
     }, [theme, locale, onClose, onRetry, onBack]);
 
+    useEffect(() => {
+        const button = error ? (
+            <>
+                {renderButton(SummaryButtonType.BACK)}
+                {renderButton(SummaryButtonType.RETRY)}
+            </>
+        ) : (
+            renderButton(SummaryButtonType.DONE)
+        );
+
+        onGetFooterButton(button);
+    }, [error, renderButton]);
+
     return (
-        <View
-            style={styles.container}
+        <ScrollView
+            style={styles.summary}
+            contentContainerStyle={styles.summaryContainer}
             testID={testID}
         >
-            <ScrollView
-                style={styles.summary}
-                contentContainerStyle={styles.summaryContainer}
-                testID='invite.summary'
-            >
-                <View style={styles.summaryContent}>
-                    <View style={styles.summarySvg}>
-                        {svg}
-                    </View>
-                    <Text style={styleSummaryMessageText}>
-                        {message}
+            <View style={styles.summaryContent}>
+                <View style={styles.summarySvg}>
+                    {svg}
+                </View>
+                <Text style={styleSummaryMessageText}>
+                    {message}
+                </Text>
+                {error ? (
+                    <Text style={styles.summaryErrorText}>
+                        {error}
                     </Text>
-                    {error ? (
-                        <Text style={styles.summaryErrorText}>
-                            {error}
-                        </Text>
-                    ) : (
-                        <>
-                            {notSent.length > 0 && (
-                                <SummaryReport
-                                    type={SummaryReportType.NOT_SENT}
-                                    invites={notSent}
-                                    selectedIds={selectedIds}
-                                    testID='invite.summary_report'
-                                />
-                            )}
-                            {sent.length > 0 && (
-                                <SummaryReport
-                                    type={SummaryReportType.SENT}
-                                    invites={sent}
-                                    selectedIds={selectedIds}
-                                    testID='invite.summary_report'
-                                />
-                            )}
-                        </>
-                    )}
-                </View>
-            </ScrollView>
-            <View style={styles.footer}>
-                <View style={styles.summaryButtonContainer}>
-                    {error ? (
-                        <>
-                            {renderButton(SummaryButtonType.BACK)}
-                            {renderButton(SummaryButtonType.RETRY)}
-                        </>
-                    ) : (
-                        renderButton(SummaryButtonType.DONE)
-                    )}
-                </View>
+                ) : (
+                    <>
+                        {notSent.length > 0 && (
+                            <SummaryReport
+                                type={SummaryReportType.NOT_SENT}
+                                invites={notSent}
+                                selectedIds={selectedIds}
+                                testID='invite.summary_report'
+                            />
+                        )}
+                        {sent.length > 0 && (
+                            <SummaryReport
+                                type={SummaryReportType.SENT}
+                                invites={sent}
+                                selectedIds={selectedIds}
+                                testID='invite.summary_report'
+                            />
+                        )}
+                    </>
+                )}
             </View>
-        </View>
+        </ScrollView>
     );
 }

@@ -13,7 +13,7 @@ import {typography} from '@utils/typography';
 
 import TextItem, {TextItemType} from './text_item';
 
-import type {SearchResult, InviteResult} from './invite';
+import type {SearchResult, InviteResult} from './invite_types';
 
 const COLOR_SUCCESS = '#3db887';
 const COLOR_ERROR = '#d24b4e';

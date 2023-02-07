@@ -15,8 +15,9 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import {ARCHIVED, SHARED} from './browse_channels';
 import DropdownSlideup from './dropdown_slideup';
+
+import {ARCHIVED, SHARED} from './';
 
 type Props = {
     typeOfChannels: string;
@@ -32,7 +33,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             lineHeight: 20,
             color: theme.centerChannelColor,
             marginLeft: 20,
-            marginTop: 12,
             marginBottom: 4,
         },
         channelDropdownIcon: {

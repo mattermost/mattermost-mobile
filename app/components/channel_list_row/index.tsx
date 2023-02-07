@@ -8,6 +8,7 @@ import {
     View,
 } from 'react-native';
 
+import {General} from '@app/constants';
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
@@ -24,6 +25,7 @@ type Props = {
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         titleContainer: {
+            flex: 1,
             marginLeft: 16,
             flexDirection: 'column',
         },
@@ -53,8 +55,8 @@ export default function ChannelListRow({
     channel,
     onPress,
     testID,
-    selectable = false,
-    selected = false,
+    selectable,
+    selected,
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -68,13 +70,12 @@ export default function ChannelListRow({
             return null;
         }
 
-        const color = selected ? theme.buttonBg : theme.centerChannelColor;
         return (
             <View>
                 <CompassIcon
                     name={selected ? 'check-circle' : 'circle-outline'}
                     size={28}
-                    color={color}
+                    color={selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.32)}
                 />
             </View>
         );
@@ -95,7 +96,8 @@ export default function ChannelListRow({
 
     const itemTestID = `${testID}.${channel.name}`;
     const channelDisplayNameTestID = `${itemTestID}.display_name`;
-    let icon = 'globe';
+    let icon = channel.type === General.PRIVATE_CHANNEL ? 'lock-outline' : 'globe';
+
     if (channel.delete_at) {
         icon = 'archive-outline';
     } else if (channel.shared) {
@@ -117,10 +119,11 @@ export default function ChannelListRow({
                         style={style.icon}
                     />
                     <View style={style.titleContainer}>
-
                         <Text
                             style={style.displayName}
                             testID={channelDisplayNameTestID}
+                            ellipsizeMode='tail'
+                            numberOfLines={1}
                         >
                             {channel.display_name}
                         </Text>

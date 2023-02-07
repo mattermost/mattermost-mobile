@@ -64,12 +64,15 @@ exports[`components/channel_list_row should be selected 1`] = `
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
             "marginLeft": 16,
           }
         }
       >
         <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
           style={
             {
               "color": "#3f4350",
@@ -175,12 +178,15 @@ exports[`components/channel_list_row should match snapshot with delete_at filled
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
             "marginLeft": 16,
           }
         }
       >
         <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
           style={
             {
               "color": "#3f4350",
@@ -264,12 +270,15 @@ exports[`components/channel_list_row should match snapshot with open channel ico
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
             "marginLeft": 16,
           }
         }
       >
         <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
           style={
             {
               "color": "#3f4350",
@@ -353,12 +362,15 @@ exports[`components/channel_list_row should match snapshot with private channel 
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
             "marginLeft": 16,
           }
         }
       >
         <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
           style={
             {
               "color": "#3f4350",
@@ -442,12 +454,15 @@ exports[`components/channel_list_row should match snapshot with purpose filled i
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
             "marginLeft": 16,
           }
         }
       >
         <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
           style={
             {
               "color": "#3f4350",
@@ -546,12 +561,15 @@ exports[`components/channel_list_row should match snapshot with shared filled in
       <View
         style={
           {
+            "flex": 1,
             "flexDirection": "column",
             "marginLeft": 16,
           }
         }
       >
         <Text
+          ellipsizeMode="tail"
+          numberOfLines={1}
           style={
             {
               "color": "#3f4350",

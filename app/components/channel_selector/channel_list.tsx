@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {View, FlatList} from 'react-native';
+import {useIntl} from 'react-intl';
+import {View, FlatList, Text} from 'react-native';
 
 import ChannelListRow from '@components/channel_list_row';
-import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
@@ -17,8 +17,12 @@ type Props = {
     onEndReached: () => void;
     loading: boolean;
     channels: Channel[];
+    selectedChannels?: Channel[];
     onSelectChannel: (channel: Channel) => void;
     term?: string;
+    itemSeparator?: boolean;
+    itemSelectable?: boolean;
+    noResultsWithoutTerm?: string;
 }
 
 const channelKeyExtractor = (channel: Channel) => {
@@ -59,7 +63,12 @@ export default function ChannelList({
     loading,
     term,
     channels,
+    selectedChannels = [],
+    itemSeparator = true,
+    itemSelectable,
+    noResultsWithoutTerm,
 }: Props) {
+    const {formatMessage} = useIntl();
     const theme = useTheme();
 
     const style = getStyleFromTheme(theme);
@@ -73,11 +82,13 @@ export default function ChannelList({
         return (
             <ChannelListRow
                 channel={item}
+                selectable={itemSelectable}
+                selected={selectedChannels.findIndex(({id}) => id === item.id) !== -1}
                 testID='browse_channels.custom_list.channel_item'
                 onPress={onSelectChannel}
             />
         );
-    }, [onSelectChannel]);
+    }, [onSelectChannel, itemSelectable, selectedChannels]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {
@@ -106,14 +117,12 @@ export default function ChannelList({
 
         return (
             <View style={noResutsStyle}>
-                <FormattedText
-                    id='browse_channels.noMore'
-                    defaultMessage='No more channels to join'
-                    style={style.noResultText}
-                />
+                <Text style={style.noResultText}>
+                    {noResultsWithoutTerm || formatMessage({id: 'channel_selector.noMore', defaultMessage: 'No channels available'})}
+                </Text>
             </View>
         );
-    }, [style, term, noResutsStyle]);
+    }, [style, term, noResutsStyle, noResultsWithoutTerm]);
 
     const renderSeparator = useCallback(() => (
         <View
@@ -130,7 +139,7 @@ export default function ChannelList({
             ListFooterComponent={renderLoading}
             onEndReached={onEndReached}
             contentContainerStyle={style.listContainer}
-            ItemSeparatorComponent={renderSeparator}
+            ItemSeparatorComponent={itemSeparator ? renderSeparator : undefined}
             keyExtractor={channelKeyExtractor}
         />
     );

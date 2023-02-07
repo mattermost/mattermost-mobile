@@ -1,16 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState, useRef} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
-import {Keyboard, View, LayoutChangeEvent} from 'react-native';
+import React, {useCallback, useEffect, useState, useRef, useMemo} from 'react';
+import {useIntl} from 'react-intl';
+import {Keyboard, View, LayoutChangeEvent, Platform} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {getTeamMembersByIds, addUsersToTeam, sendEmailInvitesToTeam} from '@actions/remote/team';
 import {searchProfiles} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
-import {ServerErrors} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useModalPosition} from '@hooks/device';
@@ -19,33 +17,33 @@ import {dismissModal, setButtons} from '@screens/navigation';
 import {isEmail} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
-import {isGuest} from '@utils/user';
 
+import {sendMembersInvites, sendGuestsInvites} from './invite_actions';
 import Selection from './selection';
+import SelectionChannels from './selection_channels';
 import Summary from './summary';
 
+import type {EmailInvite, SearchResult, Invites, Result} from './invite_types';
 import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
 import type {OptionsTopBarButton} from 'react-native-navigation';
 
 const CLOSE_BUTTON_ID = 'close-invite';
-const SEND_BUTTON_ID = 'send-invite';
+const BACK_BUTTON_ID = 'back-invite';
 const TIMEOUT_MILLISECONDS = 200;
 const DEFAULT_RESULT = {sent: [], notSent: []};
 
-const makeLeftButton = (theme: Theme): OptionsTopBarButton => ({
+const makeLeftButton = (theme: Theme, isBack: boolean): OptionsTopBarButton => (isBack ? {
+    id: BACK_BUTTON_ID,
+    icon: CompassIcon.getImageSourceSync(
+        Platform.select({default: 'arrow-left', ios: 'arrow-back-ios'}),
+        24,
+        theme.sidebarHeaderTextColor,
+    ),
+    testID: 'invite.back.button',
+} : {
     id: CLOSE_BUTTON_ID,
     icon: CompassIcon.getImageSourceSync('close', 24, theme.sidebarHeaderTextColor),
     testID: 'invite.close.button',
-});
-
-const makeRightButton = (theme: Theme, formatMessage: IntlShape['formatMessage'], enabled: boolean): OptionsTopBarButton => ({
-    id: SEND_BUTTON_ID,
-    text: formatMessage({id: 'invite.send_invite', defaultMessage: 'Send'}),
-    showAsAction: 'always',
-    testID: 'invite.send.button',
-    color: theme.sidebarHeaderTextColor,
-    disabledColor: changeOpacity(theme.sidebarHeaderTextColor, 0.4),
-    enabled,
 });
 
 const closeModal = async () => {
@@ -53,38 +51,51 @@ const closeModal = async () => {
     await dismissModal();
 };
 
-const getStyleSheet = makeStyleSheetFromTheme(() => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             flex: 1,
             flexDirection: 'column',
+        },
+        contentContainer: {
+            display: 'flex',
+            flex: 1,
         },
         loadingContainer: {
             flex: 1,
             justifyContent: 'center',
             alignItems: 'center',
         },
+        footer: {
+            display: 'flex',
+            flexDirection: 'row',
+            justifyContent: 'center',
+            borderTopWidth: 0,
+            padding: 20,
+            backgroundColor: theme.centerChannelBg,
+        },
+        footerWithBorder: {
+            borderTopWidth: 1,
+            borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
+        },
+        footerButtonContainer: {
+            flexGrow: 1,
+            flexDirection: 'row',
+            justifyContent: 'center',
+        },
     };
 });
 
-export type EmailInvite = string;
-
-export type SearchResult = UserProfile|EmailInvite;
-
-export type InviteResult = {
-    userId: string;
-    reason: string;
-};
-
-export type Result = {
-    sent: InviteResult[];
-    notSent: InviteResult[];
-}
-
 enum Stage {
     SELECTION = 'selection',
+    SELECT_CHANNELS = 'select_channels',
     RESULT = 'result',
     LOADING = 'loading',
+}
+
+enum InviteType {
+    MEMBER = 'member',
+    GUEST = 'guest',
 }
 
 type InviteProps = {
@@ -119,11 +130,15 @@ export default function Invite({
 
     const [term, setTerm] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
-    const [selectedIds, setSelectedIds] = useState<{[id: string]: SearchResult}>({});
+    const [selectedIds, setSelectedIds] = useState<Invites>({});
+    const [inviteType, setInviteType] = useState(InviteType.MEMBER);
+    const [customMessage, setCustomMessage] = useState('');
+    const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<Result>(DEFAULT_RESULT);
     const [wrapperHeight, setWrapperHeight] = useState(0);
     const [stage, setStage] = useState(Stage.SELECTION);
+    const [footerButton, setFooterButton] = useState<React.ReactNode>(null);
     const [sendError, setSendError] = useState('');
 
     const selectedCount = Object.keys(selectedIds).length;
@@ -148,14 +163,40 @@ export default function Invite({
         setSearchResults(results);
     }, [serverUrl, teamId]);
 
-    const handleReset = () => {
+    const handleOnGetFooterButton = useCallback((button: React.ReactNode) => {
+        setFooterButton(button);
+    }, []);
+
+    const handleOnOpenSelectChannels = useCallback(() => {
+        setStage(Stage.SELECT_CHANNELS);
+    }, []);
+
+    const handleOnAddChannels = useCallback((channels: Channel[]) => {
+        setSelectedChannels(channels);
+        setStage(Stage.SELECTION);
+    }, []);
+
+    const handleOnCustomMessageChange = useCallback((text: string) => {
+        setCustomMessage(text);
+    }, []);
+
+    const handleOnGuestChange = useCallback((enabled: boolean) => {
+        setInviteType(enabled ? InviteType.GUEST : InviteType.MEMBER);
+
+        if (!enabled) {
+            setSelectedChannels([]);
+            setCustomMessage('');
+        }
+    }, []);
+
+    const handleReset = useCallback(() => {
         setStage(Stage.LOADING);
         setSendError('');
         setTerm('');
         setSearchResults([]);
         setResult(DEFAULT_RESULT);
         setStage(Stage.SELECTION);
-    };
+    }, []);
 
     const handleClearSearch = useCallback(() => {
         setTerm('');
@@ -190,14 +231,14 @@ export default function Invite({
         handleClearSearch();
     }, [selectedIds, handleClearSearch]);
 
-    const handleRetry = () => {
+    const handleRetry = useCallback(() => {
         setSendError('');
         setStage(Stage.LOADING);
 
         retryTimeoutId.current = setTimeout(() => {
             handleSend();
         }, TIMEOUT_MILLISECONDS);
-    };
+    }, []);
 
     const handleSendError = () => {
         setSendError(formatMessage({id: 'invite.send_error', defaultMessage: 'Something went wrong while trying to send invitations. Please check your network connection and try again.'}));
@@ -212,117 +253,35 @@ export default function Invite({
 
         setStage(Stage.LOADING);
 
-        const userIds = [];
-        const emails = [];
+        const {data, error} = (inviteType === InviteType.GUEST) ? (
+            await sendGuestsInvites(serverUrl, teamId, teamDisplayName, selectedIds, selectedChannels, customMessage, intl, isAdmin)
+        ) : (
+            await sendMembersInvites(serverUrl, teamId, teamDisplayName, selectedIds, intl, isAdmin)
+        );
 
-        for (const [id, item] of Object.entries(selectedIds)) {
-            if (typeof item === 'string') {
-                emails.push(item);
-            } else {
-                userIds.push(id);
-            }
+        if (error) {
+            handleSendError();
+        } else if (data) {
+            setResult(data);
         }
 
-        const currentMemberIds = new Set();
-
-        if (userIds.length) {
-            const {members: currentTeamMembers = [], error: getTeamMembersByIdsError} = await getTeamMembersByIds(serverUrl, teamId, userIds);
-
-            if (getTeamMembersByIdsError) {
-                handleSendError();
-                return;
-            }
-
-            for (const {user_id: currentMemberId} of currentTeamMembers) {
-                currentMemberIds.add(currentMemberId);
-            }
-        }
-
-        const sent: InviteResult[] = [];
-        const notSent: InviteResult[] = [];
-        const usersToAdd = [];
-
-        for (const userId of userIds) {
-            if (isGuest((selectedIds[userId] as UserProfile).roles)) {
-                notSent.push({userId, reason: formatMessage({id: 'invite.members.user_is_guest', defaultMessage: 'Contact your admin to make this guest a full member'})});
-            } else if (currentMemberIds.has(userId)) {
-                notSent.push({userId, reason: formatMessage({id: 'invite.members.already_member', defaultMessage: 'This person is already a team member'})});
-            } else {
-                usersToAdd.push(userId);
-            }
-        }
-
-        if (usersToAdd.length) {
-            const {members, error: addUsersToTeamError} = await addUsersToTeam(serverUrl, teamId, usersToAdd);
-
-            if (addUsersToTeamError) {
-                handleSendError();
-                return;
-            }
-
-            if (members) {
-                const membersWithError: Record<string, string> = {};
-                for (const {user_id, error} of members) {
-                    if (error) {
-                        membersWithError[user_id] = error.message;
-                    }
-                }
-
-                for (const userId of usersToAdd) {
-                    if (membersWithError[userId]) {
-                        notSent.push({userId, reason: membersWithError[userId]});
-                    } else {
-                        sent.push({userId, reason: formatMessage({id: 'invite.summary.member_invite', defaultMessage: 'Invited as a member of {teamDisplayName}'}, {teamDisplayName})});
-                    }
-                }
-            }
-        }
-
-        if (emails.length) {
-            const {members, error: sendEmailInvitesToTeamError} = await sendEmailInvitesToTeam(serverUrl, teamId, emails);
-
-            if (sendEmailInvitesToTeamError) {
-                handleSendError();
-                return;
-            }
-
-            if (members) {
-                const membersWithError: Record<string, string> = {};
-                for (const {email, error} of members) {
-                    if (error) {
-                        membersWithError[email] = isAdmin && error.server_error_id === ServerErrors.SEND_EMAIL_WITH_DEFAULTS_ERROR ? (
-                            formatMessage({id: 'invite.summary.smtp_failure', defaultMessage: 'SMTP is not configured in System Console'})
-                        ) : (
-                            error.message
-                        );
-                    }
-                }
-
-                for (const email of emails) {
-                    if (membersWithError[email]) {
-                        notSent.push({userId: email, reason: membersWithError[email]});
-                    } else {
-                        sent.push({userId: email, reason: formatMessage({id: 'invite.summary.email_invite', defaultMessage: 'An invitation email has been sent'})});
-                    }
-                }
-            }
-        }
-
-        setResult({sent, notSent});
         setStage(Stage.RESULT);
     };
 
+    const goBack = useCallback(() => {
+        setStage(Stage.SELECTION);
+    }, []);
+
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, closeModal, [closeModal]);
-    useNavButtonPressed(SEND_BUTTON_ID, componentId, handleSend, [handleSend]);
+    useNavButtonPressed(BACK_BUTTON_ID, componentId, goBack, [goBack]);
 
     useEffect(() => {
         const buttons: NavButtons = {
-            leftButtons: [makeLeftButton(theme)],
-            rightButtons: stage === Stage.SELECTION ? [makeRightButton(theme, formatMessage, selectedCount > 0)] : [],
+            leftButtons: [makeLeftButton(theme, stage === Stage.SELECT_CHANNELS)],
         };
 
         setButtons(componentId, buttons);
-    }, [theme, locale, componentId, selectedCount > 0, stage === Stage.SELECTION, sendError]);
+    }, [theme, locale, componentId, stage === Stage.SELECT_CHANNELS]);
 
     useEffect(() => {
         mergeNavigationOptions(componentId, {
@@ -332,12 +291,13 @@ export default function Invite({
                     text: stage === Stage.RESULT ? (
                         formatMessage({id: 'invite.title.summary', defaultMessage: 'Invite summary'})
                     ) : (
+                        (stage === Stage.SELECT_CHANNELS && formatMessage({id: 'invite.title.select_channels', defaultMessage: 'Add to channels'})) ||
                         formatMessage({id: 'invite.title', defaultMessage: 'Invite'})
                     ),
                 },
             },
         });
-    }, [componentId, locale, theme, stage === Stage.RESULT]);
+    }, [componentId, locale, theme, stage === Stage.RESULT, stage === Stage.SELECT_CHANNELS]);
 
     useEffect(() => {
         return () => {
@@ -357,7 +317,23 @@ export default function Invite({
         Reflect.deleteProperty(newSelectedIds, id);
 
         setSelectedIds(newSelectedIds);
+
+        if (Object.keys(newSelectedIds).length === 0) {
+            handleOnGuestChange(false);
+        }
     }, [selectedIds]);
+
+    const footerStyle = useMemo(() => {
+        const style = [];
+
+        style.push(styles.footer);
+
+        if (stage !== Stage.SELECT_CHANNELS) {
+            style.push(styles.footerWithBorder);
+        }
+
+        return style;
+    }, [stage !== Stage.SELECT_CHANNELS]);
 
     const renderContent = () => {
         switch (stage) {
@@ -378,7 +354,17 @@ export default function Invite({
                         onClose={closeModal}
                         onRetry={handleRetry}
                         onBack={handleReset}
+                        onGetFooterButton={handleOnGetFooterButton}
                         testID='invite.screen.summary'
+                    />
+                );
+            case Stage.SELECT_CHANNELS:
+                return (
+                    <SelectionChannels
+                        teamId={teamId}
+                        selectedChannels={selectedChannels}
+                        onAddChannels={handleOnAddChannels}
+                        onGetFooterButton={handleOnGetFooterButton}
                     />
                 );
             default:
@@ -396,10 +382,18 @@ export default function Invite({
                         modalPosition={modalPosition}
                         wrapperHeight={wrapperHeight}
                         loading={loading}
+                        guestEnabled={inviteType === InviteType.GUEST}
+                        customMessage={customMessage}
+                        selectedChannelsCount={selectedChannels.length}
                         onSearchChange={handleSearchChange}
                         onSelectItem={handleSelectItem}
                         onRemoveItem={handleRemoveItem}
                         onClose={closeModal}
+                        onSend={handleSend}
+                        onGetFooterButton={handleOnGetFooterButton}
+                        onOpenSelectChannels={handleOnOpenSelectChannels}
+                        onGuestChange={handleOnGuestChange}
+                        onCustomMessageChange={handleOnCustomMessageChange}
                         testID='invite.screen.selection'
                     />
                 );
@@ -413,7 +407,14 @@ export default function Invite({
             ref={mainView}
             testID='invite.screen'
         >
-            {renderContent()}
+            <View style={styles.contentContainer}>
+                {renderContent()}
+            </View>
+            <View style={footerStyle}>
+                <View style={styles.footerButtonContainer}>
+                    {footerButton}
+                </View>
+            </View>
         </SafeAreaView>
     );
 }

@@ -3,12 +3,11 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
-import {Keyboard, Platform, StyleSheet, View} from 'react-native';
+import {Keyboard, StyleSheet} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
-import Loading from '@components/loading';
-import Search from '@components/search';
+import ChannelSelector from '@components/channel_selector';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -16,10 +15,6 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
-import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
-
-import ChannelDropdown from './channel_dropdown';
-import ChannelList from './channel_list';
 
 import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
 import type {ImageResource, OptionsTopBarButton} from 'react-native-navigation';
@@ -58,16 +53,6 @@ const close = () => {
 const style = StyleSheet.create({
     container: {
         flex: 1,
-    },
-    searchBar: {
-        marginLeft: 12,
-        marginRight: Platform.select({ios: 4, default: 12}),
-        marginTop: 12,
-    },
-    loadingContainer: {
-        flex: 1,
-        justifyContent: 'center' as const,
-        alignItems: 'center' as const,
     },
 });
 
@@ -158,10 +143,6 @@ export default function BrowseChannels(props: Props) {
         }
     }, [setHeaderButtons, intl.locale]);
 
-    const onSearch = useCallback(() => {
-        searchChannels(term);
-    }, [term, searchChannels]);
-
     const handleCreate = useCallback(() => {
         const screen = Screens.CREATE_OR_EDIT_CHANNEL;
         const title = intl.formatMessage({id: 'mobile.create_channel.title', defaultMessage: 'New channel'});
@@ -177,62 +158,23 @@ export default function BrowseChannels(props: Props) {
         setHeaderButtons(!adding);
     }, [theme, canCreateChannels, adding]);
 
-    let content;
-    if (adding) {
-        content = (
-            <Loading
-                containerStyle={style.loadingContainer}
-                size='large'
-                color={theme.buttonBg}
-            />
-        );
-    } else {
-        let channelDropdown;
-        if (canShowArchivedChannels || sharedChannelsEnabled) {
-            channelDropdown = (
-                <ChannelDropdown
-                    onPress={changeTypeOfChannels}
-                    typeOfChannels={typeOfChannels}
-                    canShowArchivedChannels={canShowArchivedChannels}
-                    sharedChannelsEnabled={sharedChannelsEnabled}
-                />
-            );
-        }
-
-        content = (
-            <>
-                <View
-                    testID='browse_channels.screen'
-                    style={style.searchBar}
-                >
-                    <Search
-                        testID='browse_channels.search_bar'
-                        placeholder={intl.formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
-                        cancelButtonTitle={intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
-                        placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                        onChangeText={searchChannels}
-                        onSubmitEditing={onSearch}
-                        onCancel={stopSearch}
-                        autoCapitalize='none'
-                        keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
-                        value={term}
-                    />
-                </View>
-                {channelDropdown}
-                <ChannelList
-                    channels={channels}
-                    onEndReached={onEndReached}
-                    loading={loading}
-                    onSelectChannel={onSelectChannel}
-                    term={term}
-                />
-            </>
-        );
-    }
-
     return (
         <SafeAreaView style={style.container}>
-            {content}
+            <ChannelSelector
+                sharedChannelsEnabled={sharedChannelsEnabled}
+                canShowArchivedChannels={canShowArchivedChannels}
+                typeOfChannels={typeOfChannels}
+                changeChannelType={changeTypeOfChannels}
+                term={term}
+                searchChannels={searchChannels}
+                stopSearch={stopSearch}
+                channels={channels}
+                adding={adding}
+                loading={loading}
+                noResultsWithoutTerm={intl.formatMessage({id: 'browse_channels.noMore', defaultMessage: 'No more channels to join'})}
+                onEndReached={onEndReached}
+                onSelectChannel={onSelectChannel}
+            />
         </SafeAreaView>
     );
 }

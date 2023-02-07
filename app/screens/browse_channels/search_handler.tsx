@@ -4,11 +4,12 @@
 import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 
 import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, searchChannels} from '@actions/remote/channel';
+import {ARCHIVED, PUBLIC, SHARED} from '@components/channel_selector';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import useDidUpdate from '@hooks/did_update';
 
-import BrowseChannels, {ARCHIVED, PUBLIC, SHARED} from './browse_channels';
+import BrowseChannels from './browse_channels';
 
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type {AvailableScreens} from '@typings/screens/navigation';
