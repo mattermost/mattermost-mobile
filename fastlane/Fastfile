@@ -702,6 +702,14 @@ platform :android do
         )
       end
 
+      Dir.glob(".#{release_dir}*.kt") do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'package com.mattermost.rnbeta',
+            new_string: "package #{package_id}"
+        )
+      end
+
       Dir.glob('../android/app/src/main/java/com/mattermost/share/*.java') do |item|
         find_replace_string(
             path_to_file: item[1..-1],
@@ -717,14 +725,14 @@ platform :android do
             new_string: "import #{package_id}.*;"
         )
       end
-    end
 
-    Dir.glob('../android/app/src/main/java/com/mattermost/newarchitecture/*.java') do |item|
-      find_replace_string(
-          path_to_file: item[1..-1],
-          old_string: 'import com.mattermost.rnbeta.BuildConfig;',
-          new_string: "import #{package_id}.BuildConfig;"
-      )
+      Dir.glob('../android/app/src/main/java/com/mattermost/helpers/*.kt') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.*',
+            new_string: "import #{package_id}.*"
+        )
+      end
     end
   end
 
