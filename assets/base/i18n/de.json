@@ -987,5 +987,11 @@
     "mobile.manage_members.done": "Erledigt",
     "mobile.manage_members.change_role.error": "Beim Versuch, die Rolle zu aktualisieren, ist ein Fehler aufgetreten. Bitte überprüfe deine Verbindung und versuche es erneut.",
     "mobile.manage_members.cancel": "Abbrechen",
-    "mobile.manage_members.admin": "Administrator"
+    "mobile.manage_members.admin": "Administrator",
+    "mobile.calls_recording_stop_none_in_progress": "Es findet keine Aufzeichnung statt.",
+    "mobile.calls_recording_stop_no_permissions": "Du hast nicht die Berechtigung, die Aufzeichnung zu beenden. Bitte den Gesprächsleiter, die Aufzeichnung zu beenden.",
+    "mobile.calls_recording_start_no_permissions": "Du hast nicht die Berechtigung, eine Aufzeichnung zu starten. Bitte frage den Gesprächsleiter, ob er eine Aufzeichnung starten darf.",
+    "mobile.calls_recording_start_in_progress": "Eine Aufzeichnung ist bereits im Gange.",
+    "mobile.calls_host_rec_error_title": "Bei der Aufnahme ist etwas schief gelaufen",
+    "mobile.calls_host_rec_error": "Bitte versuche, die Aufzeichnung zu wiederholen. Du kannst dich auch an deinen Systemadministrator wenden, um Hilfe bei der Fehlerbehebung zu erhalten."
 }
