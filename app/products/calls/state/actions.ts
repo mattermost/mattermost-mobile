@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {needsRecordingAlert} from '@calls/alerts';
 import {
     getCallsConfig,
     getCallsState,
@@ -513,6 +514,11 @@ export const setRecordingState = (serverUrl: string, channelId: string, recState
         return;
     }
 
+    // If a new call has started, we reset the alert state so it can be showed again.
+    if (currentCall.recState && recState.start_at > currentCall.recState.start_at) {
+        needsRecordingAlert();
+    }
+
     const nextCurrentCall = {
         ...currentCall,
         recState,
@@ -534,6 +540,11 @@ export const setHost = (serverUrl: string, channelId: string, hostId: string) =>
     const currentCall = getCurrentCall();
     if (!currentCall || currentCall.channelId !== channelId) {
         return;
+    }
+
+    // If we are the new host we show the alert again.
+    if (currentCall.myUserId === hostId) {
+        needsRecordingAlert();
     }
 
     const nextCurrentCall = {

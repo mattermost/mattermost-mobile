@@ -13,6 +13,8 @@ export {
     unraiseHand,
     setSpeakerphoneOn,
     handleCallsSlashCommand,
+    startCallRecording,
+    stopCallRecording,
 } from './calls';
 
 export {hasMicrophonePermission} from './permissions';
