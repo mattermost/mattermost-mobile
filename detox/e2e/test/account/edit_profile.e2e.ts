@@ -89,6 +89,7 @@ describe('Account - Edit Profile', () => {
         await waitFor(EditProfileScreen.nicknameInput).toBeVisible().whileElement(by.id(EditProfileScreen.testID.scrollView)).scroll(50, 'down');
         await EditProfileScreen.nicknameInput.replaceText(`${testUser.nickname}${suffix}`);
         await EditProfileScreen.scrollView.tap({x: 1, y: 1});
+        await waitFor(EditProfileScreen.positionInput).toBeVisible().whileElement(by.id(EditProfileScreen.testID.scrollView)).scroll(50, 'down');
         await EditProfileScreen.positionInput.replaceText(`${testUser.position}${suffix}`);
         await EditProfileScreen.saveButton.tap();
 
