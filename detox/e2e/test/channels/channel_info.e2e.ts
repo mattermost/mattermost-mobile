@@ -65,6 +65,7 @@ describe('Channels - Channel Info', () => {
         await expect(ChannelInfoScreen.copyChannelLinkOption).toBeVisible();
         await expect(ChannelInfoScreen.editChannelOption).toBeVisible();
         await expect(ChannelInfoScreen.leaveChannelOption).toBeVisible();
+        await waitFor(ChannelInfoScreen.archiveChannelOption).toBeVisible().whileElement(by.id(ChannelInfoScreen.testID.scrollView)).scroll(50, 'down');
         await expect(ChannelInfoScreen.archiveChannelOption).toBeVisible();
 
         // # Go back to channel list screen

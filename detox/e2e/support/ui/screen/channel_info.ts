@@ -109,7 +109,7 @@ class ChannelInfoScreen {
     };
 
     archiveChannel = async (alertArchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
-        await waitFor(this.archiveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
+        await waitFor(this.archiveChannelOption).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(50, 'down');
         await this.archiveChannelOption.tap({x: 1, y: 1});
         const {
             noButton,
@@ -196,7 +196,7 @@ class ChannelInfoScreen {
     };
 
     unarchiveChannel = async (alertUnarchiveChannelTitle: Detox.NativeElement, {confirm = true} = {}) => {
-        await waitFor(this.unarchiveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
+        await waitFor(this.unarchiveChannelOption).toBeVisible().whileElement(by.id(this.testID.scrollView)).scroll(50, 'down');
         await this.unarchiveChannelOption.tap({x: 1, y: 1});
         const {
             noButton,
