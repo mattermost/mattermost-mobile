@@ -987,5 +987,11 @@
     "mobile.manage_members.done": "Gotowe",
     "mobile.manage_members.change_role.error": "Wystąpił błąd podczas próby aktualizacji roli. Proszę sprawdzić swoje połączenie i spróbować ponownie.",
     "mobile.manage_members.cancel": "Anuluj",
-    "mobile.manage_members.admin": "Administrator"
+    "mobile.manage_members.admin": "Administrator",
+    "mobile.calls_recording_stop_none_in_progress": "Nie trwa nagrywanie.",
+    "mobile.calls_recording_stop_no_permissions": "Nie masz uprawnień do zatrzymania nagrania. Poproś prowadzącego rozmowę o zatrzymanie nagrania.",
+    "mobile.calls_recording_start_no_permissions": "Nie masz uprawnień do rozpoczęcia nagrywania. Poproś prowadzącego rozmowę o uruchomienie nagrania.",
+    "mobile.calls_recording_start_in_progress": "Nagranie jest już w trakcie realizacji.",
+    "mobile.calls_host_rec_error_title": "Coś poszło nie tak z nagraniem",
+    "mobile.calls_host_rec_error": "Proszę spróbować nagrać ponownie. Możesz również skontaktować się z administratorem systemu, aby uzyskać pomoc w rozwiązywaniu problemów."
 }
