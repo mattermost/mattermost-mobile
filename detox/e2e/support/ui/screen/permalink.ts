@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {PostList} from '@support/ui/component';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class PermalinkScreen {
@@ -27,6 +28,7 @@ class PermalinkScreen {
     };
 
     toBeVisible = async () => {
+        await wait(timeouts.ONE_SEC);
         await expect(this.permalinkScreen).toBeVisible();
 
         return this.permalinkScreen;
@@ -34,6 +36,7 @@ class PermalinkScreen {
 
     jumpToRecentMessages = async () => {
         // # Jump to recent messages
+        await wait(timeouts.ONE_SEC);
         await this.jumpToRecentMessagesButton.tap();
         await expect(this.permalinkScreen).not.toBeVisible();
     };

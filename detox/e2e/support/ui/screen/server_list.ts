@@ -53,7 +53,9 @@ class ServerListScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        }
 
         return this.serverListScreen;
     };
@@ -62,10 +64,7 @@ class ServerListScreen {
         // # Open server list screen
         await ChannelListScreen.serverIcon.tap();
 
-        if (isIos()) {
-            return this.toBeVisible();
-        }
-        return null;
+        return this.toBeVisible();
     };
 
     close = async () => {
