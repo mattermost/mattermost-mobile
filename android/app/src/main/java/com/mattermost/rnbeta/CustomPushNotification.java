@@ -12,11 +12,13 @@ import androidx.core.app.NotificationCompat;
 
 import java.util.Objects;
 
+import com.facebook.react.bridge.ReadableMap;
 import com.mattermost.helpers.CustomPushNotificationHelper;
 import com.mattermost.helpers.DatabaseHelper;
 import com.mattermost.helpers.Network;
 import com.mattermost.helpers.NotificationHelper;
 import com.mattermost.helpers.PushNotificationDataHelper;
+import com.mattermost.helpers.ReadableMapUtils;
 import com.mattermost.share.ShareModule;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
@@ -95,13 +97,17 @@ public class CustomPushNotification extends PushNotification {
                     if (type.equals(CustomPushNotificationHelper.PUSH_TYPE_MESSAGE)) {
                         if (channelId != null) {
                             Bundle notificationBundle = mNotificationProps.asBundle();
-                            if (serverUrl != null && !isReactInit) {
+                            if (serverUrl != null) {
                                 // We will only fetch the data related to the notification on the native side
                                 // as updating the data directly to the db removes the wal & shm files needed
                                 // by watermelonDB, if the DB is updated while WDB is running it causes WDB to
                                 // detect the database as malformed, thus the app stop working and a restart is required.
                                 // Data will be fetch from within the JS context instead.
-                                dataHelper.fetchAndStoreDataForPushNotification(notificationBundle);
+                                Bundle notificationResult = dataHelper.fetchAndStoreDataForPushNotification(notificationBundle, isReactInit);
+                                if (notificationResult != null) {
+                                    notificationBundle.putBundle("data", notificationResult);
+                                    mNotificationProps = createProps(notificationBundle);
+                                }
                             }
                             createSummary = NotificationHelper.addNotificationToPreferences(
                                     mContext,
@@ -146,6 +152,7 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private void notifyReceivedToJS() {
+
         mJsIOHelper.sendEventToJS(NOTIFICATION_RECEIVED_EVENT_NAME, mNotificationProps.asBundle(), mAppLifecycleFacade.getRunningReactContext());
     }
 
