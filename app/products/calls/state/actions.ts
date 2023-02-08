@@ -35,7 +35,7 @@ export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<
         }, {} as ChannelsWithCalls);
     setChannelsWithCalls(serverUrl, channelsWithCalls);
 
-    setCallsState(serverUrl, {serverUrl, myUserId, calls, enabled});
+    setCallsState(serverUrl, {myUserId, calls, enabled});
 
     // Does the current call need to be updated?
     const currentCall = getCurrentCall();

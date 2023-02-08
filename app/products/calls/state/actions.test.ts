@@ -152,7 +152,6 @@ describe('useCallsState', () => {
 
         const expectedCallsState = {
             ...initialCallsState,
-            serverUrl: 'server1',
             myUserId: 'myId',
             calls: {'channel-1': testNewCall1, 'channel-2': call2, 'channel-3': call3},
             enabled: {'channel-2': true},
@@ -758,7 +757,6 @@ describe('useCallsState', () => {
     it('voiceOn and Off', () => {
         const initialCallsState = {
             ...DefaultCallsState,
-            serverUrl: 'server1',
             myUserId: 'myUserId',
             calls: {'channel-1': call1, 'channel-2': call2},
         };

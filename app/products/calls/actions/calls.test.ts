@@ -97,7 +97,7 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
         hostId: 'xohi8cki9787fgiryne716u84o',
     } as Call;
     act(() => {
-        State.setCallsState(serverUrl, {serverUrl, myUserId: 'myUserId', calls: {}, enabled: {}});
+        State.setCallsState(serverUrl, {myUserId: 'myUserId', calls: {}, enabled: {}});
         State.callStarted(serverUrl, call);
     });
 };
@@ -277,7 +277,6 @@ describe('Actions.Calls', () => {
 
     it('loadCalls fails from server', async () => {
         const expectedCallsState: CallsState = {
-            serverUrl: 'server1',
             myUserId: 'userId1',
             calls: {},
             enabled: {},
