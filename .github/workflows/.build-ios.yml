@@ -24,10 +24,6 @@ on:
       is_pr:
         required: true
         type: boolean
-      is_unsigned:
-        required: false
-        type: boolean
-        default: false
       extension_app_identifier:
         required: true
         type: string
@@ -39,6 +35,11 @@ on:
         required: false
         type: string
         default: "ios-build-${{ github.run_id }}"
+      build_type:
+        required: false
+        type: boolean
+        # Valid values: signed, unsigned, simulator
+        default: "signed"
       ios_app_group:
         required: true
         type: string
@@ -57,6 +58,9 @@ on:
       match_type:
         required: true
         type: string
+      node_options:
+        required: false
+        type: string
       notification_service_identifier:
         required: true 
         type: string
@@ -74,6 +78,9 @@ on:
         required: false
         type: boolean
         default: false
+      tag:
+        required: false
+        type: string
     secrets:
       aws_access_key_id:
         required: true
@@ -83,6 +90,9 @@ on:
         type: string
       fastlane_team_id:
         required: true
+        type: string
+      gh_token:
+        required: false
         type: string
       ios_api_issuer_id:
         required: true
@@ -129,6 +139,7 @@ env:
   BUILD_PR: "${{ inputs.is_pr }}"
   EXTENSION_APP_IDENTIFIER: "${{ inputs.extension_app_identifier }}"
   FASTLANE_TEAM_ID: "${{ secrets.fastlane_team_id }}"
+  GITHUB_TOKEN: "${{ secrets.gh_token }}"
   IOS_API_ISSUER_ID: "${{ secrets.ios_api_issuer_id }}"
   IOS_API_KEY: "${{ secrets.ios_api_key }}"
   IOS_API_KEY_ID: "${{ secrets.ios_api_key_id }}"
@@ -145,6 +156,7 @@ env:
   MATCH_TYPE: "${{ inputs.match_type }}"
   MATTERMOST_WEBHOOK_URL: "${{ secrets.mattermost_webhook_url }}"
   NOTIFICATION_SERVICE_IDENTIFIER: "${{ inputs.notification_service_identifier }}"
+  NODE_OPTIONS: "${{ inputs.node_options }}"
   PILOT_SKIP_WAITING_FOR_BUILD_PROCESSING: "${{ inputs.pilot_skip_waiting_for_build_processing }}"
   REPLACE_ASSETS: "${{ inputs.replace_assets }}"
   SENTRY_AUTH_TOKEN: "${{ secrets.sentry_auth_token }}"
@@ -154,6 +166,7 @@ env:
   SENTRY_PROJECT_IOS: "${{ secrets.sentry_project_ios }}"
   SHOW_ONBOARDING: "true"
   SYNC_PROVISIONING_PROFILES: "true"
+  TAG: "${{ inputs.tag }}"
 
 jobs:
   build-ios:
@@ -171,13 +184,35 @@ jobs:
       uses: ./.github/actions/fastlane-dependencies
       with:
         os: ios
-    - name: ci/build-ios
+    # Build iOS app, method depends on the value of `build_type`
+    - name: ci/build-ios-signed
+      working-directory: ./fastlane
       run: |
         HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
-        export TERM=xterm && bundle exec fastlane ios ${{ ( is_unsigned && 'build' ) || 'unsigned' }}
+        export TERM=xterm && bundle exec fastlane ios build
+      if: "${{ inputs.build_type == 'signed' }}"
+    - name: ci/build-ios-unsigned
       working-directory: ./fastlane
+      run: |
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
+        bundle exec fastlane ios unsigned
+      if: "${{ inputs.build_type == 'unsigned' }}"
+    - name: ci/build-ios-simulator
+      working-directory: ./fastlane
+      run: |
+        HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
+        bundle exec fastlane ios simulator
+      if: "${{ inputs.build_type == 'unsigned' }}"
+    # Upload the build artifact, filename depends on the value of `build_type`
     - name: ci/upload-ios-buld
       uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
       with:
         name: "${{ inputs.build_artifact_name }}"
         path: "*.ipa"
+      if: "${{ inputs.build_type == 'signed' || inputs.build_type == 'unsigned' }}"
+    - name: ci/upload-ios-buld-simulator
+      uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+      with:
+        name: "${{ inputs.build_artifact_name }}"
+        path: "Mattermost-simulator-x86_64.app.zip"
+      if: "${{ inputs.build_type == 'simulator' }}"
