@@ -4,28 +4,28 @@ on:
   workflow_call:
     inputs:
       app_name:
-        required: true
+        required: false
         type: string
       aws_bucket_name:
-        required: true
+        required: false
         type: string
       aws_folder_name:
-        required: true
+        required: false
         type: string
       aws_region:
-        required: true
+        required: false
         type: string
       is_beta:
-        required: true
+        required: false
         type: boolean
       build_for_release:
-        required: true
+        required: false
         type: boolean
       is_pr:
-        required: true
+        required: false
         type: boolean
       extension_app_identifier:
-        required: true
+        required: false
         type: string
       branch_to_build:
         required: false
@@ -41,28 +41,28 @@ on:
         # Valid values: signed, unsigned, simulator
         default: "signed"
       ios_app_group:
-        required: true
+        required: false
         type: string
       ios_build_export_method:
-        required: true
+        required: false
         type: string
       ios_icloud_container:
-        required: true
+        required: false
         type: string
       main_app_identifier:
-        required: true
+        required: false
         type: string
       match_app_identifier:
-        required: true
+        required: false
         type: string
       match_type:
-        required: true
+        required: false
         type: string
       node_options:
         required: false
         type: string
       notification_service_identifier:
-        required: true 
+        required: false
         type: string
       pilot_skip_waiting_for_build_processing:
         required: false
@@ -83,34 +83,34 @@ on:
         type: string
     secrets:
       aws_access_key_id:
-        required: true
+        required: false
         type: string
       aws_secret_access_key:
-        required: true
+        required: false
         type: string
       fastlane_team_id:
-        required: true
+        required: false
         type: string
       gh_token:
         required: false
         type: string
       ios_api_issuer_id:
-        required: true
+        required: false
         type: string
       ios_api_key:
-        required: true
+        required: false
         type: string
       ios_api_key_id:
-        required: true
+        required: false
         type: string
       match_git_url:
-        required: true
+        required: false
         type: string
       match_password:
-        required: true
+        required: false
         type: string
       mattermost_webhook_url:
-        required: true
+        required: false
         type: string
       sentry_auth_token:
         required: false

@@ -1,13 +1,7 @@
 ---
 name: test
-# TODO: define these conditions afterwards
-on:
-  push:
+on: [push]
 
 jobs:
   test:
-    runs-on: ubuntu-latest
-    steps:
-    - run: |
-        echo "${{ ( false && 'it is true' ) || 'it is false' }}"
-  #  uses: ./.github/workflows/.test.yml
+    uses: ./.github/workflows/.test.yml

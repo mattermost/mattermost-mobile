@@ -1,12 +1,10 @@
 ---
-name: "build-ios.beta"
+name: "build-ios-beta"
 # TODO: define these conditions afterwards
 on:
   workflow_call:
 
 jobs:
-  test:
-    uses: ./.github/workflows/.test.yml
   build-ios-pr:
     uses: ./.github/workflows/.build-ios.yml
     with:
@@ -43,4 +41,3 @@ jobs:
       sentry_dsn_ios: "${{ secrets.MM_MOBILE_SENTRY_DSN_IOS }}"
       sentry_org: "${{ secrets.MM_MOBILE_SENTRY_ORG }}"
       sentry_project_ios: "${{ secrets.MM_MOBILE_SENTRY_PROJECT_IOS }}"
-    needs: [test]

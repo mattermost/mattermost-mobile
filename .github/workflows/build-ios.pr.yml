@@ -1,12 +1,10 @@
 ---
-name: "build-ios.pr"
+name: "build-ios-pr"
 # TODO: define these conditions afterwards
 on:
   workflow_call:
 
 jobs:
-  test:
-    uses: ./.github/workflows/.test.yml
   build-ios-pr:
     uses: ./.github/workflows/.build-ios.yml
     with:
@@ -38,4 +36,3 @@ jobs:
       match_git_url: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
       match_password: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
       mattermost_webhook_url: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
-    needs: [test]

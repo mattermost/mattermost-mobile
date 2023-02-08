@@ -1,0 +1,15 @@
+---
+name: "build-ios-simulator"
+# TODO: define these conditions afterwards
+on:
+  workflow_call:
+
+jobs:
+  build-ios-unsigned:
+    uses: ./.github/workflows/.build-ios.yml
+    with:
+      build_type: simulator
+      node_options: "--max_old_space_size=12000"
+      tag: "${{ github.ref_name }}"
+    secrets:
+      gh_token: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
