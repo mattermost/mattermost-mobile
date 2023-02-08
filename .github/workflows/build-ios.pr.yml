@@ -1,5 +1,5 @@
 ---
-name: build
+name: "build-ios.pr"
 # TODO: define these conditions afterwards
 on:
   workflow_call:

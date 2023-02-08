@@ -1,5 +1,5 @@
 ---
-name: build
+name: "build-ios.beta"
 # TODO: define these conditions afterwards
 on:
   workflow_call:

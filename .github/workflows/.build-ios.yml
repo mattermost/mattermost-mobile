@@ -24,6 +24,10 @@ on:
       is_pr:
         required: true
         type: boolean
+      is_unsigned:
+        required: false
+        type: boolean
+        default: false
       extension_app_identifier:
         required: true
         type: string
@@ -170,7 +174,7 @@ jobs:
     - name: ci/build-ios
       run: |
         HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
-        export TERM=xterm && bundle exec fastlane ios build
+        export TERM=xterm && bundle exec fastlane ios ${{ ( is_unsigned && 'build' ) || 'unsigned' }}
       working-directory: ./fastlane
     - name: ci/upload-ios-buld
       uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
