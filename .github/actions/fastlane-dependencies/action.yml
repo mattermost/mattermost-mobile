@@ -2,7 +2,7 @@
 name: 'fastlane-dependencies'
 description: 'Install fastlane dependencies'
 
-input:
+inputs:
   os:
     description: Name of the OS to generate dependencies for, to compartimentalize caching
     type: string

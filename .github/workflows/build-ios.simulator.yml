@@ -8,7 +8,7 @@ jobs:
   build-ios-unsigned:
     uses: ./.github/workflows/.build-ios.yml
     with:
-      build_artifact_name: "ios-build-${{ github.run_id }}"
+      build_artifact_name: "ios-build-simulator-${{ github.run_id }}"
       build_type: simulator
       node_options: "--max_old_space_size=12000"
       tag: "${{ github.ref_name }}"

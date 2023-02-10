@@ -36,7 +36,7 @@ on:
         type: string
       build_type:
         required: false
-        type: boolean
+        type: string
         # Valid values: signed, unsigned, simulator
         default: "signed"
       ios_app_group:
@@ -83,46 +83,32 @@ on:
     secrets:
       aws_access_key_id:
         required: false
-        type: string
       aws_secret_access_key:
         required: false
-        type: string
       fastlane_team_id:
         required: false
-        type: string
       gh_token:
         required: false
-        type: string
       ios_api_issuer_id:
         required: false
-        type: string
       ios_api_key:
         required: false
-        type: string
       ios_api_key_id:
         required: false
-        type: string
       match_git_url:
         required: false
-        type: string
       match_password:
         required: false
-        type: string
       mattermost_webhook_url:
         required: false
-        type: string
       sentry_auth_token:
         required: false
-        type: string
       sentry_dsn_ios:
         required: false
-        type: string
       sentry_org:
         required: false
-        type: string
       sentry_project_ios:
         required: false
-        type: string
 
 env:
   BRANCH_TO_BUILD: "${{ inputs.branch_to_build }}"

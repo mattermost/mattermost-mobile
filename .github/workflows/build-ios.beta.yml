@@ -9,7 +9,7 @@ jobs:
     uses: ./.github/workflows/.build-ios.yml
     with:
       branch_to_build: "${{ github.ref_name }}"
-      build_artifact_name: "ios-build-${{ github.run_id }}"
+      build_artifact_name: "ios-build-beta-${{ github.run_id }}"
       app_name: "Mattermost Beta"
       aws_bucket_name: "releases.mattermost.com"
       aws_folder_name: "mattermost-mobile-beta"
