@@ -1,0 +1,28 @@
+---
+name: 'deploy-to-store'
+on:
+  workflow_call:
+    inputs:
+      build_artifact_name:
+        required: true
+        type: string
+      os:
+        # Valid values: `ios`, `android`
+        required: true
+        type: string
+      env:
+        required: false
+        type: string
+
+jobs:
+  deploy-to-store:
+    runs-on: ubuntu-latest
+    steps:
+    - name: ci/download-artifact
+      uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+      with:
+        name: "${{ inputs.build_artifact_name }}"
+    - name: ci/deploy-to-store
+      working-directory: fastlane
+      shell: bash
+      command: ${{ inputs.env }} bundle exec fastlane ${{ inputs.os }} deploy file:$(pwd)/../${{ ( inputs.os == 'ios' && '*.ipa' ) || '*.apk' }}
