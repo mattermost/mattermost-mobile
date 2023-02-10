@@ -24,5 +24,4 @@ jobs:
         name: "${{ inputs.build_artifact_name }}"
     - name: ci/deploy-to-store
       working-directory: fastlane
-      shell: bash
-      command: ${{ inputs.env }} bundle exec fastlane ${{ inputs.os }} deploy file:$(pwd)/../${{ ( inputs.os == 'ios' && '*.ipa' ) || '*.apk' }}
+      run: ${{ inputs.env }} bundle exec fastlane ${{ inputs.os }} deploy file:$(pwd)/../${{ ( inputs.os == 'ios' && '*.ipa' ) || '*.apk' }}
