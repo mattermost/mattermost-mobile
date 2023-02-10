@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useState, useMemo, useEffect} from 'react';
+import React, {useCallback, useState, useMemo, useEffect, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {
     Keyboard,
@@ -11,8 +11,10 @@ import {
     useWindowDimensions,
     FlatList,
     ListRenderItemInfo,
-    ScrollView,
+    NativeScrollEvent,
+    NativeSyntheticEvent,
 } from 'react-native';
+import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -56,10 +58,6 @@ const keyExtractor = (item: SearchResult) => (
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
-            display: 'flex',
-            flex: 1,
-        },
-        selection: {
             display: 'flex',
         },
         searchList: {
@@ -116,7 +114,11 @@ type SelectionProps = {
     modalPosition: number;
     wrapperHeight: number;
     loading: boolean;
+    canInviteUser: boolean;
+    canInviteGuest: boolean;
     guestEnabled: boolean;
+    emailEnabled?: boolean;
+    customMessageEnabled?: boolean;
     customMessage: string;
     selectedChannelsCount: number;
     testID: string;
@@ -128,6 +130,7 @@ type SelectionProps = {
     onGetFooterButton: (button: React.ReactNode) => void;
     onOpenSelectChannels: () => void;
     onGuestChange: (enabled: boolean) => void;
+    onCustomMessageToggleChange: (enabled: boolean) => void;
     onCustomMessageChange: (text: string) => void;
 }
 
@@ -144,7 +147,11 @@ export default function Selection({
     modalPosition,
     wrapperHeight,
     loading,
+    canInviteUser,
+    canInviteGuest,
     guestEnabled,
+    emailEnabled,
+    customMessageEnabled,
     customMessage,
     selectedChannelsCount,
     testID,
@@ -156,6 +163,7 @@ export default function Selection({
     onGetFooterButton,
     onOpenSelectChannels,
     onGuestChange,
+    onCustomMessageToggleChange,
     onCustomMessageChange,
 }: SelectionProps) {
     const {formatMessage, locale} = useIntl();
@@ -166,8 +174,13 @@ export default function Selection({
     const isTablet = useIsTablet();
     const keyboardHeight = useKeyboardHeight();
 
+    const scrollViewRef = useRef<KeyboardAwareScrollView>(null);
+    const updateScrollTimeout = useRef<NodeJS.Timeout>();
+    const scrollToBottomTimeout = useRef<NodeJS.Timeout>();
+
     const [teamBarHeight, setTeamBarHeight] = useState(0);
     const [searchBarHeight, setSearchBarHeight] = useState(0);
+    const [scrollPosition, setScrollPosition] = useState(0);
 
     const selectedCount = Object.keys(selectedIds).length;
 
@@ -181,6 +194,18 @@ export default function Selection({
             />,
         );
     }, [selectedCount, guestEnabled, selectedChannelsCount, locale]);
+
+    useEffect(() => {
+        return () => {
+            if (updateScrollTimeout.current) {
+                clearTimeout(updateScrollTimeout.current);
+            }
+
+            if (scrollToBottomTimeout.current) {
+                clearTimeout(scrollToBottomTimeout.current);
+            }
+        };
+    }, []);
 
     const onLayoutSelectionTeamBar = useCallback((e: LayoutChangeEvent) => {
         setTeamBarHeight(e.nativeEvent.layout.height);
@@ -212,12 +237,12 @@ export default function Selection({
     });
 
     const workingSpace = wrapperHeight - keyboardOverlap;
-    const spaceOnTop = otherElementsSize - AUTOCOMPLETE_ADJUST;
-    const spaceOnBottom = workingSpace - (otherElementsSize + keyboardAdjust);
+    const spaceOnTop = otherElementsSize - scrollPosition - AUTOCOMPLETE_ADJUST;
+    const spaceOnBottom = (workingSpace + scrollPosition) - (otherElementsSize + keyboardAdjust);
     const autocompletePosition = spaceOnBottom > spaceOnTop ? (
-        otherElementsSize
+        otherElementsSize - scrollPosition
     ) : (
-        workingSpace - otherElementsSize
+        (workingSpace + scrollPosition) - otherElementsSize
     );
     const autocompleteAvailableSpace = spaceOnBottom > spaceOnTop ? spaceOnBottom : spaceOnTop;
     const isLandscape = dimensions.width > dimensions.height;
@@ -261,6 +286,52 @@ export default function Selection({
 
         return style;
     }, [searchResults, styles]);
+
+    const scrollToBottom = useCallback(() => {
+        if (scrollToBottomTimeout.current) {
+            clearTimeout(scrollToBottomTimeout.current);
+        }
+
+        scrollToBottomTimeout.current = setTimeout(() => {
+            scrollViewRef.current?.scrollToEnd();
+            scrollToBottomTimeout.current = undefined;
+        }, 200);
+    }, []);
+
+    const handleOnScroll = useCallback((e: NativeSyntheticEvent<NativeScrollEvent>) => {
+        onSearchChange('');
+        const pos = e.nativeEvent.contentOffset.y;
+
+        if (updateScrollTimeout.current) {
+            clearTimeout(updateScrollTimeout.current);
+        }
+
+        updateScrollTimeout.current = setTimeout(() => {
+            setScrollPosition(pos);
+            updateScrollTimeout.current = undefined;
+        }, 100);
+    }, []);
+
+    const handleOnGuestChange = (enabled: boolean) => {
+        onGuestChange(enabled);
+
+        if (enabled) {
+            scrollToBottom();
+        }
+    };
+
+    const handleOnCustomMessageInputFocus = () => {
+        onSearchChange('');
+        scrollToBottom();
+    };
+
+    const handleOnCustomMessageToggleChange = (enabled: boolean) => {
+        onCustomMessageToggleChange(enabled);
+
+        if (enabled) {
+            scrollToBottom();
+        }
+    };
 
     const renderNoResults = useCallback(() => {
         if (!term || loading) {
@@ -336,8 +407,11 @@ export default function Selection({
 
     return (
         <>
-            <ScrollView
-                style={styles.selection}
+            <KeyboardAwareScrollView
+                style={styles.container}
+                ref={scrollViewRef}
+                keyboardShouldPersistTaps={'always'}
+                onScroll={handleOnScroll}
                 testID={testID}
             >
                 <SelectionTeamBar
@@ -351,6 +425,7 @@ export default function Selection({
                 />
                 <SelectionSearchBar
                     term={term}
+                    emailEnabled={emailEnabled}
                     onSearchChange={onSearchChange}
                     onLayoutContainer={onLayoutSearchBar}
                 />
@@ -362,17 +437,23 @@ export default function Selection({
                         >
                             {renderSelectedItems}
                         </View>
-                        <SelectionInviteAs
-                            guestEnabled={guestEnabled}
-                            selectedChannelsCount={selectedChannelsCount}
-                            customMessage={customMessage}
-                            onGuestChange={onGuestChange}
-                            onSelectChannels={onOpenSelectChannels}
-                            onCustomMessageChange={onCustomMessageChange}
-                        />
+                        {canInviteGuest && (
+                            <SelectionInviteAs
+                                guestEnabled={guestEnabled}
+                                selectedChannelsCount={selectedChannelsCount}
+                                customMessageEnabled={customMessageEnabled}
+                                customMessage={customMessage}
+                                canChange={canInviteUser}
+                                onGuestChange={handleOnGuestChange}
+                                onSelectChannels={onOpenSelectChannels}
+                                onCustomMessageToggleChange={handleOnCustomMessageToggleChange}
+                                onCustomMessageInputFocus={handleOnCustomMessageInputFocus}
+                                onCustomMessageChange={onCustomMessageChange}
+                            />
+                        )}
                     </>
                 )}
-            </ScrollView>
+            </KeyboardAwareScrollView>
             <Animated.View style={searchListContainerStyle}>
                 <FlatList
                     data={searchResults}

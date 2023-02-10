@@ -3,9 +3,12 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
+import {combineLatest, of as of$} from 'rxjs';
 import {switchMap, distinctUntilChanged, map} from 'rxjs/operators';
 
+import {Permissions} from '@constants';
+import {observePermissionForTeam} from '@queries/servers/role';
+import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentTeam} from '@queries/servers/team';
 import {observeTeammateNameDisplay, observeCurrentUser} from '@queries/servers/user';
 import {isSystemAdmin} from '@utils/user';
@@ -16,6 +19,20 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
     const team = observeCurrentTeam(database);
+
+    const currentUser = observeCurrentUser(database);
+
+    const enableGuestAccounts = observeConfigBooleanValue(database, 'EnableGuestAccounts');
+
+    const buildEnterpriseReady = observeConfigBooleanValue(database, 'BuildEnterpriseReady');
+
+    const teamIsGroupConstrained = team.pipe(
+        switchMap((t) => of$(t?.isGroupConstrained)),
+    );
+
+    const canAddGuestToTeam = combineLatest([currentUser, team]).pipe(
+        switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.INVITE_GUEST, false)),
+    );
 
     return {
         teamId: team.pipe(
@@ -31,6 +48,16 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
             switchMap((t) => of$(t?.inviteId)),
         ),
         teammateNameDisplay: observeTeammateNameDisplay(database),
+        isOpenServer: observeConfigBooleanValue(database, 'EnableOpenServer'),
+        canInviteUser: combineLatest([currentUser, team]).pipe(
+            switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.ADD_USER_TO_TEAM, false)),
+        ),
+        canInviteGuest: combineLatest([teamIsGroupConstrained, enableGuestAccounts, buildEnterpriseReady, canAddGuestToTeam]).pipe(
+            switchMap(([isGroupConstrained, guestAccounts, enterpriseReady, addGuestToTeam]) => (
+                of$(!isGroupConstrained && guestAccounts && enterpriseReady, addGuestToTeam)
+            )),
+        ),
+        canSendEmailInvitations: observeConfigBooleanValue(database, 'EnableEmailInvitations'),
         isAdmin: observeCurrentUser(database).pipe(
             map((user) => isSystemAdmin(user?.roles || '')),
             distinctUntilChanged(),

@@ -18,6 +18,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         container: {
             display: 'flex',
+            marginBottom: 20,
         },
         addToChannelsContainer: {
             marginLeft: 4,
@@ -48,48 +49,40 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 type SelectionInviteAsProps = {
     guestEnabled: boolean;
     selectedChannelsCount: number;
+    customMessageEnabled?: boolean;
     customMessage?: string;
+    canChange?: boolean;
     onGuestChange: (enabled: boolean) => void;
     onSelectChannels: () => void;
+    onCustomMessageToggleChange: (enabled: boolean) => void;
+    onCustomMessageInputFocus: () => void;
     onCustomMessageChange: (customMessage: string) => void;
 }
 
 export default function SelectionInviteAs({
     guestEnabled,
     selectedChannelsCount,
+    customMessageEnabled,
     customMessage,
+    canChange = true,
     onGuestChange,
     onSelectChannels,
+    onCustomMessageToggleChange,
+    onCustomMessageInputFocus,
     onCustomMessageChange,
 }: SelectionInviteAsProps) {
     const {formatMessage} = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const [customMessageEnabled, setCustomMessageEnabled] = useState(false);
     const [isCustomMessageInputFocused, setIsCustomMessageInputFocused] = useState(false);
 
-    const handleGuestToggle = (enabled: boolean) => {
-        onGuestChange(enabled);
-
-        if (!enabled) {
-            setCustomMessageEnabled(false);
-        }
-    };
-
-    const handleCustomMessageToggle = (enabled: boolean) => {
-        setCustomMessageEnabled(enabled);
-
-        if (!enabled) {
-            onCustomMessageChange('');
-        }
-    };
-
-    const onCustomMessageInputFocus = () => {
+    const handleOnCustomMessageInputFocus = () => {
         setIsCustomMessageInputFocused(true);
+        onCustomMessageInputFocus();
     };
 
-    const onCustomMessageInputBlur = () => {
+    const handleOnCustomMessageInputBlur = () => {
         setIsCustomMessageInputFocused(false);
     };
 
@@ -115,8 +108,9 @@ export default function SelectionInviteAs({
                 type='toggle'
                 label={formatMessage({id: 'invite.invite_as.guest.label', defaultMessage: 'Invite as guest'})}
                 description={formatMessage({id: 'invite.invite_as.guest.description', defaultMessage: 'Guests are limited to selected channels'})}
-                action={handleGuestToggle}
+                action={onGuestChange}
                 selected={guestEnabled}
+                toggleItemProps={{disabled: !canChange}}
                 testID='invite.invite_as.guest_toggle'
             />
             {guestEnabled && (
@@ -147,7 +141,7 @@ export default function SelectionInviteAs({
                         type='toggle'
                         icon='message-text-outline'
                         label={formatMessage({id: 'invite.invite_as.set_custom_message', defaultMessage: 'Set a custom message'})}
-                        action={handleCustomMessageToggle}
+                        action={onCustomMessageToggleChange}
                         selected={customMessageEnabled}
                         testID='invite.invite_as.custom_message_toggle'
                     />
@@ -158,6 +152,7 @@ export default function SelectionInviteAs({
                             exiting={FadeOut.duration(200)}
                         >
                             <TextInput
+                                autoFocus={true}
                                 autoCorrect={false}
                                 autoCapitalize={'none'}
                                 disableFullscreenUI={true}
@@ -167,8 +162,8 @@ export default function SelectionInviteAs({
                                 placeholder={formatMessage({id: 'invite.invite_as.custom_message_placeholder', defaultMessage: 'Enter a custom message…'})}
                                 placeholderTextColor={styles.customMessageInputPlaceholder.color}
                                 onChangeText={onCustomMessageChange}
-                                onFocus={onCustomMessageInputFocus}
-                                onBlur={onCustomMessageInputBlur}
+                                onFocus={handleOnCustomMessageInputFocus}
+                                onBlur={handleOnCustomMessageInputBlur}
                                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                 value={customMessage}
                                 pointerEvents='auto'

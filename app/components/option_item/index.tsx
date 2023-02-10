@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {LayoutChangeEvent, Platform, StyleProp, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {LayoutChangeEvent, Platform, StyleProp, Switch, SwitchProps, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -112,6 +112,7 @@ export type OptionItemProps = {
     optionDescriptionTextStyle?: StyleProp<TextStyle>;
     optionLabelTextStyle?: StyleProp<TextStyle>;
     radioItemProps?: Partial<RadioItemProps>;
+    toggleItemProps?: Partial<SwitchProps>;
     selected?: boolean;
     testID?: string;
     type: OptionType;
@@ -134,6 +135,7 @@ const OptionItem = ({
     optionDescriptionTextStyle,
     optionLabelTextStyle,
     radioItemProps,
+    toggleItemProps,
     selected,
     testID = 'optionItem',
     type,
@@ -196,6 +198,7 @@ const OptionItem = ({
                 trackColor={trackColor}
                 thumbColor={thumbColor}
                 testID={`${testID}.toggled.${selected}`}
+                {...toggleItemProps}
             />
         );
     } else if (type === OptionType.ARROW) {

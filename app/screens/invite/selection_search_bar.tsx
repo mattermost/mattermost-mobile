@@ -47,12 +47,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 type SelectionSearchBarProps = {
     term: string;
+    emailEnabled?: boolean;
     onSearchChange: (text: string) => void;
     onLayoutContainer: (e: LayoutChangeEvent) => void;
 }
 
 export default function SelectionSearchBar({
     term,
+    emailEnabled,
     onSearchChange,
     onLayoutContainer,
 }: SelectionSearchBarProps) {
@@ -114,7 +116,11 @@ export default function SelectionSearchBar({
                     enablesReturnKeyAutomatically={true}
                     returnKeyType='search'
                     style={searchInputStyle}
-                    placeholder={formatMessage({id: 'invite.searchPlaceholder', defaultMessage: 'Type a name or email address…'})}
+                    placeholder={emailEnabled ? (
+                        formatMessage({id: 'invite.search.placeholder_with_email', defaultMessage: 'Type a name or email address…'})
+                    ) : (
+                        formatMessage({id: 'invite.search.placeholder', defaultMessage: 'Type a name…'})
+                    )}
                     placeholderTextColor={styles.searchInputPlaceholder.color}
                     onChangeText={handleSearchChange}
                     onFocus={onTextInputFocus}

@@ -23,6 +23,14 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const enableOpenServer = observeConfigBooleanValue(database, 'EnableOpenServer');
 
+    const enableGuestAccounts = observeConfigBooleanValue(database, 'EnableGuestAccounts');
+
+    const buildEnterpriseReady = observeConfigBooleanValue(database, 'BuildEnterpriseReady');
+
+    const teamIsGroupConstrained = team.pipe(
+        switchMap((t) => of$(t?.isGroupConstrained)),
+    );
+
     const canJoinChannels = combineLatest([currentUser, team]).pipe(
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.JOIN_PUBLIC_CHANNELS, true)),
     );
@@ -43,11 +51,21 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.ADD_USER_TO_TEAM, false)),
     );
 
+    const canAddGuestToTeam = combineLatest([currentUser, team]).pipe(
+        switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.INVITE_GUEST, false)),
+    );
+
+    const canInviteGuest = combineLatest([teamIsGroupConstrained, enableGuestAccounts, buildEnterpriseReady, canAddGuestToTeam]).pipe(
+        switchMap(([isGroupConstrained, guestAccounts, enterpriseReady, addGuestToTeam]) => (
+            of$(!isGroupConstrained && guestAccounts && enterpriseReady, addGuestToTeam)
+        )),
+    );
+
     return {
         canCreateChannels,
         canJoinChannels,
-        canInvitePeople: combineLatest([enableOpenServer, canAddUserToTeam]).pipe(
-            switchMap(([openServer, addUser]) => of$(openServer && addUser)),
+        canInvitePeople: combineLatest([enableOpenServer, canAddUserToTeam, canInviteGuest]).pipe(
+            switchMap(([openServer, addUser, inviteGuest]) => of$(openServer && (addUser || inviteGuest))),
         ),
         displayName: team.pipe(
             switchMap((t) => of$(t?.displayName)),

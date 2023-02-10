@@ -105,6 +105,10 @@ type InviteProps = {
     teamLastIconUpdate: number;
     teamInviteId: string;
     teammateNameDisplay: string;
+    isOpenServer: boolean;
+    canInviteUser: boolean;
+    canInviteGuest: boolean;
+    canSendEmailInvitations: boolean;
     isAdmin: boolean;
 }
 
@@ -115,6 +119,10 @@ export default function Invite({
     teamLastIconUpdate,
     teamInviteId,
     teammateNameDisplay,
+    isOpenServer,
+    canInviteUser,
+    canInviteGuest,
+    canSendEmailInvitations,
     isAdmin,
 }: InviteProps) {
     const intl = useIntl();
@@ -131,7 +139,8 @@ export default function Invite({
     const [term, setTerm] = useState('');
     const [searchResults, setSearchResults] = useState<SearchResult[]>([]);
     const [selectedIds, setSelectedIds] = useState<Invites>({});
-    const [inviteType, setInviteType] = useState(InviteType.MEMBER);
+    const [inviteType, setInviteType] = useState(!canInviteUser && canInviteGuest ? InviteType.GUEST : InviteType.MEMBER);
+    const [customMessageEnabled, setCustomMessageEnabled] = useState(false);
     const [customMessage, setCustomMessage] = useState('');
     const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
     const [loading, setLoading] = useState(false);
@@ -156,12 +165,12 @@ export default function Invite({
         const {data} = await searchProfiles(serverUrl, searchTerm.toLowerCase(), {});
         const results: SearchResult[] = data ?? [];
 
-        if (!results.length && isEmail(searchTerm.trim())) {
+        if (!results.length && canSendEmailInvitations && isEmail(searchTerm.trim())) {
             results.push(searchTerm.trim() as EmailInvite);
         }
 
         setSearchResults(results);
-    }, [serverUrl, teamId]);
+    }, [serverUrl, canSendEmailInvitations]);
 
     const handleOnGetFooterButton = useCallback((button: React.ReactNode) => {
         setFooterButton(button);
@@ -169,11 +178,21 @@ export default function Invite({
 
     const handleOnOpenSelectChannels = useCallback(() => {
         setStage(Stage.SELECT_CHANNELS);
+        setTerm('');
+        setSearchResults([]);
     }, []);
 
     const handleOnAddChannels = useCallback((channels: Channel[]) => {
         setSelectedChannels(channels);
         setStage(Stage.SELECTION);
+    }, []);
+
+    const handleOnCustomMessageToggleChange = useCallback((enabled: boolean) => {
+        setCustomMessageEnabled(enabled);
+
+        if (!enabled) {
+            setCustomMessage('');
+        }
     }, []);
 
     const handleOnCustomMessageChange = useCallback((text: string) => {
@@ -185,6 +204,7 @@ export default function Invite({
 
         if (!enabled) {
             setSelectedChannels([]);
+            setCustomMessageEnabled(false);
             setCustomMessage('');
         }
     }, []);
@@ -382,7 +402,10 @@ export default function Invite({
                         modalPosition={modalPosition}
                         wrapperHeight={wrapperHeight}
                         loading={loading}
+                        canInviteUser={canInviteUser}
+                        canInviteGuest={canInviteGuest}
                         guestEnabled={inviteType === InviteType.GUEST}
+                        customMessageEnabled={customMessageEnabled}
                         customMessage={customMessage}
                         selectedChannelsCount={selectedChannels.length}
                         onSearchChange={handleSearchChange}
@@ -393,6 +416,7 @@ export default function Invite({
                         onGetFooterButton={handleOnGetFooterButton}
                         onOpenSelectChannels={handleOnOpenSelectChannels}
                         onGuestChange={handleOnGuestChange}
+                        onCustomMessageToggleChange={handleOnCustomMessageToggleChange}
                         onCustomMessageChange={handleOnCustomMessageChange}
                         testID='invite.screen.selection'
                     />
@@ -400,7 +424,9 @@ export default function Invite({
         }
     };
 
-    return (
+    return ((!isOpenServer || (!canInviteUser && !canInviteGuest)) ? (
+        null
+    ) : (
         <SafeAreaView
             style={styles.container}
             onLayout={onLayoutWrapper}
@@ -416,5 +442,5 @@ export default function Invite({
                 </View>
             </View>
         </SafeAreaView>
-    );
+    ));
 }

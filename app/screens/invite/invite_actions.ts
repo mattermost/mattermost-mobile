@@ -253,7 +253,7 @@ export const sendGuestInviteForUser = async (
 
     if (memberOfAny) {
         return {
-            notSent: {
+            sent: {
                 userId,
                 reason: formatMessage(
                     {
