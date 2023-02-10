@@ -1,7 +1,7 @@
 {
     "about.date": "Дата створення:",
     "about.enterpriseEditione1": "Enterprise Edition",
-    "about.enterpriseEditionLearn": "Детальніше про редакцію Enterprise читайте на",
+    "about.enterpriseEditionLearn": "Детальніше про редакцію Enterprise читайте на ",
     "about.enterpriseEditionSt": "Сучасне спілкування в вашій локальній мережі.",
     "about.hash": "Хеш збірки:",
     "about.hashee": "Хеш збірки EE:",
@@ -267,6 +267,6 @@
     "alert.removed_from_channel.title": "Видалено з каналу",
     "alert.removed_from_channel.description": "Вас видалили з каналу {displayName}.",
     "alert.push_proxy.button": "Добре",
-    "alert.push_proxy_unknown.title": "Сповіщення не може бути отримано з цього сервера",
-    "alert.push_proxy_unknown.description": "З невідомих причин цей сервер не зміг отримати push-нотифікацію. Це буде зроблено знову під час наступного підключення."
+    "alert.push_proxy_unknown.title": "Повідомлення не може бути отримано з цього сервера",
+    "alert.push_proxy_unknown.description": "З невідомих причин цей сервер не зміг отримати push-нотифікацію. Під час наступного підключення спроба буде повторена."
 }
