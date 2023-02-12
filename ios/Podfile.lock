@@ -566,7 +566,7 @@ PODS:
     - React-RCTText
     - ReactCommon/turbomodule/core
     - Yoga
-  - RNRudderSdk (1.6.0):
+  - RNRudderSdk (1.6.1):
     - React
     - Rudder (~> 1.6.0)
   - RNScreens (3.19.0):
@@ -1014,7 +1014,7 @@ SPEC CHECKSUMS:
   RNPermissions: dcdb7b99796bbeda6975a6e79ad519c41b251b1c
   RNReactNativeHapticFeedback: 1e3efeca9628ff9876ee7cdd9edec1b336913f8c
   RNReanimated: cc5e3aa479cb9170bcccf8204291a6950a3be128
-  RNRudderSdk: c2e707ce96c78137950980e060acd4ad5dc141ac
+  RNRudderSdk: 59d86a619602ae880796d7f235fb9161cbfdb2ac
   RNScreens: ea4cd3a853063cda19a4e3c28d2e52180c80f4eb
   RNSentry: 7e90aec2633d2fdad8aeb839c9915e4376fd27d1
   RNShare: 48b3113cd089a2be8ff0515c3ae7a46a4db8a76b
