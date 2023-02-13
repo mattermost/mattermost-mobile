@@ -59,7 +59,7 @@ class SplitViewModule: RCTEventEmitter {
     DispatchQueue.main.async {
       let appDelegate = UIApplication.shared.delegate as! AppDelegate
       appDelegate.allowRotation = true
-      UIDevice.current.setValue(UIInterfaceOrientation.unknown, forKey: "orientation")
+      UIDevice.current.setValue(UIInterfaceOrientation.unknown.rawValue, forKey: "orientation")
     }
   }
   
@@ -68,8 +68,8 @@ class SplitViewModule: RCTEventEmitter {
     DispatchQueue.main.async {
       let appDelegate = UIApplication.shared.delegate as! AppDelegate
       appDelegate.allowRotation = false
-      UIDevice.current.setValue(UIInterfaceOrientation.unknown, forKey: "orientation")
-      UIDevice.current.setValue(UIInterfaceOrientation.portrait, forKey: "orientation")
+      UIDevice.current.setValue(UIInterfaceOrientation.unknown.rawValue, forKey: "orientation")
+      UIDevice.current.setValue(UIInterfaceOrientation.portrait.rawValue, forKey: "orientation")
     }
   }
 }
