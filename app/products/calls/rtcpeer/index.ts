@@ -29,13 +29,6 @@ export default class RTCPeer extends EventEmitter {
 
     public connected: boolean;
 
-    private readonly sessionConstraints = {
-        mandatory: {
-            OfferToReceiveAudio: true,
-            OfferToReceiveVideo: true,
-        },
-    };
-
     constructor(config: RTCPeerConfig) {
         super();
 
