@@ -224,7 +224,7 @@ jobs:
       run: |
         HOMEBREW_NO_AUTO_UPDATE=1 brew install watchman
         bundle exec fastlane ios simulator
-      if: "${{ inputs.build_type == 'unsigned' }}"
+      if: "${{ inputs.build_type == 'simulator' }}"
     # Upload the build artifact, its path depends on the value of `build_type`
     - name: ci/upload-ios-buld
       uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
