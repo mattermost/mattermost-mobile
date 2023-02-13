@@ -60,6 +60,7 @@ on:
       node_options:
         required: false
         type: string
+        default: "--max_old_space_size=12000"
       notification_service_identifier:
         required: false
         type: string
@@ -141,7 +142,9 @@ env:
   MATCH_TYPE: "${{ inputs.match_type }}"
   MATTERMOST_WEBHOOK_URL: "${{ secrets.mattermost_webhook_url }}"
   NOTIFICATION_SERVICE_IDENTIFIER: "${{ inputs.notification_service_identifier }}"
+  NODE_ENV: production
   NODE_OPTIONS: "${{ inputs.node_options }}"
+  BABEL_ENV: production
   PILOT_SKIP_WAITING_FOR_BUILD_PROCESSING: "${{ inputs.pilot_skip_waiting_for_build_processing }}"
   REPLACE_ASSETS: "${{ inputs.replace_assets }}"
   SENTRY_AUTH_TOKEN: "${{ secrets.sentry_auth_token }}"
