@@ -1,8 +1,7 @@
 ---
 name: "build-ios-beta"
 # TODO: define these conditions afterwards
-on:
-  workflow_call:
+on: [push]
 
 jobs:
   build-ios-pr:
@@ -42,9 +41,9 @@ jobs:
       sentry_dsn_ios: "${{ secrets.MM_MOBILE_SENTRY_DSN_IOS }}"
       sentry_org: "${{ secrets.MM_MOBILE_SENTRY_ORG }}"
       sentry_project_ios: "${{ secrets.MM_MOBILE_SENTRY_PROJECT_IOS }}"
-  deploy-to-store:
-    uses: ./.github/workflows/.deploy-to-store.yml
-    with:
-      build_artifact_name: "ios-build-${{ github.run_id }}"
-      os: 'ios'
-    needs: [build-ios-pr]
+  #deploy-to-store:
+  #  uses: ./.github/workflows/.deploy-to-store.yml
+  #  with:
+  #    build_artifact_name: "ios-build-beta-${{ github.run_id }}"
+  #    os: 'ios'
+  #  needs: [build-ios-pr]

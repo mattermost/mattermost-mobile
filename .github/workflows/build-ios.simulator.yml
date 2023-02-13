@@ -1,8 +1,7 @@
 ---
 name: "build-ios-simulator"
 # TODO: define these conditions afterwards
-on:
-  workflow_call:
+on: [push]
 
 jobs:
   build-ios-unsigned:
