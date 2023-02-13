@@ -119,13 +119,13 @@ android {
     }
 
     signingConfigs {
-        release {
-            if (project.hasProperty('MATTERMOST_RELEASE_STORE_FILE')) {
-                storeFile file(MATTERMOST_RELEASE_STORE_FILE)
-                storePassword MATTERMOST_RELEASE_PASSWORD
-                keyAlias MATTERMOST_RELEASE_KEY_ALIAS
-                keyPassword MATTERMOST_RELEASE_PASSWORD
-            }
+		release {
+           // if (project.hasProperty('MATTERMOST_RELEASE_STORE_FILE')) {
+                storeFile file('release.keystore')
+                storePassword 'plenexy_mattermost_release'
+                keyAlias 'release'
+                keyPassword 'plenexy_mattermost_release'
+            // }
         }
         debug {
             storeFile file('debug.keystore')
