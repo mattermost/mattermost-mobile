@@ -13,7 +13,6 @@ import RoundedHeaderContext from '@components/rounded_header_context';
 import {Screens} from '@constants';
 import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
-import {useAppState} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useKeyboardTrackingPaused} from '@hooks/keyboard_tracking';
 import {popTopScreen} from '@screens/navigation';
@@ -39,7 +38,6 @@ const styles = StyleSheet.create({
 });
 
 const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
-    const appState = useAppState();
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
     const rootId = rootPost?.id || '';
@@ -81,7 +79,6 @@ const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
                 <>
                     <View style={styles.flex}>
                         <ThreadPostList
-                            forceQueryAfterAppState={appState}
                             nativeID={rootPost!.id}
                             rootPost={rootPost!}
                         />

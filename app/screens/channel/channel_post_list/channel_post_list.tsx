@@ -1,16 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useRef} from 'react';
+import React, {useCallback, useEffect, useRef} from 'react';
 import {StyleProp, StyleSheet, ViewStyle} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
+import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostsBefore} from '@actions/remote/post';
 import PostList from '@components/post_list';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {debounce} from '@helpers/api/general';
-import {useIsTablet} from '@hooks/device';
+import {useAppState, useIsTablet} from '@hooks/device';
 
 import Intro from './intro';
 
@@ -39,10 +40,19 @@ const ChannelPostList = ({
     lastViewedAt, nativeID, posts, shouldShowJoinLeaveMessages,
     currentCallBarVisible, joinCallBannerVisible,
 }: Props) => {
+    const appState = useAppState();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const canLoadPosts = useRef(true);
     const fetchingPosts = useRef(false);
+
+    const oldPostsCount = useRef<number>(posts.length);
+    useEffect(() => {
+        if (oldPostsCount.current < posts.length && appState === 'active') {
+            oldPostsCount.current = posts.length;
+            markChannelAsRead(serverUrl, channelId, true);
+        }
+    }, [isCRTEnabled, posts, channelId, serverUrl, appState === 'active']);
 
     const onEndReached = useCallback(debounce(async () => {
         if (!fetchingPosts.current && canLoadPosts.current && posts.length) {

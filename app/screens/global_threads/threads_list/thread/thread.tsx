@@ -205,7 +205,7 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                         enableSoftBreak={true}
                         textStyle={textStyles}
                         baseStyle={styles.message}
-                        value={post.message}
+                        value={post.message.substring(0, 100)} // This substring helps to avoid ANR's
                     />
                 </Text>
             );

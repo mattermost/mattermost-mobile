@@ -15,14 +15,12 @@ import ThreadPostList from './thread_post_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
-import type {AppStateStatus} from 'react-native';
 
 type Props = WithDatabaseArgs & {
-    forceQueryAfterAppState: AppStateStatus;
     rootPost: PostModel;
 };
 
-const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({database, rootPost}: Props) => {
+const enhanced = withObservables(['rootPost'], ({database, rootPost}: Props) => {
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
         channelLastViewedAt: observeMyChannel(database, rootPost.channelId).pipe(

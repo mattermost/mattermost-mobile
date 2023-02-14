@@ -6,7 +6,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
 import {markPostAsDeleted} from '@actions/local/post';
 import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
-import {fetchChannelStats, fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
+import {fetchChannelStats, fetchMyChannel} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
 import {ActionType, Events, Screens} from '@constants';
@@ -116,7 +116,6 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     if (!shouldIgnorePost(post)) {
         let markAsViewed = false;
-        let markAsRead = false;
 
         if (!myChannel.manuallyUnread) {
             if (
@@ -125,21 +124,17 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 !isFromWebhook(post)
             ) {
                 markAsViewed = true;
-                markAsRead = false;
             } else if ((post.channel_id === currentChannelId)) {
                 const isChannelScreenMounted = NavigationStore.getScreensInStack().includes(Screens.CHANNEL);
 
                 const isTabletDevice = await isTablet();
                 if (isChannelScreenMounted || isTabletDevice) {
                     markAsViewed = false;
-                    markAsRead = true;
                 }
             }
         }
 
-        if (markAsRead) {
-            markChannelAsRead(serverUrl, post.channel_id);
-        } else if (markAsViewed) {
+        if (markAsViewed) {
             preparedMyChannelHack(myChannel);
             const {member: viewedAt} = await markChannelAsViewed(serverUrl, post.channel_id, false, true);
             if (viewedAt) {
