@@ -987,5 +987,11 @@
     "mobile.manage_members.done": "Bitti",
     "mobile.manage_members.change_role.error": "Rol güncellenirken bir sorun çıktı. Lütfen bağlantınızı denetleyip yeniden deneyin.",
     "mobile.manage_members.cancel": "İptal",
-    "mobile.manage_members.admin": "Yönetici"
+    "mobile.manage_members.admin": "Yönetici",
+    "mobile.calls_recording_stop_none_in_progress": "",
+    "mobile.calls_recording_stop_no_permissions": "",
+    "mobile.calls_recording_start_no_permissions": "",
+    "mobile.calls_recording_start_in_progress": "",
+    "mobile.calls_host_rec_error_title": "",
+    "mobile.calls_host_rec_error": ""
 }
