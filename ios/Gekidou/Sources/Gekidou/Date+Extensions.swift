@@ -16,9 +16,3 @@ extension Date {
     self = Date(timeIntervalSince1970: TimeInterval(milliseconds) / 1000)
   }
 }
-
-extension StringProtocol {
-    public subscript(offset: Int) -> Character {
-        self[index(startIndex, offsetBy: offset)]
-    }
-}

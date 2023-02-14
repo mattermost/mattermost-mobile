@@ -48,6 +48,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   }
 
   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error: nil];
+  [[GekidouWrapper default] setPreference:@"true" forKey:@"ApplicationIsRunning"];
 
   [RNNotifications startMonitorNotifications];
 
@@ -91,10 +92,22 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
     // When rootId is nil, clear channel's root post notifications or else clear all thread notifications
     [[NotificationHelper default] clearChannelOrThreadNotificationsWithUserInfo:userInfo];
     [[GekidouWrapper default] postNotificationReceipt:userInfo];
+    [RNNotifications didReceiveBackgroundNotification:userInfo withCompletionHandler:completionHandler];
+    return;
   }
   
-  if (state != UIApplicationStateActive || isClearAction) {
-    [RNNotifications didReceiveBackgroundNotification:userInfo withCompletionHandler:completionHandler];
+  if (state != UIApplicationStateActive) {
+    [[GekidouWrapper default] fetchDataForPushNotification:userInfo withContentHandler:^(NSData * _Nullable data) {
+      NSMutableDictionary *notification = [userInfo mutableCopy];
+      NSError *jsonError;
+      if (data != nil) {
+        id json = [NSJSONSerialization JSONObjectWithData:data options:NULL error:&jsonError];
+        if (!jsonError) {
+          [notification setObject:json forKey:@"data"];
+        }
+      }
+      [RNNotifications didReceiveBackgroundNotification:notification withCompletionHandler:completionHandler];
+    }];
   } else {
     completionHandler(UIBackgroundFetchResultNewData);
   }
@@ -130,6 +143,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
 -(void)applicationWillTerminate:(UIApplication *)application {
   [[GekidouWrapper default] setPreference:@"false" forKey:@"ApplicationIsForeground"];
+  [[GekidouWrapper default] setPreference:@"false" forKey:@"ApplicationIsRunning"];
 }
 
 - (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
