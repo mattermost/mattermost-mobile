@@ -10,7 +10,6 @@ on:
       app_scheme:
         required: false
         type: string
-        default: "mattermost"
       aws_bucket_name:
         required: false
         type: string
@@ -20,30 +19,28 @@ on:
       aws_region:
         required: false
         type: string
-      is_beta:
+      beta_build:
         required: false
-        type: boolean
+        type: string
       build_for_release:
         required: false
-        type: boolean
-      is_pr:
+        type: string
+      build_pr:
         required: false
-        type: boolean
+        type: string
       extension_app_identifier:
         required: false
         type: string
       branch_to_build:
         required: false
         type: string
-        default: "main"
       build_artifact_name:
         required: true
         type: string
       build_type:
-        required: false
-        type: string
         # Valid values: signed, unsigned, simulator
-        default: "signed"
+        required: true
+        type: string
       ios_app_group:
         required: false
         type: string
@@ -61,19 +58,20 @@ on:
         type: string
       match_readonly:
         required: false
-        type: boolean
-        default: true
+        type: string
       match_shallow_clone:
         required: false
-        type: boolean
-        default: true
+        type: string
       match_skip_docs:
         required: false
-        type: boolean
-        default: true
+        type: string
       match_type:
         required: false
         type: string
+      babel_env:
+        required: false
+        type: string
+        default: "production"
       node_env:
         required: false
         type: string
@@ -82,35 +80,24 @@ on:
         required: false
         type: string
         default: "--max_old_space_size=12000"
-      babel_env:
-        required: false
-        type: string
-        default: "production"
       notification_service_identifier:
         required: false
         type: string
       pilot_skip_waiting_for_build_processing:
         required: false
-        type: boolean
-        # To match the upstream default:
-        # https://github.com/fastlane/fastlane/blob/be7d70a923fcde0655b8632de2088de9e3a743fe/pilot/lib/pilot/options.rb#L168
-        default: false
+        type: string
       replace_assets:
         required: false
-        type: boolean
-        default: true
+        type: string
       sentry_enabled:
         required: false
-        type: boolean
-        default: false
+        type: string
       show_onboarding:
         required: false
-        type: boolean
-        default: true
-      show_provisioning_profiles:
+        type: string
+      sync_provisioning_profiles:
         required: false
-        type: boolean
-        default: true
+        type: string
       tag:
         required: false
         type: string
@@ -159,9 +146,9 @@ jobs:
         [ -z "${{ inputs.aws_bucket_name }}" ]                         || echo 'AWS_BUCKET_NAME=${{ inputs.aws_bucket_name }}' >> $GITHUB_ENV
         [ -z "${{ inputs.aws_folder_name }}" ]                         || echo 'AWS_FOLDER_NAME=${{ inputs.aws_folder_name }}' >> $GITHUB_ENV
         [ -z "${{ inputs.aws_region }}" ]                              || echo 'AWS_REGION=${{ inputs.aws_region }}' >> $GITHUB_ENV
-        [ -z "${{ inputs.is_beta }}" ]                                 || echo 'BETA_BUILD=${{ inputs.is_beta }}' >> $GITHUB_ENV
+        [ -z "${{ inputs.beta_build }}" ]                              || echo 'BETA_BUILD=${{ inputs.beta_build }}' >> $GITHUB_ENV
         [ -z "${{ inputs.build_for_release }}" ]                       || echo 'BUILD_FOR_RELEASE=${{ inputs.build_for_release }}' >> $GITHUB_ENV
-        [ -z "${{ inputs.is_pr }}" ]                                   || echo 'BUILD_PR=${{ inputs.is_pr }}' >> $GITHUB_ENV
+        [ -z "${{ inputs.build_pr }}" ]                                || echo 'BUILD_PR=${{ inputs.build_pr }}' >> $GITHUB_ENV
         [ -z "${{ inputs.extension_app_identifier }}" ]                || echo 'EXTENSION_APP_IDENTIFIER=${{ inputs.extension_app_identifier }}' >> $GITHUB_ENV
         [ -z "${{ secrets.fastlane_team_id }}" ]                       || echo 'FASTLANE_TEAM_ID=${{ secrets.fastlane_team_id }}' >> $GITHUB_ENV
         [ -z "${{ secrets.gh_token }}" ]                               || echo 'GITHUB_TOKEN=${{ secrets.gh_token }}' >> $GITHUB_ENV
@@ -192,7 +179,7 @@ jobs:
         [ -z "${{ secrets.sentry_org }}" ]                             || echo 'SENTRY_ORG=${{ secrets.sentry_org }}' >> $GITHUB_ENV
         [ -z "${{ secrets.sentry_project_ios }}" ]                     || echo 'SENTRY_PROJECT_IOS=${{ secrets.sentry_project_ios }}' >> $GITHUB_ENV
         [ -z "${{ secrets.show_onboarding }}" ]                        || echo 'SHOW_ONBOARDING=${{ secrets.show_onboarding }}' >> $GITHUB_ENV
-        [ -z "${{ secrets.show_provisioning_profiles }}" ]             || echo 'SYNC_PROVISIONING_PROFILES=${{ secrets.show_provisioning_profiles }}' >> $GITHUB_ENV
+        [ -z "${{ secrets.sync_provisioning_profiles }}" ]             || echo 'SYNC_PROVISIONING_PROFILES=${{ secrets.sync_provisioning_profiles }}' >> $GITHUB_ENV
         [ -z "${{ inputs.tag }}" ]                                     || echo 'TAG=${{ inputs.tag }}' >> $GITHUB_ENV
     - name: ci/checkout-repo
       uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0

@@ -7,26 +7,31 @@ jobs:
   build-ios-pr:
     uses: ./.github/workflows/.build-ios.yml
     with:
-      branch_to_build: "${{ github.ref_name }}"
       build_artifact_name: "ios-build-beta-${{ github.run_id }}"
+      build_type: "signed"
       app_name: "Mattermost Beta"
+      app_scheme: "mattermost"
       aws_bucket_name: "releases.mattermost.com"
       aws_folder_name: "mattermost-mobile-beta"
       aws_region: "us-east-1"
-      is_beta: true
-      build_for_release: true
-      is_pr: false
+      beta_build: "true"
+      build_for_release: "true"
       extension_app_identifier: "com.mattermost.rnbeta.MattermostShare"
       ios_app_group: "group.com.mattermost.rnbeta"
       ios_build_export_method: "app-store"
       ios_icloud_container: "iCloud.com.mattermost.rnbeta"
       main_app_identifier: "com.mattermost.rnbeta"
       match_app_identifier: "com.mattermost.rnbeta.NotificationService,com.mattermost.rnbeta.MattermostShare,com.mattermost.rnbeta"
+      match_readonly: "true"
+      match_shallow_clone: "true"
+      match_skip_docs: "true"
       match_type: "appstore"
       notification_service_identifier: "com.mattermost.rnbeta.NotificationService"
-      pilot_skip_waiting_for_build_processing: true
-      replace_assets: false
-      sentry_enabled: true
+      pilot_skip_waiting_for_build_processing: "true"
+      replace_assets: "false"
+      sentry_enabled: "true"
+      show_onboarding: "true"
+      sync_provisioning_profiles: "true"
     secrets:
       aws_access_key_id: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
       aws_secret_access_key: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"

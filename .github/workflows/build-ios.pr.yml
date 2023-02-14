@@ -9,23 +9,29 @@ jobs:
     with:
       branch_to_build: "${{ github.ref_name }}"
       build_artifact_name: "ios-build-pr-${{ github.run_id }}"
+      build_type: "signed"
       app_name: "Mattermost Beta"
+      app_scheme: "mattermost"
       aws_bucket_name: "pr-builds.mattermost.com"
       aws_folder_name: "mattermost-mobile"
       aws_region: "us-east-1"
-      is_beta: true
-      build_for_release: true
-      is_pr: true
+      beta_build: "true"
+      build_for_release: "true"
+      build_pr: "true"
       extension_app_identifier: "com.mattermost.rnbeta.MattermostShare"
       ios_app_group: "group.com.mattermost.rnbeta"
       ios_build_export_method: "ad-hoc"
       ios_icloud_container: "iCloud.com.mattermost.rnbeta"
       main_app_identifier: "com.mattermost.rnbeta"
       match_app_identifier: "com.mattermost.rnbeta.NotificationService,com.mattermost.rnbeta.MattermostShare,com.mattermost.rnbeta"
+      match_readonly: "true"
+      match_shallow_clone: "true"
+      match_skip_docs: "true"
       match_type: "adhoc"
       notification_service_identifier: "com.mattermost.rnbeta.NotificationService"
-      replace_assets: false
-      sentry_enabled: false
+      replace_assets: "false"
+      show_onboarding: "true"
+      sync_provisioning_profiles: "true"
     secrets:
       aws_access_key_id: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
       aws_secret_access_key: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
