@@ -8,6 +8,7 @@ import {transformTeamThreadsSyncRecord} from '@database/operator/server_data_ope
 import {getRawRecordPairs, getUniqueRawsBy, getValidRecordsForUpdate} from '@database/operator/utils/general';
 import {logWarning} from '@utils/log';
 
+import type ServerDataOperatorBase from '.';
 import type {HandleTeamThreadsSyncArgs, RecordPair} from '@typings/database/database';
 import type TeamThreadsSyncModel from '@typings/database/models/servers/team_threads_sync';
 
@@ -17,7 +18,7 @@ export interface TeamThreadsSyncHandlerMix {
 
 const {TEAM_THREADS_SYNC} = MM_TABLES.SERVER;
 
-const TeamThreadsSyncHandler = (superclass: any) => class extends superclass {
+const TeamThreadsSyncHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     handleTeamThreadsSync = async ({data, prepareRecordsOnly = false}: HandleTeamThreadsSyncArgs): Promise<TeamThreadsSyncModel[]> => {
         if (!data || !data.length) {
             logWarning(
@@ -61,7 +62,7 @@ const TeamThreadsSyncHandler = (superclass: any) => class extends superclass {
         })) as TeamThreadsSyncModel[];
 
         if (models?.length && !prepareRecordsOnly) {
-            await this.batchRecords(models);
+            await this.batchRecords(models, 'handleTeamThreadsSync');
         }
 
         return models;

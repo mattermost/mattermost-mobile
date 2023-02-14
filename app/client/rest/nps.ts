@@ -3,11 +3,13 @@
 
 import {General} from '@constants';
 
+import type ClientBase from './base';
+
 export interface ClientNPSMix {
     npsGiveFeedbackAction: () => Promise<Post>;
 }
 
-const ClientNPS = (superclass: any) => class extends superclass {
+const ClientNPS = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     npsGiveFeedbackAction = async () => {
         return this.doFetch(
             `${this.getPluginRoute(General.NPS_PLUGIN_ID)}/api/v1/give_feedback`,

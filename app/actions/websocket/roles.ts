@@ -66,7 +66,7 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
         models.push(user);
     }
 
-    await operator.batchRecords(models);
+    await operator.batchRecords(models, 'handleUserRoleUpdatedEvent');
 }
 
 export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
@@ -118,7 +118,7 @@ export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: W
         });
         models.push(...teamMembership);
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'handleTeamMemberRoleUpdatedEvent');
     } catch {
         // do nothing
     }

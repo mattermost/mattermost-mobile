@@ -56,7 +56,7 @@ describe('** APP DATA OPERATOR **', () => {
             ],
             tableName: 'Info',
             prepareRecordsOnly: false,
-        });
+        }, 'handleInfo');
     });
 
     it('=> HandleGlobal: should write to GLOBAL table', async () => {
@@ -79,6 +79,6 @@ describe('** APP DATA OPERATOR **', () => {
             createOrUpdateRawValues: globals,
             tableName: 'Global',
             prepareRecordsOnly: false,
-        });
+        }, 'handleGlobal');
     });
 });

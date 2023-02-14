@@ -6,13 +6,9 @@ import CategoryHandler, {CategoryHandlerMix} from '@database/operator/server_dat
 import ChannelHandler, {ChannelHandlerMix} from '@database/operator/server_data_operator/handlers/channel';
 import GroupHandler, {GroupHandlerMix} from '@database/operator/server_data_operator/handlers/group';
 import PostHandler, {PostHandlerMix} from '@database/operator/server_data_operator/handlers/post';
-import PostsInChannelHandler, {PostsInChannelHandlerMix} from '@database/operator/server_data_operator/handlers/posts_in_channel';
-import PostsInThreadHandler, {PostsInThreadHandlerMix} from '@database/operator/server_data_operator/handlers/posts_in_thread';
-import ReactionHander, {ReactionHandlerMix} from '@database/operator/server_data_operator/handlers/reaction';
 import TeamHandler, {TeamHandlerMix} from '@database/operator/server_data_operator/handlers/team';
 import TeamThreadsSyncHandler, {TeamThreadsSyncHandlerMix} from '@database/operator/server_data_operator/handlers/team_threads_sync';
 import ThreadHandler, {ThreadHandlerMix} from '@database/operator/server_data_operator/handlers/thread';
-import ThreadInTeamHandler, {ThreadInTeamHandlerMix} from '@database/operator/server_data_operator/handlers/thread_in_team';
 import UserHandler, {UserHandlerMix} from '@database/operator/server_data_operator/handlers/user';
 import mix from '@utils/mix';
 
@@ -23,13 +19,9 @@ interface ServerDataOperator extends
     ChannelHandlerMix,
     GroupHandlerMix,
     PostHandlerMix,
-    PostsInChannelHandlerMix,
-    PostsInThreadHandlerMix,
-    ReactionHandlerMix,
     ServerDataOperatorBase,
     TeamHandlerMix,
     ThreadHandlerMix,
-    ThreadInTeamHandlerMix,
     TeamThreadsSyncHandlerMix,
     UserHandlerMix
 {}
@@ -39,12 +31,8 @@ class ServerDataOperator extends mix(ServerDataOperatorBase).with(
     ChannelHandler,
     GroupHandler,
     PostHandler,
-    PostsInChannelHandler,
-    PostsInThreadHandler,
-    ReactionHander,
     TeamHandler,
     ThreadHandler,
-    ThreadInTeamHandler,
     TeamThreadsSyncHandler,
     UserHandler,
 ) {

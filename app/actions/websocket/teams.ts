@@ -162,5 +162,5 @@ const fetchAndStoreJoinedTeamInfo = async (serverUrl: string, operator: ServerDa
     }
 
     const models = await Promise.all(modelPromises);
-    await operator.batchRecords(models.flat());
+    await operator.batchRecords(models.flat(), 'fetchAndStoreJoinedTeamInfo');
 };

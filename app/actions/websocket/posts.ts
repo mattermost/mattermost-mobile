@@ -176,7 +176,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     models.push(...postModels);
 
-    operator.batchRecords(models);
+    operator.batchRecords(models, 'handleNewPostEvent');
 }
 
 export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage) {
@@ -220,7 +220,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     });
     models.push(...postModels);
 
-    operator.batchRecords(models);
+    operator.batchRecords(models, 'handlePostEdited');
 }
 
 export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
@@ -263,7 +263,7 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
         }
 
         if (models.length) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'handlePostDeleted');
         }
     } catch {
         // Do nothing
