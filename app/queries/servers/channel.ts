@@ -460,6 +460,29 @@ export const queryEmptyDirectAndGroupChannels = (database: Database) => {
     );
 };
 
+export const observeArchivedDirectChannels = (database: Database, currentUserId: string) => {
+    const deactivatedIds = database.get<UserModel>(USER).query(
+        Q.where('delete_at', Q.gt(0)),
+    ).observe().pipe(
+        switchMap((users) => of$(users.map((u) => u.id))),
+    );
+
+    return deactivatedIds.pipe(
+        switchMap((dIds) => {
+            return database.get<ChannelModel>(CHANNEL).query(
+                Q.on(
+                    CHANNEL_MEMBERSHIP,
+                    Q.and(
+                        Q.where('user_id', Q.notEq(currentUserId)),
+                        Q.where('user_id', Q.oneOf(dIds)),
+                    ),
+                ),
+                Q.where('type', 'D'),
+            ).observe();
+        }),
+    );
+};
+
 export function observeMyChannelMentionCount(database: Database, teamId?: string, columns = ['mentions_count', 'is_unread']): Observable<number> {
     const conditions: Q.Where[] = [
         Q.where('delete_at', Q.eq(0)),
