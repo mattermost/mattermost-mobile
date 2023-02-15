@@ -192,10 +192,12 @@ jobs:
         [ -z "${{ inputs.tag }}" ]                                     || echo 'TAG=${{ inputs.tag }}' >> $GITHUB_ENV
     - name: ci/output-ssh-private-key
       run: |
+        SSH_KEY_PATH=~/.ssh/id_ed25519
         if [ -n "${{ secrets.private_deploy_key }}" ]; then
           mkdir -p ~/.ssh
-          echo '${{ secrets.private_deploy_key }}' > ~/.ssh/id_rsa
-          chmod 0600 ~/.ssh/id_rsa
+          echo -e '${{ secrets.private_deploy_key }}' > ${SSH_KEY_PATH}
+          chmod 0600 ${SSH_KEY_PATH}
+          ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
         fi
     - name: ci/checkout-repo
       uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
