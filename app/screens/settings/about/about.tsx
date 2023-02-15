@@ -187,20 +187,18 @@ const About = ({componentId, config, license}: AboutProps) => {
 
     const copyToClipboard = useCallback(
         () => {
-            const appVersion = `${intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version:'})} ${intl.formatMessage({id: serverVersion.id, defaultMessage: serverVersion.defaultMessage}, serverVersion.values)}`
-            const server = `${intl.formatMessage({id: 'settings.about.server.version.desc', defaultMessage: 'Server Version:'})} ${intl.formatMessage({id: serverVersion.id, defaultMessage: serverVersion.defaultMessage}, serverVersion.values)}`
-            const database = `${intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database:'})}  ${intl.formatMessage({id: 'settings.about.database.value', defaultMessage: `${config.SQLDriverName}`})}`
+            const appVersion = `${intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version:'})} ${intl.formatMessage({id: serverVersion.id, defaultMessage: serverVersion.defaultMessage}, serverVersion.values)}`;
+            const server = `${intl.formatMessage({id: 'settings.about.server.version.desc', defaultMessage: 'Server Version:'})} ${intl.formatMessage({id: serverVersion.id, defaultMessage: serverVersion.defaultMessage}, serverVersion.values)}`;
+            const database = `${intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database:'})}  ${intl.formatMessage({id: 'settings.about.database.value', defaultMessage: `${config.SQLDriverName}`})}`;
             const databaseSchemaVersion = `${intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version:'})} ${intl.formatMessage({
                 id: 'settings.about.database.schema.value',
                 defaultMessage: `${config.SchemaVersion}`,
-            })}`
-
-            const copiedString = `${appVersion}\n${server}\n${database} \n${databaseSchemaVersion}`
+            })}`;
+            const copiedString = `${appVersion}\n${server}\n${database} \n${databaseSchemaVersion}`;
             Clipboard.setString(copiedString);
         },
-      [intl],
+        [intl],
     );
-    
 
     return (
         <SettingContainer testID='about'>
