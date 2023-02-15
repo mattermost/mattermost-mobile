@@ -54,33 +54,33 @@ class PushNotificationDataRunnable {
                         Log.i("ReactNative", "Start fetching notification data in server=$serverUrl for channel=$channelId")
 
                         val receivingThreads = isCRTEnabled && !rootId.isNullOrEmpty()
-                        val writableMap = Arguments.createMap()
+                        val notificationData = Arguments.createMap()
 
                         if (!teamId.isNullOrEmpty()) {
                             val res = fetchTeamIfNeeded(db, serverUrl, teamId)
-                            res.first?.let { writableMap.putMap("team", it) }
-                            res.second?.let { writableMap.putMap("myTeam", it) }
+                            res.first?.let { notificationData.putMap("team", it) }
+                            res.second?.let { notificationData.putMap("myTeam", it) }
                         }
 
                         if (channelId != null && postId != null) {
                             val channelRes = fetchMyChannel(db, serverUrl, channelId, isCRTEnabled)
-                            channelRes.first?.let { writableMap.putMap("channel", it) }
-                            channelRes.second?.let { writableMap.putMap("myChannel", it) }
+                            channelRes.first?.let { notificationData.putMap("channel", it) }
+                            channelRes.second?.let { notificationData.putMap("myChannel", it) }
                             val loadedProfiles = channelRes.third
 
                             // Fetch categories if needed
-                            if (!teamId.isNullOrEmpty() && writableMap.getMap("myTeam") != null) {
+                            if (!teamId.isNullOrEmpty() && notificationData.getMap("myTeam") != null) {
                                 // should load all categories
                                 val res = fetchMyTeamCategories(db, serverUrl, teamId)
-                                res?.let { writableMap.putMap("categories", it) }
-                            } else if (writableMap.getMap("channel") != null) {
+                                res?.let { notificationData.putMap("categories", it) }
+                            } else if (notificationData.getMap("channel") != null) {
                                 // check if the channel is in the category for the team
-                                val res = addToDefaultCategoryIfNeeded(db, writableMap.getMap("channel")!!)
-                                res?.let { writableMap.putArray("categoryChannels", it) }
+                                val res = addToDefaultCategoryIfNeeded(db, notificationData.getMap("channel")!!)
+                                res?.let { notificationData.putArray("categoryChannels", it) }
                             }
 
                             val postData = fetchPosts(db, serverUrl, channelId, isCRTEnabled, rootId, loadedProfiles)
-                            postData?.getMap("posts")?.let { writableMap.putMap("posts", it) }
+                            postData?.getMap("posts")?.let { notificationData.putMap("posts", it) }
 
                             var notificationThread: ReadableMap? = null
                             if (isCRTEnabled && !rootId.isNullOrEmpty()) {
@@ -92,17 +92,17 @@ class PushNotificationDataRunnable {
                                 for(item in it) {
                                     threadsArray.pushMap(item)
                                 }
-                                writableMap.putArray("threads", threadsArray)
+                                notificationData.putArray("threads", threadsArray)
                             }
 
                             val userList = fetchNeededUsers(serverUrl, loadedProfiles, postData)
-                            writableMap.putArray("users", ReadableArrayUtils.toWritableArray(userList.toArray()))
+                            notificationData.putArray("users", ReadableArrayUtils.toWritableArray(userList.toArray()))
                         }
 
-                        result = Arguments.toBundle(writableMap)
+                        result = Arguments.toBundle(notificationData)
 
                         if (!isReactInit) {
-                            dbHelper.saveToDatabase(db, writableMap, teamId, channelId, receivingThreads)
+                            dbHelper.saveToDatabase(db, notificationData, teamId, channelId, receivingThreads)
                         }
 
                         Log.i("ReactNative", "Done processing push notification=$serverUrl for channel=$channelId")
