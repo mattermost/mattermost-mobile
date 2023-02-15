@@ -206,7 +206,8 @@ jobs:
       run: |
         mkdir -p ~/.ssh
         echo '${{ secrets.private_deploy_key }}' > ~/.ssh/id_rsa
-      if: "${{ inputs.build_type == 'signed' }}"
+        chmod 0600 ~/.ssh/id_rsa
+      if: "${{ secrets.private_deploy_key != '' }}"
     # Build iOS app, method depends on the value of `build_type`
     - name: ci/build-ios-signed
       working-directory: ./fastlane
