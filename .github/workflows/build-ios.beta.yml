@@ -42,6 +42,7 @@ jobs:
       match_git_url: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
       match_password: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
       mattermost_webhook_url: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
+      private_deploy_key: "${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}"
       sentry_auth_token: "${{ secrets.MM_MOBILE_SENTRY_AUTH_TOKEN }}"
       sentry_dsn_ios: "${{ secrets.MM_MOBILE_SENTRY_DSN_IOS }}"
       sentry_org: "${{ secrets.MM_MOBILE_SENTRY_ORG }}"
