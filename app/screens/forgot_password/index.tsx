@@ -137,8 +137,7 @@ const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
         }
 
         const {data} = await sendPasswordResetEmail(serverUrl, email);
-
-        if (data) {
+        if (data === 'OK') {
             setIsPasswordLinkSent(true);
             return;
         }

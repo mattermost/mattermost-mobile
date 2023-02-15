@@ -245,7 +245,7 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
         return {error};
     }
     return {
-        data: response.data,
+        data: response.status,
         error: undefined,
     };
 };
