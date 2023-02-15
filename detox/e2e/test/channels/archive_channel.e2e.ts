@@ -25,6 +25,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Archive Channel', () => {
@@ -71,10 +72,12 @@ describe('Channels - Archive Channel', () => {
         await ChannelScreen.postDraftArchivedCloseChannelButton.tap();
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
         await BrowseChannelsScreen.searchInput.replaceText(publicChannel.name);
 
         // * Verify search returns the archived public channel item
+        await wait(timeouts.ONE_SEC);
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(publicChannel.name)).toHaveText(publicChannel.display_name);
 
         // # Go back to channel list screen
@@ -116,10 +119,12 @@ describe('Channels - Archive Channel', () => {
         await ChannelScreen.postDraftArchivedCloseChannelButton.tap();
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
         await BrowseChannelsScreen.searchInput.replaceText(privateChannel.name);
 
         // * Verify search returns the archived private channel item
+        await wait(timeouts.ONE_SEC);
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(privateChannel.name)).toHaveText(privateChannel.display_name);
 
         // # Go back to channel list screen

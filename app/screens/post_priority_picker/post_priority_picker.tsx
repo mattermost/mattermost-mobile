@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View} from 'react-native';
@@ -21,6 +20,8 @@ import {typography} from '@utils/typography';
 
 import Footer from './footer';
 import PickerOption from './picker_option';
+
+import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 
 export const POST_PRIORITY_PICKER_BUTTON = 'close-post-priority-picker';
 

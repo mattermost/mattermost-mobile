@@ -17,7 +17,7 @@ const Toasts = ({
     fileInfo,
     setAction,
 }: Props) => {
-    const galleryItem = {...fileInfo, type: 'image'} as GalleryItemType;
+    const galleryItem = {...fileInfo, type: fileInfo?.mime_type.startsWith('image/') ? 'image' : 'file'} as GalleryItemType;
 
     switch (action) {
         case 'downloading':

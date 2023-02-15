@@ -20,7 +20,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Custom Status', () => {
@@ -84,7 +84,11 @@ describe('Account - Custom Status', () => {
 
         // * Verify custom status is set on the field, shown under recent, and removed from suggestions
         await expect(CustomStatusScreen.getCustomStatusEmoji(customStatusEmojiName)).toBeVisible();
-        await expect(CustomStatusScreen.statusInput).toHaveValue(customStatusText);
+        if (isIos()) {
+            await expect(CustomStatusScreen.statusInput).toHaveValue(customStatusText);
+        } else {
+            await expect(CustomStatusScreen.statusInput).toHaveText(customStatusText);
+        }
         const {customStatusSuggestion: recentCustomStatus, customStatusClearButton: recentCustomStatusClearButton} = CustomStatusScreen.getRecentCustomStatus(customStatusEmojiName, customStatusText, customStatusDuration);
         await expect(recentCustomStatus).toBeVisible();
         const {customStatusSuggestion: suggestedCustomStatus} = CustomStatusScreen.getSuggestedCustomStatus(customStatusEmojiName, customStatusText, customStatusDuration);
@@ -108,9 +112,10 @@ describe('Account - Custom Status', () => {
         const customStatusText = `Status ${getRandomId()}`;
         const customStatusDuration = 'today';
         await CustomStatusScreen.open();
-        await CustomStatusScreen.openEmojiPicker('default');
+        await CustomStatusScreen.openEmojiPicker('default', true);
         await EmojiPickerScreen.searchInput.replaceText(customStatusEmojiName);
         await element(by.text('🤡')).tap();
+        await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
 
@@ -122,7 +127,11 @@ describe('Account - Custom Status', () => {
 
         // * Verify custom status is set on the field and shown under recent
         await expect(CustomStatusScreen.getCustomStatusEmoji(customStatusEmojiName)).toBeVisible();
-        await expect(CustomStatusScreen.statusInput).toHaveValue(customStatusText);
+        if (isIos()) {
+            await expect(CustomStatusScreen.statusInput).toHaveValue(customStatusText);
+        } else {
+            await expect(CustomStatusScreen.statusInput).toHaveText(customStatusText);
+        }
         const {customStatusSuggestion: recentCustomStatus, customStatusClearButton: recentCustomStatusClearButton} = CustomStatusScreen.getRecentCustomStatus(customStatusEmojiName, customStatusText, customStatusDuration);
         await expect(recentCustomStatus).toBeVisible();
 
@@ -165,7 +174,11 @@ describe('Account - Custom Status', () => {
 
         // * Verify custom status is cleared from input field
         await expect(CustomStatusScreen.getCustomStatusEmoji('default')).toBeVisible();
-        await expect(CustomStatusScreen.statusInput).toHaveValue(defaultStatusText);
+        if (isIos()) {
+            await expect(CustomStatusScreen.statusInput).toHaveValue(defaultStatusText);
+        } else {
+            await expect(CustomStatusScreen.statusInput).toHaveText('');
+        }
 
         // # Go back to account screen
         await CustomStatusScreen.close();

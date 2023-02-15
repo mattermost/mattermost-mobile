@@ -8,8 +8,8 @@ import {Device} from '@constants';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
 import {STATUS_BAR_HEIGHT} from '@constants/view';
 
-const {MattermostManaged} = NativeModules;
-const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
+const {SplitView} = NativeModules;
+const {isRunningInSplitView} = SplitView;
 const ShareModule: NativeShareExtension|undefined = Platform.select({android: NativeModules.MattermostShare});
 
 // isMinimumServerVersion will return true if currentVersion is equal to higher or than

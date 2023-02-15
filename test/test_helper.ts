@@ -104,7 +104,7 @@ class TestHelper {
             currentUserId: this.basicUser!.id,
         });
         if (systems?.length) {
-            await operator.batchRecords(systems);
+            await operator.batchRecords(systems, 'test');
         }
 
         await operator.handleSystem({
@@ -459,23 +459,23 @@ class TestHelper {
     };
 
     mockLogin = () => {
-        nock(this.basicClient?.getBaseRoute()).
+        nock(this.basicClient?.getBaseRoute() || '').
             post('/users/login').
             reply(200, this.basicUser!, {'X-Version-Id': 'Server Version'});
 
-        nock(this.basicClient?.getBaseRoute()).
+        nock(this.basicClient?.getBaseRoute() || '').
             get('/users/me/teams/members').
             reply(200, [this.basicTeamMember]);
 
-        nock(this.basicClient?.getBaseRoute()).
+        nock(this.basicClient?.getBaseRoute() || '').
             get('/users/me/teams/unread').
             reply(200, [{team_id: this.basicTeam!.id, msg_count: 0, mention_count: 0}]);
 
-        nock(this.basicClient?.getBaseRoute()).
+        nock(this.basicClient?.getBaseRoute() || '').
             get('/users/me/teams').
             reply(200, [this.basicTeam]);
 
-        nock(this.basicClient?.getBaseRoute()).
+        nock(this.basicClient?.getBaseRoute() || '').
             get('/users/me/preferences').
             reply(200, [{user_id: this.basicUser!.id, category: 'tutorial_step', name: this.basicUser!.id, value: '999'}]);
     };
@@ -563,7 +563,7 @@ class TestHelper {
     };
 
     initBasic = async (client = this.createClient()) => {
-        client.setUrl(Config.TestServerUrl || Config.DefaultServerUrl);
+        client.apiClient.baseUrl = Config.TestServerUrl || Config.DefaultServerUrl;
         this.basicClient = client;
 
         this.initMockEntities();

@@ -1,8 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
+
+import type {IntlShape} from 'react-intl';
 
 export function alertFailedToOpenDocument(file: FileInfo, intl: IntlShape) {
     Alert.alert(

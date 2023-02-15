@@ -2,14 +2,13 @@
 // See LICENSE.txt for license information.
 
 import {ProfilePicture} from '@support/ui/component';
-import {timeouts} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class UserProfileScreen {
     testID = {
         userProfileScreen: 'user_profile.screen',
         userProfileAvatarPrefix: 'user_profile_avatar.',
-        userProfileBackdrop: 'user_profile.backdrop',
         systemAdminTag: 'user_profile.system_admin.tag',
         teamAdminTag: 'user_profile.team_admin.tag',
         channelAdminTag: 'user_profile.channel_admin.tag',
@@ -26,7 +25,6 @@ class UserProfileScreen {
     };
 
     userProfileScreen = element(by.id(this.testID.userProfileScreen));
-    userProfileBackdrop = element(by.id(this.testID.userProfileBackdrop));
     userDisplayName = element(by.id(this.testID.userDisplayName));
     username = element(by.id(this.testID.username));
     sendMessageProfileOption = element(by.id(this.testID.sendMessageProfileOption));
@@ -49,8 +47,14 @@ class UserProfileScreen {
     };
 
     close = async () => {
-        await this.userProfileBackdrop.tap({x: 5, y: 10});
+        if (isIos()) {
+            await this.userProfileScreen.swipe('down');
+        } else {
+            await device.pressBack();
+        }
+        await wait(timeouts.ONE_SEC);
         await expect(this.userProfileScreen).not.toBeVisible();
+        await wait(timeouts.ONE_SEC);
     };
 }
 

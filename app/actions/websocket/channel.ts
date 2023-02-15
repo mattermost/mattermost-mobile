@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {addChannelToDefaultCategory} from '@actions/local/category';
 import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
@@ -21,6 +19,8 @@ import {getConfig, getCurrentChannelId} from '@queries/servers/system';
 import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {logDebug} from '@utils/log';
+
+import type {Model} from '@nozbe/watermelondb';
 
 // Received when current user created a channel in a different client
 export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
@@ -57,7 +57,7 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
                 }
             }
         }
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'handleChannelCreatedEvent');
     } catch {
         // do nothing
     }
@@ -109,7 +109,7 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
         if (infoModel.model) {
             models.push(...infoModel.model);
         }
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'handleChannelUpdatedEvent');
     } catch {
         // Do nothing
     }
@@ -165,7 +165,7 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
         if (rolesRequest.roles?.length) {
             models.push(...await operator.handleRole({roles: rolesRequest.roles, prepareRecordsOnly: true}));
         }
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'handleChannelMemberUpdatedEvent');
     } catch {
         // do nothing
     }
@@ -235,7 +235,7 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMe
             models.push(...userModels);
         }
 
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'handleDirectAddedEvent');
     } catch {
         // do nothing
     }
@@ -267,7 +267,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                     const prepareModels = await Promise.all(prepare);
                     const flattenedModels = prepareModels.flat();
                     if (flattenedModels?.length > 0) {
-                        await operator.batchRecords(flattenedModels);
+                        await operator.batchRecords(flattenedModels, 'handleUserAddedToChannelEvent - prepareMyChannelsForTeam');
                     }
                 }
 
@@ -308,7 +308,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         }
 
         if (models.length) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'handleUserAddedToChannelEvent');
         }
 
         await fetchChannelStats(serverUrl, channelId, false);
@@ -356,7 +356,7 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
             }
         }
 
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'handleUserRemovedFromChannelEvent');
     } catch (error) {
         logDebug('cannot handle user removed from channel websocket event', error);
     }

@@ -3,16 +3,18 @@
 
 import assert from 'assert';
 
-import {CallsConfig} from '@calls/types/calls';
 import {License} from '@constants';
 
 import {getICEServersConfigs} from './utils';
+
+import type {CallsConfig} from '@calls/types/calls';
 
 describe('getICEServersConfigs', () => {
     it('backwards compatible case, no ICEServersConfigs present', () => {
         const config: CallsConfig = {
             pluginEnabled: true,
             ICEServers: ['stun:stun.example.com:3478'],
+            ICEServersConfigs: [],
             AllowEnableCalls: true,
             DefaultEnabled: true,
             NeedsTURNCredentials: false,

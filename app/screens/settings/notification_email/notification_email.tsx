@@ -24,6 +24,7 @@ import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -54,7 +55,7 @@ const emailFooterCRTText = {
 };
 
 type NotificationEmailProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentUser: UserModel;
     emailInterval: string;
     enableEmailBatching: boolean;
@@ -95,7 +96,7 @@ const NotificationEmail = ({componentId, currentUser, emailInterval, enableEmail
 
             if (notifyInterval !== initialInterval) {
                 const emailIntervalPreference = {
-                    category: Preferences.CATEGORY_NOTIFICATIONS,
+                    category: Preferences.CATEGORIES.NOTIFICATIONS,
                     name: Preferences.EMAIL_INTERVAL,
                     user_id: currentUser.id,
                     value: notifyInterval,

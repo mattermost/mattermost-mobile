@@ -7,11 +7,16 @@ import MathView from 'react-native-math-view';
 import {SafeAreaView, Edge} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {popTopScreen} from '@screens/navigation';
 import {splitLatexCodeInLines} from '@utils/markdown/latex';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
+    componentId: AvailableScreens;
     content: string;
 }
 
@@ -53,7 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Latex = ({content}: Props) => {
+const Latex = ({componentId, content}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
     const lines = splitLatexCodeInLines(content);
@@ -65,6 +70,10 @@ const Latex = ({content}: Props) => {
     const onRenderErrorMessage = ({error}: {error: Error}) => {
         return <Text style={style.errorText}>{'Render error: ' + error.message}</Text>;
     };
+
+    useAndroidHardwareBackHandler(componentId, () => {
+        popTopScreen(componentId);
+    });
 
     return (
         <SafeAreaView

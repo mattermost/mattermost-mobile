@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import type ClientBase from './base';
+
 export interface ClientCategoriesMix {
     getCategories: (userId: string, teamId: string) => Promise<CategoriesWithOrder>;
     getCategoriesOrder: (userId: string, teamId: string) => Promise<string[]>;
@@ -8,7 +10,7 @@ export interface ClientCategoriesMix {
     updateChannelCategories: (userId: string, teamId: string, categories: CategoryWithChannels[]) => Promise<CategoriesWithOrder>;
 }
 
-const ClientCategories = (superclass: any) => class extends superclass {
+const ClientCategories = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     getCategories = async (userId: string, teamId: string) => {
         return this.doFetch(
             `${this.getCategoriesRoute(userId, teamId)}`,

@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, ViewStyle} from 'react-native';
 import Svg, {
     Rect,
     Path,
@@ -14,6 +13,8 @@ import Svg, {
     LinearGradient,
     Stop,
 } from 'react-native-svg';
+
+import type {StyleProp, ViewStyle} from 'react-native';
 
 type Props = {
     theme: Theme;

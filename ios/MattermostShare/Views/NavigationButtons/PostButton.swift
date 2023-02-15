@@ -15,6 +15,8 @@ struct PostButton: View {
   @Binding var message: String
   @State var pressed: Bool = false
   
+  let submitPublisher = NotificationCenter.default.publisher(for: Notification.Name("submit"))
+  
   func submit() {
     let userInfo: [String: Any] = [
       "serverUrl": shareViewModel.server?.url as Any,
@@ -50,5 +52,8 @@ struct PostButton: View {
     .padding(.leading, 10)
     .padding(.vertical, 5)
     .disabled(disabled || pressed)
+    .onReceive(submitPublisher) {_ in
+      submit()
+    }
   }
 }

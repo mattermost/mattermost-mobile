@@ -26,6 +26,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Edit Channel', () => {
@@ -91,17 +92,20 @@ describe('Channels - Edit Channel', () => {
         await CreateOrEditChannelScreen.openEditChannel();
 
         // * Verify current values of fields
-        await expect(CreateOrEditChannelScreen.displayNameInput).toHaveValue(testChannel.display_name);
-        await expect(CreateOrEditChannelScreen.purposeInput).toHaveValue(`Channel purpose: ${testChannel.display_name.toLowerCase()}`);
-        await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(`Channel header: ${testChannel.display_name.toLowerCase()}`);
+        if (isIos()) {
+            await expect(CreateOrEditChannelScreen.displayNameInput).toHaveValue(testChannel.display_name);
+            await expect(CreateOrEditChannelScreen.purposeInput).toHaveValue(`Channel purpose: ${testChannel.display_name.toLowerCase()}`);
+            await expect(CreateOrEditChannelScreen.headerInput).toHaveValue(`Channel header: ${testChannel.display_name.toLowerCase()}`);
+        } else {
+            await expect(CreateOrEditChannelScreen.displayNameInput).toHaveText(testChannel.display_name);
+            await expect(CreateOrEditChannelScreen.purposeInput).toHaveText(`Channel purpose: ${testChannel.display_name.toLowerCase()}`);
+            await expect(CreateOrEditChannelScreen.headerInput).toHaveText(`Channel header: ${testChannel.display_name.toLowerCase()}`);
+        }
 
         // # Edit channel info and save changes
         await CreateOrEditChannelScreen.displayNameInput.typeText(' name');
         await CreateOrEditChannelScreen.purposeInput.typeText(' purpose');
-        await CreateOrEditChannelScreen.headerInput.tapReturnKey();
-        await CreateOrEditChannelScreen.headerInput.typeText('header1');
-        await CreateOrEditChannelScreen.headerInput.tapReturnKey();
-        await CreateOrEditChannelScreen.headerInput.typeText('header2');
+        await CreateOrEditChannelScreen.headerInput.typeText('\nheader1\nheader2');
         await CreateOrEditChannelScreen.saveButton.tap();
 
         // * Verify on channel info screen and changes have been saved

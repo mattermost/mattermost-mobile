@@ -15,9 +15,11 @@ import SettingContainer from '../setting_container';
 import CustomTheme from './custom_theme';
 import {ThemeTiles} from './theme_tiles';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type DisplayThemeProps = {
     allowedThemeKeys: string[];
-    componentId: string;
+    componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
 }
@@ -38,10 +40,10 @@ const DisplayTheme = ({allowedThemeKeys, componentId, currentTeamId, currentUser
         }
 
         const pref: PreferenceType = {
-            category: Preferences.CATEGORY_THEME,
+            category: Preferences.CATEGORIES.THEME,
             name: currentTeamId,
             user_id: currentUserId,
-            value: JSON.stringify(Preferences.THEMES[allowedTheme]),
+            value: JSON.stringify(Preferences.THEMES[allowedTheme as ThemeKey]),
         };
         savePreference(serverUrl, [pref]);
     }, [allowedThemeKeys, currentTeamId, initialTheme, serverUrl]);

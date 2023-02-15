@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {MessageDescriptor} from '@formatjs/intl/src/types';
 import React from 'react';
 import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+
+import type {MessageDescriptor} from '@formatjs/intl/src/types';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {

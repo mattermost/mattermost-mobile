@@ -71,7 +71,7 @@ describe('Messaging - Emojis and Reactions', () => {
         await expect(PostOptionsScreen.getReactionEmoji('raised_hands')).toBeVisible();
 
         // # Open emoji picker screen and add a new reaction
-        await EmojiPickerScreen.open();
+        await EmojiPickerScreen.open(true);
         await EmojiPickerScreen.searchInput.replaceText('clown_face');
         await element(by.text('🤡')).tap();
 
@@ -128,12 +128,12 @@ describe('Messaging - Emojis and Reactions', () => {
 
     it('MM-T4862_3 - should be able to include emojis in a message and be able to find them in emoji bar and recently used section', async () => {
         // # Open a channel screen and post a message that includes emojis
-        const message = 'The quick brown fox :fox_face: jumps over the lazy dog :dog:';
+        const message = 'brown fox :fox_face: lazy dog :dog:';
         await ChannelScreen.open(channelsCategory, testChannel.name);
         await ChannelScreen.postMessage(message);
 
         // * Verify message is posted with emojis
-        const resolvedMessage = 'The quick brown fox 🦊 jumps over the lazy dog 🐶';
+        const resolvedMessage = 'brown fox 🦊 lazy dog 🐶';
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, resolvedMessage);
         await expect(postListPostItem).toBeVisible();
@@ -150,9 +150,9 @@ describe('Messaging - Emojis and Reactions', () => {
         await EmojiPickerScreen.open();
 
         // * Verify emojis exist in recently used section
-        await expect(element(by.text('Recently Used'))).toExist();
-        await expect(element(by.text('🦊'))).toExist();
-        await expect(element(by.text('🐶'))).toExist();
+        await expect(element(by.text('RECENTLY USED'))).toExist();
+        await expect(element(by.text('🦊')).atIndex(0)).toExist();
+        await expect(element(by.text('🐶')).atIndex(0)).toExist();
 
         // # Go back to channel list screen
         await EmojiPickerScreen.close();

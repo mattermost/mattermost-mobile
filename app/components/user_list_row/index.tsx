@@ -4,6 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
+    InteractionManager,
     Platform,
     Text,
     View,
@@ -11,6 +12,7 @@ import {
 
 import {storeProfileLongPressTutorial} from '@actions/app/global';
 import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -18,23 +20,27 @@ import TutorialHighlight from '@components/tutorial_highlight';
 import TutorialLongPress from '@components/tutorial_highlight/long_press';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {t} from '@i18n';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, isGuest} from '@utils/user';
 
 type Props = {
+    highlight?: boolean;
     id: string;
     isMyUser: boolean;
-    highlight?: boolean;
-    user: UserProfile;
-    teammateNameDisplay: string;
-    testID: string;
-    onPress?: (user: UserProfile) => void;
+    isChannelAdmin: boolean;
+    manageMode: boolean;
     onLongPress: (user: UserProfile) => void;
+    onPress?: (user: UserProfile) => void;
     selectable: boolean;
     disabled?: boolean;
     selected: boolean;
+    showManageMode: boolean;
+    teammateNameDisplay: string;
+    testID: string;
     tutorialWatched?: boolean;
+    user: UserProfile;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
@@ -83,6 +89,15 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             justifyContent: 'center',
         },
+        selectorManage: {
+            alignItems: 'center',
+            flexDirection: 'row',
+            justifyContent: 'center',
+        },
+        manageText: {
+            color: changeOpacity(theme.centerChannelColor, 0.64),
+            ...typography('Body', 100, 'Regular'),
+        },
         tutorial: {
             top: Platform.select({ios: -74, default: -94}),
         },
@@ -99,36 +114,37 @@ function UserListRow({
     id,
     isMyUser,
     highlight,
-    user,
-    teammateNameDisplay,
-    testID,
+    isChannelAdmin,
     onPress,
     onLongPress,
-    tutorialWatched = false,
+    manageMode = false,
     selectable,
     disabled,
     selected,
+    showManageMode = false,
+    teammateNameDisplay,
+    testID,
+    tutorialWatched = false,
+    user,
 }: Props) {
     const theme = useTheme();
-    const intl = useIntl();
     const isTablet = useIsTablet();
     const [showTutorial, setShowTutorial] = useState(false);
     const [itemBounds, setItemBounds] = useState<TutorialItemBounds>({startX: 0, startY: 0, endX: 0, endY: 0});
     const viewRef = useRef<View>(null);
     const style = getStyleFromTheme(theme);
-    const {formatMessage} = intl;
+    const {formatMessage, locale} = useIntl();
     const {username} = user;
 
     const startTutorial = () => {
         viewRef.current?.measureInWindow((x, y, w, h) => {
             const bounds: TutorialItemBounds = {
-                startX: x - 20,
+                startX: x,
                 startY: y,
                 endX: x + w,
                 endY: y + h,
             };
             if (viewRef.current) {
-                setShowTutorial(true);
                 setItemBounds(bounds);
             }
         });
@@ -140,20 +156,56 @@ function UserListRow({
     }, []);
 
     useEffect(() => {
-        let time: NodeJS.Timeout;
         if (highlight && !tutorialWatched) {
-            time = setTimeout(startTutorial, 650);
+            if (isTablet) {
+                setShowTutorial(true);
+                return;
+            }
+            InteractionManager.runAfterInteractions(() => {
+                setShowTutorial(true);
+            });
         }
-        return () => clearTimeout(time);
-    }, [highlight, tutorialWatched]);
+    }, [highlight, tutorialWatched, isTablet]);
 
     const handlePress = useCallback(() => {
+        if (isMyUser && manageMode) {
+            return;
+        }
         onPress?.(user);
-    }, [onPress, user]);
+    }, [onPress, isMyUser, manageMode, user]);
 
     const handleLongPress = useCallback(() => {
         onLongPress?.(user);
     }, [onLongPress, user]);
+
+    const manageModeIcon = useMemo(() => {
+        if (!showManageMode || isMyUser) {
+            return null;
+        }
+
+        const color = changeOpacity(theme.centerChannelColor, 0.64);
+        const i18nId = isChannelAdmin ? t('mobile.manage_members.admin') : t('mobile.manage_members.member');
+        const defaultMessage = isChannelAdmin ? 'Admin' : 'Member';
+
+        return (
+            <View style={style.selectorManage}>
+                <FormattedText
+                    id={i18nId}
+                    style={style.manageText}
+                    defaultMessage={defaultMessage}
+                />
+                <CompassIcon
+                    name={'chevron-down'}
+                    size={18}
+                    color={color}
+                />
+            </View>
+        );
+    }, [isChannelAdmin, showManageMode, theme]);
+
+    const onLayout = useCallback(() => {
+        startTutorial();
+    }, []);
 
     const icon = useMemo(() => {
         if (!selectable) {
@@ -181,7 +233,7 @@ function UserListRow({
         }, {username});
     }
 
-    const teammateDisplay = displayUsername(user, intl.locale, teammateNameDisplay);
+    const teammateDisplay = displayUsername(user, locale, teammateNameDisplay);
     const showTeammateDisplay = teammateDisplay !== username;
 
     const userItemTestID = `${testID}.${id}`;
@@ -249,16 +301,17 @@ function UserListRow({
                         </View>
                         }
                     </View>
-                    {icon}
+                    {manageMode ? manageModeIcon : icon}
                 </View>
             </TouchableWithFeedback>
             {showTutorial &&
             <TutorialHighlight
                 itemBounds={itemBounds}
                 onDismiss={handleDismissTutorial}
+                onLayout={onLayout}
             >
                 <TutorialLongPress
-                    message={intl.formatMessage({id: 'user.tutorial.long_press', defaultMessage: "Long-press on an item to view a user's profile"})}
+                    message={formatMessage({id: 'user.tutorial.long_press', defaultMessage: "Long-press on an item to view a user's profile"})}
                     style={isTablet ? style.tutorialTablet : style.tutorial}
                 />
             </TutorialHighlight>

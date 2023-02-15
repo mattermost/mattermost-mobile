@@ -29,7 +29,7 @@ import {
     SettingsScreen,
     ThemeDisplaySettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Smoke Test - Account', () => {
@@ -59,6 +59,7 @@ describe('Smoke Test - Account', () => {
     it('MM-T5114_1 - should be able to set user presence and custom status', async () => {
         // # Tap on user presence option and tap on online user status option
         await AccountScreen.userPresenceOption.tap();
+        await wait(timeouts.ONE_SEC);
         await AccountScreen.onlineUserStatusOption.tap();
 
         // * Verify on account screen and verify user presence icon and label are for online user status
@@ -71,9 +72,11 @@ describe('Smoke Test - Account', () => {
         const customStatusText = `Status ${getRandomId()}`;
         const customStatusDuration = 'today';
         await CustomStatusScreen.open();
-        await CustomStatusScreen.openEmojiPicker('default');
+        await wait(timeouts.ONE_SEC);
+        await CustomStatusScreen.openEmojiPicker('default', true);
         await EmojiPickerScreen.searchInput.replaceText(customStatusEmojiName);
         await element(by.text('🤡')).tap();
+        await wait(timeouts.ONE_SEC);
         await CustomStatusScreen.statusInput.replaceText(customStatusText);
         await CustomStatusScreen.doneButton.tap();
 
@@ -137,7 +140,11 @@ describe('Smoke Test - Account', () => {
         await MentionNotificationSettingsScreen.open();
 
         // * Verify keywords are saved
-        await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveValue(keywords.toLowerCase());
+        if (isIos()) {
+            await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveValue(keywords.toLowerCase());
+        } else {
+            await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveText(keywords.toLowerCase());
+        }
 
         // # Go back to notification settings screen, open push notification settings screen, tap on mentions only option, tap on mobile away option, tap on back button, and go back to notification settings screen
         await MentionNotificationSettingsScreen.back();

@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
 import {Alert, AlertButton} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
@@ -14,6 +13,7 @@ import {tryOpenURL} from '@utils/url';
 
 import type ServersModel from '@typings/database/models/app/servers';
 import type {DeepLinkWithData} from '@typings/launch';
+import type {IntlShape} from 'react-intl';
 
 export function isSupportedServer(currentVersion: string) {
     return isMinimumServerVersion(currentVersion, SupportedServer.MAJOR_VERSION, SupportedServer.MIN_VERSION, SupportedServer.PATCH_VERSION);
@@ -60,11 +60,11 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
     const isLicensed = license.IsLicensed === 'true';
     const samlEnabled = config.EnableSaml === 'true' && isLicensed && license.SAML === 'true';
     const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-    const isMinServerVersionForFreeOAuth = isMinimumServerVersion(config.Version, 7, 6);
+    const isMinServerVersionForCloudOAuthChanges = isMinimumServerVersion(config.Version, 7, 6);
     let googleEnabled = false;
     let o365Enabled = false;
     let openIdEnabled = false;
-    if (isMinServerVersionForFreeOAuth) {
+    if (isMinServerVersionForCloudOAuthChanges) {
         googleEnabled = config.EnableSignUpWithGoogle === 'true';
         o365Enabled = config.EnableSignUpWithOffice365 === 'true';
         openIdEnabled = config.EnableSignUpWithOpenId === 'true';

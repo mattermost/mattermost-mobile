@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Client} from '@client/rest';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getTeamById} from '@queries/servers/team';
 
 import {forceLogoutIfNecessary} from './session';
+
+import type {Client} from '@client/rest';
 
 export const fetchGroup = async (serverUrl: string, id: string, fetchOnly = false) => {
     try {
@@ -82,7 +83,7 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
         ]);
 
         if (!fetchOnly) {
-            await operator.batchRecords([...groups, ...groupChannels]);
+            await operator.batchRecords([...groups, ...groupChannels], 'fetchGroupsForChannel');
         }
 
         return {groups, groupChannels};
@@ -109,7 +110,7 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetc
         ]);
 
         if (!fetchOnly) {
-            await operator.batchRecords([...groups, ...groupTeams]);
+            await operator.batchRecords([...groups, ...groupTeams], 'fetchGroupsForTeam');
         }
 
         return {groups, groupTeams};
@@ -135,7 +136,7 @@ export const fetchGroupsForMember = async (serverUrl: string, userId: string, fe
         ]);
 
         if (!fetchOnly) {
-            await operator.batchRecords([...groups, ...groupMemberships]);
+            await operator.batchRecords([...groups, ...groupMemberships], 'fetchGroupsForMember');
         }
 
         return {groups, groupMemberships};

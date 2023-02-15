@@ -101,7 +101,7 @@ lane :set_app_version do
     )
 
     if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
-      msg = ENV['INCREMENT_VERSION_NUMBER_MESSAGE'] || 'Bump app version number to '
+      msg = ENV['INCREMENT_VERSION_NUMBER_MESSAGE'] || 'Bump app version number to'
       commit_message = "#{msg} #{version_number.to_s}"
       build_folder_path = Dir[File.expand_path('..')].first
       repo_path = (sh "git -C #{build_folder_path} rev-parse --show-toplevel").strip
@@ -132,7 +132,7 @@ lane :set_app_build_number do
 
 
     if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
-      msg = ENV['INCREMENT_BUILD_NUMBER_MESSAGE'] || 'Bump app build number to '
+      msg = ENV['INCREMENT_BUILD_NUMBER_MESSAGE'] || 'Bump app build number to'
       commit_message = "#{msg} #{build_number.to_s}"
       build_folder_path = Dir[File.expand_path('..')].first
       repo_path = (sh "git -C #{build_folder_path} rev-parse --show-toplevel").strip
@@ -144,6 +144,12 @@ lane :set_app_build_number do
       end
     end
   end
+end
+
+desc 'Increments version and build number for both Android and iOS'
+lane :set_app_version_build do
+  set_app_version
+  set_app_build_number
 end
 
 desc 'Configure the app before building'
@@ -667,6 +673,7 @@ platform :android do
     package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
     android_change_package_identifier(newIdentifier: package_id, manifest: './android/app/src/main/AndroidManifest.xml')
     android_update_application_id(app_folder_name: 'android/app', application_id: package_id)
+    android_update_namespace(app_folder_name: 'android/app', namespace: package_id)
 
     app_scheme = ENV['APP_SCHEME'] || 'mattermost'
     find_replace_string(
@@ -693,17 +700,19 @@ platform :android do
 
       sh "mv .#{beta_dir}* .#{release_dir}"
 
-      find_replace_string(
-          path_to_file: './android/app/BUCK',
-          old_string: 'package com.mattermost.rnbeta;',
-          new_string: "package #{package_id};"
-      )
-
       Dir.glob(".#{release_dir}*.java") do |item|
         find_replace_string(
             path_to_file: item[1..-1],
             old_string: 'package com.mattermost.rnbeta;',
             new_string: "package #{package_id};"
+        )
+      end
+
+      Dir.glob(".#{release_dir}*.kt") do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'package com.mattermost.rnbeta',
+            new_string: "package #{package_id}"
         )
       end
 
@@ -722,14 +731,14 @@ platform :android do
             new_string: "import #{package_id}.*;"
         )
       end
-    end
 
-    Dir.glob('../android/app/src/main/java/com/mattermost/newarchitecture/*.java') do |item|
-      find_replace_string(
-          path_to_file: item[1..-1],
-          old_string: 'import com.mattermost.rnbeta.BuildConfig;',
-          new_string: "import #{package_id}.BuildConfig;"
-      )
+      Dir.glob('../android/app/src/main/java/com/mattermost/helpers/*.kt') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.*',
+            new_string: "import #{package_id}.*"
+        )
+      end
     end
   end
 

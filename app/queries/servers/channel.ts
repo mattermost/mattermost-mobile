@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {of as of$, Observable} from 'rxjs';
 import {map as map$, switchMap, distinctUntilChanged} from 'rxjs/operators';
@@ -187,7 +189,7 @@ export const queryAllMyChannel = (database: Database) => {
 };
 
 export const queryAllMyChannelsForTeam = (database: Database, teamId: string) => {
-    return database.get<ChannelModel>(MY_CHANNEL).query(
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(CHANNEL, Q.where('team_id', Q.oneOf([teamId, '']))),
     );
 };
@@ -317,7 +319,7 @@ export async function deleteChannelMembership(operator: ServerDataOperator, user
             models.push(membership.prepareDestroyPermanently());
         }
         if (models.length && !prepareRecordsOnly) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'deleteChannelMembership');
         }
         return {models};
     } catch (error) {
@@ -374,7 +376,7 @@ export const queryTeamDefaultChannel = (database: Database, teamId: string) => {
 };
 
 export const queryMyChannelsByTeam = (database: Database, teamId: string, includeDeleted = false) => {
-    const conditions: Q.Condition[] = [Q.where('team_id', Q.eq(teamId))];
+    const conditions: Q.Where[] = [Q.where('team_id', Q.eq(teamId))];
     if (!includeDeleted) {
         conditions.push(Q.where('delete_at', Q.eq(0)));
     }
@@ -453,7 +455,7 @@ export const queryEmptyDirectAndGroupChannels = (database: Database) => {
 };
 
 export function observeMyChannelMentionCount(database: Database, teamId?: string, columns = ['mentions_count', 'is_unread']): Observable<number> {
-    const conditions: Q.Condition[] = [
+    const conditions: Q.Where[] = [
         Q.where('delete_at', Q.eq(0)),
     ];
 
@@ -616,7 +618,7 @@ export const queryChannelsForAutocomplete = (database: Database, matchTerm: stri
             Q.experimentalNestedJoin(CHANNEL_MEMBERSHIP, USER),
         );
     }
-    const orConditions: Q.Condition[] = [
+    const orConditions: Q.Where[] = [
         Q.where('display_name', Q.like(matchTerm)),
         Q.where('name', Q.like(likeTerm)),
     ];
@@ -644,7 +646,7 @@ export const queryChannelsForAutocomplete = (database: Database, matchTerm: stri
         teamsToSearch.push('');
     }
 
-    const andConditions: Q.Condition[] = [
+    const andConditions: Q.Where[] = [
         Q.where('team_id', Q.oneOf(teamsToSearch)),
     ];
     if (!isSearch) {
@@ -663,4 +665,14 @@ export const queryChannelsForAutocomplete = (database: Database, matchTerm: stri
     );
 
     return database.get<ChannelModel>(CHANNEL).query(...clauses);
+};
+
+export const queryChannelMembers = (database: Database, channelId: string) => {
+    return database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(
+        Q.where('channel_id', channelId),
+    );
+};
+
+export const observeChannelMembers = (database: Database, channelId: string) => {
+    return queryChannelMembers(database, channelId).observe();
 };

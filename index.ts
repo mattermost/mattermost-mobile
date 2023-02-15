@@ -3,10 +3,10 @@
 
 import TurboLogger from '@mattermost/react-native-turbo-log';
 import {LogBox, Platform} from 'react-native';
+import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
 import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
-import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
 
 import {initialize, start} from './app/init/app';
 import setFontFamily from './app/utils/font_family';
@@ -26,9 +26,6 @@ TurboLogger.configure({
 
 if (__DEV__) {
     LogBox.ignoreLogs([
-        '`-[RCTRootView cancelTouches]`',
-        'scaleY',
-        "[react-native-gesture-handler] Seems like you're using an old API with gesture components, check out new Gestures system!",
         'new NativeEventEmitter',
     ]);
 

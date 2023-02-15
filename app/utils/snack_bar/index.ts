@@ -4,10 +4,12 @@ import {Screens} from '@constants';
 import {SNACK_BAR_TYPE} from '@constants/snack_bar';
 import {showOverlay} from '@screens/navigation';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type ShowSnackBarArgs = {
     barType: keyof typeof SNACK_BAR_TYPE;
     onAction?: () => void;
-    sourceScreen?: typeof Screens[keyof typeof Screens];
+    sourceScreen?: AvailableScreens;
 };
 
 export const showSnackBar = (passProps: ShowSnackBarArgs) => {
@@ -26,5 +28,12 @@ export const showFavoriteChannelSnackbar = (favorited: boolean, onAction: () => 
     return showSnackBar({
         onAction,
         barType: favorited ? SNACK_BAR_TYPE.FAVORITE_CHANNEL : SNACK_BAR_TYPE.UNFAVORITE_CHANNEL,
+    });
+};
+
+export const showRemoveChannelUserSnackbar = () => {
+    return showSnackBar({
+        barType: SNACK_BAR_TYPE.REMOVE_CHANNEL_USER,
+        sourceScreen: Screens.MANAGE_CHANNEL_MEMBERS,
     });
 };

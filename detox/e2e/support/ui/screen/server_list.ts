@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ServerListScreen {
     testID = {
         serverListScreen: 'server_list.screen',
-        serverListBackdrop: 'server_list.backdrop',
         serverListTitle: 'server_list.title',
         addServerButton: 'server_list.add_a_server.button',
         tutorialHighlight: 'tutorial_highlight',
@@ -16,9 +15,8 @@ class ServerListScreen {
     };
 
     serverListScreen = element(by.id(this.testID.serverListScreen));
-    serverListBackdrop = element(by.id(this.testID.serverListBackdrop));
     serverListTitle = element(by.id(this.testID.serverListTitle));
-    addServerButton = element(by.id(this.testID.addServerButton));
+    addServerButton = element(by.text('Add a server'));
     tutorialHighlight = element(by.id(this.testID.tutorialHighlight));
     tutorialSwipeLeft = element(by.id(this.testID.tutorialSwipeLeft));
 
@@ -55,7 +53,9 @@ class ServerListScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        }
 
         return this.serverListScreen;
     };
@@ -68,14 +68,26 @@ class ServerListScreen {
     };
 
     close = async () => {
-        await this.serverListBackdrop.tap({x: 5, y: 10});
+        if (isIos()) {
+            await this.serverListScreen.swipe('down');
+        } else {
+            await device.pressBack();
+        }
+        await wait(timeouts.ONE_SEC);
         await expect(this.serverListScreen).not.toBeVisible();
+        await wait(timeouts.ONE_SEC);
     };
 
     closeTutorial = async () => {
-        await expect(this.tutorialHighlight).toExist();
-        await this.tutorialSwipeLeft.tap();
-        await expect(this.tutorialHighlight).not.toExist();
+        if (isIos()) {
+            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
+            await this.tutorialSwipeLeft.tap();
+            await expect(this.tutorialHighlight).not.toExist();
+        } else {
+            await wait(timeouts.ONE_SEC);
+            await device.pressBack();
+            await wait(timeouts.ONE_SEC);
+        }
     };
 }
 

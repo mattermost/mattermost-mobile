@@ -5,6 +5,7 @@ import assert from 'assert';
 
 import {act, renderHook} from '@testing-library/react-hooks';
 
+import {needsRecordingAlert} from '@calls/alerts';
 import {
     newCurrentCall,
     setCallsState,
@@ -52,6 +53,8 @@ import {
     GlobalCallsState,
     RecordingState,
 } from '../types/calls';
+
+jest.mock('@calls/alerts');
 
 const call1: Call = {
     participants: {
@@ -149,7 +152,6 @@ describe('useCallsState', () => {
 
         const expectedCallsState = {
             ...initialCallsState,
-            serverUrl: 'server1',
             myUserId: 'myId',
             calls: {'channel-1': testNewCall1, 'channel-2': call2, 'channel-3': call3},
             enabled: {'channel-2': true},
@@ -755,7 +757,6 @@ describe('useCallsState', () => {
     it('voiceOn and Off', () => {
         const initialCallsState = {
             ...DefaultCallsState,
-            serverUrl: 'server1',
             myUserId: 'myUserId',
             calls: {'channel-1': call1, 'channel-2': call2},
         };
@@ -955,6 +956,8 @@ describe('useCallsState', () => {
         act(() => setRecordingState('server1', 'channel-2', recState));
         assert.deepEqual((result.current[0] as CallsState).calls['channel-2'], {...call2, recState});
         assert.deepEqual((result.current[1] as CurrentCall | null), expectedCurrentCallState);
+        act(() => setRecordingState('server1', 'channel-1', {...recState, start_at: recState.start_at + 1}));
+        expect(needsRecordingAlert).toBeCalled();
     });
 
     it('setHost', () => {
@@ -1006,5 +1009,7 @@ describe('useCallsState', () => {
         act(() => setHost('server1', 'channel-2', 'user-1923'));
         assert.deepEqual((result.current[0] as CallsState).calls['channel-2'], {...call2, hostId: 'user-1923'});
         assert.deepEqual((result.current[1] as CurrentCall | null), expectedCurrentCallState);
+        act(() => setHost('server1', 'channel-1', 'myUserId'));
+        expect(needsRecordingAlert).toBeCalled();
     });
 });

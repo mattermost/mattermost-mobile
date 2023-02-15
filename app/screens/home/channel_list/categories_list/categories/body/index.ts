@@ -9,11 +9,10 @@ import {map, switchMap, combineLatestWith} from 'rxjs/operators';
 
 import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
-import {MyChannelModel} from '@database/models/server';
-import {getPreferenceAsBool} from '@helpers/api/preference';
+import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
 import {observeChannelsByCategoryChannelSortOrder, observeChannelsByLastPostAtInCategory} from '@queries/servers/categories';
 import {observeNotifyPropsByChannels, queryChannelsByNames, queryEmptyDirectAndGroupChannels} from '@queries/servers/channel';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeCurrentUserId, observeLastUnreadChannelId} from '@queries/servers/system';
 import {getDirectChannelName} from '@utils/channel';
 
@@ -22,6 +21,7 @@ import CategoryBody from './category_body';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type ChannelData = Pick<ChannelModel, 'id' | 'displayName'> & {
@@ -96,7 +96,7 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
 
     const currentChannelId = observeCurrentChannelId(database);
 
-    const hiddenDmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DIRECT_CHANNEL_SHOW, undefined, 'false').
+    const hiddenDmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.DIRECT_CHANNEL_SHOW, undefined, 'false').
         observeWithColumns(['value']).pipe(
             switchMap((prefs: PreferenceModel[]) => {
                 const names = prefs.map(dmMap);
@@ -112,7 +112,7 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         switchMap(mapChannelIds),
     );
 
-    const hiddenChannelIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_GROUP_CHANNEL_SHOW, undefined, 'false').
+    const hiddenChannelIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.GROUP_CHANNEL_SHOW, undefined, 'false').
         observeWithColumns(['value']).pipe(
             switchMap(mapPrefName),
             combineLatestWith(hiddenDmIds, emptyDmIds),
@@ -129,7 +129,7 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
 
     let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
     if (category.type === DMS_CATEGORY) {
-        limit = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).
+        limit = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_LIMIT_DMS).
             observeWithColumns(['value']).pipe(
                 switchMap((val) => {
                     return val[0] ? of$(parseInt(val[0].value, 10)) : of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
@@ -137,10 +137,10 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
             );
     }
 
-    const unreadsOnTop = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
+    const unreadsOnTop = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
         observeWithColumns(['value']).
         pipe(
-            switchMap((prefs: PreferenceModel[]) => of$(getPreferenceAsBool(prefs, Preferences.CATEGORY_SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS, false))),
+            switchMap((prefs: PreferenceModel[]) => of$(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
         );
 
     const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);

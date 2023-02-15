@@ -5,6 +5,8 @@ import {buildQueryString} from '@utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
+import type ClientBase from './base';
+
 export interface ClientPostsMix {
     createPost: (post: Post) => Promise<Post>;
     updatePost: (post: Post) => Promise<Post>;
@@ -33,12 +35,12 @@ export interface ClientPostsMix {
     unacknowledgePost: (postId: string, userId: string) => Promise<any>;
 }
 
-const ClientPosts = (superclass: any) => class extends superclass {
+const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     createPost = async (post: Post) => {
-        this.analytics.trackAPI('api_posts_create', {channel_id: post.channel_id});
+        this.analytics?.trackAPI('api_posts_create', {channel_id: post.channel_id});
 
         if (post.root_id != null && post.root_id !== '') {
-            this.analytics.trackAPI('api_posts_replied', {channel_id: post.channel_id});
+            this.analytics?.trackAPI('api_posts_replied', {channel_id: post.channel_id});
         }
 
         return this.doFetch(
@@ -48,7 +50,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     updatePost = async (post: Post) => {
-        this.analytics.trackAPI('api_posts_update', {channel_id: post.channel_id});
+        this.analytics?.trackAPI('api_posts_update', {channel_id: post.channel_id});
 
         return this.doFetch(
             `${this.getPostRoute(post.id)}`,
@@ -64,7 +66,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     patchPost = async (postPatch: Partial<Post> & {id: string}) => {
-        this.analytics.trackAPI('api_posts_patch', {channel_id: postPatch.channel_id});
+        this.analytics?.trackAPI('api_posts_patch', {channel_id: postPatch.channel_id});
 
         return this.doFetch(
             `${this.getPostRoute(postPatch.id)}/patch`,
@@ -73,7 +75,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     deletePost = async (postId: string) => {
-        this.analytics.trackAPI('api_posts_delete');
+        this.analytics?.trackAPI('api_posts_delete');
 
         return this.doFetch(
             `${this.getPostRoute(postId)}`,
@@ -81,7 +83,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
         );
     };
 
-    getPostThread = (postId: string, options: FetchPaginatedThreadOptions): Promise<PostResponse> => {
+    getPostThread = (postId: string, options: FetchPaginatedThreadOptions) => {
         const {
             fetchThreads = true,
             collapsedThreads = false,
@@ -112,7 +114,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     getPostsBefore = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT, collapsedThreads = false, collapsedThreadsExtended = false) => {
-        this.analytics.trackAPI('api_posts_get_before', {channel_id: channelId});
+        this.analytics?.trackAPI('api_posts_get_before', {channel_id: channelId});
 
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/posts${buildQueryString({before: postId, page, per_page: perPage, collapsedThreads, collapsedThreadsExtended})}`,
@@ -121,7 +123,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     getPostsAfter = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT, collapsedThreads = false, collapsedThreadsExtended = false) => {
-        this.analytics.trackAPI('api_posts_get_after', {channel_id: channelId});
+        this.analytics?.trackAPI('api_posts_get_after', {channel_id: channelId});
 
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/posts${buildQueryString({after: postId, page, per_page: perPage, collapsedThreads, collapsedThreadsExtended})}`,
@@ -137,7 +139,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     getSavedPosts = async (userId: string, channelId = '', teamId = '', page = 0, perPage = PER_PAGE_DEFAULT) => {
-        this.analytics.trackAPI('api_posts_get_flagged', {team_id: teamId});
+        this.analytics?.trackAPI('api_posts_get_flagged', {team_id: teamId});
 
         return this.doFetch(
             `${this.getUserRoute(userId)}/posts/flagged${buildQueryString({channel_id: channelId, team_id: teamId, page, per_page: perPage})}`,
@@ -146,7 +148,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     getPinnedPosts = async (channelId: string) => {
-        this.analytics.trackAPI('api_posts_get_pinned', {channel_id: channelId});
+        this.analytics?.trackAPI('api_posts_get_pinned', {channel_id: channelId});
         return this.doFetch(
             `${this.getChannelRoute(channelId)}/pinned`,
             {method: 'get'},
@@ -154,7 +156,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     markPostAsUnread = async (userId: string, postId: string) => {
-        this.analytics.trackAPI('api_post_set_unread_post');
+        this.analytics?.trackAPI('api_post_set_unread_post');
 
         // collapsed_threads_supported is not based on user preferences but to know if "CLIENT" supports CRT
         const body = JSON.stringify({collapsed_threads_supported: true});
@@ -166,7 +168,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     pinPost = async (postId: string) => {
-        this.analytics.trackAPI('api_posts_pin');
+        this.analytics?.trackAPI('api_posts_pin');
 
         return this.doFetch(
             `${this.getPostRoute(postId)}/pin`,
@@ -175,7 +177,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     unpinPost = async (postId: string) => {
-        this.analytics.trackAPI('api_posts_unpin');
+        this.analytics?.trackAPI('api_posts_unpin');
 
         return this.doFetch(
             `${this.getPostRoute(postId)}/unpin`,
@@ -184,7 +186,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     addReaction = async (userId: string, postId: string, emojiName: string) => {
-        this.analytics.trackAPI('api_reactions_save', {post_id: postId});
+        this.analytics?.trackAPI('api_reactions_save', {post_id: postId});
 
         return this.doFetch(
             `${this.getReactionsRoute()}`,
@@ -193,7 +195,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     removeReaction = async (userId: string, postId: string, emojiName: string) => {
-        this.analytics.trackAPI('api_reactions_delete', {post_id: postId});
+        this.analytics?.trackAPI('api_reactions_delete', {post_id: postId});
 
         return this.doFetch(
             `${this.getUserRoute(userId)}/posts/${postId}/reactions/${emojiName}`,
@@ -209,7 +211,7 @@ const ClientPosts = (superclass: any) => class extends superclass {
     };
 
     searchPostsWithParams = async (teamId: string, params: PostSearchParams) => {
-        this.analytics.trackAPI('api_posts_search');
+        this.analytics?.trackAPI('api_posts_search');
         const endpoint = teamId ? `${this.getTeamRoute(teamId)}/posts/search` : `${this.getPostsRoute()}/search`;
         return this.doFetch(endpoint, {method: 'post', body: params});
     };
@@ -224,9 +226,9 @@ const ClientPosts = (superclass: any) => class extends superclass {
 
     doPostActionWithCookie = async (postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
         if (selectedOption) {
-            this.analytics.trackAPI('api_interactive_messages_menu_selected');
+            this.analytics?.trackAPI('api_interactive_messages_menu_selected');
         } else {
-            this.analytics.trackAPI('api_interactive_messages_button_clicked');
+            this.analytics?.trackAPI('api_interactive_messages_button_clicked');
         }
 
         const msg: any = {

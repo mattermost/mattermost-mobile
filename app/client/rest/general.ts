@@ -3,7 +3,15 @@
 
 import {buildQueryString} from '@utils/helpers';
 
+import {PER_PAGE_DEFAULT} from './constants';
 import ClientError from './error';
+
+import type ClientBase from './base';
+
+type PoliciesResponse<T> = {
+    policies: T[];
+    total_count: number;
+}
 
 export interface ClientGeneralMix {
     getOpenGraphMetadata: (url: string) => Promise<any>;
@@ -12,12 +20,14 @@ export interface ClientGeneralMix {
     getClientConfigOld: () => Promise<ClientConfig>;
     getClientLicenseOld: () => Promise<ClientLicense>;
     getTimezones: () => Promise<string[]>;
-    getDataRetentionPolicy: () => Promise<any>;
+    getGlobalDataRetentionPolicy: () => Promise<GlobalDataRetentionPolicy>;
+    getTeamDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<PoliciesResponse<TeamDataRetentionPolicy>>;
+    getChannelDataRetentionPolicies: (userId: string, page?: number, perPage?: number) => Promise<PoliciesResponse<ChannelDataRetentionPolicy>>;
     getRolesByNames: (rolesNames: string[]) => Promise<Role[]>;
     getRedirectLocation: (urlParam: string) => Promise<Record<string, string>>;
 }
 
-const ClientGeneral = (superclass: any) => class extends superclass {
+const ClientGeneral = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     getOpenGraphMetadata = async (url: string) => {
         return this.doFetch(
             `${this.urlVersion}/opengraph`,
@@ -41,7 +51,7 @@ const ClientGeneral = (superclass: any) => class extends superclass {
         const url = `${this.urlVersion}/logs`;
 
         if (!this.enableLogging) {
-            throw new ClientError(this.client.baseUrl, {
+            throw new ClientError(this.apiClient.baseUrl, {
                 message: 'Logging disabled.',
                 url,
             });
@@ -74,9 +84,23 @@ const ClientGeneral = (superclass: any) => class extends superclass {
         );
     };
 
-    getDataRetentionPolicy = () => {
+    getGlobalDataRetentionPolicy = () => {
         return this.doFetch(
-            `${this.getDataRetentionRoute()}/policy`,
+            `${this.getGlobalDataRetentionRoute()}/policy`,
+            {method: 'get'},
+        );
+    };
+
+    getTeamDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+        return this.doFetch(
+            `${this.getGranularDataRetentionRoute(userId)}/team_policies${buildQueryString({page, per_page: perPage})}`,
+            {method: 'get'},
+        );
+    };
+
+    getChannelDataRetentionPolicies = (userId: string, page = 0, perPage = PER_PAGE_DEFAULT) => {
+        return this.doFetch(
+            `${this.getGranularDataRetentionRoute(userId)}/channel_policies${buildQueryString({page, per_page: perPage})}`,
             {method: 'get'},
         );
     };

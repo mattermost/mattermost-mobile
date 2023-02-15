@@ -1,11 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Alert} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
+import {Navigation} from 'react-native-navigation';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
 import {fetchUsersByIds} from '@actions/remote/user';
-import {needsRecordingWillBePostedAlert} from '@calls/alerts';
+import {leaveAndJoinWithAlert, needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {
     getCallsConfig,
     getCallsState,
@@ -18,16 +20,20 @@ import {
     setCallForChannel,
     newCurrentCall,
     myselfLeftCall,
+    getCurrentCall,
+    getChannelsWithCalls,
 } from '@calls/state';
-import {General, Preferences} from '@constants';
+import {General, Preferences, Screens} from '@constants';
 import Calls from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
+import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
+import NavigationStore from '@store/navigation_store';
 import {logWarning} from '@utils/log';
 import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/user';
 
@@ -228,7 +234,13 @@ export const enableChannelCalls = async (serverUrl: string, channelId: string, e
     return {};
 };
 
-export const joinCall = async (serverUrl: string, channelId: string, userId: string, hasMicPermission: boolean): Promise<{ error?: string | Error; data?: string }> => {
+export const joinCall = async (
+    serverUrl: string,
+    channelId: string,
+    userId: string,
+    hasMicPermission: boolean,
+    title?: string,
+): Promise<{ error?: string | Error; data?: string }> => {
     // Edge case: calls was disabled when app loaded, and then enabled, but app hasn't
     // reconnected its websocket since then (i.e., hasn't called batchLoadCalls yet)
     const {data: enabled} = await checkIsCallsPluginEnabled(serverUrl);
@@ -246,7 +258,7 @@ export const joinCall = async (serverUrl: string, channelId: string, userId: str
     try {
         connection = await newConnection(serverUrl, channelId, () => {
             myselfLeftCall();
-        }, setScreenShareURL, hasMicPermission);
+        }, setScreenShareURL, hasMicPermission, title);
     } catch (error: unknown) {
         await forceLogoutIfNecessary(serverUrl, error as ClientError);
         return {error: error as Error};
@@ -268,6 +280,16 @@ export const leaveCall = () => {
         connection = null;
     }
     setSpeakerphoneOn(false);
+};
+
+export const leaveCallPopCallScreen = async () => {
+    leaveCall();
+
+    // Need to pop the call screen, if it's somewhere in the stack.
+    if (NavigationStore.getScreensInStack().includes(Screens.CALL)) {
+        await dismissAllModalsAndPopToScreen(Screens.CALL, 'Call');
+        Navigation.pop(Screens.CALL).catch(() => null);
+    }
 };
 
 export const muteMyself = () => {
@@ -307,7 +329,7 @@ export const sendReaction = (emoji: CallReactionEmoji) => {
 };
 
 export const setSpeakerphoneOn = (speakerphoneOn: boolean) => {
-    InCallManager.setSpeakerphoneOn(speakerphoneOn);
+    InCallManager.setForceSpeakerphoneOn(speakerphoneOn);
     setSpeakerPhone(speakerphoneOn);
 };
 
@@ -363,7 +385,7 @@ export const getEndCallMessage = async (serverUrl: string, channelId: string, cu
         const otherUser = await getUserById(database, otherID);
         const license = await getLicense(database);
         const config = await getConfig(database);
-        const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
+        const preferences = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
         const displaySetting = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         msg = intl.formatMessage({
             id: 'mobile.calls_end_msg_dm',
@@ -389,6 +411,8 @@ export const endCall = async (serverUrl: string, channelId: string) => {
 };
 
 export const startCallRecording = async (serverUrl: string, callId: string) => {
+    needsRecordingErrorAlert();
+
     const client = NetworkManager.getClient(serverUrl);
 
     let data: ApiResp | RecordingState;
@@ -405,6 +429,7 @@ export const startCallRecording = async (serverUrl: string, callId: string) => {
 
 export const stopCallRecording = async (serverUrl: string, callId: string) => {
     needsRecordingWillBePostedAlert();
+    needsRecordingErrorAlert();
 
     const client = NetworkManager.getClient(serverUrl);
 
@@ -418,4 +443,157 @@ export const stopCallRecording = async (serverUrl: string, callId: string) => {
     }
 
     return data;
+};
+
+// handleCallsSlashCommand will return true if the slash command was handled
+export const handleCallsSlashCommand = async (value: string, serverUrl: string, channelId: string, currentUserId: string, intl: IntlShape):
+    Promise<{ handled?: boolean; error?: string }> => {
+    const tokens = value.split(' ');
+    if (tokens.length < 2 || tokens[0] !== '/call') {
+        return {handled: false};
+    }
+
+    switch (tokens[1]) {
+        case 'end':
+            await handleEndCall(serverUrl, channelId, currentUserId, intl);
+            return {handled: true};
+        case 'start': {
+            if (getChannelsWithCalls(serverUrl)[channelId]) {
+                return {
+                    error: intl.formatMessage({
+                        id: 'mobile.calls_start_call_exists',
+                        defaultMessage: 'A call is already ongoing in the channel.',
+                    }),
+                };
+            }
+            const title = tokens.length > 2 ? tokens.slice(2).join(' ') : undefined;
+            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title);
+            return {handled: true};
+        }
+        case 'join':
+            await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+            return {handled: true};
+        case 'leave':
+            if (getCurrentCall()?.channelId === channelId) {
+                await leaveCallPopCallScreen();
+                return {handled: true};
+            }
+            return {
+                error: intl.formatMessage({
+                    id: 'mobile.calls_not_connected',
+                    defaultMessage: 'You\'re not connected to a call in the current channel.',
+                }),
+            };
+        case 'recording': {
+            if (tokens.length < 3) {
+                return {handled: false};
+            }
+
+            const action = tokens[2];
+            const currentCall = getCurrentCall();
+            const recording = currentCall?.recState;
+            const isHost = currentCall?.hostId === currentUserId;
+
+            if (currentCall?.channelId !== channelId) {
+                return {
+                    error: intl.formatMessage({
+                        id: 'mobile.calls_not_connected',
+                        defaultMessage: 'You\'re not connected to a call in the current channel.',
+                    }),
+                };
+            }
+
+            if (action === 'start') {
+                if (recording && recording.start_at > recording.end_at) {
+                    return {
+                        error: intl.formatMessage({
+                            id: 'mobile.calls_recording_start_in_progress',
+                            defaultMessage: 'A recording is already in progress.',
+                        }),
+                    };
+                }
+
+                if (!isHost) {
+                    return {
+                        error: intl.formatMessage({
+                            id: 'mobile.calls_recording_start_no_permissions',
+                            defaultMessage: 'You don\'t have permissions to start a recording. Please ask the call host to start a recording.',
+                        }),
+                    };
+                }
+
+                await startCallRecording(currentCall.serverUrl, currentCall.channelId);
+
+                return {handled: true};
+            }
+
+            if (action === 'stop') {
+                if (!recording || recording.end_at > recording.start_at) {
+                    return {
+                        error: intl.formatMessage({
+                            id: 'mobile.calls_recording_stop_none_in_progress',
+                            defaultMessage: 'No recording is in progress.',
+                        }),
+                    };
+                }
+
+                if (!isHost) {
+                    return {
+                        error: intl.formatMessage({
+                            id: 'mobile.calls_recording_stop_no_permissions',
+                            defaultMessage: 'You don\'t have permissions to stop the recording. Please ask the call host to stop the recording.',
+                        }),
+                    };
+                }
+
+                await stopCallRecording(currentCall.serverUrl, currentCall.channelId);
+
+                return {handled: true};
+            }
+        }
+    }
+
+    return {handled: false};
+};
+
+const handleEndCall = async (serverUrl: string, channelId: string, currentUserId: string, intl: IntlShape) => {
+    const hasPermissions = await canEndCall(serverUrl, channelId);
+
+    if (!hasPermissions) {
+        Alert.alert(
+            intl.formatMessage({
+                id: 'mobile.calls_end_permission_title',
+                defaultMessage: 'Error',
+            }),
+            intl.formatMessage({
+                id: 'mobile.calls_end_permission_msg',
+                defaultMessage: 'You don\'t have permission to end the call. Please ask the call owner to end the call.',
+            }));
+        return;
+    }
+
+    const message = await getEndCallMessage(serverUrl, channelId, currentUserId, intl);
+    const title = intl.formatMessage({id: 'mobile.calls_end_call_title', defaultMessage: 'End call'});
+
+    Alert.alert(
+        title,
+        message,
+        [
+            {
+                text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
+            },
+            {
+                text: title,
+                onPress: async () => {
+                    try {
+                        await endCall(serverUrl, channelId);
+                    } catch (e) {
+                        const err = (e as ClientError).message || 'unable to complete command, see server logs';
+                        Alert.alert('Error', `Error: ${err}`);
+                    }
+                },
+                style: 'cancel',
+            },
+        ],
+    );
 };

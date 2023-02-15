@@ -14,7 +14,7 @@ import {
     transformTeamSearchHistoryRecord,
 } from '@database/operator/server_data_operator/transformers/team';
 
-import ServerDataOperator from '..';
+import type ServerDataOperator from '..';
 
 describe('*** Operator: Team Handlers tests ***', () => {
     let operator: ServerDataOperator;
@@ -60,7 +60,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
             tableName: 'Team',
             prepareRecordsOnly: false,
             transformer: transformTeamRecord,
-        });
+        }, 'handleTeam');
     });
 
     it('=> HandleTeamMemberships: should write to the TEAM_MEMBERSHIP table', async () => {
@@ -98,7 +98,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
             prepareRecordsOnly: false,
             buildKeyRecordBy: buildTeamMembershipKey,
             transformer: transformTeamMembershipRecord,
-        });
+        }, 'handleTeamMemberships');
     });
 
     it('=> HandleMyTeam: should write to the MY_TEAM table', async () => {
@@ -124,7 +124,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
             tableName: 'MyTeam',
             prepareRecordsOnly: false,
             transformer: transformMyTeamRecord,
-        });
+        }, 'handleMyTeam');
     });
 
     it('=> HandleTeamChannelHistory: should write to the TEAM_CHANNEL_HISTORY table', async () => {
@@ -150,7 +150,7 @@ describe('*** Operator: Team Handlers tests ***', () => {
             tableName: 'TeamChannelHistory',
             prepareRecordsOnly: false,
             transformer: transformTeamChannelHistoryRecord,
-        });
+        }, 'handleTeamChannelHistory');
     });
 
     it('=> HandleTeamSearchHistory: should write to the TEAM_SEARCH_HISTORY table', async () => {
@@ -179,6 +179,6 @@ describe('*** Operator: Team Handlers tests ***', () => {
             prepareRecordsOnly: false,
             buildKeyRecordBy: buildTeamSearchHistoryKey,
             transformer: transformTeamSearchHistoryRecord,
-        });
+        }, 'handleTeamSearchHistory');
     });
 });

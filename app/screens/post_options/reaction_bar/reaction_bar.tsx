@@ -24,8 +24,10 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import PickReaction from './pick_reaction';
 import Reaction from './reaction';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type QuickReactionProps = {
-    bottomSheetId: typeof Screens[keyof typeof Screens];
+    bottomSheetId: AvailableScreens;
     recentEmojis: string[];
     postId: string;
 };

@@ -12,13 +12,16 @@ import CompassIcon from '@components/compass_icon';
 import ShareFeedbackIllustration from '@components/illustrations/share_feedback';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
 import {dismissOverlay} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
-    componentId: string;
+    componentId: AvailableScreens;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -117,6 +120,7 @@ const ShareFeedback = ({
     }, [close, componentId]);
 
     useBackNavigation(onPressNo);
+    useAndroidHardwareBackHandler(componentId, onPressNo);
 
     const doAfterAnimation = useCallback(() => {
         executeAfterDone.current();

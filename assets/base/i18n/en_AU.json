@@ -665,7 +665,6 @@
     "channel_info.close": "Close",
     "channel_info.archive_title": "Archive {term}",
     "channel_info.archive_failed": "An error occurred trying to archive the channel {displayName}",
-    "channel_info.archive_description": "Are you sure you want to archive the {term} {name}?",
     "channel_info.archive": "Archive Channel",
     "channel_info.alertYes": "Yes",
     "channel_info.alertNo": "No",
@@ -937,5 +936,7 @@
     "connection_banner.connecting": "Connecting...",
     "skintone_selector.tooltip.title": "Choose your default skin tone",
     "skintone_selector.tooltip.description": "You can now choose the skin tone you prefer to use for your emojis.",
-    "default_skin_tone": "Default Skin Tone"
+    "default_skin_tone": "Default Skin Tone",
+    "mobile.calls_rec": "rec",
+    "mobile.calls_host": "host"
 }

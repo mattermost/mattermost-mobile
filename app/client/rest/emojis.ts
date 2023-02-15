@@ -5,6 +5,8 @@ import {buildQueryString} from '@utils/helpers';
 
 import {PER_PAGE_DEFAULT} from './constants';
 
+import type ClientBase from './base';
+
 export interface ClientEmojisMix {
     getCustomEmoji: (id: string) => Promise<CustomEmoji>;
     getCustomEmojiByName: (name: string) => Promise<CustomEmoji>;
@@ -15,7 +17,7 @@ export interface ClientEmojisMix {
     autocompleteCustomEmoji: (name: string) => Promise<CustomEmoji[]>;
 }
 
-const ClientEmojis = (superclass: any) => class extends superclass {
+const ClientEmojis = <TBase extends Constructor<ClientBase>>(superclass: TBase) => class extends superclass {
     getCustomEmoji = async (id: string) => {
         return this.doFetch(
             `${this.getEmojisRoute()}/${id}`,

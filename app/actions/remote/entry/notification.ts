@@ -3,11 +3,11 @@
 
 import {switchToChannelById} from '@actions/remote/channel';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
-import {Preferences, Screens} from '@constants';
+import {Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getMyChannel} from '@queries/servers/channel';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {queryThemePreferences} from '@queries/servers/preference';
 import {getConfig, getCurrentTeamId, getLicense, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
@@ -53,7 +53,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         // When opening the app from a push notification the theme may not be set in the EphemeralStore
         // causing the goToScreen to use the Appearance theme instead and that causes the screen background color to potentially
         // not match the theme
-        const themes = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, teamId).fetch();
+        const themes = await queryThemePreferences(database, teamId).fetch();
         let theme = getDefaultThemeByAppearance();
         if (themes.length) {
             theme = setThemeDefaults(JSON.parse(themes[0].value) as Theme);
@@ -136,7 +136,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
         await NavigationStore.waitUntilScreenHasLoaded(Screens.THREAD);
     }
 
-    await operator.batchRecords(models);
+    await operator.batchRecords(models, 'pushNotificationEntry');
     setTeamLoading(serverUrl, false);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(operator.database))!;

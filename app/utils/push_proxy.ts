@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import EphemeralStore from '@store/ephemeral_store';
+
+import type {IntlShape} from 'react-intl';
 
 export function canReceiveNotifications(serverUrl: string, verification: string, intl: IntlShape) {
     switch (verification) {

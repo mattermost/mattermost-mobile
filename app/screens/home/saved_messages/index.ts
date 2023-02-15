@@ -7,11 +7,9 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
-import {PreferenceModel} from '@database/models/server';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
 import {queryPostsById} from '@queries/servers/post';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {observeConfigBooleanValue} from '@queries/servers/system';
 import {observeCurrentUser} from '@queries/servers/user';
 import {mapCustomEmojiNames} from '@utils/emoji/helpers';
@@ -20,6 +18,7 @@ import {getTimezone} from '@utils/user';
 import SavedMessagesScreen from './saved_messages';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
+import type PreferenceModel from '@typings/database/models/servers/preference';
 
 function getPostIDs(preferences: PreferenceModel[]) {
     return preferences.map((preference) => preference.name);
@@ -29,7 +28,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
 
     return {
-        posts: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_SAVED_POST, undefined, 'true').observeWithColumns(['name']).pipe(
+        posts: querySavedPostsPreferences(database, undefined, 'true').observeWithColumns(['name']).pipe(
             switchMap((rows) => {
                 if (!rows.length) {
                     return of$([]);

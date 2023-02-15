@@ -20,6 +20,8 @@ import {tryOpenURL} from '@utils/url';
 import ReportProblem from './report_problem';
 import SettingItem from './setting_item';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 const CLOSE_BUTTON_ID = 'close-settings';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -40,7 +42,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 type SettingsProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     helpLink: string;
     showHelp: boolean;
     siteName: string;
@@ -75,7 +77,6 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
     }, []);
 
     useAndroidHardwareBackHandler(componentId, close);
-
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, []);
 
     const goToNotifications = preventDoubleTap(() => {
@@ -107,9 +108,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
     });
 
     const openHelp = preventDoubleTap(() => {
-        const link = helpLink ? helpLink.toLowerCase() : '';
-
-        if (link) {
+        if (helpLink) {
             const onError = () => {
                 Alert.alert(
                     intl.formatMessage({id: 'mobile.link.error.title', defaultMessage: 'Error'}),
@@ -117,7 +116,7 @@ const Settings = ({componentId, helpLink, showHelp, siteName}: SettingsProps) =>
                 );
             };
 
-            tryOpenURL(link, onError);
+            tryOpenURL(helpLink, onError);
         }
     });
 

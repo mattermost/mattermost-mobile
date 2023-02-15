@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Pin and Unpin Message', () => {
@@ -68,6 +68,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         await PostOptionsScreen.pinPostOption.tap();
 
         // * Verify pinned text is displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItemPreHeaderText).toHaveText(pinnedText);
 
@@ -76,6 +77,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         await PostOptionsScreen.unpinPostOption.tap();
 
         // * Verify pinned text is not displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         await expect(postListPostItemPreHeaderText).not.toBeVisible();
 
         // # Go back to channel list screen
@@ -94,6 +96,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         await PostOptionsScreen.pinPostOption.tap();
 
         // * Verify pinned text is displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItemPreHeaderText).toHaveText(pinnedText);
 
@@ -102,6 +105,7 @@ describe('Messaging - Pin and Unpin Message', () => {
         await PostOptionsScreen.unpinPostOption.tap();
 
         // * Verify pinned text is not displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         await expect(postListPostItemPreHeaderText).not.toBeVisible();
 
         // # Go back to channel list screen

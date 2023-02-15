@@ -26,7 +26,7 @@ import {
     ThreadOptionsScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Threads - Follow and Unfollow Thread', () => {
@@ -183,6 +183,7 @@ describe('Threads - Follow and Unfollow Thread', () => {
         await ThreadOptionsScreen.followingThreadOption.tap();
 
         // * Verify thread is not displayed anymore in all your threads section
+        await wait(timeouts.ONE_SEC);
         await expect(GlobalThreadsScreen.getThreadItem(parentPost.id)).not.toBeVisible();
 
         // # Go back to channel list screen

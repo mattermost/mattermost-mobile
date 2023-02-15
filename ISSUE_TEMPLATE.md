@@ -1,4 +1,4 @@
-Submit feature requests to http://www.mattermost.org/feature-requests/. File non-security related bugs here in the following format: 
+Submit feature requests to https://mattermost.com/suggestions/. File non-security related bugs here in the following format: 
 
 #### Summary
 Issue in one concise sentence.

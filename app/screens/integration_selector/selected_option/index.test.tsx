@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import Database from '@nozbe/watermelondb/Database';
 import React from 'react';
 
 import {Preferences, View as ViewConstants} from '@constants';
@@ -9,6 +8,8 @@ import {renderWithEverything} from '@test/intl-test-helper';
 import TestHelper from '@test/test_helper';
 
 import SelectedOption from '.';
+
+import type Database from '@nozbe/watermelondb/Database';
 
 describe('components/integration_selector/selected_option', () => {
     let database: Database;

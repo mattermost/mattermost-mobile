@@ -16,13 +16,15 @@ import SettingContainer from '../setting_container';
 import SettingOption from '../setting_option';
 import SettingSeparator from '../settings_separator';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 const CLOCK_TYPE = {
     NORMAL: 'NORMAL',
     MILITARY: 'MILITARY',
 } as const;
 
 type DisplayClockProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentUserId: string;
     hasMilitaryTimeFormat: boolean;
 }
@@ -40,7 +42,7 @@ const DisplayClock = ({componentId, currentUserId, hasMilitaryTimeFormat}: Displ
     const saveClockDisplayPreference = useCallback(() => {
         if (hasMilitaryTimeFormat !== isMilitaryTimeFormat) {
             const timePreference: PreferenceType = {
-                category: Preferences.CATEGORY_DISPLAY_SETTINGS,
+                category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
                 name: 'use_military_time',
                 user_id: currentUserId,
                 value: `${isMilitaryTimeFormat}`,

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type UserModel from '@typings/database/models/servers/user';
-import type {ConfigurationParamWithUrls, ConfigurationParamWithUrl} from 'react-native-webrtc';
+import type {RTCIceServer} from 'react-native-webrtc';
 
 export type GlobalCallsState = {
     micPermissionsGranted: boolean;
@@ -13,14 +13,12 @@ export const DefaultGlobalCallsState: GlobalCallsState = {
 };
 
 export type CallsState = {
-    serverUrl: string;
     myUserId: string;
     calls: Dictionary<Call>;
     enabled: Dictionary<boolean>;
 }
 
 export const DefaultCallsState: CallsState = {
-    serverUrl: '',
     myUserId: '',
     calls: {},
     enabled: {},
@@ -118,7 +116,7 @@ export type CallsConnection = {
 
 export type ServerCallsConfig = {
     ICEServers?: string[]; // deprecated
-    ICEServersConfigs?: ICEServersConfigs;
+    ICEServersConfigs: RTCIceServer[];
     AllowEnableCalls: boolean;
     DefaultEnabled: boolean;
     NeedsTURNCredentials: boolean;
@@ -144,8 +142,6 @@ export const DefaultCallsConfig: CallsConfig = {
     MaxCallParticipants: 0,
     EnableRecordings: false,
 };
-
-export type ICEServersConfigs = Array<ConfigurationParamWithUrls | ConfigurationParamWithUrl>;
 
 export type ApiResp = {
     message?: string;
@@ -175,4 +171,5 @@ export type RecordingState = {
     init_at: number;
     start_at: number;
     end_at: number;
+    err?: string;
 }

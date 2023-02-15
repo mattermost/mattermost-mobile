@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import {IntlShape, useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, View} from 'react-native';
-import {ImageResource, OptionsTopBarButton} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
@@ -13,6 +12,7 @@ import Search from '@components/search';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
@@ -21,7 +21,8 @@ import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 import ChannelDropdown from './channel_dropdown';
 import ChannelList from './channel_list';
 
-import type {NavButtons} from '@typings/screens/navigation';
+import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
+import type {ImageResource, OptionsTopBarButton} from 'react-native-navigation';
 
 const CLOSE_BUTTON_ID = 'close-browse-channels';
 const CREATE_BUTTON_ID = 'create-pub-channel';
@@ -73,7 +74,7 @@ const style = StyleSheet.create({
 type Props = {
 
     // Screen Props (do not change during the lifetime of the screen)
-    componentId: string;
+    componentId: AvailableScreens;
     closeButton: ImageResource;
 
     // Properties not changing during the lifetime of the screen)
@@ -169,6 +170,7 @@ export default function BrowseChannels(props: Props) {
 
     useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
     useNavButtonPressed(CREATE_BUTTON_ID, componentId, handleCreate, [handleCreate]);
+    useAndroidHardwareBackHandler(componentId, close);
 
     useEffect(() => {
         // Update header buttons in case anything related to the header changes

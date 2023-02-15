@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 import {AppState, AppStateStatus} from 'react-native';
 
 import {addFilesToDraft} from '@actions/local/draft';
 import {PROGRESS_TIME_TO_STORE} from '@constants/files';
 import DatabaseManager from '@database/manager';
-import ServerDataOperator from '@database/operator/server_data_operator';
 import {getDraft} from '@queries/servers/drafts';
 import TestHelper from '@test/test_helper';
 
 import {exportedForTesting} from '.';
+
+import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
 
 const {DraftUploadManager} = exportedForTesting;
 
@@ -83,13 +84,13 @@ describe('draft upload manager', () => {
 
         const fileClientId = 'clientId';
         const fileServerId = 'serverId';
-        await addFilesToDraft(url, channelId, rootId, [{clientId: fileClientId} as FileInfo]);
+        await addFilesToDraft(url, channelId, rootId, [{clientId: fileClientId, localPath: 'path1'} as FileInfo]);
 
-        manager.prepareUpload(url, {clientId: fileClientId} as FileInfo, channelId, rootId, 0);
+        manager.prepareUpload(url, {clientId: fileClientId, localPath: 'path1'} as FileInfo, channelId, rootId, 0);
         expect(manager.isUploading(fileClientId)).toBe(true);
 
         expect(uploadMocks.resolvePromise).not.toBeNull();
-        uploadMocks.resolvePromise!({ok: true, code: 201, data: {file_infos: [{clientId: fileClientId, id: fileServerId}]}});
+        uploadMocks.resolvePromise!({ok: true, code: 201, data: {file_infos: [{clientId: fileClientId, id: fileServerId, localPath: 'path1'}]}});
 
         // Wait for other promises (on complete write) to finish
         await new Promise(process.nextTick);
@@ -106,9 +107,9 @@ describe('draft upload manager', () => {
         const uploadMocks = mockUpload();
 
         const fileClientId = 'clientId';
-        await addFilesToDraft(url, channelId, rootId, [{clientId: fileClientId} as FileInfo]);
+        await addFilesToDraft(url, channelId, rootId, [{clientId: fileClientId, localPath: 'path1'} as FileInfo]);
 
-        manager.prepareUpload(url, {clientId: fileClientId} as FileInfo, channelId, rootId, 0);
+        manager.prepareUpload(url, {clientId: fileClientId, localPath: 'path2'} as FileInfo, channelId, rootId, 0);
         expect(manager.isUploading(fileClientId)).toBe(true);
 
         // Wait for other promises to finish
@@ -259,13 +260,13 @@ describe('draft upload manager', () => {
 
         const fileClientId = 'clientId';
         const fileServerId = 'serverId';
-        await addFilesToDraft(url, channelId, rootId, [{clientId: fileClientId} as FileInfo]);
+        await addFilesToDraft(url, channelId, rootId, [{clientId: fileClientId, localPath: 'path1'} as FileInfo]);
 
-        manager.prepareUpload(url, {clientId: fileClientId} as FileInfo, channelId, rootId, 0);
+        manager.prepareUpload(url, {clientId: fileClientId, localPath: 'path1'} as FileInfo, channelId, rootId, 0);
         expect(manager.isUploading(fileClientId)).toBe(true);
 
         expect(uploadMocks.resolvePromise).not.toBeNull();
-        uploadMocks.resolvePromise!({ok: true, code: 500, data: {file_infos: [{clientId: fileClientId, id: fileServerId}]}});
+        uploadMocks.resolvePromise!({ok: true, code: 500, data: {file_infos: [{clientId: fileClientId, id: fileServerId, localPath: 'path1'}]}});
 
         // Wait for other promises (on complete write) to finish
         await new Promise(process.nextTick);
@@ -283,9 +284,9 @@ describe('draft upload manager', () => {
         const uploadMocks = mockUpload();
 
         const clientId = 'clientId';
-        await addFilesToDraft(url, channelId, rootId, [{clientId} as FileInfo]);
+        await addFilesToDraft(url, channelId, rootId, [{clientId, localPath: 'path1'} as FileInfo]);
 
-        manager.prepareUpload(url, {clientId} as FileInfo, channelId, rootId, 0);
+        manager.prepareUpload(url, {clientId, localPath: 'path1'} as FileInfo, channelId, rootId, 0);
         expect(manager.isUploading(clientId)).toBe(true);
 
         expect(uploadMocks.resolvePromise).not.toBeNull();
@@ -307,9 +308,9 @@ describe('draft upload manager', () => {
         const uploadMocks = mockUpload();
 
         const clientId = 'clientId';
-        await addFilesToDraft(url, channelId, rootId, [{clientId} as FileInfo]);
+        await addFilesToDraft(url, channelId, rootId, [{clientId, localPath: 'path1'} as FileInfo]);
 
-        manager.prepareUpload(url, {clientId} as FileInfo, channelId, rootId, 0);
+        manager.prepareUpload(url, {clientId, localPath: 'path1'} as FileInfo, channelId, rootId, 0);
         expect(manager.isUploading(clientId)).toBe(true);
 
         expect(uploadMocks.resolvePromise).not.toBeNull();
@@ -331,13 +332,13 @@ describe('draft upload manager', () => {
         const uploadMocks = mockUpload();
 
         const clientId = 'clientId';
-        await addFilesToDraft(url, channelId, rootId, [{clientId} as FileInfo]);
+        await addFilesToDraft(url, channelId, rootId, [{clientId, localPath: 'path1'} as FileInfo]);
 
         const nullProgressHandler = jest.fn();
         let cancelProgressHandler = manager.registerProgressHandler(clientId, nullProgressHandler);
         expect(cancelProgressHandler).toBeNull();
 
-        manager.prepareUpload(url, {clientId} as FileInfo, channelId, rootId, 0);
+        manager.prepareUpload(url, {clientId, localPath: 'path1'} as FileInfo, channelId, rootId, 0);
         expect(manager.isUploading(clientId)).toBe(true);
 
         const progressHandler = jest.fn();
@@ -372,13 +373,13 @@ describe('draft upload manager', () => {
         const uploadMocks = mockUpload();
 
         const clientId = 'clientId';
-        await addFilesToDraft(url, channelId, rootId, [{clientId} as FileInfo]);
+        await addFilesToDraft(url, channelId, rootId, [{clientId, localPath: 'path1'} as FileInfo]);
 
         const nullErrorHandler = jest.fn();
         let cancelErrorHandler = manager.registerProgressHandler(clientId, nullErrorHandler);
         expect(cancelErrorHandler).toBeNull();
 
-        manager.prepareUpload(url, {clientId} as FileInfo, channelId, rootId, 0);
+        manager.prepareUpload(url, {clientId, localPath: 'path1'} as FileInfo, channelId, rootId, 0);
         expect(manager.isUploading(clientId)).toBe(true);
 
         const errorHandler = jest.fn();
@@ -408,13 +409,13 @@ describe('draft upload manager', () => {
         const uploadMocks = mockUpload();
 
         const clientId = 'clientId';
-        await addFilesToDraft(url, channelId, rootId, [{clientId} as FileInfo]);
+        await addFilesToDraft(url, channelId, rootId, [{clientId, localPath: 'path1'} as FileInfo]);
 
         const nullErrorHandler = jest.fn();
         let cancelErrorHandler = manager.registerProgressHandler(clientId, nullErrorHandler);
         expect(cancelErrorHandler).toBeNull();
 
-        manager.prepareUpload(url, {clientId} as FileInfo, channelId, rootId, 0);
+        manager.prepareUpload(url, {clientId, localPath: 'path1'} as FileInfo, channelId, rootId, 0);
         expect(manager.isUploading(clientId)).toBe(true);
 
         const errorHandler = jest.fn();

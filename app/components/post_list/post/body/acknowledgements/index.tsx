@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetProps} from '@gorhom/bottom-sheet';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity} from 'react-native';
@@ -22,6 +21,7 @@ import {typography} from '@utils/typography';
 import UsersList from './users_list';
 import {USER_ROW_HEIGHT} from './users_list/user_list_item';
 
+import type {BottomSheetProps} from '@gorhom/bottom-sheet';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 

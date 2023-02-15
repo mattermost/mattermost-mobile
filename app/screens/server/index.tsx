@@ -4,7 +4,7 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Platform, useWindowDimensions, View} from 'react-native';
+import {Alert, BackHandler, Platform, useWindowDimensions, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -13,15 +13,15 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import LocalConfig from '@assets/config.json';
-import ClientError from '@client/rest/error';
 import AppVersion from '@components/app_version';
 import {Screens, Launch} from '@constants';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
 import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
-import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
+import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
 import {getErrorMessage} from '@utils/client_error';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {loginOptions} from '@utils/server';
@@ -31,12 +31,14 @@ import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 import ServerForm from './form';
 import ServerHeader from './header';
 
+import type ClientError from '@client/rest/error';
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 interface ServerProps extends LaunchProps {
     animated?: boolean;
     closeButtonId?: string;
-    componentId: string;
+    componentId: AvailableScreens;
     isModal?: boolean;
     theme: Theme;
 }
@@ -91,6 +93,11 @@ const Server = ({
     const {formatMessage} = intl;
     const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
     const additionalServer = launchType === Launch.AddServerFromDeepLink || launchType === Launch.AddServer;
+
+    const dismiss = () => {
+        NetworkManager.invalidateClient(url);
+        dismissModal({componentId});
+    };
 
     useEffect(() => {
         let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
@@ -157,17 +164,29 @@ const Server = ({
     }, [componentId, url, dimensions]);
 
     useEffect(() => {
-        const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
-            if (closeButtonId && buttonId === closeButtonId) {
-                NetworkManager.invalidateClient(url);
-                dismissModal({componentId});
+        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
+            if (LocalConfig.ShowOnboarding && animated) {
+                popTopScreen(Screens.SERVER);
+                return true;
             }
+            if (isModal) {
+                dismiss();
+                return true;
+            }
+
+            return false;
         });
 
         PushNotifications.registerIfNeeded();
 
-        return () => navigationEvents.remove();
+        return () => backHandler.remove();
     }, []);
+
+    useEffect(() => {
+        translateX.value = 0;
+    }, []);
+
+    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
 
     const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
         const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);

@@ -21,6 +21,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Account Menu', () => {
@@ -63,6 +64,7 @@ describe('Account - Account Menu', () => {
     it('MM-T4988_2 - should be able to set user presence', async () => {
         // # Tap on user presence option and tap on offline user status option
         await AccountScreen.userPresenceOption.tap();
+        await wait(timeouts.ONE_SEC);
         await AccountScreen.offlineUserStatusOption.tap();
 
         // * Verify on account screen and verify user presence icon and label are for offline user status
@@ -72,6 +74,7 @@ describe('Account - Account Menu', () => {
 
         // # Tap on user presence option and tap on do not disturb user status option
         await AccountScreen.userPresenceOption.tap();
+        await wait(timeouts.ONE_SEC);
         await AccountScreen.dndUserStatusOption.tap();
 
         // * Verify on account screen and verify user presence icon and label are for do no disturb user status
@@ -81,6 +84,7 @@ describe('Account - Account Menu', () => {
 
         // # Tap on user presence option and tap on away user status option
         await AccountScreen.userPresenceOption.tap();
+        await wait(timeouts.ONE_SEC);
         await AccountScreen.awayUserStatusOption.tap();
 
         // * Verify on account screen and verify user presence icon and label are for away user status
@@ -90,6 +94,7 @@ describe('Account - Account Menu', () => {
 
         // # Tap on user presence option and tap on online user status option
         await AccountScreen.userPresenceOption.tap();
+        await wait(timeouts.ONE_SEC);
         await AccountScreen.onlineUserStatusOption.tap();
 
         // * Verify on account screen and verify user presence icon and label are for online user status

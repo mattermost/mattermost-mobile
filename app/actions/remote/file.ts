@@ -1,18 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
-
-import {Client} from '@client/rest';
-import ClientError from '@client/rest/error';
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import NetworkManager from '@managers/network_manager';
+import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
+
+import type {Client} from '@client/rest';
+import type ClientError from '@client/rest/error';
+import type {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 
 export const downloadFile = (serverUrl: string, fileId: string, desitnation: string) => { // Let it throw and handle it accordingly
     const client = NetworkManager.getClient(serverUrl);
     return client.apiClient.download(client.getFileRoute(fileId), desitnation.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
+};
+
+export const downloadProfileImage = (serverUrl: string, userId: string, lastPictureUpdate: number, destination: string) => { // Let it throw and handle it accordingly
+    const client = NetworkManager.getClient(serverUrl);
+    return client.apiClient.download(client.getProfilePictureUrl(userId, lastPictureUpdate), destination.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
 };
 
 export const uploadFile = (
@@ -27,10 +33,11 @@ export const uploadFile = (
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
+        return {cancel: client.uploadPostAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
     } catch (error) {
+        logDebug('uploadFile', error);
         return {error: error as ClientError};
     }
-    return {cancel: client.uploadPostAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
 };
 
 export const fetchPublicLink = async (serverUrl: string, fileId: string) => {

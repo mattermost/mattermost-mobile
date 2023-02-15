@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
@@ -23,6 +22,8 @@ import Typing from '../typing';
 import Uploads from '../uploads';
 
 import Header from './header';
+
+import type {PasteInputRef} from '@mattermost/react-native-paste-input';
 
 type Props = {
     testID?: string;

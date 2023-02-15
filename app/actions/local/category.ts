@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {CHANNELS_CATEGORY, DMS_CATEGORY} from '@constants/categories';
 import DatabaseManager from '@database/manager';
 import {prepareCategoryChannels, queryCategoriesByTeamIds, getCategoryById, prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
@@ -41,7 +39,7 @@ export async function storeCategories(serverUrl: string, categories: CategoryWit
         }
 
         if (models.length > 0) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'storeCategories');
         }
 
         return {models};
@@ -81,7 +79,6 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
             return {error: 'no current user id'};
         }
 
-        const models: Model[] = [];
         const categoriesWithChannels: CategoryWithChannels[] = [];
 
         if (isDMorGM(channel)) {
@@ -101,13 +98,12 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
                 cwc.channel_ids.unshift(channel.id);
                 categoriesWithChannels.push(cwc);
             }
-
-            const ccModels = await prepareCategoryChannels(operator, categoriesWithChannels);
-            models.push(...ccModels);
         }
 
+        const models = await prepareCategoryChannels(operator, categoriesWithChannels);
+
         if (models.length && !prepareRecordsOnly) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'addChannelToDefaultCategory');
         }
 
         return {models};

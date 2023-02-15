@@ -10,9 +10,9 @@ import {Preferences} from '@constants';
 import {MODAL_SCREENS_WITHOUT_BACK, SCREENS_AS_BOTTOM_SHEET, SCREENS_WITH_TRANSPARENT_BACKGROUND} from '@constants/screens';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
-import {NamedStyles} from '@typings/global/styles';
 import {appearanceControlledScreens, mergeNavigationOptions} from '@utils/navigation';
 
+import type {NamedStyles} from '@typings/global/styles';
 import type {Options} from 'react-native-navigation';
 
 const rgbPattern = /^rgba?\((\d+),(\d+),(\d+)(?:,([\d.]+))?\)$/;

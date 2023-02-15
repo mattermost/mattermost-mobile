@@ -128,7 +128,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
         initialPostModels.push(...reactionModels);
     }
 
-    await operator.batchRecords(initialPostModels);
+    await operator.batchRecords(initialPostModels, 'createPost - initial');
 
     const isCRTEnabled = await getIsCRTEnabled(database);
 
@@ -167,7 +167,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
                     models.push(...threadModels);
                 }
             }
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'createPost - failure');
         }
 
         return {data: true};
@@ -192,7 +192,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
             models.push(...threadModels);
         }
     }
-    await operator.batchRecords(models);
+    await operator.batchRecords(models, 'createPost - success');
 
     newPost = created;
 
@@ -237,7 +237,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
             p.props = newPost.props;
             p.updateAt = timestamp;
         });
-        await operator.batchRecords([post]);
+        await operator.batchRecords([post], 'retryFailedPost - first update');
 
         const created = await client.createPost(newPost);
         const models = await operator.handlePosts({
@@ -253,7 +253,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
                 models.push(member);
             }
         }
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'retryFailedPost - success update');
     } catch (error) {
         if (isServerError(error) && (
             error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
@@ -268,7 +268,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
                     failed: true,
                 };
             });
-            await operator.batchRecords([post]);
+            await operator.batchRecords([post], 'retryFailedPost - error update');
         }
 
         return {error};
@@ -375,7 +375,7 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
                     models.push(...threadModels);
                 }
             }
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'fetchPosts');
         }
         return result;
     } catch (error) {
@@ -434,7 +434,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
                     }
                 }
 
-                await operator.batchRecords(models);
+                await operator.batchRecords(models, 'fetchPostsBefore');
             } catch (error) {
                 logError('FETCH POSTS BEFORE ERROR', error);
             }
@@ -444,7 +444,7 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         if (activeServerUrl === serverUrl) {
-            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, true);
+            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
         }
         return {error};
     }
@@ -489,7 +489,7 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
                     models.push(...threadModels);
                 }
             }
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'fetchPostsSince');
         }
         return result;
     } catch (error) {
@@ -633,7 +633,7 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
                     models.push(...threadModels);
                 }
             }
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'fetchPostThread');
         }
         setFetchingThreadState(postId, false);
         return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
@@ -709,7 +709,7 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
                     models.push(...threadModels);
                 }
             }
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'fetchPostsAround');
         }
 
         return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
@@ -763,7 +763,7 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
                         return mdls;
                     });
                     if (models.length) {
-                        await operator.batchRecords(models);
+                        await operator.batchRecords(models, 'fetchMissingChannelsFromPosts');
                     }
                 }
             }
@@ -821,7 +821,7 @@ export async function fetchPostById(serverUrl: string, postId: string, fetchOnly
                 }
             }
 
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'fetchPostById');
         }
 
         return {post};
@@ -1048,7 +1048,7 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
             return mdls;
         });
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'fetchSavedPosts');
 
         return {
             order,
@@ -1130,7 +1130,7 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
             return mdls;
         });
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'fetchPinnedPosts');
 
         return {
             order,

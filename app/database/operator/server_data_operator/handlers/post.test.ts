@@ -9,7 +9,7 @@ import {buildDraftKey} from '@database/operator/server_data_operator/comparators
 import {transformDraftRecord} from '@database/operator/server_data_operator/transformers/post';
 import {createPostsChain} from '@database/operator/utils/post';
 
-import ServerDataOperator from '..';
+import type ServerDataOperator from '..';
 
 Q.sortBy = jest.fn().mockImplementation((field) => {
     return Q.where(field, Q.gte(0));
@@ -61,7 +61,7 @@ describe('*** Operator: Post Handlers tests ***', () => {
             createOrUpdateRawValues: drafts,
             tableName: 'Draft',
             prepareRecordsOnly: false,
-        });
+        }, 'handleDraft');
     });
 
     it('=> HandlePosts: should write to the Post and its sub-child tables', async () => {

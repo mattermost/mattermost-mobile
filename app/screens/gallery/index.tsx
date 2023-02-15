@@ -3,12 +3,11 @@
 
 import React, {useCallback, useMemo, useRef, useState} from 'react';
 import {NativeModules, useWindowDimensions, Platform} from 'react-native';
-import {Navigation} from 'react-native-navigation';
 
-import {Screens} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {useGalleryControls} from '@hooks/gallery';
-import {dismissOverlay} from '@screens/navigation';
+import {dismissOverlay, setScreensOrientation} from '@screens/navigation';
 import {freezeOtherScreens} from '@utils/gallery';
 
 import Footer from './footer';
@@ -16,15 +15,17 @@ import Gallery, {GalleryRef} from './gallery';
 import Header from './header';
 
 import type {GalleryItemType} from '@typings/screens/gallery';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
+    componentId: AvailableScreens;
     galleryIdentifier: string;
     hideActions: boolean;
     initialIndex: number;
     items: GalleryItemType[];
 }
 
-const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Props) => {
+const GalleryScreen = ({componentId, galleryIdentifier, hideActions, initialIndex, items}: Props) => {
     const dim = useWindowDimensions();
     const isTablet = useIsTablet();
     const [localIndex, setLocalIndex] = useState(initialIndex);
@@ -44,24 +45,22 @@ const GalleryScreen = ({galleryIdentifier, hideActions, initialIndex, items}: Pr
     }, []);
 
     const close = useCallback(() => {
+        setScreensOrientation(isTablet);
         if (Platform.OS === 'ios' && !isTablet) {
             // We need both the navigation & the module
-            Navigation.setDefaultOptions({
-                layout: {
-                    orientation: ['portrait'],
-                },
-            });
-            NativeModules.MattermostManaged.lockPortrait();
+            NativeModules.SplitView.lockPortrait();
         }
         freezeOtherScreens(false);
         requestAnimationFrame(async () => {
-            dismissOverlay(Screens.GALLERY);
+            dismissOverlay(componentId);
         });
     }, [isTablet]);
 
     const onIndexChange = useCallback((index: number) => {
         setLocalIndex(index);
     }, []);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <>

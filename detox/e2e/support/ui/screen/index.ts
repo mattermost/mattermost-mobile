@@ -23,6 +23,7 @@ import EmojiPickerScreen from './emoji_picker';
 import FindChannelsScreen from './find_channels';
 import GlobalThreadsScreen from './global_threads';
 import HomeScreen from './home';
+import Invite from './invite';
 import LoginScreen from './login';
 import MentionNotificationSettingsScreen from './mention_notification_settings';
 import NotificationSettingsScreen from './notification_settings';
@@ -69,6 +70,7 @@ export {
     FindChannelsScreen,
     GlobalThreadsScreen,
     HomeScreen,
+    Invite,
     LoginScreen,
     MentionNotificationSettingsScreen,
     NotificationSettingsScreen,

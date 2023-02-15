@@ -150,7 +150,7 @@ async function doReconnect(serverUrl: string) {
     await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeam?.id || '', currentChannel?.id || '', initialTeamId, initialChannelId);
 
     const dt = Date.now();
-    await operator.batchRecords(models);
+    await operator.batchRecords(models, 'doReconnect');
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
     setTeamLoading(serverUrl, false);
 
@@ -415,6 +415,13 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
         case WebsocketEvents.GROUP_ASSOCIATED_TO_CHANNEL:
             break;
         case WebsocketEvents.GROUP_DISSOCIATED_TO_CHANNEL:
+            break;
+
+        // Plugins
+        case WebsocketEvents.PLUGIN_STATUSES_CHANGED:
+        case WebsocketEvents.PLUGIN_ENABLED:
+        case WebsocketEvents.PLUGIN_DISABLED:
+            // Do nothing, this event doesn't need logic in the mobile app
             break;
     }
 }

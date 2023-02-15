@@ -6,6 +6,7 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$, from as from$} from 'rxjs';
 import {map, switchMap} from 'rxjs/operators';
 
+import {queryFilesForPost} from '@queries/servers/file';
 import {observeConfigBooleanValue, observeLicense} from '@queries/servers/system';
 import {fileExists} from '@utils/file';
 
@@ -47,7 +48,7 @@ const enhance = withObservables(['post'], ({database, post}: EnhanceProps) => {
         map(([download, compliance]) => compliance || download),
     );
 
-    const filesInfo = post.files.observeWithColumns(['local_path']).pipe(
+    const filesInfo = queryFilesForPost(database, post.id).observeWithColumns(['local_path']).pipe(
         switchMap((fs) => from$(filesLocalPathValidation(fs, post.userId))),
     );
 

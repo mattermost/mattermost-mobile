@@ -1,8 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Model} from '@nozbe/watermelondb';
-
+import {dataRetentionCleanup} from '@actions/local/systems';
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
@@ -37,6 +36,7 @@ import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
 import type ClientError from '@client/rest/error';
+import type {Database, Model} from '@nozbe/watermelondb';
 
 export type AppEntryData = {
     initialTeamId: string;
@@ -178,7 +178,7 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
     if (!initialTeamId && teamData.teams?.length && teamData.memberships?.length) {
         // If no initial team was set in the database but got teams in the response
         const config = await getConfig(database);
-        const teamOrderPreference = getPreferenceValue(prefData.preferences || [], Preferences.TEAMS_ORDER, '', '') as string;
+        const teamOrderPreference = getPreferenceValue<string>(prefData.preferences || [], Preferences.CATEGORIES.TEAMS_ORDER, '', '');
         const teamMembers = new Set(teamData.memberships.filter((m) => m.delete_at === 0).map((m) => m.team_id));
         const myTeams = teamData.teams!.filter((t) => teamMembers.has(t.id));
         const defaultTeam = selectDefaultTeam(myTeams, meData.user?.locale || DEFAULT_LOCALE, teamOrderPreference, config?.ExperimentalPrimaryTeam);
@@ -378,7 +378,9 @@ export const syncOtherServers = async (serverUrl: string) => {
     for (const server of servers) {
         if (server.url !== serverUrl && server.lastActiveAt > 0) {
             registerDeviceToken(server.url);
-            syncAllChannelMembersAndThreads(server.url);
+            syncAllChannelMembersAndThreads(server.url).then(() => {
+                dataRetentionCleanup(server.url);
+            });
             autoUpdateTimezone(server.url);
         }
     }
@@ -429,7 +431,7 @@ const graphQLSyncAllChannelMembers = async (serverUrl: string) => {
         const modelPromises = await prepareMyChannelsForTeam(operator, '', channels, memberships, undefined, true);
         const models = (await Promise.all(modelPromises)).flat();
         if (models.length) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'graphQLSyncAllChannelMembers');
         }
     }
 

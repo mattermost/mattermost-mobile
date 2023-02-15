@@ -2,26 +2,36 @@
 // See LICENSE.txt for license information.
 
 import React, {RefObject, useEffect, useRef, useState} from 'react';
-import {AppState, Keyboard, NativeModules, Platform, useWindowDimensions, View} from 'react-native';
-import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
+import {AppState, Keyboard, NativeEventEmitter, NativeModules, Platform, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Device} from '@constants';
 
-const {MattermostManaged} = NativeModules;
-const isRunningInSplitView = MattermostManaged.isRunningInSplitView;
+import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
+
+const {SplitView} = NativeModules;
+const {isRunningInSplitView} = SplitView;
+const emitter = new NativeEventEmitter(SplitView);
 
 export function useSplitView() {
     const [isSplitView, setIsSplitView] = useState(false);
-    const dimensions = useWindowDimensions();
 
     useEffect(() => {
         if (Device.IS_TABLET) {
-            isRunningInSplitView().then((result: {isSplitView: boolean}) => {
-                setIsSplitView(result.isSplitView);
+            isRunningInSplitView().then((result: SplitViewResult) => {
+                if (result.isSplitView != null) {
+                    setIsSplitView(result.isSplitView);
+                }
             });
         }
-    }, [dimensions]);
+        const listener = emitter.addListener('SplitViewChanged', (result: SplitViewResult) => {
+            if (result.isSplitView != null) {
+                setIsSplitView(result.isSplitView);
+            }
+        });
+
+        return () => listener.remove();
+    }, []);
 
     return isSplitView;
 }

@@ -87,7 +87,6 @@ class ShareViewController: UIViewController {
   }
   
   private func doPost(_ notification: Notification) {
-    removeObservers()
     if let userInfo = notification.userInfo {
       let serverUrl = userInfo["serverUrl"] as? String
       let channelId = userInfo["channelId"] as? String
@@ -121,15 +120,20 @@ class ShareViewController: UIViewController {
         )
 
         let shareExtension = Gekidou.ShareExtension()
-        shareExtension.uploadFiles(
+        let uploadError = shareExtension.uploadFiles(
           serverUrl: url,
           channelId: channel,
           message: message,
           files: files,
           completionHandler: { [weak self] in
+            self?.removeObservers()
             self?.extensionContext!.completeRequest(returningItems: [])
           })
+        if uploadError != nil {
+          NotificationCenter.default.post(name: Notification.Name("errorPosting"), object: nil, userInfo: ["info": uploadError as Any])
+        }
       } else {
+        removeObservers()
         extensionContext!.completeRequest(returningItems: [])
       }
     }

@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {addRecentReaction} from '@actions/local/reactions';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
@@ -14,6 +12,7 @@ import {getEmojiFirstAlias} from '@utils/emoji/helpers';
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
+import type {Model} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
 
 export async function addReaction(serverUrl: string, postId: string, emojiName: string) {
@@ -52,7 +51,7 @@ export async function addReaction(serverUrl: string, postId: string, emojiName: 
                 models.push(...recent);
             }
 
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'addReaction');
 
             return {reaction};
         }

@@ -33,7 +33,7 @@ describe('** APP DATA TRANSFORMER **', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('InfoModel');
+        expect(preparedRecords!.collection.table).toBe('Info');
     });
 
     it('=> transformGlobalRecord: should return an array of type Global', async () => {
@@ -52,6 +52,6 @@ describe('** APP DATA TRANSFORMER **', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('GlobalModel');
+        expect(preparedRecords!.collection.table).toBe('Global');
     });
 });

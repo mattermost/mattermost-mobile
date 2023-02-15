@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
@@ -21,12 +20,11 @@ import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
+import type {Model} from '@nozbe/watermelondb';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 function preparedMyChannelHack(myChannel: MyChannelModel) {
-    // @ts-expect-error hack accessing _preparedState
     if (!myChannel._preparedState) {
-        // @ts-expect-error hack setting _preparedState
         myChannel._preparedState = null;
     }
 }
@@ -179,7 +177,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     models.push(...postModels);
 
-    operator.batchRecords(models);
+    operator.batchRecords(models, 'handleNewPostEvent');
 }
 
 export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage) {
@@ -223,7 +221,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     });
     models.push(...postModels);
 
-    operator.batchRecords(models);
+    operator.batchRecords(models, 'handlePostEdited');
 }
 
 export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
@@ -266,7 +264,7 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
         }
 
         if (models.length) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'handlePostDeleted');
         }
     } catch {
         // Do nothing

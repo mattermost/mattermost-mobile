@@ -15,7 +15,7 @@ import {
     transformMyChannelSettingsRecord,
 } from '@database/operator/server_data_operator/transformers/channel';
 
-import ServerDataOperator from '..';
+import type ServerDataOperator from '..';
 
 describe('*** Operator: Channel Handlers tests ***', () => {
     let operator: ServerDataOperator;
@@ -63,7 +63,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             tableName: 'Channel',
             prepareRecordsOnly: false,
             transformer: transformChannelRecord,
-        });
+        }, 'handleChannel');
     });
 
     it('=> HandleMyChannelSettings: should write to the MY_CHANNEL_SETTINGS table', async () => {
@@ -103,7 +103,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             prepareRecordsOnly: false,
             buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelSettingsRecord,
-        });
+        }, 'handleMyChannelSettings');
     });
 
     it('=> HandleChannelInfo: should write to the CHANNEL_INFO table', async () => {
@@ -134,7 +134,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             tableName: 'ChannelInfo',
             prepareRecordsOnly: false,
             transformer: transformChannelInfoRecord,
-        });
+        }, 'handleChannelInfo');
     });
 
     it('=> HandleMyChannel: should write to the MY_CHANNEL table', async () => {
@@ -195,7 +195,7 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             prepareRecordsOnly: false,
             buildKeyRecordBy: buildMyChannelKey,
             transformer: transformMyChannelRecord,
-        });
+        }, 'handleMyChannel');
     });
 
     it('=> HandleMyChannel: should keep the previous lastFetchedAt for MY_CHANNEL', async () => {
@@ -314,6 +314,6 @@ describe('*** Operator: Channel Handlers tests ***', () => {
             prepareRecordsOnly: false,
             buildKeyRecordBy: buildChannelMembershipKey,
             transformer: transformChannelMembershipRecord,
-        });
+        }, 'handleChannelMembership');
     });
 });

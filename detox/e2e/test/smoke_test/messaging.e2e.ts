@@ -139,7 +139,7 @@ describe('Smoke Test - Messaging', () => {
 
         // # Open post options for message, open emoji picker screen, and add a reaction
         await ChannelScreen.openPostOptionsFor(post.id, resolvedMessage);
-        await EmojiPickerScreen.open();
+        await EmojiPickerScreen.open(true);
         await EmojiPickerScreen.searchInput.replaceText('clown_face');
         await element(by.text('🤡')).tap();
 
@@ -174,6 +174,7 @@ describe('Smoke Test - Messaging', () => {
         await PostOptionsScreen.savePostOption.tap();
 
         // * Verify saved text is displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         const {postListPostItemPreHeaderText: channelPostListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(channelPostListPostItemPreHeaderText).toHaveText(savedText);
 
@@ -199,6 +200,7 @@ describe('Smoke Test - Messaging', () => {
         await PostOptionsScreen.unpinPostOption.tap();
 
         // * Verify pinned text is not displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         await expect(channelPostListPostItemPreHeaderText).not.toBeVisible();
 
         // # Go back to channel list screen
