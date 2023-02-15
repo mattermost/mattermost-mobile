@@ -17,6 +17,7 @@ import {
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {useInputPropagation} from '@app/hooks/input';
 import Autocomplete from '@components/autocomplete';
 import ErrorText from '@components/error_text';
 import FloatingTextInput from '@components/floating_text_input_label';
@@ -126,6 +127,8 @@ export default function ChannelInfoForm({
     const dimensions = useWindowDimensions();
     const isTablet = useIsTablet();
 
+    const [propagateValue, shouldProcessEvent] = useInputPropagation();
+
     const keyboardHeight = useKeyboardHeight();
     const [keyboardVisible, setKeyBoardVisible] = useState(false);
     const [scrollPosition, setScrollPosition] = useState(0);
@@ -192,6 +195,18 @@ export default function ChannelInfoForm({
             setKeyBoardVisible(true);
         }
     }, [keyboardHeight]);
+
+    const onHeaderAutocompleteChange = useCallback((value: string) => {
+        onHeaderChange(value);
+        propagateValue(value);
+    }, [onHeaderChange]);
+
+    const onHeaderInputChange = useCallback((value: string) => {
+        if (!shouldProcessEvent(value)) {
+            return;
+        }
+        onHeaderChange(value);
+    }, [onHeaderChange]);
 
     const onLayoutError = useCallback((e: LayoutChangeEvent) => {
         setErrorHeight(e.nativeEvent.layout.height);
@@ -371,7 +386,7 @@ export default function ChannelInfoForm({
                                 enablesReturnKeyAutomatically={true}
                                 label={labelHeader}
                                 placeholder={placeholderHeader}
-                                onChangeText={onHeaderChange}
+                                onChangeText={onHeaderInputChange}
                                 multiline={true}
                                 keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                                 returnKeyType='next'
@@ -397,7 +412,7 @@ export default function ChannelInfoForm({
             </KeyboardAwareScrollView>
             <Autocomplete
                 position={animatedAutocompletePosition}
-                updateValue={onHeaderChange}
+                updateValue={onHeaderAutocompleteChange}
                 cursorPosition={header.length}
                 value={header}
                 nestedScrollEnabled={true}

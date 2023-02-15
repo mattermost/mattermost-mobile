@@ -17,6 +17,7 @@ import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {useInputPropagation} from '@hooks/input';
 import {t} from '@i18n';
 import NavigationStore from '@store/navigation_store';
 import {extractFileInfo} from '@utils/file';
@@ -120,6 +121,7 @@ export default function PostInput({
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
     const lastTypingEventSent = useRef(0);
 
@@ -184,6 +186,9 @@ export default function PostInput({
     }, [updateCursorPosition, cursorPosition]);
 
     const handleTextChange = useCallback((newValue: string) => {
+        if (!shouldProcessEvent(newValue)) {
+            return;
+        }
         updateValue(newValue);
         lastNativeValue.current = newValue;
 
@@ -228,10 +233,16 @@ export default function PostInput({
                 case 'enter':
                     sendMessage();
                     break;
-                case 'shift-enter':
-                    updateValue((v) => v.substring(0, cursorPosition) + '\n' + v.substring(cursorPosition));
+                case 'shift-enter': {
+                    let newValue: string;
+                    updateValue((v) => {
+                        newValue = v.substring(0, cursorPosition) + '\n' + v.substring(cursorPosition);
+                        return newValue;
+                    });
                     updateCursorPosition((pos) => pos + 1);
+                    propagateValue(newValue!);
                     break;
+                }
             }
         }
     }, [sendMessage, updateValue, cursorPosition, isTablet]);
@@ -270,6 +281,7 @@ export default function PostInput({
                 const draft = value ? `${value} ${text} ` : `${text} `;
                 updateValue(draft);
                 updateCursorPosition(draft.length);
+                propagateValue(draft);
                 inputRef.current?.focus();
             }
         });
@@ -278,10 +290,7 @@ export default function PostInput({
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
-            // May change when we implement Fabric
-            inputRef.current?.setNativeProps({
-                text: value,
-            });
+            propagateValue(value);
             lastNativeValue.current = value;
         }
     }, [value]);
@@ -314,6 +323,7 @@ export default function PostInput({
             testID={testID}
             underlineColorAndroid='transparent'
             textContentType='none'
+            value={value}
         />
     );
 }
