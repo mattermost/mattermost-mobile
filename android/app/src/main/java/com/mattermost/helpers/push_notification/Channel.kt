@@ -58,61 +58,76 @@ suspend fun PushNotificationDataRunnable.Companion.fetchMyChannel(db: Database, 
 }
 
 private suspend fun PushNotificationDataRunnable.Companion.fetchMyChannelData(serverUrl: String, channelId: String, isCRTEnabled: Boolean, channelData: ReadableMap): ReadableMap? {
-    val myChannel = fetch(serverUrl, "/api/v4/channels/$channelId/members/me")
-    val myChannelData = myChannel?.getMap("data")
-    if (myChannelData != null) {
-        val data = Arguments.createMap()
-        data.merge(myChannelData)
-        data.putString("id", channelId)
-        val totalMsg = if (isCRTEnabled) {
-            channelData.getInt("total_msg_count_root")
-        } else {
-            channelData.getInt("total_msg_count")
-        }
-        val myMsgCount = if (isCRTEnabled) {
-            myChannelData.getInt("msg_count_root")
-        } else {
-            myChannelData.getInt("msg_count")
-        }
+    try {
+        val myChannel = fetch(serverUrl, "/api/v4/channels/$channelId/members/me")
+        val myChannelData = myChannel?.getMap("data")
+        if (myChannelData != null) {
+            val data = Arguments.createMap()
+            data.merge(myChannelData)
+            data.putString("id", channelId)
 
-        val mentionCount = if (isCRTEnabled) {
-            myChannelData.getInt("mention_count_root")
-        } else {
-            myChannelData.getInt("mention_count")
-        }
+            val totalMsg = if (isCRTEnabled) {
+                channelData.getInt("total_msg_count_root")
+            } else {
+                channelData.getInt("total_msg_count")
+            }
 
-        val lastPostAt = if (isCRTEnabled) {
-            try { channelData.getDouble("last_root_post_at") }
-            catch (e: Exception) { channelData.getDouble("last_post_at") }
-        } else {
-            channelData.getDouble("last_post_at")
-        }
+            val myMsgCount = if (isCRTEnabled) {
+                myChannelData.getInt("msg_count_root")
+            } else {
+                myChannelData.getInt("msg_count")
+            }
 
-        data.putInt("message_count", 0.coerceAtLeast(totalMsg - myMsgCount))
-        data.putInt("mentions_count", mentionCount)
-        data.putBoolean("is_unread", myMsgCount > 0)
-        data.putDouble("last_post_at", lastPostAt)
-        return data
+            val mentionCount = if (isCRTEnabled) {
+                myChannelData.getInt("mention_count_root")
+            } else {
+                myChannelData.getInt("mention_count")
+            }
+
+            val lastPostAt = if (isCRTEnabled) {
+                try {
+                    channelData.getDouble("last_root_post_at")
+                } catch (e: Exception) {
+                    channelData.getDouble("last_post_at")
+                }
+            } else {
+                channelData.getDouble("last_post_at")
+            }
+
+            val messageCount = 0.coerceAtLeast(totalMsg - myMsgCount)
+            data.putInt("message_count", messageCount)
+            data.putInt("mentions_count", mentionCount)
+            data.putBoolean("is_unread", messageCount > 0)
+            data.putDouble("last_post_at", lastPostAt)
+            return data
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 
     return null
 }
 
 private suspend fun PushNotificationDataRunnable.Companion.fetchProfileInChannel(db: Database, serverUrl: String, channelId: String): ReadableArray? {
-    val currentUserId = queryCurrentUserId(db)?.removeSurrounding("\"")
-    val profilesInChannel = fetch(serverUrl, "/api/v4/users?in_channel=${channelId}&page=0&per_page=8&sort=")
-    val profilesArray = profilesInChannel?.getArray("data")
-    val result = Arguments.createArray()
-    if (profilesArray != null) {
-        for (i in 0 until profilesArray.size()) {
-            val profile = profilesArray.getMap(i)
-            if (profile.getString("id") != currentUserId) {
-                result.pushMap(profile)
+    return try {
+        val currentUserId = queryCurrentUserId(db)
+        val profilesInChannel = fetch(serverUrl, "/api/v4/users?in_channel=${channelId}&page=0&per_page=8&sort=")
+        val profilesArray = profilesInChannel?.getArray("data")
+        val result = Arguments.createArray()
+        if (profilesArray != null) {
+            for (i in 0 until profilesArray.size()) {
+                val profile = profilesArray.getMap(i)
+                if (profile.getString("id") != currentUserId) {
+                    result.pushMap(profile)
+                }
             }
         }
-    }
 
-    return result
+        result
+    } catch (e: Exception) {
+        e.printStackTrace()
+        null
+    }
 }
 
 private fun PushNotificationDataRunnable.Companion.displayUsername(user: ReadableMap, displayNameSetting: String): String {

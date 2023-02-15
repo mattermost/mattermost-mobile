@@ -24,8 +24,8 @@ internal fun insertPostInChannel(db: Database, channelId: String, earliest: Doub
         db.execute(
                 """
                 INSERT INTO PostsInChannel 
-                (id, channel_id, earliest, latest, _status) 
-                VALUES (?, ?, ?, ?, 'created')
+                (id, channel_id, earliest, latest, _changed, _status) 
+                VALUES (?, ?, ?, ?, '', 'created')
                 """.trimIndent(),
                 arrayOf(id, channelId, earliest, latest))
 

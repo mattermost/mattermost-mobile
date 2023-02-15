@@ -11,7 +11,7 @@ fun getLastPictureUpdate(db: Database?, userId: String): Double? {
         if (db != null) {
             var id = userId
             if (userId == "me") {
-                (queryCurrentUserId(db)?.removeSurrounding("\"") ?: userId).also { id = it }
+                (queryCurrentUserId(db) ?: userId).also { id = it }
             }
             val userQuery = "SELECT last_picture_update FROM User WHERE id=?"
             db.rawQuery(userQuery, arrayOf(id)).use { cursor ->
@@ -30,7 +30,7 @@ fun getLastPictureUpdate(db: Database?, userId: String): Double? {
 
 fun getCurrentUserLocale(db: Database): String {
     try {
-        val currentUserId = queryCurrentUserId(db)?.removeSurrounding("\"") ?: return "en"
+        val currentUserId = queryCurrentUserId(db) ?: return "en"
         val userQuery = "SELECT locale FROM User WHERE id=?"
         db.rawQuery(userQuery, arrayOf(currentUserId)).use { cursor ->
             if (cursor.count == 1) {
@@ -62,8 +62,8 @@ fun handleUsers(db: Database, users: ReadableArray) {
                     """
                     INSERT INTO User (id, auth_service, update_at, delete_at, email, first_name, is_bot, is_guest,
                     last_name, last_picture_update, locale, nickname, position, roles, status, username, notify_props, 
-                    props, timezone, _status) 
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'created')
+                    props, timezone, _changed, _status) 
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'created')
                     """.trimIndent(),
                     arrayOf(
                             user.getString("id"),

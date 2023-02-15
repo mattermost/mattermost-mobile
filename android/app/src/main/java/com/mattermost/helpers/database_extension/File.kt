@@ -20,8 +20,8 @@ internal fun insertFiles(db: Database, files: JSONArray) {
             db.execute(
                     """
                     INSERT INTO File 
-                    (id, extension, height, image_thumbnail, local_path, mime_type, name, post_id, size, width, _status) 
-                    VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, ?, 'created')
+                    (id, extension, height, image_thumbnail, local_path, mime_type, name, post_id, size, width, _changed, _status) 
+                    VALUES (?, ?, ?, ?, '', ?, ?, ?, ?, ?, '', 'created')
                     """.trimIndent(),
                     arrayOf(
                             id, extension, height, miniPreview,

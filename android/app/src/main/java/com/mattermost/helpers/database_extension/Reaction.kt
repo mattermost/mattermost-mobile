@@ -12,8 +12,8 @@ internal fun insertReactions(db: Database, reactions: JSONArray) {
             db.execute(
                     """
                     INSERT INTO Reaction 
-                    (id, create_at, emoji_name, post_id, user_id, _status) 
-                    VALUES (?, ?, ?, ?, ?, 'created')
+                    (id, create_at, emoji_name, post_id, user_id, _changed, _status) 
+                    VALUES (?, ?, ?, ?, ?, '', 'created')
                     """.trimIndent(),
                     arrayOf(
                             id,

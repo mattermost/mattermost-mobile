@@ -1,8 +1,10 @@
 package com.mattermost.helpers.database_extension
 
+import com.facebook.react.bridge.Arguments
 import com.facebook.react.bridge.NoSuchKeyException
 import com.facebook.react.bridge.ReadableMap
 import com.nozbe.watermelondb.Database
+import com.nozbe.watermelondb.mapCursor
 
 fun findTeam(db: Database?, teamId: String): Boolean {
     if (db != null) {
@@ -18,6 +20,22 @@ fun findMyTeam(db: Database?, teamId: String): Boolean {
         return team != null
     }
     return false
+}
+
+fun queryMyTeams(db: Database?): ArrayList<ReadableMap>? {
+    db?.rawQuery("SELECT * FROM MyTeam")?.use { cursor ->
+        val results = ArrayList<ReadableMap>()
+        if (cursor.count > 0) {
+            while(cursor.moveToNext()) {
+                val map = Arguments.createMap()
+                map.mapCursor(cursor)
+                results.add(map)
+            }
+        }
+
+        return results
+    }
+    return null
 }
 
 fun insertTeam(db: Database, team: ReadableMap): Boolean {
@@ -44,8 +62,8 @@ fun insertTeam(db: Database, team: ReadableMap): Boolean {
                 """
                 INSERT INTO Team (
                   id, allow_open_invite, description, display_name, name, update_at, type, allowed_domains,
-                  group_constrained, last_team_icon_update, invite_id, _status
-                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+                  group_constrained, last_team_icon_update, invite_id, _changed, _status
+                ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', ?)
                 """.trimIndent(),
                 arrayOf(
                         id, isAllowOpenInvite, description, displayName, name, updateAt,
@@ -70,13 +88,13 @@ fun insertMyTeam(db: Database, myTeam: ReadableMap): Boolean {
 
     return try {
         db.execute(
-                "INSERT INTO MyTeam (id, roles, status) VALUES (?, ?, ?)",
+                "INSERT INTO MyTeam (id, roles, _changed, _status) VALUES (?, ?, '', ?)",
                 arrayOf(id, roles, status)
         )
         db.execute(
                 """
-                    INSERT INTO TeamMembership (id, team_id, user_id, scheme_admin, status)
-                    VALUES (?, ?, ?, ?, ?)
+                    INSERT INTO TeamMembership (id, team_id, user_id, scheme_admin, _changed, _status)
+                    VALUES (?, ?, ?, ?, '', ?)
                     """.trimIndent(),
                 arrayOf(membershipId, id, currentUserId, schemeAdmin, status)
         )
