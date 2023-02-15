@@ -49,12 +49,12 @@ const enhanced = withObservables(['currentTeamId', 'isTablet', 'onlyUnreads'], (
             const lastUnread = isTablet ? observeLastUnreadChannelId(database).pipe(
                 switchMap(getC),
             ) : of$(undefined);
-            const myUnreadChannels = queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at']);
+            const myUnreadChannels = queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at', 'is_unread']);
             const notifyProps = myUnreadChannels.pipe(switchMap((cs) => observeNotifyPropsByChannels(database, cs)));
             const channels = myUnreadChannels.pipe(switchMap((myChannels) => observeChannelsByLastPostAt(database, myChannels)));
             const channelsMap = channels.pipe(switchMap((cs) => of$(makeChannelsMap(cs))));
 
-            return queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at']).pipe(
+            return queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at', 'is_unread']).pipe(
                 combineLatestWith(channelsMap, notifyProps),
                 map(filterAndSortMyChannels),
                 combineLatestWith(lastUnread),
