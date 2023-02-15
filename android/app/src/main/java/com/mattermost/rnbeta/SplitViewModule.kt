@@ -29,11 +29,10 @@ class SplitViewModule(private var reactContext: ReactApplicationContext) : React
 
     override fun getName() = "SplitView"
 
-    fun sendEvent(eventName: String,
-                  params: WritableMap?) {
+    private fun sendEvent(params: WritableMap?) {
         reactContext
                 .getJSModule(RCTDeviceEventEmitter::class.java)
-                .emit(eventName, params)
+                .emit("SplitViewChanged", params)
     }
 
     private fun getSplitViewResults(folded: Boolean) : WritableMap? {
@@ -51,7 +50,7 @@ class SplitViewModule(private var reactContext: ReactApplicationContext) : React
     fun setDeviceFolded(folded: Boolean) {
         val map = getSplitViewResults(folded)
         if (listenerCount > 0 && isDeviceFolded != folded) {
-            sendEvent("SplitViewChanged", map)
+            sendEvent(map)
         }
         isDeviceFolded = folded
     }

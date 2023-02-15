@@ -29,6 +29,7 @@ import org.json.JSONException;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Objects;
 
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -75,8 +76,8 @@ public class ShareModule extends ReactContextBaseJavaModule {
     public String getCurrentActivityName() {
         Activity currentActivity = getCurrentActivity();
         if (currentActivity != null) {
-            String actvName = currentActivity.getComponentName().getClassName();
-            String[] components = actvName.split("\\.");
+            String activityName = currentActivity.getComponentName().getClassName();
+            String[] components = activityName.split("\\.");
             return components[components.length - 1];
         }
 
@@ -115,7 +116,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
         if (data != null && data.hasKey("serverUrl")) {
             ReadableArray files = data.getArray("files");
             String serverUrl = data.getString("serverUrl");
-            final String token = Credentials.getCredentialsForServerSync(this.getReactApplicationContext(), serverUrl);
+            final String token = Credentials.getCredentialsForServerSync(mReactContext, serverUrl);
             JSONObject postData = buildPostObject(data);
 
             if (files != null && files.size() > 0) {
@@ -236,7 +237,7 @@ public class ShareModule extends ReactContextBaseJavaModule {
 
             try (Response response = client.newCall(request).execute()) {
                 if (response.isSuccessful()) {
-                    String responseData = response.body().string();
+                    String responseData = Objects.requireNonNull(response.body()).string();
                     JSONObject responseJson = new JSONObject(responseData);
                     JSONArray fileInfoArray = responseJson.getJSONArray("file_infos");
                     JSONArray file_ids = new JSONArray();

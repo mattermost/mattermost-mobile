@@ -91,7 +91,7 @@ class ShareViewModel: ObservableObject {
       return
     }
     
-    Gekidou.Network.default.fetchUserProfilePicture(userId: userId, withServerUrl: serverUrl, completionHandler: {data, response, error in
+    Gekidou.Network.default.fetchUserProfilePicture(userId: userId, lastUpdateAt: 0, withServerUrl: serverUrl, completionHandler: {data, response, error in
       guard (response as? HTTPURLResponse)?.statusCode == 200 else {
         debugPrint("Error while fetching image \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
         return
