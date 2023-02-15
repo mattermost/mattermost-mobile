@@ -6,9 +6,9 @@ extension ImageCache {
         keysCache.removeAllObjects()
     }
     
-    func insertImage(_ data: Data?, for userId: String, updatedAt: Double, onServer serverUrl: String ) {
+    func insertImage(_ data: Data?, for userId: String, updatedAt: Double, forServer serverUrl: String ) {
         guard let data = data else {
-            return removeImage(for: userId, onServer: serverUrl)
+            return removeImage(for: userId, forServer: serverUrl)
         }
         
         lock.lock(); defer { lock.unlock() }
@@ -18,7 +18,7 @@ extension ImageCache {
         keysCache.setObject(imageKey, forKey: cacheKey)
     }
     
-    func removeImage(for userId: String, onServer serverUrl: String) {
+    func removeImage(for userId: String, forServer serverUrl: String) {
         lock.lock(); defer { lock.unlock() }
         let cacheKey = "\(serverUrl)-\(userId)" as NSString
         if let key = keysCache.object(forKey: cacheKey) {
