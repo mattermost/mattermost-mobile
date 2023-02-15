@@ -178,8 +178,8 @@ jobs:
         [ -z "${{ inputs.sentry_enabled }}" ]                          || echo 'SENTRY_ENABLED=${{ inputs.sentry_enabled }}' >> $GITHUB_ENV
         [ -z "${{ secrets.sentry_org }}" ]                             || echo 'SENTRY_ORG=${{ secrets.sentry_org }}' >> $GITHUB_ENV
         [ -z "${{ secrets.sentry_project_ios }}" ]                     || echo 'SENTRY_PROJECT_IOS=${{ secrets.sentry_project_ios }}' >> $GITHUB_ENV
-        [ -z "${{ secrets.show_onboarding }}" ]                        || echo 'SHOW_ONBOARDING=${{ secrets.show_onboarding }}' >> $GITHUB_ENV
-        [ -z "${{ secrets.sync_provisioning_profiles }}" ]             || echo 'SYNC_PROVISIONING_PROFILES=${{ secrets.sync_provisioning_profiles }}' >> $GITHUB_ENV
+        [ -z "${{ inputs.show_onboarding }}" ]                         || echo 'SHOW_ONBOARDING=${{ inputs.show_onboarding }}' >> $GITHUB_ENV
+        [ -z "${{ inputs.sync_provisioning_profiles }}" ]              || echo 'SYNC_PROVISIONING_PROFILES=${{ inputs.sync_provisioning_profiles }}' >> $GITHUB_ENV
         [ -z "${{ inputs.tag }}" ]                                     || echo 'TAG=${{ inputs.tag }}' >> $GITHUB_ENV
     - name: ci/checkout-repo
       uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
