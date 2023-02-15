@@ -155,11 +155,11 @@ jobs:
         [ -z "${{ secrets.gh_token }}" ]                               || echo 'GITHUB_TOKEN=${{ secrets.gh_token }}' >> $GITHUB_ENV
         [ -z "${{ secrets.ios_api_issuer_id }}" ]                      || echo 'IOS_API_ISSUER_ID=${{ secrets.ios_api_issuer_id }}' >> $GITHUB_ENV
         if [ -n "${{ secrets.ios_api_key }}" ]; then
-          cat <<-EOF >>$GITHUB_ENV
-          IOS_API_KEY<<INNEREOF
-          ${{ secrets.ios_api_key }}
-          INNEREOF
-          EOF
+          cat <<EOF >>$GITHUB_ENV
+        IOS_API_KEY<<INNEREOF
+        ${{ secrets.ios_api_key }}
+        INNEREOF
+        EOF
         fi
         [ -z "${{ secrets.ios_api_key_id }}" ]                         || echo 'IOS_API_KEY_ID=${{ secrets.ios_api_key_id }}' >> $GITHUB_ENV
         [ -z "${{ inputs.ios_app_group }}" ]                           || echo 'IOS_APP_GROUP=${{ inputs.ios_app_group }}' >> $GITHUB_ENV
