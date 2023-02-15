@@ -228,7 +228,9 @@ const About = ({componentId, config, license}: AboutProps) => {
                     </View>
                     <View style={styles.copyToClipBord}>
                         <TouchableOpacity onPress={() => copyToClipboard()}>
-                            <Text style={styles.rightHeading}>Copy info</Text>
+                            <Text style={styles.rightHeading}>
+                                {intl.formatMessage({id: 'settins.about.copy_info', defaultMessage: 'Copy Info'})}
+                            </Text>
                         </TouchableOpacity>
                     </View>
                 </View>
