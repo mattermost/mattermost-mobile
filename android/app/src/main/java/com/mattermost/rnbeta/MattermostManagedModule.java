@@ -32,10 +32,10 @@ import com.mattermost.helpers.RealPathUtil;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
-import java.io.IOException;
 import java.lang.ref.WeakReference;
 import java.net.URL;
 import java.nio.channels.FileChannel;
+import java.util.Objects;
 
 public class MattermostManagedModule extends ReactContextBaseJavaModule {
     private static final String SAVE_EVENT = "MattermostManagedSaveFile";
@@ -45,8 +45,6 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
 
     private Promise mPickerPromise;
     private String fileContent;
-
-    private static final String TAG = MattermostManagedModule.class.getSimpleName();
 
     private MattermostManagedModule(ReactApplicationContext reactContext) {
         super(reactContext);
@@ -149,7 +147,7 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
             }
             try {
                 final String packageName = currentActivity.getPackageName();
-                final String authority = new StringBuilder(packageName).append(".provider").toString();
+                final String authority = packageName + ".provider";
                 contentUri = FileProvider.getUriForFile(currentActivity, authority, newFile);
             }
             catch(IllegalArgumentException e) {
@@ -176,7 +174,7 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
         intent.setType(mimeType);
         intent.putExtra(Intent.EXTRA_TITLE, filename);
 
-        PackageManager pm = getCurrentActivity().getPackageManager();
+        PackageManager pm = Objects.requireNonNull(getCurrentActivity()).getPackageManager();
         if (intent.resolveActivity(pm) != null) {
             try {
                 getCurrentActivity().startActivityForResult(intent, SAVE_REQUEST);
@@ -211,7 +209,7 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
             if (!TextUtils.isEmpty(token)) {
                 WritableMap headers = Arguments.createMap();
                 if (optionsMap.hasKey("headers")) {
-                    headers.merge(optionsMap.getMap("headers"));
+                    headers.merge(Objects.requireNonNull(optionsMap.getMap("headers")));
                 }
                 headers.putString("Authorization", "Bearer " + token);
                 optionsMap.putMap("headers", headers);
@@ -237,34 +235,21 @@ public class MattermostManagedModule extends ReactContextBaseJavaModule {
 
         @Override
         protected Object doInBackgroundGuarded() {
-            FileChannel source = null;
-            FileChannel dest = null;
             try {
-                File input = new File(this.fromFile);
-                FileInputStream fileInputStream = new FileInputStream(input);
                 ParcelFileDescriptor pfd = weakContext.get().getContentResolver().openFileDescriptor(toFile, "w");
-                FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor());
-                source = fileInputStream.getChannel();
-                dest = fileOutputStream.getChannel();
-                dest.transferFrom(source, 0, source.size());
+                File input = new File(this.fromFile);
+                try (FileInputStream fileInputStream = new FileInputStream(input)) {
+                    try (FileOutputStream fileOutputStream = new FileOutputStream(pfd.getFileDescriptor())) {
+                        FileChannel source = fileInputStream.getChannel();
+                        FileChannel dest = fileOutputStream.getChannel();
+                        dest.transferFrom(source, 0, source.size());
+                        source.close();
+                        dest.close();
+                    }
+                }
+                pfd.close();
             } catch (Exception e) {
                 e.printStackTrace();
-            } finally {
-                if (source != null) {
-                    try {
-                        source.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
-
-                if (dest != null) {
-                    try {
-                        dest.close();
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
-                }
             }
 
             return null;

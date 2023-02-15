@@ -17,6 +17,7 @@ import {observeCurrentChannelId, getCurrentChannelId, observeCurrentUserId} from
 import {observeTeammateNameDisplay} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Clause} from '@nozbe/watermelondb/QueryDescription';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -225,7 +226,12 @@ export const observeChannel = (database: Database, channelId: string) => {
 };
 
 export const getChannelByName = async (database: Database, teamId: string, channelName: string) => {
-    const channels = await database.get<ChannelModel>(CHANNEL).query(Q.on(TEAM, 'id', teamId), Q.where('name', channelName)).fetch();
+    const clauses: Clause[] = [];
+    if (teamId) {
+        clauses.push(Q.on(TEAM, 'id', teamId));
+    }
+    clauses.push(Q.where('name', channelName));
+    const channels = await database.get<ChannelModel>(CHANNEL).query(...clauses).fetch();
 
     // Check done to force types
     if (channels.length) {

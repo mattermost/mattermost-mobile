@@ -987,5 +987,11 @@
     "mobile.manage_members.done": "Klaar",
     "mobile.manage_members.change_role.error": "Er is een fout opgetreden tijdens het bijwerken van de rol. Controleer jouw verbinding en probeer opnieuw.",
     "mobile.manage_members.cancel": "Annuleren",
-    "mobile.manage_members.admin": "Beheerder"
+    "mobile.manage_members.admin": "Beheerder",
+    "mobile.calls_recording_stop_none_in_progress": "Er is geen opname bezig.",
+    "mobile.calls_recording_stop_no_permissions": "Je hebt geen rechten om de opname te stoppen. Vraag de gesprekshost om de opname te stoppen.",
+    "mobile.calls_recording_start_no_permissions": "Je hebt geen rechten om een opname te starten. Vraag de gesprekshost om een opname te starten.",
+    "mobile.calls_recording_start_in_progress": "Er is al een opname bezig.",
+    "mobile.calls_host_rec_error_title": "Er ging iets mis met de opname",
+    "mobile.calls_host_rec_error": "Probeer opnieuw op te nemen. Je kan ook contact opnemen met jouuw systeembeheerder voor hulp bij het oplossen van problemen."
 }

@@ -1,6 +1,6 @@
 {
   "name": "mattermost-mobile",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Mattermost Mobile with React Native",
   "repository": "git@github.com:mattermost/mattermost-mobile.git",
   "author": "Mattermost, Inc.",
@@ -89,7 +89,7 @@
     "react-native-vector-icons": "9.2.0",
     "react-native-video": "5.2.1",
     "react-native-walkthrough-tooltip": "1.5.0",
-    "react-native-webrtc": "106.0.4",
+    "react-native-webrtc": "106.0.5",
     "react-native-webview": "11.26.1",
     "react-syntax-highlighter": "15.5.0",
     "readable-stream": "3.6.0",

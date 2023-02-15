@@ -5,6 +5,7 @@ import android.util.LruCache
 
 class BitmapCache {
     private var memoryCache: LruCache<String, Bitmap>
+    private var keysCache: LruCache<String, String>
 
     init {
         val maxMemory = (Runtime.getRuntime().maxMemory() / 1024).toInt()
@@ -14,15 +15,35 @@ class BitmapCache {
                 return bitmap.byteCount / 1024
             }
         }
+        keysCache = LruCache<String, String>(50)
     }
 
-    fun getBitmapFromMemCache(key: String): Bitmap? {
+    fun bitmap(userId: String, updatedAt: Double, serverUrl: String): Bitmap? {
+        val key = "$serverUrl-$userId-$updatedAt"
         return memoryCache.get(key)
     }
 
-    fun addBitmapToMemoryCache(key: String, bitmap: Bitmap) {
-        if (getBitmapFromMemCache(key) == null) {
-            memoryCache.put(key, bitmap)
+    fun insertBitmap(bitmap: Bitmap?, userId: String, updatedAt: Double, serverUrl: String) {
+        if (bitmap == null) {
+            removeBitmap(userId, serverUrl)
         }
+        val key = "$serverUrl-$userId-$updatedAt"
+        val cachedKey = "$serverUrl-$userId"
+        keysCache.put(cachedKey, key)
+        memoryCache.put(key, bitmap)
+    }
+
+    fun removeBitmap(userId: String, serverUrl: String) {
+        val cachedKey = "$serverUrl-$userId"
+        val key = keysCache.get(cachedKey)
+        if (key != null) {
+            memoryCache.remove(key)
+            keysCache.remove(cachedKey)
+        }
+    }
+
+    fun removeAllBitmaps() {
+        memoryCache.evictAll()
+        keysCache.evictAll()
     }
 }
