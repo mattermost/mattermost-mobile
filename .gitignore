@@ -37,6 +37,7 @@ project.xcworkspace
 ios/Pods
 .podinstall
 ios/.xcode.env.local
+ios/Mattermost/GoogleService-Info.plist
 
 # Android/IntelliJ
 #
@@ -54,6 +55,7 @@ android/build
 .settings
 .project
 .classpath
+android/app/google-services.json
 
 # node.js
 #
