@@ -122,6 +122,8 @@ on:
         required: false
       mattermost_webhook_url:
         required: false
+      private_deploy_key:
+        required: false
       sentry_auth_token:
         required: false
       sentry_dsn_ios:
@@ -200,6 +202,11 @@ jobs:
       uses: ./.github/actions/fastlane-dependencies
       with:
         os: ios
+    - name: ci/output-ssh-private-key
+      run: |
+        mkdir -p ~/.ssh
+        echo '${{ secrets.private_deploy_key }}' > ~/.ssh/id_rsa
+      if: "${{ inputs.build_type == 'signed' }}"
     # Build iOS app, method depends on the value of `build_type`
     - name: ci/build-ios-signed
       working-directory: ./fastlane

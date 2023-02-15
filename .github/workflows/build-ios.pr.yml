@@ -42,3 +42,4 @@ jobs:
       match_git_url: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
       match_password: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
       mattermost_webhook_url: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
+      private_deploy_key: "${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}"
