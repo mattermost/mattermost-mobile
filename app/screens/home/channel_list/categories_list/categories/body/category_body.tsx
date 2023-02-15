@@ -63,7 +63,7 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit,
 
     useEffect(() => {
         if (directChannels.length) {
-            fetchDirectChannelsInfo(serverUrl, directChannels);
+            fetchDirectChannelsInfo(serverUrl, directChannels.filter((c) => !c.displayName));
         }
     }, [directChannels.length]);
 
