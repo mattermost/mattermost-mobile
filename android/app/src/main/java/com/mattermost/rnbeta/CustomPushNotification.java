@@ -152,7 +152,6 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private void notifyReceivedToJS() {
-
         mJsIOHelper.sendEventToJS(NOTIFICATION_RECEIVED_EVENT_NAME, mNotificationProps.asBundle(), mAppLifecycleFacade.getRunningReactContext());
     }
 
