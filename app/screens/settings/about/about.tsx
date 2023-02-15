@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import Config from '@assets/config.json';
 import CompassIcon from '@components/compass_icon';
@@ -92,6 +94,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         group: {
             flexDirection: 'row',
         },
+        justifyBetween: {
+            justifyContent: 'space-between',
+            alignItems: 'center',
+        },
+        copyToClipBord: {
+            paddingHorizontal: 3,
+            borderRadius: 50,
+            alignSelf: 'flex-end',
+            ...typography('Body', 25, 'Light'),
+            borderColor: theme.centerChannelColor,
+            borderWidth: 1,
+        },
     };
 });
 
@@ -171,6 +185,14 @@ const About = ({componentId, config, license}: AboutProps) => {
         popTopScreen(componentId);
     });
 
+    const copyToClipboard = () => {
+        const copiedString = `${intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version:'})} ${intl.formatMessage({id: serverVersion.id, defaultMessage: serverVersion.defaultMessage}, serverVersion.values)} \n ${intl.formatMessage({id: 'settings.about.server.version.desc', defaultMessage: 'Server Version:'})} ${intl.formatMessage({id: serverVersion.id, defaultMessage: serverVersion.defaultMessage}, serverVersion.values)} \n ${intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database:'})}  ${intl.formatMessage({id: 'settings.about.database.value', defaultMessage: `${config.SQLDriverName}`})} \n ${intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version:'})} ${intl.formatMessage({
+            id: 'settings.about.database.schema.value',
+            defaultMessage: `${config.SchemaVersion}`,
+        })}`;
+        Clipboard.setString(copiedString);
+    };
+
     return (
         <SettingContainer testID='about'>
             <View style={styles.logoContainer}>
@@ -188,20 +210,27 @@ const About = ({componentId, config, license}: AboutProps) => {
                 <SettingSeparator lineStyles={styles.lineStyles}/>
             </View>
             <View style={styles.infoContainer}>
-                <View style={styles.group}>
-                    <Text
-                        style={styles.leftHeading}
-                        testID='about.app_version.title'
-                    >
-                        {intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version:'})}
-                    </Text>
-                    <Text
-                        style={styles.rightHeading}
-                        testID='about.app_version.value'
-                    >
-                        {intl.formatMessage({id: 'settings.about.build', defaultMessage: '{version} (Build {number})'},
-                            {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()})}
-                    </Text>
+                <View style={[styles.group, styles.justifyBetween]}>
+                    <View style={styles.group}>
+                        <Text
+                            style={styles.leftHeading}
+                            testID='about.app_version.title'
+                        >
+                            {intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version:'})}
+                        </Text>
+                        <Text
+                            style={styles.rightHeading}
+                            testID='about.app_version.value'
+                        >
+                            {intl.formatMessage({id: 'settings.about.build', defaultMessage: '{version} (Build {number})'},
+                                {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()})}
+                        </Text>
+                    </View>
+                    <View style={styles.copyToClipBord}>
+                        <TouchableOpacity onPress={() => copyToClipboard()}>
+                            <Text style={styles.rightHeading}>Copy info</Text>
+                        </TouchableOpacity>
+                    </View>
                 </View>
                 <View style={styles.group}>
                     <Text
