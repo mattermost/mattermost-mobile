@@ -51,7 +51,7 @@ export async function addReaction(serverUrl: string, postId: string, emojiName: 
                 models.push(...recent);
             }
 
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'addReaction');
 
             return {reaction};
         }

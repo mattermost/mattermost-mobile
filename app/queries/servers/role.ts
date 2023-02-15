@@ -88,8 +88,8 @@ export function observePermissionForPost(database: Database, post: PostModel, us
     );
 }
 
-export function observeCanManageChannelMembers(database: Database, post: PostModel, user: UserModel) {
-    return observeChannel(database, post.channelId).pipe(
+export function observeCanManageChannelMembers(database: Database, channelId: string, user: UserModel) {
+    return observeChannel(database, channelId).pipe(
         switchMap((c) => {
             if (!c || c.deleteAt !== 0 || isDMorGM(c) || c.name === General.DEFAULT_CHANNEL) {
                 return of$(false);

@@ -1,8 +1,19 @@
 diff --git a/node_modules/@nozbe/watermelondb/Database/index.js b/node_modules/@nozbe/watermelondb/Database/index.js
-index 8d71c6f..9ad75d6 100644
+index 8d71c6f..7a4b570 100644
 --- a/node_modules/@nozbe/watermelondb/Database/index.js
 +++ b/node_modules/@nozbe/watermelondb/Database/index.js
-@@ -126,6 +126,10 @@ var Database = /*#__PURE__*/function () {
+@@ -91,7 +91,9 @@ var Database = /*#__PURE__*/function () {
+ 
+         if (!preparedState) {
+           (0, _common.invariant)('disposable' !== record._raw._status, "Cannot batch a disposable record");
+-          throw new Error("Cannot batch a record that doesn't have a prepared create/update/delete");
++          //throw new Error("Cannot batch a record that doesn't have a prepared create/update/delete");
++          console.debug('Trying to batch a record with no prepared state on table', record.constructor.table)
++          return;
+         }
+ 
+         var raw = record._raw;
+@@ -126,6 +128,10 @@ var Database = /*#__PURE__*/function () {
            // subsequent changes to the record don't trip up the invariant
            // TODO: What if this fails?
            record._preparedState = null;
@@ -27,27 +38,37 @@ index 96114ec..ecfe3c1 100644
  
    prepareDestroyPermanently(): this
 diff --git a/node_modules/@nozbe/watermelondb/Model/index.js b/node_modules/@nozbe/watermelondb/Model/index.js
-index b0e3a83..57ecb8d 100644
+index b0e3a83..d7ead09 100644
 --- a/node_modules/@nozbe/watermelondb/Model/index.js
 +++ b/node_modules/@nozbe/watermelondb/Model/index.js
-@@ -81,7 +81,7 @@ var Model = /*#__PURE__*/function () {
+@@ -81,7 +81,17 @@ var Model = /*#__PURE__*/function () {
    _proto.prepareUpdate = function prepareUpdate(recordUpdater = _noop.default) {
      var _this = this;
  
 -    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes");
-+    (0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes in table " + _this.table);
++    if ('deleted' === this._raw._status) {
++      console.debug("Updating a deleted record in table " + _this.table)
++      return this;
++    }
++
++    //(0, _invariant.default)(!this._preparedState, "Cannot update a record with pending changes");
++    if (this._preparedState) {
++      console.debug("Updating a record with pending changes in table " + _this.table)
++    } else {
++      this.__original = Object.assign({}, this._raw);
++    }
  
      this.__ensureNotDisposable("Model.prepareUpdate()");
  
-@@ -92,6 +92,7 @@ var Model = /*#__PURE__*/function () {
+@@ -91,7 +101,6 @@ var Model = /*#__PURE__*/function () {
+       this._setRaw((0, _Schema.columnName)('updated_at'), Date.now());
      } // Perform updates
  
- 
-+    this.__original = Object.assign({}, this._raw);
+-
      (0, _ensureSync.default)(recordUpdater(this));
      this._isEditing = false;
      this._preparedState = 'update'; // TODO: `process.nextTick` doesn't work on React Native
-@@ -107,6 +108,19 @@ var Model = /*#__PURE__*/function () {
+@@ -107,6 +116,19 @@ var Model = /*#__PURE__*/function () {
      return this;
    };
  
@@ -67,10 +88,31 @@ index b0e3a83..57ecb8d 100644
    _proto.prepareMarkAsDeleted = function prepareMarkAsDeleted() {
      (0, _invariant.default)(!this._preparedState, "Cannot mark a record with pending changes as deleted");
  
+@@ -118,7 +140,10 @@ var Model = /*#__PURE__*/function () {
+   };
+ 
+   _proto.prepareDestroyPermanently = function prepareDestroyPermanently() {
+-    (0, _invariant.default)(!this._preparedState, "Cannot destroy permanently a record with pending changes");
++    //(0, _invariant.default)(!this._preparedState, "Cannot destroy permanently a record with pending changes");
++    if (this._preparedState) {
++      console.debug("Deleting a record with pending changes in table " + this.table);
++    }
+ 
+     this.__ensureNotDisposable("Model.prepareDestroyPermanently()");
+ 
 diff --git a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
-index ca31e20..b45c753 100644
+index ca31e20..764519f 100644
 --- a/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
 +++ b/node_modules/@nozbe/watermelondb/native/android/src/main/java/com/nozbe/watermelondb/Database.kt
+@@ -11,7 +11,7 @@ import java.io.File
+ class Database(
+     private val name: String,
+     private val context: Context,
+-    private val openFlags: Int = SQLiteDatabase.CREATE_IF_NECESSARY or SQLiteDatabase.ENABLE_WRITE_AHEAD_LOGGING
++    private val openFlags: Int = SQLiteDatabase.CREATE_IF_NECESSARY
+ ) {
+ 
+     private val db: SQLiteDatabase by lazy {
 @@ -22,6 +22,21 @@ class Database(
              if (name == ":memory:" || name.contains("mode=memory")) {
                  context.cacheDir.delete()
@@ -94,9 +136,18 @@ index ca31e20..b45c753 100644
                  // On some systems there is some kind of lock on `/databases` folder ¯\_(ツ)_/¯
                  context.getDatabasePath("$name.db").path.replace("/databases", "")
 diff --git a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
-index 1a1cabf..01bbb2b 100644
+index 1a1cabf..c4459c8 100644
 --- a/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
 +++ b/node_modules/@nozbe/watermelondb/native/shared/Database.cpp
+@@ -21,7 +21,7 @@ Database::Database(jsi::Runtime *runtime, std::string path, bool usesExclusiveLo
+     executeMultiple("pragma temp_store = memory;");
+     #endif
+ 
+-    executeMultiple("pragma journal_mode = WAL;");
++//    executeMultiple("pragma journal_mode = WAL;");
+ 
+     #ifdef ANDROID
+     // NOTE: This was added in an attempt to fix mysterious `database disk image is malformed` issue when using
 @@ -54,6 +54,7 @@ void Database::destroy() {
      const std::lock_guard<std::mutex> lock(mutex_);
  

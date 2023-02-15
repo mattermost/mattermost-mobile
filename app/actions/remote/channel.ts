@@ -5,8 +5,9 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
-import {removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
+import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
+import {updateLocalUser} from '@actions/local/user';
 import {loadCallForChannel} from '@calls/actions/calls';
 import {DeepLink, Events, General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -15,7 +16,7 @@ import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
 import AppsManager from '@managers/apps_manager';
 import NetworkManager from '@managers/network_manager';
 import {getActiveServer} from '@queries/app/servers';
-import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId, queryChannelsById} from '@queries/servers/channel';
+import {prepareMyChannelsForTeam, getChannelById, getChannelByName, getMyChannel, getChannelInfo, queryMyChannelSettingsByIds, getMembersCountByChannelsId, deleteChannelMembership, queryChannelsById} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams, removeChannelFromTeamHistory} from '@queries/servers/team';
@@ -35,9 +36,10 @@ import {setDirectChannelVisible} from './preference';
 import {fetchRolesIfNeeded} from './role';
 import {forceLogoutIfNecessary} from './session';
 import {addCurrentUserToTeam, fetchTeamByName, removeCurrentUserFromTeam} from './team';
-import {fetchProfilesInGroupChannels, fetchProfilesPerChannels, fetchUsersByIds, updateUsersNoLongerVisible} from './user';
+import {fetchProfilesInChannel, fetchProfilesInGroupChannels, fetchProfilesPerChannels, fetchUsersByIds, updateUsersNoLongerVisible} from './user';
 
 import type {Client} from '@client/rest';
+import type ClientError from '@client/rest/error';
 import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type {IntlShape} from 'react-intl';
@@ -47,6 +49,99 @@ export type MyChannelsRequest = {
     channels?: Channel[];
     memberships?: ChannelMembership[];
     error?: unknown;
+}
+
+export type ChannelMembersRequest = {
+    members?: ChannelMembership[];
+    error?: unknown;
+}
+
+export async function removeMemberFromChannel(serverUrl: string, channelId: string, userId: string) {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+
+        await client.removeFromChannel(userId, channelId);
+        await deleteChannelMembership(operator, userId, channelId);
+
+        return {error: undefined};
+    } catch (error) {
+        logError('removeMemberFromChannel', error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
+
+export async function fetchChannelMembersByIds(serverUrl: string, channelId: string, userIds: string[], fetchOnly = false): Promise<ChannelMembersRequest> {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const members = await client.getChannelMembersByIds(channelId, userIds);
+
+        if (!fetchOnly) {
+            const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            if (operator && members.length) {
+                const memberships = members.map((u) => ({
+                    channel_id: channelId,
+                    user_id: u.user_id,
+                    scheme_admin: u.scheme_admin,
+                }));
+                await operator.handleChannelMembership({
+                    channelMemberships: memberships,
+                    prepareRecordsOnly: false,
+                });
+            }
+        }
+
+        return {members};
+    } catch (error) {
+        logError('fetchChannelMembersByIds', error);
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+}
+export async function updateChannelMemberSchemeRoles(serverUrl: string, channelId: string, userId: string, isSchemeUser: boolean, isSchemeAdmin: boolean, fetchOnly = false) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        await client.updateChannelMemberSchemeRoles(channelId, userId, isSchemeUser, isSchemeAdmin);
+
+        if (!fetchOnly) {
+            return getMemberInChannel(serverUrl, channelId, userId);
+        }
+
+        return {error: undefined};
+    } catch (error) {
+        logError('updateChannelMemberSchemeRoles', error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
+
+export async function getMemberInChannel(serverUrl: string, channelId: string, userId: string, fetchOnly = false) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const member = await client.getMemberInChannel(channelId, userId);
+
+        if (!fetchOnly) {
+            updateLocalUser(serverUrl, member, userId);
+        }
+        return {member, error: undefined};
+    } catch (error) {
+        logError('getMemberInChannel', error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    }
+}
+
+export async function fetchChannelMemberships(serverUrl: string, channelId: string, options: GetUsersOptions, fetchOnly = false) {
+    const {users = []} = await fetchProfilesInChannel(serverUrl, channelId, undefined, options, fetchOnly);
+    const userIds = users.map((u) => u.id);
+
+    // MM-49896 https://mattermost.atlassian.net/browse/MM-49896
+    // We are not sure the getChannelMembers API returns the same members
+    // from getProfilesInChannel.  This guarantees a 1:1 match of the
+    // user IDs
+    const {members = []} = await fetchChannelMembersByIds(serverUrl, channelId, userIds, true);
+    return {users, members};
 }
 
 export async function addMembersToChannel(serverUrl: string, channelId: string, userIds: string[], postRootId = '', fetchOnly = false) {
@@ -79,7 +174,7 @@ export async function addMembersToChannel(serverUrl: string, channelId: string, 
             }));
 
             const models = await Promise.all(modelPromises);
-            await operator.batchRecords(models.flat());
+            await operator.batchRecords(models.flat(), 'addMembersToChannel');
         }
         return {channelMemberships};
     } catch (error) {
@@ -156,7 +251,7 @@ export async function createChannel(serverUrl: string, displayName: string, purp
             models.push(...categoriesModels.models);
         }
         if (models.length) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'createChannel');
         }
         fetchChannelStats(serverUrl, channelData.id, false);
         EphemeralStore.creatingChannel = false;
@@ -201,7 +296,7 @@ export async function patchChannel(serverUrl: string, channelPatch: Partial<Chan
             models.push(channel);
         }
         if (models?.length) {
-            await operator.batchRecords(models.flat());
+            await operator.batchRecords(models.flat(), 'patchChannel');
         }
         return {channel: channelData};
     } catch (error) {
@@ -248,7 +343,7 @@ export async function leaveChannel(serverUrl: string, channelId: string) {
             models.push(...removeUserModels);
         }
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'leaveChannel');
 
         if (isTabletDevice) {
             switchToLastChannel(serverUrl);
@@ -298,7 +393,7 @@ export async function fetchChannelCreator(serverUrl: string, channelId: string, 
                 }));
 
                 const models = await Promise.all(modelPromises);
-                await operator.batchRecords(models.flat());
+                await operator.batchRecords(models.flat(), 'fetchChannelCreator');
             }
 
             return {user};
@@ -389,7 +484,7 @@ export async function fetchMyChannelsForTeam(serverUrl: string, teamId: string, 
             const {models: catModels} = await storeCategories(serverUrl, categories, true, true); // Re-sync
             const models = (chModels || []).concat(catModels || []);
             if (models.length) {
-                await operator.batchRecords(models);
+                await operator.batchRecords(models, 'fetchMyChannelsForTeam');
             }
             setTeamLoading(serverUrl, false);
         }
@@ -514,7 +609,7 @@ export async function fetchMissingDirectChannelsInfo(serverUrl: string, directCh
             }
 
             const models = await Promise.all(modelPromises);
-            await operator.batchRecords(models.flat());
+            await operator.batchRecords(models.flat(), 'fetchMissingDirectChannelInfo');
         }
 
         return {directChannels: updatedChannelsArray, users};
@@ -592,7 +687,7 @@ export async function joinChannel(serverUrl: string, teamId: string, channelId?:
                 }
                 if (flattenedModels?.length > 0) {
                     try {
-                        await operator.batchRecords(flattenedModels);
+                        await operator.batchRecords(flattenedModels, 'joinChannel');
                     } catch {
                         logError('FAILED TO BATCH CHANNELS');
                     }
@@ -631,10 +726,14 @@ export async function joinChannelIfNeeded(serverUrl: string, channelId: string) 
     }
 }
 
-export async function markChannelAsRead(serverUrl: string, channelId: string) {
+export async function markChannelAsRead(serverUrl: string, channelId: string, updateLocal = false) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.viewMyChannel(channelId);
+
+        if (updateLocal) {
+            await markChannelAsViewed(serverUrl, channelId, true);
+        }
 
         return {};
     } catch (error) {
@@ -818,7 +917,7 @@ export async function createDirectChannel(serverUrl: string, userId: string, dis
             models.push(...userModels);
         }
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'createDirectChannel');
         EphemeralStore.creatingDMorGMTeammates = [];
         fetchRolesIfNeeded(serverUrl, member.roles.split(' '));
         return {data: created};
@@ -952,7 +1051,7 @@ export async function createGroupChannel(serverUrl: string, userIds: string[]) {
                 }
 
                 models.push(...userModels);
-                operator.batchRecords(models);
+                operator.batchRecords(models, 'createGroupChannel');
             }
         }
         EphemeralStore.creatingDMorGMTeammates = [];
@@ -1297,7 +1396,7 @@ export const convertChannelToPrivate = async (serverUrl: string, channelId: stri
             channel.prepareUpdate((c) => {
                 c.type = General.PRIVATE_CHANNEL;
             });
-            await operator.batchRecords([channel]);
+            await operator.batchRecords([channel], 'convertChannelToPrivate');
         }
         return {error: undefined};
     } catch (error) {

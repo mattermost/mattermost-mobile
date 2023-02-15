@@ -17,6 +17,7 @@ import {observeCurrentChannelId, getCurrentChannelId, observeCurrentUserId} from
 import {observeTeammateNameDisplay} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Clause} from '@nozbe/watermelondb/QueryDescription';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -225,7 +226,12 @@ export const observeChannel = (database: Database, channelId: string) => {
 };
 
 export const getChannelByName = async (database: Database, teamId: string, channelName: string) => {
-    const channels = await database.get<ChannelModel>(CHANNEL).query(Q.on(TEAM, 'id', teamId), Q.where('name', channelName)).fetch();
+    const clauses: Clause[] = [];
+    if (teamId) {
+        clauses.push(Q.on(TEAM, 'id', teamId));
+    }
+    clauses.push(Q.where('name', channelName));
+    const channels = await database.get<ChannelModel>(CHANNEL).query(...clauses).fetch();
 
     // Check done to force types
     if (channels.length) {
@@ -319,7 +325,7 @@ export async function deleteChannelMembership(operator: ServerDataOperator, user
             models.push(membership.prepareDestroyPermanently());
         }
         if (models.length && !prepareRecordsOnly) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'deleteChannelMembership');
         }
         return {models};
     } catch (error) {
@@ -451,6 +457,29 @@ export const queryEmptyDirectAndGroupChannels = (database: Database) => {
             Q.where('team_id', Q.eq('')),
         ),
         Q.where('last_post_at', Q.eq(0)),
+    );
+};
+
+export const observeArchivedDirectChannels = (database: Database, currentUserId: string) => {
+    const deactivatedIds = database.get<UserModel>(USER).query(
+        Q.where('delete_at', Q.gt(0)),
+    ).observe().pipe(
+        switchMap((users) => of$(users.map((u) => u.id))),
+    );
+
+    return deactivatedIds.pipe(
+        switchMap((dIds) => {
+            return database.get<ChannelModel>(CHANNEL).query(
+                Q.on(
+                    CHANNEL_MEMBERSHIP,
+                    Q.and(
+                        Q.where('user_id', Q.notEq(currentUserId)),
+                        Q.where('user_id', Q.oneOf(dIds)),
+                    ),
+                ),
+                Q.where('type', 'D'),
+            ).observe();
+        }),
     );
 };
 

@@ -68,6 +68,7 @@ describe('Messaging - Save and Unsave Message', () => {
         await PostOptionsScreen.savePostOption.tap();
 
         // * Verify saved text is displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         const {postListPostItemPreHeaderText} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItemPreHeaderText).toHaveText(savedText);
 
@@ -76,6 +77,7 @@ describe('Messaging - Save and Unsave Message', () => {
         await PostOptionsScreen.unsavePostOption.tap();
 
         // * Verify saved text is not displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         await expect(postListPostItemPreHeaderText).not.toBeVisible();
 
         // # Go back to channel list screen
@@ -94,6 +96,7 @@ describe('Messaging - Save and Unsave Message', () => {
         await PostOptionsScreen.savePostOption.tap();
 
         // * Verify saved text is displayed on the post pre-header
+        await wait(timeouts.ONE_SEC);
         const {postListPostItemPreHeaderText} = ThreadScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItemPreHeaderText).toHaveText(savedText);
 

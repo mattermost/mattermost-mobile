@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ThreadOptionsScreen {
@@ -36,7 +36,12 @@ class ThreadOptionsScreen {
     };
 
     close = async () => {
-        await this.threadOptionsScreen.swipe('down');
+        if (isIos()) {
+            await this.threadOptionsScreen.swipe('down');
+        } else {
+            await device.pressBack();
+        }
+        await wait(timeouts.ONE_SEC);
         await expect(this.threadOptionsScreen).not.toBeVisible();
         await wait(timeouts.ONE_SEC);
     };

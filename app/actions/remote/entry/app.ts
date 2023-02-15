@@ -25,7 +25,7 @@ export async function appEntry(serverUrl: string, since = 0) {
     // clear lastUnreadChannelId
     const removeLastUnreadChannelId = await prepareCommonSystemValues(operator, {lastUnreadChannelId: ''});
     if (removeLastUnreadChannelId) {
-        await operator.batchRecords(removeLastUnreadChannelId);
+        await operator.batchRecords(removeLastUnreadChannelId, 'appEntry - removeLastUnreadChannelId');
     }
 
     WebsocketManager.openAll();

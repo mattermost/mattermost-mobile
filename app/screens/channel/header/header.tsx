@@ -42,6 +42,7 @@ type ChannelProps = {
     searchTerm: string;
     teamId: string;
     callsEnabledInChannel: boolean;
+    isTabletView?: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -69,7 +70,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelHeader = ({
     channelId, channelType, componentId, customStatus, displayName,
     isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
-    searchTerm, teamId, callsEnabledInChannel,
+    searchTerm, teamId, callsEnabledInChannel, isTabletView,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -233,7 +234,7 @@ const ChannelHeader = ({
                 onBackPress={onBackPress}
                 onTitlePress={onTitlePress}
                 rightButtons={rightButtons}
-                showBackButton={!isTablet}
+                showBackButton={!isTablet || !isTabletView}
                 subtitle={subtitle}
                 subtitleCompanion={subtitleCompanion}
                 title={title}

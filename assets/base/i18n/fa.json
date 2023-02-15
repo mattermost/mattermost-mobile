@@ -5,7 +5,7 @@
     "about.enterpriseEditionSt": "ارتباطات مدرن از پشت دیوار آتش شما.",
     "about.hash": "هش ساخت:",
     "about.hashee": "هش ساخت نسخه تجاری:",
-    "about.teamEditionLearn": "از اینجا عضو جامعه مترمست شوید",
+    "about.teamEditionLearn": "از اینجا عضو جامعه مترموست شوید",
     "about.teamEditionSt": "تمام ارتباطات تیم شما از یکجا، قابل جستجوی سریع و قابل دسترس از همه جا.",
     "about.teamEditiont0": "نسخه تیمی",
     "about.teamEditiont1": "نسخه تجاری",
@@ -805,8 +805,8 @@
     "snack.bar.unmute.channel": "این کانال صدادار شده است",
     "snack.bar.unfavorite.channel": "این کانال برگزیده نیست",
     "snack.bar.mute.channel": "این کانال بی‌صدا شده است",
-    "notification_settings.mobile.trigger_push": "اعلان‌های پوش اجرا شود زمانی که...",
-    "notification_settings.mentions.keywords_mention": "کلیدواژه‌ای که اشاره‌ها را اجرا می‌کند",
+    "notification_settings.mobile.trigger_push": "اعلان‌های پوش زمانی اجرا شوند که...",
+    "notification_settings.mentions.keywords_mention": "کلیدواژه‌ای که اشاره‌ها را به کار می‌اندازد",
     "notification_settings.mentions.sensitiveUsername": "نام‌کاربری غیرحساس به حروف کوچک و بزرگ",
     "apps.error.parser.missing_list_end": "علامت بستن فهرست لازم است.",
     "apps.error.form.no_submit": "`submit` تعریف نشده است",
@@ -837,5 +837,8 @@
     "mobile.participants.header": "شرکت کنندگان گفت‌وگو",
     "mobile.calls_lasted": "{duration} طول کشید",
     "channel_modal.nameEx": "مشکلات، بازاریابی",
-    "terms_of_service.alert_cancel": "لغو"
+    "terms_of_service.alert_cancel": "لغو",
+    "notification_settings.mentions..keywordsDescription": "کلمات دیگری که اشاره‌ها را به کار می‌اندازد",
+    "alert.push_proxy_unknown.description": "این سرور قادر به دریافت اعلان‌های پوش نیست. دفعه‌ی بعد که متصل شدید، مجددا سعی می‌شود.",
+    "alert.push_proxy_error.description": "به خاطر پیکربندی این سرور، قابلیت دریافت اعلان‌ها روی تلفن همراه نیست. برای اطلاعات بیشتر با مدیر سامانه تماس بگیرید."
 }

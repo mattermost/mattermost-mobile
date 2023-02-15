@@ -39,7 +39,7 @@ export async function storeCategories(serverUrl: string, categories: CategoryWit
         }
 
         if (models.length > 0) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'storeCategories');
         }
 
         return {models};
@@ -103,7 +103,7 @@ export async function addChannelToDefaultCategory(serverUrl: string, channel: Ch
         const models = await prepareCategoryChannels(operator, categoriesWithChannels);
 
         if (models.length && !prepareRecordsOnly) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'addChannelToDefaultCategory');
         }
 
         return {models};

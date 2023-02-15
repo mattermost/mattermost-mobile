@@ -42,7 +42,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             createOrUpdateRawValues: roles,
             tableName: 'Role',
             prepareRecordsOnly: false,
-        });
+        }, 'handleRole');
     });
 
     it('=> HandleCustomEmojis: should write to the CUSTOM_EMOJI table', async () => {
@@ -72,7 +72,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             tableName: 'CustomEmoji',
             prepareRecordsOnly: false,
             transformer: transformCustomEmojiRecord,
-        });
+        }, 'handleCustomEmojis');
     });
 
     it('=> HandleSystem: should write to the SYSTEM table', async () => {
@@ -93,7 +93,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             createOrUpdateRawValues: systems,
             tableName: 'System',
             prepareRecordsOnly: false,
-        });
+        }, 'handleSystem');
     });
 
     it('=> HandleConfig: should write to the CONFIG table', async () => {
@@ -117,7 +117,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
             tableName: 'Config',
             prepareRecordsOnly: false,
             deleteRawValues: configsToDelete,
-        });
+        }, 'handleConfigs');
     });
 
     it('=> No table name: should not call execute if tableName is invalid', async () => {
@@ -135,7 +135,7 @@ describe('*** DataOperator: Base Handlers tests ***', () => {
                 transformer: transformSystemRecord,
                 createOrUpdateRawValues: [{id: 'tos-1', value: '1'}],
                 prepareRecordsOnly: false,
-            }),
+            }, 'test'),
         ).rejects.toThrow(Error);
     });
 });

@@ -60,11 +60,11 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
     const isLicensed = license.IsLicensed === 'true';
     const samlEnabled = config.EnableSaml === 'true' && isLicensed && license.SAML === 'true';
     const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-    const isMinServerVersionForFreeOAuth = isMinimumServerVersion(config.Version, 7, 6);
+    const isMinServerVersionForCloudOAuthChanges = isMinimumServerVersion(config.Version, 7, 6);
     let googleEnabled = false;
     let o365Enabled = false;
     let openIdEnabled = false;
-    if (isMinServerVersionForFreeOAuth) {
+    if (isMinServerVersionForCloudOAuthChanges) {
         googleEnabled = config.EnableSignUpWithGoogle === 'true';
         o365Enabled = config.EnableSignUpWithOffice365 === 'true';
         openIdEnabled = config.EnableSignUpWithOpenId === 'true';

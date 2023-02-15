@@ -3,7 +3,7 @@
 
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React from 'react';
+import React, {useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import Animated from 'react-native-reanimated';
@@ -18,19 +18,26 @@ const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
 type Props = {
     enablePostIconOverride: boolean;
     forwardRef?: React.RefObject<any>;
+    imageSize?: number;
     user: UserModel;
     userIconOverride?: string;
 }
 
-const styles = StyleSheet.create({
-    avatar: {
-        borderRadius: 48,
-        height: 96,
-        width: 96,
-    },
-});
+const DEFAULT_IMAGE_SIZE = 96;
 
-const UserProfileAvatar = ({enablePostIconOverride, forwardRef, user, userIconOverride}: Props) => {
+const getStyles = (size?: number) => {
+    return StyleSheet.create({
+        avatar: {
+            borderRadius: 48,
+            height: size || DEFAULT_IMAGE_SIZE,
+            width: size || DEFAULT_IMAGE_SIZE,
+        },
+    });
+};
+
+const UserProfileAvatar = ({enablePostIconOverride, forwardRef, imageSize, user, userIconOverride}: Props) => {
+    const styles = useMemo(() => getStyles(imageSize), [imageSize]);
+
     if (enablePostIconOverride && userIconOverride) {
         return (
             <View style={styles.avatar}>
@@ -48,7 +55,7 @@ const UserProfileAvatar = ({enablePostIconOverride, forwardRef, user, userIconOv
             author={user}
             forwardRef={forwardRef}
             showStatus={true}
-            size={96}
+            size={imageSize || DEFAULT_IMAGE_SIZE}
             statusSize={24}
             testID={`user_profile_avatar.${user.id}.profile_picture`}
         />

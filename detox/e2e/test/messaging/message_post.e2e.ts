@@ -22,7 +22,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Message Post', () => {
@@ -87,6 +87,10 @@ describe('Messaging - Message Post', () => {
         await ChannelScreen.postMessage('short message');
 
         // * Verify long message is posted and displays show more button (chevron down button)
+        if (isAndroid()) {
+            await device.pressBack();
+            await wait(timeouts.ONE_SEC);
+        }
         const {postListPostItem, postListPostItemShowLessButton, postListPostItemShowMoreButton} = ChannelScreen.getPostListPostItem(post.id, longMessage);
         await expect(postListPostItem).toBeVisible();
         await expect(postListPostItemShowMoreButton).toBeVisible();

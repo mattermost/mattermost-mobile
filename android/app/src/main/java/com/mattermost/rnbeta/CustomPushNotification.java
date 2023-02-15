@@ -7,22 +7,28 @@ import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
 
 import java.util.Objects;
 
+import com.facebook.react.bridge.ReadableMap;
 import com.mattermost.helpers.CustomPushNotificationHelper;
 import com.mattermost.helpers.DatabaseHelper;
 import com.mattermost.helpers.Network;
 import com.mattermost.helpers.NotificationHelper;
 import com.mattermost.helpers.PushNotificationDataHelper;
+import com.mattermost.helpers.ReadableMapUtils;
 import com.mattermost.share.ShareModule;
 import com.wix.reactnativenotifications.core.NotificationIntentAdapter;
 import com.wix.reactnativenotifications.core.notification.PushNotification;
 import com.wix.reactnativenotifications.core.AppLaunchHelper;
 import com.wix.reactnativenotifications.core.AppLifecycleFacade;
 import com.wix.reactnativenotifications.core.JsIOHelper;
+
+import static com.mattermost.helpers.database_extension.GeneralKt.*;
 import static com.wix.reactnativenotifications.Defs.NOTIFICATION_RECEIVED_EVENT_NAME;
+
 
 public class CustomPushNotification extends PushNotification {
     private final PushNotificationDataHelper dataHelper;
@@ -51,7 +57,6 @@ public class CustomPushNotification extends PushNotification {
         int notificationId = NotificationHelper.getNotificationId(initialData);
 
         String serverUrl = addServerUrlToBundle(initialData);
-        boolean isReactInit = mAppLifecycleFacade.isReactInitialized();
 
         if (ackId != null && serverUrl != null) {
             Bundle response = ReceiptDelivery.send(ackId, serverUrl, postId, type, isIdLoaded);
@@ -65,7 +70,7 @@ public class CustomPushNotification extends PushNotification {
             }
         }
 
-        finishProcessingNotification(serverUrl, type, channelId, notificationId, isReactInit);
+        finishProcessingNotification(serverUrl, type, channelId, notificationId);
     }
 
     @Override
@@ -78,7 +83,9 @@ public class CustomPushNotification extends PushNotification {
         }
     }
 
-    private void finishProcessingNotification(String serverUrl, String type, String channelId, int notificationId, Boolean isReactInit) {
+    private void finishProcessingNotification(final String serverUrl, @NonNull final String type, final String channelId, final int notificationId) {
+        final boolean isReactInit = mAppLifecycleFacade.isReactInitialized();
+
         switch (type) {
             case CustomPushNotificationHelper.PUSH_TYPE_MESSAGE:
             case CustomPushNotificationHelper.PUSH_TYPE_SESSION:
@@ -90,13 +97,17 @@ public class CustomPushNotification extends PushNotification {
                     if (type.equals(CustomPushNotificationHelper.PUSH_TYPE_MESSAGE)) {
                         if (channelId != null) {
                             Bundle notificationBundle = mNotificationProps.asBundle();
-                            if (serverUrl != null && !isReactInit) {
+                            if (serverUrl != null) {
                                 // We will only fetch the data related to the notification on the native side
                                 // as updating the data directly to the db removes the wal & shm files needed
                                 // by watermelonDB, if the DB is updated while WDB is running it causes WDB to
                                 // detect the database as malformed, thus the app stop working and a restart is required.
                                 // Data will be fetch from within the JS context instead.
-                                dataHelper.fetchAndStoreDataForPushNotification(notificationBundle);
+                                Bundle notificationResult = dataHelper.fetchAndStoreDataForPushNotification(notificationBundle, isReactInit);
+                                if (notificationResult != null) {
+                                    notificationBundle.putBundle("data", notificationResult);
+                                    mNotificationProps = createProps(notificationBundle);
+                                }
                             }
                             createSummary = NotificationHelper.addNotificationToPreferences(
                                     mContext,
@@ -145,17 +156,20 @@ public class CustomPushNotification extends PushNotification {
     }
 
     private String addServerUrlToBundle(Bundle bundle) {
+        DatabaseHelper dbHelper = DatabaseHelper.Companion.getInstance();
         String serverId = bundle.getString("server_id");
-        String serverUrl;
-        if (serverId == null) {
-            serverUrl = Objects.requireNonNull(DatabaseHelper.Companion.getInstance()).getOnlyServerUrl();
-        } else {
-            serverUrl = Objects.requireNonNull(DatabaseHelper.Companion.getInstance()).getServerUrlForIdentifier(serverId);
-        }
+        String serverUrl = null;
+        if (dbHelper != null) {
+            if (serverId == null) {
+                serverUrl = dbHelper.getOnlyServerUrl();
+            } else {
+                serverUrl = getServerUrlForIdentifier(dbHelper, serverId);
+            }
 
-        if (!TextUtils.isEmpty(serverUrl)) {
-            bundle.putString("server_url", serverUrl);
-            mNotificationProps = createProps(bundle);
+            if (!TextUtils.isEmpty(serverUrl)) {
+                bundle.putString("server_url", serverUrl);
+                mNotificationProps = createProps(bundle);
+            }
         }
 
         return serverUrl;

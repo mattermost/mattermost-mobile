@@ -62,7 +62,7 @@ describe('Messaging - Markdown Code', () => {
         // * Verify markdown code block is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
-        await ChannelScreen.getFlatPostList().scrollTo('bottom');
+        await waitFor(postListPostItemCodeBlock).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
         await expect(postListPostItemCodeBlock).toBeVisible();
 
         // # Go back to channel list screen
@@ -79,7 +79,7 @@ describe('Messaging - Markdown Code', () => {
         // * Verify markdown html is displayed
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItemCodeBlock} = ChannelScreen.getPostListPostItem(post.id);
-        await ChannelScreen.getFlatPostList().scrollTo('bottom');
+        await waitFor(postListPostItemCodeBlock).toBeVisible().whileElement(by.id(ChannelScreen.postList.testID.flatList)).scroll(50, 'down');
         await expect(postListPostItemCodeBlock).toBeVisible();
 
         // # Go back to channel list screen

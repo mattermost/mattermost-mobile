@@ -11,7 +11,6 @@ import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-cont
 
 import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
-import FreezeScreen from '@components/freeze_screen';
 import TeamSidebar from '@components/team_sidebar';
 import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -159,7 +158,7 @@ const ChannelListScreen = (props: ChannelProps) => {
     }, []);
 
     return (
-        <FreezeScreen freeze={!isFocused}>
+        <>
             <Animated.View style={top}/>
             <SafeAreaView
                 style={styles.flex}
@@ -191,7 +190,7 @@ const ChannelListScreen = (props: ChannelProps) => {
                     </Animated.View>
                 </View>
             </SafeAreaView>
-        </FreezeScreen>
+        </>
     );
 };
 

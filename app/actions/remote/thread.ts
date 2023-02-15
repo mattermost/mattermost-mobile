@@ -115,7 +115,7 @@ export const updateTeamThreadsAsRead = async (serverUrl: string, teamId: string)
     }
 };
 
-export const markThreadAsRead = async (serverUrl: string, teamId: string | undefined, threadId: string) => {
+export const markThreadAsRead = async (serverUrl: string, teamId: string | undefined, threadId: string, updateLastViewed = true) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
 
     if (!database) {
@@ -141,7 +141,7 @@ export const markThreadAsRead = async (serverUrl: string, teamId: string | undef
 
         // Update locally
         await updateThread(serverUrl, threadId, {
-            last_viewed_at: timestamp,
+            last_viewed_at: updateLastViewed ? timestamp : undefined,
             unread_replies: 0,
             unread_mentions: 0,
         });
@@ -360,7 +360,7 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
             const allNewThreads = await fetchThreads(
                 serverUrl,
                 teamId,
-                {deleted: true, since: syncData.latest},
+                {deleted: true, since: syncData.latest + 1},
             );
             if (allNewThreads.error) {
                 return {error: allNewThreads.error};
@@ -395,7 +395,7 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
 
             if (!prepareRecordsOnly && models?.length) {
                 try {
-                    await operator.batchRecords(models);
+                    await operator.batchRecords(models, 'syncTeamThreads');
                 } catch (err) {
                     if (__DEV__) {
                         throw err;
@@ -460,7 +460,7 @@ export const loadEarlierThreads = async (serverUrl: string, teamId: string, last
 
             if (!prepareRecordsOnly && models?.length) {
                 try {
-                    await operator.batchRecords(models);
+                    await operator.batchRecords(models, 'loadEarlierThreads');
                 } catch (err) {
                     if (__DEV__) {
                         throw err;

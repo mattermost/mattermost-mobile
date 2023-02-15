@@ -226,9 +226,9 @@ export const observeIsCustomStatusExpirySupported = (database: Database) => {
     );
 };
 
-export const observeConfigBooleanValue = (database: Database, key: keyof ClientConfig) => {
+export const observeConfigBooleanValue = (database: Database, key: keyof ClientConfig, defaultValue = false) => {
     return observeConfigValue(database, key).pipe(
-        switchMap((v) => of$(v === 'true')),
+        switchMap((v) => of$(v ? v === 'true' : defaultValue)),
         distinctUntilChanged(),
     );
 };
@@ -420,7 +420,7 @@ export async function setCurrentChannelId(operator: ServerDataOperator, channelI
     try {
         const models = await prepareCommonSystemValues(operator, {currentChannelId: channelId});
         if (models) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'setCurrentChannelId');
         }
 
         return {currentChannelId: channelId};
@@ -436,7 +436,7 @@ export async function setCurrentTeamAndChannelId(operator: ServerDataOperator, t
             currentTeamId: teamId,
         });
         if (models) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'setCurrentTeamAndChannelId');
         }
 
         return {currentTeamId: teamId, currentChannelId: channelId};
@@ -511,16 +511,24 @@ export const observeLastDismissedAnnouncement = (database: Database) => {
 };
 
 export const observeCanUploadFiles = (database: Database) => {
-    const enableFileAttachments = observeConfigBooleanValue(database, 'EnableFileAttachments');
-    const enableMobileFileUpload = observeConfigBooleanValue(database, 'EnableMobileFileUpload');
+    const enableFileAttachments = observeConfigBooleanValue(database, 'EnableFileAttachments', true);
+    const enableMobileFileUpload = observeConfigBooleanValue(database, 'EnableMobileFileUpload', true);
     const license = observeLicense(database);
 
     return combineLatest([enableFileAttachments, enableMobileFileUpload, license]).pipe(
         switchMap(([efa, emfu, l]) => of$(
-            efa ||
-                (l?.IsLicensed !== 'true' && l?.Compliance !== 'true' && emfu),
-        ),
-        ),
+            efa &&
+                (l?.IsLicensed !== 'true' || l?.Compliance !== 'true' || emfu),
+        )),
+    );
+};
+
+export const observeCanDownloadFiles = (database: Database) => {
+    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload', true);
+    const license = observeLicense(database);
+
+    return combineLatest([enableMobileFileDownload, license]).pipe(
+        switchMap(([emfd, l]) => of$((l?.IsLicensed !== 'true' || l?.Compliance !== 'true' || emfd))),
     );
 };
 

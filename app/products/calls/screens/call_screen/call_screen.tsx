@@ -20,7 +20,7 @@ import {RTCView} from 'react-native-webrtc';
 
 import {leaveCall, muteMyself, setSpeakerphoneOn, unmuteMyself} from '@calls/actions';
 import {startCallRecording, stopCallRecording} from '@calls/actions/calls';
-import {recordingAlert, recordingWillBePostedAlert} from '@calls/alerts';
+import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
@@ -373,6 +373,11 @@ const CallScreen = ({
     // - Is the host, recording has started, and recording has ended
     if (isHost && currentCall?.recState?.start_at && currentCall.recState.end_at) {
         recordingWillBePostedAlert(intl);
+    }
+
+    // The host should receive an alert in case of unexpected error.
+    if (isHost && currentCall?.recState?.err) {
+        recordingErrorAlert(intl);
     }
 
     // The user should see the loading only if:

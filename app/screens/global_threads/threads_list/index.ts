@@ -12,25 +12,23 @@ import {observeTeammateNameDisplay} from '@queries/servers/user';
 import ThreadsList from './threads_list';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type {AppStateStatus} from 'react-native';
 
 type Props = {
     tab: GlobalThreadsTab;
     teamId: string;
-    forceQueryAfterAppState: AppStateStatus;
 } & WithDatabaseArgs;
 
 const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
     teamId: observeCurrentTeamId(database),
 }));
 
-const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], ({database, tab, teamId}: Props) => {
+const enhanced = withObservables(['tab', 'teamId'], ({database, tab, teamId}: Props) => {
     const getOnlyUnreads = tab !== 'all';
 
     const teamThreadsSyncObserver = queryTeamThreadsSync(database, teamId).observeWithColumns(['earliest']);
 
     return {
-        unreadsCount: queryThreadsInTeam(database, teamId, true).observeCount(false),
+        unreadsCount: queryThreadsInTeam(database, teamId, true, true, true).observeCount(false),
         teammateNameDisplay: observeTeammateNameDisplay(database),
         threads: teamThreadsSyncObserver.pipe(
             switchMap((teamThreadsSync) => {

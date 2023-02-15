@@ -8,6 +8,7 @@ import {queryGroupChannelForChannel, queryGroupMembershipForMember, queryGroupTe
 import {generateGroupAssociationId} from '@utils/groups';
 import {logWarning} from '@utils/log';
 
+import type ServerDataOperatorBase from '.';
 import type {HandleGroupArgs, HandleGroupChannelsForChannelArgs, HandleGroupMembershipForMemberArgs, HandleGroupTeamsForTeamArgs} from '@typings/database/database';
 import type GroupModel from '@typings/database/models/servers/group';
 import type GroupChannelModel from '@typings/database/models/servers/group_channel';
@@ -23,7 +24,7 @@ export interface GroupHandlerMix {
     handleGroupTeamsForTeam: ({teamId, groups, prepareRecordsOnly}: HandleGroupTeamsForTeamArgs) => Promise<GroupTeamModel[]>;
 }
 
-const GroupHandler = (superclass: any) => class extends superclass implements GroupHandlerMix {
+const GroupHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass implements GroupHandlerMix {
     /**
       * handleGroups: Handler responsible for the Create/Update operations occurring on the Group table from the 'Server' schema
       *
@@ -46,7 +47,7 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
             createOrUpdateRawValues,
             tableName: GROUP,
             prepareRecordsOnly,
-        });
+        }, 'handleGroups');
     };
 
     /**
@@ -93,14 +94,14 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
         records.push(...(await this.handleRecords({
             fieldName: 'id',
             transformer: transformGroupChannelRecord,
-            rawValues,
+            createOrUpdateRawValues: rawValues,
             tableName: GROUP_CHANNEL,
             prepareRecordsOnly: true,
-        })));
+        }, 'handleGroupChannelsForChannel')));
 
         // Batch update if there are records
         if (records.length && !prepareRecordsOnly) {
-            await this.batchRecords(records);
+            await this.batchRecords(records, 'handleGroupChannelsForChannel');
         }
 
         return records;
@@ -147,17 +148,19 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
             rawValues.push(...Object.values(groupsSet));
         }
 
-        records.push(...(await this.handleRecords({
-            fieldName: 'id',
-            transformer: transformGroupMembershipRecord,
-            rawValues,
-            tableName: GROUP_MEMBERSHIP,
-            prepareRecordsOnly: true,
-        })));
+        if (rawValues.length) {
+            records.push(...(await this.handleRecords({
+                fieldName: 'id',
+                transformer: transformGroupMembershipRecord,
+                createOrUpdateRawValues: rawValues,
+                tableName: GROUP_MEMBERSHIP,
+                prepareRecordsOnly: true,
+            }, 'handleGroupMembershipsForMember')));
+        }
 
         // Batch update if there are records
         if (records.length && !prepareRecordsOnly) {
-            await this.batchRecords(records);
+            await this.batchRecords(records, 'handleGroupMembershipsForMember');
         }
 
         return records;
@@ -207,14 +210,14 @@ const GroupHandler = (superclass: any) => class extends superclass implements Gr
         records.push(...(await this.handleRecords({
             fieldName: 'id',
             transformer: transformGroupTeamRecord,
-            rawValues,
+            createOrUpdateRawValues: rawValues,
             tableName: GROUP_TEAM,
             prepareRecordsOnly: true,
-        })));
+        }, 'handleGroupTeamsForTeam')));
 
         // Batch update if there are records
         if (records.length && !prepareRecordsOnly) {
-            await this.batchRecords(records);
+            await this.batchRecords(records, 'handleGroupTeamsForTeam');
         }
 
         return records;

@@ -110,6 +110,7 @@ class ChannelScreen {
     };
 
     toBeVisible = async () => {
+        await wait(timeouts.ONE_SEC);
         await waitFor(this.channelScreen).toExist().withTimeout(timeouts.TEN_SEC);
 
         return this.channelScreen;
@@ -123,6 +124,7 @@ class ChannelScreen {
     };
 
     back = async () => {
+        await wait(timeouts.ONE_SEC);
         await this.backButton.tap();
         await expect(this.channelScreen).not.toBeVisible();
     };

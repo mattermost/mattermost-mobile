@@ -21,7 +21,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Settings - Auto-Responder Notification Settings', () => {
@@ -77,7 +77,11 @@ describe('Account - Settings - Auto-Responder Notification Settings', () => {
 
         // * Verify enable automatic replies option is toggled on and message is saved
         await expect(AutoResponderNotificationSettingsScreen.enableAutomaticRepliesOptionToggledOn).toBeVisible();
-        await expect(AutoResponderNotificationSettingsScreen.messageInput).toHaveValue(message);
+        if (isIos()) {
+            await expect(AutoResponderNotificationSettingsScreen.messageInput).toHaveValue(message);
+        } else {
+            await expect(AutoResponderNotificationSettingsScreen.messageInput).toHaveText(message);
+        }
 
         // # Toggle enable automatic replies option off and tap on back button
         await AutoResponderNotificationSettingsScreen.toggleEnableAutomaticRepliesOptionOff();

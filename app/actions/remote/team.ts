@@ -86,7 +86,7 @@ export async function addUserToTeam(serverUrl: string, teamId: string, userId: s
                     prepareCategoriesAndCategoriesChannels(operator, categories || [], true),
                 ])).flat();
 
-                await operator.batchRecords(models);
+                await operator.batchRecords(models, 'addUserToTeam');
                 setTeamLoading(serverUrl, false);
                 loadEventSent = false;
 
@@ -199,7 +199,7 @@ export async function fetchMyTeams(serverUrl: string, fetchOnly = false): Promis
                     const models = await Promise.all(modelPromises);
                     const flattenedModels = models.flat();
                     if (flattenedModels.length > 0) {
-                        await operator.batchRecords(flattenedModels);
+                        await operator.batchRecords(flattenedModels, 'fetchMyTeams');
                     }
                 }
             }
@@ -233,7 +233,7 @@ export async function fetchMyTeam(serverUrl: string, teamId: string, fetchOnly =
                     const models = await Promise.all(modelPromises);
                     const flattenedModels = models.flat();
                     if (flattenedModels?.length > 0) {
-                        await operator.batchRecords(flattenedModels);
+                        await operator.batchRecords(flattenedModels, 'fetchMyTeam');
                     }
                 }
             }
@@ -362,7 +362,7 @@ export async function fetchTeamByName(serverUrl: string, teamName: string, fetch
             const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
             if (operator) {
                 const models = await operator.handleTeam({teams: [team], prepareRecordsOnly: true});
-                await operator.batchRecords(models);
+                await operator.batchRecords(models, 'fetchTeamByName');
             }
         }
 
@@ -441,7 +441,7 @@ export async function handleTeamChange(serverUrl: string, teamId: string) {
     }
 
     if (models.length) {
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'handleTeamChange');
     }
     DeviceEventEmitter.emit(Events.TEAM_SWITCH, false);
 

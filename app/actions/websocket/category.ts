@@ -96,7 +96,7 @@ export async function handleCategoryOrderUpdatedEvent(serverUrl: string, msg: We
                     c.sortOrder = order.findIndex(findOrder);
                 });
             });
-            await operator.batchRecords(categories);
+            await operator.batchRecords(categories, 'handleCategoryOrderUpdatedEvent');
         }
     } catch (e) {
         logError('Category WS: handleCategoryOrderUpdatedEvent', e, msg);

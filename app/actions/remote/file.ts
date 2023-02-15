@@ -3,6 +3,7 @@
 
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import NetworkManager from '@managers/network_manager';
+import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -32,10 +33,11 @@ export const uploadFile = (
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
+        return {cancel: client.uploadPostAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
     } catch (error) {
+        logDebug('uploadFile', error);
         return {error: error as ClientError};
     }
-    return {cancel: client.uploadPostAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
 };
 
 export const fetchPublicLink = async (serverUrl: string, fileId: string) => {

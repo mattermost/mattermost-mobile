@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, MyChannelsRequest} from '@actions/remote/channel';
+import {markChannelAsViewed} from '@actions/local/channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {MyPreferencesRequest, fetchMyPreferences} from '@actions/remote/preference';
@@ -461,6 +462,9 @@ export async function handleEntryAfterLoadNavigation(
             } else {
                 await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
             }
+        } else if (tabletDevice && initialChannelId === currentChannelId) {
+            await markChannelAsRead(serverUrl, initialChannelId);
+            markChannelAsViewed(serverUrl, initialChannelId);
         }
     } catch (error) {
         logDebug('could not manage the entry after load navigation', error);
