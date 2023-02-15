@@ -148,13 +148,15 @@ const GroupHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercl
             rawValues.push(...Object.values(groupsSet));
         }
 
-        records.push(...(await this.handleRecords({
-            fieldName: 'id',
-            transformer: transformGroupMembershipRecord,
-            createOrUpdateRawValues: rawValues,
-            tableName: GROUP_MEMBERSHIP,
-            prepareRecordsOnly: true,
-        }, 'handleGroupMembershipsForMember')));
+        if (rawValues.length) {
+            records.push(...(await this.handleRecords({
+                fieldName: 'id',
+                transformer: transformGroupMembershipRecord,
+                createOrUpdateRawValues: rawValues,
+                tableName: GROUP_MEMBERSHIP,
+                prepareRecordsOnly: true,
+            }, 'handleGroupMembershipsForMember')));
+        }
 
         // Batch update if there are records
         if (records.length && !prepareRecordsOnly) {
