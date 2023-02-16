@@ -75,12 +75,12 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
     }
     const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
     const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;
-    const ssoOptions: Record<string, boolean> = {
-        [Sso.SAML]: samlEnabled,
-        [Sso.GITLAB]: gitlabEnabled,
-        [Sso.GOOGLE]: googleEnabled,
-        [Sso.OFFICE365]: o365Enabled,
-        [Sso.OPENID]: openIdEnabled,
+    const ssoOptions: SsoWithOptions = {
+        [Sso.SAML]: {enabled: samlEnabled, text: config.SamlLoginButtonText},
+        [Sso.GITLAB]: {enabled: gitlabEnabled},
+        [Sso.GOOGLE]: {enabled: googleEnabled},
+        [Sso.OFFICE365]: {enabled: o365Enabled},
+        [Sso.OPENID]: {enabled: openIdEnabled, text: config.OpenIdButtonText},
     };
     const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key]);
     const numberSSOs = enabledSSOs.length;
