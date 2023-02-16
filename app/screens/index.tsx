@@ -143,6 +143,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.JOIN_TEAM:
             screen = withServerDatabase(require('@screens/join_team').default);
             break;
+        case Screens.CREATE_A_TEAM:
+            screen = withServerDatabase(require('@screens/create_a_team').default);
+            break;
         case Screens.LATEX:
             screen = withServerDatabase(require('@screens/latex').default);
             break;

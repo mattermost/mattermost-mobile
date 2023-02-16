@@ -19,6 +19,13 @@ function loadTranslation(locale?: string) {
         let translations: Record<string, string>;
 
         switch (locale) {
+            case 'vi':
+                require('@formatjs/intl-pluralrules/locale-data/en');
+                require('@formatjs/intl-numberformat/locale-data/en');
+                require('@formatjs/intl-datetimeformat/locale-data/en');
+
+                translations = require('@assets/i18n/vi.json');
+                break;
             case 'bg':
                 require('@formatjs/intl-pluralrules/locale-data/bg');
                 require('@formatjs/intl-numberformat/locale-data/bg');
@@ -187,7 +194,8 @@ export function resetMomentLocale(locale?: string) {
 
 export function getTranslations(lang: string) {
     const locale = getLocaleFromLanguage(lang);
-    return loadTranslation(locale);
+    // ?
+    return loadTranslation('vi');
 }
 
 export function getLocalizedMessage(lang: string, id: string, defaultMessage?: string) {

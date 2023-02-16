@@ -35,6 +35,17 @@ export type MyTeamsRequest = {
     error?: unknown;
 }
 
+export async function createTeam(serverUrl: string, team: Team) {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const result = await client.createTeam(team);
+
+        return result;
+    } catch (error) {
+        return {error};
+    }
+}
+
 export async function addCurrentUserToTeam(serverUrl: string, teamId: string, fetchOnly = false) {
     let database;
     try {

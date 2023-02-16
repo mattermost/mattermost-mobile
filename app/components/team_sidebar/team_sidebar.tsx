@@ -10,6 +10,7 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 
 import AddTeam from './add_team';
 import TeamList from './team_list';
+import CreateTeam from './create_team';
 
 type Props = {
     iconPad?: boolean;
@@ -68,6 +69,8 @@ export default function TeamSidebar({iconPad, canJoinOtherTeams, teamsCount}: Pr
                 {canJoinOtherTeams && (
                     <AddTeam/>
                 )}
+                {/* // ? */}
+                <CreateTeam/>
             </Animated.View>
         </Animated.View>
     );
