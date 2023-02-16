@@ -211,7 +211,7 @@ const LoginOptions = ({
                 <KeyboardAwareScrollView
                     bounces={true}
                     contentContainerStyle={[styles.innerContainer, additionalContainerStyle]}
-                    enableAutomaticScroll={Platform.OS === 'android'}
+                    enableAutomaticScroll={true}
                     enableOnAndroid={false}
                     enableResetScrollToCoords={true}
                     extraScrollHeight={0}
@@ -228,11 +228,9 @@ const LoginOptions = ({
                         <Form
                             config={config}
                             extra={extra}
-                            keyboardAwareRef={keyboardAwareRef}
                             license={license}
                             launchError={launchError}
                             launchType={launchType}
-                            numberSSOs={numberSSOs}
                             theme={theme}
                             serverDisplayName={serverDisplayName}
                             serverUrl={serverUrl}
