@@ -7,6 +7,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {sanitizeLikeString} from '@helpers/database';
 
 import {queryDisplayNamePreferences} from './preference';
 import {observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense, observeConfigValue} from './system';
@@ -86,7 +87,7 @@ export async function getTeammateNameDisplay(database: Database) {
 export const queryUsersLike = (database: Database, likeUsername: string) => {
     return database.get<UserModel>(USER).query(
         Q.where('username', Q.like(
-            `%${Q.sanitizeLikeString(likeUsername)}%`,
+            `%${sanitizeLikeString(likeUsername)}%`,
         )),
     );
 };

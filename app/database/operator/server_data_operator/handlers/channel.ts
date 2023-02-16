@@ -318,12 +318,12 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
         }));
 
         const uniqueRaws = getUniqueRawsBy({raws: memberships, key: 'id'}) as ChannelMember[];
-        const ids = uniqueRaws.map((cm: ChannelMember) => cm.channel_id);
+        const ids = uniqueRaws.map((cm: ChannelMember) => `${cm.channel_id}-${cm.user_id}`);
         const db: Database = this.database;
         const existing = await db.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(
             Q.where('id', Q.oneOf(ids)),
         ).fetch();
-        const membershipMap = new Map<string, ChannelMembershipModel>(existing.map((member) => [member.id, member]));
+        const membershipMap = new Map<string, ChannelMembershipModel>(existing.map((member) => [member.channelId, member]));
         const createOrUpdateRawValues = uniqueRaws.reduce((res: ChannelMember[], cm) => {
             const e = membershipMap.get(cm.channel_id);
             if (!e) {

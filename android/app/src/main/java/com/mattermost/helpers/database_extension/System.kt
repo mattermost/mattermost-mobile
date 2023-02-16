@@ -4,8 +4,13 @@ import com.nozbe.watermelondb.Database
 import org.json.JSONObject
 
 fun queryCurrentUserId(db: Database): String? {
-    val result = find(db, "System", "currentUserId")!!
-    return result.getString("value")
+    val result = find(db, "System", "currentUserId")
+    return result?.getString("value")?.removeSurrounding("\"")
+}
+
+fun queryCurrentTeamId(db: Database): String? {
+    val result = find(db, "System", "currentTeamId")
+    return result?.getString("value")?.removeSurrounding("\"")
 }
 
 fun queryConfigDisplayNameSetting(db: Database): String? {

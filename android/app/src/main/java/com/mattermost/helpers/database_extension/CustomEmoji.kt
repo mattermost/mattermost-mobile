@@ -9,7 +9,7 @@ internal fun insertCustomEmojis(db: Database, customEmojis: JSONArray) {
             val emoji = customEmojis.getJSONObject(i)
             if (find(db, "CustomEmoji", emoji.getString("id")) == null) {
                 db.execute(
-                        "INSERT INTO CustomEmoji (id, name, _status) VALUES (?, ?, 'created')",
+                        "INSERT INTO CustomEmoji (id, name, _changed, _status) VALUES (?, ?, '', 'created')",
                         arrayOf(
                                 emoji.getString("id"),
                                 emoji.getString("name"),

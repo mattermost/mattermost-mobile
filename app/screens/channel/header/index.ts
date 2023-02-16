@@ -3,6 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import React from 'react';
 import {of as of$} from 'rxjs';
 import {combineLatestWith, switchMap} from 'rxjs/operators';
 
@@ -91,4 +92,4 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
     };
 });
 
-export default withDatabase(enhanced(ChannelHeader));
+export default withDatabase(enhanced(React.memo(ChannelHeader)));

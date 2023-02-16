@@ -115,7 +115,7 @@ export const updateTeamThreadsAsRead = async (serverUrl: string, teamId: string)
     }
 };
 
-export const markThreadAsRead = async (serverUrl: string, teamId: string | undefined, threadId: string) => {
+export const markThreadAsRead = async (serverUrl: string, teamId: string | undefined, threadId: string, updateLastViewed = true) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
 
     if (!database) {
@@ -141,7 +141,7 @@ export const markThreadAsRead = async (serverUrl: string, teamId: string | undef
 
         // Update locally
         await updateThread(serverUrl, threadId, {
-            last_viewed_at: timestamp,
+            last_viewed_at: updateLastViewed ? timestamp : undefined,
             unread_replies: 0,
             unread_mentions: 0,
         });

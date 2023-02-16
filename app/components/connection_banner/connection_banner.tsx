@@ -36,6 +36,7 @@ const getStyle = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         background: {
             backgroundColor: theme.sidebarBg,
+            zIndex: 1,
         },
         bannerContainerNotConnected: {
             ...bannerContainer,

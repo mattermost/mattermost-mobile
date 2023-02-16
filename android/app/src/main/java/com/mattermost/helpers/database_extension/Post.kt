@@ -57,6 +57,24 @@ fun queryPostSinceForChannel(db: Database?, channelId: String): Double? {
     return null
 }
 
+fun queryLastPostInThread(db: Database?, rootId: String): Double? {
+    try {
+        if (db != null) {
+            val query = "SELECT create_at FROM Post WHERE root_id=? AND delete_at=0 ORDER BY create_at DESC LIMIT 1"
+            db.rawQuery(query, arrayOf(rootId)).use { cursor ->
+                if (cursor.count == 1) {
+                    cursor.moveToFirst()
+                    return cursor.getDouble(0)
+                }
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+
+    return null
+}
+
 internal fun insertPost(db: Database, post: JSONObject) {
     try {
         val id = try { post.getString("id") } catch (e: JSONException) { return }
@@ -83,8 +101,8 @@ internal fun insertPost(db: Database, post: JSONObject) {
                 """
                 INSERT INTO Post 
                 (id, channel_id, create_at, delete_at, update_at, edit_at, is_pinned, message, metadata, original_id, pending_post_id, 
-                previous_post_id, root_id, type, user_id, props, _status) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'created')
+                previous_post_id, root_id, type, user_id, props, _changed, _status) 
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'created')
                 """.trimIndent(),
                 arrayOf(
                         id, channelId, createAt, deleteAt, updateAt, editAt,
@@ -173,20 +191,10 @@ fun DatabaseHelper.handlePosts(db: Database, postsData: ReadableMap?, channelId:
             val postList = posts.toList()
             var earliest = 0.0
             var latest = 0.0
-            var lastFetchedAt = 0.0
 
             if (ordered != null && posts.isNotEmpty()) {
                 val firstId = ordered.first()
                 val lastId = ordered.last()
-                lastFetchedAt = postList.fold(0.0) { acc, next ->
-                    val post = next.second as Map<*, *>
-                    val createAt = post["create_at"] as Double
-                    val updateAt = post["update_at"] as Double
-                    val deleteAt = post["delete_at"] as Double
-                    val value = maxOf(createAt, updateAt, deleteAt)
-
-                    maxOf(value, acc)
-                }
                 var prevPostId = ""
 
                 val sortedPosts = postList.sortedBy { (_, value) ->
@@ -213,17 +221,16 @@ fun DatabaseHelper.handlePosts(db: Database, postsData: ReadableMap?, channelId:
                         }
 
                         val jsonPost = JSONObject(post)
-                        val rootId = post["root_id"] as? String
-
-                        if (!rootId.isNullOrEmpty()) {
-                            var thread = postsInThread[rootId]?.toMutableList()
-                            if (thread == null) {
-                                thread = mutableListOf()
-                            }
-
-                            thread.add(jsonPost)
-                            postsInThread[rootId] = thread.toList()
+                        val postId = post["id"] as? String ?: ""
+                        val rootId = post["root_id"] as? String ?: ""
+                        val postInThread = rootId.ifEmpty { postId }
+                        var thread = postsInThread[postInThread]?.toMutableList()
+                        if (thread == null) {
+                            thread = mutableListOf()
                         }
+
+                        thread.add(jsonPost)
+                        postsInThread[postInThread] = thread.toList()
 
                         if (find(db, "Post", key) == null) {
                             insertPost(db, jsonPost)
@@ -240,7 +247,6 @@ fun DatabaseHelper.handlePosts(db: Database, postsData: ReadableMap?, channelId:
 
             if (!receivingThreads) {
                 handlePostsInChannel(db, channelId, earliest, latest)
-                updateMyChannelLastFetchedAt(db, channelId, lastFetchedAt)
             }
             handlePostsInThread(db, postsInThread)
         }

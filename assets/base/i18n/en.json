@@ -475,7 +475,7 @@
   "mobile.components.select_server_view.displayName": "Display Name",
   "mobile.components.select_server_view.enterServerUrl": "Enter Server URL",
   "mobile.components.select_server_view.msg_connect": "Let’s Connect to a Server",
-  "mobile.components.select_server_view.msg_description": "A Server is your team's communication hub which is accessed through a unique URL",
+  "mobile.components.select_server_view.msg_description": "A server is your team's communication hub accessed using a unique URL",
   "mobile.components.select_server_view.msg_welcome": "Welcome",
   "mobile.components.select_server_view.proceed": "Proceed",
   "mobile.create_channel": "Create",

@@ -71,14 +71,53 @@ internal fun insertThreadParticipants(db: Database, threadId: String, participan
             db.execute(
                     """
                     INSERT INTO ThreadParticipant 
-                    (id, thread_id, user_id, _status) 
-                    VALUES (?, ?, ?, 'created')
+                    (id, thread_id, user_id, _changed, _status) 
+                    VALUES (?, ?, ?, '', 'created')
                     """.trimIndent(),
                     arrayOf(id, threadId, participant.getString("id"))
             )
         } catch (e: Exception) {
             e.printStackTrace()
         }
+    }
+}
+
+fun insertTeamThreadsSync(db: Database, teamId: String, earliest: Double, latest: Double) {
+    try {
+        val query = """
+            INSERT INTO TeamThreadsSync (id, _changed, _status, earliest, latest)
+            VALUES (?, '', 'created', ?, ?)
+            """
+        db.execute(query, arrayOf(teamId, earliest, latest))
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+fun updateTeamThreadsSync(db: Database, teamId: String, earliest: Double, latest: Double, existingRecord: ReadableMap) {
+    try {
+        val storeEarliest = minOf(earliest, existingRecord.getDouble("earliest"))
+        val storeLatest = maxOf(latest, existingRecord.getDouble("latest"))
+        val query = "UPDATE TeamThreadsSync SET earliest=?, latest=? WHERE id=?"
+        db.execute(query, arrayOf(storeEarliest, storeLatest, teamId))
+    } catch (e: Exception) {
+        e.printStackTrace()
+    }
+}
+
+fun syncParticipants(db: Database, thread: ReadableMap) {
+    try {
+        val threadId = thread.getString("id")
+        val participants = thread.getArray("participants")
+        if (participants != null) {
+            db.execute("DELETE FROM ThreadParticipant WHERE thread_id = ?", arrayOf(threadId))
+
+            if (participants.size() > 0) {
+                insertThreadParticipants(db, threadId!!, participants)
+            }
+        }
+    } catch (e: Exception) {
+        e.printStackTrace()
     }
 }
 
@@ -93,11 +132,13 @@ internal fun handlePostsInThread(db: Database, postsInThread: Map<String, List<J
                     cursor.moveToFirst()
                     val cursorMap = Arguments.createMap()
                     cursorMap.mapCursor(cursor)
+                    val storeEarliest = minOf(earliest, cursorMap.getDouble("earliest"))
+                    val storeLatest = maxOf(latest, cursorMap.getDouble("latest"))
                     db.execute(
-                            "UPDATE PostsInThread SET earliest = ?, latest = ?, _status = 'updated' WHERE id = ?",
+                            "UPDATE PostsInThread SET earliest = ?, latest = ?, _status = 'updated' WHERE root_id = ?",
                             arrayOf(
-                                    minOf(earliest, cursorMap.getDouble("earliest")),
-                                    maxOf(latest, cursorMap.getDouble("latest")),
+                                    storeEarliest,
+                                    storeLatest,
                                     key
                             )
                     )
@@ -108,8 +149,8 @@ internal fun handlePostsInThread(db: Database, postsInThread: Map<String, List<J
                 db.execute(
                         """
                             INSERT INTO PostsInThread 
-                            (id, root_id, earliest, latest, _status) 
-                            VALUES (?, ?, ?, ?, 'created')
+                            (id, root_id, earliest, latest, _changed, _status) 
+                            VALUES (?, ?, ?, ?, '', 'created')
                             """.trimIndent(),
                         arrayOf(id, key, earliest, latest)
                 )
@@ -120,31 +161,87 @@ internal fun handlePostsInThread(db: Database, postsInThread: Map<String, List<J
     }
 }
 
-fun handleThreads(db: Database, threads: ReadableArray) {
-    for (i in 0 until threads.size()) {
+fun handleThreads(db: Database, threads: ArrayList<ReadableMap>, teamId: String?) {
+    val teamIds = ArrayList<String>()
+    if (teamId.isNullOrEmpty()) {
+        val myTeams = queryMyTeams(db)
+        if (myTeams != null) {
+            for (myTeam in myTeams) {
+                myTeam.getString("id")?.let { teamIds.add(it) }
+            }
+        }
+    } else {
+        teamIds.add(teamId)
+    }
+
+    for (i in 0 until threads.size) {
         try {
-            val thread = threads.getMap(i)
-            val threadId = thread.getString("id")
-
-            // Insert/Update the thread
-            val existingRecord = find(db, "Thread", threadId)
-            if (existingRecord == null) {
-                insertThread(db, thread)
-            } else {
-                updateThread(db, thread, existingRecord)
-            }
-
-            // Delete existing and insert thread participants
-            val participants = thread.getArray("participants")
-            if (participants != null) {
-                db.execute("DELETE FROM ThreadParticipant WHERE thread_id = ?", arrayOf(threadId))
-
-                if (participants.size() > 0) {
-                    insertThreadParticipants(db, threadId!!, participants)
-                }
-            }
+            val thread = threads[i]
+            handleThread(db, thread, teamIds)
         } catch (e: Exception) {
             e.printStackTrace()
+        }
+    }
+
+    handleTeamThreadsSync(db, threads, teamIds)
+}
+
+fun handleThread(db: Database, thread: ReadableMap, teamIds: ArrayList<String>) {
+    // Insert/Update the thread
+    val threadId = thread.getString("id")
+    val isFollowing = thread.getBoolean("is_following")
+    val existingRecord = find(db, "Thread", threadId)
+    if (existingRecord == null) {
+        insertThread(db, thread)
+    } else {
+        updateThread(db, thread, existingRecord)
+    }
+
+    syncParticipants(db, thread)
+
+    // this is per team
+    if (isFollowing) {
+        for (teamId in teamIds) {
+            handleThreadInTeam(db, thread, teamId)
+        }
+    }
+}
+
+fun handleThreadInTeam(db: Database, thread: ReadableMap, teamId: String) {
+    val threadId = thread.getString("id") ?: return
+    val existingRecord = findByColumns(
+            db,
+            "ThreadsInTeam",
+            arrayOf("thread_id", "team_id"),
+            arrayOf(threadId, teamId)
+    )
+    if (existingRecord == null) {
+        try {
+            val id = RandomId.generate()
+            val query = """
+            INSERT INTO ThreadsInTeam (id, team_id, thread_id, _changed, _status)
+            VALUES (?, ?, ?, '', 'created')
+            """
+            db.execute(query, arrayOf(id, teamId, threadId))
+        } catch (e: Exception) {
+            e.printStackTrace()
+        }
+    }
+}
+
+fun handleTeamThreadsSync(db: Database, threadList: ArrayList<ReadableMap>, teamIds: ArrayList<String>) {
+    val sortedList = threadList.filter{ it.getBoolean("is_following") }
+            .sortedBy { it.getDouble("last_reply_at") }
+            .map { it.getDouble("last_reply_at") }
+    val earliest = sortedList.first()
+    val latest = sortedList.last()
+
+    for (teamId in teamIds) {
+        val existingTeamThreadsSync = find(db, "TeamThreadsSync", teamId)
+        if (existingTeamThreadsSync == null) {
+            insertTeamThreadsSync(db, teamId, earliest, latest)
+        } else {
+            updateTeamThreadsSync(db, teamId, earliest, latest, existingTeamThreadsSync)
         }
     }
 }

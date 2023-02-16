@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React, {useEffect, useMemo} from 'react';
 import {useWindowDimensions} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
@@ -60,19 +60,19 @@ const CategoriesList = ({channelsCount, iconPad, isCRTEnabled, teamsCount}: Chan
         return {maxWidth: withTiming(tabletWidth.value, {duration: 350})};
     }, [isTablet, width]);
 
-    let content;
+    const content = useMemo(() => {
+        if (channelsCount < 1) {
+            return (<LoadChannelsError/>);
+        }
 
-    if (channelsCount < 1) {
-        content = (<LoadChannelsError/>);
-    } else {
-        content = (
+        return (
             <>
                 <SubHeader/>
                 {isCRTEnabled && <ThreadsButton/>}
                 <Categories/>
             </>
         );
-    }
+    }, [isCRTEnabled]);
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>

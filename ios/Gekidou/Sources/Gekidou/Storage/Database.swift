@@ -43,6 +43,7 @@ public class Database: NSObject {
     internal var systemTable = Table("System")
     internal var teamTable = Table("Team")
     internal var myTeamTable = Table("MyTeam")
+    internal var teamMembershipTable = Table("TeamMembership")
     internal var channelTable = Table("Channel")
     internal var channelInfoTable = Table("ChannelInfo")
     internal var channelMembershipTable = Table("ChannelMembership")
@@ -58,7 +59,12 @@ public class Database: NSObject {
     internal var userTable = Table("User")
     internal var threadTable = Table("Thread")
     internal var threadParticipantTable = Table("ThreadParticipant")
+    internal var threadsInTeamTable = Table("ThreadsInTeam")
+    internal var teamThreadsSyncTable = Table("TeamThreadsSync")
     internal var configTable = Table("Config")
+    internal var preferenceTable = Table("Preference")
+    internal var categoryTable = Table("Category")
+    internal var categoryChannelTable = Table("CategoryChannel")
     
     @objc public static let `default` = Database()
     

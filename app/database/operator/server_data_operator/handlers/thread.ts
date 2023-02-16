@@ -124,7 +124,9 @@ const ThreadHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
                 threadsMap: {[teamId]: threads},
                 prepareRecordsOnly: true,
             }) as ThreadInTeamModel[];
-            batch.push(...threadsInTeam);
+            if (threadsInTeam.length) {
+                batch.push(...threadsInTeam);
+            }
         }
 
         if (batch.length && !prepareRecordsOnly) {
@@ -199,7 +201,7 @@ const ThreadHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superc
             const threadIds = threadsMap[teamId].map((thread) => thread.id);
             const chunks = await (this.database as Database).get<ThreadInTeamModel>(THREADS_IN_TEAM).query(
                 Q.where('team_id', teamId),
-                Q.where('id', Q.oneOf(threadIds)),
+                Q.where('thread_id', Q.oneOf(threadIds)),
             ).fetch();
             const chunksMap = chunks.reduce((result: Record<string, ThreadInTeamModel>, chunk) => {
                 result[chunk.threadId] = chunk;

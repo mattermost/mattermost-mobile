@@ -9,6 +9,7 @@ import {map as map$, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {sanitizeLikeString} from '@helpers/database';
 import {hasPermission} from '@utils/role';
 
 import {prepareDeletePost} from './post';
@@ -460,6 +461,29 @@ export const queryEmptyDirectAndGroupChannels = (database: Database) => {
     );
 };
 
+export const observeArchivedDirectChannels = (database: Database, currentUserId: string) => {
+    const deactivatedIds = database.get<UserModel>(USER).query(
+        Q.where('delete_at', Q.gt(0)),
+    ).observe().pipe(
+        switchMap((users) => of$(users.map((u) => u.id))),
+    );
+
+    return deactivatedIds.pipe(
+        switchMap((dIds) => {
+            return database.get<ChannelModel>(CHANNEL).query(
+                Q.on(
+                    CHANNEL_MEMBERSHIP,
+                    Q.and(
+                        Q.where('user_id', Q.notEq(currentUserId)),
+                        Q.where('user_id', Q.oneOf(dIds)),
+                    ),
+                ),
+                Q.where('type', 'D'),
+            ).observe();
+        }),
+    );
+};
+
 export function observeMyChannelMentionCount(database: Database, teamId?: string, columns = ['mentions_count', 'is_unread']): Observable<number> {
     const conditions: Q.Where[] = [
         Q.where('delete_at', Q.eq(0)),
@@ -500,7 +524,7 @@ export function queryMyRecentChannels(database: Database, take: number) {
 
 export const observeDirectChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
     const onlyDMs = term.startsWith('@') ? "AND c.type='D'" : '';
-    const value = Q.sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
+    const value = sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
     let username = `u.username LIKE '${value}%'`;
     let displayname = `c.display_name LIKE '${value}%'`;
     if (!matchStart) {
@@ -526,7 +550,7 @@ export const observeDirectChannelsByTerm = (database: Database, term: string, ta
 export const observeNotDirectChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
     const teammateNameSetting = observeTeammateNameDisplay(database);
 
-    const value = Q.sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
+    const value = sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
     let username = `u.username LIKE '${value}%'`;
     let nickname = `u.nickname LIKE '${value}%'`;
     let displayname = `(u.first_name || ' ' || u.last_name) LIKE '${value}%'`;
@@ -567,7 +591,7 @@ export const observeJoinedChannelsByTerm = (database: Database, term: string, ta
         return of$([]);
     }
 
-    const value = Q.sanitizeLikeString(term);
+    const value = sanitizeLikeString(term);
     let displayname = `c.display_name LIKE '${value}%'`;
     if (!matchStart) {
         displayname = `c.display_name LIKE '%${value}%' AND c.display_name NOT LIKE '${value}%'`;
@@ -585,7 +609,7 @@ export const observeArchiveChannelsByTerm = (database: Database, term: string, t
         return of$([]);
     }
 
-    const value = Q.sanitizeLikeString(term);
+    const value = sanitizeLikeString(term);
     const displayname = `%${value}%`;
     return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(CHANNEL, Q.and(
@@ -616,7 +640,7 @@ export const observeChannelsByLastPostAt = (database: Database, myChannels: MyCh
 };
 
 export const queryChannelsForAutocomplete = (database: Database, matchTerm: string, isSearch: boolean, teamId: string) => {
-    const likeTerm = `%${Q.sanitizeLikeString(matchTerm)}%`;
+    const likeTerm = `%${sanitizeLikeString(matchTerm)}%`;
     const clauses: Q.Clause[] = [];
     if (isSearch) {
         clauses.push(

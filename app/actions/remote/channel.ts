@@ -5,7 +5,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
-import {removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
+import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
 import {updateLocalUser} from '@actions/local/user';
 import {loadCallForChannel} from '@calls/actions/calls';
@@ -726,10 +726,14 @@ export async function joinChannelIfNeeded(serverUrl: string, channelId: string) 
     }
 }
 
-export async function markChannelAsRead(serverUrl: string, channelId: string) {
+export async function markChannelAsRead(serverUrl: string, channelId: string, updateLocal = false) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         await client.viewMyChannel(channelId);
+
+        if (updateLocal) {
+            await markChannelAsViewed(serverUrl, channelId, true);
+        }
 
         return {};
     } catch (error) {

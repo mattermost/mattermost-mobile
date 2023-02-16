@@ -1,6 +1,7 @@
 package com.mattermost.helpers.database_extension
 
 import com.facebook.react.bridge.ReadableMap
+import com.mattermost.helpers.DatabaseHelper
 import com.mattermost.helpers.ReadableMapUtils
 import com.nozbe.watermelondb.Database
 import org.json.JSONException
@@ -22,20 +23,6 @@ fun findMyChannel(db: Database?, channelId: String): Boolean {
     return false
 }
 
-internal fun updateMyChannelLastFetchedAt(db: Database, channelId: String, lastFetchedAt: Double) {
-    try {
-        db.execute(
-                "UPDATE MyChannel SET last_fetched_at = ?, _status = 'updated' WHERE id = ?",
-                arrayOf(
-                        lastFetchedAt,
-                        channelId
-                )
-        )
-    } catch (e: Exception) {
-        e.printStackTrace()
-    }
-}
-
 internal fun handleChannel(db: Database, channel: ReadableMap) {
     try {
         val exists = channel.getString("id")?.let { findChannel(db, it) } ?: false
@@ -50,10 +37,26 @@ internal fun handleChannel(db: Database, channel: ReadableMap) {
     }
 }
 
-internal fun handleMyChannel(db: Database, myChannel: ReadableMap) {
+internal fun DatabaseHelper.handleMyChannel(db: Database, myChannel: ReadableMap, postsData: ReadableMap?, receivingThreads: Boolean) {
     try {
         val json = ReadableMapUtils.toJSONObject(myChannel)
         val exists = myChannel.getString("id")?.let { findMyChannel(db, it) } ?: false
+
+        if (postsData != null && !receivingThreads) {
+            val posts = ReadableMapUtils.toJSONObject(postsData.getMap("posts")).toMap()
+            val postList = posts.toList()
+            val lastFetchedAt = postList.fold(0.0) { acc, next ->
+                val post = next.second as Map<*, *>
+                val createAt = post["create_at"] as Double
+                val updateAt = post["update_at"] as Double
+                val deleteAt = post["delete_at"] as Double
+                val value = maxOf(createAt, updateAt, deleteAt)
+
+                maxOf(value, acc)
+            }
+            json.put("last_fetched_at", lastFetchedAt)
+        }
+
         if (exists) {
             updateMyChannel(db, json)
             return
@@ -85,8 +88,8 @@ fun insertChannel(db: Database, channel: JSONObject): Boolean {
         db.execute(
                 """
                 INSERT INTO Channel 
-                (id, create_at, delete_at, update_at, creator_id, display_name, name, team_id, type, is_group_constrained, shared, _status)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'created')
+                (id, create_at, delete_at, update_at, creator_id, display_name, name, team_id, type, is_group_constrained, shared, _changed, _status)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'created')
                 """.trimIndent(),
                 arrayOf(
                         id, createAt, deleteAt, updateAt,
@@ -110,8 +113,8 @@ fun insertChannelInfo(db: Database, channel: JSONObject) {
         db.execute(
                 """
                 INSERT INTO ChannelInfo
-                (id, header, purpose, guest_count, member_count, pinned_post_count, _status)
-                VALUES (?, ?, ?, 0, 0, 0, 'created')
+                (id, header, purpose, guest_count, member_count, pinned_post_count, _changed, _status)
+                VALUES (?, ?, ?, 0, 0, 0, '', 'created')
                 """.trimIndent(),
                 arrayOf(id, header, purpose)
         )
@@ -130,15 +133,15 @@ fun insertMyChannel(db: Database, myChanel: JSONObject): Boolean {
         val lastPostAt = try { myChanel.getDouble("last_post_at") } catch (e: JSONException) { 0 }
         val lastViewedAt = try { myChanel.getDouble("last_viewed_at") } catch (e: JSONException) { 0 }
         val viewedAt = 0
-        val lastFetchedAt = 0
+        val lastFetchedAt = try { myChanel.getDouble("last_fetched_at") } catch (e: JSONException) { 0 }
         val manuallyUnread = false
 
         db.execute(
                 """
                     INSERT INTO MyChannel
                     (id, roles, message_count, mentions_count, is_unread, manually_unread,
-                    last_post_at, last_viewed_at, viewed_at, last_fetched_at, _status)
-                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'created') 
+                    last_post_at, last_viewed_at, viewed_at, last_fetched_at, _changed, _status)
+                    VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'created') 
                     """,
                 arrayOf(
                         id, roles, msgCount, mentionsCount, isUnread, manuallyUnread,
@@ -160,8 +163,8 @@ fun insertMyChannelSettings(db: Database, myChanel: JSONObject) {
 
         db.execute(
                 """
-                    INSERT INTO MyChannelSettings (id, notify_props)
-                    VALUES (?, ?)
+                    INSERT INTO MyChannelSettings (id, notify_props, _changed, _status)
+                    VALUES (?, ?, '', 'created')
                     """,
                 arrayOf(id, notifyProps)
         )
@@ -172,15 +175,15 @@ fun insertMyChannelSettings(db: Database, myChanel: JSONObject) {
 
 fun insertChannelMember(db: Database, myChanel: JSONObject) {
     try {
-        val userId = queryCurrentUserId(db)?.removeSurrounding("\"") ?: return
+        val userId = queryCurrentUserId(db) ?: return
         val channelId = try { myChanel.getString("id") } catch (e: JSONException) { return }
         val schemeAdmin = try { myChanel.getBoolean("scheme_admin") } catch (e: JSONException) { false }
         val id = "$channelId-$userId"
         db.execute(
                 """
                     INSERT INTO ChannelMembership 
-                    (id, channel_id, user_id, scheme_admin, _status)
-                    VALUES (?, ?, ?, ?, 'created')
+                    (id, channel_id, user_id, scheme_admin, _changed, _status)
+                    VALUES (?, ?, ?, ?, '', 'created')
                     """,
                 arrayOf(id, channelId, userId, schemeAdmin)
         )
@@ -198,14 +201,18 @@ fun updateMyChannel(db: Database, myChanel: JSONObject) {
         val isUnread = try { myChanel.getBoolean("is_unread") } catch (e: JSONException) { false }
         val lastPostAt = try { myChanel.getDouble("last_post_at") } catch (e: JSONException) { 0 }
         val lastViewedAt = try { myChanel.getDouble("last_viewed_at") } catch (e: JSONException) { 0 }
+        val lastFetchedAt = try { myChanel.getDouble("last_fetched_at") } catch (e: JSONException) { 0 }
 
         db.execute(
                 """
                     UPDATE MyChannel SET message_count=?, mentions_count=?, is_unread=?, 
-                    last_post_at=?, last_viewed_at=?, _status = 'updated' 
+                    last_post_at=?, last_viewed_at=?, last_fetched_at=?, _status = 'updated' 
                     WHERE id=?
                     """,
-                arrayOf(msgCount, mentionsCount, isUnread, lastPostAt, lastViewedAt, id)
+                arrayOf(
+                        msgCount, mentionsCount, isUnread,
+                        lastPostAt, lastViewedAt, lastFetchedAt, id
+                )
         )
     } catch (e: Exception) {
         e.printStackTrace()
