@@ -47,7 +47,7 @@ export const convertToNotificationData = (notification: Notification, tapped = t
     return notificationData;
 };
 
-export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel' | 'Connection') => {
+export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel' | 'Connection' | 'Post') => {
     const title = intl.formatMessage({id: 'notification.message_not_found', defaultMessage: 'Message not found'});
     let message;
     switch (type) {
@@ -63,6 +63,12 @@ export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel' | 'C
                 defaultMessage: 'This message belongs to a team where you are not a member.',
             });
             break;
+        case 'Post':
+            message = intl.formatMessage({
+                id: 'notification.no_post',
+                defaultMessage: 'This post has not been found.',
+            });
+            break;
         case 'Connection':
             message = intl.formatMessage({
                 id: 'notification.no_connection',
@@ -75,7 +81,7 @@ export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel' | 'C
     popToRoot();
 };
 
-export const emitNotificationError = (type: 'Team' | 'Channel' | 'Connection') => {
+export const emitNotificationError = (type: 'Team' | 'Channel' | 'Post' | 'Connection') => {
     const req = setTimeout(() => {
         DeviceEventEmitter.emit(Events.NOTIFICATION_ERROR, type);
         clearTimeout(req);

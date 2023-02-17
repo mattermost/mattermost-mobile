@@ -162,10 +162,11 @@ const launchToHome = async (props: LaunchProps) => {
             const extra = props.extra as NotificationWithData;
             openPushNotification = Boolean(props.serverUrl && !props.launchError && extra.userInteraction && extra.payload?.channel_id && !extra.payload?.userInfo?.local);
             if (openPushNotification) {
-                pushNotificationEntry(props.serverUrl!, extra);
-            } else {
-                appEntry(props.serverUrl!);
+                await resetToHome(props);
+                return pushNotificationEntry(props.serverUrl!, extra);
             }
+
+            appEntry(props.serverUrl!);
             break;
         }
         case Launch.Normal:

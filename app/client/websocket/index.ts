@@ -44,6 +44,7 @@ export default class WebSocketClient {
     private url = '';
 
     private serverUrl: string;
+    private hasReliablyReconnect = false;
 
     constructor(serverUrl: string, token: string, lastDisconnect = 0) {
         this.connectionId = '';
@@ -155,6 +156,7 @@ export default class WebSocketClient {
                     if (this.serverSequence && this.missedEventsCallback) {
                         this.missedEventsCallback();
                     }
+                    this.hasReliablyReconnect = true;
                 }
             } else if (this.firstConnectCallback) {
                 logInfo('websocket connected to', this.url);
@@ -172,6 +174,7 @@ export default class WebSocketClient {
 
             this.conn = undefined;
             this.responseSequence = 1;
+            this.hasReliablyReconnect = false;
 
             if (this.connectFailCount === 0) {
                 logInfo('websocket closed', this.url);
@@ -215,6 +218,7 @@ export default class WebSocketClient {
 
         this.conn!.onError((evt: any) => {
             if (evt.url === this.url) {
+                this.hasReliablyReconnect = false;
                 if (this.connectFailCount <= 1) {
                     logError('websocket error', this.url);
                     logError('WEBSOCKET ERROR EVENT', evt);
@@ -244,11 +248,17 @@ export default class WebSocketClient {
 
                         // If we already have a connectionId present, and server sends a different one,
                         // that means it's either a long timeout, or server restart, or sequence number is not found.
+                        // If the server is not available the first time we try to connect, we won't have a connection id
+                        // but still we need to sync.
                         // Then we do the sync calls, and reset sequence number to 0.
-                        if (this.connectionId !== '' && this.connectionId !== msg.data.connection_id) {
-                            logInfo(this.url, 'long timeout, or server restart, or sequence number is not found.');
+                        if (
+                            (this.connectionId !== '' && this.connectionId !== msg.data.connection_id) ||
+                            (this.hasReliablyReconnect && this.connectionId === '')
+                        ) {
+                            logInfo(this.url, 'long timeout, or server restart, or sequence number is not found, or first connect after failure.');
                             this.reconnectCallback();
                             this.serverSequence = 0;
+                            this.hasReliablyReconnect = false;
                         }
 
                         // If it's a fresh connection, we have to set the connectionId regardless.
@@ -316,6 +326,7 @@ export default class WebSocketClient {
         this.stop = stop;
         this.connectFailCount = 0;
         this.responseSequence = 1;
+        this.hasReliablyReconnect = false;
 
         if (this.conn && this.conn.readyState === WebSocketReadyState.OPEN) {
             this.conn.close();

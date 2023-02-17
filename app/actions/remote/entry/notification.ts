@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {fetchMyChannel, switchToChannelById} from '@actions/remote/channel';
+import {fetchPostById} from '@actions/remote/post';
 import {fetchMyTeam} from '@actions/remote/team';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import {Screens} from '@constants';
@@ -9,6 +10,7 @@ import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getMyChannel} from '@queries/servers/channel';
+import {getPostById} from '@queries/servers/post';
 import {queryThemePreferences} from '@queries/servers/preference';
 import {getCurrentTeamId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
@@ -21,6 +23,7 @@ import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 import type ClientError from '@client/rest/error';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
+import type PostModel from '@typings/database/models/servers/post';
 
 export async function pushNotificationEntry(serverUrl: string, notification: NotificationWithData) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
@@ -66,7 +69,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     if (!myTeam) {
         const resp = await fetchMyTeam(serverUrl, teamId);
         if (resp.error) {
-            if ((resp.error as ClientError).status_code === '403') {
+            if ((resp.error as ClientError).status_code === 403) {
                 emitNotificationError('Team');
             } else {
                 emitNotificationError('Connection');
@@ -79,7 +82,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     if (!myChannel) {
         const resp = await fetchMyChannel(serverUrl, teamId, channelId);
         if (resp.error) {
-            if ((resp.error as ClientError).status_code === '403') {
+            if ((resp.error as ClientError).status_code === 403) {
                 emitNotificationError('Channel');
             } else {
                 emitNotificationError('Connection');
@@ -96,7 +99,21 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     let switchedToChannel = false;
     if (myChannel && myTeam) {
         if (isThreadNotification) {
-            await fetchAndSwitchToThread(serverUrl, rootId, true);
+            let post: PostModel | Post | undefined = await getPostById(database, rootId);
+            if (!post) {
+                const resp = await fetchPostById(serverUrl, rootId);
+                post = resp.post;
+            }
+
+            const actualRootId = post && ('root_id' in post ? post.root_id : post.rootId);
+
+            if (actualRootId) {
+                await fetchAndSwitchToThread(serverUrl, actualRootId, true);
+            } else if (post) {
+                await fetchAndSwitchToThread(serverUrl, rootId, true);
+            } else {
+                emitNotificationError('Post');
+            }
         } else {
             switchedToChannel = true;
             await switchToChannelById(serverUrl, channelId, teamId);
