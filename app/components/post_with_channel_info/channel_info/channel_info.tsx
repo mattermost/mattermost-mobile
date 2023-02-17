@@ -67,7 +67,9 @@ function ChannelInfo({channelId, channelName, teamName, testID}: Props) {
     ), [isPressed, styles]);
 
     const onChannelNamePressed = useCallback(() => {
-        switchToChannelById(serverUrl, channelId);
+        if (channelId) {
+            switchToChannelById(serverUrl, channelId);
+        }
     }, [serverUrl, channelId]);
 
     const togglePressed = useCallback(() => {
