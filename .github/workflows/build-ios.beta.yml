@@ -1,7 +1,12 @@
 ---
 name: "build-ios-beta"
-# TODO: define these conditions afterwards
-on: [push]
+on:
+  push:
+    branches:
+    # TODO: remove the `gha-` to match the current workflow again
+    - build-gha-\d+$
+    - build-gha-ios-\d+$
+    - build-gha-ios-beta-\d+$
 
 jobs:
   build-ios-pr:

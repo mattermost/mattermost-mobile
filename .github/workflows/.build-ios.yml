@@ -210,7 +210,7 @@ jobs:
     - name: ci/fastlane-dependencies
       uses: ./.github/actions/fastlane-dependencies
       with:
-        os: ios
+        caching_key: ios
     # Build iOS app, method depends on the value of `build_type`
     - name: ci/build-ios-signed
       working-directory: ./fastlane

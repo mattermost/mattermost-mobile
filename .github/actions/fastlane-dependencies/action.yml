@@ -3,7 +3,7 @@ name: 'fastlane-dependencies'
 description: 'Install fastlane dependencies'
 
 inputs:
-  os:
+  caching_key:
     description: Name of the OS to generate dependencies for, to compartimentalize caching
     type: string
     required: true

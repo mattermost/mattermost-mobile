@@ -1,0 +1,36 @@
+---
+name: "github-release-draft"
+on:
+  push:
+    tags:
+    # TODO: remove the `gha-` to match the current workflow again
+    - 'gha-v[0-9]+.[0-9]+.[0-9]+*'
+
+jobs:
+  build-ios-unsigned:
+    uses: ./.github/workflows/.build-ios.yml
+    with:
+      build_artifact_name: "ios-build-unsigned-${{ github.run_id }}"
+      build_type: unsigned
+      node_options: "--max_old_space_size=12000"
+      tag: "${{ github.ref_name }}"
+    secrets:
+      gh_token: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+  # TODO add android job here. Also modify github-release to download its artifact, and to depend on it
+  github-release:
+    runs-on: ubuntu-20.04   # To use Ruby 2.7, instead of Ruby 3
+    steps:
+    - name: ci/fastlane-dependencies
+      uses: ./.github/actions/fastlane-dependencies
+      with:
+        caching_key: github-release
+    - name: ci/download-android-artifact
+      uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+      with:
+        name: "ios-build-unsigned-${{ github.run_id }}"
+    - run:
+        name: Create GitHub release
+        working_directory: fastlane
+        command: bundle exec fastlane github
+    # TODO depend on android job as well
+    needs: [build-ios-unsigned]
