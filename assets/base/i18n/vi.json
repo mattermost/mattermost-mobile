@@ -292,6 +292,8 @@
   "mentions.empty.title": "Chưa đề cập đến",
   "mobile.account.settings.save": "Cứu",
   "mobile.action_menu.select": "Chọn một tùy chọn",
+  
+  "mobile.add_team.joining_to_server": "Đang kết nối tới máy chủ",
   "mobile.add_team.create_team": "Tạo một nhóm mới",
   "mobile.add_team.join_team": "Tham gia một nhóm khác",
   "mobile.add_team.create_team_button": "Tạo nhóm",
@@ -310,6 +312,7 @@
   "mobile.add_team.team_url_is_taken": "URL này đã được sử dụng hoặc không có sẵn. Vui lòng thử cái khác.",
   "mobile.add_team.team_name_required": "Hãy nhập tên nhóm.",
   "mobile.add_team.team_url_required": "Hãy nhập đường dẫn.",
+  
   "mobile.android.back_handler_exit": "Nhấn lại một lần nữa để thoát",
   "mobile.announcement_banner.title": "Thông báo",
   "mobile.calls_call_ended": "Cuộc gọi kết thúc",

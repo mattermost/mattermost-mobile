@@ -53,6 +53,7 @@ import ServerHeader from './header';
 import type ClientError from '@client/rest/error';
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
+import FormattedText from '@app/components/formatted_text';
 
 interface ServerProps extends LaunchProps {
     animated?: boolean;
@@ -287,7 +288,7 @@ const Server = ({
         goToScreen(screen, '', passProps, {
             ...loginAnimationOptions(),
 
-            // TODO  
+            // TODO ?
             topBar: {visible: false, backButton: undefined},
         });
         setConnecting(false);
@@ -302,16 +303,19 @@ const Server = ({
 
         if (connecting && cancelPing) {
             cancelPing();
+            setIsFirstLoad(false);
             return;
         }
 
         const serverUrl = typeof manualUrl === 'string' ? manualUrl : url;
         if (!serverUrl || serverUrl.trim() === '') {
             setUrlError(formatMessage(defaultServerUrlMessage));
+            setIsFirstLoad(false);
             return;
         }
 
         if (!isServerUrlValid(serverUrl)) {
+            setIsFirstLoad(false);
             return;
         }
 
@@ -334,6 +338,7 @@ const Server = ({
                 }),
             );
             setConnecting(false);
+            setIsFirstLoad(false);
             return;
         }
 
@@ -377,6 +382,7 @@ const Server = ({
             pingUrl,
             !retryWithHttp,
         );
+
         const result = await doPing(
             serverUrl,
             true,
@@ -384,6 +390,7 @@ const Server = ({
         );
 
         if (canceled) {
+            setIsFirstLoad(false);
             return;
         }
 
@@ -396,6 +403,7 @@ const Server = ({
                 setButtonDisabled(true);
                 setConnecting(false);
             }
+            setIsFirstLoad(false);
             return;
         }
 
@@ -404,11 +412,13 @@ const Server = ({
             result.canReceiveNotifications as string,
             intl,
         );
+
         const data = await fetchConfigAndLicense(serverUrl, true);
         if (data.error) {
             setButtonDisabled(true);
             setUrlError(getErrorMessage(data.error as ClientError, intl));
             setConnecting(false);
+            setIsFirstLoad(false);
             return;
         }
 
@@ -423,6 +433,7 @@ const Server = ({
                     defaultMessage: 'You are already connected to this server.',
                 }),
             );
+            setIsFirstLoad(false);
             return;
         }
 
@@ -448,6 +459,10 @@ const Server = ({
                 }}
             >
                 <Loading size={'large'}/>
+                <FormattedText
+                    id='mobile.add_team.joining_to_server'
+                    defaultMessage='Joining to server'
+                />
             </View>
         );
     }
