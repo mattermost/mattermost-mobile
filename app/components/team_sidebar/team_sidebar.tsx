@@ -69,7 +69,6 @@ export default function TeamSidebar({iconPad, canJoinOtherTeams, teamsCount}: Pr
                 {canJoinOtherTeams && (
                     <AddTeam/>
                 )}
-                {/* // ? */}
                 <CreateTeam/>
             </Animated.View>
         </Animated.View>

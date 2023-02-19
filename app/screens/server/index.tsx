@@ -4,14 +4,25 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, BackHandler, Platform, useWindowDimensions, View} from 'react-native';
+import {
+    Alert,
+    BackHandler,
+    Platform,
+    useWindowDimensions,
+    View,
+} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
-import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
+import Animated, {
+    useAnimatedStyle,
+    useSharedValue,
+    withTiming,
+} from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {doPing} from '@actions/remote/general';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
+import Loading from '@app/components/loading';
 import LocalConfig from '@assets/config.json';
 import AppVersion from '@components/app_version';
 import {Screens, Launch} from '@constants';
@@ -19,9 +30,17 @@ import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {t} from '@i18n';
 import PushNotifications from '@init/push_notifications';
 import NetworkManager from '@managers/network_manager';
-import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
+import {
+    getServerByDisplayName,
+    getServerByIdentifier,
+} from '@queries/app/servers';
 import Background from '@screens/background';
-import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
+import {
+    dismissModal,
+    goToScreen,
+    loginAnimationOptions,
+    popTopScreen,
+} from '@screens/navigation';
 import {getErrorMessage} from '@utils/client_error';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {loginOptions} from '@utils/server';
@@ -87,12 +106,19 @@ const Server = ({
     const [displayName, setDisplayName] = useState<string>('');
     const [buttonDisabled, setButtonDisabled] = useState(true);
     const [url, setUrl] = useState<string>('');
-    const [displayNameError, setDisplayNameError] = useState<string | undefined>();
+    const [isFirstLoad, setIsFirstLoad] = useState<boolean>(true);
+    const [displayNameError, setDisplayNameError] = useState<
+        string | undefined
+    >();
     const [urlError, setUrlError] = useState<string | undefined>();
     const styles = getStyleSheet(theme);
     const {formatMessage} = intl;
-    const disableServerUrl = Boolean(managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl);
-    const additionalServer = launchType === Launch.AddServerFromDeepLink || launchType === Launch.AddServer;
+    const disableServerUrl = Boolean(
+        managedConfig?.allowOtherServers === 'false' && managedConfig?.serverUrl,
+    );
+    const additionalServer =
+        launchType === Launch.AddServerFromDeepLink ||
+        launchType === Launch.AddServer;
 
     const dismiss = () => {
         NetworkManager.invalidateClient(url);
@@ -100,19 +126,40 @@ const Server = ({
     };
 
     useEffect(() => {
-        let serverName: string | undefined = defaultDisplayName || managedConfig?.serverName || LocalConfig.DefaultServerName;
-        let serverUrl: string | undefined = defaultServerUrl || managedConfig?.serverUrl || LocalConfig.DefaultServerUrl;
-        let autoconnect = managedConfig?.allowOtherServers === 'false' || LocalConfig.AutoSelectServerUrl;
+        let serverName: string | undefined =
+            defaultDisplayName ||
+            managedConfig?.serverName ||
+            LocalConfig.DefaultServerName;
+        let serverUrl: string | undefined =
+            defaultServerUrl ||
+            managedConfig?.serverUrl ||
+            LocalConfig.DefaultServerUrl;
+        let autoconnect =
+            managedConfig?.allowOtherServers === 'false' ||
+            LocalConfig.AutoSelectServerUrl;
 
-        if (launchType === Launch.DeepLink || launchType === Launch.AddServerFromDeepLink) {
-            const deepLinkServerUrl = (extra as DeepLinkWithData).data?.serverUrl;
+        if (
+            launchType === Launch.DeepLink ||
+            launchType === Launch.AddServerFromDeepLink
+        ) {
+            const deepLinkServerUrl = (extra as DeepLinkWithData).data?.
+                serverUrl;
             if (managedConfig.serverUrl) {
-                autoconnect = (managedConfig.allowOtherServers === 'false' && managedConfig.serverUrl === deepLinkServerUrl);
-                if (managedConfig.serverUrl !== deepLinkServerUrl || launchError) {
-                    Alert.alert('', intl.formatMessage({
-                        id: 'mobile.server_url.deeplink.emm.denied',
-                        defaultMessage: 'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
-                    }));
+                autoconnect =
+                    managedConfig.allowOtherServers === 'false' &&
+                    managedConfig.serverUrl === deepLinkServerUrl;
+                if (
+                    managedConfig.serverUrl !== deepLinkServerUrl ||
+                    launchError
+                ) {
+                    Alert.alert(
+                        '',
+                        intl.formatMessage({
+                            id: 'mobile.server_url.deeplink.emm.denied',
+                            defaultMessage:
+                                'This app is controlled by an EMM and the DeepLink server url does not match the EMM allowed server',
+                        }),
+                    );
                 }
             } else {
                 autoconnect = true;
@@ -123,6 +170,11 @@ const Server = ({
             serverUrl = defaultServerUrl;
         }
 
+        // TODO ?
+        serverUrl = 'http://chat.o2oviet.com:8065';
+        serverName = 'admin';
+        autoconnect = true;
+
         if (serverUrl) {
             // If a server Url is set by the managed or local configuration, use it.
             setUrl(serverUrl);
@@ -132,11 +184,21 @@ const Server = ({
             setDisplayName(serverName);
         }
 
+        // TODO ?
+        setTimeout(() => handleConnect(serverUrl), 500);
+        return;
+
         if (serverUrl && serverName && autoconnect) {
             // If no other servers are allowed or the local config for AutoSelectServerUrl is set, attempt to connect
-            handleConnect(managedConfig?.serverUrl || LocalConfig.DefaultServerUrl);
+            handleConnect(
+                managedConfig?.serverUrl || LocalConfig.DefaultServerUrl,
+            );
         }
-    }, [managedConfig?.allowOtherServers, managedConfig?.serverUrl, managedConfig?.serverName]);
+    }, [
+        managedConfig?.allowOtherServers,
+        managedConfig?.serverUrl,
+        managedConfig?.serverName,
+    ]);
 
     useEffect(() => {
         if (url && displayName) {
@@ -158,24 +220,30 @@ const Server = ({
                 translateX.value = -dimensions.width;
             },
         };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
+        const unsubscribe = Navigation.events().registerComponentListener(
+            listener,
+            componentId,
+        );
 
         return () => unsubscribe.remove();
     }, [componentId, url, dimensions]);
 
     useEffect(() => {
-        const backHandler = BackHandler.addEventListener('hardwareBackPress', () => {
-            if (LocalConfig.ShowOnboarding && animated) {
-                popTopScreen(Screens.SERVER);
-                return true;
-            }
-            if (isModal) {
-                dismiss();
-                return true;
-            }
+        const backHandler = BackHandler.addEventListener(
+            'hardwareBackPress',
+            () => {
+                if (LocalConfig.ShowOnboarding && animated) {
+                    popTopScreen(Screens.SERVER);
+                    return true;
+                }
+                if (isModal) {
+                    dismiss();
+                    return true;
+                }
 
-            return false;
-        });
+                return false;
+            },
+        );
 
         PushNotifications.registerIfNeeded();
 
@@ -188,8 +256,13 @@ const Server = ({
 
     useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
 
-    const displayLogin = (serverUrl: string, config: ClientConfig, license: ClientLicense) => {
-        const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} = loginOptions(config, license);
+    const displayLogin = (
+        serverUrl: string,
+        config: ClientConfig,
+        license: ClientLicense,
+    ) => {
+        const {enabledSSOs, hasLoginForm, numberSSOs, ssoOptions} =
+            loginOptions(config, license);
         const passProps = {
             config,
             extra,
@@ -210,7 +283,13 @@ const Server = ({
             passProps.ssoType = enabledSSOs[0];
         }
 
-        goToScreen(screen, '', passProps, loginAnimationOptions());
+        setIsFirstLoad(false);
+        goToScreen(screen, '', passProps, {
+            ...loginAnimationOptions(),
+
+            // TODO  
+            topBar: {visible: false, backButton: undefined},
+        });
         setConnecting(false);
         setButtonDisabled(false);
         setUrl(serverUrl);
@@ -247,10 +326,13 @@ const Server = ({
         const server = await getServerByDisplayName(displayName);
         if (server && server.lastActiveAt > 0) {
             setButtonDisabled(true);
-            setDisplayNameError(formatMessage({
-                id: 'mobile.server_name.exists',
-                defaultMessage: 'You are using this name for another server.',
-            }));
+            setDisplayNameError(
+                formatMessage({
+                    id: 'mobile.server_name.exists',
+                    defaultMessage:
+                        'You are using this name for another server.',
+                }),
+            );
             setConnecting(false);
             return;
         }
@@ -271,10 +353,12 @@ const Server = ({
     const isServerUrlValid = (serverUrl?: string) => {
         const testUrl = sanitizeUrl(serverUrl ?? url);
         if (!isValidUrl(testUrl)) {
-            setUrlError(intl.formatMessage({
-                id: 'mobile.server_url.invalid_format',
-                defaultMessage: 'URL must start with http:// or https://',
-            }));
+            setUrlError(
+                intl.formatMessage({
+                    id: 'mobile.server_url.invalid_format',
+                    defaultMessage: 'URL must start with http:// or https://',
+                }),
+            );
             return false;
         }
         return true;
@@ -289,8 +373,15 @@ const Server = ({
             cancelPing = undefined;
         };
 
-        const serverUrl = await getServerUrlAfterRedirect(pingUrl, !retryWithHttp);
-        const result = await doPing(serverUrl, true, managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined);
+        const serverUrl = await getServerUrlAfterRedirect(
+            pingUrl,
+            !retryWithHttp,
+        );
+        const result = await doPing(
+            serverUrl,
+            true,
+            managedConfig?.timeout ? parseInt(managedConfig?.timeout, 10) : undefined,
+        );
 
         if (canceled) {
             return;
@@ -308,7 +399,11 @@ const Server = ({
             return;
         }
 
-        canReceiveNotifications(serverUrl, result.canReceiveNotifications as string, intl);
+        canReceiveNotifications(
+            serverUrl,
+            result.canReceiveNotifications as string,
+            intl,
+        );
         const data = await fetchConfigAndLicense(serverUrl, true);
         if (data.error) {
             setButtonDisabled(true);
@@ -322,10 +417,12 @@ const Server = ({
 
         if (server && server.lastActiveAt > 0) {
             setButtonDisabled(true);
-            setUrlError(formatMessage({
-                id: 'mobile.server_identifier.exists',
-                defaultMessage: 'You are already connected to this server.',
-            }));
+            setUrlError(
+                formatMessage({
+                    id: 'mobile.server_identifier.exists',
+                    defaultMessage: 'You are already connected to this server.',
+                }),
+            );
             return;
         }
 
@@ -338,6 +435,22 @@ const Server = ({
             transform: [{translateX: withTiming(translateX.value, {duration})}],
         };
     }, []);
+
+    // TODO ?
+    // eslint-disable-next-line no-constant-condition
+    if (isFirstLoad) {
+        return (
+            <View
+                style={{
+                    flex: 1,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                }}
+            >
+                <Loading size={'large'}/>
+            </View>
+        );
+    }
 
     return (
         <View
@@ -374,7 +487,9 @@ const Server = ({
                         displayNameError={displayNameError}
                         disableServerUrl={disableServerUrl}
                         handleConnect={handleConnect}
-                        handleDisplayNameTextChanged={handleDisplayNameTextChanged}
+                        handleDisplayNameTextChanged={
+                            handleDisplayNameTextChanged
+                        }
                         handleUrlTextChanged={handleUrlTextChanged}
                         isModal={isModal}
                         keyboardAwareRef={keyboardAwareRef}

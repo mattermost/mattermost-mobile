@@ -194,7 +194,7 @@ export function resetMomentLocale(locale?: string) {
 
 export function getTranslations(lang: string) {
     const locale = getLocaleFromLanguage(lang);
-    // ?
+    // TODO ?
     return loadTranslation('vi');
 }
 
