@@ -545,7 +545,7 @@
     "mobile.create_direct_message.start": "Starte Unterhaltung",
     "mobile.create_channel.title": "Neuer Kanal",
     "mobile.components.select_server_view.msg_welcome": "Willkommen",
-    "mobile.components.select_server_view.msg_description": "Ein Server ist das Kommunikationszentrum deines Teams, auf den über eine eindeutige URL zugegriffen wird",
+    "mobile.components.select_server_view.msg_description": "Ein Server ist das Kommunikationszentrum deines Teams, erreichbar über eine eindeutige URL",
     "mobile.components.select_server_view.msg_connect": "Verbinden wir uns mit einem Server",
     "mobile.components.select_server_view.displayName": "Anzeigename",
     "mobile.components.select_server_view.displayHelp": "Wähle einen Anzeigenamen für deinen Server",
