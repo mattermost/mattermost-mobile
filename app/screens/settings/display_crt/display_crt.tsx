@@ -4,13 +4,14 @@
 import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 
-import {savePreference} from '@actions/remote/preference';
+import {handleCRTToggled, savePreference} from '@actions/remote/preference';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
+import EphemeralStore from '@store/ephemeral_store';
 
 import SettingBlock from '../setting_block';
 import SettingContainer from '../setting_container';
@@ -37,7 +38,8 @@ const DisplayCRT = ({componentId, currentUserId, isCRTEnabled}: Props) => {
 
     const close = () => popTopScreen(componentId);
 
-    const saveCRTPreference = useCallback(() => {
+    const saveCRTPreference = useCallback(async () => {
+        close();
         if (isCRTEnabled !== isEnabled) {
             const crtPreference: PreferenceType = {
                 category: Preferences.CATEGORIES.DISPLAY_SETTINGS,
@@ -45,9 +47,13 @@ const DisplayCRT = ({componentId, currentUserId, isCRTEnabled}: Props) => {
                 user_id: currentUserId,
                 value: isEnabled ? Preferences.COLLAPSED_REPLY_THREADS_ON : Preferences.COLLAPSED_REPLY_THREADS_OFF,
             };
-            savePreference(serverUrl, [crtPreference]);
+
+            EphemeralStore.setEnablingCRT(true);
+            const {error} = await savePreference(serverUrl, [crtPreference]);
+            if (!error) {
+                handleCRTToggled(serverUrl);
+            }
         }
-        close();
     }, [isEnabled, isCRTEnabled, serverUrl]);
 
     useBackNavigation(saveCRTPreference);

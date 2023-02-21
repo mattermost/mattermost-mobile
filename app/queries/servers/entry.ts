@@ -39,6 +39,7 @@ const {
     THREAD,
     THREADS_IN_TEAM,
     THREAD_PARTICIPANT,
+    TEAM_THREADS_SYNC,
     MY_CHANNEL,
 } = MM_TABLES.SERVER;
 
@@ -99,6 +100,7 @@ export async function truncateCrtRelatedTables(serverUrl: string): Promise<{erro
                     [`DELETE FROM ${THREAD}`, []],
                     [`DELETE FROM ${THREADS_IN_TEAM}`, []],
                     [`DELETE FROM ${THREAD_PARTICIPANT}`, []],
+                    [`DELETE FROM ${TEAM_THREADS_SYNC}`, []],
                     [`DELETE FROM ${MY_CHANNEL}`, []],
                 ],
             });

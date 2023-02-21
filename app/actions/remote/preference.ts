@@ -1,14 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {General, Preferences} from '@constants';
+import {DeviceEventEmitter} from 'react-native';
+
+import {truncateCrtRelatedTables} from '@app/queries/servers/entry';
+import {Events, General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
+import EphemeralStore from '@store/ephemeral_store';
 import {getUserIdFromChannelName} from '@utils/user';
 
+import {appEntry} from './entry';
 import {forceLogoutIfNecessary} from './session';
 
 export type MyPreferencesRequest = {
@@ -184,4 +189,12 @@ export const savePreferredSkinTone = async (serverUrl: string, skinCode: string)
     } catch (error) {
         return {error};
     }
+};
+
+export const handleCRTToggled = async (serverUrl: string) => {
+    const currentServerUrl = await DatabaseManager.getActiveServerUrl();
+    await truncateCrtRelatedTables(serverUrl);
+    await appEntry(serverUrl);
+    EphemeralStore.setEnablingCRT(false);
+    DeviceEventEmitter.emit(Events.CRT_TOGGLED, serverUrl === currentServerUrl);
 };
