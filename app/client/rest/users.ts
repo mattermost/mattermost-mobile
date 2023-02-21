@@ -27,7 +27,7 @@ export interface ClientUsersMix {
         username: string,
         password: string
     ) => Promise<any>;
-    sendCheckTeamExists: (name: string) => Promise<any>;
+    sendGetAllTeams: () => Promise<any>;
     setDefaultProfileImage: (userId: string) => Promise<any>;
     login: (
         loginId: string,
@@ -206,14 +206,18 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(
                 });
             };
 
-            sendCheckTeamExists = async (
-                name: string,
-            ) => {
-                this.analytics?.trackAPI('api_users_check_team_exists');
+            sendGetAllTeams = async () => {
+                this.analytics?.trackAPI('api_users_get_all_teams');
 
-                return this.doFetch(`${this.getTeamsRoute()}/name/${name}/exists`, {
-                    method: 'get',
-                });
+                return this.doFetch(
+                    `${this.getTeamsRoute()}${buildQueryString({
+                        page: 0,
+                        per_page: 100000,
+                    })}`,
+                    {
+                        method: 'get',
+                    },
+                );
             };
 
             setDefaultProfileImage = async (userId: string) => {

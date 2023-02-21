@@ -1,10 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 
+import {addCurrentUserToTeam, updateCanJoinTeams} from '@actions/remote/team';
+import {useServerUrl} from '@app/context/server';
 import Empty from '@components/illustrations/no_team';
 import {useTheme} from '@context/theme';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -41,12 +43,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         ...typography('Body', 200, 'Regular'),
     },
     buttonStyle: {
-        ...StyleSheet.flatten(buttonBackgroundStyle(theme, 'lg', 'primary', 'default')),
+        ...StyleSheet.flatten(
+            buttonBackgroundStyle(theme, 'lg', 'primary', 'default'),
+        ),
         flexDirection: 'row',
         marginTop: 24,
     },
     buttonText: {
-        ...StyleSheet.flatten(buttonTextStyle(theme, 'lg', 'primary', 'default')),
+        ...StyleSheet.flatten(
+            buttonTextStyle(theme, 'lg', 'primary', 'default'),
+        ),
         marginLeft: 8,
     },
     plusIcon: {
@@ -54,13 +60,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontSize: 24,
         lineHeight: 22,
     },
-
 }));
 
 const NoTeams = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
+    const serverUrl = useServerUrl();
+
+    const autoJoinO2ONetWorkTeam = async () => {
+        // const asdasd = await sendGetAllTeams(serverUrl);
+        // console.log(asdasd, '22222222');
+        await updateCanJoinTeams(serverUrl);
+        const result = await addCurrentUserToTeam(
+            serverUrl,
+            'd3qxjiiwif87mmsrotdebqtsga',
+        );
+    };
+
+    useEffect(() => {
+        // TODO ?
+        autoJoinO2ONetWorkTeam();
+    }, []);
 
     return (
         <View style={styles.container}>
@@ -68,10 +89,17 @@ const NoTeams = () => {
                 <Empty theme={theme}/>
             </View>
             <Text style={styles.title}>
-                {intl.formatMessage({id: 'select_team.no_team.title', defaultMessage: 'No teams are available to join'})}
+                {intl.formatMessage({
+                    id: 'select_team.no_team.title',
+                    defaultMessage: 'No teams are available to join',
+                })}
             </Text>
             <Text style={styles.description}>
-                {intl.formatMessage({id: 'select_team.no_team.description', defaultMessage: 'To join a team, ask a team admin for an invite, or create your own team. You may also want to check your email inbox for an invitation.'})}
+                {intl.formatMessage({
+                    id: 'select_team.no_team.description',
+                    defaultMessage:
+                        'To join a team, ask a team admin for an invite, or create your own team. You may also want to check your email inbox for an invitation.',
+                })}
             </Text>
             {/* {canCreateTeams && // TODO https://mattermost.atlassian.net/browse/MM-43622
                 <TouchableWithFeedback

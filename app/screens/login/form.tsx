@@ -21,7 +21,7 @@ import {
 } from 'react-native';
 import Button from 'react-native-button';
 
-import {login, sendCheckTeamExists} from '@actions/remote/session';
+import {login} from '@actions/remote/session';
 import CompassIcon from '@app/components/compass_icon';
 import ClientError from '@client/rest/error';
 import FloatingTextInput from '@components/floating_text_input_label';

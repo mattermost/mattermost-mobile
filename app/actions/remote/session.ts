@@ -346,10 +346,7 @@ export const sendCreateAccountRequest = async (
     };
 };
 
-export const sendCheckTeamExists = async (
-    serverUrl: string,
-    name: string,
-) => {
+export const sendGetAllTeams = async (serverUrl: string) => {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -359,14 +356,12 @@ export const sendCheckTeamExists = async (
 
     let response;
     try {
-        response = await client.sendCheckTeamExists(
-            name,
-        );
+        response = await client.sendGetAllTeams();
     } catch (error) {
         return {error};
     }
     return {
-        data: response.data,
+        data: response,
         error: undefined,
     };
 };
