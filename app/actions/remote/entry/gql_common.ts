@@ -2,17 +2,16 @@
 // See LICENSE.txt for license information.
 
 import {storeConfigAndLicense} from '@actions/local/systems';
-import {fetchMissingDirectChannelsInfo, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
-import {autoUpdateTimezone, updateAllUsersSince} from '@actions/remote/user';
+import {autoUpdateTimezone, fetchProfilesInGroupChannels, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
 import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getPreferenceValue, getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {queryAllChannels, queryAllChannelsForTeam} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
@@ -24,6 +23,7 @@ import {processIsCRTEnabled} from '@utils/thread';
 
 import {teamsToRemove, FETCH_UNREADS_TIMEOUT, entryRest, EntryResponse, entryInitialChannelId, restDeferredAppEntryActions, getRemoveTeamIds} from './common';
 
+import type {MyChannelsRequest} from '@actions/remote/channel';
 import type ClientError from '@client/rest/error';
 import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -34,12 +34,10 @@ export async function deferredAppEntryGraphQLActions(
     serverUrl: string,
     since: number,
     currentUserId: string,
-    currentUserLocale: string,
     teamData: MyTeamsRequest,
     chData: MyChannelsRequest | undefined,
     preferences: PreferenceType[] | undefined,
     config: ClientConfig,
-    license: ClientLicense | undefined,
     initialTeamId?: string,
     initialChannelId?: string,
 ) {
@@ -104,11 +102,10 @@ export async function deferredAppEntryGraphQLActions(
 
     // defer sidebar GM profiles
     setTimeout(async () => {
-        const directChannels = chData?.channels?.filter((v) => v?.type === General.GM_CHANNEL);
-        const channelsToFetchProfiles = new Set<Channel>(directChannels);
+        const gmIds = chData?.channels?.filter((v) => v?.type === General.GM_CHANNEL).map((v) => v.id);
+        const channelsToFetchProfiles = new Set<string>(gmIds);
         if (channelsToFetchProfiles.size) {
-            const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
-            fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
+            fetchProfilesInGroupChannels(serverUrl, Array.from(channelsToFetchProfiles));
         }
     }, FETCH_MISSING_GM_TIMEOUT);
 
@@ -294,7 +291,7 @@ export async function deferredAppEntryActions(
     initialTeamId?: string, initialChannelId?: string) {
     let result;
     if (config?.FeatureFlagGraphQL === 'true') {
-        result = await deferredAppEntryGraphQLActions(serverUrl, since, currentUserId, currentUserLocale, teamData, chData, preferences, config, license, initialTeamId, initialChannelId);
+        result = await deferredAppEntryGraphQLActions(serverUrl, since, currentUserId, teamData, chData, preferences, config, initialTeamId, initialChannelId);
         if (result.error) {
             logDebug('Error using GraphQL, trying REST', result.error);
             result = restDeferredAppEntryActions(serverUrl, since, currentUserId, currentUserLocale, preferences, config, license, teamData, chData, initialTeamId, initialChannelId);
