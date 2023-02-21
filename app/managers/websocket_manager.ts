@@ -140,17 +140,20 @@ class WebsocketManager {
         }
     };
 
-    public initializeClient = (serverUrl: string) => {
+    public initializeClient = async (serverUrl: string) => {
         const client: WebSocketClient = this.clients[serverUrl];
-        if (!client?.isConnected()) {
-            if (!this.firstConnectionSynced[serverUrl]) {
-                handleFirstConnect(serverUrl);
-                this.firstConnectionSynced[serverUrl] = true;
-            }
-            client.initialize();
-        }
         this.connectionTimerIDs[serverUrl]?.cancel();
         delete this.connectionTimerIDs[serverUrl];
+        if (!client?.isConnected()) {
+            client.initialize();
+            if (!this.firstConnectionSynced[serverUrl]) {
+                const error = await handleFirstConnect(serverUrl);
+                if (error) {
+                    client.close(false);
+                }
+                this.firstConnectionSynced[serverUrl] = true;
+            }
+        }
     };
 
     private onFirstConnect = (serverUrl: string) => {
@@ -161,7 +164,10 @@ class WebsocketManager {
     private onReconnect = async (serverUrl: string) => {
         this.startPeriodicStatusUpdates(serverUrl);
         this.getConnectedSubject(serverUrl).next('connected');
-        await handleReconnect(serverUrl);
+        const error = await handleReconnect(serverUrl);
+        if (error) {
+            this.getClient(serverUrl)?.close(false);
+        }
     };
 
     private onReliableReconnect = async (serverUrl: string) => {

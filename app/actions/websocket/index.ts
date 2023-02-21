@@ -74,11 +74,11 @@ import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 export async function handleFirstConnect(serverUrl: string) {
     registerDeviceToken(serverUrl);
     autoUpdateTimezone(serverUrl);
-    doReconnect(serverUrl);
+    return doReconnect(serverUrl);
 }
 
 export async function handleReconnect(serverUrl: string) {
-    await doReconnect(serverUrl);
+    return doReconnect(serverUrl);
 }
 
 export async function handleClose(serverUrl: string, lastDisconnect: number) {
@@ -100,12 +100,12 @@ export async function handleClose(serverUrl: string, lastDisconnect: number) {
 async function doReconnect(serverUrl: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
-        return;
+        return new Error('cannot find server database');
     }
 
     const appDatabase = DatabaseManager.appDatabase?.database;
     if (!appDatabase) {
-        return;
+        return new Error('cannot find app database');
     }
 
     const {database} = operator;
@@ -120,7 +120,7 @@ async function doReconnect(serverUrl: string) {
     const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastDisconnectedAt);
     if ('error' in entryData) {
         setTeamLoading(serverUrl, false);
-        return;
+        return entryData.error;
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
 
@@ -146,6 +146,7 @@ async function doReconnect(serverUrl: string) {
     dataRetentionCleanup(serverUrl);
 
     AppsManager.refreshAppBindings(serverUrl);
+    return undefined;
 }
 
 export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
