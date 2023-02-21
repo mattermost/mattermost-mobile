@@ -172,7 +172,7 @@ const Server = ({
         }
 
         // TODO ?
-        serverUrl = 'http://chat.o2oviet.com:8065';
+        serverUrl = 'http://45.119.85.240:8065';
         serverName = 'admin';
         autoconnect = true;
 

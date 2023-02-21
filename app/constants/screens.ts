@@ -23,6 +23,7 @@ export const EDIT_SERVER = 'EditServer';
 export const EMOJI_PICKER = 'EmojiPicker';
 export const FIND_CHANNELS = 'FindChannels';
 export const FORGOT_PASSWORD = 'ForgotPassword';
+export const CREATE_ACCOUNT = 'CreateAccount';
 export const GALLERY = 'Gallery';
 export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
@@ -93,6 +94,7 @@ export default {
     EMOJI_PICKER,
     FIND_CHANNELS,
     FORGOT_PASSWORD,
+    CREATE_ACCOUNT,
     GALLERY,
     GLOBAL_THREADS,
     HOME,

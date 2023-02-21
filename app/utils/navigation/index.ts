@@ -15,6 +15,7 @@ export const appearanceControlledScreens = new Set<AvailableScreens>([
     Screens.SERVER,
     Screens.LOGIN,
     Screens.FORGOT_PASSWORD,
+    Screens.CREATE_ACCOUNT,
     Screens.MFA,
     Screens.SSO,
     Screens.REVIEW_APP,

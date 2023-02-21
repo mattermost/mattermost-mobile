@@ -13,7 +13,12 @@ import NetworkManager from '@managers/network_manager';
 import WebsocketManager from '@managers/websocket_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getServerDisplayName} from '@queries/app/servers';
-import {getCurrentUserId, getExpiredSession, getConfig, getLicense} from '@queries/servers/system';
+import {
+    getCurrentUserId,
+    getExpiredSession,
+    getConfig,
+    getLicense,
+} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {logWarning, logError} from '@utils/log';
@@ -37,7 +42,11 @@ export const completeLogin = async (serverUrl: string) => {
     const license = await getLicense(database);
     const config = await getConfig(database);
 
-    if (!Object.keys(config)?.length || !license || !Object.keys(license)?.length) {
+    if (
+        !Object.keys(config)?.length ||
+        !license ||
+        !Object.keys(license)?.length
+    ) {
         return null;
     }
 
@@ -46,9 +55,13 @@ export const completeLogin = async (serverUrl: string) => {
     const systems: IdValue[] = [];
 
     // Set push proxy verification
-    const ppVerification = EphemeralStore.getPushProxyVerificationState(serverUrl);
+    const ppVerification =
+        EphemeralStore.getPushProxyVerificationState(serverUrl);
     if (ppVerification) {
-        systems.push({id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: ppVerification});
+        systems.push({
+            id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS,
+            value: ppVerification,
+        });
     }
 
     // Start websocket
@@ -68,7 +81,10 @@ export const completeLogin = async (serverUrl: string) => {
     return null;
 };
 
-export const forceLogoutIfNecessary = async (serverUrl: string, err: ClientErrorProps) => {
+export const forceLogoutIfNecessary = async (
+    serverUrl: string,
+    err: ClientErrorProps,
+) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -76,14 +92,22 @@ export const forceLogoutIfNecessary = async (serverUrl: string, err: ClientError
 
     const currentUserId = await getCurrentUserId(database);
 
-    if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
+    if (
+        'status_code' in err &&
+        err.status_code === HTTP_UNAUTHORIZED &&
+        err?.url?.indexOf('/login') === -1 &&
+        currentUserId
+    ) {
         await logout(serverUrl);
     }
 
     return {error: null};
 };
 
-export const fetchSessions = async (serverUrl: string, currentUserId: string) => {
+export const fetchSessions = async (
+    serverUrl: string,
+    currentUserId: string,
+) => {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -101,7 +125,17 @@ export const fetchSessions = async (serverUrl: string, currentUserId: string) =>
     return undefined;
 };
 
-export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaToken, password, config, serverDisplayName}: LoginArgs): Promise<LoginActionResponse> => {
+export const login = async (
+    serverUrl: string,
+    {
+        ldapOnly = false,
+        loginId,
+        mfaToken,
+        password,
+        config,
+        serverDisplayName,
+    }: LoginArgs,
+): Promise<LoginActionResponse> => {
     let deviceToken;
     let user: UserProfile;
 
@@ -136,12 +170,17 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
             },
         });
 
-        await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await server?.operator.handleUsers({
+            users: [user],
+            prepareRecordsOnly: false,
+        });
         await server?.operator.handleSystem({
-            systems: [{
-                id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                value: user.id,
-            }],
+            systems: [
+                {
+                    id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                    value: user.id,
+                },
+            ],
             prepareRecordsOnly: false,
         });
         const csrfToken = await getCSRFFromCookie(serverUrl);
@@ -159,35 +198,52 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     }
 };
 
-export const logout = async (serverUrl: string, skipServerLogout = false, removeServer = false, skipEvents = false) => {
+export const logout = async (
+    serverUrl: string,
+    skipServerLogout = false,
+    removeServer = false,
+    skipEvents = false,
+) => {
     if (!skipServerLogout) {
         try {
             const client = NetworkManager.getClient(serverUrl);
             await client.logout();
         } catch (error) {
             // We want to log the user even if logging out from the server failed
-            logWarning('An error occurred logging out from the server', serverUrl, error);
+            logWarning(
+                'An error occurred logging out from the server',
+                serverUrl,
+                error,
+            );
         }
     }
 
     if (!skipEvents) {
-        DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {serverUrl, removeServer});
+        DeviceEventEmitter.emit(Events.SERVER_LOGOUT, {
+            serverUrl,
+            removeServer,
+        });
     }
 };
 
 export const cancelSessionNotification = async (serverUrl: string) => {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} =
+            DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const expiredSession = await getExpiredSession(database);
         const rechable = (await NetInfo.fetch()).isInternetReachable;
 
         if (expiredSession?.notificationId && rechable) {
-            PushNotifications.cancelScheduleNotification(parseInt(expiredSession.notificationId, 10));
+            PushNotifications.cancelScheduleNotification(
+                parseInt(expiredSession.notificationId, 10),
+            );
             operator.handleSystem({
-                systems: [{
-                    id: SYSTEM_IDENTIFIERS.SESSION_EXPIRATION,
-                    value: '',
-                }],
+                systems: [
+                    {
+                        id: SYSTEM_IDENTIFIERS.SESSION_EXPIRATION,
+                        value: '',
+                    },
+                ],
                 prepareRecordsOnly: false,
             });
         }
@@ -198,7 +254,8 @@ export const cancelSessionNotification = async (serverUrl: string) => {
 
 export const scheduleSessionNotification = async (serverUrl: string) => {
     try {
-        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} =
+            DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const sessions = await fetchSessions(serverUrl, 'me');
         const user = await getCurrentUser(database);
         const serverName = await getServerDisplayName(serverUrl);
@@ -210,16 +267,23 @@ export const scheduleSessionNotification = async (serverUrl: string) => {
 
             if (session) {
                 const sessionId = session.id;
-                const notificationId = scheduleExpiredNotification(serverUrl, session, serverName, user?.locale);
+                const notificationId = scheduleExpiredNotification(
+                    serverUrl,
+                    session,
+                    serverName,
+                    user?.locale,
+                );
                 operator.handleSystem({
-                    systems: [{
-                        id: SYSTEM_IDENTIFIERS.SESSION_EXPIRATION,
-                        value: {
-                            id: sessionId,
-                            notificationId,
-                            expiresAt: session.expires_at,
+                    systems: [
+                        {
+                            id: SYSTEM_IDENTIFIERS.SESSION_EXPIRATION,
+                            value: {
+                                id: sessionId,
+                                notificationId,
+                                expiresAt: session.expires_at,
+                            },
                         },
-                    }],
+                    ],
                     prepareRecordsOnly: false,
                 });
             }
@@ -230,7 +294,10 @@ export const scheduleSessionNotification = async (serverUrl: string) => {
     }
 };
 
-export const sendPasswordResetEmail = async (serverUrl: string, email: string) => {
+export const sendPasswordResetEmail = async (
+    serverUrl: string,
+    email: string,
+) => {
     let client;
     try {
         client = NetworkManager.getClient(serverUrl);
@@ -250,7 +317,67 @@ export const sendPasswordResetEmail = async (serverUrl: string, email: string) =
     };
 };
 
-export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string): Promise<LoginActionResponse> => {
+export const sendCreateAccountRequest = async (
+    serverUrl: string,
+    email: string,
+    username: string,
+    password: string,
+) => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    let response;
+    try {
+        response = await client.sendCreateAccountRequest(
+            email,
+            username,
+            password,
+        );
+    } catch (error) {
+        return {error};
+    }
+    return {
+        data: response.data,
+        error: undefined,
+    };
+};
+
+export const sendCheckTeamExists = async (
+    serverUrl: string,
+    name: string,
+) => {
+    let client;
+    try {
+        client = NetworkManager.getClient(serverUrl);
+    } catch (error) {
+        return {error};
+    }
+
+    let response;
+    try {
+        response = await client.sendCheckTeamExists(
+            name,
+        );
+    } catch (error) {
+        return {error};
+    }
+    return {
+        data: response.data,
+        error: undefined,
+    };
+};
+
+export const ssoLogin = async (
+    serverUrl: string,
+    serverDisplayName: string,
+    serverIdentifier: string,
+    bearerToken: string,
+    csrfToken: string,
+): Promise<LoginActionResponse> => {
     let deviceToken;
     let user;
 
@@ -281,12 +408,17 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
         });
         deviceToken = await getDeviceToken();
         user = await client.getMe();
-        await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
+        await server?.operator.handleUsers({
+            users: [user],
+            prepareRecordsOnly: false,
+        });
         await server?.operator.handleSystem({
-            systems: [{
-                id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
-                value: user.id,
-            }],
+            systems: [
+                {
+                    id: Database.SYSTEM_IDENTIFIERS.CURRENT_USER_ID,
+                    value: user.id,
+                },
+            ],
             prepareRecordsOnly: false,
         });
     } catch (e) {
@@ -294,7 +426,11 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
     }
 
     try {
-        const {error, hasTeams, time} = await loginEntry({serverUrl, user, deviceToken});
+        const {error, hasTeams, time} = await loginEntry({
+            serverUrl,
+            user,
+            deviceToken,
+        });
         completeLogin(serverUrl);
         return {error: error as ClientError, failed: false, hasTeams, time};
     } catch (error) {
@@ -304,7 +440,8 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
 
 async function findSession(serverUrl: string, sessions: Session[]) {
     try {
-        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database} =
+            DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const expiredSession = await getExpiredSession(database);
         const deviceToken = await getDeviceToken();
 
@@ -333,7 +470,9 @@ async function findSession(serverUrl: string, sessions: Session[]) {
 
         // Next try and find the session based on the OS
         // if multiple sessions exists with the same os type this can be inaccurate
-        session = sessions.find((s) => s.props?.os.toLowerCase() === Platform.OS);
+        session = sessions.find(
+            (s) => s.props?.os.toLowerCase() === Platform.OS,
+        );
         if (session) {
             return session;
         }
