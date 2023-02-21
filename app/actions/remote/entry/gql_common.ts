@@ -102,15 +102,14 @@ export async function deferredAppEntryGraphQLActions(
 
     // defer sidebar GM profiles
     setTimeout(async () => {
-        const gmIds = chData?.channels?.reduce<string[]>((acc, v) => {
+        const gmIds = chData?.channels?.reduce<Set<string>>((acc, v) => {
             if (v?.type === General.GM_CHANNEL) {
-                acc.push(v.id);
+                acc.add(v.id);
             }
             return acc;
-        }, []);
-        const channelsToFetchProfiles = new Set<string>(gmIds);
-        if (channelsToFetchProfiles.size) {
-            fetchProfilesInGroupChannels(serverUrl, Array.from(channelsToFetchProfiles));
+        }, new Set<string>());
+        if (gmIds?.size) {
+            fetchProfilesInGroupChannels(serverUrl, Array.from(gmIds));
         }
     }, FETCH_MISSING_GM_TIMEOUT);
 
