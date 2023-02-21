@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {storeConfigAndLicense} from '@actions/local/systems';
+import {fetchMissingDirectChannelsInfo, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {fetchDataRetentionPolicy} from '@actions/remote/systems';
@@ -23,7 +24,6 @@ import {processIsCRTEnabled} from '@utils/thread';
 
 import {teamsToRemove, FETCH_UNREADS_TIMEOUT, entryRest, EntryResponse, entryInitialChannelId, restDeferredAppEntryActions, getRemoveTeamIds} from './common';
 
-import {fetchMissingDirectChannelsInfo, MyChannelsRequest} from '@actions/remote/channel';
 import type ClientError from '@client/rest/error';
 import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -102,8 +102,8 @@ export async function deferredAppEntryGraphQLActions(
     updateCanJoinTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
 
-     // defer sidebar GM profiles
-     setTimeout(async () => {
+    // defer sidebar GM profiles
+    setTimeout(async () => {
         const directChannels = chData?.channels?.filter((v) => v?.type === General.GM_CHANNEL);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
@@ -111,7 +111,7 @@ export async function deferredAppEntryGraphQLActions(
             fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
         }
     }, FETCH_MISSING_GM_TIMEOUT);
-    
+
     return {error: undefined};
 }
 

@@ -312,7 +312,6 @@ export async function restDeferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense | undefined, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string) {
-
     setTimeout(async () => {
         if (chData?.channels?.length && chData.memberships?.length) {
             // defer fetching posts for unread channels on initial team
@@ -346,8 +345,8 @@ export async function restDeferredAppEntryActions(
     // Fetch groups for current user
     fetchGroupsForMember(serverUrl, currentUserId);
 
-     // defer sidebar DM & GM profiles
-     setTimeout(async () => {
+    // defer sidebar DM & GM profiles
+    setTimeout(async () => {
         const directChannels = chData?.channels?.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
         if (channelsToFetchProfiles.size) {
