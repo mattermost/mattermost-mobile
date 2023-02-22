@@ -97,16 +97,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             flexDirection: 'row',
         },
         copyToClipBordTitle: {
-            paddingLeft: 5,
-            fontWeight: 'bold',
-            color: theme.buttonColor,
+            ...typography('Body', 200, 'SemiBold'),
+            paddingLeft: 6,
+            color: theme.buttonBg,
         },
         copyToClipBoardBtn: {
             paddingHorizontal: 20,
-            backgroundColor: theme.buttonBg,
+            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
             width: 120,
-            marginHorizontal: 2,
             marginTop: 10,
+            borderRadius: 4,
         },
     };
 });
@@ -225,6 +225,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                     alignSelf: 'stretch',
                     marginTop: 30,
                     marginBottom: 20,
+                    marginHorizontal: 20,
                     padding: 0,
                 }}
             />
@@ -289,20 +290,31 @@ const About = ({componentId, config, license}: AboutProps) => {
                         })}
                     </Text>
                 </View>
+
                 <Button
-                    type='clear'
+                    type='solid'
                     icon={
                         <Icon
                             name='clone'
-                            size={18}
-                            color={theme.buttonColor}
+                            size={15}
+                            color={theme.buttonBg}
                         />
                     }
-                    title='Copy info'
-                    titleStyle={styles.copyToClipBordTitle}
+                    title={
+                        <Text
+                            style={styles.copyToClipBordTitle}
+                            testID='settings.about.copy_info'
+                        >
+                            {intl.formatMessage({
+                                id: 'settings.about.copy_info',
+                                defaultMessage: 'Copy info',
+                            })}
+                        </Text>
+                    }
                     onPress={copyToClipboard}
                     buttonStyle={styles.copyToClipBoardBtn}
                 />
+
                 {license.IsLicensed === 'true' && (
                     <View style={styles.licenseContainer}>
                         <FormattedText
