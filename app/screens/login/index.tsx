@@ -35,7 +35,7 @@ export interface LoginOptionsProps extends LaunchProps {
     license: ClientLicense;
     serverDisplayName: string;
     serverUrl: string;
-    ssoOptions: Record<string, boolean>;
+    ssoOptions: SsoWithOptions;
     theme: Theme;
 }
 
@@ -85,7 +85,7 @@ const LoginOptions = ({
     const isTablet = useIsTablet();
     const translateX = useSharedValue(dimensions.width);
     const numberSSOs = useMemo(() => {
-        return Object.values(ssoOptions).filter((v) => v).length;
+        return Object.values(ssoOptions).filter((v) => v.enabled).length;
     }, [ssoOptions]);
     const description = useMemo(() => {
         if (hasLoginForm) {
@@ -211,7 +211,7 @@ const LoginOptions = ({
                 <KeyboardAwareScrollView
                     bounces={true}
                     contentContainerStyle={[styles.innerContainer, additionalContainerStyle]}
-                    enableAutomaticScroll={Platform.OS === 'android'}
+                    enableAutomaticScroll={true}
                     enableOnAndroid={false}
                     enableResetScrollToCoords={true}
                     extraScrollHeight={0}
@@ -228,11 +228,9 @@ const LoginOptions = ({
                         <Form
                             config={config}
                             extra={extra}
-                            keyboardAwareRef={keyboardAwareRef}
                             license={license}
                             launchError={launchError}
                             launchType={launchType}
-                            numberSSOs={numberSSOs}
                             theme={theme}
                             serverDisplayName={serverDisplayName}
                             serverUrl={serverUrl}

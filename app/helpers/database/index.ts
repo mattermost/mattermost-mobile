@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import xRegExp from 'xregexp';
+
 import {General} from '@constants';
 
 import type Model from '@nozbe/watermelondb/Model';
@@ -91,3 +93,7 @@ export const filterAndSortMyChannels = ([myChannels, channels, notifyProps]: Fil
 
     return [...mentions, ...unreads, ...mutedMentions];
 };
+
+// Matches letters from any alphabet and numbers
+const sqliteLikeStringRegex = xRegExp('[^\\p{L}\\p{Nd}]', 'g');
+export const sanitizeLikeString = (value: string) => value.replace(sqliteLikeStringRegex, '_');

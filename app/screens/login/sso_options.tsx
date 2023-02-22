@@ -2,19 +2,17 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Image, ImageSourcePropType, View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {Image, ImageSourcePropType, Text, View} from 'react-native';
 import Button from 'react-native-button';
 
 import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
 import {Sso} from '@constants';
-import {t} from '@i18n';
 import {buttonBackgroundStyle} from '@utils/buttonStyles';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
 type SsoInfo = {
-    defaultMessage: string;
-    id: string;
+    text: string;
     imageSrc?: ImageSourcePropType;
     compassIcon?: string;
 };
@@ -22,40 +20,38 @@ type SsoInfo = {
 type Props = {
     goToSso: (ssoType: string) => void;
     ssoOnly: boolean;
-    ssoOptions: Record<string, boolean>;
+    ssoOptions: SsoWithOptions;
     theme: Theme;
 }
 
 const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
+    const {formatMessage} = useIntl();
     const styles = getStyleSheet(theme);
     const styleButtonBackground = buttonBackgroundStyle(theme, 'lg', 'primary');
 
     const getSsoButtonOptions = ((ssoType: string): SsoInfo => {
         const sso: SsoInfo = {} as SsoInfo;
+        const options = ssoOptions[ssoType];
         switch (ssoType) {
             case Sso.SAML:
-                sso.defaultMessage = 'SAML';
+                sso.text = options.text || formatMessage({id: 'mobile.login_options.saml', defaultMessage: 'SAML'});
                 sso.compassIcon = 'lock';
-                sso.id = t('mobile.login_options.saml');
                 break;
             case Sso.GITLAB:
-                sso.defaultMessage = 'GitLab';
+                sso.text = formatMessage({id: 'mobile.login_options.gitlab', defaultMessage: 'GitLab'});
                 sso.imageSrc = require('@assets/images/Icon_Gitlab.png');
-                sso.id = t('mobile.login_options.gitlab');
                 break;
             case Sso.GOOGLE:
-                sso.defaultMessage = 'Google';
+                sso.text = formatMessage({id: 'mobile.login_options.google', defaultMessage: 'Google'});
                 sso.imageSrc = require('@assets/images/Icon_Google.png');
-                sso.id = t('mobile.login_options.google');
                 break;
             case Sso.OFFICE365:
-                sso.defaultMessage = 'Office 365';
+                sso.text = formatMessage({id: 'mobile.login_options.office365', defaultMessage: 'Office 365'});
                 sso.imageSrc = require('@assets/images/Icon_Office.png');
-                sso.id = t('mobile.login_options.office365');
                 break;
             case Sso.OPENID:
-                sso.defaultMessage = 'Open ID';
-                sso.id = t('mobile.login_options.openid');
+                sso.text = options.text || formatMessage({id: 'mobile.login_options.openid', defaultMessage: 'Open ID'});
+                sso.imageSrc = require('@assets/images/Icon_Openid.png');
                 break;
 
             default:
@@ -64,7 +60,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
     });
 
     const enabledSSOs = Object.keys(ssoOptions).filter(
-        (ssoType: string) => ssoOptions[ssoType],
+        (ssoType: string) => ssoOptions[ssoType].enabled,
     );
 
     let styleViewContainer;
@@ -76,7 +72,7 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
 
     const componentArray = [];
     for (const ssoType of enabledSSOs) {
-        const {compassIcon, defaultMessage, id, imageSrc} = getSsoButtonOptions(ssoType);
+        const {compassIcon, text, imageSrc} = getSsoButtonOptions(ssoType);
         const handlePress = () => {
             goToSso(ssoType);
         };
@@ -105,21 +101,21 @@ const SsoOptions = ({goToSso, ssoOnly, ssoOptions, theme}: Props) => {
                     style={styles.buttonTextContainer}
                 >
                     {ssoOnly && (
-                        <FormattedText
-                            key={'pretext' + id}
-                            id='mobile.login_options.sso_continue'
+                        <Text
+                            key={'pretext' + text}
                             style={styles.buttonText}
-                            defaultMessage={'Continue with '}
-                            testID={'pretext' + id}
-                        />
+                            testID={'pretext' + text}
+                        >
+                            {text}
+                        </Text>
                     )}
-                    <FormattedText
+                    <Text
                         key={ssoType}
-                        id={id}
                         style={styles.buttonText}
-                        defaultMessage={defaultMessage}
-                        testID={id}
-                    />
+                        testID={text}
+                    >
+                        {text}
+                    </Text>
                 </View>
             </Button>,
         );

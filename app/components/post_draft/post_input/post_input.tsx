@@ -134,12 +134,8 @@ export default function PostInput({
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
 
-    const blur = () => {
-        inputRef.current?.blur();
-    };
-
     const handleAndroidKeyboard = () => {
-        blur();
+        onBlur();
     };
 
     const onBlur = useCallback(() => {
