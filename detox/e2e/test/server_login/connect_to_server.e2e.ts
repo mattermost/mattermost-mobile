@@ -41,7 +41,7 @@ describe('Server Login - Connect to Server', () => {
         // * Verify basic elements on server screen
         await expect(headerWelcome).toHaveText('Welcome');
         await expect(headerTitleConnectToServer).toHaveText('Let’s Connect to a Server');
-        await expect(headerDescription).toHaveText('A Server is your team\'s communication hub which is accessed through a unique URL');
+        await expect(headerDescription).toHaveText('A server is your team\'s communication hub accessed using a unique URL');
         await expect(serverUrlInput).toBeVisible();
         await expect(serverDisplayNameInput).toBeVisible();
         await expect(displayHelp).toHaveText('Choose a display name for your server');
