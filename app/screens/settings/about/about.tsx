@@ -221,7 +221,7 @@ const About = ({componentId, config, license}: AboutProps) => {
             <View
                 style={{
                     height: 0.5,
-                    backgroundColor: '#d3d3d3',
+                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
                     alignSelf: 'stretch',
                     marginTop: 30,
                     marginBottom: 20,
@@ -342,7 +342,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                 <View
                     style={{
                         height: 0.5,
-                        backgroundColor: '#d3d3d3',
+                        backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
                         alignSelf: 'stretch',
                         marginBottom: 20,
                     }}
