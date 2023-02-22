@@ -8,16 +8,17 @@ import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getConfig} from '@queries/servers/system';
 import {hasReliableWebsocket} from '@utils/config';
+import {toMilliseconds} from '@utils/datetime';
 import {logError, logInfo, logWarning} from '@utils/log';
 
 const MAX_WEBSOCKET_FAILS = 7;
-const MIN_WEBSOCKET_RETRY_TIME = 3000; // 3 sec
-
-const MAX_WEBSOCKET_RETRY_TIME = 300000; // 5 mins
+const WEBSOCKET_TIMEOUT = toMilliseconds({seconds: 30});
+const MIN_WEBSOCKET_RETRY_TIME = toMilliseconds({seconds: 3});
+const MAX_WEBSOCKET_RETRY_TIME = toMilliseconds({minutes: 5});
 
 export default class WebSocketClient {
     private conn?: WebSocketClientInterface;
-    private connectionTimeout: any;
+    private connectionTimeout: NodeJS.Timeout | undefined;
     private connectionId: string;
     private token: string;
 
@@ -127,7 +128,7 @@ export default class WebSocketClient {
                 // iOS is using he underlying cookieJar
                 headers.Authorization = `Bearer ${this.token}`;
             }
-            const {client} = await getOrCreateWebSocketClient(this.url, {headers});
+            const {client} = await getOrCreateWebSocketClient(this.url, {headers, timeoutInterval: WEBSOCKET_TIMEOUT});
             this.conn = client;
         } catch (error) {
             return;
@@ -207,7 +208,9 @@ export default class WebSocketClient {
             this.connectionTimeout = setTimeout(
                 () => {
                     if (this.stop) {
-                        clearTimeout(this.connectionTimeout);
+                        if (this.connectionTimeout) {
+                            clearTimeout(this.connectionTimeout);
+                        }
                         return;
                     }
                     this.initialize(opts);

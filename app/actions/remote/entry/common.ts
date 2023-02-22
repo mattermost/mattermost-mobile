@@ -107,6 +107,12 @@ export const entryRest = async (serverUrl: string, teamId?: string, channelId?: 
     }
 
     const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, isCRTEnabled} = fetchedData;
+    const chError = chData?.error as ClientError | undefined;
+    if (chError?.status_code === 403) {
+        // if the user does not have appropriate permissions, which means the user those not belong to the team,
+        // we set it as there is no errors, so that the teams and others can be properly handled
+        chData!.error = undefined;
+    }
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     if (error) {
         return {error};

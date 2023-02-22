@@ -124,13 +124,14 @@ async function doReconnect(serverUrl: string) {
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
 
-    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId);
-
     const dt = Date.now();
-    await operator.batchRecords(models, 'doReconnect');
+    if (models?.length) {
+        await operator.batchRecords(models, 'doReconnect');
+    }
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
     setTeamLoading(serverUrl, false);
 
+    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId);
     await fetchPostDataIfNeeded(serverUrl);
 
     const {id: currentUserId, locale: currentUserLocale} = (await getCurrentUser(database))!;

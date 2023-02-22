@@ -57,5 +57,5 @@ if (Platform.OS === 'android') {
 
 Navigation.events().registerAppLaunchedListener(async () => {
     await initialize();
-    await start();
+    start();
 });

@@ -25,10 +25,6 @@ import type {LoginArgs} from '@typings/database/database';
 
 const HTTP_UNAUTHORIZED = 401;
 
-export const completeLogin = async (serverUrl: string) => {
-    await DatabaseManager.setActiveServerDatabase(serverUrl);
-};
-
 export const addPushProxyVerificationStateFromLogin = async (serverUrl: string) => {
     try {
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
@@ -133,7 +129,7 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
     try {
         await addPushProxyVerificationStateFromLogin(serverUrl);
         const {error} = await loginEntry({serverUrl});
-        await completeLogin(serverUrl);
+        await DatabaseManager.setActiveServerDatabase(serverUrl);
         return {error: error as ClientError, failed: false};
     } catch (error) {
         return {error: error as ClientError, failed: false};
@@ -275,7 +271,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
     try {
         await addPushProxyVerificationStateFromLogin(serverUrl);
         const {error} = await loginEntry({serverUrl});
-        await completeLogin(serverUrl);
+        await DatabaseManager.setActiveServerDatabase(serverUrl);
         return {error: error as ClientError, failed: false};
     } catch (error) {
         return {error: error as ClientError, failed: false};

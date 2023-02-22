@@ -43,12 +43,8 @@ class WebsocketManager {
         this.netConnected = Boolean((await NetInfo.fetch()).isConnected);
         serverCredentials.forEach(
             ({serverUrl, token}) => {
-                const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-                if (!operator) {
-                    return;
-                }
-
                 try {
+                    DatabaseManager.getServerDatabaseAndOperator(serverUrl);
                     this.createClient(serverUrl, token, 0);
                 } catch (error) {
                     logError('WebsocketManager init error', error);

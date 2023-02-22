@@ -66,7 +66,7 @@ export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel' | 'C
         case 'Post':
             message = intl.formatMessage({
                 id: 'notification.no_post',
-                defaultMessage: 'This post has not been found.',
+                defaultMessage: 'The message has not been found.',
             });
             break;
         case 'Connection':
