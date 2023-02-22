@@ -312,13 +312,8 @@ export async function restDeferredAppEntryActions(
     serverUrl: string, since: number, currentUserId: string, currentUserLocale: string, preferences: PreferenceType[] | undefined,
     config: ClientConfig, license: ClientLicense | undefined, teamData: MyTeamsRequest, chData: MyChannelsRequest | undefined,
     initialTeamId?: string, initialChannelId?: string) {
-    // defer sidebar DM & GM profiles
-    let channelsToFetchProfiles: Set<Channel>|undefined;
     setTimeout(async () => {
         if (chData?.channels?.length && chData.memberships?.length) {
-            const directChannels = chData.channels.filter(isDMorGM);
-            channelsToFetchProfiles = new Set<Channel>(directChannels);
-
             // defer fetching posts for unread channels on initial team
             fetchPostsForUnreadChannels(serverUrl, chData.channels, chData.memberships, initialChannelId);
         }
@@ -350,8 +345,11 @@ export async function restDeferredAppEntryActions(
     // Fetch groups for current user
     fetchGroupsForMember(serverUrl, currentUserId);
 
+    // defer sidebar DM & GM profiles
     setTimeout(async () => {
-        if (channelsToFetchProfiles?.size) {
+        const directChannels = chData?.channels?.filter(isDMorGM);
+        const channelsToFetchProfiles = new Set<Channel>(directChannels);
+        if (channelsToFetchProfiles.size) {
             const teammateDisplayNameSetting = getTeammateNameDisplaySetting(preferences || [], config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
             fetchMissingDirectChannelsInfo(serverUrl, Array.from(channelsToFetchProfiles), currentUserLocale, teammateDisplayNameSetting, currentUserId);
         }
