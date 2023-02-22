@@ -6,7 +6,8 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import {TouchableOpacity} from 'react-native-gesture-handler';
+import {Button} from 'react-native-elements';
+import Icon from 'react-native-vector-icons/FontAwesome';
 
 import Config from '@assets/config.json';
 import CompassIcon from '@components/compass_icon';
@@ -18,6 +19,7 @@ import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
+import SettingContainer from '@screens/settings/setting_container';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -94,17 +96,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         group: {
             flexDirection: 'row',
         },
-        justifyBetween: {
-            justifyContent: 'space-between',
-            alignItems: 'center',
+        copyToClipBordTitle: {
+            paddingLeft: 5,
+            fontWeight: 'bold',
+            color: theme.buttonColor,
         },
-        copyToClipBord: {
-            paddingHorizontal: 3,
-            borderRadius: 50,
-            alignSelf: 'flex-end',
-            ...typography('Body', 25, 'Light'),
-            borderColor: theme.centerChannelColor,
-            borderWidth: 1,
+        copyToClipBoardBtn: {
+            paddingHorizontal: 20,
+            backgroundColor: theme.buttonBg,
+            width: 120,
+            marginHorizontal: 2,
+            marginTop: 10,
         },
     };
 });
@@ -215,32 +217,32 @@ const About = ({componentId, config, license}: AboutProps) => {
                     license={license}
                 />
                 <Subtitle config={config}/>
-                <SettingSeparator lineStyles={styles.lineStyles}/>
             </View>
+            <View
+                style={{
+                    height: 0.5,
+                    backgroundColor: '#d3d3d3',
+                    alignSelf: 'stretch',
+                    marginTop: 30,
+                    marginBottom: 20,
+                    padding: 0,
+                }}
+            />
             <View style={styles.infoContainer}>
-                <View style={[styles.group, styles.justifyBetween]}>
-                    <View style={styles.group}>
-                        <Text
-                            style={styles.leftHeading}
-                            testID='about.app_version.title'
-                        >
-                            {intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version:'})}
-                        </Text>
-                        <Text
-                            style={styles.rightHeading}
-                            testID='about.app_version.value'
-                        >
-                            {intl.formatMessage({id: 'settings.about.build', defaultMessage: '{version} (Build {number})'},
-                                {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()})}
-                        </Text>
-                    </View>
-                    <View style={styles.copyToClipBord}>
-                        <TouchableOpacity onPress={copyToClipboard}>
-                            <Text style={styles.rightHeading}>
-                                {intl.formatMessage({id: 'settins.about.copy_info', defaultMessage: 'Copy Info'})}
-                            </Text>
-                        </TouchableOpacity>
-                    </View>
+                <View style={styles.group}>
+                    <Text
+                        style={styles.leftHeading}
+                        testID='about.app_version.title'
+                    >
+                        {intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version:'})}
+                    </Text>
+                    <Text
+                        style={styles.rightHeading}
+                        testID='about.app_version.value'
+                    >
+                        {intl.formatMessage({id: 'settings.about.build', defaultMessage: '{version} (Build {number})'},
+                            {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()})}
+                    </Text>
                 </View>
                 <View style={styles.group}>
                     <Text
@@ -287,6 +289,20 @@ const About = ({componentId, config, license}: AboutProps) => {
                         })}
                     </Text>
                 </View>
+                <Button
+                    type='clear'
+                    icon={
+                        <Icon
+                            name='clone'
+                            size={18}
+                            color={theme.buttonColor}
+                        />
+                    }
+                    title='Copy info'
+                    titleStyle={styles.copyToClipBordTitle}
+                    onPress={copyToClipboard}
+                    buttonStyle={styles.copyToClipBoardBtn}
+                />
                 {license.IsLicensed === 'true' && (
                     <View style={styles.licenseContainer}>
                         <FormattedText
@@ -311,6 +327,14 @@ const About = ({componentId, config, license}: AboutProps) => {
                         values={{site: config.SiteName}}
                     />
                 }
+                <View
+                    style={{
+                        height: 0.5,
+                        backgroundColor: '#d3d3d3',
+                        alignSelf: 'stretch',
+                        marginBottom: 20,
+                    }}
+                />
                 <FormattedText
                     defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
                     id={t('settings.about.copyright')}
