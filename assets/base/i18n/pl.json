@@ -547,7 +547,7 @@
     "mobile.create_direct_message.start": "Rozpocznij Rozmowę",
     "mobile.create_channel.title": "Nowy kanał",
     "mobile.components.select_server_view.msg_welcome": "Witamy",
-    "mobile.components.select_server_view.msg_description": "Serwer jest węzłem komunikacyjnym Twojego zespołu, do którego dostęp uzyskuje się poprzez unikalny adres URL",
+    "mobile.components.select_server_view.msg_description": "Serwer jest węzłem komunikacyjnym Twojego zespołu, do którego dostęp uzyskuje się za pomocą unikalnego adresu URL",
     "mobile.components.select_server_view.msg_connect": "Połączmy się z serwerem",
     "mobile.components.select_server_view.displayName": "Nazwa Wyświetlana",
     "mobile.components.select_server_view.displayHelp": "Wybierz nazwę wyświetlaną dla swojego serwera",
