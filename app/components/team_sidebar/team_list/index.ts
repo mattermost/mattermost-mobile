@@ -8,6 +8,7 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, map} from 'rxjs/operators';
 
+import {observeCurrentTeamId} from '@app/queries/servers/system';
 import {Preferences} from '@constants';
 import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
 import {queryJoinedTeams, queryMyTeams} from '@queries/servers/team';
@@ -52,8 +53,10 @@ const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
             });
         }),
     );
+    const currentTeam = observeCurrentTeamId(database);
     return {
         myOrderedTeams,
+        currentTeam,
     };
 });
 
