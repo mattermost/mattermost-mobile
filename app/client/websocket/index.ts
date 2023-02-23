@@ -7,16 +7,18 @@ import {Platform} from 'react-native';
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getConfig} from '@queries/servers/system';
+import {hasReliableWebsocket} from '@utils/config';
+import {toMilliseconds} from '@utils/datetime';
 import {logError, logInfo, logWarning} from '@utils/log';
 
 const MAX_WEBSOCKET_FAILS = 7;
-const MIN_WEBSOCKET_RETRY_TIME = 3000; // 3 sec
-
-const MAX_WEBSOCKET_RETRY_TIME = 300000; // 5 mins
+const WEBSOCKET_TIMEOUT = toMilliseconds({seconds: 30});
+const MIN_WEBSOCKET_RETRY_TIME = toMilliseconds({seconds: 3});
+const MAX_WEBSOCKET_RETRY_TIME = toMilliseconds({minutes: 5});
 
 export default class WebSocketClient {
     private conn?: WebSocketClientInterface;
-    private connectionTimeout: any;
+    private connectionTimeout: NodeJS.Timeout | undefined;
     private connectionId: string;
     private token: string;
 
@@ -43,6 +45,7 @@ export default class WebSocketClient {
     private url = '';
 
     private serverUrl: string;
+    private hasReliablyReconnect = false;
 
     constructor(serverUrl: string, token: string, lastDisconnect = 0) {
         this.connectionId = '';
@@ -98,7 +101,7 @@ export default class WebSocketClient {
 
         this.url = connectionUrl;
 
-        const reliableWebSockets = config.EnableReliableWebSockets === 'true';
+        const reliableWebSockets = hasReliableWebsocket(config);
         if (reliableWebSockets) {
             // Add connection id, and last_sequence_number to the query param.
             // We cannot also send it as part of the auth_challenge, because the session cookie is already sent with the request.
@@ -125,7 +128,7 @@ export default class WebSocketClient {
                 // iOS is using he underlying cookieJar
                 headers.Authorization = `Bearer ${this.token}`;
             }
-            const {client} = await getOrCreateWebSocketClient(this.url, {headers});
+            const {client} = await getOrCreateWebSocketClient(this.url, {headers, timeoutInterval: WEBSOCKET_TIMEOUT});
             this.conn = client;
         } catch (error) {
             return;
@@ -154,6 +157,7 @@ export default class WebSocketClient {
                     if (this.serverSequence && this.missedEventsCallback) {
                         this.missedEventsCallback();
                     }
+                    this.hasReliablyReconnect = true;
                 }
             } else if (this.firstConnectCallback) {
                 logInfo('websocket connected to', this.url);
@@ -171,6 +175,7 @@ export default class WebSocketClient {
 
             this.conn = undefined;
             this.responseSequence = 1;
+            this.hasReliablyReconnect = false;
 
             if (this.connectFailCount === 0) {
                 logInfo('websocket closed', this.url);
@@ -203,7 +208,9 @@ export default class WebSocketClient {
             this.connectionTimeout = setTimeout(
                 () => {
                     if (this.stop) {
-                        clearTimeout(this.connectionTimeout);
+                        if (this.connectionTimeout) {
+                            clearTimeout(this.connectionTimeout);
+                        }
                         return;
                     }
                     this.initialize(opts);
@@ -214,6 +221,7 @@ export default class WebSocketClient {
 
         this.conn!.onError((evt: any) => {
             if (evt.url === this.url) {
+                this.hasReliablyReconnect = false;
                 if (this.connectFailCount <= 1) {
                     logError('websocket error', this.url);
                     logError('WEBSOCKET ERROR EVENT', evt);
@@ -243,11 +251,17 @@ export default class WebSocketClient {
 
                         // If we already have a connectionId present, and server sends a different one,
                         // that means it's either a long timeout, or server restart, or sequence number is not found.
+                        // If the server is not available the first time we try to connect, we won't have a connection id
+                        // but still we need to sync.
                         // Then we do the sync calls, and reset sequence number to 0.
-                        if (this.connectionId !== '' && this.connectionId !== msg.data.connection_id) {
-                            logInfo(this.url, 'long timeout, or server restart, or sequence number is not found.');
+                        if (
+                            (this.connectionId !== '' && this.connectionId !== msg.data.connection_id) ||
+                            (this.hasReliablyReconnect && this.connectionId === '')
+                        ) {
+                            logInfo(this.url, 'long timeout, or server restart, or sequence number is not found, or first connect after failure.');
                             this.reconnectCallback();
                             this.serverSequence = 0;
+                            this.hasReliablyReconnect = false;
                         }
 
                         // If it's a fresh connection, we have to set the connectionId regardless.
@@ -315,6 +329,7 @@ export default class WebSocketClient {
         this.stop = stop;
         this.connectFailCount = 0;
         this.responseSequence = 1;
+        this.hasReliablyReconnect = false;
 
         if (this.conn && this.conn.readyState === WebSocketReadyState.OPEN) {
             this.conn.close();

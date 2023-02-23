@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import {markChannelAsViewed} from '@actions/local/channel';
-import {dataRetentionCleanup} from '@actions/local/systems';
 import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, handleKickFromChannel, markChannelAsRead, MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
@@ -11,8 +10,7 @@ import {fetchRoles} from '@actions/remote/role';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
 import {fetchMyTeams, fetchTeamsChannelsAndUnreadPosts, handleKickFromTeam, MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
-import {autoUpdateTimezone, fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
-import {gqlAllChannels} from '@client/graphQL/entry';
+import {fetchMe, MyUserRequest, updateAllUsersSince} from '@actions/remote/user';
 import {General, Preferences, Screens} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_RESPONSE_NOT_AVAILABLE, PUSH_PROXY_RESPONSE_UNKNOWN, PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_UNKNOWN, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
@@ -22,16 +20,13 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import {DEFAULT_LOCALE} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
-import {getAllServers} from '@queries/app/servers';
-import {prepareMyChannelsForTeam, queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
+import {queryAllChannelsForTeam, queryChannelsById} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getPushVerificationStatus, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getConfig, getCurrentChannelId, getCurrentTeamId, getPushVerificationStatus, getWebSocketLastDisconnected, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
-import {getIsCRTEnabled} from '@queries/servers/thread';
 import NavigationStore from '@store/navigation_store';
 import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
-import {getMemberChannelsFromGQLQuery, gqlToClientChannelMembership} from '@utils/graphql';
 import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
@@ -112,6 +107,12 @@ export const entryRest = async (serverUrl: string, teamId?: string, channelId?: 
     }
 
     const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, isCRTEnabled} = fetchedData;
+    const chError = chData?.error as ClientError | undefined;
+    if (chError?.status_code === 403) {
+        // if the user does not have appropriate permissions, which means the user those not belong to the team,
+        // we set it as there is no errors, so that the teams and others can be properly handled
+        chData!.error = undefined;
+    }
     const error = teamData.error || chData?.error || prefData.error || meData.error;
     if (error) {
         return {error};
@@ -372,107 +373,6 @@ export const registerDeviceToken = async (serverUrl: string) => {
     return {error: undefined};
 };
 
-export const syncOtherServers = async (serverUrl: string) => {
-    const servers = await getAllServers();
-    for (const server of servers) {
-        if (server.url !== serverUrl && server.lastActiveAt > 0) {
-            registerDeviceToken(server.url);
-            syncAllChannelMembersAndThreads(server.url).then(() => {
-                dataRetentionCleanup(server.url);
-            });
-            autoUpdateTimezone(server.url);
-        }
-    }
-};
-
-const syncAllChannelMembersAndThreads = async (serverUrl: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return;
-    }
-
-    const config = await getConfig(database);
-
-    if (config?.FeatureFlagGraphQL === 'true') {
-        const error = await graphQLSyncAllChannelMembers(serverUrl);
-        if (error) {
-            logDebug('failed graphQL, falling back to rest', error);
-            restSyncAllChannelMembers(serverUrl);
-        }
-    } else {
-        restSyncAllChannelMembers(serverUrl);
-    }
-};
-
-const graphQLSyncAllChannelMembers = async (serverUrl: string) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return 'Server database not found';
-    }
-
-    const {database} = operator;
-
-    const response = await gqlAllChannels(serverUrl);
-    if ('error' in response) {
-        return response.error;
-    }
-
-    if (response.errors) {
-        return response.errors[0].message;
-    }
-
-    const userId = await getCurrentUserId(database);
-
-    const channels = getMemberChannelsFromGQLQuery(response.data);
-    const memberships = response.data.channelMembers?.map((m) => gqlToClientChannelMembership(m, userId));
-
-    if (channels && memberships) {
-        const modelPromises = await prepareMyChannelsForTeam(operator, '', channels, memberships, undefined, true);
-        const models = (await Promise.all(modelPromises)).flat();
-        if (models.length) {
-            await operator.batchRecords(models, 'graphQLSyncAllChannelMembers');
-        }
-    }
-
-    const isCRTEnabled = await getIsCRTEnabled(database);
-    if (isCRTEnabled) {
-        const myTeams = await queryMyTeams(operator.database).fetch();
-        for await (const myTeam of myTeams) {
-            // need to await here since GM/DM threads in different teams overlap
-            await syncTeamThreads(serverUrl, myTeam.id);
-        }
-    }
-
-    return '';
-};
-
-const restSyncAllChannelMembers = async (serverUrl: string) => {
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch {
-        return;
-    }
-
-    try {
-        const myTeams = await client.getMyTeams();
-        const preferences = await client.getMyPreferences();
-        const config = await client.getClientConfigOld();
-
-        let excludeDirect = false;
-        for await (const myTeam of myTeams) {
-            fetchMyChannelsForTeam(serverUrl, myTeam.id, false, 0, false, excludeDirect);
-            excludeDirect = true;
-            if (preferences && processIsCRTEnabled(preferences, config.CollapsedThreads, config.FeatureFlagCollapsedThreads, config.Version)) {
-                // need to await here since GM/DM threads in different teams overlap
-                await syncTeamThreads(serverUrl, myTeam.id);
-            }
-        }
-    } catch {
-        // Do nothing
-    }
-};
-
 export async function verifyPushProxy(serverUrl: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
@@ -537,7 +437,14 @@ export async function handleEntryAfterLoadNavigation(
         const isThreadsMounted = mountedScreens.includes(Screens.THREAD);
         const tabletDevice = await isTablet();
 
-        if (currentTeamIdAfterLoad !== currentTeamId) {
+        if (!currentTeamIdAfterLoad) {
+            // First load or no team
+            if (tabletDevice) {
+                await setCurrentTeamAndChannelId(operator, initialTeamId, '');
+            } else {
+                await setCurrentTeamAndChannelId(operator, initialTeamId, initialChannelId);
+            }
+        } else if (currentTeamIdAfterLoad !== currentTeamId) {
             // Switched teams while loading
             if (!teamMembers.find((t) => t.team_id === currentTeamIdAfterLoad && t.delete_at === 0)) {
                 await handleKickFromTeam(serverUrl, currentTeamIdAfterLoad);
