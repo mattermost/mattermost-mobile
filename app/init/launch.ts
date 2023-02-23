@@ -27,8 +27,7 @@ const initialNotificationTypes = [PushNotification.NOTIFICATION_TYPE.MESSAGE, Pu
 export const initialLaunch = async () => {
     const deepLinkUrl = await Linking.getInitialURL();
     if (deepLinkUrl) {
-        await launchAppFromDeepLink(deepLinkUrl, true);
-        return;
+        return launchAppFromDeepLink(deepLinkUrl, true);
     }
 
     const notification = await Notifications.getInitialNotification();
@@ -43,11 +42,10 @@ export const initialLaunch = async () => {
         tapped = delivered.find((d) => (d as unknown as NotificationData).ack_id === notification?.payload.ack_id) == null;
     }
     if (initialNotificationTypes.includes(notification?.payload?.type) && tapped) {
-        await launchAppFromNotification(convertToNotificationData(notification!), true);
-        return;
+        return launchAppFromNotification(convertToNotificationData(notification!), true);
     }
 
-    await launchApp({launchType: Launch.Normal, coldStart: true});
+    return launchApp({launchType: Launch.Normal, coldStart: notification ? tapped : true});
 };
 
 const launchAppFromDeepLink = async (deepLinkUrl: string, coldStart = false) => {
@@ -162,14 +160,17 @@ const launchToHome = async (props: LaunchProps) => {
             const extra = props.extra as NotificationWithData;
             openPushNotification = Boolean(props.serverUrl && !props.launchError && extra.userInteraction && extra.payload?.channel_id && !extra.payload?.userInfo?.local);
             if (openPushNotification) {
-                pushNotificationEntry(props.serverUrl!, extra);
-            } else {
-                appEntry(props.serverUrl!);
+                await resetToHome(props);
+                return pushNotificationEntry(props.serverUrl!, extra.payload!);
             }
+
+            appEntry(props.serverUrl!);
             break;
         }
         case Launch.Normal:
-            appEntry(props.serverUrl!);
+            if (props.coldStart) {
+                appEntry(props.serverUrl!);
+            }
             break;
     }
 
@@ -202,16 +203,21 @@ export const getLaunchPropsFromNotification = async (notification: NotificationW
 
     const {payload} = notification;
     launchProps.extra = notification;
+    let serverUrl: string | undefined;
 
-    if (payload?.server_url) {
-        launchProps.serverUrl = payload.server_url;
-    } else if (payload?.server_id) {
-        const serverUrl = await DatabaseManager.getServerUrlFromIdentifier(payload.server_id);
-        if (serverUrl) {
-            launchProps.serverUrl = serverUrl;
-        } else {
-            launchProps.launchError = true;
+    try {
+        if (payload?.server_url) {
+            DatabaseManager.getServerDatabaseAndOperator(payload.server_url);
+            serverUrl = payload.server_url;
+        } else if (payload?.server_id) {
+            serverUrl = await DatabaseManager.getServerUrlFromIdentifier(payload.server_id);
         }
+    } catch {
+        launchProps.launchError = true;
+    }
+
+    if (serverUrl) {
+        launchProps.serverUrl = serverUrl;
     } else {
         launchProps.launchError = true;
     }

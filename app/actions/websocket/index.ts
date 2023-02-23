@@ -2,11 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {markChannelAsViewed} from '@actions/local/channel';
+import {dataRetentionCleanup} from '@actions/local/systems';
 import {markChannelAsRead} from '@actions/remote/channel';
-import {handleEntryAfterLoadNavigation} from '@actions/remote/entry/common';
+import {handleEntryAfterLoadNavigation, registerDeviceToken} from '@actions/remote/entry/common';
 import {deferredAppEntryActions, entry} from '@actions/remote/entry/gql_common';
 import {fetchPostsForChannel, fetchPostThread} from '@actions/remote/post';
-import {fetchStatusByIds} from '@actions/remote/user';
+import {autoUpdateTimezone} from '@actions/remote/user';
 import {loadConfigAndCalls} from '@calls/actions/calls';
 import {
     handleCallChannelDisabled,
@@ -32,17 +33,15 @@ import {Screens, WebsocketEvents} from '@constants';
 import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import AppsManager from '@managers/apps_manager';
-import {getCurrentChannel} from '@queries/servers/channel';
 import {getLastPostInThread} from '@queries/servers/post';
 import {
     getConfig,
     getCurrentChannelId,
-    getCurrentUserId,
+    getCurrentTeamId,
     getLicense,
     getWebSocketLastDisconnected,
     resetWebSocketLastDisconnected,
 } from '@queries/servers/system';
-import {getCurrentTeam} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
@@ -72,36 +71,14 @@ import {handleLeaveTeamEvent, handleUserAddedToTeamEvent, handleUpdateTeamEvent,
 import {handleThreadUpdatedEvent, handleThreadReadChangedEvent, handleThreadFollowChangedEvent} from './threads';
 import {handleUserUpdatedEvent, handleUserTypingEvent} from './users';
 
-// ESR: 5.37
-const alreadyConnected = new Set<string>();
-
 export async function handleFirstConnect(serverUrl: string) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-    const {database} = operator;
-    const config = await getConfig(database);
-    const lastDisconnect = await getWebSocketLastDisconnected(database);
-
-    // ESR: 5.37
-    if (lastDisconnect && config?.EnableReliableWebSockets !== 'true' && alreadyConnected.has(serverUrl)) {
-        await handleReconnect(serverUrl);
-        return;
-    }
-
-    alreadyConnected.add(serverUrl);
-    resetWebSocketLastDisconnected(operator);
-    fetchStatusByIds(serverUrl, ['me']);
-
-    if (isSupportedServerCalls(config?.Version)) {
-        const currentUserId = await getCurrentUserId(database);
-        loadConfigAndCalls(serverUrl, currentUserId);
-    }
+    registerDeviceToken(serverUrl);
+    autoUpdateTimezone(serverUrl);
+    return doReconnect(serverUrl);
 }
 
 export async function handleReconnect(serverUrl: string) {
-    await doReconnect(serverUrl);
+    return doReconnect(serverUrl);
 }
 
 export async function handleClose(serverUrl: string, lastDisconnect: number) {
@@ -123,12 +100,12 @@ export async function handleClose(serverUrl: string, lastDisconnect: number) {
 async function doReconnect(serverUrl: string) {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
-        return;
+        return new Error('cannot find server database');
     }
 
     const appDatabase = DatabaseManager.appDatabase?.database;
     if (!appDatabase) {
-        return;
+        return new Error('cannot find app database');
     }
 
     const {database} = operator;
@@ -136,21 +113,23 @@ async function doReconnect(serverUrl: string) {
     const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
     resetWebSocketLastDisconnected(operator);
 
-    const currentTeam = await getCurrentTeam(database);
-    const currentChannel = await getCurrentChannel(database);
+    const currentTeamId = await getCurrentTeamId(database);
+    const currentChannelId = await getCurrentChannelId(database);
 
     setTeamLoading(serverUrl, true);
-    const entryData = await entry(serverUrl, currentTeam?.id, currentChannel?.id, lastDisconnectedAt);
+    const entryData = await entry(serverUrl, currentTeamId, currentChannelId, lastDisconnectedAt);
     if ('error' in entryData) {
         setTeamLoading(serverUrl, false);
-        return;
+        return entryData.error;
     }
     const {models, initialTeamId, initialChannelId, prefData, teamData, chData} = entryData;
 
-    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeam?.id || '', currentChannel?.id || '', initialTeamId, initialChannelId);
+    await handleEntryAfterLoadNavigation(serverUrl, teamData.memberships || [], chData?.memberships || [], currentTeamId || '', currentChannelId || '', initialTeamId, initialChannelId);
 
     const dt = Date.now();
-    await operator.batchRecords(models, 'doReconnect');
+    if (models?.length) {
+        await operator.batchRecords(models, 'doReconnect');
+    }
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
     setTeamLoading(serverUrl, false);
 
@@ -166,7 +145,10 @@ async function doReconnect(serverUrl: string) {
 
     await deferredAppEntryActions(serverUrl, lastDisconnectedAt, currentUserId, currentUserLocale, prefData.preferences, config, license, teamData, chData, initialTeamId);
 
+    dataRetentionCleanup(serverUrl);
+
     AppsManager.refreshAppBindings(serverUrl);
+    return undefined;
 }
 
 export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {

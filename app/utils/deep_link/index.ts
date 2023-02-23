@@ -5,13 +5,13 @@ import {createIntl, IntlShape} from 'react-intl';
 import urlParse from 'url-parse';
 
 import {makeDirectChannel, switchToChannelByName} from '@actions/remote/channel';
-import {appEntry} from '@actions/remote/entry';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchUsersByUsernames} from '@actions/remote/user';
 import {DeepLink, Launch, Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
+import WebsocketManager from '@managers/websocket_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
@@ -48,7 +48,7 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
         if (existingServerUrl !== currentServerUrl && NavigationStore.getVisibleScreen()) {
             await dismissAllModalsAndPopToRoot();
             DatabaseManager.setActiveServerDatabase(existingServerUrl);
-            appEntry(existingServerUrl, Date.now());
+            WebsocketManager.initializeClient(existingServerUrl);
             await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
         }
 

@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {markTeamThreadsAsRead, processReceivedThreads, updateThread} from '@actions/local/thread';
-import {getCurrentTeamId} from '@app/queries/servers/system';
 import DatabaseManager from '@database/manager';
+import {getCurrentTeamId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
