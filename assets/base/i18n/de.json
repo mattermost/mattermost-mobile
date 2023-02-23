@@ -992,5 +992,8 @@
     "mobile.calls_recording_start_no_permissions": "Du hast nicht die Berechtigung, eine Aufzeichnung zu starten. Bitte frage den Gesprächsleiter, ob er eine Aufzeichnung starten darf.",
     "mobile.calls_recording_start_in_progress": "Eine Aufzeichnung ist bereits im Gange.",
     "mobile.calls_host_rec_error_title": "Bei der Aufnahme ist etwas schief gelaufen",
-    "mobile.calls_host_rec_error": "Bitte versuche, die Aufzeichnung zu wiederholen. Du kannst dich auch an deinen Systemadministrator wenden, um Hilfe bei der Fehlerbehebung zu erhalten."
+    "mobile.calls_host_rec_error": "Bitte versuche, die Aufzeichnung zu wiederholen. Du kannst dich auch an deinen Systemadministrator wenden, um Hilfe bei der Fehlerbehebung zu erhalten.",
+    "notification.no_post": "Die Nachricht wurde nicht gefunden.",
+    "notification.no_connection": "Der Server ist nicht erreichbar und wir waren nicht in der Lage, den Benachrichtigungskanal / das Team abzurufen.",
+    "invite.summary.back": "Zurück"
 }
