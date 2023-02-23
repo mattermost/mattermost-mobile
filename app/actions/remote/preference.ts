@@ -3,6 +3,7 @@
 
 import {DeviceEventEmitter} from 'react-native';
 
+import {handleReconnect} from '@actions/websocket';
 import {truncateCrtRelatedTables} from '@app/queries/servers/entry';
 import {Events, General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -13,7 +14,6 @@ import {getCurrentUserId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
 import {getUserIdFromChannelName} from '@utils/user';
 
-import {appEntry} from './entry';
 import {forceLogoutIfNecessary} from './session';
 
 export type MyPreferencesRequest = {
@@ -194,7 +194,7 @@ export const savePreferredSkinTone = async (serverUrl: string, skinCode: string)
 export const handleCRTToggled = async (serverUrl: string) => {
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();
     await truncateCrtRelatedTables(serverUrl);
-    await appEntry(serverUrl);
+    await handleReconnect(serverUrl);
     EphemeralStore.setEnablingCRT(false);
     DeviceEventEmitter.emit(Events.CRT_TOGGLED, serverUrl === currentServerUrl);
 };
