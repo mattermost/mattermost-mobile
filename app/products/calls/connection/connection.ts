@@ -234,8 +234,10 @@ export async function newConnection(
         });
 
         peer.on('stream', (remoteStream: MediaStream) => {
-            logDebug('new remote stream received', remoteStream);
-            logDebug('remote tracks', remoteStream.getTracks());
+            logDebug('new remote stream received', remoteStream.id);
+            for (const track of remoteStream.getTracks()) {
+                logDebug('remote track', track.id);
+            }
 
             streams.push(remoteStream);
             if (remoteStream.getVideoTracks().length > 0) {
