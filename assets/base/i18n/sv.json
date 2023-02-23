@@ -409,7 +409,6 @@
     "mobile.no_results_with_term.messages": "Inga träffar hittades för “{term}”",
     "mobile.no_results_with_term.files": "Inga filer som matchar “{term}”",
     "mobile.no_results_with_term": "Inga resultat för “{term}”",
-    "mobile.login_options.sso_continue": "Fortsätt med",
     "mobile.login_options.separator_text": "eller logga in med",
     "mobile.login_options.select_option": "Välj ett inloggningsalternativ nedan.",
     "mobile.login_options.saml": "SAML",

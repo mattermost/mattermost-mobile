@@ -543,7 +543,6 @@
     "mobile.manage_members.change_role.error": "Si è verificato un errore durante il tentativo di aggiornamento del ruolo. Controllare la connessione e riprovare.",
     "mobile.manage_members.cancel": "Annullamento",
     "mobile.manage_members.admin": "Admin",
-    "mobile.login_options.sso_continue": "Continua con",
     "mobile.login_options.separator_text": "o accedi con",
     "mobile.login_options.select_option": "Seleziona un'opzione di accesso qui sotto.",
     "mobile.login_options.saml": "SAML",

@@ -579,7 +579,6 @@
     "mobile.no_results_with_term.messages": "No matches found for '\\{term}'\\",
     "mobile.no_results_with_term.files": "No files matching '\\{term}'\\",
     "mobile.no_results_with_term": "No results for '\\{term}'\\",
-    "mobile.login_options.sso_continue": "Continue with",
     "mobile.login_options.separator_text": "or log in with",
     "mobile.login_options.select_option": "Select a login option below.",
     "mobile.login_options.saml": "SAML",
