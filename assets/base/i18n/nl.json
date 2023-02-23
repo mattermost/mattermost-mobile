@@ -603,7 +603,6 @@
     "mobile.no_results_with_term.messages": "Geen resultaten gevonden voor \"{term}\"",
     "mobile.no_results_with_term.files": "Geen bestanden die overeenkomen met \"{term}\"",
     "mobile.no_results_with_term": "Geen resultaten voor \"{term}\"",
-    "mobile.login_options.sso_continue": "Doorgaan met",
     "mobile.login_options.separator_text": "of meldt je aan met",
     "mobile.login_options.select_option": "Selecteer hieronder een aanmeldingsoptie.",
     "mobile.login_options.saml": "SAML",

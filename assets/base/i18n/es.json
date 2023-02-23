@@ -647,7 +647,6 @@
     "mobile.no_results_with_term.messages": "No se encontraron coincidencias para “{term}”",
     "mobile.no_results_with_term": "No hay resultados para “{term}”",
     "mobile.no_results_with_term.files": "No hay archivos que coincidan con “{term}”",
-    "mobile.login_options.sso_continue": "Continua con",
     "mobile.login_options.separator_text": "o inicia sesión con",
     "mobile.login_options.select_option": "Selecciona a continuación una opción de inicio de sesión.",
     "mobile.login_options.saml": "SAML",

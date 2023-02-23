@@ -593,7 +593,6 @@
     "mobile.no_results_with_term.messages": "Keine Treffer für \"{term}\" gefunden",
     "mobile.no_results_with_term.files": "Keine Dateien zum Thema \"{term}\"",
     "mobile.no_results_with_term": "Keine Ergebnisse für \"{term}\"",
-    "mobile.login_options.sso_continue": "Weiter mit",
     "mobile.login_options.separator_text": "oder melde dich an mit",
     "mobile.login_options.select_option": "Wähle unten eine Anmeldeoption.",
     "mobile.login_options.saml": "SAML",

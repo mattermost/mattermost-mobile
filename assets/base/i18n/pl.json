@@ -605,7 +605,6 @@
     "mobile.no_results_with_term.messages": "Nie znaleziono dopasowań dla \"{term}\"",
     "mobile.no_results_with_term.files": "Brak plików pasujących do \"{term}\"",
     "mobile.no_results_with_term": "Brak wyników dla \"{term}\"",
-    "mobile.login_options.sso_continue": "Kontynuuj z",
     "mobile.login_options.separator_text": "lub zaloguj się za pomocą",
     "mobile.login_options.select_option": "Wybierz poniżej opcję logowania.",
     "mobile.login_options.saml": "SAML",

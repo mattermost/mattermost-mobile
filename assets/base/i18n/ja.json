@@ -508,7 +508,6 @@
     "mobile.no_results_with_term.messages": "\"{term}\"に該当する情報がありませんでした",
     "mobile.no_results_with_term.files": "\"{term}\" に一致するファイルがありませんでした",
     "mobile.no_results_with_term": "\"{term}\"の結果はありません",
-    "mobile.login_options.sso_continue": "続ける",
     "mobile.login_options.separator_text": "または 次の方法でログインする",
     "mobile.login_options.select_option": "以下からログイン方法を選択してください。",
     "mobile.login_options.saml": "SAML",
