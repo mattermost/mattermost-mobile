@@ -992,5 +992,8 @@
     "mobile.calls_recording_start_no_permissions": "Nie masz uprawnień do rozpoczęcia nagrywania. Poproś prowadzącego rozmowę o uruchomienie nagrania.",
     "mobile.calls_recording_start_in_progress": "Nagranie jest już w trakcie realizacji.",
     "mobile.calls_host_rec_error_title": "Coś poszło nie tak z nagraniem",
-    "mobile.calls_host_rec_error": "Proszę spróbować nagrać ponownie. Możesz również skontaktować się z administratorem systemu, aby uzyskać pomoc w rozwiązywaniu problemów."
+    "mobile.calls_host_rec_error": "Proszę spróbować nagrać ponownie. Możesz również skontaktować się z administratorem systemu, aby uzyskać pomoc w rozwiązywaniu problemów.",
+    "notification.no_post": "Wiadomość nie została odnaleziona.",
+    "notification.no_connection": "Serwer jest nieosiągalny i nie byliśmy w stanie pobrać powiadomienia dla kanału / zespołu.",
+    "invite.summary.back": "Wróć"
 }
