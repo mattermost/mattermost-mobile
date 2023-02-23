@@ -4,15 +4,14 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 
+import SettingContainer from '@components/settings/container';
+import SettingItem from '@components/settings/item';
 import {General, Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import {gotoSettingsScreen} from '@screens/settings/config';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
-
-import SettingContainer from '../setting_container';
-import SettingItem from '../setting_item';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';

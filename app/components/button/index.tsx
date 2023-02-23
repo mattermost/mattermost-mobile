@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
+import {StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
 import RNButton from 'react-native-button';
 
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -18,7 +18,12 @@ type Props = {
     testID?: string;
     onPress: () => void;
     text: string;
+    compassIcon?: React.ReactNode;
 }
+
+const styles = StyleSheet.create({
+    container: {flexDirection: 'row'},
+});
 
 const Button = ({
     theme,
@@ -31,6 +36,7 @@ const Button = ({
     onPress,
     text,
     testID,
+    compassIcon,
 }: Props) => {
     const bgStyle = useMemo(() => [
         buttonBackgroundStyle(theme, size, emphasis, buttonType, buttonState),
@@ -48,12 +54,15 @@ const Button = ({
             onPress={onPress}
             testID={testID}
         >
-            <Text
-                style={txtStyle}
-                numberOfLines={1}
-            >
-                {text}
-            </Text>
+            <View style={styles.container}>
+                {compassIcon}
+                <Text
+                    style={txtStyle}
+                    numberOfLines={1}
+                >
+                    {text}
+                </Text>
+            </View>
         </RNButton>
     );
 };

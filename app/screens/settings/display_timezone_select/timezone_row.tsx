@@ -5,8 +5,8 @@ import React, {useCallback} from 'react';
 import {TouchableOpacity, View, Text} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import SettingSeparator from '@components/settings/separator';
 import {useTheme} from '@context/theme';
-import SettingSeparator from '@screens/settings/settings_separator';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
