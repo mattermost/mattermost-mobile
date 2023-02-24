@@ -63,7 +63,7 @@ const Button = ({
                 <CompassIcon
                     name={iconName!}
                     size={iconSize}
-                    color={theme.buttonColor}
+                    color={StyleSheet.flatten(txtStyle).color}
                     style={styles.icon}
                 />
                 }
