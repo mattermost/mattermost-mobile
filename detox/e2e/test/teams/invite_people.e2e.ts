@@ -19,13 +19,11 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {isAndroid, isIos, timeouts} from '@support/utils';
+import {isIos, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 function systemDialog(label: string) {
     if (isIos()) {
-        return element(by.label(label)).atIndex(0);
-    } else if (isAndroid()) {
         return element(by.label(label)).atIndex(0);
     }
     return element(by.text(label));
