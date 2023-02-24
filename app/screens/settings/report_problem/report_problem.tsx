@@ -7,10 +7,9 @@ import React from 'react';
 import {Alert, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 
+import SettingItem from '@components/settings/item';
 import {useTheme} from '@context/theme';
 import {preventDoubleTap} from '@utils/tap';
-
-import SettingItem from '../setting_item';
 
 type ReportProblemProps = {
     buildNumber: string;

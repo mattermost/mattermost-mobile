@@ -281,7 +281,10 @@ export default function PostInput({
                 inputRef.current?.focus();
             }
         });
-        return () => listener.remove();
+        return () => {
+            listener.remove();
+            updateDraftMessage(serverUrl, channelId, rootId, value); // safe draft on unmount
+        };
     }, [updateValue, value, channelId, rootId]);
 
     useEffect(() => {

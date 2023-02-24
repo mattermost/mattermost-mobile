@@ -5,6 +5,9 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {updateMe} from '@actions/remote/user';
+import SettingContainer from '@components/settings/container';
+import SettingOption from '@components/settings/option';
+import SettingSeparator from '@components/settings/separator';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -13,10 +16,6 @@ import {goToScreen, popTopScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {getDeviceTimezone} from '@utils/timezone';
 import {getTimezoneRegion, getUserTimezoneProps} from '@utils/user';
-
-import SettingContainer from '../setting_container';
-import SettingOption from '../setting_option';
-import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';

@@ -2,12 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
+import {StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
 import RNButton from 'react-native-button';
 
+import CompassIcon from '@components/compass_icon';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 
-type Props = {
+type ConditionalProps = | {iconName: string; iconSize: number} | {iconName?: never; iconSize?: never}
+
+type Props = ConditionalProps & {
     theme: Theme;
     backgroundStyle?: StyleProp<ViewStyle>;
     textStyle?: StyleProp<TextStyle>;
@@ -20,6 +23,11 @@ type Props = {
     text: string;
 }
 
+const styles = StyleSheet.create({
+    container: {flexDirection: 'row'},
+    icon: {marginRight: 7},
+});
+
 const Button = ({
     theme,
     backgroundStyle,
@@ -31,6 +39,8 @@ const Button = ({
     onPress,
     text,
     testID,
+    iconName,
+    iconSize,
 }: Props) => {
     const bgStyle = useMemo(() => [
         buttonBackgroundStyle(theme, size, emphasis, buttonType, buttonState),
@@ -48,12 +58,22 @@ const Button = ({
             onPress={onPress}
             testID={testID}
         >
-            <Text
-                style={txtStyle}
-                numberOfLines={1}
-            >
-                {text}
-            </Text>
+            <View style={styles.container}>
+                {Boolean(iconName) &&
+                <CompassIcon
+                    name={iconName!}
+                    size={iconSize}
+                    color={StyleSheet.flatten(txtStyle).color}
+                    style={styles.icon}
+                />
+                }
+                <Text
+                    style={txtStyle}
+                    numberOfLines={1}
+                >
+                    {text}
+                </Text>
+            </View>
         </RNButton>
     );
 };

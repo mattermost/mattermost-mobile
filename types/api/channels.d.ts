@@ -16,6 +16,7 @@ type ChannelNotifyProps = {
     mark_unread: 'all' | 'mention';
     push: NotificationLevel;
     ignore_channel_mentions: 'default' | 'off' | 'on';
+    push_threads: 'all' | 'mention';
 };
 type Channel = {
     id: string;

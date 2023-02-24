@@ -10,7 +10,7 @@ export const CALL = 'Call';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
 export const CHANNEL_INFO = 'ChannelInfo';
-export const CHANNEL_MENTION = 'ChannelMention';
+export const CHANNEL_NOTIFICATION_PREFERENCES = 'ChannelNotificationPreferences';
 export const CODE = 'Code';
 export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
@@ -79,7 +79,7 @@ export default {
     CHANNEL,
     CHANNEL_ADD_PEOPLE,
     CHANNEL_INFO,
-    CHANNEL_MENTION,
+    CHANNEL_NOTIFICATION_PREFERENCES,
     CODE,
     CREATE_DIRECT_MESSAGE,
     CREATE_OR_EDIT_CHANNEL,
@@ -172,6 +172,5 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
 
 export const NOT_READY = [
     CHANNEL_ADD_PEOPLE,
-    CHANNEL_MENTION,
     CREATE_TEAM,
 ];
