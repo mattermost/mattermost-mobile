@@ -995,5 +995,16 @@
     "mobile.calls_host_rec_error": "Bitte versuche, die Aufzeichnung zu wiederholen. Du kannst dich auch an deinen Systemadministrator wenden, um Hilfe bei der Fehlerbehebung zu erhalten.",
     "notification.no_post": "Die Nachricht wurde nicht gefunden.",
     "notification.no_connection": "Der Server ist nicht erreichbar und wir waren nicht in der Lage, den Benachrichtigungskanal / das Team abzurufen.",
-    "invite.summary.back": "Zurück"
+    "invite.summary.back": "Zurück",
+    "channel_notification_preferences.unmute_content": "Stummschaltung aufheben",
+    "channel_notification_preferences.thread_replies": "Antworten zu Unterhaltungen",
+    "channel_notification_preferences.reset_default": "Auf Standardwerte zurücksetzen",
+    "channel_notification_preferences.notify_about": "Benachrichtige mich über...",
+    "channel_notification_preferences.notification.thread_replies": "Benachrichtige mich über Antworten auf Unterhaltungen, denen ich in diesem Kanal folge",
+    "channel_notification_preferences.notification.none": "Keine",
+    "channel_notification_preferences.notification.mention": "Erwähnungen, nur Direktnachrichten",
+    "channel_notification_preferences.notification.all": "Alle neuen Nachrichten",
+    "channel_notification_preferences.muted_title": "Dieser Kanal ist stummgeschaltet",
+    "channel_notification_preferences.muted_content": "Du kannst die Benachrichtigungseinstellungen ändern, erhältst aber keine Benachrichtigungen, bis der Kanal wieder freigeschaltet wird.",
+    "channel_notification_preferences.default": "(Standard)"
 }
