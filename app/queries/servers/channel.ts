@@ -211,6 +211,13 @@ export const observeMyChannel = (database: Database, channelId: string) => {
     );
 };
 
+export const observeMyChannelRoles = (database: Database, channelId: string) => {
+    return observeMyChannel(database, channelId).pipe(
+        switchMap((v) => of$(v?.roles)),
+        distinctUntilChanged(),
+    );
+};
+
 export const getChannelById = async (database: Database, channelId: string) => {
     try {
         const channel = await database.get<ChannelModel>(CHANNEL).find(channelId);

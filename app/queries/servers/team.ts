@@ -296,6 +296,13 @@ export const observeMyTeam = (database: Database, teamId: string) => {
     );
 };
 
+export const observeMyTeamRoles = (database: Database, teamId: string) => {
+    return observeMyTeam(database, teamId).pipe(
+        switchMap((v) => of$(v?.roles)),
+        distinctUntilChanged(),
+    );
+};
+
 export const getTeamById = async (database: Database, teamId: string) => {
     try {
         const team = (await database.get<TeamModel>(TEAM).find(teamId));

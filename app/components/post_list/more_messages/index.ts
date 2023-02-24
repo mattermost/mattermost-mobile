@@ -3,8 +3,9 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import React from 'react';
 import {of as of$, first as first$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {observeMyChannel} from '@queries/servers/channel';
 import {observeThreadById} from '@queries/servers/thread';
@@ -31,8 +32,14 @@ const enhanced = withObservables(['channelId', 'isCRTEnabled', 'rootId'], ({chan
     }
 
     const myChannel = observeMyChannel(database, channelId);
-    const isManualUnread = myChannel.pipe(switchMap((ch) => of$(ch?.manuallyUnread)));
-    const unreadCount = myChannel.pipe(switchMap((ch) => of$(ch?.messageCount)));
+    const isManualUnread = myChannel.pipe(
+        switchMap((ch) => of$(ch?.manuallyUnread)),
+        distinctUntilChanged(),
+    );
+    const unreadCount = myChannel.pipe(
+        switchMap((ch) => of$(ch?.messageCount)),
+        distinctUntilChanged(),
+    );
 
     return {
         isManualUnread,
@@ -40,4 +47,4 @@ const enhanced = withObservables(['channelId', 'isCRTEnabled', 'rootId'], ({chan
     };
 });
 
-export default withDatabase(enhanced(MoreMessages));
+export default React.memo(withDatabase(enhanced(MoreMessages)));
