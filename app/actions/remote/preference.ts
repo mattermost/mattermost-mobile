@@ -4,11 +4,11 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {handleReconnect} from '@actions/websocket';
-import {truncateCrtRelatedTables} from '@queries/servers/entry';
 import {Events, General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
+import {truncateCrtRelatedTables} from '@queries/servers/entry';
 import {querySavedPostsPreferences} from '@queries/servers/preference';
 import {getCurrentUserId} from '@queries/servers/system';
 import EphemeralStore from '@store/ephemeral_store';
