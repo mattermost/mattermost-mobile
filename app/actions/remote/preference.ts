@@ -4,7 +4,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {handleReconnect} from '@actions/websocket';
-import {truncateCrtRelatedTables} from '@app/queries/servers/entry';
+import {truncateCrtRelatedTables} from '@queries/servers/entry';
 import {Events, General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
