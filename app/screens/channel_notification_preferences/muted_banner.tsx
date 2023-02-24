@@ -92,14 +92,8 @@ const MutedBanner = ({channelId}: Props) => {
                 })}
                 theme={theme}
                 backgroundStyle={styles.button}
-                compassIcon={(
-                    <CompassIcon
-                        name='bell-outline'
-                        size={18}
-                        color={theme.buttonColor}
-                        style={{marginRight: 7}}
-                    />
-                )}
+                iconName='bell-outline'
+                iconSize={18}
             />
         </Animated.View>
     );

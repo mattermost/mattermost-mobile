@@ -174,7 +174,7 @@
   "channel_notification_preferences.notification.all": "All new messages",
   "channel_notification_preferences.notification.mention": "Mentions, direct messages only",
   "channel_notification_preferences.notification.none": "Nothing",
-  "channel_notification_preferences.notification.thread_replies": "",
+  "channel_notification_preferences.notification.thread_replies": "Notify me about replies to threads I’m following in this channel",
   "channel_notification_preferences.notify_about": "Notify me about...",
   "channel_notification_preferences.reset_default": "Reset to default",
   "channel_notification_preferences.thread_replies": "Thread replies",

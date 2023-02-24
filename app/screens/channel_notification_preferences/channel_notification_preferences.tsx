@@ -37,7 +37,7 @@ const ChannelNotificationPreferences = ({channelId, componentId, defaultLevel, d
     const defaultNotificationReplies = defaultThreadReplies === 'all';
     const diffNotificationLevel = notifyLevel !== 'default' && notifyLevel !== defaultLevel;
     const notifyTitleTop = useSharedValue((isMuted ? MUTED_BANNER_HEIGHT : 0) + BLOCK_TITLE_HEIGHT);
-    const [notifyAbout, setNotifyAbout] = useState<NotificationLevel>(notifyLevel === undefined || notifyLevel === 'default' ? defaultLevel : notifyLevel);
+    const [notifyAbout, setNotifyAbout] = useState<NotificationLevel>((notifyLevel === undefined || notifyLevel === 'default') ? defaultLevel : notifyLevel);
     const [threadReplies, setThreadReplies] = useState<boolean>((notifyThreadReplies || defaultThreadReplies) === 'all');
     const [resetDefaultVisible, setResetDefaultVisible] = useState(diffNotificationLevel || defaultNotificationReplies !== threadReplies);
 
@@ -61,8 +61,6 @@ const ChannelNotificationPreferences = ({channelId, componentId, defaultLevel, d
         setResetDefaultVisible(defaultNotificationReplies !== value || notifyAbout !== defaultLevel);
     }, [defaultLevel, defaultNotificationReplies, notifyAbout]);
 
-    const close = () => popTopScreen(componentId);
-
     const save = useCallback(() => {
         const pushThreads = threadReplies ? 'all' : 'mention';
 
@@ -74,8 +72,8 @@ const ChannelNotificationPreferences = ({channelId, componentId, defaultLevel, d
 
             updateChannelNotifyProps(serverUrl, channelId, props);
         }
-        close();
-    }, [channelId, isCRTEnabled, notifyAbout, notifyLevel, notifyThreadReplies, serverUrl, threadReplies]);
+        popTopScreen(componentId);
+    }, [channelId, componentId, isCRTEnabled, notifyAbout, notifyLevel, notifyThreadReplies, serverUrl, threadReplies]);
 
     useBackNavigation(save);
     useAndroidHardwareBackHandler(componentId, save);

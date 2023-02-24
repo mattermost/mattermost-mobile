@@ -5,9 +5,12 @@ import React, {useMemo} from 'react';
 import {StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
 import RNButton from 'react-native-button';
 
+import CompassIcon from '@components/compass_icon';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 
-type Props = {
+type ConditionalProps = | {iconName: string; iconSize: number} | {iconName?: never; iconSize?: never}
+
+type Props = ConditionalProps & {
     theme: Theme;
     backgroundStyle?: StyleProp<ViewStyle>;
     textStyle?: StyleProp<TextStyle>;
@@ -18,11 +21,11 @@ type Props = {
     testID?: string;
     onPress: () => void;
     text: string;
-    compassIcon?: React.ReactNode;
 }
 
 const styles = StyleSheet.create({
     container: {flexDirection: 'row'},
+    icon: {marginRight: 7},
 });
 
 const Button = ({
@@ -36,7 +39,8 @@ const Button = ({
     onPress,
     text,
     testID,
-    compassIcon,
+    iconName,
+    iconSize,
 }: Props) => {
     const bgStyle = useMemo(() => [
         buttonBackgroundStyle(theme, size, emphasis, buttonType, buttonState),
@@ -55,7 +59,14 @@ const Button = ({
             testID={testID}
         >
             <View style={styles.container}>
-                {compassIcon}
+                {Boolean(iconName) &&
+                <CompassIcon
+                    name={iconName!}
+                    size={iconSize}
+                    color={theme.buttonColor}
+                    style={styles.icon}
+                />
+                }
                 <Text
                     style={txtStyle}
                     numberOfLines={1}
