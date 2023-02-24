@@ -190,14 +190,16 @@ end
 desc 'Upload file to s3'
 lane :upload_file_to_s3 do |options|
   os_type = options[:os_type].downcase
-  extension = os_type == "android" ? "*.apk" : "*.ipa"
+  extensions = os_type == "android" ? ["*.apk", "*.aab"] : ["*.ipa"]
   build_folder_path = Dir[File.expand_path('..')].first
   files = []
 
   unless options[:file].nil? || options[:file].empty?
     files.push("#{build_folder_path}/#{options[:file]}")
   else
-    files = Dir.glob("#{build_folder_path}/#{extension}").select { |f| File.file? f}
+    extensions.each do |extension|
+      files.push(*Dir.glob("#{build_folder_path}/#{extension}").select { |f| File.file? f})
+    end
   end
 
   unless ENV['AWS_BUCKET_NAME'].nil? || ENV['AWS_BUCKET_NAME'].empty? || ENV['AWS_REGION'].nil? || ENV['AWS_REGION'].empty? || files.length == 0
@@ -636,7 +638,7 @@ platform :android do
     replace_assets
     link_sentry_android
     build_android
-    move_apk_to_root
+    move_android_to_root
     upload_file_to_s3({:os_type => "android"})
   end
 
@@ -750,10 +752,10 @@ platform :android do
   end
 
   lane :deploy do |options|
-    apk_path = options[:file]
+    file_path = options[:file]
 
-    unless apk_path.nil?
-      submit_to_google_play(apk_path)
+    unless file_path.nil?
+      submit_to_google_play(file_path)
     end
   end
 
@@ -779,49 +781,73 @@ platform :android do
 
   def build_android
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
+    build_task = ENV['ANDROID_BUILD_TASK'].nil? || ENV['ANDROID_BUILD_TASK'].empty? ? 'assemble' : ENV['ANDROID_BUILD_TASK']
+    build_task = build_task.split(",")
 
-    gradle(
-        task: 'app:assemble',
-        build_type: config_mode,
-        project_dir: 'android/',
-        properties: {
-          'separateApk' => ENV["SEPARATE_APKS"] || false,
-          'universalApk' => ENV["SEPARATE_APKS"] || false,
-        }
-    )
+    if build_task.include?("assemble")
+      gradle(
+          task: 'app:assemble',
+          build_type: config_mode,
+          project_dir: 'android/',
+          properties: {
+            'separateApk' => ENV["SEPARATE_APKS"] || false,
+            'universalApk' => ENV["SEPARATE_APKS"] || false,
+          }
+      )
+    end
+
+    if build_task.include?("bundle")
+      gradle(
+          task: 'app:bundle',
+          build_type: config_mode,
+          project_dir: 'android/',
+      )
+    end
   end
 
-  def move_apk_to_root
+  def move_android_to_root
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     app_name_sub = app_name.gsub(" ", "_")
-    apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
-    json_path = lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
+    build_task = ENV['ANDROID_BUILD_TASK'].nil? || ENV['ANDROID_BUILD_TASK'].empty? ? 'assemble' : ENV['ANDROID_BUILD_TASK']
+    build_task = build_task.split(",")
 
-    if json_path.nil? || json_path.empty?
-      dir_name = File.dirname(apks.first)
-      json_path = Dir.glob(File.join(dir_name, '*.json')).first
-    end
-
-    UI.message("JSON PATH APK #{json_path}")
-    outputJson = load_config_json(json_path)
-    paths = []
-    apks.each do |apk|
-      filename = File.basename(apk)
-      output = outputJson["elements"].find { |o| o["outputFile"] == filename }
-      unless output.nil?
-        filterName = output["filters"].empty? ? '' : output["filters"].first["value"]
-        name = "#{app_name_sub}"
-        unless filterName.nil? || filterName.empty?
-          name += "-#{filterName}"
-        end
-        new_apk_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{name}.apk"
-        paths.push(new_apk_path)
-        sh "mv #{apk} #{new_apk_path}"
-        UI.message("APK PATH \"#{new_apk_path}\", #{filterName}")
+    if build_task.include?("assemble")
+      apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
+      json_path = lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
+  
+      if json_path.nil? || json_path.empty?
+        dir_name = File.dirname(apks.first)
+        json_path = Dir.glob(File.join(dir_name, '*.json')).first
       end
+
+      UI.message("JSON PATH APK #{json_path}")
+      outputJson = load_config_json(json_path)
+      paths = []
+      apks.each do |apk|
+        filename = File.basename(apk)
+        output = outputJson["elements"].find { |o| o["outputFile"] == filename }
+        unless output.nil?
+          filterName = output["filters"].empty? ? '' : output["filters"].first["value"]
+          name = "#{app_name_sub}"
+          unless filterName.nil? || filterName.empty?
+            name += "-#{filterName}"
+          end
+          new_apk_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{name}.apk"
+          paths.push(new_apk_path)
+          sh "mv #{apk} #{new_apk_path}"
+          UI.message("APK PATH \"#{new_apk_path}\", #{filterName}")
+        end
+      end
+
+      lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS] = paths
     end
 
-    lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS] = paths
+    if build_task.include?("bundle")
+      aab = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
+      new_aab_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{app_name_sub}.aab"
+      sh "mv #{aab} #{new_aab_path}"
+      UI.message("AAB PATH \"#{new_aab_path}\"")
+    end
   end
 
   def link_sentry_android
@@ -960,21 +986,36 @@ def submit_to_testflight(ipa_path)
                              })
 end
 
-def submit_to_google_play(apk_path)
-  apks = Dir.glob(apk_path).select { |f| File.file? f}
-  filenames = apks.map {|f| File.basename(f)}
-
-  if(apks.length > 0)
+def submit_to_google_play(file_path)
+  filenames = []
+  if(file_path.include?("aab"))
+    aab_filename = Dir.glob(file_path).select { |f| File.file? f}.first
     unless ENV['SUPPLY_JSON_KEY'].nil? || ENV['SUPPLY_JSON_KEY'].empty?
       supply(
           package_name: ENV['MAIN_APP_IDENTIFIER'] || ENV['SUPPLY_PACKAGE_NAME'],
           track: ENV['SUPPLY_TRACK'] || 'alpha',
-          apk_paths: apks
+          aab: aab_filename,
+          skip_upload_apk: true
       )
     end
+    filenames.push(aab_filename)
   else
-    UI.user_error! "There are no apks in #{apk_path}"
-    return
+    apks = Dir.glob(file_path).select { |f| File.file? f}
+    filenames = apks.map {|f| File.basename(f)}
+
+    if(apks.length > 0)
+      unless ENV['SUPPLY_JSON_KEY'].nil? || ENV['SUPPLY_JSON_KEY'].empty?
+        supply(
+            package_name: ENV['MAIN_APP_IDENTIFIER'] || ENV['SUPPLY_PACKAGE_NAME'],
+            track: ENV['SUPPLY_TRACK'] || 'alpha',
+            apk_paths: apks,
+            skip_upload_aab: true
+        )
+      end
+    else
+      UI.user_error! "There are no apks in #{apk_path}"
+      return
+    end
   end
 
   version_number = android_get_version_name(gradle_file: './android/app/build.gradle')

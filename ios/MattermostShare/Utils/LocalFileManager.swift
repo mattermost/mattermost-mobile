@@ -96,26 +96,9 @@ class LocalFileManager {
     return nil
   }
   
-  func saveProfileImage(image: UIImage, userId: String) {
-    guard let data = image.pngData(),
-          let url = getURLForImage(imageName: userId)
-    else { return }
-    
-    do {
-      try data.write(to: url)
-    } catch let error {
-      print("Erro saving image. \(error)")
-    }
-  }
-  
-  func getProfileImage(userId: String) -> UIImage? {
-    guard let url = getURLForImage(imageName: userId) else { return nil }
-    return UIImage(contentsOfFile: url.path)
-  }
-  
   func getImagePixels(imageUrl: URL) -> Int64 {
     if let imageSourceRef = CGImageSourceCreateWithURL(imageUrl as CFURL, nil),
-       let props = CGImageSourceCopyPropertiesAtIndex(imageSourceRef, 0, nil) as? NSDictionary,
+       let props: NSDictionary = CGImageSourceCopyPropertiesAtIndex(imageSourceRef, 0, nil),
        let height =  props["PixelHeight"] as? NSNumber,
        let width = props["PixelWidth"] as? NSNumber {
       return Int64(width.intValue * height.intValue)
