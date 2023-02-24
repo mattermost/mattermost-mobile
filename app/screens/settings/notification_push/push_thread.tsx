@@ -4,11 +4,10 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
 
+import SettingBlock from '@components/settings/block';
+import SettingOption from '@components/settings/option';
+import SettingSeparator from '@components/settings/separator';
 import {t} from '@i18n';
-
-import SettingBlock from '../setting_block';
-import SettingOption from '../setting_option';
-import SettingSeparator from '../settings_separator';
 
 const headerText = {
     id: t('notification_settings.push_threads.replies'),

@@ -5,6 +5,10 @@ import React, {useCallback, useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {handleCRTToggled, savePreference} from '@actions/remote/preference';
+import SettingBlock from '@components/settings/block';
+import SettingContainer from '@components/settings/container';
+import SettingOption from '@components/settings/option';
+import SettingSeparator from '@components/settings/separator';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -12,11 +16,6 @@ import useBackNavigation from '@hooks/navigate_back';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-
-import SettingBlock from '../setting_block';
-import SettingContainer from '../setting_container';
-import SettingOption from '../setting_option';
-import SettingSeparator from '../settings_separator';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
