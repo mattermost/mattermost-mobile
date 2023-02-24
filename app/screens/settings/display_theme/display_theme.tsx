@@ -4,13 +4,12 @@
 import React, {useCallback, useMemo} from 'react';
 
 import {savePreference} from '@actions/remote/preference';
+import SettingContainer from '@components/settings/container';
 import {Preferences} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
-
-import SettingContainer from '../setting_container';
 
 import CustomTheme from './custom_theme';
 import {ThemeTiles} from './theme_tiles';

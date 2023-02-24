@@ -628,6 +628,10 @@ export const observeChannelSettings = (database: Database, channelId: string) =>
     );
 };
 
+export const observeIsMutedSetting = (database: Database, channelId: string) => {
+    return observeChannelSettings(database, channelId).pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === General.MENTION)));
+};
+
 export const observeChannelsByLastPostAt = (database: Database, myChannels: MyChannelModel[], excludeIds?: string[]) => {
     const ids = myChannels.map((c) => c.id);
     const idsStr = `'${ids.join("','")}'`;
