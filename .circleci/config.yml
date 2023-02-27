@@ -480,12 +480,9 @@ workflows:
   version: 2
   superMegaAwesomeBuild:
     jobs:
-      - test
-      
+    
       - build-android-release:
           context: mattermost-mobile-android-release
-          requires:
-            - test
           filters:
             branches:
               only:
@@ -522,8 +519,6 @@ workflows:
 
       - build-ios-release:
           context: mattermost-mobile-ios-release
-          requires:
-            - test
           filters:
             branches:
               only:
@@ -560,23 +555,17 @@ workflows:
 
       - build-android-pr:
           context: mattermost-mobile-android-pr
-          requires:
-            - test
           filters:
             branches:
               only: /^(build|android)-pr-.*/
       - build-ios-pr:
           context: mattermost-mobile-ios-pr
-          requires:
-            - test
           filters:
             branches:
               only: /^(build|ios)-pr-.*/
 
       - build-android-unsigned:
           context: mattermost-mobile-unsigned
-          requires:
-            - test
           filters:
             tags:
               only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
@@ -584,8 +573,6 @@ workflows:
               only: unsigned
       - build-ios-unsigned:
           context: mattermost-mobile-unsigned
-          requires:
-            - test
           filters:
             tags:
               only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
@@ -593,8 +580,6 @@ workflows:
               only: unsigned
       - build-ios-simulator:
           context: mattermost-mobile-unsigned
-          requires:
-            - test
           filters:
             branches:
               only:
