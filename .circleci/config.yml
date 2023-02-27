@@ -483,116 +483,54 @@ workflows:
     
       - build-android-release:
           context: mattermost-mobile-android-release
-          filters:
-            branches:
-              only:
-                - /^build-release-\d+$/
-                - /^build-android-release-\d+$/
+
       - deploy-android-release:
           context: mattermost-mobile-android-release
           requires:
             - build-android-release
-          filters:
-            branches:
-              only:
-                - /^build-release-\d+$/
-                - /^build-android-release-\d+$/
 
       - build-android-beta:
           context: mattermost-mobile-android-beta
-          filters:
-            branches:
-              only:
-                - /^build-\d+$/
-                - /^build-android-\d+$/
-                - /^build-android-beta-\d+$/
+
       - deploy-android-beta:
           context: mattermost-mobile-android-beta
           requires:
             - build-android-beta
-          filters:
-            branches:
-              only:
-                - /^build-\d+$/
-                - /^build-android-\d+$/
-                - /^build-android-beta-\d+$/
 
       - build-ios-release:
           context: mattermost-mobile-ios-release
-          filters:
-            branches:
-              only:
-                - /^build-release-\d+$/
-                - /^build-ios-release-\d+$/
+          
       - deploy-ios-release:
           context: mattermost-mobile-ios-release
           requires:
             - build-ios-release
-          filters:
-            branches:
-              only:
-                - /^build-release-\d+$/
-                - /^build-ios-release-\d+$/
+
 
       - build-ios-beta:
           context: mattermost-mobile-ios-beta
-          filters:
-            branches:
-              only:
-                - /^build-\d+$/
-                - /^build-ios-\d+$/
-                - /^build-ios-beta-\d+$/
+
       - deploy-ios-beta:
           context: mattermost-mobile-ios-beta
           requires:
             - build-ios-beta
-          filters:
-            branches:
-              only:
-                - /^build-\d+$/
-                - /^build-ios-\d+$/
-                - /^build-ios-beta-\d+$/
 
       - build-android-pr:
           context: mattermost-mobile-android-pr
-          filters:
-            branches:
-              only: /^(build|android)-pr-.*/
+
       - build-ios-pr:
           context: mattermost-mobile-ios-pr
-          filters:
-            branches:
-              only: /^(build|ios)-pr-.*/
 
       - build-android-unsigned:
           context: mattermost-mobile-unsigned
-          filters:
-            tags:
-              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
-            branches:
-              only: unsigned
+
       - build-ios-unsigned:
           context: mattermost-mobile-unsigned
-          filters:
-            tags:
-              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
-            branches:
-              only: unsigned
+          
       - build-ios-simulator:
           context: mattermost-mobile-unsigned
-          filters:
-            branches:
-              only:
-                - /^build-\d+$/
-                - /^build-ios-sim-\d+$/
 
       - github-release:
           context: mattermost-mobile-unsigned
           requires:
             - build-android-unsigned
             - build-ios-unsigned
-          filters:
-            tags:
-              only: /^v(\d+\.)(\d+\.)(\d+)(.*)?$/
-            branches:
-              only: unsigned
