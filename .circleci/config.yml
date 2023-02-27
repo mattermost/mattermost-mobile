@@ -478,13 +478,13 @@ jobs:
 
 workflows:
   version: 2
-  build:
+  superMegaAwesomeBuild:
     jobs:
       - test
-      # - check-deps:
-      #     context: sast-webhook
-      #     requires:
-      #       - test
+       - check-deps:
+           context: sast-webhook
+           requires:
+             - test
 
       - build-android-release:
           context: mattermost-mobile-android-release
