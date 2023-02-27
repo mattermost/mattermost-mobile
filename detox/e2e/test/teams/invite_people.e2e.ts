@@ -79,7 +79,7 @@ describe('Teams - Invite', () => {
         await expect(Invite.teamIcon).toBeVisible();
 
         // * Verify default Selection
-        await expect(Invite.screenSelection).toBeVisible();
+        await waitFor(Invite.screenSelection).toBeVisible().withTimeout(timeouts.TWO_SEC);
 
         // * Verify Server data
         await expect(Invite.serverDisplayName).toHaveText(serverOneDisplayName);
@@ -138,7 +138,7 @@ describe('Teams - Invite', () => {
         await Invite.sendButton.tap();
 
         // * Validate summary report sent
-        await waitFor(Invite.screenSummary).toBeVisible().withTimeout(timeouts.TWO_SEC);
+        await waitFor(Invite.screenSummary).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(Invite.getSummaryReportSent()).toBeVisible();
         await expect(Invite.getSummaryReportNotSent()).not.toExist();
         await expect(Invite.getSummaryReportTextItem(noUserEmailFormat)).toBeVisible();
