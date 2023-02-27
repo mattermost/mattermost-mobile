@@ -92,6 +92,15 @@ describe('Channels - Channel List', () => {
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText('Off-Topic');
 
+        // # Go back to channel list screen and tap on a third channel
+        await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
+        await ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName).tap();
+
+        // * Verify on third channel
+        await ChannelScreen.toBeVisible();
+        await expect(ChannelScreen.headerTitle).toHaveText('Town Square');
+
         // # Go back to channel list screen
         await ChannelScreen.back();
     });
