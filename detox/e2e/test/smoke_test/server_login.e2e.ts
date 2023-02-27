@@ -26,7 +26,7 @@ import {
     ServerScreen,
 } from '@support/ui/screen';
 import {expect} from 'detox';
-import {timeouts} from "@support/utils";
+import {isAndroid, timeouts} from "@support/utils";
 
 describe('Smoke Test - Server Login', () => {
     const serverOneDisplayName = 'Server 1';
@@ -79,11 +79,15 @@ describe('Smoke Test - Server Login', () => {
 
         // # Go back to first server, open server list screen, swipe left on second server and tap on logout option
         await ServerListScreen.open();
-        await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
+        if (isAndroid()) {
+            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
+        }
         await waitFor(ServerListScreen.getServerItemInactive(serverOneDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ServerListScreen.getServerItemInactive(serverOneDisplayName).tap();
         await ServerListScreen.open();
-        await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
+        if (isAndroid()) {
+            await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
+        }
         await waitFor(ServerListScreen.getServerItemInactive(serverTwoDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ServerListScreen.getServerItemInactive(serverTwoDisplayName).swipe('left');
         await ServerListScreen.getServerItemLogoutOption(serverTwoDisplayName).tap();
