@@ -995,5 +995,16 @@
     "mobile.calls_host_rec_error": "Proszę spróbować nagrać ponownie. Możesz również skontaktować się z administratorem systemu, aby uzyskać pomoc w rozwiązywaniu problemów.",
     "notification.no_post": "Wiadomość nie została odnaleziona.",
     "notification.no_connection": "Serwer jest nieosiągalny i nie byliśmy w stanie pobrać powiadomienia dla kanału / zespołu.",
-    "invite.summary.back": "Wróć"
+    "invite.summary.back": "Wróć",
+    "channel_notification_preferences.unmute_content": "Wyłącz wyciszenie kanału",
+    "channel_notification_preferences.thread_replies": "Odpowiedzi na wątki",
+    "channel_notification_preferences.reset_default": "Przywróć domyślne",
+    "channel_notification_preferences.notify_about": "Powiadom mnie o...",
+    "channel_notification_preferences.notification.thread_replies": "Powiadom mnie o odpowiedziach na wątki, które śledzę na tym kanale",
+    "channel_notification_preferences.notification.none": "Nic",
+    "channel_notification_preferences.notification.mention": "Wzmianki, tylko bezpośrednie wiadomości",
+    "channel_notification_preferences.notification.all": "Wszystkie nowe wiadomości",
+    "channel_notification_preferences.muted_title": "Ten kanał jest wyciszony",
+    "channel_notification_preferences.muted_content": "Możesz zmienić ustawienia powiadomień, ale nie będziesz otrzymywać powiadomień, dopóki na kanale nie zostanie wyłączone wyciszenie.",
+    "channel_notification_preferences.default": "(domyślne)"
 }
