@@ -321,7 +321,7 @@
     "post_body.check_for_out_of_channel_groups_mentions.message": "nie zostali powiadomieni poprzez tą wzmiankę, ponieważ nie są na kanale. Nie można ich dodać do kanału, ponieważ nie są członkami grup połączonych. Aby dodać je do tego kanału, muszą zostać dodane do połączonych grup.",
     "post_body.check_for_out_of_channel_mentions.link.and": " i ",
     "post_body.check_for_out_of_channel_mentions.link.private": "dodaj je do tego prywatnego kanału",
-    "post_body.check_for_out_of_channel_mentions.link.public": "dodaj je do kanału",
+    "post_body.check_for_out_of_channel_mentions.link.public": "dodać ich do kanału",
     "post_body.check_for_out_of_channel_mentions.message_last": "? Będą mieć dostęp do całej historii wiadomości.",
     "post_body.check_for_out_of_channel_mentions.message.multiple": "zostały wspomniane, ale nie są w kanale. Czy chciałbyś ",
     "post_body.check_for_out_of_channel_mentions.message.one": "został wspomniany, ale nie ma go w kanale. Czy chciałbyś ",
