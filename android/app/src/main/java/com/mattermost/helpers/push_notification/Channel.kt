@@ -11,6 +11,7 @@ import com.mattermost.helpers.database_extension.queryCurrentUserId
 import com.nozbe.watermelondb.Database
 import java.text.Collator
 import java.util.Locale
+import kotlin.math.max
 
 suspend fun PushNotificationDataRunnable.Companion.fetchMyChannel(db: Database, serverUrl: String, channelId: String, isCRTEnabled: Boolean): Triple<ReadableMap?, ReadableMap?, ReadableArray?> {
     val channel = fetch(serverUrl, "/api/v4/channels/$channelId")
@@ -98,7 +99,7 @@ private suspend fun PushNotificationDataRunnable.Companion.fetchMyChannelData(se
             data.putInt("message_count", messageCount)
             data.putInt("mentions_count", mentionCount)
             data.putBoolean("is_unread", messageCount > 0)
-            data.putDouble("last_post_at", lastPostAt)
+            data.putDouble("last_post_at", max(lastPostAt, channelData.getDouble("create_at")))
             return data
         }
     } catch (e: Exception) {

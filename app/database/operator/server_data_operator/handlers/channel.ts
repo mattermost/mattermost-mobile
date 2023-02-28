@@ -246,10 +246,12 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
                 const totalMsg = isCRT ? channel.total_msg_count_root! : channel.total_msg_count;
                 const myMsgCount = isCRT ? my.msg_count_root! : my.msg_count;
                 const msgCount = Math.max(0, totalMsg - myMsgCount);
+                const lastPostTimestamp = isCRT ? (channel.last_root_post_at || channel.last_post_at) : channel.last_post_at;
+                const lastPostAt = Math.max(lastPostTimestamp, channel.create_at);
                 my.msg_count = msgCount;
                 my.mention_count = isCRT ? my.mention_count_root! : my.mention_count;
                 my.is_unread = msgCount > 0;
-                my.last_post_at = (isCRT ? (channel.last_root_post_at || channel.last_post_at) : channel.last_post_at) || 0;
+                my.last_post_at = lastPostAt;
             }
         }
 
@@ -271,7 +273,8 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
             }
 
             const chan = channelMap[my.channel_id];
-            const lastPostAt = (isCRT ? chan.last_root_post_at : chan.last_post_at) || 0;
+            const lastPostTimestamp = isCRT ? (chan.last_root_post_at || chan.last_post_at) : chan.last_post_at;
+            const lastPostAt = Math.max(lastPostTimestamp, chan.create_at);
             if ((chan && e.lastPostAt < lastPostAt) ||
                 e.isUnread !== my.is_unread || e.lastViewedAt < my.last_viewed_at ||
                 e.roles !== my.roles
