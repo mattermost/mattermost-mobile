@@ -25,8 +25,8 @@ import {
     ServerListScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {isAndroid, isIos, timeouts} from '@support/utils';
 import {expect} from 'detox';
-import {isAndroid, isIos, timeouts} from "@support/utils";
 
 describe('Smoke Test - Server Login', () => {
     const serverOneDisplayName = 'Server 1';
