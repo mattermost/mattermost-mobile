@@ -21,9 +21,7 @@ import Animated, {
 } from 'react-native-reanimated';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
-import {
-    sendCreateAccountRequest,
-} from '@actions/remote/session';
+import {sendCreateAccountRequest} from '@actions/remote/session';
 import CompassIcon from '@app/components/compass_icon';
 import Loading from '@app/components/loading';
 import FloatingTextInput from '@components/floating_text_input_label';
@@ -125,12 +123,15 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
     const translateX = useSharedValue(dimensions.width);
     const isTablet = useIsTablet();
 
-    const refEmail = useRef<TextInput>(null);
+    const refPassword = useRef<TextInput>(null);
+    const refTeamCode = useRef<TextInput>(null);
 
     const [email, setEmail] = useState<string>('');
     const [password, setPassword] = useState<string>('');
+    const [teamCode, setTeamCode] = useState<string>('');
     const [errorEmail, setErrorEmail] = useState<string>('');
     const [errorPassword, setErrorPassword] = useState<string>('');
+    const [errorTeamCode, setErrorTeamCode] = useState<string>('');
     const [isPasswordVisible, setIsPasswordVisible] = useState(false);
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const {formatMessage} = useIntl();
@@ -145,6 +146,11 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
     const changePassword = useCallback((passwordStr: string) => {
         setPassword(passwordStr);
         setErrorPassword('');
+    }, []);
+
+    const changeTeamCode = useCallback((teamCodeStr: string) => {
+        setTeamCode(teamCodeStr);
+        setErrorTeamCode('');
     }, []);
 
     const onFocus = useCallback(() => {
@@ -198,6 +204,7 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
             email + '@gmail.com',
             email,
             password,
+            teamCode,
         );
         await setIsLoading(false);
 
@@ -233,11 +240,30 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
 
         setErrorPassword('');
 
+        if (
+            result.error &&
+            result.error.toString().toLowerCase().includes('team')
+        ) {
+            setErrorTeamCode(
+                formatMessage({
+                    id: 'mobile.account.team_code_not_found',
+                    defaultMessage: result.error.toString(),
+                }),
+            );
+            return;
+        }
+
+        setErrorTeamCode('');
+
         popTopScreen();
-    }, [email, password]);
+    }, [email, password, teamCode]);
 
     const onFocusPassword = useCallback(() => {
-        refEmail?.current?.focus();
+        refPassword?.current?.focus();
+    }, []);
+
+    const onFocusTeamCode = useCallback(() => {
+        refTeamCode?.current?.focus();
     }, []);
 
     const renderProceedButton = useMemo(() => {
@@ -277,7 +303,7 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
                 onPress={submitCreateAccount}
                 containerStyle={[
                     styleButtonBackground,
-                    {marginTop: errorPassword ? 30 : 10},
+                    {marginTop: errorTeamCode ? 30 : 20},
                 ]}
             >
                 {buttonIcon}
@@ -288,7 +314,16 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
                 />
             </Button>
         );
-    }, [email, password, errorEmail, errorPassword, isLoading, theme]);
+    }, [
+        email,
+        password,
+        teamCode,
+        errorEmail,
+        errorPassword,
+        errorTeamCode,
+        isLoading,
+        theme,
+    ]);
 
     const togglePasswordVisiblity = useCallback(() => {
         setIsPasswordVisible((prevState) => !prevState);
@@ -369,13 +404,39 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
                             })}
                             onChangeText={changePassword}
                             onFocus={onFocus}
-                            onSubmitEditing={submitCreateAccount}
+                            onSubmitEditing={onFocusTeamCode}
                             returnKeyType='next'
                             spellCheck={false}
                             theme={theme}
                             value={password}
-                            ref={refEmail}
+                            ref={refPassword}
                             endAdornment={endAdornment}
+                        />
+                        <FloatingTextInput
+                            autoCorrect={false}
+                            autoCapitalize={'none'}
+                            blurOnSubmit={true}
+                            disableFullscreenUI={true}
+                            containerStyle={[
+                                styles.inputBoxPassword,
+                                {marginTop: errorPassword ? 40 : 10},
+                            ]}
+                            enablesReturnKeyAutomatically={true}
+                            error={errorTeamCode}
+                            keyboardType='email-address'
+                            label={formatMessage({
+                                id: 'mobile.account.team_code',
+                                defaultMessage: 'Team Code',
+                            })}
+                            onChangeText={changeTeamCode}
+                            onFocus={onFocus}
+                            onSubmitEditing={submitCreateAccount}
+                            returnKeyType='done'
+                            spellCheck={false}
+                            maxLength={10}
+                            theme={theme}
+                            value={teamCode}
+                            ref={refTeamCode}
                         />
                         {renderProceedButton}
                     </View>
@@ -411,9 +472,11 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
     useEffect(() => {
         translateX.value = 0;
         setEmail('');
-        setErrorEmail('');
         setPassword('');
+        setTeamCode('');
+        setErrorEmail('');
         setErrorPassword('');
+        setErrorTeamCode('');
     }, []);
 
     useAndroidHardwareBackHandler(componentId, onReturn);

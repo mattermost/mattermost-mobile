@@ -269,7 +269,7 @@ const LoginForm = ({
 
         if (emailEnabled) {
             loginPlaceholders.push(
-                formatMessage({id: 'login.email', defaultMessage: 'Email'}),
+                formatMessage({id: 'login.telephone', defaultMessage: 'Telephone'}),
             );
         }
 

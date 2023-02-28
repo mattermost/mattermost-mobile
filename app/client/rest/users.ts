@@ -25,7 +25,8 @@ export interface ClientUsersMix {
     sendCreateAccountRequest: (
         email: string,
         username: string,
-        password: string
+        password: string,
+        teamCode: string
     ) => Promise<any>;
     sendGetAllTeams: () => Promise<any>;
     setDefaultProfileImage: (userId: string) => Promise<any>;
@@ -197,12 +198,13 @@ const ClientUsers = <TBase extends Constructor<ClientBase>>(
                 email: string,
                 username: string,
                 password: string,
+                teamCode: string,
             ) => {
                 this.analytics?.trackAPI('api_users_send_create_account_request');
 
                 return this.doFetch(`${this.getUsersRoute()}`, {
                     method: 'post',
-                    body: {email, username, password},
+                    body: {email, username, password, team_code: teamCode},
                 });
             };
 

@@ -173,6 +173,7 @@ const Server = ({
 
         // TODO ?
         serverUrl = 'http://45.119.85.240:8065';
+        // serverUrl = 'https://finki.o2onetwork.one';
         serverName = 'admin';
         autoconnect = true;
 

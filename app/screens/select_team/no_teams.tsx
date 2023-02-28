@@ -1,12 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect} from 'react';
+import React from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, View} from 'react-native';
 
-import {addCurrentUserToTeam, updateCanJoinTeams} from '@actions/remote/team';
-import {useServerUrl} from '@app/context/server';
 import Empty from '@components/illustrations/no_team';
 import {useTheme} from '@context/theme';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -66,22 +64,6 @@ const NoTeams = () => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const intl = useIntl();
-    const serverUrl = useServerUrl();
-
-    const autoJoinO2ONetWorkTeam = async () => {
-        // const asdasd = await sendGetAllTeams(serverUrl);
-        // console.log(asdasd, '22222222');
-        await updateCanJoinTeams(serverUrl);
-        const result = await addCurrentUserToTeam(
-            serverUrl,
-            'd3qxjiiwif87mmsrotdebqtsga',
-        );
-    };
-
-    useEffect(() => {
-        // TODO ?
-        autoJoinO2ONetWorkTeam();
-    }, []);
 
     return (
         <View style={styles.container}>

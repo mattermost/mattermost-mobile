@@ -322,6 +322,7 @@ export const sendCreateAccountRequest = async (
     email: string,
     username: string,
     password: string,
+    teamCode: string,
 ) => {
     let client;
     try {
@@ -336,6 +337,7 @@ export const sendCreateAccountRequest = async (
             email,
             username,
             password,
+            teamCode,
         );
     } catch (error) {
         return {error};
