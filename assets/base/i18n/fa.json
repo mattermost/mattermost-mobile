@@ -603,7 +603,6 @@
     "mobile.no_results_with_term": "نتیجه‌ای برای «{term}» نیست",
     "mobile.managed.jailbreak_no_reason": "موجود نیست",
     "mobile.managed.jailbreak_no_debug_info": "موجود نیست",
-    "mobile.login_options.sso_continue": "ادامه دهید با",
     "mobile.login_options.separator_text": "یا وارد شوید با",
     "mobile.login_options.select_option": "یکی از گزینه‌های ورود را انتخاب کنید.",
     "mobile.login_options.saml": "SAML",

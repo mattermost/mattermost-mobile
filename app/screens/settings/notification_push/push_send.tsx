@@ -5,14 +5,13 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 
 import FormattedText from '@components/formatted_text';
+import SettingBlock from '@components/settings/block';
+import SettingOption from '@components/settings/option';
+import SettingSeparator from '@components/settings/separator';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import SettingBlock from '../setting_block';
-import SettingOption from '../setting_option';
-import SettingSeparator from '../settings_separator';
 
 const headerText = {
     id: t('notification_settings.send_notification.about'),
