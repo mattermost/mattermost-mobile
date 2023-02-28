@@ -344,7 +344,7 @@ jobs:
           working_directory: fastlane
           name: Run fastlane to build unsigned android
           no_output_timeout: 30m
-          command: bundle exec fastlane android unsigned
+          command: bundle exec fastlane android unsigned --stacktrace
       - persist
       - save:
           filename: "*.apk"
