@@ -7,6 +7,9 @@ mattermost.keystore
 tmp/
 .env
 env.d.ts
+*.apk
+*.aab
+*.ipa
 
 */**/compass-icons.ttf
 
@@ -30,8 +33,6 @@ xcuserdata
 *.moved-aside
 DerivedData
 *.hmap
-*.ipa
-*.apk
 *.xcuserstate
 project.xcworkspace
 ios/Pods

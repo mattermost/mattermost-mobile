@@ -211,6 +211,13 @@ export const observeMyChannel = (database: Database, channelId: string) => {
     );
 };
 
+export const observeMyChannelRoles = (database: Database, channelId: string) => {
+    return observeMyChannel(database, channelId).pipe(
+        switchMap((v) => of$(v?.roles)),
+        distinctUntilChanged(),
+    );
+};
+
 export const getChannelById = async (database: Database, channelId: string) => {
     try {
         const channel = await database.get<ChannelModel>(CHANNEL).find(channelId);
@@ -626,6 +633,10 @@ export const observeChannelSettings = (database: Database, channelId: string) =>
     return database.get<MyChannelSettingsModel>(MY_CHANNEL_SETTINGS).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
     );
+};
+
+export const observeIsMutedSetting = (database: Database, channelId: string) => {
+    return observeChannelSettings(database, channelId).pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === General.MENTION)));
 };
 
 export const observeChannelsByLastPostAt = (database: Database, myChannels: MyChannelModel[], excludeIds?: string[]) => {

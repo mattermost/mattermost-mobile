@@ -17,7 +17,6 @@ import {
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {useInputPropagation} from '@app/hooks/input';
 import Autocomplete from '@components/autocomplete';
 import ErrorText from '@components/error_text';
 import FloatingTextInput from '@components/floating_text_input_label';
@@ -28,6 +27,7 @@ import {General, Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
+import {useInputPropagation} from '@hooks/input';
 import {t} from '@i18n';
 import {
     changeOpacity,
