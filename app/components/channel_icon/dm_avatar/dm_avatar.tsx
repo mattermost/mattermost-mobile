@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
@@ -13,7 +12,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     author?: UserModel;
-    isInfo?: boolean;
+    onCenterBg?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -22,19 +21,19 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: theme.sidebarBg,
         borderWidth: 0,
     },
-    statusInfo: {
+    statusOnCenterBg: {
         backgroundColor: theme.centerChannelBg,
     },
     icon: {
         color: changeOpacity(theme.sidebarText, 0.4),
         left: 1,
     },
-    iconInfo: {
+    iconOnCenterBg: {
         color: changeOpacity(theme.centerChannelColor, 0.72),
     },
 }));
 
-const DmAvatar = ({author, isInfo}: Props) => {
+const DmAvatar = ({author, onCenterBg}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -42,22 +41,20 @@ const DmAvatar = ({author, isInfo}: Props) => {
         return (
             <CompassIcon
                 name='archive-outline'
-                style={[style.icon, isInfo && style.iconInfo]}
+                style={[style.icon, onCenterBg && style.iconOnCenterBg]}
                 size={24}
             />
         );
     }
 
     return (
-        <View style={style.container}>
-            <ProfilePicture
-                author={author}
-                size={24}
-                showStatus={true}
-                statusSize={12}
-                statusStyle={[style.status, isInfo && style.statusInfo]}
-            />
-        </View>
+        <ProfilePicture
+            author={author}
+            size={24}
+            showStatus={true}
+            statusSize={12}
+            statusStyle={[style.status, onCenterBg && style.statusOnCenterBg]}
+        />
     );
 };
 

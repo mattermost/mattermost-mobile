@@ -10,7 +10,7 @@ import {observeTutorialWatched} from '@queries/app/global';
 import {observeCurrentChannel} from '@queries/servers/channel';
 import {observeCanManageChannelMembers, observePermissionForChannel} from '@queries/servers/role';
 import {observeCurrentChannelId, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
-import {observeCurrentUser, observeTeammateNameDisplay} from '@queries/servers/user';
+import {observeCurrentUser} from '@queries/servers/user';
 
 import ManageChannelMembers from './manage_channel_members';
 
@@ -31,7 +31,6 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         currentUserId: observeCurrentUserId(database),
         currentTeamId: observeCurrentTeamId(database),
         canManageAndRemoveMembers,
-        teammateNameDisplay: observeTeammateNameDisplay(database),
         tutorialWatched: observeTutorialWatched(Tutorial.PROFILE_LONG_PRESS),
         canChangeMemberRoles,
     };

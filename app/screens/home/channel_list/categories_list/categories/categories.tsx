@@ -17,6 +17,7 @@ import CategoryHeader from './header';
 import UnreadCategories from './unreads';
 
 import type CategoryModel from '@typings/database/models/servers/category';
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
     categories: CategoryModel[];
@@ -60,8 +61,8 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
 
     const [initiaLoad, setInitialLoad] = useState(!categoriesToShow.length);
 
-    const onChannelSwitch = useCallback(async (channelId: string) => {
-        switchToChannelById(serverUrl, channelId);
+    const onChannelSwitch = useCallback(async (c: Channel | ChannelModel) => {
+        switchToChannelById(serverUrl, c.id);
     }, [serverUrl]);
 
     const renderCategory = useCallback((data: {item: CategoryModel | 'UNREADS'}) => {

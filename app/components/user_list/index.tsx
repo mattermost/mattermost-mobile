@@ -8,7 +8,6 @@ import {FlatList, Keyboard, ListRenderItemInfo, Platform, SectionList, SectionLi
 import {storeProfile} from '@actions/local/user';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
-import UserListRow from '@components/user_list_row';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -20,6 +19,10 @@ import {
     makeStyleSheetFromTheme,
 } from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import UserListRow from '../user_list_row';
+
+import type UserModel from '@typings/database/models/servers/user';
 
 type UserProfileWithChannelAdmin = UserProfile & {scheme_admin?: boolean}
 type RenderItemType = ListRenderItemInfo<UserProfileWithChannelAdmin> & {section?: SectionListData<UserProfileWithChannelAdmin>}
@@ -149,8 +152,7 @@ type Props = {
     profiles: UserProfile[];
     channelMembers?: ChannelMember[];
     currentUserId: string;
-    teammateNameDisplay: string;
-    handleSelectProfile: (user: UserProfile) => void;
+    handleSelectProfile: (user: UserProfile | UserModel) => void;
     fetchMore: () => void;
     loading: boolean;
     manageMode?: boolean;
@@ -167,7 +169,6 @@ export default function UserList({
     channelMembers,
     selectedIds,
     currentUserId,
-    teammateNameDisplay,
     handleSelectProfile,
     fetchMore,
     loading,
@@ -200,21 +201,29 @@ export default function UserList({
         return createProfilesSections(intl, profiles, channelMembers);
     }, [channelMembers, loading, profiles, term]);
 
-    const openUserProfile = useCallback(async (profile: UserProfile) => {
-        const {user} = await storeProfile(serverUrl, profile);
-        if (user) {
-            const screen = Screens.USER_PROFILE;
-            const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
-            const closeButtonId = 'close-user-profile';
-            const props = {
-                closeButtonId,
-                userId: user.id,
-                location: Screens.USER_PROFILE,
-            };
-
-            Keyboard.dismiss();
-            openAsBottomSheet({screen, title, theme, closeButtonId, props});
+    const openUserProfile = useCallback(async (profile: UserProfile | UserModel) => {
+        let user: UserModel;
+        if ('create_at' in profile) {
+            const res = await storeProfile(serverUrl, profile);
+            if (!res.user) {
+                return;
+            }
+            user = res.user;
+        } else {
+            user = profile;
         }
+
+        const screen = Screens.USER_PROFILE;
+        const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
+        const closeButtonId = 'close-user-profile';
+        const props = {
+            closeButtonId,
+            userId: user.id,
+            location: Screens.USER_PROFILE,
+        };
+
+        Keyboard.dismiss();
+        openAsBottomSheet({screen, title, theme, closeButtonId, props});
     }, []);
 
     const renderItem = useCallback(({item, index, section}: RenderItemType) => {
@@ -239,12 +248,11 @@ export default function UserList({
                 selected={selected}
                 showManageMode={showManageMode}
                 testID='create_direct_message.user_list.user_item'
-                teammateNameDisplay={teammateNameDisplay}
                 tutorialWatched={tutorialWatched}
                 user={item}
             />
         );
-    }, [selectedIds, handleSelectProfile, showManageMode, manageMode, teammateNameDisplay, tutorialWatched]);
+    }, [selectedIds, handleSelectProfile, showManageMode, manageMode, tutorialWatched]);
 
     const renderLoading = useCallback(() => {
         if (!loading) {

@@ -115,7 +115,6 @@ const Header = (props: HeaderProps) => {
                         <CustomStatusEmoji
                             customStatus={customStatus!}
                             style={style.customStatusEmoji}
-                            testID='post_header'
                         />
                     )}
                     {(!isSystemPost || isAutoResponse) &&

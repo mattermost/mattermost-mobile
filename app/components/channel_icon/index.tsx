@@ -16,7 +16,7 @@ type ChannelIconProps = {
     hasDraft?: boolean;
     isActive?: boolean;
     isArchived?: boolean;
-    isInfo?: boolean;
+    onCenterBg?: boolean;
     isUnread?: boolean;
     isMuted?: boolean;
     membersCount?: number;
@@ -43,10 +43,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         iconUnread: {
             color: theme.sidebarUnreadText,
         },
-        iconInfo: {
+        iconOnCenterBg: {
             color: changeOpacity(theme.centerChannelColor, 0.72),
         },
-        iconInfoUnread: {
+        iconUnreadOnCenterBg: {
             color: theme.centerChannelColor,
         },
         groupBox: {
@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         groupBoxUnread: {
             backgroundColor: changeOpacity(theme.sidebarUnreadText, 0.3),
         },
-        groupBoxInfo: {
+        groupBoxOnCenterBg: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.3),
         },
         group: {
@@ -74,10 +74,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         groupUnread: {
             color: theme.sidebarUnreadText,
         },
-        groupInfo: {
+        groupOnCenterBg: {
             color: changeOpacity(theme.centerChannelColor, 0.72),
         },
-        groupInfoUnread: {
+        groupUnreadOnCenterBg: {
             color: theme.centerChannelColor,
         },
         muted: {
@@ -88,7 +88,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const ChannelIcon = ({
     hasDraft = false, isActive = false, isArchived = false,
-    isInfo = false, isUnread = false, isMuted = false,
+    onCenterBg = false, isUnread = false, isMuted = false,
     membersCount = 0, name,
     shared, size = 12, style, testID, type,
 }: ChannelIconProps) => {
@@ -115,10 +115,10 @@ const ChannelIcon = ({
         activeGroup = styles.groupActive;
     }
 
-    if (isInfo) {
-        activeIcon = isUnread && !isMuted ? styles.iconInfoUnread : styles.iconInfo;
-        activeGroupBox = styles.groupBoxInfo;
-        activeGroup = isUnread ? styles.groupInfoUnread : styles.groupInfo;
+    if (onCenterBg) {
+        activeIcon = isUnread && !isMuted ? styles.iconUnreadOnCenterBg : styles.iconOnCenterBg;
+        activeGroupBox = styles.groupBoxOnCenterBg;
+        activeGroup = isUnread ? styles.groupUnreadOnCenterBg : styles.groupOnCenterBg;
     }
 
     if (isMuted) {
@@ -186,7 +186,7 @@ const ChannelIcon = ({
         icon = (
             <DmAvatar
                 channelName={name}
-                isInfo={isInfo}
+                onCenterBg={onCenterBg}
             />
         );
     }

@@ -77,7 +77,6 @@ describe('components/channel_list_row', () => {
                 profiles={[user]}
                 testID='UserListRow'
                 currentUserId={'1'}
-                teammateNameDisplay={'johndoe'}
                 handleSelectProfile={() => {
                     // noop
                 }}
@@ -101,7 +100,6 @@ describe('components/channel_list_row', () => {
                 profiles={[user]}
                 testID='UserListRow'
                 currentUserId={'1'}
-                teammateNameDisplay={'johndoe'}
                 handleSelectProfile={() => {
                     // noop
                 }}
@@ -125,7 +123,6 @@ describe('components/channel_list_row', () => {
                 profiles={[user, user2]}
                 testID='UserListRow'
                 currentUserId={'1'}
-                teammateNameDisplay={'johndoe'}
                 handleSelectProfile={() => {
                     // noop
                 }}
@@ -149,7 +146,6 @@ describe('components/channel_list_row', () => {
                 profiles={[user]}
                 testID='UserListRow'
                 currentUserId={'1'}
-                teammateNameDisplay={'johndoe'}
                 handleSelectProfile={() => {
                     // noop
                 }}

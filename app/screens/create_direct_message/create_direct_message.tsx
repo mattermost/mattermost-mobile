@@ -381,7 +381,6 @@ export default function CreateDirectMessage({
                 profiles={data}
                 selectedIds={selectedIds}
                 showNoResults={!loading && page.current !== -1}
-                teammateNameDisplay={teammateNameDisplay}
                 fetchMore={getProfiles}
                 term={term}
                 testID='create_direct_message.user_list'

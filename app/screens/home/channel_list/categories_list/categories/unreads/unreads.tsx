@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, Text} from 'react-native';
 
@@ -29,10 +29,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         paddingVertical: 8,
         marginTop: 12,
     },
+    container: {
+        paddingHorizontal: 20,
+    },
 }));
 
 type UnreadCategoriesProps = {
-    onChannelSwitch: (channelId: string) => void;
+    onChannelSwitch: (channel: Channel | ChannelModel) => void;
     onlyUnreads: boolean;
     unreadChannels: ChannelModel[];
     unreadThreads: {unreads: boolean; mentions: number};
@@ -52,11 +55,20 @@ const UnreadCategories = ({onChannelSwitch, onlyUnreads, unreadChannels, unreadT
                 channel={item}
                 onPress={onChannelSwitch}
                 testID='channel_list.category.unreads.channel_item'
+                highlightActive={true}
+                highlightState={true}
             />
         );
     }, [onChannelSwitch]);
 
     const showEmptyState = onlyUnreads && !unreadChannels.length;
+    const containerStyle = useMemo(() => {
+        return [
+            styles.container,
+            showEmptyState && !isTablet && styles.empty,
+        ];
+    }, [styles, showEmptyState, isTablet]);
+
     const showTitle = !onlyUnreads || (onlyUnreads && !showEmptyState);
     const EmptyState = showEmptyState && !isTablet ? (
         <Empty onlyUnreads={onlyUnreads}/>
@@ -76,7 +88,7 @@ const UnreadCategories = ({onChannelSwitch, onlyUnreads, unreadChannels, unreadT
             </Text>
             }
             <FlatList
-                contentContainerStyle={showEmptyState && !isTablet && styles.empty}
+                contentContainerStyle={containerStyle}
                 data={unreadChannels}
                 renderItem={renderItem}
                 keyExtractor={extractKey}

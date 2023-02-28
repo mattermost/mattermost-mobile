@@ -74,7 +74,6 @@ const UserProfileCustomStatus = ({customStatus}: Props) => {
                 <CustomStatusEmoji
                     customStatus={customStatus}
                     emojiSize={24}
-                    testID={'user_profile.custom_status_emoji'}
                     style={styles.emoji}
                 />
                 }

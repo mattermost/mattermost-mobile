@@ -19,13 +19,10 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    baseContainer: {
-        marginLeft: -18,
-        marginRight: -20,
-    },
     icon: {
         color: changeOpacity(theme.sidebarText, 0.5),
         fontSize: 24,
+        marginRight: 12,
     },
     iconActive: {
         color: theme.sidebarText,
@@ -41,7 +38,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     currentChannelId: string;
     groupUnreadsSeparately: boolean;
-    isInfo?: boolean;
+    onCenterBg?: boolean;
     onlyUnreads: boolean;
     onPress?: () => void;
     unreadsAndMentions: {
@@ -50,7 +47,7 @@ type Props = {
     };
 };
 
-const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUnreads, onPress, unreadsAndMentions}: Props) => {
+const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, onCenterBg, onlyUnreads, onPress, unreadsAndMentions}: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
@@ -78,7 +75,7 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUn
         const icon = [
             customStyles.icon,
             (isActive || unreads) && customStyles.iconActive,
-            isInfo && customStyles.iconInfo,
+            onCenterBg && customStyles.iconInfo,
         ];
 
         const text = [
@@ -87,16 +84,16 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUn
             styles.text,
             unreads && styles.highlight,
             isActive && styles.textActive,
-            isInfo && styles.textInfo,
+            onCenterBg && styles.textOnCenterBg,
         ];
 
         const badge = [
             styles.badge,
-            isInfo && styles.infoBadge,
+            onCenterBg && styles.badgeOnCenterBg,
         ];
 
         return [container, icon, text, badge];
-    }, [customStyles, isActive, isInfo, styles, unreads]);
+    }, [customStyles, isActive, onCenterBg, styles, unreads]);
 
     if (groupUnreadsSeparately && (onlyUnreads && !isActive && !unreads && !mentions)) {
         return null;
@@ -107,7 +104,7 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUn
             onPress={handlePress}
             testID='channel_list.threads.button'
         >
-            <View style={customStyles.baseContainer}>
+            <View>
                 <View style={containerStyle}>
                     <CompassIcon
                         name='message-text-outline'

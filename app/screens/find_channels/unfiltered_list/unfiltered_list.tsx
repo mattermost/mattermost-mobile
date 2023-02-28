@@ -52,9 +52,9 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, te
     const [sections, setSections] = useState(buildSections(recentChannels));
     const sectionListStyle = useMemo(() => ({paddingBottom: keyboardHeight}), [keyboardHeight]);
 
-    const onPress = useCallback(async (channelId: string) => {
+    const onPress = useCallback(async (c: Channel | ChannelModel) => {
         await close();
-        switchToChannelById(serverUrl, channelId);
+        switchToChannelById(serverUrl, c.id);
     }, [serverUrl, close]);
 
     const renderSectionHeader = useCallback(({section}: SectionListRenderItemInfo<ChannelModel>) => (
@@ -65,9 +65,10 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, te
         return (
             <ChannelItem
                 channel={item}
-                isInfo={true}
                 onPress={onPress}
+                onCenterBg={true}
                 showTeamName={showTeamName}
+                highlightState={true}
                 testID={`${testID}.channel_item`}
             />
         );

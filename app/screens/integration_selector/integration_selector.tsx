@@ -117,7 +117,6 @@ export type Props = {
     isMultiselect?: boolean;
     selected: SelectedDialogValue;
     theme: Theme;
-    teammateNameDisplay: string;
     componentId: AvailableScreens;
 }
 
@@ -164,7 +163,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 function IntegrationSelector(
     {dataSource, data, isMultiselect = false, selected, handleSelect,
-        currentTeamId, currentUserId, componentId, getDynamicOptions, options, teammateNameDisplay}: Props) {
+        currentTeamId, currentUserId, componentId, getDynamicOptions, options}: Props) {
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
@@ -523,7 +522,6 @@ function IntegrationSelector(
                     <ServerUserList
                         currentTeamId={currentTeamId}
                         currentUserId={currentUserId}
-                        teammateNameDisplay={teammateNameDisplay}
                         term={term}
                         tutorialWatched={true}
                         handleSelectProfile={handleSelectProfile}
