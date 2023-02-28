@@ -32,7 +32,10 @@ class SplitViewModule: RCTEventEmitter {
   
   @objc func isRunningInFullScreen() -> Bool {
     guard let w = UIApplication.shared.delegate?.window, let window = w else { return false }
-    return window.frame.equalTo(window.screen.bounds)
+    let screenSize = window.screen.bounds.size.width
+    let frameSize = window.frame.size.width
+    let shouldBeConsideredFullScreen = frameSize >= (screenSize * 0.6)
+    return shouldBeConsideredFullScreen
   }
   
   @objc func isSplitView() {

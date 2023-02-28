@@ -48,6 +48,13 @@ export const observeCurrentUser = (database: Database) => {
     );
 };
 
+export const observeCurrentUserRoles = (database: Database) => {
+    return observeCurrentUser(database).pipe(
+        switchMap((v) => of$(v?.roles)),
+        distinctUntilChanged(),
+    );
+};
+
 export const queryAllUsers = (database: Database) => {
     return database.get<UserModel>(USER).query();
 };

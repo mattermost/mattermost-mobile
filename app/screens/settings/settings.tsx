@@ -6,19 +6,19 @@ import {useIntl} from 'react-intl';
 import {Alert, Platform, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
+import SettingContainer from '@components/settings/container';
+import SettingItem from '@components/settings/item';
 import {Screens} from '@constants';
 import {useServerDisplayName} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, goToScreen, setButtons} from '@screens/navigation';
-import SettingContainer from '@screens/settings/setting_container';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import ReportProblem from './report_problem';
-import SettingItem from './setting_item';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 

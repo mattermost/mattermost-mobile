@@ -4,10 +4,9 @@
 import React from 'react';
 import {useIntl} from 'react-intl';
 
+import SettingOption from '@components/settings/option';
+import SettingSeparator from '@components/settings/separator';
 import {useTheme} from '@context/theme';
-import SettingSeparator from '@screens/settings/settings_separator';
-
-import SettingOption from '../setting_option';
 
 const radioItemProps = {checkedBody: true};
 

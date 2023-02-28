@@ -316,7 +316,7 @@ export function filterProfilesMatchingTerm(users: UserProfile[], term: string): 
     });
 }
 
-export function getNotificationProps(user: UserModel) {
+export function getNotificationProps(user?: UserModel) {
     if (user && user.notifyProps) {
         return user.notifyProps;
     }
