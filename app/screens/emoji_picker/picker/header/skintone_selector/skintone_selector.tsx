@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Platform, StyleSheet} from 'react-native';
+import {InteractionManager, Platform, StyleSheet} from 'react-native';
 import Animated, {
     EntryAnimationsValues, ExitAnimationsValues, FadeIn, FadeOut,
     SharedValue, useAnimatedStyle, withDelay, withTiming,
@@ -125,13 +125,11 @@ const SkinToneSelector = ({skinTone = 'default', containerWidth, isSearching, tu
     }, []);
 
     useEffect(() => {
-        const t = setTimeout(() => {
+        InteractionManager.runAfterInteractions(() => {
             if (!tutorialWatched) {
                 setTooltipVisible(true);
             }
-        }, 750);
-
-        return () => clearTimeout(t);
+        });
     }, []);
 
     return (

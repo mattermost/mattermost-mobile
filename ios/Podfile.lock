@@ -409,7 +409,7 @@ PODS:
     - react-native-video/Video (= 5.2.1)
   - react-native-video/Video (5.2.1):
     - React-Core
-  - react-native-webrtc (106.0.5):
+  - react-native-webrtc (106.0.6):
     - JitsiWebRTC (~> 106.0.0)
     - React-Core
   - react-native-webview (11.26.1):
@@ -983,7 +983,7 @@ SPEC CHECKSUMS:
   react-native-safe-area-context: 39c2d8be3328df5d437ac1700f4f3a4f75716acc
   react-native-turbo-mailer: dec932ffe8c20dfd22b43c23ee5890ceea909620
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
-  react-native-webrtc: ef315d8adb68e78298b22100377d12ef168efdb5
+  react-native-webrtc: 22ac6c64a1e38552bb173dde81ffea6979a58ef3
   react-native-webview: 9f111dfbcfc826084d6c507f569e5e03342ee1c1
   React-perflogger: af8a3d31546077f42d729b949925cc4549f14def
   React-RCTActionSheet: 57cc5adfefbaaf0aae2cf7e10bccd746f2903673

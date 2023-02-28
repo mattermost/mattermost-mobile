@@ -70,7 +70,7 @@ extension Network {
     }
     
     public func fetchUserProfilePicture(userId: String, lastUpdateAt: Double, forServerUrl serverUrl: String, completionHandler: @escaping ResponseHandler) {
-        let endpoint = "/users/\(userId)/image?lastPictureUpdate=\(lastUpdateAt)"
+        let endpoint = "/users/\(userId)/image?lastPictureUpdate=\(Int64(lastUpdateAt))"
         let url = buildApiUrl(serverUrl, endpoint)
         
         return request(url, usingMethod: "GET", forServerUrl: serverUrl, completionHandler: completionHandler)

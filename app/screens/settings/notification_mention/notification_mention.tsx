@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import SettingContainer from '../setting_container';
+import SettingContainer from '@components/settings/container';
 
 import MentionSettings from './mention_settings';
 

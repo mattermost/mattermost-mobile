@@ -415,7 +415,6 @@
     "login.signIn": "Войти",
     "login.invalid_credentials": "Неверная комбинация электронной почты и пароля",
     "login.forgot": "Забыли пароль?",
-    "mobile.login_options.sso_continue": "Продолжить",
     "mobile.login_options.separator_text": "или войти в систему с помощью",
     "mobile.login_options.select_option": "Выберите вариант входа в систему ниже.",
     "mobile.login_options.saml": "SAML",

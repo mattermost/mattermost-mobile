@@ -703,7 +703,6 @@
     "mobile.no_results_with_term": "Aucun résultat pour \"{term}\"",
     "mobile.no_results_with_term.messages": "Aucun résultat trouvé pour \"{term}\"",
     "mobile.no_results_with_term.files": "Aucun fichier correspondant à \"{term}\"",
-    "mobile.login_options.sso_continue": "Poursuivre avec",
     "mobile.login_options.separator_text": "ou connectez-vous avec",
     "mobile.login_options.select_option": "Sélectionnez une option de connexion ci-dessous.",
     "mobile.login_options.saml": "SAML",
