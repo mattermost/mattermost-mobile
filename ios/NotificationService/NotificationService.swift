@@ -83,8 +83,9 @@ class NotificationService: UNNotificationServiceExtension {
 
       let isCRTEnabled = notification.userInfo["is_crt_enabled"] as? Bool ?? false
       let rootId = notification.userInfo["root_id"] as? String ?? ""
-      let channelName = notification.userInfo["channel_name"] as? String ?? ""
-      let message = (notification.userInfo["message"] as? String ?? "")
+      let senderName = notification.userInfo["sender_name"] as? String
+      let channelName = notification.userInfo["channel_name"] as? String
+      var message = (notification.userInfo["message"] as? String ?? "")
       let overrideUsername = notification.userInfo["override_username"] as? String
       let senderId = notification.userInfo["sender_id"] as? String
       let senderIdentifier = overrideUsername ?? senderId
@@ -94,11 +95,18 @@ class NotificationService: UNNotificationServiceExtension {
       if isCRTEnabled && !rootId.isEmpty {
         conversationId = rootId
       }
+      
+      if channelName == nil && message == "",
+         let senderName = senderName,
+         let body = bestAttemptContent?.body {
+        message = body.replacingOccurrences(of: "\(senderName) ", with: "")
+        bestAttemptContent?.body = message
+      }
 
       let handle = INPersonHandle(value: senderIdentifier, type: .unknown)
       let sender = INPerson(personHandle: handle,
                             nameComponents: nil,
-                            displayName: channelName,
+                            displayName: channelName ?? senderName,
                             image: avatar,
                             contactIdentifier: nil,
                             customIdentifier: nil)
