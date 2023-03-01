@@ -42,6 +42,7 @@ function setup() {
         npm run clean || exit 1
         npm install --ignore-scripts || exit 1
         npx patch-package || exit 1
+        node node_modules/react-native-webrtc/tools/downloadWebRTC.js || exit 1
 
         if [[ "$1" == "ios"* ]]; then
           echo "Installing Gems"

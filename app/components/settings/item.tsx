@@ -7,11 +7,12 @@ import {Platform} from 'react-native';
 
 import OptionItem, {OptionItemProps} from '@components/option_item';
 import {useTheme} from '@context/theme';
-import SettingSeparator from '@screens/settings/settings_separator';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Options, {DisplayOptionConfig, NotificationsOptionConfig, SettingOptionConfig} from './config';
+import Options, {DisplayOptionConfig, NotificationsOptionConfig, SettingOptionConfig} from '../../screens/settings/config';
+
+import SettingSeparator from './separator';
 
 type SettingsConfig = keyof typeof SettingOptionConfig | keyof typeof NotificationsOptionConfig| keyof typeof DisplayOptionConfig
 type SettingOptionProps = {
