@@ -28,6 +28,7 @@ type AtMentionItemProps = {
     onUserPress?: (user: UserProfile | UserModel) => void;
     onUserLongPress?: (user: UserProfile | UserModel) => void;
     disabled?: boolean;
+    viewRef?: React.LegacyRef<View>;
 }
 
 const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
@@ -79,6 +80,7 @@ const UserItem = ({
     onUserPress,
     onUserLongPress,
     disabled = false,
+    viewRef,
 }: AtMentionItemProps) => {
     const theme = useTheme();
     const style = getThemedStyles(theme);
@@ -126,6 +128,7 @@ const UserItem = ({
             disabled={!(onUserPress || onUserLongPress)}
         >
             <View
+                ref={viewRef}
                 style={containerStyle}
                 testID={userItemTestId}
             >

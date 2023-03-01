@@ -188,6 +188,7 @@ function UserListRow({
                 testID={userItemTestID}
                 rightDecorator={manageMode ? manageModeIcon : icon}
                 disabled={!(selectable || selected || !disabled)}
+                viewRef={viewRef}
             />
             {showTutorial &&
             <TutorialHighlight

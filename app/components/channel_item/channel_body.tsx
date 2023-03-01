@@ -71,20 +71,25 @@ export const ChannelBody = ({
         const teamText = (
             <Text
                 ellipsizeMode='tail'
-                numberOfLines={1}
+                numberOfLines={isTablet ? undefined : 1} // Handled by the parent text on tablets
                 style={[styles.teamName, isMuted && styles.teamNameMuted, styles.flex]}
                 testID={`${testId}.team_display_name`}
             >
-                {teamDisplayName}
+                {` ${teamDisplayName}`}
             </Text>
         );
 
         if (isTablet) {
             return (
-                <>
-                    {channelText}
+                <Text
+                    ellipsizeMode='tail'
+                    numberOfLines={1}
+                    style={[textStyles, styles.flex]}
+                    testID={`${testId}.display_name`}
+                >
+                    {displayName}
                     {teamText}
-                </>
+                </Text>
             );
         }
 
