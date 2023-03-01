@@ -47,6 +47,7 @@ class ServerScreen {
         await this.serverUrlInput.replaceText(serverUrl);
         await this.serverUrlInput.tapReturnKey();
         await this.serverDisplayNameInput.replaceText(serverDisplayName);
+        await this.serverUrlInput.tapReturnKey();
         await this.tapConnectButton();
     };
 
