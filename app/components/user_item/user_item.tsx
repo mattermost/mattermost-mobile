@@ -5,13 +5,14 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
 
+import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {displayUsername, getUserCustomStatus, isBot, isCustomStatusExpired, isGuest} from '@utils/user';
+import {displayUsername, getUserCustomStatus, isBot, isCustomStatusExpired, isGuest, isShared} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -59,7 +60,7 @@ const nonThemedStyles = StyleSheet.create({
         marginRight: 12,
     },
     tag: {
-        marginRight: 6,
+        marginLeft: 6,
     },
     flex: {
         flex: 1,
@@ -85,8 +86,7 @@ const UserItem = ({
 
     const bot = user ? isBot(user) : false;
     const guest = user ? isGuest(user.roles) : false;
-
-    //const shared = user ? isShared(user) : false;
+    const shared = user ? isShared(user) : false;
 
     const isCurrentUser = currentUserId === user?.id;
     const customStatus = getUserCustomStatus(user);
@@ -113,11 +113,11 @@ const UserItem = ({
 
     const onPress = useCallback(() => {
         onUserPress?.(user);
-    }, [user]);
+    }, [user, onUserPress]);
 
     const onLongPress = useCallback(() => {
         onUserLongPress?.(user);
-    }, [user]);
+    }, [user, onUserLongPress]);
 
     return (
         <TouchableOpacity
@@ -136,18 +136,7 @@ const UserItem = ({
                     testID={`${userItemTestId}.profile_picture`}
                     containerStyle={nonThemedStyles.profile}
                 />
-                {showBadges && bot && (
-                    <BotTag
-                        testID={`${userItemTestId}.bot.tag`}
-                        style={nonThemedStyles.tag}
-                    />
-                )}
-                {showBadges && guest && (
-                    <GuestTag
-                        testID={`${userItemTestId}.guest.tag`}
-                        style={nonThemedStyles.tag}
-                    />
-                )}
+
                 <Text
                     style={style.rowFullname}
                     numberOfLines={1}
@@ -171,9 +160,29 @@ const UserItem = ({
                         </Text>
                     )}
                 </Text>
+                {showBadges && bot && (
+                    <BotTag
+                        testID={`${userItemTestId}.bot.tag`}
+                        style={nonThemedStyles.tag}
+                    />
+                )}
+                {showBadges && guest && (
+                    <GuestTag
+                        testID={`${userItemTestId}.guest.tag`}
+                        style={nonThemedStyles.tag}
+                    />
+                )}
                 {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji && !customStatusExpired) && (
                     <CustomStatusEmoji
                         customStatus={customStatus!}
+                        style={nonThemedStyles.icon}
+                    />
+                )}
+                {shared && (
+                    <CompassIcon
+                        name={'circle-multiple-outline'}
+                        size={16}
+                        color={theme.centerChannelColor}
                         style={nonThemedStyles.icon}
                     />
                 )}

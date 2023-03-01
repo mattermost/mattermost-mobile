@@ -45,11 +45,13 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         selector: {
             alignItems: 'center',
             justifyContent: 'center',
+            marginLeft: 12,
         },
         selectorManage: {
             alignItems: 'center',
             flexDirection: 'row',
             justifyContent: 'center',
+            marginLeft: 12,
         },
         manageText: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -158,7 +160,7 @@ function UserListRow({
     }, []);
 
     const icon = useMemo(() => {
-        if (!selectable) {
+        if (!selectable && !selected) {
             return null;
         }
 
