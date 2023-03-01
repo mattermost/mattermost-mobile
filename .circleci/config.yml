@@ -9,6 +9,8 @@ executors:
       resource_class:
         default: large
         type: string
+    GRADLE_OPTS: -XX:MaxRAMPercentage=90.0
+    _JAVA_OPTIONS: -Xmx3g
     environment:
       NODE_OPTIONS: --max_old_space_size=12000
       NODE_ENV: production
