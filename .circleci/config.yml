@@ -13,7 +13,7 @@ executors:
       NODE_OPTIONS: --max_old_space_size=12000
       NODE_ENV: production
       BABEL_ENV: production
-      GRADLE_OPTS: -XX:MaxRAMPercentage=90.0
+      GRADLE_OPTS: -Dorg.gradle.daemon=false -Dorg.gradle.workers.max=2 -XX:MaxRAMPercentage=90.0 
       _JAVA_OPTIONS: -Xmx3g
     docker:
       - image: cimg/android:2022.09.2-node
