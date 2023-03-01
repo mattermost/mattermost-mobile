@@ -68,6 +68,7 @@ exports[`components/channel_list_row should show no results 1`] = `
     {
       "backgroundColor": "#ffffff",
       "flex": 1,
+      "paddingHorizontal": 16,
     }
   }
   testID="UserListRow.section_list"
@@ -221,6 +222,7 @@ exports[`components/channel_list_row should show no results 1`] = `
               {
                 "alignItems": "center",
                 "justifyContent": "center",
+                "marginLeft": 12,
               }
             }
           >
@@ -328,6 +330,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
     {
       "backgroundColor": "#ffffff",
       "flex": 1,
+      "paddingHorizontal": 16,
     }
   }
   testID="UserListRow.section_list"
@@ -481,6 +484,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
               {
                 "alignItems": "center",
                 "justifyContent": "center",
+                "marginLeft": 12,
               }
             }
           >
@@ -668,6 +672,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
     {
       "backgroundColor": "#ffffff",
       "flex": 1,
+      "paddingHorizontal": 16,
     }
   }
   testID="UserListRow.section_list"
@@ -821,6 +826,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
               {
                 "alignItems": "center",
                 "justifyContent": "center",
+                "marginLeft": 12,
               }
             }
           >
@@ -960,6 +966,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
     {
       "backgroundColor": "#ffffff",
       "flex": 1,
+      "paddingHorizontal": 16,
     }
   }
   testID="UserListRow.section_list"
@@ -1113,6 +1120,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               {
                 "alignItems": "center",
                 "justifyContent": "center",
+                "marginLeft": 12,
               }
             }
           >
@@ -1278,6 +1286,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               {
                 "alignItems": "center",
                 "justifyContent": "center",
+                "marginLeft": 12,
               }
             }
           >
