@@ -34,7 +34,7 @@ public class Credentials {
                     String service = map.getString("service");
                     assert service != null;
                     if (service.isEmpty()) {
-                        String[] credentials = token[0].split(",[ ]*");
+                        String[] credentials = token[0].split(", *");
                         if (credentials.length == 2) {
                             token[0] = credentials[0];
                         }

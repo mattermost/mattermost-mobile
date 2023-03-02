@@ -2,6 +2,7 @@ package com.mattermost.helpers;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.ReadableArray;
+import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.ReadableType;
 import com.facebook.react.bridge.WritableArray;
 
@@ -109,7 +110,9 @@ public class ReadableArrayUtils {
                 writableArray.pushString((String) value);
             } else if (value instanceof Map) {
                 writableArray.pushMap(ReadableMapUtils.toWritableMap((Map<String, Object>) value));
-            } else if (value.getClass().isArray()) {
+            } else if (value instanceof ReadableMap) {
+                writableArray.pushMap((ReadableMap) value);
+            }else if (value.getClass().isArray()) {
                 writableArray.pushArray(ReadableArrayUtils.toWritableArray((Object[]) value));
             }
         }

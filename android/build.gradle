@@ -7,9 +7,9 @@ buildscript {
         compileSdkVersion = 33
         targetSdkVersion = 33
         supportLibVersion = "33.0.0"
-        kotlinVersion = "1.5.30"
-        kotlin_version = "1.5.30"
-        firebaseVersion = "21.0.0"
+        kotlinVersion = "1.7.21"
+        kotlin_version = "1.7.21"
+        firebaseVersion = "23.1.1"
         RNNKotlinVersion = kotlinVersion
 
         // We use NDK 23 which has both M1 support and is the side-by-side NDK version from AGP.
@@ -23,7 +23,7 @@ buildscript {
     dependencies {
         classpath("com.android.tools.build:gradle:7.3.1")
         classpath("com.facebook.react:react-native-gradle-plugin")
-        classpath('com.google.gms:google-services:4.3.14')
+        classpath('com.google.gms:google-services:4.3.15')
         classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:$kotlinVersion")
 
         // NOTE: Do not place your application dependencies here; they belong

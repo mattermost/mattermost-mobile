@@ -79,7 +79,7 @@ const ServerHeader = ({additionalServer, theme}: Props) => {
             }
             {title}
             <FormattedText
-                defaultMessage="A Server is your team's communication hub which is accessed through a unique URL"
+                defaultMessage="A server is your team's communication hub accessed using a unique URL"
                 id='mobile.components.select_server_view.msg_description'
                 style={styles.description}
                 testID='server_header.description'

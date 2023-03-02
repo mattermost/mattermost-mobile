@@ -200,7 +200,7 @@ export function doesMatchNamedEmoji(emojiName: string) {
     return false;
 }
 
-export const getEmojiFirstAlias = (emoji: string) => {
+export const getEmojiFirstAlias = (emoji: string): string => {
     return getEmojiByName(emoji, [])?.short_names?.[0] || emoji;
 };
 

@@ -7,6 +7,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {sanitizeLikeString} from '@helpers/database';
 
 import {queryDisplayNamePreferences} from './preference';
 import {observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense, observeConfigValue} from './system';
@@ -44,6 +45,13 @@ export const getCurrentUser = async (database: Database) => {
 export const observeCurrentUser = (database: Database) => {
     return observeCurrentUserId(database).pipe(
         switchMap((id) => observeUser(database, id)),
+    );
+};
+
+export const observeCurrentUserRoles = (database: Database) => {
+    return observeCurrentUser(database).pipe(
+        switchMap((v) => of$(v?.roles)),
+        distinctUntilChanged(),
     );
 };
 
@@ -86,7 +94,7 @@ export async function getTeammateNameDisplay(database: Database) {
 export const queryUsersLike = (database: Database, likeUsername: string) => {
     return database.get<UserModel>(USER).query(
         Q.where('username', Q.like(
-            `%${Q.sanitizeLikeString(likeUsername)}%`,
+            `%${sanitizeLikeString(likeUsername)}%`,
         )),
     );
 };

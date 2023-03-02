@@ -24,7 +24,7 @@ import {
     ServerScreen,
     ThreadScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Messaging - Message Draft', () => {
@@ -60,7 +60,11 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.postInput.replaceText(message);
 
         // * Verify message exists in post draft and is not yet added to post list
-        await expect(ChannelScreen.postInput).toHaveValue(message);
+        if (isIos()) {
+            await expect(ChannelScreen.postInput).toHaveValue(message);
+        } else {
+            await expect(ChannelScreen.postInput).toHaveText(message);
+        }
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem} = ChannelScreen.getPostListPostItem(post.id, message);
         await expect(postListPostItem).not.toExist();
@@ -72,7 +76,11 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.open(channelsCategory, testChannel.name);
 
         // * Verify message draft still exists in post draft
-        await expect(ChannelScreen.postInput).toHaveValue(message);
+        if (isIos()) {
+            await expect(ChannelScreen.postInput).toHaveValue(message);
+        } else {
+            await expect(ChannelScreen.postInput).toHaveText(message);
+        }
 
         // # Clear post draft and go back to channel list screen
         await ChannelScreen.postInput.clearText();
@@ -87,14 +95,22 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.postInput.replaceText(message);
 
         // * Verify message draft exists in post draft
-        await expect(ChannelScreen.postInput).toHaveValue(message);
+        if (isIos()) {
+            await expect(ChannelScreen.postInput).toHaveValue(message);
+        } else {
+            await expect(ChannelScreen.postInput).toHaveText(message);
+        }
 
         // # Send app to home and re-open
         await device.sendToHome();
         await device.launchApp({newInstance: false});
 
         // * Verify message draft still exists in post draft
-        await expect(ChannelScreen.postInput).toHaveValue(message);
+        if (isIos()) {
+            await expect(ChannelScreen.postInput).toHaveValue(message);
+        } else {
+            await expect(ChannelScreen.postInput).toHaveText(message);
+        }
 
         // # Clear post draft and go back to channel list screen
         await ChannelScreen.postInput.clearText();
@@ -128,7 +144,7 @@ describe('Messaging - Message Draft', () => {
         await ChannelScreen.back();
     });
 
-    it('MM-T4781_4 - should be able to create a message draft from reply thread', async () => {
+    it('MM-T4781_4 - should be able to create a message draft from reply thread -- KNOWN ISSUE: MM-50298', async () => {
         // # Open a channel screen, post a message, and tap on the post to open reply thread
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open(channelsCategory, testChannel.name);
@@ -146,7 +162,11 @@ describe('Messaging - Message Draft', () => {
         await ThreadScreen.postInput.replaceText(replyMessage);
 
         // * Verify reply message exists in post draft and is not yet added to post list
-        await expect(ThreadScreen.postInput).toHaveValue(replyMessage);
+        if (isIos()) {
+            await expect(ThreadScreen.postInput).toHaveValue(replyMessage);
+        } else {
+            await expect(ThreadScreen.postInput).toHaveText(replyMessage);
+        }
         const {post} = await Post.apiGetLastPostInChannel(siteOneUrl, testChannel.id);
         const {postListPostItem: replyPostListPostItem} = ThreadScreen.getPostListPostItem(post.id, replyMessage);
         await expect(replyPostListPostItem).not.toExist();
@@ -156,7 +176,11 @@ describe('Messaging - Message Draft', () => {
         await parentPostListPostItem.tap();
 
         // * Verify reply message draft still exists in post draft
-        await expect(ThreadScreen.postInput).toHaveValue(replyMessage);
+        if (isIos()) {
+            await expect(ThreadScreen.postInput).toHaveValue(replyMessage);
+        } else {
+            await expect(ThreadScreen.postInput).toHaveText(replyMessage);
+        }
 
         // # Clear reply post draft and go back to channel list screen
         await ThreadScreen.postInput.clearText();

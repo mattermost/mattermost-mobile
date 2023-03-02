@@ -1,7 +1,6 @@
 package com.mattermost.rnbeta;
 
 import android.app.Notification;
-import android.app.NotificationManager;
 import android.content.Context;
 import android.os.Bundle;
 import android.service.notification.StatusBarNotification;

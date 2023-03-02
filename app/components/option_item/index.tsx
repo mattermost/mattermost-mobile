@@ -177,10 +177,12 @@ const OptionItem = ({
             />
         );
     } else if (type === OptionType.RADIO) {
+        const radioComponentTestId = selected ? `${testID}.selected` : `${testID}.not_selected`;
         radioComponent = (
             <RadioItem
                 selected={Boolean(selected)}
                 {...radioItemProps}
+                testID={radioComponentTestId}
             />
         );
     } else if (type === OptionType.TOGGLE) {

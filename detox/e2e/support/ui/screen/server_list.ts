@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ServerListScreen {
@@ -53,7 +53,9 @@ class ServerListScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            await waitFor(this.serverListScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        }
 
         return this.serverListScreen;
     };
@@ -66,15 +68,26 @@ class ServerListScreen {
     };
 
     close = async () => {
-        await this.serverListScreen.swipe('down');
+        if (isIos()) {
+            await this.serverListScreen.swipe('down');
+        } else {
+            await device.pressBack();
+        }
+        await wait(timeouts.ONE_SEC);
         await expect(this.serverListScreen).not.toBeVisible();
         await wait(timeouts.ONE_SEC);
     };
 
     closeTutorial = async () => {
-        await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
-        await this.tutorialSwipeLeft.tap();
-        await expect(this.tutorialHighlight).not.toExist();
+        if (isIos()) {
+            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
+            await this.tutorialSwipeLeft.tap();
+            await expect(this.tutorialHighlight).not.toExist();
+        } else {
+            await wait(timeouts.ONE_SEC);
+            await device.pressBack();
+            await wait(timeouts.ONE_SEC);
+        }
     };
 }
 

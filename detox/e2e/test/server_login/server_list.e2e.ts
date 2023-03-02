@@ -258,7 +258,7 @@ describe('Server Login - Server List', () => {
         await expect(ServerScreen.headerTitleAddServer).toBeVisible();
         await ServerScreen.serverUrlInput.replaceText(serverTwoUrl);
         await ServerScreen.serverDisplayNameInput.replaceText(serverTwoDisplayName);
-        await ServerScreen.connectButton.tap();
+        await ServerScreen.tapConnectButton();
 
         // * Verify same name server error
         const sameNameServerError = 'You are using this name for another server.';
@@ -267,7 +267,7 @@ describe('Server Login - Server List', () => {
         // # Attempt to add a server already logged in and with active session, with the same server display name
         await ServerScreen.serverUrlInput.replaceText(serverOneUrl);
         await ServerScreen.serverDisplayNameInput.replaceText(serverOneDisplayName);
-        await ServerScreen.connectButton.tap();
+        await ServerScreen.tapConnectButton();
 
         // * Verify same name server error
         await expect(ServerScreen.serverDisplayNameInputError).toHaveText(sameNameServerError);

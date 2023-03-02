@@ -14,7 +14,7 @@ import {Screens} from '@constants';
 import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
-import {useAppState, useIsTablet} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useKeyboardTrackingPaused} from '@hooks/keyboard_tracking';
 import {useTeamSwitch} from '@hooks/team_switch';
@@ -35,6 +35,7 @@ type ChannelProps = {
     isInACall: boolean;
     isInCurrentChannelCall: boolean;
     isCallsEnabledInChannel: boolean;
+    isTabletView?: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -54,8 +55,8 @@ const Channel = ({
     isInACall,
     isInCurrentChannelCall,
     isCallsEnabledInChannel,
+    isTabletView,
 }: ChannelProps) => {
-    const appState = useAppState();
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const [shouldRenderPosts, setShouldRenderPosts] = useState(false);
@@ -125,13 +126,13 @@ const Channel = ({
                     channelId={channelId}
                     componentId={componentId}
                     callsEnabledInChannel={isCallsEnabledInChannel}
+                    isTabletView={isTabletView}
                 />
                 {shouldRender &&
                 <>
                     <View style={[styles.flex, {marginTop}]}>
                         <ChannelPostList
                             channelId={channelId}
-                            forceQueryAfterAppState={appState}
                             nativeID={channelId}
                             currentCallBarVisible={isInACall}
                             joinCallBannerVisible={showJoinCallBanner}

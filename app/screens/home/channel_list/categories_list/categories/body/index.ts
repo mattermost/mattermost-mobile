@@ -11,7 +11,7 @@ import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
 import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
 import {observeChannelsByCategoryChannelSortOrder, observeChannelsByLastPostAtInCategory} from '@queries/servers/categories';
-import {observeNotifyPropsByChannels, queryChannelsByNames, queryEmptyDirectAndGroupChannels} from '@queries/servers/channel';
+import {observeArchivedDirectChannels, observeNotifyPropsByChannels, queryChannelsByNames, queryEmptyDirectAndGroupChannels} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeCurrentUserId, observeLastUnreadChannelId} from '@queries/servers/system';
 import {getDirectChannelName} from '@utils/channel';
@@ -112,19 +112,8 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         switchMap(mapChannelIds),
     );
 
-    const hiddenChannelIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.GROUP_CHANNEL_SHOW, undefined, 'false').
-        observeWithColumns(['value']).pipe(
-            switchMap(mapPrefName),
-            combineLatestWith(hiddenDmIds, emptyDmIds),
-            switchMap(([hIds, hDmIds, eDmIds]) => {
-                return of$(new Set(hIds.concat(hDmIds, eDmIds)));
-            }),
-        );
-
-    const sortedChannels = hiddenChannelIds.pipe(
-        switchMap((excludeIds) => observeSortedChannels(database, category, Array.from(excludeIds), locale)),
-        combineLatestWith(currentChannelId),
-        map(([channels, ccId]) => filterArchived(channels, ccId)),
+    const archivedDmIds = observeArchivedDirectChannels(database, currentUserId).pipe(
+        switchMap(mapChannelIds),
     );
 
     let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
@@ -144,6 +133,25 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
         );
 
     const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);
+
+    const hiddenChannelIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.GROUP_CHANNEL_SHOW, undefined, 'false').
+        observeWithColumns(['value']).pipe(
+            switchMap(mapPrefName),
+            combineLatestWith(hiddenDmIds, emptyDmIds, archivedDmIds, lastUnreadId),
+            switchMap(([hIds, hDmIds, eDmIds, aDmIds, excludeId]) => {
+                const hidden = new Set(hIds.concat(hDmIds, eDmIds, aDmIds));
+                if (excludeId) {
+                    hidden.delete(excludeId);
+                }
+                return of$(hidden);
+            }),
+        );
+    const sortedChannels = hiddenChannelIds.pipe(
+        switchMap((excludeIds) => observeSortedChannels(database, category, Array.from(excludeIds), locale)),
+        combineLatestWith(currentChannelId),
+        map(([channels, ccId]) => filterArchived(channels, ccId)),
+    );
+
     const unreadChannels = category.myChannels.observeWithColumns(['mentions_count', 'is_unread']);
     const notifyProps = unreadChannels.pipe(switchMap((myChannels) => observeNotifyPropsByChannels(database, myChannels)));
     const unreadIds = unreadChannels.pipe(

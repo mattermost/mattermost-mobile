@@ -69,6 +69,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         // * Verify favorited toast message appears
         await wait(timeouts.ONE_SEC);
         await expect(ChannelScreen.toastMessage).toHaveText('This channel was favorited');
+        await waitFor(ChannelScreen.toastMessage).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -85,6 +86,7 @@ describe('Channels - Favorite and Unfavorite Channel', () => {
         // * Verify unfavorited toast message appears
         await wait(timeouts.ONE_SEC);
         await expect(ChannelScreen.toastMessage).toHaveText('This channel was unfavorited');
+        await waitFor(ChannelScreen.toastMessage).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();

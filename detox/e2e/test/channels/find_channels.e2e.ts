@@ -25,6 +25,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Find Channels', () => {
@@ -73,6 +74,7 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.searchInput.replaceText(testChannel.name);
 
         // * Verify search returns the target public channel item
+        await wait(timeouts.ONE_SEC);
         await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(testChannel.name)).toHaveText(testChannel.display_name);
 
         // # Tap on the target public channel item
@@ -94,6 +96,7 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.searchInput.replaceText(searchTerm);
 
         // * Verify empty search state for find channels
+        await wait(timeouts.ONE_SEC);
         await expect(element(by.text(`No matches found for “${searchTerm}”`))).toBeVisible();
         await expect(element(by.text('Check the spelling or try another search.'))).toBeVisible();
 
@@ -113,12 +116,14 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.searchInput.replaceText(testOtherUser1.username);
 
         // * Verify search returns the target direct message channel item
+        await wait(timeouts.ONE_SEC);
         await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(directMessageChannel.name)).toHaveText(testOtherUser1.username);
 
         // # Search for the group message channel
         await FindChannelsScreen.searchInput.replaceText(testOtherUser2.username);
 
         // * Verify search returns the target group message channel item
+        await wait(timeouts.ONE_SEC);
         await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(groupMessageChannel.name)).toHaveText(`${testOtherUser1.username}, ${testOtherUser2.username}, sysadmin`);
 
         // # Go back to channel list screen
@@ -134,6 +139,7 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.searchInput.replaceText(archivedChannel.name);
 
         // * Verify search returns the target archived channel item
+        await wait(timeouts.ONE_SEC);
         await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(archivedChannel.name)).toHaveText(archivedChannel.display_name);
 
         // # Go back to channel list screen
@@ -149,12 +155,14 @@ describe('Channels - Find Channels', () => {
         await FindChannelsScreen.searchInput.replaceText(joinedPrivateChannel.name);
 
         // * Verify search returns the target joined private channel item
+        await wait(timeouts.ONE_SEC);
         await expect(FindChannelsScreen.getFilteredChannelItemDisplayName(joinedPrivateChannel.name)).toHaveText(joinedPrivateChannel.display_name);
 
         // # Search for an unjoined private channel
         await FindChannelsScreen.searchInput.replaceText(unjoinedPrivateChannel.name);
 
         // * Verify empty search state for find channels
+        await wait(timeouts.ONE_SEC);
         await expect(element(by.text(`No matches found for “${unjoinedPrivateChannel.name}”`))).toBeVisible();
 
         // # Go back to channel list screen

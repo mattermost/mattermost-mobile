@@ -37,6 +37,8 @@ export const convertToNotificationData = (notification: Notification, tapped = t
             type: payload.type,
             use_user_icon: payload.use_user_icon,
             version: payload.version,
+            isCRTEnabled: typeof payload.is_crt_enabled === 'string' ? payload.is_crt_enabled === 'true' : Boolean(payload.is_crt_enabled),
+            data: payload.data,
         },
         userInteraction: tapped,
         foreground: false,
@@ -45,7 +47,7 @@ export const convertToNotificationData = (notification: Notification, tapped = t
     return notificationData;
 };
 
-export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel') => {
+export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel' | 'Connection' | 'Post') => {
     const title = intl.formatMessage({id: 'notification.message_not_found', defaultMessage: 'Message not found'});
     let message;
     switch (type) {
@@ -61,13 +63,25 @@ export const notificationError = (intl: IntlShape, type: 'Team' | 'Channel') => 
                 defaultMessage: 'This message belongs to a team where you are not a member.',
             });
             break;
+        case 'Post':
+            message = intl.formatMessage({
+                id: 'notification.no_post',
+                defaultMessage: 'The message has not been found.',
+            });
+            break;
+        case 'Connection':
+            message = intl.formatMessage({
+                id: 'notification.no_connection',
+                defaultMessage: 'The server is unreachable and we were not able to retrieve the notification channel / team.',
+            });
+            break;
     }
 
     Alert.alert(title, message);
     popToRoot();
 };
 
-export const emitNotificationError = (type: 'Team' | 'Channel') => {
+export const emitNotificationError = (type: 'Team' | 'Channel' | 'Post' | 'Connection') => {
     const req = setTimeout(() => {
         DeviceEventEmitter.emit(Events.NOTIFICATION_ERROR, type);
         clearTimeout(req);

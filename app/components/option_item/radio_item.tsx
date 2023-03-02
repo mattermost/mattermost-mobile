@@ -38,8 +38,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 export type RadioItemProps = {
     selected: boolean;
     checkedBody?: boolean;
+    testID?: string;
 }
-const RadioItem = ({selected, checkedBody}: RadioItemProps) => {
+const RadioItem = ({selected, checkedBody, testID}: RadioItemProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -60,7 +61,10 @@ const RadioItem = ({selected, checkedBody}: RadioItemProps) => {
     }, [checkedBody]);
 
     return (
-        <View style={[styles.ring, !selected && styles.inActive]}>
+        <View
+            style={[styles.ring, !selected && styles.inActive]}
+            testID={testID}
+        >
             {selected && getBody()}
         </View>
     );

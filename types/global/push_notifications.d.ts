@@ -39,6 +39,20 @@ interface NotificationData {
     use_user_icon?: string;
     userInfo?: NotificationUserInfo;
     version: string;
+    isCRTEnabled: boolean;
+    data?: NotificationExtraData;
+}
+
+interface NotificationExtraData {
+    channel?: Channel;
+    myChannel?: ChannelMembership;
+    categories?: CategoriesWithOrder;
+    categoryChannels?: CategoryChannel[];
+    team?: Team;
+    myTeam?: TeamMembership;
+    users?: UserProfile[];
+    posts?: PostResponse;
+    threads?: Thread[];
 }
 
 interface NotificationWithData extends Notification {

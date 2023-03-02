@@ -6,9 +6,9 @@ import withObservables from '@nozbe/with-observables';
 import {combineLatest} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {observeChannel, observeMyChannel} from '@queries/servers/channel';
+import {observeChannel, observeMyChannelRoles} from '@queries/servers/channel';
 import {queryRolesByNames} from '@queries/servers/role';
-import {observeCurrentUser} from '@queries/servers/user';
+import {observeCurrentUserRoles} from '@queries/servers/user';
 
 import Intro from './intro';
 
@@ -16,13 +16,13 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 
 const enhanced = withObservables(['channelId'], ({channelId, database}: {channelId: string} & WithDatabaseArgs) => {
     const channel = observeChannel(database, channelId);
-    const myChannel = observeMyChannel(database, channelId);
-    const me = observeCurrentUser(database);
+    const myChannelRoles = observeMyChannelRoles(database, channelId);
+    const meRoles = observeCurrentUserRoles(database);
 
-    const roles = combineLatest([me, myChannel]).pipe(
+    const roles = combineLatest([meRoles, myChannelRoles]).pipe(
         switchMap(([user, member]) => {
-            const userRoles = user?.roles.split(' ');
-            const memberRoles = member?.roles.split(' ');
+            const userRoles = user?.split(' ');
+            const memberRoles = member?.split(' ');
             const combinedRoles = [];
             if (userRoles) {
                 combinedRoles.push(...userRoles);

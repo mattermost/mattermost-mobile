@@ -12,7 +12,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {timeouts} from '@support/utils';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Server Login - Connect to Server', () => {
@@ -41,7 +41,7 @@ describe('Server Login - Connect to Server', () => {
         // * Verify basic elements on server screen
         await expect(headerWelcome).toHaveText('Welcome');
         await expect(headerTitleConnectToServer).toHaveText('Let’s Connect to a Server');
-        await expect(headerDescription).toHaveText('A Server is your team\'s communication hub which is accessed through a unique URL');
+        await expect(headerDescription).toHaveText('A server is your team\'s communication hub accessed using a unique URL');
         await expect(serverUrlInput).toBeVisible();
         await expect(serverDisplayNameInput).toBeVisible();
         await expect(displayHelp).toHaveText('Choose a display name for your server');
@@ -70,6 +70,7 @@ describe('Server Login - Connect to Server', () => {
         await serverUrlInput.replaceText(invalidServerUrl);
         await serverDisplayNameInput.replaceText('Server 1');
         await connectButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify invalid url error
         await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
@@ -82,6 +83,7 @@ describe('Server Login - Connect to Server', () => {
         await serverUrlInput.replaceText('expired.badssl.com');
         await serverDisplayNameInput.replaceText('Server 1');
         await connectButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify connection error
         await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
@@ -92,6 +94,7 @@ describe('Server Login - Connect to Server', () => {
         await serverUrlInput.replaceText('wrong.host.badssl.com');
         await serverDisplayNameInput.replaceText('Server 1');
         await connectButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify connection error
         await waitFor(serverUrlInputError).toExist().withTimeout(timeouts.TEN_SEC);
@@ -103,6 +106,7 @@ describe('Server Login - Connect to Server', () => {
         await serverUrlInput.replaceText(serverOneUrl);
         await serverDisplayNameInput.replaceText('Server 1');
         await connectButton.tap();
+        await wait(timeouts.ONE_SEC);
 
         // * Verify on login screen
         await LoginScreen.toBeVisible();

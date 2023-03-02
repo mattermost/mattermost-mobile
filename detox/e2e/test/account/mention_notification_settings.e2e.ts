@@ -21,7 +21,7 @@ import {
     ServerScreen,
     SettingsScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Settings - Mention Notification Settings', () => {
@@ -78,7 +78,11 @@ describe('Account - Settings - Mention Notification Settings', () => {
         await expect(MentionNotificationSettingsScreen.caseSensitiveFirstNameOptionToggledOn).toBeVisible();
         await expect(MentionNotificationSettingsScreen.nonCaseSensitiveUsernameOptionToggledOn).toBeVisible();
         await expect(MentionNotificationSettingsScreen.channelWideMentionsOptionToggledOff).toBeVisible();
-        await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveValue(keywords.replace(/ /g, '').toLowerCase());
+        if (isIos()) {
+            await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveValue(keywords.replace(/ /g, '').toLowerCase());
+        } else {
+            await expect(MentionNotificationSettingsScreen.keywordsInput).toHaveText(keywords.replace(/ /g, '').toLowerCase());
+        }
 
         // # Switch toggles back to original state, clear keywords, tap on back button, and go back to mention notifications screen
         await MentionNotificationSettingsScreen.toggleCaseSensitiveFirstNameOptionOff();
