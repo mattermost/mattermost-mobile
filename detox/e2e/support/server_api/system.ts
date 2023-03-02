@@ -230,7 +230,7 @@ export const System = {
     apiRequireLicense,
     apiRequireLicenseForFeature,
     apiRequireSMTPServer,
-    apiUpdateConfig,
+    // apiUpdateConfig,
     apiUploadLicense,
     getClientLicense,
     getDefaultConfig,

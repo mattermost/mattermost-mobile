@@ -8,7 +8,7 @@ beforeAll(async () => {
     // Login as sysadmin and reset server configuration
     await System.apiCheckSystemHealth(siteOneUrl);
     await User.apiAdminLogin(siteOneUrl);
-    await System.apiUpdateConfig(siteOneUrl);
+    // await System.apiUpdateConfig(siteOneUrl);
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
 
     await device.launchApp({
