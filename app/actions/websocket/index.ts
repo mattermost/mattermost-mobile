@@ -130,6 +130,13 @@ async function doReconnect(serverUrl: string) {
     if (models?.length) {
         await operator.batchRecords(models, 'doReconnect');
     }
+
+    const tabletDevice = await isTablet();
+    if (tabletDevice && initialChannelId === currentChannelId) {
+        await markChannelAsRead(serverUrl, initialChannelId);
+        markChannelAsViewed(serverUrl, initialChannelId);
+    }
+
     logInfo('WEBSOCKET RECONNECT MODELS BATCHING TOOK', `${Date.now() - dt}ms`);
     setTeamLoading(serverUrl, false);
 
