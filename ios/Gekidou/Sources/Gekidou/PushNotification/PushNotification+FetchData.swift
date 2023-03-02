@@ -176,10 +176,9 @@ extension PushNotification {
                                 lastFetchedAt = fetchedAt
                             }
                         }
-                        var lastPostAt: Double = data.channel?.createAt ?? 0
+                        var lastPostAt: Double = 0
                         if let channel = data.channel {
-                            let lastPostTimestamp = isCRTEnabled ? channel.lastRootPostAt : channel.lastPostAt
-                            lastPostAt = max(lastPostTimestamp, channel.createAt)
+                            lastPostAt = isCRTEnabled ? channel.lastRootPostAt : channel.lastPostAt
                             myChannel.internalMsgCount = channel.totalMsgCount - myChannel.msgCount
                             myChannel.internalMsgCountRoot = channel.totalMsgCountRoot - myChannel.msgCountRoot
                         }

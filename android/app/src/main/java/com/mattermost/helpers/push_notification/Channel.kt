@@ -99,7 +99,7 @@ private suspend fun PushNotificationDataRunnable.Companion.fetchMyChannelData(se
             data.putInt("message_count", messageCount)
             data.putInt("mentions_count", mentionCount)
             data.putBoolean("is_unread", messageCount > 0)
-            data.putDouble("last_post_at", max(lastPostAt, channelData.getDouble("create_at")))
+            data.putDouble("last_post_at", lastPostAt)
             return data
         }
     } catch (e: Exception) {

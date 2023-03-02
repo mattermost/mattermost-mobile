@@ -4,6 +4,7 @@
 import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
 import {getPreferenceAsBool, getPreferenceValue} from '@helpers/api/preference';
+import {isDMorGM} from '@utils/channel';
 import {getUserIdFromChannelName} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
@@ -132,8 +133,11 @@ export const filterManuallyClosedDms = (
     return channelsWithMyChannel.filter((cwm) => {
         const {channel, myChannel} = cwm;
 
-        if (channel.type !== General.DM_CHANNEL && channel.type !== General.GM_CHANNEL) {
+        if (!isDMorGM(channel)) {
             return true;
+        } else if (!myChannel.lastPostAt) {
+            // If the direct channel does not have posts we hide it
+            return false;
         }
 
         if (isUnreadChannel(myChannel, notifyPropsPerChannel[myChannel.id], lastUnreadChannelId)) {
