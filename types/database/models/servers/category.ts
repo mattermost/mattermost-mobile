@@ -25,7 +25,7 @@ declare class CategoryModel extends Model {
     displayName: string;
 
     /** type : The type of category */
-    type: string;
+    type: CategoryType;
 
     /** sort_order : The sort order for this category */
     sortOrder: number;
