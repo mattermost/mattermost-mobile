@@ -3,13 +3,10 @@
 
 import path from 'path';
 
-import {ldapPort, ldapServer} from '@support/test_config';
-import merge from 'deepmerge';
 import jestExpect from 'expect';
 
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
-import defaultServerConfig from './default_config.json';
 
 // ****************************************************************
 // System
