@@ -283,9 +283,9 @@ export default function PostInput({
         });
         return () => {
             listener.remove();
-            updateDraftMessage(serverUrl, channelId, rootId, value); // safe draft on unmount
+            updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
         };
-    }, [updateValue, value, channelId, rootId]);
+    }, [updateValue, channelId, rootId]);
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
