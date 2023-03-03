@@ -37,22 +37,22 @@ class PushNotifications {
     configured = false;
 
     init(register: boolean) {
-        if (register) {
-            this.registerIfNeeded();
-        }
-
         Notifications.events().registerNotificationOpened(this.onNotificationOpened);
         Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered);
         Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
         Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
+
+        if (register) {
+            this.registerIfNeeded();
+        }
     }
 
     async registerIfNeeded() {
         const isRegistered = await Notifications.isRegisteredForRemoteNotifications();
         if (!isRegistered) {
             await requestNotifications(['alert', 'sound', 'badge']);
-            Notifications.registerRemoteNotifications();
         }
+        Notifications.registerRemoteNotifications();
     }
 
     createReplyCategory = () => {
