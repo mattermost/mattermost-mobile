@@ -137,7 +137,7 @@ export const backgroundNotification = async (serverUrl: string, notification: No
                     serverUrl, teamId,
                     channel ? [channel] : [],
                     myChannel ? [myChannel] : [],
-                    true, isCRTEnabled,
+                    false, isCRTEnabled,
                 );
 
                 if (data.categoryChannels?.length && channel) {

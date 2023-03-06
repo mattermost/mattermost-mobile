@@ -79,7 +79,7 @@ describe('Teams - Invite', () => {
         await expect(Invite.teamIcon).toBeVisible();
 
         // * Verify default Selection
-        await expect(Invite.screenSelection).toBeVisible();
+        await waitFor(Invite.screenSelection).toBeVisible().withTimeout(timeouts.TWO_SEC);
 
         // * Verify Server data
         await expect(Invite.serverDisplayName).toHaveText(serverOneDisplayName);
@@ -93,10 +93,9 @@ describe('Teams - Invite', () => {
     });
 
     it('MM-T5221 - should be able to share a URL invite to the team', async () => {
-        // # Tap on Share link
-        await Invite.shareLinkButton.tap();
-
         if (isIos()) {
+            // # Tap on Share link
+            await Invite.shareLinkButton.tap();
             const dialog = systemDialog(`Join the ${testTeam.display_name} team`);
 
             // * Verify share dialog is open
@@ -104,28 +103,28 @@ describe('Teams - Invite', () => {
 
             // # Close share dialog
             await dialog.swipe('down');
-        }
+        } // no support for Android system dialogs by detox yet. See https://github.com/wix/Detox/issues/3227
     });
 
     it('MM-T5361 - should show no results item in search list', async () => {
         const noUser = 'qwertyuiop';
 
-        // # Search for a non existent user
+        // # Search for a non-existent user
         await Invite.searchBarInput.replaceText(noUser);
 
         // * Validate no results item in search list
-        await expect(Invite.getSearchListNoResults(noUser)).toBeVisible();
+        await waitFor(Invite.getSearchListNoResults(noUser)).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await expect(Invite.getSearchListNoResultsText(noUser)).toHaveText(noUser);
     });
 
     it('MM-T5362 - should be able to send email invite', async () => {
         const noUserEmailFormat = 'qwerty@ui.op';
 
-        // # Search for a non existent user with email format
+        // # Search for a non-existent user with email format
         await Invite.searchBarInput.replaceText(noUserEmailFormat);
 
         // * Validate email invite item in search list
-        await expect(Invite.getSearchListTextItem(noUserEmailFormat)).toBeVisible();
+        await waitFor(Invite.getSearchListTextItem(noUserEmailFormat)).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await expect(Invite.getSearchListTextItemText(noUserEmailFormat)).toHaveText(noUserEmailFormat);
 
         // # Select email invite item
@@ -139,7 +138,7 @@ describe('Teams - Invite', () => {
         await Invite.sendButton.tap();
 
         // * Validate summary report sent
-        await expect(Invite.screenSummary).toBeVisible();
+        await waitFor(Invite.screenSummary).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(Invite.getSummaryReportSent()).toBeVisible();
         await expect(Invite.getSummaryReportNotSent()).not.toExist();
         await expect(Invite.getSummaryReportTextItem(noUserEmailFormat)).toBeVisible();
@@ -149,11 +148,11 @@ describe('Teams - Invite', () => {
     it('MM-T5363 - should be able to send user invite', async () => {
         const username = ` @${testUser1.username}`;
 
-        // # Search for a existent user
+        // # Search for an existent user
         await Invite.searchBarInput.replaceText(testUser1.username);
 
         // * Validate user item in search list
-        await expect(Invite.getSearchListUserItem(testUser1.id)).toBeVisible();
+        await waitFor(Invite.getSearchListUserItem(testUser1.id)).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await expect(Invite.getSearchListUserItemText(testUser1.id)).toHaveText(username);
 
         // # Select user item
@@ -167,7 +166,7 @@ describe('Teams - Invite', () => {
         await Invite.sendButton.tap();
 
         // * Validate summary report sent
-        await expect(Invite.screenSummary).toBeVisible();
+        await waitFor(Invite.screenSummary).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(Invite.getSummaryReportSent()).toBeVisible();
         await expect(Invite.getSummaryReportNotSent()).not.toExist();
         await expect(Invite.getSummaryReportUserItem(testUser1.id)).toBeVisible();
@@ -177,11 +176,11 @@ describe('Teams - Invite', () => {
     it('MM-T5364 - should not be able to send user invite to user already in team', async () => {
         const username = ` @${testUser1.username}`;
 
-        // # Search for a existent user already in team
+        // # Search for an existent user already in team
         await Invite.searchBarInput.replaceText(testUser1.username);
 
         // * Validate user item in search list
-        await expect(Invite.getSearchListUserItem(testUser1.id)).toBeVisible();
+        await waitFor(Invite.getSearchListUserItem(testUser1.id)).toBeVisible().withTimeout(timeouts.TWO_SEC);
 
         // # Select user item
         await Invite.getSearchListUserItem(testUser1.id).tap();
@@ -206,11 +205,11 @@ describe('Teams - Invite', () => {
         const username1 = ` @${testUser1.username}`;
         const username2 = ` @${testUser2.username}`;
 
-        // # Search for a existent user
+        // # Search for an existent user
         await Invite.searchBarInput.replaceText(testUser2.username);
 
         // * Validate user item in search list
-        await expect(Invite.getSearchListUserItem(testUser2.id)).toBeVisible();
+        await waitFor(Invite.getSearchListUserItem(testUser2.id)).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // # Select user item
         await Invite.getSearchListUserItem(testUser2.id).tap();
@@ -234,7 +233,7 @@ describe('Teams - Invite', () => {
         await Invite.sendButton.tap();
 
         // * Validate summary
-        await expect(Invite.screenSummary).toBeVisible();
+        await waitFor(Invite.screenSummary).toBeVisible().withTimeout(timeouts.TEN_SEC);
 
         // * Validate summary report not sent
         await expect(Invite.getSummaryReportNotSent()).toBeVisible();
@@ -242,7 +241,7 @@ describe('Teams - Invite', () => {
         await expect(Invite.getSummaryReportUserItemText(testUser1.id)).toHaveText(username1);
 
         // * Validate summary report sent
-        await expect(Invite.getSummaryReportSent()).toBeVisible();
+        await waitFor(Invite.getSummaryReportSent()).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await expect(Invite.getSummaryReportUserItem(testUser2.id)).toBeVisible();
         await expect(Invite.getSummaryReportUserItemText(testUser2.id)).toHaveText(username2);
     });

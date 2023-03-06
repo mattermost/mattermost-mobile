@@ -102,6 +102,7 @@ const EditProfile = ({
             popTopScreen(componentId);
         }
     }, []);
+
     const enableSaveButton = useCallback((value: boolean) => {
         if (!isTablet) {
             const buttons = {
@@ -114,18 +115,19 @@ const EditProfile = ({
         }
         setCanSave(value);
     }, [componentId, rightButton]);
+
     const submitUser = useCallback(preventDoubleTap(async () => {
         enableSaveButton(false);
         setError(undefined);
         setUpdating(true);
         try {
             const newUserInfo: Partial<UserProfile> = {
-                email: userInfo.email,
-                first_name: userInfo.firstName,
-                last_name: userInfo.lastName,
-                nickname: userInfo.nickname,
-                position: userInfo.position,
-                username: userInfo.username,
+                email: userInfo.email.trim(),
+                first_name: userInfo.firstName.trim(),
+                last_name: userInfo.lastName.trim(),
+                nickname: userInfo.nickname.trim(),
+                position: userInfo.position.trim(),
+                username: userInfo.username.trim(),
             };
             const localPath = changedProfilePicture.current?.localPath;
             const profileImageRemoved = changedProfilePicture.current?.isRemoved;

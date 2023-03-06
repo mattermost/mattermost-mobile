@@ -15,6 +15,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
+import {useInputPropagation} from '@hooks/input';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
@@ -61,6 +62,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [isUpdating, setIsUpdating] = useState(false);
     const [containerHeight, setContainerHeight] = useState(0);
+    const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
     const mainView = useRef<View>(null);
     const modalPosition = useModalPosition(mainView);
@@ -123,10 +125,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
         });
     }, [componentId, intl, theme]);
 
-    const onChangeText = useCallback((message: string) => {
-        setPostMessage(message);
+    const onChangeTextCommon = useCallback((message: string) => {
         const tooLong = message.trim().length > maxPostSize;
-
         if (tooLong) {
             const line = intl.formatMessage({id: 'mobile.message_length.message_split_left', defaultMessage: 'Message exceeds the character limit'});
             const extra = `${message.trim().length} / ${maxPostSize}`;
@@ -134,7 +134,21 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             setErrorExtra(extra);
         }
         toggleSaveButton(post.message !== message);
-    }, [intl, maxPostSize, toggleSaveButton]);
+    }, [intl, maxPostSize, post.message, toggleSaveButton]);
+
+    const onAutocompleteChangeText = useCallback((message: string) => {
+        setPostMessage(message);
+        propagateValue(message);
+        onChangeTextCommon(message);
+    }, [onChangeTextCommon]);
+
+    const onInputChangeText = useCallback((message: string) => {
+        if (!shouldProcessEvent(message)) {
+            return;
+        }
+        setPostMessage(message);
+        onChangeTextCommon(message);
+    }, [onChangeTextCommon]);
 
     const handleUIUpdates = useCallback((res: {error?: unknown}) => {
         if (res.error) {
@@ -233,7 +247,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                     <EditPostInput
                         hasError={Boolean(errorLine)}
                         message={postMessage}
-                        onChangeText={onChangeText}
+                        onChangeText={onInputChangeText}
                         onTextSelectionChange={onTextSelectionChange}
                         ref={postInputRef}
                     />
@@ -244,7 +258,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 hasFilesAttached={hasFilesAttached}
                 nestedScrollEnabled={true}
                 rootId={post.rootId}
-                updateValue={onChangeText}
+                updateValue={onAutocompleteChangeText}
                 value={postMessage}
                 cursorPosition={cursorPosition}
                 position={animatedAutocompletePosition}

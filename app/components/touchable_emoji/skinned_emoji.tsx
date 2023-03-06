@@ -4,12 +4,12 @@
 import React, {useCallback, useMemo} from 'react';
 import {StyleProp, View, ViewStyle} from 'react-native';
 
-import {useEmojiSkinTone} from '@app/hooks/emoji_category_bar';
-import {preventDoubleTap} from '@app/utils/tap';
 import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useEmojiSkinTone} from '@hooks/emoji_category_bar';
 import {skinCodes} from '@utils/emoji';
 import {isValidNamedEmoji} from '@utils/emoji/helpers';
+import {preventDoubleTap} from '@utils/tap';
 
 type Props = {
     name: string;

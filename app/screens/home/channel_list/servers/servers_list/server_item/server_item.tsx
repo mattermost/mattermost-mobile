@@ -9,7 +9,6 @@ import Swipeable from 'react-native-gesture-handler/Swipeable';
 import {Navigation} from 'react-native-navigation';
 
 import {storeMultiServerTutorial} from '@actions/app/global';
-import {appEntry} from '@actions/remote/entry';
 import {doPing} from '@actions/remote/general';
 import {logout} from '@actions/remote/session';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -24,6 +23,7 @@ import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {subscribeServerUnreadAndMentions, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
+import WebsocketManager from '@managers/websocket_manager';
 import {getServerByIdentifier} from '@queries/app/servers';
 import {dismissBottomSheet} from '@screens/navigation';
 import {canReceiveNotifications} from '@utils/push_proxy';
@@ -296,7 +296,7 @@ const ServerItem = ({
             await dismissBottomSheet();
             Navigation.updateProps(Screens.HOME, {extra: undefined});
             DatabaseManager.setActiveServerDatabase(server.url);
-            await appEntry(server.url, Date.now());
+            WebsocketManager.initializeClient(server.url);
             return;
         }
 

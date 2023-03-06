@@ -619,7 +619,6 @@
     "mobile.no_results_with_term.messages": "\"{term}\" için bir eşleşme bulunamadı",
     "mobile.no_results_with_term.files": "\"{term}\" ile eşleşen bir dosya bulunamadı",
     "mobile.no_results_with_term": "\"{term}\" için sonuç bulunamadı",
-    "mobile.login_options.sso_continue": "Şununla ilerleyin",
     "mobile.login_options.separator_text": "ya da şununla oturum açın",
     "mobile.login_options.select_option": "Aşağıdan bir oturum açma seçeneği seçin.",
     "mobile.login_options.saml": "SAML",
@@ -987,5 +986,11 @@
     "mobile.manage_members.done": "Bitti",
     "mobile.manage_members.change_role.error": "Rol güncellenirken bir sorun çıktı. Lütfen bağlantınızı denetleyip yeniden deneyin.",
     "mobile.manage_members.cancel": "İptal",
-    "mobile.manage_members.admin": "Yönetici"
+    "mobile.manage_members.admin": "Yönetici",
+    "mobile.calls_recording_stop_none_in_progress": "",
+    "mobile.calls_recording_stop_no_permissions": "",
+    "mobile.calls_recording_start_no_permissions": "",
+    "mobile.calls_recording_start_in_progress": "",
+    "mobile.calls_host_rec_error_title": "",
+    "mobile.calls_host_rec_error": ""
 }

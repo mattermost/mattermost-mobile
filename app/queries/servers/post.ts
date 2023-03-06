@@ -20,12 +20,26 @@ const {SERVER: {POST, POSTS_IN_CHANNEL, POSTS_IN_THREAD}} = MM_TABLES;
 
 export const prepareDeletePost = async (post: PostModel): Promise<Model[]> => {
     const preparedModels: Model[] = [post.prepareDestroyPermanently()];
-    const relations: Array<Query<Model>> = [post.drafts, post.postsInThread, post.files, post.reactions];
+    const relations: Array<Query<Model>> = [post.drafts, post.files, post.reactions];
     for await (const models of relations) {
         try {
             models.forEach((m) => {
                 preparedModels.push(m.prepareDestroyPermanently());
             });
+        } catch {
+            // Record not found, do nothing
+        }
+    }
+
+    // If the post is a root post, delete the postsInThread model
+    if (!post.rootId) {
+        try {
+            const postsInThread = await post.postsInThread.fetch();
+            if (postsInThread) {
+                postsInThread.forEach((m) => {
+                    preparedModels.push(m.prepareDestroyPermanently());
+                });
+            }
         } catch {
             // Record not found, do nothing
         }

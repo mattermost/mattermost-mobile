@@ -7,9 +7,9 @@ import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {fetchDataRetentionPolicy} from '@actions/remote/systems';
 import {MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
-import {autoUpdateTimezone, updateAllUsersSince} from '@actions/remote/user';
+import {autoUpdateTimezone, fetchProfilesInGroupChannels, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
-import {Preferences} from '@constants';
+import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
@@ -27,6 +27,8 @@ import type {MyChannelsRequest} from '@actions/remote/channel';
 import type ClientError from '@client/rest/error';
 import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
+
+const FETCH_MISSING_GM_TIMEOUT = 2500;
 
 export async function deferredAppEntryGraphQLActions(
     serverUrl: string,
@@ -97,6 +99,19 @@ export async function deferredAppEntryGraphQLActions(
 
     updateCanJoinTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
+
+    // defer sidebar GM profiles
+    setTimeout(async () => {
+        const gmIds = chData?.channels?.reduce<Set<string>>((acc, v) => {
+            if (v?.type === General.GM_CHANNEL) {
+                acc.add(v.id);
+            }
+            return acc;
+        }, new Set<string>());
+        if (gmIds?.size) {
+            fetchProfilesInGroupChannels(serverUrl, Array.from(gmIds));
+        }
+    }, FETCH_MISSING_GM_TIMEOUT);
 
     return {error: undefined};
 }

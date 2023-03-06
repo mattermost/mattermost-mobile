@@ -5,11 +5,11 @@ import BottomSheetM, {BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheet
 import React, {ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
 import {DeviceEventEmitter, Handle, InteractionManager, Keyboard, StyleProp, View, ViewStyle} from 'react-native';
 
-import useNavButtonPressed from '@app/hooks/navigation_button_pressed';
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal} from '@screens/navigation';
 import {hapticFeedback} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

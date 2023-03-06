@@ -3,13 +3,10 @@
 
 import path from 'path';
 
-import {ldapPort, ldapServer} from '@support/test_config';
-import merge from 'deepmerge';
 import jestExpect from 'expect';
 
 import client from './client';
 import {apiUploadFile, getResponseFromError} from './common';
-import defaultServerConfig from './default_config.json';
 
 // ****************************************************************
 // System
@@ -153,29 +150,6 @@ export const apiRequireSMTPServer = async (baseUrl: string) => {
 };
 
 /**
- * Update configuration.
- * See https://api.mattermost.com/#operation/UpdateConfig
- * @param {string} baseUrl - the base server URL
- * @param {Object} newConfig - specific config to update
- * @return {Object} returns {config} on success or {error, status} on error
- */
-export const apiUpdateConfig = async (baseUrl: string, newConfig: any = {}): Promise<any> => {
-    try {
-        const {config: currentConfig} = await apiGetConfig(baseUrl);
-        const config = merge.all([currentConfig, getDefaultConfig(baseUrl), newConfig]);
-
-        const response = await client.put(
-            `${baseUrl}/api/v4/config`,
-            config,
-        );
-
-        return {config: response.data};
-    } catch (err) {
-        return getResponseFromError(err);
-    }
-};
-
-/**
  * Upload server license with file expected at "/detox/e2e/support/fixtures/mattermost-license.txt"
  * See https://api.mattermost.com/#operation/UploadLicenseFile
  * @param {string} baseUrl - the base server URL
@@ -209,18 +183,6 @@ export const getClientLicense = async (baseUrl: string): Promise<any> => {
     return {license: out.license};
 };
 
-export const getDefaultConfig = (siteUrl: string) => {
-    const fromEnv = {
-        LdapSettings: {
-            LdapServer: ldapServer,
-            LdapPort: ldapPort,
-        },
-        ServiceSettings: {SiteURL: siteUrl},
-    };
-
-    return merge(defaultServerConfig, fromEnv);
-};
-
 export const System = {
     apiCheckSystemHealth,
     apiEmailTest,
@@ -230,10 +192,8 @@ export const System = {
     apiRequireLicense,
     apiRequireLicenseForFeature,
     apiRequireSMTPServer,
-    apiUpdateConfig,
     apiUploadLicense,
     getClientLicense,
-    getDefaultConfig,
 };
 
 export default System;

@@ -11,6 +11,7 @@ import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {sanitizeLikeString} from '@helpers/database';
 import {hasPermission} from '@utils/role';
+import {getUserIdFromChannelName} from '@utils/user';
 
 import {prepareDeletePost} from './post';
 import {queryRoles} from './role';
@@ -208,6 +209,13 @@ export const getMyChannel = async (database: Database, channelId: string) => {
 export const observeMyChannel = (database: Database, channelId: string) => {
     return database.get<MyChannelModel>(MY_CHANNEL).query(Q.where('id', channelId), Q.take(1)).observe().pipe(
         switchMap((result) => (result.length ? result[0].observe() : of$(undefined))),
+    );
+};
+
+export const observeMyChannelRoles = (database: Database, channelId: string) => {
+    return observeMyChannel(database, channelId).pipe(
+        switchMap((v) => of$(v?.roles)),
+        distinctUntilChanged(),
     );
 };
 
@@ -430,10 +438,6 @@ export const observeNotifyPropsByChannels = (database: Database, channels: Chann
     );
 };
 
-export const queryChannelsByNames = (database: Database, names: string[]) => {
-    return database.get<ChannelModel>(CHANNEL).query(Q.where('name', Q.oneOf(names)));
-};
-
 export const queryMyChannelUnreads = (database: Database, currentTeamId: string) => {
     return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(
@@ -446,40 +450,42 @@ export const queryMyChannelUnreads = (database: Database, currentTeamId: string)
                 Q.where('delete_at', Q.eq(0)),
             ),
         ),
-        Q.where('is_unread', Q.eq(true)),
+        Q.or(
+            Q.where('is_unread', Q.eq(true)),
+            Q.where('mentions_count', Q.gte(0)),
+        ),
         Q.sortBy('last_post_at', Q.desc),
     );
 };
 
-export const queryEmptyDirectAndGroupChannels = (database: Database) => {
-    return database.get<MyChannelModel>(MY_CHANNEL).query(
-        Q.on(
-            CHANNEL,
-            Q.where('team_id', Q.eq('')),
-        ),
-        Q.where('last_post_at', Q.eq(0)),
-    );
-};
-
 export const observeArchivedDirectChannels = (database: Database, currentUserId: string) => {
-    const deactivatedIds = database.get<UserModel>(USER).query(
+    const deactivated = database.get<UserModel>(USER).query(
         Q.where('delete_at', Q.gt(0)),
-    ).observe().pipe(
-        switchMap((users) => of$(users.map((u) => u.id))),
-    );
+    ).observe();
 
-    return deactivatedIds.pipe(
-        switchMap((dIds) => {
+    return deactivated.pipe(
+        switchMap((users) => {
+            const usersMap = new Map(users.map((u) => [u.id, u]));
             return database.get<ChannelModel>(CHANNEL).query(
                 Q.on(
                     CHANNEL_MEMBERSHIP,
                     Q.and(
                         Q.where('user_id', Q.notEq(currentUserId)),
-                        Q.where('user_id', Q.oneOf(dIds)),
+                        Q.where('user_id', Q.oneOf(Array.from(usersMap.keys()))),
                     ),
                 ),
                 Q.where('type', 'D'),
-            ).observe();
+            ).observe().pipe(
+                switchMap((channels) => {
+                    // eslint-disable-next-line max-nested-callbacks
+                    return of$(new Map(channels.map((c) => {
+                        const teammateId = getUserIdFromChannelName(currentUserId, c.name);
+                        const user = usersMap.get(teammateId);
+
+                        return [c.id, user];
+                    })));
+                }),
+            );
         }),
     );
 };
@@ -628,13 +634,17 @@ export const observeChannelSettings = (database: Database, channelId: string) =>
     );
 };
 
-export const observeChannelsByLastPostAt = (database: Database, myChannels: MyChannelModel[], excludeIds?: string[]) => {
+export const observeIsMutedSetting = (database: Database, channelId: string) => {
+    return observeChannelSettings(database, channelId).pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === General.MENTION)));
+};
+
+export const observeChannelsByLastPostAt = (database: Database, myChannels: MyChannelModel[]) => {
     const ids = myChannels.map((c) => c.id);
     const idsStr = `'${ids.join("','")}'`;
-    const exclude = excludeIds?.length ? `AND c.id NOT IN ('${excludeIds.join("','")}')` : '';
+
     return database.get<ChannelModel>(CHANNEL).query(
         Q.unsafeSqlQuery(`SELECT DISTINCT c.* FROM ${CHANNEL} c INNER JOIN
-        ${MY_CHANNEL} mc ON mc.id=c.id AND c.id IN (${idsStr}) ${exclude}
+        ${MY_CHANNEL} mc ON mc.id=c.id AND c.id IN (${idsStr})
         ORDER BY CASE mc.last_post_at WHEN 0 THEN c.create_at ELSE mc.last_post_at END DESC`),
     ).observe();
 };

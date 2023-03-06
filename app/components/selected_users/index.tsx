@@ -150,6 +150,7 @@ export default function SelectedUsers({
     const [isVisible, setIsVisible] = useState(false);
     const numberSelectedIds = Object.keys(selectedIds).length;
     const bottomSpace = (dimensions.height - containerHeight - modalPosition);
+    const bottomPaddingBottom = isTablet ? CHIP_HEIGHT_WITH_MARGIN : 0;
 
     const users = useMemo(() => {
         const u = [];
@@ -172,8 +173,8 @@ export default function SelectedUsers({
     }, [selectedIds, teammateNameDisplay, onRemove]);
 
     const totalPanelHeight = useDerivedValue(() => (
-        isVisible ? panelHeight.value + BUTTON_HEIGHT : 0
-    ), [isVisible, isTablet]);
+        isVisible ? panelHeight.value + BUTTON_HEIGHT + bottomPaddingBottom : 0
+    ), [isVisible, isTablet, bottomPaddingBottom]);
 
     const marginBottom = useMemo(() => {
         let margin = keyboard.height && Platform.OS === 'ios' ? keyboard.height - insets.bottom : 0;
@@ -208,7 +209,7 @@ export default function SelectedUsers({
     }, [onPress]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        panelHeight.value = Math.min(PANEL_MAX_HEIGHT, e.nativeEvent.layout.height);
+        panelHeight.value = Math.min(PANEL_MAX_HEIGHT + bottomPaddingBottom, e.nativeEvent.layout.height);
     }, []);
 
     const androidMaxHeight = Platform.select({
@@ -235,8 +236,8 @@ export default function SelectedUsers({
     const animatedViewStyle = useAnimatedStyle(() => ({
         height: withTiming(totalPanelHeight.value + insets.bottom, {duration: 250}),
         borderWidth: isVisible ? 1 : 0,
-        maxHeight: isVisible ? PANEL_MAX_HEIGHT + BUTTON_HEIGHT + insets.bottom : 0,
-    }), [isVisible, insets]);
+        maxHeight: isVisible ? PANEL_MAX_HEIGHT + BUTTON_HEIGHT + bottomPaddingBottom + insets.bottom : 0,
+    }), [isVisible, insets, bottomPaddingBottom]);
 
     const animatedButtonStyle = useAnimatedStyle(() => ({
         opacity: withTiming(isVisible ? 1 : 0, {duration: isVisible ? 500 : 100}),

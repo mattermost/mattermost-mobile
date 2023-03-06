@@ -7,6 +7,9 @@ import {Text} from 'react-native';
 
 import {updateMe} from '@actions/remote/user';
 import FloatingTextInput from '@components/floating_text_input_label';
+import SettingBlock from '@components/settings/block';
+import SettingOption from '@components/settings/option';
+import SettingSeparator from '@components/settings/separator';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -17,10 +20,6 @@ import ReplySettings from '@screens/settings/notification_mention/reply_settings
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
-
-import SettingBlock from '../setting_block';
-import SettingOption from '../setting_option';
-import SettingSeparator from '../settings_separator';
 
 import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';

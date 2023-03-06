@@ -79,11 +79,11 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
             if (reaction) {
                 const emojiAlias = getEmojiFirstAlias(reaction.emojiName);
                 if (acc.has(emojiAlias)) {
-                    const rs = acc.get(emojiAlias);
+                    const rs = acc.get(emojiAlias)!;
                     // eslint-disable-next-line max-nested-callbacks
-                    const present = rs!.findIndex((r) => r.userId === reaction.userId) > -1;
+                    const present = rs.findIndex((r) => r.userId === reaction.userId) > -1;
                     if (!present) {
-                        rs!.push(reaction);
+                        rs.push(reaction);
                     }
                 } else {
                     acc.set(emojiAlias, [reaction]);
@@ -98,7 +98,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
         }, new Map<string, ReactionModel[]>());
 
         return {reactionsByName, highlightedReactions};
-    }, [sortedReactions]);
+    }, [sortedReactions, reactions]);
 
     const handleAddReactionToPost = (emoji: string) => {
         addReaction(serverUrl, postId, emoji);
@@ -171,7 +171,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
                     return (
                         <Reaction
                             key={r}
-                            count={reaction!.length}
+                            count={reaction?.length || 1}
                             emojiName={r}
                             highlight={highlightedReactions.includes(r)}
                             onPress={handleReactionPress}
