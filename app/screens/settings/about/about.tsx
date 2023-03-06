@@ -6,20 +6,19 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import {Button} from 'react-native-elements';
-import Icon from 'react-native-vector-icons/FontAwesome';
+import {TouchableOpacity} from 'react-native-gesture-handler';
 
+import {buttonBackgroundStyle, buttonTextStyle} from '@app/utils/buttonStyles';
 import Config from '@assets/config.json';
+import Button from '@components/button';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SettingContainer from '@components/settings/container';
-import SettingSeparator from '@components/settings/separator';
 import AboutLinks from '@constants/about_links';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {t} from '@i18n';
 import {popTopScreen} from '@screens/navigation';
-import SettingContainer from '@screens/settings/setting_container';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -96,17 +95,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         group: {
             flexDirection: 'row',
         },
-        copyToClipBordTitle: {
-            ...typography('Body', 200, 'SemiBold'),
-            paddingLeft: 6,
-            color: theme.buttonBg,
-        },
-        copyToClipBoardBtn: {
-            paddingHorizontal: 20,
-            backgroundColor: changeOpacity(theme.buttonBg, 0.08),
+        copyInfoButtonContainer: {
             width: 120,
             marginTop: 10,
-            borderRadius: 4,
         },
     };
 });
@@ -291,29 +282,19 @@ const About = ({componentId, config, license}: AboutProps) => {
                     </Text>
                 </View>
 
-                <Button
-                    type='solid'
-                    icon={
-                        <Icon
-                            name='clone'
-                            size={15}
-                            color={theme.buttonBg}
-                        />
-                    }
-                    title={
-                        <Text
-                            style={styles.copyToClipBordTitle}
-                            testID='settings.about.copy_info'
-                        >
-                            {intl.formatMessage({
-                                id: 'settings.about.copy_info',
-                                defaultMessage: 'Copy info',
-                            })}
-                        </Text>
-                    }
-                    onPress={copyToClipboard}
-                    buttonStyle={styles.copyToClipBoardBtn}
-                />
+                <TouchableOpacity style={styles.copyInfoButtonContainer}>
+                    <Button
+                        theme={theme}
+                        backgroundStyle={buttonBackgroundStyle(theme, 'lg', 'tertiary')}
+                        onPress={copyToClipboard}
+                        textStyle={buttonTextStyle(theme, 'lg', 'tertiary', 'default')}
+                        text={'Copy info'}
+                        testID={'settings.about.copy_info'}
+                        iconName='content-copy'
+                        iconSize={18}
+                        buttonType={'default'}
+                    />
+                </TouchableOpacity>
 
                 {license.IsLicensed === 'true' && (
                     <View style={styles.licenseContainer}>
