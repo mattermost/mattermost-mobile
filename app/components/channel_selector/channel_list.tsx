@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {View, FlatList, Text} from 'react-native';
 
@@ -12,6 +12,11 @@ import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+type ChannelData = {
+    channel: Channel;
+    isSelected: boolean;
+};
 
 type Props = {
     onEndReached: () => void;
@@ -25,7 +30,7 @@ type Props = {
     noResultsWithoutTerm?: string;
 }
 
-const channelKeyExtractor = (channel: Channel) => {
+const channelKeyExtractor = ({channel}: ChannelData) => {
     return channel.id;
 };
 
@@ -71,6 +76,14 @@ export default function ChannelList({
     const {formatMessage} = useIntl();
     const theme = useTheme();
 
+    const [hasLoaded, setHasLoaded] = useState(false);
+
+    useEffect(() => {
+        if (!hasLoaded && loading) {
+            setHasLoaded(true);
+        }
+    }, [!hasLoaded, loading]);
+
     const style = getStyleFromTheme(theme);
     const keyboardHeight = useKeyboardHeight();
     const noResutsStyle = useMemo(() => [
@@ -78,17 +91,30 @@ export default function ChannelList({
         {paddingBottom: keyboardHeight},
     ], [style, keyboardHeight]);
 
-    const renderItem = useCallback(({item}: {item: Channel}) => {
-        return (
+    const channelsData = useMemo(() => {
+        const data: ChannelData[] = [];
+
+        for (const channel of channels) {
+            const isSelected = selectedChannels.findIndex(({id}) => id === channel.id) !== -1;
+
+            data.push({channel, isSelected});
+        }
+
+        return data;
+    }, [channels, selectedChannels]);
+
+    const renderItem = useCallback(
+        ({item: {channel, isSelected}}: {item: ChannelData}) => (
             <ChannelListRow
-                channel={item}
+                channel={channel}
                 selectable={itemSelectable}
-                selected={selectedChannels.findIndex(({id}) => id === item.id) !== -1}
+                selected={isSelected}
                 testID='browse_channels.custom_list.channel_item'
                 onPress={onSelectChannel}
             />
-        );
-    }, [onSelectChannel, itemSelectable, selectedChannels]);
+        ),
+        [onSelectChannel, itemSelectable],
+    );
 
     const renderLoading = useCallback(() => {
         if (!loading) {
@@ -107,6 +133,10 @@ export default function ChannelList({
     }, [loading, theme]);
 
     const renderNoResults = useCallback(() => {
+        if (!hasLoaded) {
+            return null;
+        }
+
         if (term) {
             return (
                 <View style={noResutsStyle}>
@@ -122,7 +152,7 @@ export default function ChannelList({
                 </Text>
             </View>
         );
-    }, [style, term, noResutsStyle, noResultsWithoutTerm]);
+    }, [style, loading, term, noResutsStyle, noResultsWithoutTerm]);
 
     const renderSeparator = useCallback(() => (
         <View
@@ -132,7 +162,7 @@ export default function ChannelList({
 
     return (
         <FlatList
-            data={channels}
+            data={channelsData}
             renderItem={renderItem}
             testID='browse_channels.channel_list.flat_list'
             ListEmptyComponent={renderNoResults}

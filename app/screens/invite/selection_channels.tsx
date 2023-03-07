@@ -5,14 +5,14 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 
 import {fetchChannels, searchChannels} from '@actions/remote/channel';
+import Button from '@components/button';
 import ChannelSelector from '@components/channel_selector';
 import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {debounce} from '@helpers/api/general';
 import {observeCanManageChannelMembers} from '@queries/servers/role';
 import {getCurrentUser} from '@queries/servers/user';
-
-import FooterButton from './footer_button';
 
 const defaultChannels: Channel[] = [];
 
@@ -25,9 +25,15 @@ const filterInvitableChannels = async (serverUrl: string, channels: Channel[]) =
     }
 
     return channels.filter((channel) => {
-        const canManage = observeCanManageChannelMembers(database, channel.id, currentUser);
+        let canManage = false;
 
-        return canManage.subscribe();
+        const observeCanManage = observeCanManageChannelMembers(database, channel.id, currentUser);
+        const subscribeCanManage = observeCanManage.subscribe((value) => {
+            canManage = value;
+        });
+        subscribeCanManage.unsubscribe();
+
+        return canManage;
     });
 };
 
@@ -44,6 +50,7 @@ export default function SelectionChannels({
     onAddChannels,
     onGetFooterButton,
 }: SelectionChannelsProps) {
+    const theme = useTheme();
     const {formatMessage, locale} = useIntl();
     const serverUrl = useServerUrl();
 
@@ -141,12 +148,18 @@ export default function SelectionChannels({
     }, [channels, searchResults, term]);
 
     useEffect(() => {
+        const isDisabled = !preselectedChannels.length || !modified;
+
         onGetFooterButton(
-            <FooterButton
+            <Button
+                theme={theme}
+                size='lg'
+                emphasis='primary'
                 text={formatMessage({id: 'invite.selection_channel.add', defaultMessage: 'Add selected channels'})}
-                disabled={!preselectedChannels.length || !modified}
+                buttonType={isDisabled ? 'disabled' : 'default'}
+                backgroundStyle={{flex: 1}}
                 onPress={handleOnAddChannels}
-                testID='add_channels'
+                testID='invite.footer_button.add_channels'
             />,
         );
     }, [handleOnAddChannels, !preselectedChannels.length, locale]);

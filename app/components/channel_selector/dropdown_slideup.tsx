@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
+import {Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import BottomSheetContent from '@screens/bottom_sheet/content';
@@ -13,8 +14,6 @@ import {
     makeStyleSheetFromTheme,
 
 } from '@utils/theme';
-
-import {ARCHIVED, PUBLIC, SHARED} from './';
 
 type Props = {
     onPress: (channelType: string) => void;
@@ -49,17 +48,17 @@ export default function DropdownSlideup({
 
     const handlePublicPress = useCallback(() => {
         dismissBottomSheet();
-        onPress(PUBLIC);
+        onPress(Channel.CHANNEL_TYPE_PUBLIC);
     }, [onPress]);
 
     const handleArchivedPress = useCallback(() => {
         dismissBottomSheet();
-        onPress(ARCHIVED);
+        onPress(Channel.CHANNEL_TYPE_ARCHIVED);
     }, [onPress]);
 
     const handleSharedPress = useCallback(() => {
         dismissBottomSheet();
-        onPress(SHARED);
+        onPress(Channel.CHANNEL_TYPE_SHARED);
     }, [onPress]);
 
     return (
@@ -73,7 +72,7 @@ export default function DropdownSlideup({
                 onPress={handlePublicPress}
                 testID='browse_channels.dropdown_slideup_item.public_channels'
                 text={intl.formatMessage({id: 'browse_channels.publicChannels', defaultMessage: 'Public Channels'})}
-                icon={selected === PUBLIC ? 'check' : undefined}
+                icon={selected === Channel.CHANNEL_TYPE_PUBLIC ? 'check' : undefined}
                 {...commonProps}
             />
             {canShowArchivedChannels && (
@@ -81,7 +80,7 @@ export default function DropdownSlideup({
                     onPress={handleArchivedPress}
                     testID='browse_channels.dropdown_slideup_item.archived_channels'
                     text={intl.formatMessage({id: 'browse_channels.archivedChannels', defaultMessage: 'Archived Channels'})}
-                    icon={selected === ARCHIVED ? 'check' : undefined}
+                    icon={selected === Channel.CHANNEL_TYPE_ARCHIVED ? 'check' : undefined}
                     {...commonProps}
                 />
             )}
@@ -90,7 +89,7 @@ export default function DropdownSlideup({
                     onPress={handleSharedPress}
                     testID='browse_channels.dropdown_slideup_item.shared_channels'
                     text={intl.formatMessage({id: 'browse_channels.sharedChannels', defaultMessage: 'Shared Channels'})}
-                    icon={selected === SHARED ? 'check' : undefined}
+                    icon={selected === Channel.CHANNEL_TYPE_SHARED ? 'check' : undefined}
                     {...commonProps}
                 />
             )}

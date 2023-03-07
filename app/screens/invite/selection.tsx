@@ -18,6 +18,7 @@ import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import Button from '@components/button';
 import SelectedChip from '@components/selected_chip';
 import SelectedUser from '@components/selected_users/selected_user';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -28,7 +29,6 @@ import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
 import {useIsTablet, useKeyboardHeight} from '@hooks/device';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 
-import FooterButton from './footer_button';
 import SelectionInviteAs from './selection_invite_as';
 import SelectionSearchBar from './selection_search_bar';
 import SelectionTeamBar from './selection_team_bar';
@@ -185,15 +185,21 @@ export default function Selection({
     const selectedCount = Object.keys(selectedIds).length;
 
     useEffect(() => {
+        const isDisabled = !selectedCount || (selectedCount !== 0 && guestEnabled && !selectedChannelsCount);
+
         onGetFooterButton(
-            <FooterButton
+            <Button
+                theme={theme}
+                size='lg'
+                emphasis='primary'
                 text={formatMessage({id: 'invite.selection.send_invitations', defaultMessage: 'Send invitations'})}
-                disabled={!selectedCount || (selectedCount !== 0 && guestEnabled && !selectedChannelsCount)}
+                buttonType={isDisabled ? 'disabled' : 'default'}
+                backgroundStyle={{flex: 1}}
                 onPress={onSend}
-                testID='send_invite'
+                testID='invite.footer_button.send_invite'
             />,
         );
-    }, [selectedCount, guestEnabled, selectedChannelsCount, locale]);
+    }, [selectedCount, guestEnabled, selectedChannelsCount, onSend, locale]);
 
     useEffect(() => {
         return () => {

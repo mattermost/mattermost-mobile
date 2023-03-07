@@ -251,22 +251,13 @@ export default function Invite({
         handleClearSearch();
     }, [selectedIds, handleClearSearch]);
 
-    const handleRetry = useCallback(() => {
-        setSendError('');
-        setStage(Stage.LOADING);
-
-        retryTimeoutId.current = setTimeout(() => {
-            handleSend();
-        }, TIMEOUT_MILLISECONDS);
-    }, []);
-
-    const handleSendError = () => {
+    const handleSendError = useCallback(() => {
         setSendError(formatMessage({id: 'invite.send_error', defaultMessage: 'Something went wrong while trying to send invitations. Please check your network connection and try again.'}));
         setResult(DEFAULT_RESULT);
         setStage(Stage.RESULT);
-    };
+    }, []);
 
-    const handleSend = async () => {
+    const handleSend = useCallback(async () => {
         if (!selectedCount) {
             return;
         }
@@ -286,7 +277,20 @@ export default function Invite({
         }
 
         setStage(Stage.RESULT);
-    };
+    }, [selectedCount, inviteType === InviteType.GUEST, serverUrl, teamId, teamDisplayName, selectedIds, selectedChannels, customMessage, intl, isAdmin]);
+
+    const handleRetry = useCallback(() => {
+        setSendError('');
+        setStage(Stage.LOADING);
+
+        if (retryTimeoutId.current) {
+            clearTimeout(retryTimeoutId.current);
+        }
+
+        retryTimeoutId.current = setTimeout(() => {
+            handleSend();
+        }, TIMEOUT_MILLISECONDS);
+    }, [handleSend]);
 
     const goBack = useCallback(() => {
         setStage(Stage.SELECTION);

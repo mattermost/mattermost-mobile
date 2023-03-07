@@ -8,6 +8,7 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import CompassIcon from '@components/compass_icon';
 import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
+import {Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
@@ -16,8 +17,6 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import DropdownSlideup from './dropdown_slideup';
-
-import {ARCHIVED, SHARED} from './';
 
 type Props = {
     typeOfChannels: string;
@@ -84,9 +83,9 @@ export default function ChannelDropdown({
     };
 
     let channelDropdownText = intl.formatMessage({id: 'browse_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
-    if (typeOfChannels === SHARED) {
+    if (typeOfChannels === Channel.CHANNEL_TYPE_SHARED) {
         channelDropdownText = intl.formatMessage({id: 'browse_channels.showSharedChannels', defaultMessage: 'Show: Shared Channels'});
-    } else if (typeOfChannels === ARCHIVED) {
+    } else if (typeOfChannels === Channel.CHANNEL_TYPE_ARCHIVED) {
         channelDropdownText = intl.formatMessage({id: 'browse_channels.showArchivedChannels', defaultMessage: 'Show: Archived Channels'});
     }
     return (

@@ -10,8 +10,9 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     const groupSeparator: ViewStyle = {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.12),
-        width: '91%',
-        alignSelf: 'center',
+        display: 'flex',
+        flex: 1,
+        marginHorizontal: 20,
         height: 1,
     };
     return {

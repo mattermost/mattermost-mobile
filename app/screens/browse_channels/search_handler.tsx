@@ -4,8 +4,7 @@
 import React, {useCallback, useEffect, useReducer, useRef, useState} from 'react';
 
 import {fetchArchivedChannels, fetchChannels, fetchSharedChannels, searchChannels} from '@actions/remote/channel';
-import {ARCHIVED, PUBLIC, SHARED} from '@components/channel_selector';
-import {General} from '@constants';
+import {General, Channel} from '@constants';
 import {useServerUrl} from '@context/server';
 import useDidUpdate from '@hooks/did_update';
 
@@ -42,13 +41,13 @@ const filterChannelsByType = (channels: Channel[], joinedChannels: MyChannelMode
     const ids = new Set(joinedChannels.map((c) => c.id));
     let filter: (c: Channel) => boolean;
     switch (channelType) {
-        case ARCHIVED:
+        case Channel.CHANNEL_TYPE_ARCHIVED:
             filter = (c) => c.delete_at !== 0;
             break;
-        case SHARED:
+        case Channel.CHANNEL_TYPE_SHARED:
             filter = (c) => c.delete_at === 0 && c.shared && !ids.has(c.id);
             break;
-        case PUBLIC:
+        case Channel.CHANNEL_TYPE_PUBLIC:
         default:
             filter = (c) => c.delete_at === 0 && !c.shared && !ids.has(c.id);
             break;
@@ -81,19 +80,19 @@ const addAction = (t: string, data: Channel[]) => {
 
 const reducer = (state: State, action: Action) => {
     switch (action.type) {
-        case PUBLIC:
+        case Channel.CHANNEL_TYPE_PUBLIC:
             return {
                 ...state,
                 channels: [...state.channels, ...action.data],
                 loading: false,
             };
-        case ARCHIVED:
+        case Channel.CHANNEL_TYPE_ARCHIVED:
             return {
                 ...state,
                 archivedChannels: [...state.archivedChannels, ...action.data],
                 loading: false,
             };
-        case SHARED:
+        case Channel.CHANNEL_TYPE_SHARED:
             return {
                 ...state,
                 sharedChannels: [...state.sharedChannels, ...action.data],
@@ -137,7 +136,7 @@ export default function SearchHandler(props: Props) {
     const [visibleChannels, setVisibleChannels] = useState<Channel[]>([]);
     const [term, setTerm] = useState('');
 
-    const [typeOfChannels, setTypeOfChannels] = useState(PUBLIC);
+    const [typeOfChannels, setTypeOfChannels] = useState(Channel.CHANNEL_TYPE_PUBLIC);
 
     const publicPage = useRef(-1);
     const sharedPage = useRef(-1);
@@ -158,17 +157,17 @@ export default function SearchHandler(props: Props) {
         let page: (typeof publicPage | typeof sharedPage | typeof archivedPage);
 
         switch (t) {
-            case SHARED:
+            case Channel.CHANNEL_TYPE_SHARED:
                 next = nextShared;
                 fetch = fetchSharedChannels;
                 page = sharedPage;
                 break;
-            case ARCHIVED:
+            case Channel.CHANNEL_TYPE_ARCHIVED:
                 next = nextArchived;
                 fetch = fetchArchivedChannels;
                 page = archivedPage;
                 break;
-            case PUBLIC:
+            case Channel.CHANNEL_TYPE_PUBLIC:
             default:
                 next = nextPublic;
                 fetch = fetchChannels;
@@ -198,10 +197,10 @@ export default function SearchHandler(props: Props) {
 
     let activeChannels: Channel[];
     switch (typeOfChannels) {
-        case ARCHIVED:
+        case Channel.CHANNEL_TYPE_ARCHIVED:
             activeChannels = archivedChannels;
             break;
-        case SHARED:
+        case Channel.CHANNEL_TYPE_SHARED:
             activeChannels = sharedChannels;
             break;
         default:
@@ -244,17 +243,17 @@ export default function SearchHandler(props: Props) {
             let page: (typeof publicPage | typeof sharedPage | typeof archivedPage);
             let shouldFilterJoined: boolean;
             switch (t) {
-                case SHARED:
+                case Channel.CHANNEL_TYPE_SHARED:
                     page = sharedPage;
                     next = nextShared;
                     shouldFilterJoined = true;
                     break;
-                case ARCHIVED:
+                case Channel.CHANNEL_TYPE_ARCHIVED:
                     page = archivedPage;
                     next = nextArchived;
                     shouldFilterJoined = false;
                     break;
-                case PUBLIC:
+                case Channel.CHANNEL_TYPE_PUBLIC:
                 default:
                     page = publicPage;
                     next = nextPublic;
@@ -301,10 +300,10 @@ export default function SearchHandler(props: Props) {
         }
         let next;
         switch (typeOfChannels) {
-            case PUBLIC:
+            case Channel.CHANNEL_TYPE_PUBLIC:
                 next = nextPublic.current;
                 break;
-            case SHARED:
+            case Channel.CHANNEL_TYPE_SHARED:
                 next = nextShared.current;
                 break;
             default:

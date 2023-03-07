@@ -3,18 +3,17 @@
 
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {MessageDescriptor, useIntl} from 'react-intl';
-import {View, Text, ScrollView, StyleProp, TextStyle, ViewStyle} from 'react-native';
+import {View, Text, ScrollView, StyleProp, ViewStyle} from 'react-native';
 
+import Button from '@components/button';
 import AlertSvg from '@components/illustrations/alert';
 import ErrorSvg from '@components/illustrations/error';
 import SuccessSvg from '@components/illustrations/success';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import FooterButton from './footer_button';
 import SummaryReport, {SummaryReportType} from './summary_report';
 
 import type {SearchResult, Result} from './invite_types';
@@ -154,9 +153,8 @@ export default function Summary({
         let onPress;
         let iconName = '';
         let text: MessageDescriptor;
-        let styleButtonText: StyleProp<TextStyle> = {};
-        let styleButtonBackground: StyleProp<ViewStyle> = [];
-        let styleButtonIcon: StyleProp<TextStyle> = {};
+        let emphasis: ButtonEmphasis = 'primary';
+        const backgroundStyle: StyleProp<ViewStyle> = [{flex: 1}];
 
         switch (type) {
             case SummaryButtonType.BACK:
@@ -166,9 +164,8 @@ export default function Summary({
                     id: t('invite.summary.back'),
                     defaultMessage: 'Go back',
                 };
-                styleButtonText = buttonTextStyle(theme, 'lg', 'tertiary');
-                styleButtonBackground = [buttonBackgroundStyle(theme, 'lg', 'tertiary'), {marginRight: 8}];
-                styleButtonIcon = {color: theme.buttonBg};
+                emphasis = 'tertiary';
+                backgroundStyle.push({marginRight: 8});
                 break;
             case SummaryButtonType.RETRY:
                 onPress = onRetry;
@@ -189,14 +186,16 @@ export default function Summary({
         }
 
         return (
-            <FooterButton
+            <Button
+                theme={theme}
+                size='lg'
+                emphasis={emphasis}
                 text={formatMessage(text)}
-                textStyle={styleButtonText}
-                containerStyle={styleButtonBackground}
                 iconName={iconName}
-                iconStyle={styleButtonIcon}
+                iconSize={24}
+                backgroundStyle={backgroundStyle}
                 onPress={onPress}
-                testID={type}
+                testID={`invite.footer_button.${type}`}
             />
         );
     }, [theme, locale, onClose, onRetry, onBack]);

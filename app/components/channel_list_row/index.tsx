@@ -8,8 +8,8 @@ import {
     View,
 } from 'react-native';
 
-import {General} from '@app/constants';
 import CompassIcon from '@components/compass_icon';
+import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';

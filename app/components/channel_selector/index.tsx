@@ -10,15 +10,12 @@ import ChannelIcon from '@components/channel_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import SelectedChip from '@components/selected_chip';
+import {Channel} from '@constants';
 import {useTheme} from '@context/theme';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 
 import ChannelDropdown from './channel_dropdown';
 import ChannelList from './channel_list';
-
-export const PUBLIC = 'public';
-export const SHARED = 'shared';
-export const ARCHIVED = 'archived';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -89,7 +86,7 @@ export default function ChannelSelector(props: ChannelSelectorProps) {
     const {
         sharedChannelsEnabled = false,
         canShowArchivedChannels = false,
-        typeOfChannels = PUBLIC,
+        typeOfChannels = Channel.CHANNEL_TYPE_PUBLIC,
         changeChannelType: changeTypeOfChannels,
         term,
         searchChannels,

@@ -6,13 +6,12 @@ import {useIntl} from 'react-intl';
 import {TextInput, View} from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
-import {typography} from '@app/utils/typography';
+import SettingItem from '@components/settings/item';
+import SettingOption from '@components/settings/option';
+import SettingSeparator from '@components/settings/separator';
 import {useTheme} from '@context/theme';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
-
-import SettingItem from '../settings/setting_item';
-import SettingOption from '../settings/setting_option';
-import SettingSeparator from '../settings/settings_separator';
+import {typography} from '@utils/typography';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -111,6 +110,7 @@ export default function SelectionInviteAs({
                 action={onGuestChange}
                 selected={guestEnabled}
                 toggleItemProps={{disabled: !canChange}}
+                optionLabelTextStyle={{fontWeight: '600'}}
                 testID='invite.invite_as.guest_toggle'
             />
             {guestEnabled && (

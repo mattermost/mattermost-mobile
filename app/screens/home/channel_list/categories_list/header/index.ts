@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {observePermissionForTeam} from '@queries/servers/role';
@@ -29,6 +29,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const teamIsGroupConstrained = team.pipe(
         switchMap((t) => of$(t?.isGroupConstrained)),
+        distinctUntilChanged(),
     );
 
     const canJoinChannels = combineLatest([currentUser, team]).pipe(

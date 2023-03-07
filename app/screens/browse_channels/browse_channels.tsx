@@ -8,7 +8,7 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import ChannelSelector from '@components/channel_selector';
-import {Screens} from '@constants';
+import {Screens, Channel} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -21,10 +21,6 @@ import type {ImageResource, OptionsTopBarButton} from 'react-native-navigation';
 
 const CLOSE_BUTTON_ID = 'close-browse-channels';
 const CREATE_BUTTON_ID = 'create-pub-channel';
-
-export const PUBLIC = 'public';
-export const SHARED = 'shared';
-export const ARCHIVED = 'archived';
 
 const makeLeftButton = (icon: ImageResource): OptionsTopBarButton => {
     return {
