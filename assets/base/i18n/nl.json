@@ -392,7 +392,7 @@
     "mobile.create_direct_message.start": "Gesprek beginnen",
     "mobile.create_channel.title": "Nieuw kanaal",
     "mobile.components.select_server_view.msg_welcome": "Welkom",
-    "mobile.components.select_server_view.msg_description": "Een server is het communicatiecentrum van je team dat toegankelijk is via een unieke URL.",
+    "mobile.components.select_server_view.msg_description": "Een server is het communicatiecentrum van je team dat toegankelijk is via een unieke URL",
     "mobile.components.select_server_view.msg_connect": "Laten we verbinding maken met een server",
     "mobile.components.select_server_view.displayName": "Weergavenaam",
     "mobile.components.select_server_view.displayHelp": "Kies een weergavenaam voor jouw server",
