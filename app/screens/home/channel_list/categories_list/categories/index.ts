@@ -3,8 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$, combineLatest} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {of as of$} from 'rxjs';
+import {switchMap, combineLatestWith} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {getPreferenceValue} from '@helpers/api/preference';
@@ -31,8 +31,9 @@ const enhanced = withObservables(
 
         const unreadsOnTopServerPreference = observeConfigBooleanValue(database, 'ExperimentalGroupUnreadChannels');
 
-        const unreadsOnTop = combineLatest([unreadsOnTopUserPreference, unreadsOnTopServerPreference]).pipe(
-            switchMap(([u, s]) => {
+        const unreadsOnTop = unreadsOnTopServerPreference.pipe(
+            combineLatestWith(unreadsOnTopUserPreference),
+            switchMap(([s, u]) => {
                 if (!u) {
                     return of$(s);
                 }
