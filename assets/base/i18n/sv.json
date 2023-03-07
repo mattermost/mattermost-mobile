@@ -1005,5 +1005,6 @@
     "channel_notification_preferences.notification.all": "Alla nya meddelanden",
     "channel_notification_preferences.muted_title": "Kanalen är mjutad",
     "channel_notification_preferences.muted_content": "Du kan ändra notifieringsinställningarna, men eftersom kanalen är mjutad kommer du inte få notifieringar.",
-    "channel_notification_preferences.default": "(standard)"
+    "channel_notification_preferences.default": "(standard)",
+    "notification.no_connection": "Servern är otillgänglig och det gick inte att hämta information om notifieringen."
 }
