@@ -27,28 +27,28 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type ChannelListProps = {
-    channelsCount: number;
+    hasChannels: boolean;
     iconPad?: boolean;
     isCRTEnabled?: boolean;
-    teamsCount: number;
+    moreThanOneTeam: boolean;
 };
 
-const getTabletWidth = (teamsCount: number) => {
-    return TABLET_SIDEBAR_WIDTH - (teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0);
+const getTabletWidth = (moreThanOneTeam: boolean) => {
+    return TABLET_SIDEBAR_WIDTH - (moreThanOneTeam ? TEAM_SIDEBAR_WIDTH : 0);
 };
 
-const CategoriesList = ({channelsCount, iconPad, isCRTEnabled, teamsCount}: ChannelListProps) => {
+const CategoriesList = ({hasChannels, iconPad, isCRTEnabled, moreThanOneTeam}: ChannelListProps) => {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const {width} = useWindowDimensions();
     const isTablet = useIsTablet();
-    const tabletWidth = useSharedValue(isTablet ? getTabletWidth(teamsCount) : 0);
+    const tabletWidth = useSharedValue(isTablet ? getTabletWidth(moreThanOneTeam) : 0);
 
     useEffect(() => {
         if (isTablet) {
-            tabletWidth.value = getTabletWidth(teamsCount);
+            tabletWidth.value = getTabletWidth(moreThanOneTeam);
         }
-    }, [isTablet && teamsCount]);
+    }, [isTablet && moreThanOneTeam]);
 
     const tabletStyle = useAnimatedStyle(() => {
         if (!isTablet) {
@@ -61,7 +61,7 @@ const CategoriesList = ({channelsCount, iconPad, isCRTEnabled, teamsCount}: Chan
     }, [isTablet, width]);
 
     const content = useMemo(() => {
-        if (channelsCount < 1) {
+        if (!hasChannels) {
             return (<LoadChannelsError/>);
         }
 
