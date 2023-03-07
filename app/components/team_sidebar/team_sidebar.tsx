@@ -14,7 +14,7 @@ import TeamList from './team_list';
 type Props = {
     iconPad?: boolean;
     canJoinOtherTeams: boolean;
-    teamsCount: number;
+    hasMoreThanOneTeam: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -36,8 +36,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-export default function TeamSidebar({iconPad, canJoinOtherTeams, teamsCount}: Props) {
-    const initialWidth = teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0;
+export default function TeamSidebar({iconPad, canJoinOtherTeams, hasMoreThanOneTeam}: Props) {
+    const initialWidth = hasMoreThanOneTeam ? TEAM_SIDEBAR_WIDTH : 0;
     const width = useSharedValue(initialWidth);
     const marginTop = useSharedValue(iconPad ? 44 : 0);
     const theme = useTheme();
@@ -58,8 +58,8 @@ export default function TeamSidebar({iconPad, canJoinOtherTeams, teamsCount}: Pr
     }, [iconPad]);
 
     useEffect(() => {
-        width.value = teamsCount > 1 ? TEAM_SIDEBAR_WIDTH : 0;
-    }, [teamsCount]);
+        width.value = hasMoreThanOneTeam ? TEAM_SIDEBAR_WIDTH : 0;
+    }, [hasMoreThanOneTeam]);
 
     return (
         <Animated.View style={[styles.container, transform]}>

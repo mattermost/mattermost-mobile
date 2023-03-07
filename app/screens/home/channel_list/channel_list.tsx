@@ -29,9 +29,10 @@ import Servers from './servers';
 import type {LaunchType} from '@typings/launch';
 
 type ChannelProps = {
-    channelsCount: number;
+    hasChannels: boolean;
     isCRTEnabled: boolean;
-    teamsCount: number;
+    hasTeams: boolean;
+    hasMoreThanOneTeam: boolean;
     isLicensed: boolean;
     showToS: boolean;
     launchType: LaunchType;
@@ -126,10 +127,10 @@ const ChannelListScreen = (props: ChannelProps) => {
     }, [theme, insets.top]);
 
     useEffect(() => {
-        if (!props.teamsCount) {
+        if (!props.hasTeams) {
             resetToTeams();
         }
-    }, [Boolean(props.teamsCount)]);
+    }, [Boolean(props.hasTeams)]);
 
     useEffect(() => {
         const back = BackHandler.addEventListener('hardwareBackPress', handleBackPress);
@@ -176,13 +177,13 @@ const ChannelListScreen = (props: ChannelProps) => {
                     >
                         <TeamSidebar
                             iconPad={canAddOtherServers}
-                            teamsCount={props.teamsCount}
+                            hasMoreThanOneTeam={props.hasMoreThanOneTeam}
                         />
                         <CategoriesList
-                            iconPad={canAddOtherServers && props.teamsCount <= 1}
+                            iconPad={canAddOtherServers && !props.hasMoreThanOneTeam}
                             isCRTEnabled={props.isCRTEnabled}
-                            teamsCount={props.teamsCount}
-                            channelsCount={props.channelsCount}
+                            moreThanOneTeam={props.hasMoreThanOneTeam}
+                            hasChannels={props.hasChannels}
                         />
                         {isTablet &&
                             <AdditionalTabletView/>

@@ -33,8 +33,8 @@ describe('components/categories_list', () => {
     it('should render', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
-                teamsCount={1}
-                channelsCount={1}
+                moreThanOneTeam={false}
+                hasChannels={true}
             />,
             {database},
         );
@@ -46,8 +46,8 @@ describe('components/categories_list', () => {
         const wrapper = renderWithEverything(
             <CategoriesList
                 isCRTEnabled={true}
-                teamsCount={1}
-                channelsCount={1}
+                moreThanOneTeam={false}
+                hasChannels={true}
             />,
             {database},
         );
@@ -67,8 +67,8 @@ describe('components/categories_list', () => {
         jest.useFakeTimers();
         const wrapper = renderWithEverything(
             <CategoriesList
-                teamsCount={0}
-                channelsCount={1}
+                moreThanOneTeam={false}
+                hasChannels={true}
             />,
             {database},
         );
@@ -89,8 +89,8 @@ describe('components/categories_list', () => {
         jest.useFakeTimers();
         const wrapper = renderWithEverything(
             <CategoriesList
-                teamsCount={1}
-                channelsCount={0}
+                moreThanOneTeam={true}
+                hasChannels={false}
             />,
             {database},
         );

@@ -992,5 +992,18 @@
     "mobile.calls_recording_start_no_permissions": "Du har inte behörighet att starta en inspelning. Be samtalsvärden att starta en inspelning.",
     "mobile.calls_recording_start_in_progress": "En inspelning pågår redan.",
     "mobile.calls_host_rec_error_title": "Något gick fel med inspelningen",
-    "mobile.calls_host_rec_error": "Försök att spela in igen. Du kan också kontakta din systemadministratör för att få hjälp med felsökning."
+    "mobile.calls_host_rec_error": "Försök att spela in igen. Du kan också kontakta din systemadministratör för att få hjälp med felsökning.",
+    "notification.no_post": "Meddelandet hittades inte.",
+    "invite.summary.back": "Gå tillbaka",
+    "channel_notification_preferences.unmute_content": "Stäng av mjutad kanal",
+    "channel_notification_preferences.thread_replies": "Svar i trådar",
+    "channel_notification_preferences.reset_default": "Återställ till standardinställningen",
+    "channel_notification_preferences.notify_about": "Notifiera mig om...",
+    "channel_notification_preferences.notification.thread_replies": "Notifiera mig om svar i trådar som jag följer i denna kanal",
+    "channel_notification_preferences.notification.none": "Inget",
+    "channel_notification_preferences.notification.mention": "Endast omnämnanden och direktmeddelanden",
+    "channel_notification_preferences.notification.all": "Alla nya meddelanden",
+    "channel_notification_preferences.muted_title": "Kanalen är mjutad",
+    "channel_notification_preferences.muted_content": "Du kan ändra notifieringsinställningarna, men eftersom kanalen är mjutad kommer du inte få notifieringar.",
+    "channel_notification_preferences.default": "(standard)"
 }

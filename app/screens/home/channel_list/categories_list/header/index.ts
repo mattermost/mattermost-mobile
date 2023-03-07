@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {combineLatest, of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {Permissions} from '@constants';
 import {observePermissionForTeam} from '@queries/servers/role';
@@ -25,6 +25,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const canJoinChannels = combineLatest([currentUser, team]).pipe(
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.JOIN_PUBLIC_CHANNELS, true)),
+        distinctUntilChanged(),
     );
 
     const canCreatePublicChannels = combineLatest([currentUser, team]).pipe(
@@ -37,6 +38,7 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const canCreateChannels = combineLatest([canCreatePublicChannels, canCreatePrivateChannels]).pipe(
         switchMap(([open, priv]) => of$(open || priv)),
+        distinctUntilChanged(),
     );
 
     const canAddUserToTeam = combineLatest([currentUser, team]).pipe(
@@ -48,9 +50,11 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         canJoinChannels,
         canInvitePeople: combineLatest([enableOpenServer, canAddUserToTeam]).pipe(
             switchMap(([openServer, addUser]) => of$(openServer && addUser)),
+            distinctUntilChanged(),
         ),
         displayName: team.pipe(
             switchMap((t) => of$(t?.displayName)),
+            distinctUntilChanged(),
         ),
         pushProxyStatus: observePushVerificationStatus(database),
     };

@@ -3,10 +3,10 @@
 
 import {isMinimumServerVersion} from './helpers';
 
-export function hasReliableWebsocket(config: ClientConfig) {
-    if (isMinimumServerVersion(config.Version, 6, 5)) {
+export function hasReliableWebsocket(version?: string, reliableWebsocketsConfig?: string) {
+    if (version && isMinimumServerVersion(version, 6, 5)) {
         return true;
     }
 
-    return config.EnableReliableWebSockets === 'true';
+    return reliableWebsocketsConfig === 'true';
 }
