@@ -3,7 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
+import {of as of$, Observable} from 'rxjs';
 import {switchMap, combineLatestWith, distinctUntilChanged} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
@@ -19,6 +19,7 @@ import CategoryBody from './category_body';
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type CategoryModel from '@typings/database/models/servers/category';
 import type ChannelModel from '@typings/database/models/servers/channel';
+import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 type EnhanceProps = {
@@ -30,8 +31,7 @@ type EnhanceProps = {
 
 const withUserId = withObservables([], ({database}: WithDatabaseArgs) => ({currentUserId: observeCurrentUserId(database)}));
 
-const observeCategoryChannels = (category: CategoryModel) => {
-    const myChannels = category.myChannels.observeWithColumns(['last_post_at', 'is_unread']);
+const observeCategoryChannels = (category: CategoryModel, myChannels: Observable<MyChannelModel[]>) => {
     const channels = category.channels.observeWithColumns(['create_at', 'display_name']);
     const manualSort = category.categoryChannelsBySortOrder.observeWithColumns(['sort_order']);
     return myChannels.pipe(
@@ -57,7 +57,8 @@ const observeCategoryChannels = (category: CategoryModel) => {
 };
 
 const enhanced = withObservables([], ({category, currentUserId, database, isTablet, locale}: EnhanceProps) => {
-    const channelsWithMyChannel = observeCategoryChannels(category);
+    const categoryMyChannels = category.myChannels.observeWithColumns(['last_post_at', 'is_unread']);
+    const channelsWithMyChannel = observeCategoryChannels(category, categoryMyChannels);
     const currentChannelId = isTablet ? observeCurrentChannelId(database) : of$('');
     const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);
 
@@ -77,9 +78,9 @@ const enhanced = withObservables([], ({category, currentUserId, database, isTabl
             );
     }
 
-    const notifyPropsPerChannel = channelsWithMyChannel.pipe(
+    const notifyPropsPerChannel = categoryMyChannels.pipe(
         // eslint-disable-next-line max-nested-callbacks
-        switchMap((cwms) => observeNotifyPropsByChannels(database, cwms.map((c) => c.myChannel))),
+        switchMap((mc) => observeNotifyPropsByChannels(database, mc)),
     );
 
     const hiddenDmPrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.DIRECT_CHANNEL_SHOW, undefined, 'false').
