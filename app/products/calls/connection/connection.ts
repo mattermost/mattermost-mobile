@@ -22,7 +22,6 @@ import {logError, logDebug, logWarning} from '@utils/log';
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
 import type {CallsConnection} from '@calls/types/calls';
-import type {RTCPeerOpts} from '@mmcalls/common/lib/rtc_peer';
 import type {EmojiData} from '@mmcalls/common/lib/types';
 
 const peerConnectTimeout = 5000;
@@ -205,14 +204,15 @@ export async function newConnection(
         InCallManager.start({media: 'video'});
         setSpeakerPhone(true);
 
-        const opts: RTCPeerOpts = {
+        peer = new RTCPeer({
+            iceServers: iceConfigs || [],
             logDebug,
+            logErr: logError,
             webrtc: {
                 MediaStream,
                 RTCPeerConnection,
             },
-        };
-        peer = new RTCPeer({iceServers: iceConfigs || []}, opts);
+        });
 
         peer.on('offer', (sdp) => {
             logDebug(`local offer, sending: ${JSON.stringify(sdp)}`);
