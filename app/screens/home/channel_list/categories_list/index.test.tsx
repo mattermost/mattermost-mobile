@@ -89,8 +89,8 @@ describe('components/categories_list', () => {
         jest.useFakeTimers();
         const wrapper = renderWithEverything(
             <CategoriesList
-                moreThanOneTeam={false}
-                hasChannels={true}
+                moreThanOneTeam={true}
+                hasChannels={false}
             />,
             {database},
         );
