@@ -47,11 +47,9 @@ export default function DraftInputHeader({
 
     return (
         <View style={style.container}>
-            {Boolean(postPriority?.priority) && (
-                <View style={style.labelContainer}>
-                    <PostPriorityLabel label={postPriority!.priority}/>
-                </View>
-            )}
+            <View style={style.labelContainer}>
+                <PostPriorityLabel label={postPriority!.priority}/>
+            </View>
             {postPriority.requested_ack && (
                 <View style={style.ackContainer}>
                     <CompassIcon

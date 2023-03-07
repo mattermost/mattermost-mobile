@@ -499,86 +499,80 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
 }
 
 export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOnly = false): Promise<AuthorsRequest> => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
 
-    const {database} = operator;
-    const currentUserId = await getCurrentUserId(database);
-    const users = await queryAllUsers(database).fetch();
-    const existingUserIds = new Set<string>();
-    const existingUserNames = new Set<string>();
-    let excludeUsername;
-    users.forEach((u) => {
-        existingUserIds.add(u.id);
-        existingUserNames.add(u.username);
-        if (u.id === currentUserId) {
-            excludeUsername = u.username;
-        }
-    });
+        const currentUserId = await getCurrentUserId(database);
+        const users = await queryAllUsers(database).fetch();
+        const existingUserIds = new Set<string>();
+        const existingUserNames = new Set<string>();
+        let excludeUsername;
+        users.forEach((u) => {
+            existingUserIds.add(u.id);
+            existingUserNames.add(u.username);
+            if (u.id === currentUserId) {
+                excludeUsername = u.username;
+            }
+        });
 
-    const isPostPriorityEnabled = await getIsPostPriorityEnabled(database);
-    const isPostAcknowledgementsEnabled = await getIsPostAcknowledgementsEnabled(database);
-    const fetchAckUsers = isPostPriorityEnabled && isPostAcknowledgementsEnabled;
+        const isPostPriorityEnabled = await getIsPostPriorityEnabled(database);
+        const isPostAcknowledgementsEnabled = await getIsPostAcknowledgementsEnabled(database);
+        const fetchAckUsers = isPostPriorityEnabled && isPostAcknowledgementsEnabled;
 
-    const usernamesToLoad = getNeededAtMentionedUsernames(existingUserNames, posts, excludeUsername);
-    const userIdsToLoad = new Set<string>();
-    for (const p of posts) {
-        const {user_id} = p;
-        if (user_id !== currentUserId) {
-            userIdsToLoad.add(user_id);
-        }
-        if (fetchAckUsers) {
-            p.metadata?.acknowledgements?.forEach((ack) => {
-                if (ack.user_id !== currentUserId && !existingUserIds.has(ack.user_id)) {
-                    userIdsToLoad.add(ack.user_id);
-                }
-            });
-        }
-    }
-
-    try {
-        const promises: Array<Promise<UserProfile[]>> = [];
-        if (userIdsToLoad.size) {
-            promises.push(client.getProfilesByIds(Array.from(userIdsToLoad)));
-        }
-
-        if (usernamesToLoad.size) {
-            promises.push(client.getProfilesByUsernames(Array.from(usernamesToLoad)));
-        }
-
-        if (promises.length) {
-            const authorsResult = await Promise.allSettled(promises);
-            const result = authorsResult.reduce<UserProfile[][]>((acc, item) => {
-                if (item.status === 'fulfilled') {
-                    acc.push(item.value);
-                }
-                return acc;
-            }, []);
-
-            const authors = result.flat();
-            if (!fetchOnly && authors.length) {
-                await operator.handleUsers({
-                    users: authors,
-                    prepareRecordsOnly: false,
+        const usernamesToLoad = getNeededAtMentionedUsernames(existingUserNames, posts, excludeUsername);
+        const userIdsToLoad = new Set<string>();
+        for (const p of posts) {
+            const {user_id} = p;
+            if (user_id !== currentUserId) {
+                userIdsToLoad.add(user_id);
+            }
+            if (fetchAckUsers) {
+                p.metadata?.acknowledgements?.forEach((ack) => {
+                    if (ack.user_id !== currentUserId && !existingUserIds.has(ack.user_id)) {
+                        userIdsToLoad.add(ack.user_id);
+                    }
                 });
             }
-
-            return {authors};
         }
 
-        return {authors: [] as UserProfile[]};
+        try {
+            const promises: Array<Promise<UserProfile[]>> = [];
+            if (userIdsToLoad.size) {
+                promises.push(client.getProfilesByIds(Array.from(userIdsToLoad)));
+            }
+
+            if (usernamesToLoad.size) {
+                promises.push(client.getProfilesByUsernames(Array.from(usernamesToLoad)));
+            }
+
+            if (promises.length) {
+                const authorsResult = await Promise.allSettled(promises);
+                const result = authorsResult.reduce<UserProfile[][]>((acc, item) => {
+                    if (item.status === 'fulfilled') {
+                        acc.push(item.value);
+                    }
+                    return acc;
+                }, []);
+
+                const authors = result.flat();
+                if (!fetchOnly && authors.length) {
+                    await operator.handleUsers({
+                        users: authors,
+                        prepareRecordsOnly: false,
+                    });
+                }
+
+                return {authors};
+            }
+
+            return {authors: [] as UserProfile[]};
+        } catch (error) {
+            logError('FETCH AUTHORS ERROR', error);
+            forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+            return {error};
+        }
     } catch (error) {
-        logError('FETCH AUTHORS ERROR', error);
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };

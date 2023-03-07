@@ -21,6 +21,7 @@ type Draft = {
     files?: FileInfo[];
     message?: string;
     root_id: string;
+    metadata?: PostMetadata;
 };
 
 type MyTeam = {

@@ -53,7 +53,7 @@ export function getComponents(inColor: string): {red: number; green: number; blu
     };
 }
 
-export function makeStyleSheetFromTheme<T extends NamedStyles<T>>(getStyleFromTheme: (a: Theme) => T): (a: Theme) => T {
+export function makeStyleSheetFromTheme<T extends NamedStyles<T>>(getStyleFromTheme: (a: Theme, ...args: unknown[]) => T): (a: Theme, ...args: unknown[]) => T {
     let lastTheme: Theme;
     let style: T;
     return (theme: Theme) => {

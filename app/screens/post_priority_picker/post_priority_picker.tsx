@@ -223,10 +223,10 @@ const PostPriorityPicker = ({
                     selected={data.priority === PostPriorityType.URGENT}
                     value={PostPriorityType.URGENT}
                 />
-                {(isPostAcknowledgementEnabled || displayPersistentNotifications) && (
+                {(isPostAcknowledgementEnabled) && (
                     <>
                         <View style={style.optionsSeparator}/>
-                        {isPostAcknowledgementEnabled && renderAcknowledgementOption()}
+                        {renderAcknowledgementOption()}
                         {displayPersistentNotifications && renderPersistentNotificationsOption()}
                     </>
                 )}

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {View, Text, TouchableOpacity} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
@@ -84,13 +84,16 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
     const isCurrentAuthor = post.userId === currentUser.id;
     const acknowledgements = post.metadata?.acknowledgements || [];
 
-    let acknowledgedAt = 0;
-    if (acknowledgements.length) {
-        const ack = acknowledgements.find((item) => item.user_id === currentUser.id);
-        if (ack) {
-            acknowledgedAt = ack.acknowledged_at;
+    const acknowledgedAt = useMemo(() => {
+        if (acknowledgements.length > 0) {
+            const ack = acknowledgements.find((item) => item.user_id === currentUser.id);
+
+            if (ack) {
+                return ack.acknowledged_at;
+            }
         }
-    }
+        return 0;
+    }, [acknowledgements]);
 
     const handleOnPress = useCallback(() => {
         if ((acknowledgedAt && moreThan5minAgo(acknowledgedAt)) || isCurrentAuthor) {
@@ -148,7 +151,7 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
             title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
             theme,
         });
-    }, [bottom, intl, isTablet]);
+    }, [bottom, intl, isTablet, acknowledgements, theme, location, post.channelId]);
 
     return (
         <>

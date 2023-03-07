@@ -61,7 +61,7 @@ const UserListItem = ({channelId, location, user, userAcknowledgement}: Props) =
                 FooterComponent={
                     <View style={style.ackContainer}>
                         <Text style={style.time}>
-                            {'LOL -'} {userAcknowledgement}
+                            {userAcknowledgement}
                         </Text>
                     </View>
                 }

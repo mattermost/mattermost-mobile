@@ -777,7 +777,7 @@
   "permalink.show_dialog_warn.join": "Join",
   "permalink.show_dialog_warn.title": "Join private channel",
   "persistent_notifications.confirm.cancel": "Cancel",
-  "persistent_notifications.confirm.description": "@mentioned recipients will be notified every {interval, plural, one {1 minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.",
+  "persistent_notifications.confirm.description": "@mentioned recipients will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.",
   "persistent_notifications.confirm.send": "Send",
   "persistent_notifications.confirm.title": "Send persistent notifications",
   "persistent_notifications.error.max_recipients.description": "You can send persistent notifications to a maximum of {max} recipients. There are {count} recipients mentioned in your message. You’ll need to change who you’ve mentioned before you can send.",

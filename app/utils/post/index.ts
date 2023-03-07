@@ -4,6 +4,7 @@
 import {Post} from '@constants';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import {DEFAULT_LOCALE} from '@i18n';
+import {toMilliseconds} from '@utils/datetime';
 import {displayUsername} from '@utils/user';
 
 import type PostModel from '@typings/database/models/servers/post';
@@ -87,6 +88,5 @@ export const getLastFetchedAtFromPosts = (posts?: Post[]) => {
 };
 
 export const moreThan5minAgo = (time: number) => {
-    const now = new Date().getTime();
-    return now - time > 5 * 60 * 1000;
+    return Date.now() - time > toMilliseconds({minutes: 5});
 };

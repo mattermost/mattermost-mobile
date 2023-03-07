@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
+import {updateDraftPriority} from '@actions/local/draft';
 import {getChannelTimezones} from '@actions/remote/channel';
 import {executeCommand, handleGotoLocation} from '@actions/remote/command';
 import {createPost} from '@actions/remote/post';
@@ -55,10 +56,13 @@ type Props = {
     uploadFileError: React.ReactNode;
     persistentNotificationInterval: number;
     persistentNotificationMaxRecipients: number;
+    postPriority: PostPriority;
 }
 
-const INITIAL_PRIORITY = {
+export const INITIAL_PRIORITY = {
     priority: PostPriorityType.STANDARD,
+    requested_ack: false,
+    persistent_notifications: false,
 };
 
 export default function SendHandler({
@@ -87,13 +91,13 @@ export default function SendHandler({
     setIsFocused,
     persistentNotificationInterval,
     persistentNotificationMaxRecipients,
+    postPriority,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
     const [channelTimezoneCount, setChannelTimezoneCount] = useState(0);
     const [sendingMessage, setSendingMessage] = useState(false);
-    const [postPriority, setPostPriority] = useState<PostPriority>(INITIAL_PRIORITY);
 
     const canSend = useCallback(() => {
         if (sendingMessage) {
@@ -120,6 +124,10 @@ export default function SendHandler({
         setSendingMessage(false);
     }, [serverUrl, rootId, clearDraft]);
 
+    const handlePostPriority = useCallback((priority: PostPriority) => {
+        updateDraftPriority(serverUrl, channelId, rootId, priority);
+    }, [serverUrl, rootId]);
+
     const doSubmitMessage = useCallback(() => {
         const postFiles = files.filter((f) => !f.failed);
         const post = {
@@ -143,7 +151,6 @@ export default function SendHandler({
 
         clearDraft();
         setSendingMessage(false);
-        setPostPriority(INITIAL_PRIORITY);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
     }, [files, currentUserId, channelId, rootId, value, clearDraft, postPriority]);
 
@@ -279,7 +286,7 @@ export default function SendHandler({
             maxMessageLength={maxMessageLength}
             updatePostInputTop={updatePostInputTop}
             postPriority={postPriority}
-            updatePostPriority={setPostPriority}
+            updatePostPriority={handlePostPriority}
             persistentNotificationInterval={persistentNotificationInterval}
             persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
             setIsFocused={setIsFocused}

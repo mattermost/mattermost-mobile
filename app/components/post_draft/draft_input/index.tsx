@@ -150,7 +150,7 @@ export default function DraftInput({
     const sendActionTestID = `${testID}.send_action`;
     const style = getStyleSheet(theme);
 
-    const persistenNotificationsEnabled = postPriority?.persistent_notifications && postPriority?.priority === PostPriorityType.URGENT;
+    const persistenNotificationsEnabled = postPriority.persistent_notifications && postPriority.priority === PostPriorityType.URGENT;
     const {noMentionsError, mentionsList} = useMemo(() => {
         let error = false;
         let mentions: string[] = [];
