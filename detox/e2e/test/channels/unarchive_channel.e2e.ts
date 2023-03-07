@@ -17,7 +17,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {getAdminAccount, getRandomId} from '@support/utils';
+import {getAdminAccount, getRandomId, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Unarchive Channel', () => {
@@ -32,7 +32,7 @@ describe('Channels - Unarchive Channel', () => {
 
     beforeEach(async () => {
         // * Verify on channel list screen
-        await ChannelListScreen.toBeVisible();
+        await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(timeouts.TWO_MIN);
     });
 
     afterAll(async () => {

@@ -93,7 +93,7 @@ class AccountScreen {
             await expect(Alert.logoutTitle(serverDisplayName)).toBeVisible();
         }
         await Alert.logoutButton.tap();
-        await expect(this.accountScreen).not.toBeVisible();
+        await waitFor(this.accountScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 

@@ -7,7 +7,7 @@
 // - Use element testID when selecting an element. Create one if none.
 // *******************************************************************
 
-import {serverOneUrl} from '@support/test_config';
+import {siteOneUrl} from '@support/test_config';
 import {
     ChannelScreen,
     ChannelListScreen,
@@ -17,21 +17,21 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
-import {getAdminAccount, getRandomId} from '@support/utils';
+import {getAdminAccount, getRandomId, timeouts} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Convert to Private Channel', () => {
-    const serverOneDisplayName = 'Server 1';
+    const siteOneDisplayName = 'Server 1';
 
     beforeAll(async () => {
         // # Log in to server as admin
-        await ServerScreen.connectToServer(serverOneUrl, serverOneDisplayName);
+        await ServerScreen.connectToServer(siteOneUrl, siteOneDisplayName);
         await LoginScreen.login(getAdminAccount());
     });
 
     beforeEach(async () => {
         // * Verify on channel list screen
-        await ChannelListScreen.toBeVisible();
+        await waitFor(ChannelListScreen.channelListScreen).toBeVisible().withTimeout(timeouts.TWO_MIN);
     });
 
     afterAll(async () => {

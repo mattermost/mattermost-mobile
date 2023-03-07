@@ -98,6 +98,7 @@ class ChannelInfoScreen {
 
     open = async () => {
         // # Open channel info screen
+        await waitFor(ChannelScreen.headerTitle).toBeVisible().withTimeout(timeouts.TEN_SEC);
         await ChannelScreen.headerTitle.tap();
 
         return this.toBeVisible();
