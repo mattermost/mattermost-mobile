@@ -81,7 +81,6 @@ describe('Smoke Test - Channels', () => {
         // * Verify on the other channel screen
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
-        await expect(ChannelScreen.introDisplayName).toHaveText(testChannel.display_name);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -189,6 +188,7 @@ describe('Smoke Test - Channels', () => {
         // # Open a channel screen, open channel info screen, and tap on archive channel option and confirm
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+        await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();

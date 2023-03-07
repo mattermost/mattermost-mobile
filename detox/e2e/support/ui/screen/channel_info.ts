@@ -6,7 +6,7 @@ import {
     ProfilePicture,
 } from '@support/ui/component';
 import {ChannelScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isAndroid, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ChannelInfoScreen {
@@ -165,6 +165,9 @@ class ChannelInfoScreen {
 
     leaveChannel = async ({confirm = true} = {}) => {
         await waitFor(this.leaveChannelOption).toExist().withTimeout(timeouts.TWO_SEC);
+        if (isAndroid()) {
+            await this.scrollView.scrollTo('bottom');
+        }
         await this.leaveChannelOption.tap({x: 1, y: 1});
         const {
             leaveChannelTitle,

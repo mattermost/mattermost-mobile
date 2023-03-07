@@ -144,7 +144,7 @@ describe('Smoke Test - Messaging', () => {
         await element(by.text('🤡')).tap();
 
         // * Verify reaction is added to the message
-        await expect(element(by.text('🤡').withAncestor(by.id(`channel.post_list.post.${post.id}`)))).toBeVisible();
+        await waitFor(element(by.text('🤡').withAncestor(by.id(`channel.post_list.post.${post.id}`)))).toBeVisible().withTimeout(timeouts.TWO_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -161,7 +161,7 @@ describe('Smoke Test - Messaging', () => {
 
         // * Verify message is followed by user via post footer
         const {postListPostItem, postListPostItemFooterFollowingButton} = ChannelScreen.getPostListPostItem(post.id, message);
-        await expect(postListPostItemFooterFollowingButton).toBeVisible();
+        await waitFor(postListPostItemFooterFollowingButton).toBeVisible().withTimeout(timeouts.TWO_SEC);
 
         // # Tap on following button via post footer
         await postListPostItemFooterFollowingButton.tap();

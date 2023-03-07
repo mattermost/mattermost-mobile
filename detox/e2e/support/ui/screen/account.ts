@@ -81,6 +81,7 @@ class AccountScreen {
 
     open = async () => {
         // # Open account screen
+        await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await HomeScreen.accountTab.tap();
 
         return this.toBeVisible();
