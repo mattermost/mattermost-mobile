@@ -50,6 +50,7 @@ const EmojiList = ({reactionStream}: Props) => {
                     <EmojiPill
                         key={e.latestTimestamp}
                         name={e.name}
+                        literal={e.literal}
                         count={e.count}
                     />
                 ))}

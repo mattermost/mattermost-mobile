@@ -152,6 +152,7 @@ const CallAvatar = ({userModel, volume, serverUrl, sharingScreen, size, muted, r
             <View style={[style.reaction, style.emoji]}>
                 <Emoji
                     emojiName={reaction.name}
+                    literal={reaction.literal}
                     size={iconSize - 3}
                 />
             </View>
