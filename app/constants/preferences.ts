@@ -3,6 +3,8 @@
 
 export const CATEGORIES_TO_KEEP: Record<string, string> = {
     ADVANCED_SETTINGS: 'advanced_settings',
+    CHANNEL_APPROXIMATE_VIEW_TIME: 'channel_approximate_view_time',
+    CHANNEL_OPEN_TIME: 'channel_open_time',
     DIRECT_CHANNEL_SHOW: 'direct_channel_show',
     GROUP_CHANNEL_SHOW: 'group_channel_show',
     DISPLAY_SETTINGS: 'display_settings',

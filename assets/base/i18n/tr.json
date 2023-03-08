@@ -619,7 +619,6 @@
     "mobile.no_results_with_term.messages": "\"{term}\" için bir eşleşme bulunamadı",
     "mobile.no_results_with_term.files": "\"{term}\" ile eşleşen bir dosya bulunamadı",
     "mobile.no_results_with_term": "\"{term}\" için sonuç bulunamadı",
-    "mobile.login_options.sso_continue": "Şununla ilerleyin",
     "mobile.login_options.separator_text": "ya da şununla oturum açın",
     "mobile.login_options.select_option": "Aşağıdan bir oturum açma seçeneği seçin.",
     "mobile.login_options.saml": "SAML",
