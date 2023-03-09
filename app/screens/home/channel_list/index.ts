@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {queryAllMyChannelsForTeam} from '@queries/servers/channel';
 import {observeCurrentTeamId, observeLicense} from '@queries/servers/system';
@@ -21,11 +21,22 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         switchMap((lcs) => (lcs ? of$(lcs.IsLicensed === 'true') : of$(false))),
     );
 
+    const teamsCount = queryMyTeams(database).observeCount(false);
+
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
-        teamsCount: queryMyTeams(database).observeCount(false),
-        channelsCount: observeCurrentTeamId(database).pipe(
+        hasTeams: teamsCount.pipe(
+            switchMap((v) => of$(v > 0)),
+            distinctUntilChanged(),
+        ),
+        hasMoreThanOneTeam: teamsCount.pipe(
+            switchMap((v) => of$(v > 1)),
+            distinctUntilChanged(),
+        ),
+        hasChannels: observeCurrentTeamId(database).pipe(
             switchMap((id) => (id ? queryAllMyChannelsForTeam(database, id).observeCount(false) : of$(0))),
+            switchMap((v) => of$(v > 0)),
+            distinctUntilChanged(),
         ),
         isLicensed,
         showToS: observeShowToS(database),

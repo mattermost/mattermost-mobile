@@ -6,7 +6,7 @@ import {Platform} from 'react-native';
 
 import {WebsocketEvents} from '@constants';
 import DatabaseManager from '@database/manager';
-import {getConfig} from '@queries/servers/system';
+import {getConfigValue} from '@queries/servers/system';
 import {hasReliableWebsocket} from '@utils/config';
 import {toMilliseconds} from '@utils/datetime';
 import {logError, logInfo, logWarning} from '@utils/log';
@@ -79,8 +79,12 @@ export default class WebSocketClient {
             return;
         }
 
-        const config = await getConfig(database);
-        const connectionUrl = (config.WebsocketURL || this.serverUrl) + '/api/v4/websocket';
+        const [websocketUrl, version, reliableWebsocketConfig] = await Promise.all([
+            getConfigValue(database, 'WebsocketURL'),
+            getConfigValue(database, 'Version'),
+            getConfigValue(database, 'EnableReliableWebSockets'),
+        ]);
+        const connectionUrl = (websocketUrl || this.serverUrl) + '/api/v4/websocket';
 
         if (this.connectingCallback) {
             this.connectingCallback();
@@ -101,7 +105,7 @@ export default class WebSocketClient {
 
         this.url = connectionUrl;
 
-        const reliableWebSockets = hasReliableWebsocket(config);
+        const reliableWebSockets = hasReliableWebsocket(version, reliableWebsocketConfig);
         if (reliableWebSockets) {
             // Add connection id, and last_sequence_number to the query param.
             // We cannot also send it as part of the auth_challenge, because the session cookie is already sent with the request.
@@ -129,6 +133,11 @@ export default class WebSocketClient {
                 headers.Authorization = `Bearer ${this.token}`;
             }
             const {client} = await getOrCreateWebSocketClient(this.url, {headers, timeoutInterval: WEBSOCKET_TIMEOUT});
+
+            // Check again if the client is the same, to avoid race conditions
+            if (this.conn === client) {
+                return;
+            }
             this.conn = client;
         } catch (error) {
             return;

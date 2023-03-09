@@ -1,20 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database, Q} from '@nozbe/watermelondb';
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, of as of$} from 'rxjs';
-import {map, switchMap, combineLatestWith} from 'rxjs/operators';
+import {of as of$, Observable} from 'rxjs';
+import {switchMap, combineLatestWith, distinctUntilChanged} from 'rxjs/operators';
 
-import {General, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
 import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
-import {observeChannelsByCategoryChannelSortOrder, observeChannelsByLastPostAtInCategory} from '@queries/servers/categories';
-import {observeArchivedDirectChannels, observeNotifyPropsByChannels, queryChannelsByNames, queryEmptyDirectAndGroupChannels} from '@queries/servers/channel';
+import {observeArchivedDirectChannels, observeNotifyPropsByChannels} from '@queries/servers/channel';
 import {queryPreferencesByCategoryAndName, querySidebarPreferences} from '@queries/servers/preference';
 import {observeCurrentChannelId, observeCurrentUserId, observeLastUnreadChannelId} from '@queries/servers/system';
-import {getDirectChannelName} from '@utils/channel';
+import {ChannelWithMyChannel, filterArchivedChannels, filterAutoclosedDMs, filterManuallyClosedDms, getUnreadIds, sortChannels} from '@utils/categories';
 
 import CategoryBody from './category_body';
 
@@ -24,10 +22,6 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
-type ChannelData = Pick<ChannelModel, 'id' | 'displayName'> & {
-    isMuted: boolean;
-};
-
 type EnhanceProps = {
     category: CategoryModel;
     locale: string;
@@ -35,86 +29,44 @@ type EnhanceProps = {
     isTablet: boolean;
 } & WithDatabaseArgs
 
-const sortAlpha = (locale: string, a: ChannelData, b: ChannelData) => {
-    if (a.isMuted && !b.isMuted) {
-        return 1;
-    } else if (!a.isMuted && b.isMuted) {
-        return -1;
-    }
-
-    return a.displayName.localeCompare(b.displayName, locale, {numeric: true});
-};
-
-const filterArchived = (channels: Array<ChannelModel | null>, currentChannelId: string) => {
-    return channels.filter((c): c is ChannelModel => c != null && ((c.deleteAt > 0 && c.id === currentChannelId) || !c.deleteAt));
-};
-
-const buildAlphaData = (channels: ChannelModel[], notifyProps: Record<string, Partial<ChannelNotifyProps>>, locale: string) => {
-    const chanelsById = channels.reduce((result: Record<string, ChannelModel>, c) => {
-        result[c.id] = c;
-        return result;
-    }, {});
-
-    const combined = channels.map((c) => {
-        const s = notifyProps[c.id];
-        return {
-            id: c.id,
-            displayName: c.displayName,
-            isMuted: s?.mark_unread === General.MENTION,
-        };
-    });
-
-    combined.sort(sortAlpha.bind(null, locale));
-    return of$(combined.map((cdata) => chanelsById[cdata.id]));
-};
-
-const observeSortedChannels = (database: Database, category: CategoryModel, excludeIds: string[], locale: string) => {
-    switch (category.sorting) {
-        case 'alpha': {
-            const channels = category.channels.extend(Q.where('id', Q.notIn(excludeIds))).observeWithColumns(['display_name']);
-            const notifyProps = channels.pipe(switchMap((cs) => observeNotifyPropsByChannels(database, cs)));
-            return combineLatest([channels, notifyProps]).pipe(
-                switchMap(([cs, np]) => buildAlphaData(cs, np, locale)),
-            );
-        }
-        case 'manual': {
-            return observeChannelsByCategoryChannelSortOrder(database, category, excludeIds);
-        }
-        default:
-            return observeChannelsByLastPostAtInCategory(database, category, excludeIds);
-    }
-};
-
-const mapPrefName = (prefs: PreferenceModel[]) => of$(prefs.map((p) => p.name));
-
-const mapChannelIds = (channels: ChannelModel[] | MyChannelModel[]) => of$(channels.map((c) => c.id));
-
 const withUserId = withObservables([], ({database}: WithDatabaseArgs) => ({currentUserId: observeCurrentUserId(database)}));
 
-const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, locale, isTablet, database, currentUserId}: EnhanceProps) => {
-    const dmMap = (p: PreferenceModel) => getDirectChannelName(p.name, currentUserId);
+const observeCategoryChannels = (category: CategoryModel, myChannels: Observable<MyChannelModel[]>) => {
+    const channels = category.channels.observeWithColumns(['create_at', 'display_name']);
+    const manualSort = category.categoryChannelsBySortOrder.observeWithColumns(['sort_order']);
+    return myChannels.pipe(
+        combineLatestWith(channels, manualSort),
+        switchMap(([my, cs, sorted]) => {
+            const channelMap = new Map<string, ChannelModel>(cs.map((c) => [c.id, c]));
+            const categoryChannelMap = new Map<string, number>(sorted.map((s) => [s.channelId, s.sortOrder]));
+            return of$(my.reduce<ChannelWithMyChannel[]>((result, myChannel) => {
+                const channel = channelMap.get(myChannel.id);
+                if (channel) {
+                    const channelWithMyChannel: ChannelWithMyChannel = {
+                        channel,
+                        myChannel,
+                        sortOrder: categoryChannelMap.get(myChannel.id) || 0,
+                    };
+                    result.push(channelWithMyChannel);
+                }
 
-    const currentChannelId = observeCurrentChannelId(database);
+                return result;
+            }, []));
+        }),
+    );
+};
 
-    const hiddenDmIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.DIRECT_CHANNEL_SHOW, undefined, 'false').
-        observeWithColumns(['value']).pipe(
-            switchMap((prefs: PreferenceModel[]) => {
-                const names = prefs.map(dmMap);
-                const channels = queryChannelsByNames(database, names).observe();
+const enhanced = withObservables([], ({category, currentUserId, database, isTablet, locale}: EnhanceProps) => {
+    const categoryMyChannels = category.myChannels.observeWithColumns(['last_post_at', 'is_unread']);
+    const channelsWithMyChannel = observeCategoryChannels(category, categoryMyChannels);
+    const currentChannelId = isTablet ? observeCurrentChannelId(database) : of$('');
+    const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);
 
-                return channels.pipe(
-                    switchMap(mapChannelIds),
-                );
-            }),
+    const unreadsOnTop = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
+        observeWithColumns(['value']).
+        pipe(
+            switchMap((prefs: PreferenceModel[]) => of$(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
         );
-
-    const emptyDmIds = queryEmptyDirectAndGroupChannels(database).observeWithColumns(['last_post_at']).pipe(
-        switchMap(mapChannelIds),
-    );
-
-    const archivedDmIds = observeArchivedDirectChannels(database, currentUserId).pipe(
-        switchMap(mapChannelIds),
-    );
 
     let limit = of$(Preferences.CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT);
     if (category.type === DMS_CATEGORY) {
@@ -126,54 +78,61 @@ const enhance = withObservables(['category', 'isTablet', 'locale'], ({category, 
             );
     }
 
-    const unreadsOnTop = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
-        observeWithColumns(['value']).
-        pipe(
-            switchMap((prefs: PreferenceModel[]) => of$(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
-        );
-
-    const lastUnreadId = isTablet ? observeLastUnreadChannelId(database) : of$(undefined);
-
-    const hiddenChannelIds = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.GROUP_CHANNEL_SHOW, undefined, 'false').
-        observeWithColumns(['value']).pipe(
-            switchMap(mapPrefName),
-            combineLatestWith(hiddenDmIds, emptyDmIds, archivedDmIds, lastUnreadId),
-            switchMap(([hIds, hDmIds, eDmIds, aDmIds, excludeId]) => {
-                const hidden = new Set(hIds.concat(hDmIds, eDmIds, aDmIds));
-                if (excludeId) {
-                    hidden.delete(excludeId);
-                }
-                return of$(hidden);
-            }),
-        );
-    const sortedChannels = hiddenChannelIds.pipe(
-        switchMap((excludeIds) => observeSortedChannels(database, category, Array.from(excludeIds), locale)),
-        combineLatestWith(currentChannelId),
-        map(([channels, ccId]) => filterArchived(channels, ccId)),
+    const notifyPropsPerChannel = categoryMyChannels.pipe(
+        // eslint-disable-next-line max-nested-callbacks
+        switchMap((mc) => observeNotifyPropsByChannels(database, mc)),
     );
 
-    const unreadChannels = category.myChannels.observeWithColumns(['mentions_count', 'is_unread']);
-    const notifyProps = unreadChannels.pipe(switchMap((myChannels) => observeNotifyPropsByChannels(database, myChannels)));
-    const unreadIds = unreadChannels.pipe(
-        combineLatestWith(notifyProps, lastUnreadId),
-        map(([my, settings, lastUnread]) => {
-            return my.reduce<Set<string>>((set, m) => {
-                const isMuted = settings[m.id]?.mark_unread === 'mention';
-                if ((isMuted && m.mentionsCount) || (!isMuted && m.isUnread) || m.id === lastUnread) {
-                    set.add(m.id);
-                }
-                return set;
-            }, new Set());
+    const hiddenDmPrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.DIRECT_CHANNEL_SHOW, undefined, 'false').
+        observeWithColumns(['value']);
+    const hiddenGmPrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.GROUP_CHANNEL_SHOW, undefined, 'false').
+        observeWithColumns(['value']);
+    const manuallyClosedPrefs = hiddenDmPrefs.pipe(
+        combineLatestWith(hiddenGmPrefs),
+        switchMap(([dms, gms]) => of$(dms.concat(gms))),
+    );
+
+    const approxViewTimePrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.CHANNEL_APPROXIMATE_VIEW_TIME, undefined).
+        observeWithColumns(['value']);
+    const openTimePrefs = queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.CHANNEL_OPEN_TIME, undefined).
+        observeWithColumns(['value']);
+    const autoclosePrefs = approxViewTimePrefs.pipe(
+        combineLatestWith(openTimePrefs),
+        switchMap(([viewTimes, openTimes]) => of$(viewTimes.concat(openTimes))),
+    );
+
+    const categorySorting = category.observe().pipe(
+        switchMap((c) => of$(c.sorting)),
+        distinctUntilChanged(),
+    );
+
+    const deactivated = (category.type === DMS_CATEGORY) ? observeArchivedDirectChannels(database, currentUserId) : of$(undefined);
+    const sortedChannels = channelsWithMyChannel.pipe(
+        combineLatestWith(categorySorting, currentChannelId, lastUnreadId, notifyPropsPerChannel, manuallyClosedPrefs, autoclosePrefs, deactivated, limit),
+        switchMap(([cwms, sorting, channelId, unreadId, notifyProps, manuallyClosedDms, autoclose, deactivatedDMS, maxDms]) => {
+            let channelsW = cwms;
+
+            channelsW = filterArchivedChannels(channelsW, channelId);
+            channelsW = filterManuallyClosedDms(channelsW, notifyProps, manuallyClosedDms, currentUserId, unreadId);
+            channelsW = filterAutoclosedDMs(category.type, maxDms, channelId, channelsW, autoclose, notifyProps, deactivatedDMS, unreadId);
+
+            return of$(sortChannels(sorting, channelsW, notifyProps, locale));
+        }),
+    );
+
+    const unreadIds = channelsWithMyChannel.pipe(
+        combineLatestWith(notifyPropsPerChannel, lastUnreadId),
+        switchMap(([cwms, notifyProps, unreadId]) => {
+            return of$(getUnreadIds(cwms, notifyProps, unreadId));
         }),
     );
 
     return {
-        limit,
-        sortedChannels,
-        unreadsOnTop,
-        unreadIds,
         category,
+        sortedChannels,
+        unreadIds,
+        unreadsOnTop,
     };
 });
 
-export default withDatabase(withUserId(enhance(CategoryBody)));
+export default withDatabase(withUserId(enhanced(CategoryBody)));

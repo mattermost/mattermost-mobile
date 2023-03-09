@@ -31,12 +31,13 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type EnhancedProps = WithDatabaseArgs & {
     combinedPost?: Post | PostModel;
     post: PostModel;
     showAddReaction: boolean;
-    location: string;
+    sourceScreen: AvailableScreens;
     serverUrl: string;
 }
 
@@ -75,7 +76,7 @@ const withPost = withObservables([], ({post, database}: {post: Post | PostModel}
     };
 });
 
-const enhanced = withObservables([], ({combinedPost, post, showAddReaction, location, database, serverUrl}: EnhancedProps) => {
+const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sourceScreen, database, serverUrl}: EnhancedProps) => {
     const channel = observeChannel(database, post.channelId);
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = observeCurrentUser(database);
@@ -112,7 +113,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     );
 
     const canReply = combineLatest([channelIsArchived, channelIsReadOnly, canPostPermission]).pipe(switchMap(([isArchived, isReadOnly, canPost]) => {
-        return of$(!isArchived && !isReadOnly && location !== Screens.THREAD && !isSystemMessage(post) && canPost);
+        return of$(!isArchived && !isReadOnly && sourceScreen !== Screens.THREAD && !isSystemMessage(post) && canPost);
     }));
 
     const canPin = combineLatest([channelIsArchived, channelIsReadOnly]).pipe(switchMap(([isArchived, isReadOnly]) => {

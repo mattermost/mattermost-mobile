@@ -108,7 +108,7 @@ const CombinedUserActivity = ({
             return;
         }
 
-        const passProps = {post};
+        const passProps = {post, sourceScreen: location};
         Keyboard.dismiss();
         const title = isTablet ? intl.formatMessage({id: 'post.options.title', defaultMessage: 'Options'}) : '';
 
@@ -117,7 +117,7 @@ const CombinedUserActivity = ({
         } else {
             showModalOverCurrentContext(Screens.POST_OPTIONS, passProps, bottomSheetModalOptions(theme));
         }
-    }, [post, canDelete, isTablet, intl]);
+    }, [post, canDelete, isTablet, intl, location]);
 
     const renderMessage = (postType: string, userIds: string[], actorId: string) => {
         let actor = '';

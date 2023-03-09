@@ -197,8 +197,8 @@ export default function CreateDirectMessage({
         setSelectedIds((current) => removeProfileFromList(current, id));
     }, []);
 
-    const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
-        const user = selectedIds[id];
+    const createDirectChannel = useCallback(async (id: string, selectedUser?: UserProfile): Promise<boolean> => {
+        const user = selectedUser || selectedIds[id];
         const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
         const result = await makeDirectChannel(serverUrl, id, displayName);
 
@@ -219,7 +219,7 @@ export default function CreateDirectMessage({
         return !result.error;
     }, [serverUrl]);
 
-    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
+    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}, selectedUser?: UserProfile) => {
         if (startingConversation) {
             return;
         }
@@ -233,7 +233,7 @@ export default function CreateDirectMessage({
         } else if (idsToUse.length > 1) {
             success = await createGroupChannel(idsToUse);
         } else {
-            success = await createDirectChannel(idsToUse[0]);
+            success = await createDirectChannel(idsToUse[0], selectedUser);
         }
 
         if (success) {
@@ -249,7 +249,7 @@ export default function CreateDirectMessage({
                 [currentUserId]: true,
             };
 
-            startConversation(selectedId);
+            startConversation(selectedId, user);
         } else {
             clearSearch();
             setSelectedIds((current) => {

@@ -8,7 +8,6 @@ import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 're
 import {fetchDirectChannelsInfo} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
 import {ROW_HEIGHT as CHANNEL_ROW_HEIGHT} from '@components/channel_item/channel_item';
-import {DMS_CATEGORY} from '@constants/categories';
 import {useServerUrl} from '@context/server';
 import {isDMorGM} from '@utils/channel';
 
@@ -18,7 +17,6 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 type Props = {
     sortedChannels: ChannelModel[];
     category: CategoryModel;
-    limit: number;
     onChannelSwitch: (channel: Channel | ChannelModel) => void;
     unreadIds: Set<string>;
     unreadsOnTop: boolean;
@@ -26,16 +24,13 @@ type Props = {
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit, onChannelSwitch}: Props) => {
+const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChannelSwitch}: Props) => {
     const serverUrl = useServerUrl();
     const ids = useMemo(() => {
         const filteredChannels = unreadsOnTop ? sortedChannels.filter((c) => !unreadIds.has(c.id)) : sortedChannels;
 
-        if (category.type === DMS_CATEGORY && limit > 0) {
-            return filteredChannels.slice(0, limit);
-        }
         return filteredChannels;
-    }, [category.type, limit, sortedChannels, unreadIds, unreadsOnTop]);
+    }, [category.type, sortedChannels, unreadIds, unreadsOnTop]);
 
     const unreadChannels = useMemo(() => {
         return unreadsOnTop ? [] : ids.filter((c) => unreadIds.has(c.id));

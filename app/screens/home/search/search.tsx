@@ -5,6 +5,7 @@ import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewStyle} from 'react-native';
+import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
@@ -16,12 +17,14 @@ import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
+import {Screens} from '@constants';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useKeyboardHeight} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
+import NavigationStore from '@store/navigation_store';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
 import {TabTypes, TabType} from '@utils/search';
 
@@ -316,6 +319,19 @@ const SearchScreen = ({teamId, teams}: Props) => {
             setAutoScroll(false);
         }
     }, [isFocused]);
+
+    useEffect(() => {
+        const listener = HWKeyboardEvent.onHWKeyPressed((keyEvent: {pressedKey: string}) => {
+            const topScreen = NavigationStore.getVisibleScreen();
+            if (topScreen === Screens.HOME && isFocused && keyEvent.pressedKey === 'enter') {
+                searchRef.current?.blur();
+                onSubmit();
+            }
+        });
+        return () => {
+            listener.remove();
+        };
+    }, [onSubmit]);
 
     return (
         <FreezeScreen freeze={!isFocused}>
