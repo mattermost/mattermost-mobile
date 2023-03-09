@@ -78,10 +78,8 @@ export function createProfilesSections(intl: IntlShape, profiles: UserProfile[],
             const member = membersDictionary.get(p.id);
             if (member) {
                 const sectionKey = sectionRoleKeyExtractor(member.scheme_admin!).id;
-                const sectionValue = membersSections.get(sectionKey) || [];
-
-                // combine UserProfile and ChannelMember roles
-                const section = [...sectionValue, {...p, roles: `${p.roles} ${member.roles}`}];
+                const section = membersSections.get(sectionKey) || [];
+                section.push(p);
                 membersSections.set(sectionKey, section);
             }
         });
