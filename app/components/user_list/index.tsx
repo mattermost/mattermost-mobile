@@ -61,30 +61,32 @@ const sectionRoleKeyExtractor = (cAdmin: boolean) => {
     return cAdmin ? messages.admins : messages.members;
 };
 
-export function createProfilesSections(intl: IntlShape, profiles: UserProfile[], members?: ChannelMember[]) {
+export function createProfilesSections(intl: IntlShape, profiles: UserProfile[], members?: ChannelMembership[]) {
     if (!profiles.length) {
         return [];
     }
 
-    const sections = new Map();
+    const sections = new Map<string, UserProfile[]>();
 
     if (members?.length) {
         // when channel members are provided, build the sections by admins and members
-        const membersDictionary = new Map();
-        const membersSections = new Map();
+        const membersDictionary = new Map<string, ChannelMembership>();
+        const membersSections = new Map<string, UserProfile[]>();
         const {formatMessage} = intl;
         members.forEach((m) => membersDictionary.set(m.user_id, m));
         profiles.forEach((p) => {
             const member = membersDictionary.get(p.id);
-            const sectionKey = sectionRoleKeyExtractor(member.scheme_admin!);
-            const sectionValue = membersSections.get(sectionKey) || [];
+            if (member) {
+                const sectionKey = sectionRoleKeyExtractor(member.scheme_admin!).id;
+                const sectionValue = membersSections.get(sectionKey) || [];
 
-            // combine UserProfile and ChannelMember objects so can get channel member scheme_admin permission
-            const section = [...sectionValue, {...p, ...member}];
-            membersSections.set(sectionKey, section);
+                // combine UserProfile and ChannelMember roles
+                const section = [...sectionValue, {...p, roles: `${p.roles} ${member.roles}`}];
+                membersSections.set(sectionKey, section);
+            }
         });
-        sections.set(formatMessage(messages.admins), membersSections.get(messages.admins));
-        sections.set(formatMessage(messages.members), membersSections.get(messages.members));
+        sections.set(formatMessage(messages.admins), membersSections.get(messages.admins.id) || []);
+        sections.set(formatMessage(messages.members), membersSections.get(messages.members.id) || []);
     } else {
         // when channel members are not provided, build the sections alphabetically
         profiles.forEach((p) => {
@@ -98,13 +100,11 @@ export function createProfilesSections(intl: IntlShape, profiles: UserProfile[],
     const results = [];
     let index = 0;
     for (const [k, v] of sections) {
-        if (v) {
-            results.push({
-                first: index === 0,
-                id: k,
-                data: v,
-            });
-        }
+        results.push({
+            first: index === 0,
+            id: k,
+            data: v,
+        });
         index++;
     }
     return results;
@@ -147,11 +147,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 type Props = {
     profiles: UserProfile[];
-    channelMembers?: ChannelMember[];
+    channelMembers?: ChannelMembership[];
     currentUserId: string;
     teammateNameDisplay: string;
     handleSelectProfile: (user: UserProfile) => void;
-    fetchMore: () => void;
+    fetchMore?: () => void;
     loading: boolean;
     manageMode?: boolean;
     showManageMode?: boolean;
@@ -332,4 +332,3 @@ export default function UserList({
     }
     return renderSectionList(data as Array<SectionListData<UserProfile>>);
 }
-
