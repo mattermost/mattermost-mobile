@@ -6,7 +6,7 @@ import withObservables from '@nozbe/with-observables';
 
 import {observeIsPostAcknowledgementsEnabled, observePersistentNotificationsEnabled} from '@queries/servers/post';
 
-import PostPriorityPicker, {POST_PRIORITY_PICKER_BUTTON} from './post_priority_picker';
+import PostPriorityPicker from './post_priority_picker';
 
 import type {Database} from '@nozbe/watermelondb';
 
@@ -18,4 +18,3 @@ const enhanced = withObservables([], ({database}: {database: Database}) => {
 });
 
 export default withDatabase(enhanced(PostPriorityPicker));
-export {POST_PRIORITY_PICKER_BUTTON};

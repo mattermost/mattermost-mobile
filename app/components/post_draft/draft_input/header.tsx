@@ -2,65 +2,65 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, StyleSheet, View} from 'react-native';
+import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {PostPriorityColors} from '@constants/post';
 import {useTheme} from '@context/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 
 type Props = {
     postPriority: PostPriority;
     noMentionsError: boolean;
 }
 
-const style = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flexDirection: 'row',
+        alignItems: 'center',
         marginLeft: 12,
-        marginTop: Platform.select({
-            ios: 3,
-            android: 10,
-        }),
-    },
-    labelContainer: {
-        marginRight: 7,
-    },
-    ackContainer: {
-        marginRight: 7,
-    },
-    notificationsContainer: {
-        flexDirection: 'row',
+        gap: 7,
     },
     error: {
         color: PostPriorityColors.URGENT,
-        marginLeft: 7,
     },
-});
+    acknowledgements: {
+        color: theme.onlineIndicator,
+    },
+}));
 
 export default function DraftInputHeader({
     postPriority,
     noMentionsError,
 }: Props) {
     const theme = useTheme();
+    const style = getStyleSheet(theme);
 
     return (
         <View style={style.container}>
-            <View style={style.labelContainer}>
-                <PostPriorityLabel label={postPriority!.priority}/>
-            </View>
+            {postPriority.priority && (
+                <PostPriorityLabel label={postPriority.priority}/>
+            )}
             {postPriority.requested_ack && (
-                <View style={style.ackContainer}>
+                <>
                     <CompassIcon
                         color={theme.onlineIndicator}
                         name='check-circle-outline'
                         size={14}
                     />
-                </View>
+                    {!postPriority.priority && (
+                        <FormattedText
+                            id='requested_ack.title'
+                            defaultMessage='Request Acknowledgements'
+                            style={{color: theme.onlineIndicator}}
+                        />
+                    )}
+                </>
             )}
             {postPriority.persistent_notifications && (
-                <View style={style.notificationsContainer}>
+                <>
                     <CompassIcon
                         color={PostPriorityColors.URGENT}
                         name='bell-ring-outline'
@@ -73,9 +73,8 @@ export default function DraftInputHeader({
                             style={style.error}
                         />
                     )}
-                </View>
+                </>
             )}
-
         </View>
     );
 }

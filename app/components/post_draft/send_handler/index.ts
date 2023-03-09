@@ -40,8 +40,8 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
 
     const currentUserId = observeCurrentUserId(database);
     const currentUser = currentUserId.pipe(
-        switchMap((id) => observeUser(database, id),
-        ));
+        switchMap((id) => observeUser(database, id)),
+    );
     const userIsOutOfOffice = currentUser.pipe(
         switchMap((u) => of$(u?.status === General.OUT_OF_OFFICE)),
     );

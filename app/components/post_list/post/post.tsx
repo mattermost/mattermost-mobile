@@ -303,7 +303,6 @@ const Post = ({
         body = (
             <Body
                 appsEnabled={appsEnabled}
-                currentUser={currentUser}
                 hasFiles={hasFiles}
                 hasReactions={hasReactions}
                 highlight={Boolean(highlightedStyle)}

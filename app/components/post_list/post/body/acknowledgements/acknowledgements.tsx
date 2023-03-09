@@ -123,8 +123,8 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
                 {!isTablet && (
                     <View style={style.listHeader}>
                         <FormattedText
-                            id='mobile.participants.header'
-                            defaultMessage={'Thread Participants'}
+                            id='mobile.acknowledgements.header'
+                            defaultMessage={'Acknowledgements'}
                             style={style.listHeaderText}
                         />
                     </View>
@@ -134,6 +134,7 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
                     location={location}
                     userAcknowledgements={userAcknowledgements}
                     userIds={userIds}
+                    timezone={currentUser.timezone || undefined}
                 />
             </>
         );
@@ -148,10 +149,10 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
             renderContent,
             initialSnapIndex: 1,
             snapPoints,
-            title: intl.formatMessage({id: 'mobile.participants.header', defaultMessage: 'Thread Participants'}),
+            title: intl.formatMessage({id: 'mobile.acknowledgements.header', defaultMessage: 'Acknowledgements'}),
             theme,
         });
-    }, [bottom, intl, isTablet, acknowledgements, theme, location, post.channelId]);
+    }, [bottom, intl, isTablet, acknowledgements, theme, location, post.channelId, currentUser.timezone]);
 
     return (
         <>

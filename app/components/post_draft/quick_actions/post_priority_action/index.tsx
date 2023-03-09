@@ -12,7 +12,6 @@ import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {openAsBottomSheet} from '@screens/navigation';
-import {POST_PRIORITY_PICKER_BUTTON} from '@screens/post_priority_picker';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
@@ -28,6 +27,8 @@ const style = StyleSheet.create({
         padding: 10,
     },
 });
+
+const POST_PRIORITY_PICKER_BUTTON = 'close-post-priority-picker';
 
 export default function PostPriorityAction({
     testID,
@@ -51,6 +52,7 @@ export default function PostPriorityAction({
             props: {
                 postPriority,
                 updatePostPriority,
+                closeButtonId: POST_PRIORITY_PICKER_BUTTON,
             },
         });
     }, [intl, postPriority, updatePostPriority, theme]);

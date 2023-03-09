@@ -7,12 +7,13 @@ import {Alert, LayoutChangeEvent, Platform, ScrollView, View} from 'react-native
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {General} from '@constants';
-import {MENTIONS_REGEX, SPECIAL_MENTIONS_REGEX} from '@constants/autocomplete';
+import {MENTIONS_REGEX} from '@constants/autocomplete';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {getUsersCountFromMentions} from '@queries/servers/post';
+import {hasSpecialMentions} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import PostInput from '../post_input';
@@ -170,12 +171,13 @@ export default function DraftInput({
             let title = '';
             let description = '';
             let error = true;
-            if (new RegExp(SPECIAL_MENTIONS_REGEX).test(value)) {
+            if (hasSpecialMentions(value)) {
                 description = intl.formatMessage({
                     id: 'persistent_notifications.error.special_mentions',
                     defaultMessage: 'Cannot use @channel, @all or @here to mention recipients of persistent notifications.',
                 });
             } else {
+                // removes the @ from the mention
                 const formattedMentionsList = mentionsList.map((mention) => mention.slice(1));
                 const usersCount = database ? await getUsersCountFromMentions(database, formattedMentionsList) : 0;
                 if (usersCount > persistentNotificationMaxRecipients) {

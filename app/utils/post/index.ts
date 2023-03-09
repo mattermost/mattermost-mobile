@@ -2,6 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Post} from '@constants';
+import {SPECIAL_MENTIONS_REGEX} from '@constants/autocomplete';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import {DEFAULT_LOCALE} from '@i18n';
 import {toMilliseconds} from '@utils/datetime';
@@ -90,3 +91,11 @@ export const getLastFetchedAtFromPosts = (posts?: Post[]) => {
 export const moreThan5minAgo = (time: number) => {
     return Date.now() - time > toMilliseconds({minutes: 5});
 };
+
+export function hasSpecialMentions(message: string): boolean {
+    const result = SPECIAL_MENTIONS_REGEX.test(message);
+
+    // https://stackoverflow.com/questions/1520800/why-does-a-regexp-with-global-flag-give-wrong-results
+    SPECIAL_MENTIONS_REGEX.lastIndex = 0;
+    return result;
+}

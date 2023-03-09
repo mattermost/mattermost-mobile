@@ -20,12 +20,10 @@ import Message from './message';
 import Reactions from './reactions';
 
 import type PostModel from '@typings/database/models/servers/post';
-import type UserProfile from '@typings/database/models/servers/user';
 import type {SearchPattern} from '@typings/global/markdown';
 
 type BodyProps = {
     appsEnabled: boolean;
-    currentUser: UserProfile;
     hasFiles: boolean;
     hasReactions: boolean;
     highlight: boolean;
@@ -86,7 +84,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 });
 
 const Body = ({
-    appsEnabled, currentUser, hasFiles, hasReactions, highlight, highlightReplyBar,
+    appsEnabled, hasFiles, hasReactions, highlight, highlightReplyBar,
     isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAcknowledgementEnabled, isPostAddChannelMember,
     location, post, searchPatterns, showAddReaction, theme,
 }: BodyProps) => {
@@ -197,7 +195,6 @@ const Body = ({
                     <View style={style.ackAndReactionsContainer}>
                         {acknowledgementsVisible && (
                             <Acknowledgements
-                                currentUser={currentUser}
                                 hasReactions={hasReactions}
                                 location={location}
                                 post={post}

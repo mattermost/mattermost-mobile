@@ -10,10 +10,11 @@ import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {PostPriorityColors, PostPriorityType} from '@constants/post';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
-import {dismissBottomSheet} from '@screens/navigation';
+import {dismissBottomSheet, popTopScreen} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -22,15 +23,15 @@ import Footer from './footer';
 import PickerOption from './picker_option';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
-
-export const POST_PRIORITY_PICKER_BUTTON = 'close-post-priority-picker';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
-    componentId: string;
+    componentId: AvailableScreens;
     isPostAcknowledgementEnabled: boolean;
     isPersistenNotificationsEnabled: boolean;
     postPriority: PostPriority;
     updatePostPriority: (data: PostPriority) => void;
+    closeButtonId: string;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -71,13 +72,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 const PostPriorityPicker = ({
-    componentId, isPostAcknowledgementEnabled, isPersistenNotificationsEnabled,
-    postPriority, updatePostPriority,
+    componentId,
+    isPostAcknowledgementEnabled,
+    isPersistenNotificationsEnabled,
+    postPriority,
+    updatePostPriority,
+    closeButtonId,
 }: Props) => {
     const {bottom} = useSafeAreaInsets();
     const intl = useIntl();
     const isTablet = useIsTablet();
     const theme = useTheme();
+    const [data, setData] = useState<PostPriority>(postPriority);
 
     const style = getStyleSheet(theme);
 
@@ -85,9 +91,12 @@ const PostPriorityPicker = ({
         return dismissBottomSheet(Screens.POST_PRIORITY_PICKER);
     }, []);
 
-    useNavButtonPressed(POST_PRIORITY_PICKER_BUTTON, componentId, close, []);
+    const pop = () => {
+        popTopScreen(componentId);
+    };
 
-    const [data, setData] = useState<PostPriority>(postPriority);
+    useNavButtonPressed(closeButtonId, componentId, close, []);
+    useAndroidHardwareBackHandler(componentId, pop);
 
     const displayPersistentNotifications = isPersistenNotificationsEnabled && data.priority === PostPriorityType.URGENT;
 
@@ -245,7 +254,7 @@ const PostPriorityPicker = ({
     return (
         <BottomSheet
             renderContent={renderContent}
-            closeButtonId={POST_PRIORITY_PICKER_BUTTON}
+            closeButtonId={closeButtonId}
             componentId={Screens.POST_PRIORITY_PICKER}
             footerComponent={renderFooter}
             initialSnapIndex={1}
@@ -255,4 +264,4 @@ const PostPriorityPicker = ({
     );
 };
 
-export default React.memo(PostPriorityPicker);
+export default PostPriorityPicker;

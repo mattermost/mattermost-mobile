@@ -2,15 +2,14 @@
 // See LICENSE.txt for license information.
 
 import {General} from '@constants';
+import {MENTIONS_REGEX} from '@constants/autocomplete';
 
 export const getNeededAtMentionedUsernames = (usernames: Set<string>, posts: Post[], excludeUsername?: string) => {
     const usernamesToLoad = new Set<string>();
 
-    const pattern = /\B@(([a-z0-9_.-]*[a-z0-9_])[.-]*)/gi;
-
     posts.forEach((p) => {
         let match;
-        while ((match = pattern.exec(p.message)) !== null) {
+        while ((match = MENTIONS_REGEX.exec(p.message)) !== null) {
             const lowercaseMatch1 = match[1].toLowerCase();
             const lowercaseMatch2 = match[2].toLowerCase();
 

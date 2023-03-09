@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Database, Model, Q, Query} from '@nozbe/watermelondb';
-import {of as of$, combineLatest} from 'rxjs';
+import {of as of$, combineLatestWith} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {MM_TABLES} from '@constants/database';
@@ -247,7 +247,8 @@ export const getIsPostAcknowledgementsEnabled = async (database: Database) => {
 export const observeIsPostPriorityEnabled = (database: Database) => {
     const featureFlag = observeConfigBooleanValue(database, 'FeatureFlagPostPriority');
     const cfg = observeConfigBooleanValue(database, 'PostPriority');
-    return combineLatest([featureFlag, cfg]).pipe(
+    return featureFlag.pipe(
+        combineLatestWith(cfg),
         switchMap(([ff, c]) => of$(ff && c)),
         distinctUntilChanged(),
     );
@@ -261,7 +262,8 @@ export const observePersistentNotificationsEnabled = (database: Database) => {
     const user = observeCurrentUser(database);
     const enabledForAll = observeConfigBooleanValue(database, 'AllowPersistentNotifications');
     const enabledForGuests = observeConfigBooleanValue(database, 'AllowPersistentNotificationsForGuests');
-    return combineLatest([user, enabledForAll, enabledForGuests]).pipe(
+    return user.pipe(
+        combineLatestWith(enabledForAll, enabledForGuests),
         switchMap(([u, forAll, forGuests]) => {
             if (u?.isGuest) {
                 return of$(forAll && forGuests);
@@ -269,6 +271,7 @@ export const observePersistentNotificationsEnabled = (database: Database) => {
             return of$(forAll);
         }),
         distinctUntilChanged(),
+
     );
 };
 

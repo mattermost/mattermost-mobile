@@ -3,19 +3,21 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {Keyboard, TouchableOpacity, View} from 'react-native';
 
+import FormattedRelativeTime from '@components/formatted_relative_time';
 import UserItem from '@components/user_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
 import {dismissBottomSheet, openAsBottomSheet} from '@screens/navigation';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type UserModel from '@typings/database/models/servers/user';
 
 export const USER_ROW_HEIGHT = 60;
 
-const style = StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         paddingLeft: 0,
         height: USER_ROW_HEIGHT,
@@ -28,20 +30,23 @@ const style = StyleSheet.create({
         paddingLeft: 4,
     },
     time: {
+        color: changeOpacity(theme.centerChannelColor, 0.64),
         ...typography('Body', 75),
     },
-});
+}));
 
 type Props = {
     channelId: string;
     location: string;
     user: UserModel;
     userAcknowledgement: number;
+    timezone?: UserTimezone;
 }
 
-const UserListItem = ({channelId, location, user, userAcknowledgement}: Props) => {
+const UserListItem = ({channelId, location, user, userAcknowledgement, timezone}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
+    const style = getStyleSheet(theme);
     const openUserProfile = async () => {
         if (user) {
             await dismissBottomSheet(Screens.BOTTOM_SHEET);
@@ -60,9 +65,11 @@ const UserListItem = ({channelId, location, user, userAcknowledgement}: Props) =
             <UserItem
                 FooterComponent={
                     <View style={style.ackContainer}>
-                        <Text style={style.time}>
-                            {userAcknowledgement}
-                        </Text>
+                        <FormattedRelativeTime
+                            value={userAcknowledgement}
+                            timezone={timezone}
+                            style={style.time}
+                        />
                     </View>
                 }
                 containerStyle={style.container}
