@@ -342,43 +342,41 @@ const PostList = ({
                 onRefresh={onRefresh}
                 style={styles.container}
             >
-                <>
-                    <AnimatedFlatList
-                        contentContainerStyle={contentContainerStyle}
-                        data={orderedPosts}
-                        getItemLayout={(data, index) => (
-                            {length: 50, offset: 50 * index, index}
-                        )}
-                        keyboardDismissMode='interactive'
-                        keyboardShouldPersistTaps='handled'
-                        keyExtractor={keyExtractor}
-                        initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
-                        ListHeaderComponent={header}
-                        ListFooterComponent={footer}
-                        maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
-                        maxToRenderPerBatch={10}
-                        nativeID={nativeID}
-                        onEndReached={onEndReached}
-                        onEndReachedThreshold={2}
-                        onScroll={onScroll}
-                        onScrollToIndexFailed={onScrollToIndexFailed}
-                        onViewableItemsChanged={onViewableItemsChanged}
-                        ref={listRef}
-                        removeClippedSubviews={true}
-                        renderItem={renderItem}
-                        scrollEventThrottle={60}
-                        style={styles.flex}
-                        viewabilityConfig={VIEWABILITY_CONFIG}
-                        testID={`${testID}.flat_list`}
-                    />
-                    <ScrollToEndView
-                        onScrollToEnd={onScrollToEnd}
-                        isNewMessage={initialIndex > -1}
-                        showScrollToEndBtn={showScrollToEndBtn}
-                        message={location === Screens.THREAD ? 'New replies' : 'New messages'}
-                    />
-                </>
+                <AnimatedFlatList
+                    contentContainerStyle={contentContainerStyle}
+                    data={orderedPosts}
+                    getItemLayout={(data, index) => (
+                        {length: 50, offset: 50 * index, index}
+                    )}
+                    keyboardDismissMode='interactive'
+                    keyboardShouldPersistTaps='handled'
+                    keyExtractor={keyExtractor}
+                    initialNumToRender={INITIAL_BATCH_TO_RENDER + 5}
+                    ListHeaderComponent={header}
+                    ListFooterComponent={footer}
+                    maintainVisibleContentPosition={SCROLL_POSITION_CONFIG}
+                    maxToRenderPerBatch={10}
+                    nativeID={nativeID}
+                    onEndReached={onEndReached}
+                    onEndReachedThreshold={2}
+                    onScroll={onScroll}
+                    onScrollToIndexFailed={onScrollToIndexFailed}
+                    onViewableItemsChanged={onViewableItemsChanged}
+                    ref={listRef}
+                    removeClippedSubviews={true}
+                    renderItem={renderItem}
+                    scrollEventThrottle={60}
+                    style={styles.flex}
+                    viewabilityConfig={VIEWABILITY_CONFIG}
+                    testID={`${testID}.flat_list`}
+                />
             </PostListRefreshControl>
+            <ScrollToEndView
+                onScrollToEnd={onScrollToEnd}
+                isNewMessage={initialIndex > -1}
+                showScrollToEndBtn={showScrollToEndBtn}
+                message={location === Screens.THREAD ? 'New replies' : 'New messages'}
+            />
             {showMoreMessages &&
             <MoreMessages
                 channelId={channelId}

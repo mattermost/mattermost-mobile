@@ -1,7 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useEffect, useMemo, useRef} from 'react';
-import {Animated, Pressable, Text} from 'react-native';
+import React, {useMemo} from 'react';
+import {Pressable, Text} from 'react-native';
+import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import {useTheme} from '@app/context/theme';
 import {makeStyleSheetFromTheme} from '@app/utils/theme';
@@ -15,7 +16,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             width: 40,
             height: 40,
             borderRadius: 40,
-            top: -50,
+            bottom: -70,
             display: 'flex',
             justifyContent: 'center',
             alignItems: 'center',
@@ -28,7 +29,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignSelf: 'center',
             height: 40,
             borderRadius: 8,
-            top: -50,
+            bottom: -70,
             paddingHorizontal: 8,
             backgroundColor: theme.buttonBg,
             display: 'flex',
@@ -40,9 +41,9 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         newMessagesText: {
             color: '#fff',
             paddingHorizontal: 8,
+            overflow: 'hidden',
         },
         pressableBtn: {
-            scaleY: -1,
             flexDirection: 'row',
         },
     };
@@ -55,30 +56,34 @@ type Props = {
     message: string;
 };
 
-const ScrollToEndView = ({onScrollToEnd, isNewMessage, showScrollToEndBtn, message}: Props) => {
+const ScrollToEndView = ({
+    onScrollToEnd,
+    isNewMessage,
+    showScrollToEndBtn,
+    message,
+}: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
 
-    const translationY = useRef(new Animated.Value(0)).current;
+    const animatedStyle = useAnimatedStyle(
+        () => ({
+            transform: [
+                {
+                    translateY: withTiming(showScrollToEndBtn ? -80 : 0, {duration: 500}),
+                },
+            ],
+            maxWidth: withTiming(isNewMessage ? 169 : 40, {duration: 500}),
+        }),
+        [showScrollToEndBtn, isNewMessage],
+    );
 
-    const scrollBtnStyles = useMemo(() => (isNewMessage ? styles.scrollToEndBadge : styles.scrollToEndBtn), [isNewMessage]);
-
-    useEffect(() => {
-        if (showScrollToEndBtn) {
-            Animated.timing(translationY, {
-                toValue: 60,
-                useNativeDriver: true,
-            }).start();
-        } else {
-            Animated.timing(translationY, {
-                toValue: 0,
-                useNativeDriver: true,
-            }).start();
-        }
-    }, [showScrollToEndBtn]);
+    const scrollBtnStyles = useMemo(
+        () => (isNewMessage ? styles.scrollToEndBadge : styles.scrollToEndBtn),
+        [isNewMessage],
+    );
 
     return (
-        <Animated.View style={[{transform: [{translateY: translationY}]}, scrollBtnStyles]}>
+        <Animated.View style={[animatedStyle, scrollBtnStyles]}>
             <Pressable
                 onPress={onScrollToEnd}
                 style={styles.pressableBtn}
@@ -89,9 +94,7 @@ const ScrollToEndView = ({onScrollToEnd, isNewMessage, showScrollToEndBtn, messa
                     color={isNewMessage ? theme.sidebarHeaderTextColor : theme.centerChannelBg}
                 />
                 {isNewMessage && (
-                    <Text style={styles.newMessagesText}>
-                        {message}
-                    </Text>
+                    <Text style={styles.newMessagesText}>{message}</Text>
                 )}
             </Pressable>
         </Animated.View>
