@@ -7,6 +7,7 @@ import {View, Text, TouchableOpacity} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {acknowledgePost, unacknowledgePost} from '@actions/remote/post';
+import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useServerUrl} from '@context/server';
@@ -106,7 +107,7 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
         }
     }, [acknowledgedAt, isCurrentAuthor, post, serverUrl]);
 
-    const handleOnLongPress = useCallback(() => {
+    const handleOnLongPress = useCallback(async () => {
         if (!acknowledgements.length) {
             return;
         }
@@ -117,6 +118,12 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
             userAcknowledgements[item.user_id] = item.acknowledged_at;
             userIds.push(item.user_id);
         });
+
+        try {
+            await fetchMissingProfilesByIds(serverUrl, userIds);
+        } catch (e) {
+            return;
+        }
 
         const renderContent = () => (
             <>
