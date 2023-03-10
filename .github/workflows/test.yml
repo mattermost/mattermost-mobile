@@ -1,9 +1,0 @@
----
-name: test
-on:
-  pull_request:
-    types: [opened, synchronize]
-
-jobs:
-  test:
-    uses: ./.github/workflows/.test.yml

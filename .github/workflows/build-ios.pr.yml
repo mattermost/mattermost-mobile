@@ -1,49 +1,54 @@
 ---
-name: "build-ios-pr"
+name: build-ios-pr
 on:
   push:
     branches:
-    # TODO: remove the `gha-` to match the current workflow again
-    - 'build-gha-pr-*'
-    - 'ios-gha-pr-*'
+      # TODO: remove the `gha-` to match the current workflow again
+      - "build-gha-pr-*"
+      - "ios-gha-pr-*"
+
+env:
+  NODE_VERSION: 16.14.2
+  TERM: xterm
 
 jobs:
   build-ios-pr:
-    uses: ./.github/workflows/.build-ios.yml
-    with:
-      branch_to_build: "${{ github.ref_name }}"
-      build_artifact_name: "ios-build-pr-${{ github.run_id }}"
-      build_type: "signed"
-      app_name: "Mattermost Beta"
-      app_scheme: "mattermost"
-      aws_bucket_name: "pr-builds.mattermost.com"
-      aws_folder_name: "mattermost-mobile"
-      aws_region: "us-east-1"
-      beta_build: "true"
-      build_for_release: "true"
-      build_pr: "true"
-      extension_app_identifier: "com.mattermost.rnbeta.MattermostShare"
-      ios_app_group: "group.com.mattermost.rnbeta"
-      ios_build_export_method: "ad-hoc"
-      ios_icloud_container: "iCloud.com.mattermost.rnbeta"
-      main_app_identifier: "com.mattermost.rnbeta"
-      match_app_identifier: "com.mattermost.rnbeta.NotificationService,com.mattermost.rnbeta.MattermostShare,com.mattermost.rnbeta"
-      match_readonly: "true"
-      match_shallow_clone: "true"
-      match_skip_docs: "true"
-      match_type: "adhoc"
-      notification_service_identifier: "com.mattermost.rnbeta.NotificationService"
-      replace_assets: "false"
-      show_onboarding: "true"
-      sync_provisioning_profiles: "true"
-    secrets:
-      aws_access_key_id: "${{ secrets.MM_MOBILE_PR_AWS_ACCESS_KEY_ID }}"
-      aws_secret_access_key: "${{ secrets.MM_MOBILE_PR_AWS_SECRET_ACCESS_KEY }}"
-      fastlane_team_id : "${{ secrets.MM_MOBILE_FASTLANE_TEAM_ID }}"
-      ios_api_issuer_id: "${{ secrets.MM_MOBILE_IOS_API_ISSUER_ID }}"
-      ios_api_key: "${{ secrets.MM_MOBILE_IOS_API_KEY }}"
-      ios_api_key_id: "${{ secrets.MM_MOBILE_IOS_API_KEY_ID }}"
-      match_git_url: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
-      match_password: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
-      mattermost_webhook_url: "${{ secrets.MM_MOBILE_PR_MATTERMOST_WEBHOOK_URL }}"
-      private_deploy_key: "${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}"
+    runs-on: macos-12
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+
+      - name: ci/output-ssh-private-key
+        shell: bash
+        run: |
+          SSH_KEY_PATH=~/.ssh/id_ed25519
+          if [ -n "${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}" ]; then
+            mkdir -p ~/.ssh
+            echo -e '${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}' > ${SSH_KEY_PATH}
+            chmod 0600 ${SSH_KEY_PATH}
+            ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
+          fi
+
+      - name: ci/prepare-ios-build
+        uses: ./.github/actios/prepare-ios-build
+
+      - name: ci/build-ios-pr
+        env:
+          BRANCH_TO_BUILD: "${{ github.ref_name }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          FASTLANE_TEAM_ID: "${{ secrets.MM_MOBILE_FASTLANE_TEAM_ID }}"
+          IOS_API_ISSUER_ID: "${{ secrets.MM_MOBILE_IOS_API_ISSUER_ID }}"
+          IOS_API_KEY: "${{ secrets.MM_MOBILE_IOS_API_KEY }}"
+          IOS_API_KEY_ID: "${{ secrets.MM_MOBILE_IOS_API_KEY_ID }}"
+          MATCH_GIT_URL: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
+          MATCH_PASSWORD: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
+        run: bundle exec fastlane ios build --env ios.pr
+        working-directory: ./fastlane
+
+      - name: ci/upload-ios-pr-build
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: ios-build-pr-${{ github.run_id }}
+          path: "*.ipa"

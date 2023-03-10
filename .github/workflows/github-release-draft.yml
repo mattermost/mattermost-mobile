@@ -1,36 +1,57 @@
 ---
-name: "github-release-draft"
+name: draft-release
 on:
   push:
     tags:
-    # TODO: remove the `gha-` to match the current workflow again
-    - 'gha-v[0-9]+.[0-9]+.[0-9]+*'
+      # TODO: remove the `gha-` to match the current workflow again
+      - "gha-v[0-9]+.[0-9]+.[0-9]+*"
 
 jobs:
   build-ios-unsigned:
-    uses: ./.github/workflows/.build-ios.yml
-    with:
-      build_artifact_name: "ios-build-unsigned-${{ github.run_id }}"
-      build_type: unsigned
-      node_options: "--max_old_space_size=12000"
-      tag: "${{ github.ref_name }}"
-    secrets:
-      gh_token: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-  # TODO add android job here. Also modify github-release to download its artifact, and to depend on it
-  github-release:
-    runs-on: ubuntu-20.04   # To use Ruby 2.7, instead of Ruby 3
+    runs-on: macos-12
     steps:
-    - name: ci/fastlane-dependencies
-      uses: ./.github/actions/fastlane-dependencies
-      with:
-        caching_key: github-release
-    - name: ci/download-android-artifact
-      uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
-      with:
-        name: "ios-build-unsigned-${{ github.run_id }}"
-    - run:
-        name: Create GitHub release
-        working_directory: fastlane
-        command: bundle exec fastlane github
-    # TODO depend on android job as well
-    needs: [build-ios-unsigned]
+      - name: ci/checkout-repo
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+
+      - name: ci/output-ssh-private-key
+        shell: bash
+        run: |
+          SSH_KEY_PATH=~/.ssh/id_ed25519
+          if [ -n "${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}" ]; then
+            mkdir -p ~/.ssh
+            echo -e '${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}' > ${SSH_KEY_PATH}
+            chmod 0600 ${SSH_KEY_PATH}
+            ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
+          fi
+      - name: ci/prepare-ios-build
+        uses: ./.github/actios/prepare-ios-build
+      - name: ci/build-ios-unsigned
+        env:
+          TAG: "${{ github.ref_name }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios unsigned
+      - name: ci/upload-ios-unsigned
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: ios-build-unsigned-${{ github.run_id }}
+          path: "*.ipa"
+
+  # TODO add android job here. Also modify github-release to download its artifact, and to depend on it
+  release:
+    runs-on: ubuntu-22.04
+    needs:
+      - build-ios-unsigned
+    steps:
+      - uses: ruby/setup-ruby@9669f3ee51dc3f4eda8447ab696b3ab19a90d14b # v1.144.0
+        with:
+          ruby-version: "2.7"
+      - name: release/setup-fastlane-dependencies
+        run: bundle install
+        working-directory: ./fastlane
+      - name: ci/download-android-artifact
+        uses: actions/download-artifact@9bc31d5ccc31df68ecc42ccf4149144866c47d8a # v3.0.2
+        with:
+          name: "ios-build-unsigned-${{ github.run_id }}"
+      - name: Create GitHub release
+        run: bundle exec fastlane github
+        working-directory: ./fastlane
