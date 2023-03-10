@@ -153,6 +153,7 @@ export type CallReactionEmoji = {
     name: string;
     skin?: string;
     unified: string;
+    literal?: string;
 }
 
 export type CallReaction = {
@@ -165,6 +166,7 @@ export type ReactionStreamEmoji = {
     name: string;
     latestTimestamp: number;
     count: number;
+    literal?: string;
 };
 
 export type RecordingState = {

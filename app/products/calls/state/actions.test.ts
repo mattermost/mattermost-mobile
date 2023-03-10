@@ -845,8 +845,8 @@ describe('useCallsState', () => {
         const expectedCurrentCallState: CurrentCall = {
             ...initialCurrentCallState,
             reactionStream: [
-                {name: 'smile', latestTimestamp: 202, count: 1},
-                {name: '+1', latestTimestamp: 145, count: 2},
+                {name: 'smile', latestTimestamp: 202, count: 1, literal: undefined},
+                {name: '+1', latestTimestamp: 145, count: 2, literal: undefined},
             ],
             participants: {
                 ...initialCurrentCallState.participants,

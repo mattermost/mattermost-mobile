@@ -29,13 +29,15 @@ const styles = StyleSheet.create({
 interface Props {
     name: string;
     count: number;
+    literal?: string;
 }
 
-const EmojiPill = ({name, count}: Props) => {
+const EmojiPill = ({name, literal, count}: Props) => {
     return (
         <View style={styles.pill}>
             <Emoji
                 emojiName={name}
+                literal={literal}
                 size={18}
             />
             <Text style={styles.count}>{count}</Text>
