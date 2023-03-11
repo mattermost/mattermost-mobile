@@ -90,6 +90,7 @@ describe('Smoke Test - Server Login', () => {
         if (isIos()) {
             await ServerListScreen.serverListTitle.swipe('up');
         } else if (isAndroid()) {
+            await waitFor(ServerListScreen.serverListTitle).toBeVisible().withTimeout(timeouts.TWO_SEC);
             await ServerListScreen.serverListTitle.swipe('up', 'fast', 0.1, 0.5, 0.3);
         }
         await waitFor(ServerListScreen.getServerItemInactive(serverTwoDisplayName)).toBeVisible().withTimeout(timeouts.TEN_SEC);

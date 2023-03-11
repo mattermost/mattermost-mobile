@@ -81,6 +81,7 @@ class AccountScreen {
 
     open = async () => {
         // # Open account screen
+        await waitFor(HomeScreen.accountTab).toBeVisible().withTimeout(timeouts.TWO_SEC);
         await HomeScreen.accountTab.tap();
 
         return this.toBeVisible();
@@ -92,7 +93,7 @@ class AccountScreen {
             await expect(Alert.logoutTitle(serverDisplayName)).toBeVisible();
         }
         await Alert.logoutButton.tap();
-        await expect(this.accountScreen).not.toBeVisible();
+        await waitFor(this.accountScreen).not.toBeVisible().withTimeout(timeouts.TEN_SEC);
     };
 }
 
