@@ -4,7 +4,6 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedTime from '@components/formatted_time';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {CHANNEL, THREAD} from '@constants/screens';
@@ -15,6 +14,7 @@ import {typography} from '@utils/typography';
 import {displayUsername, getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import HeaderCommentedOn from './commented_on';
+import HeaderCustomStatusEmoji from './custom_status';
 import HeaderDisplayName from './display_name';
 import HeaderReply from './reply';
 import HeaderTag from './tag';
@@ -67,11 +67,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignSelf: 'center',
             marginLeft: 6,
         },
-        customStatusEmoji: {
-            color: theme.centerChannelColor,
-            marginRight: 4,
-            marginTop: 2,
-        },
     };
 });
 
@@ -112,15 +107,14 @@ const Header = (props: HeaderProps) => {
                         usernameOverride={post.props?.override_username}
                     />
                     {showCustomStatusEmoji && !customStatusExpired && Boolean(customStatus?.emoji) && (
-                        <CustomStatusEmoji
+                        <HeaderCustomStatusEmoji
                             channelId={post.channelId}
                             customStatus={customStatus!}
-                            style={style.customStatusEmoji}
                             location={location}
                             theme={theme}
                             userIconOverride={post.props?.override_icon_url}
+                            usernameOverride={post.props?.override_username}
                             userId={post.userId}
-                            testID='post_header'
                         />
                     )}
                     {(!isSystemPost || isAutoResponse) &&
