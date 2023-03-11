@@ -113,8 +113,13 @@ const Header = (props: HeaderProps) => {
                     />
                     {showCustomStatusEmoji && !customStatusExpired && Boolean(customStatus?.emoji) && (
                         <CustomStatusEmoji
+                            channelId={post.channelId}
                             customStatus={customStatus!}
                             style={style.customStatusEmoji}
+                            location={location}
+                            theme={theme}
+                            userIconOverride={post.props?.override_icon_url}
+                            userId={post.userId}
                             testID='post_header'
                         />
                     )}
