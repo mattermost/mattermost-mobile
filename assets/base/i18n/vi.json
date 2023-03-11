@@ -1017,6 +1017,7 @@
     "mobile.account.create_account": "Tạo tài khoản",
     "mobile.account.create_account_button": "Tạo",
     "mobile.account.team_code": "Mã mời",
+    "mobile.account.username": "Tên tài khoản hoặc số điện thoại",
     "mobile.account.username_already_exists": "Tên người dùng đã tồn tại",
     "mobile.account.invalid_password": "Mật khẩu không hợp lệ",
     "mobile.account.team_code_not_found": "Mã mời không tồn tại",

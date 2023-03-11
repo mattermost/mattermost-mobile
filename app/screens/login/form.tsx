@@ -471,7 +471,11 @@ const LoginForm = ({
                 enablesReturnKeyAutomatically={true}
                 error={error ? ' ' : ''}
                 keyboardType='email-address'
-                label={createLoginPlaceholder()}
+                // label={createLoginPlaceholder()}
+                label={intl.formatMessage({
+                    id: 'mobile.account.username',
+                    defaultMessage: 'Username or phonenumber',
+                })}
                 onBlur={onBlur}
                 onChangeText={onLoginChange}
                 onFocus={onFocus}

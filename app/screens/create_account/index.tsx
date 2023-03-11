@@ -374,8 +374,8 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
                             error={errorEmail}
                             keyboardType='email-address'
                             label={formatMessage({
-                                id: 'login.username',
-                                defaultMessage: 'Username',
+                                id: 'mobile.account.username',
+                                defaultMessage: 'Username or phone number',
                             })}
                             onChangeText={changeEmail}
                             onFocus={onFocus}
@@ -404,7 +404,7 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
                             })}
                             onChangeText={changePassword}
                             onFocus={onFocus}
-                            onSubmitEditing={onFocusTeamCode}
+                            onSubmitEditing={submitCreateAccount}
                             returnKeyType='next'
                             spellCheck={false}
                             theme={theme}
@@ -412,7 +412,7 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
                             ref={refPassword}
                             endAdornment={endAdornment}
                         />
-                        <FloatingTextInput
+                        {/* <FloatingTextInput
                             autoCorrect={false}
                             autoCapitalize={'none'}
                             blurOnSubmit={true}
@@ -437,7 +437,7 @@ const CreateAccount = ({componentId, serverUrl, theme}: Props) => {
                             theme={theme}
                             value={teamCode}
                             ref={refTeamCode}
-                        />
+                        /> */}
                         {renderProceedButton}
                     </View>
                 </View>
