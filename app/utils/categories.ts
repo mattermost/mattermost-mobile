@@ -3,7 +3,7 @@
 
 import {General, Preferences} from '@constants';
 import {DMS_CATEGORY} from '@constants/categories';
-import {getPreferenceAsBool, getPreferenceValue} from '@helpers/api/preference';
+import {getPreferenceAsBool} from '@helpers/api/preference';
 import {isDMorGM} from '@utils/channel';
 import {getUserIdFromChannelName} from '@utils/user';
 
@@ -42,15 +42,18 @@ export const filterAutoclosedDMs = (
         // Only autoclose DMs that haven't been assigned to a category
         return channelsWithMyChannel;
     }
-
+    const prefMap = preferences.reduce((acc, v) => {
+        const existing = acc.get(v.name);
+        acc.set(v.name, Math.max((v.value as unknown as number) || 0, existing || 0));
+        return acc;
+    }, new Map<string, number>());
     const getLastViewedAt = (cwm: ChannelWithMyChannel) => {
         // The server only ever sets the last_viewed_at to the time of the last post in channel, so we may need
         // to use the preferences added for the previous version of autoclosing DMs.
         const id = cwm.channel.id;
         return Math.max(
             cwm.myChannel.lastViewedAt,
-            getPreferenceValue<number>(preferences, Preferences.CATEGORIES.CHANNEL_APPROXIMATE_VIEW_TIME, id, 0),
-            getPreferenceValue<number>(preferences, Preferences.CATEGORIES.CHANNEL_OPEN_TIME, id, 0),
+            prefMap.get(id) || 0,
         );
     };
 
@@ -178,7 +181,7 @@ export const sortChannels = (sorting: CategorySorting, channelsWithMyChannel: Ch
         }).map((cwm) => cwm.channel);
     } else if (sorting === 'manual') {
         return channelsWithMyChannel.sort((cwmA, cwmB) => {
-            return cwmB.sortOrder - cwmA.sortOrder;
+            return cwmA.sortOrder - cwmB.sortOrder;
         }).map((cwm) => cwm.channel);
     }
 

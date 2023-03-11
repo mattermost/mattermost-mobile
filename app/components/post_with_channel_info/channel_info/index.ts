@@ -17,6 +17,9 @@ const enhance = withObservables(['post'], ({post, database}: {post: PostModel} &
     const channel = observeChannel(database, post.channelId);
 
     return {
+        channelId: channel.pipe(
+            switchMap((chan) => (chan ? of$(chan.id) : '')),
+        ),
         channelName: channel.pipe(
             switchMap((chan) => (chan ? of$(chan.displayName) : '')),
         ),
