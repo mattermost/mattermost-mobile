@@ -500,7 +500,7 @@ PODS:
     - React-perflogger (= 0.71.3)
   - ReactNativeExceptionHandler (2.10.10):
     - React-Core
-  - ReactNativeIncallManager (4.0.0):
+  - ReactNativeIncallManager (4.0.1):
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
@@ -999,7 +999,7 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 7bf0dafc7b727d93c8cb94eb00a9d3753c446c3e
   ReactCommon: 6f65ea5b7d84deb9e386f670dd11ce499ded7b40
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
-  ReactNativeIncallManager: b169b57d3064d8f62478f8fc3c485da6c75045d1
+  ReactNativeIncallManager: 0d2cf9f4d50359728a30c08549762fe67a2efb81
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: d79d9d53e6025851936bb8b3d13760b86302a669
   RNCClipboard: 2834e1c4af68697089cdd455ee4a4cdd198fa7dd
