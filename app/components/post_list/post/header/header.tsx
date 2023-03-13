@@ -14,7 +14,6 @@ import {typography} from '@utils/typography';
 import {displayUsername, getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import HeaderCommentedOn from './commented_on';
-import HeaderCustomStatusEmoji from './custom_status';
 import HeaderDisplayName from './display_name';
 import HeaderReply from './reply';
 import HeaderTag from './tag';
@@ -84,11 +83,10 @@ const Header = (props: HeaderProps) => {
     const displayName = postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride);
     const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser.locale, teammateNameDisplay, true) : undefined;
     const customStatus = getUserCustomStatus(author);
-    const customStatusExpired = isCustomStatusExpired(author);
     const showCustomStatusEmoji = Boolean(
         isCustomStatusEnabled && displayName && customStatus &&
         !(isSystemPost || author?.isBot || isAutoResponse || isWebHook),
-    );
+    ) && !isCustomStatusExpired(author) && Boolean(customStatus?.emoji);
 
     return (
         <>
@@ -105,18 +103,9 @@ const Header = (props: HeaderProps) => {
                         userIconOverride={post.props?.override_icon_url}
                         userId={post.userId}
                         usernameOverride={post.props?.override_username}
+                        showCustomStatusEmoji={showCustomStatusEmoji}
+                        customStatus={customStatus!}
                     />
-                    {showCustomStatusEmoji && !customStatusExpired && Boolean(customStatus?.emoji) && (
-                        <HeaderCustomStatusEmoji
-                            channelId={post.channelId}
-                            customStatus={customStatus!}
-                            location={location}
-                            theme={theme}
-                            userIconOverride={post.props?.override_icon_url}
-                            usernameOverride={post.props?.override_username}
-                            userId={post.userId}
-                        />
-                    )}
                     {(!isSystemPost || isAutoResponse) &&
                     <HeaderTag
                         isAutoResponder={isAutoResponse}
