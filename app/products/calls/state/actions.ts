@@ -446,6 +446,7 @@ export const userReacted = (serverUrl: string, channelId: string, reaction: Call
     } else {
         const newReaction: ReactionStreamEmoji = {
             name: reaction.emoji.name,
+            literal: reaction.emoji.literal,
             count: 1,
             latestTimestamp: reaction.timestamp,
         };
