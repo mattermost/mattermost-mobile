@@ -19,11 +19,14 @@ const BORDER_FOCUSED_WIDTH = 2;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
-        height: DEFAULT_INPUT_HEIGHT + (2 * BORDER_DEFAULT_WIDTH),
         width: '100%',
     },
     errorContainer: {
         flexDirection: 'row',
+
+        // Hack to properly place text in flexbox
+        borderColor: 'transparent',
+        borderWidth: 1,
     },
     errorIcon: {
         color: theme.errorTextColor,
@@ -174,13 +177,8 @@ const FloatingTextInput = forwardRef<FloatingTextInputRef, FloatingTextInputProp
     const onPressAction = !isKeyboardInput && editable && onPress ? onPress : undefined;
 
     const combinedContainerStyle = useMemo(() => {
-        const res: StyleProp<ViewStyle> = [styles.container];
-        if (multiline) {
-            res.push({height: 100 + (2 * BORDER_DEFAULT_WIDTH)});
-        }
-        res.push(containerStyle);
-        return res;
-    }, [styles, containerStyle, multiline]);
+        return [styles.container, containerStyle];
+    }, [styles, containerStyle]);
 
     const combinedTextInputContainerStyle = useMemo(() => {
         const res: StyleProp<TextStyle> = [styles.textInput];

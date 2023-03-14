@@ -317,7 +317,16 @@ const Server = ({
             return;
         }
 
-        const server = await getServerByIdentifier(data.config!.DiagnosticId);
+        if (!data.config?.DiagnosticId) {
+            setUrlError(formatMessage({
+                id: 'mobile.diagnostic_id.empty',
+                defaultMessage: 'The server you are trying to access doesn\'t have a DiagnosticId set. Contact the system admin to check the configuration and make sure the DiagnosticId is set.',
+            }));
+            setConnecting(false);
+            return;
+        }
+
+        const server = await getServerByIdentifier(data.config.DiagnosticId);
         setConnecting(false);
 
         if (server && server.lastActiveAt > 0) {
