@@ -16,15 +16,12 @@ export type Props = BottomSheetFooterProps & {
     onSubmit: () => void;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme, isTablet: boolean) => ({
+const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.centerChannelBg,
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
         borderTopWidth: 1,
         paddingTop: 20,
-        paddingBottom: Platform.select({ios: (isTablet ? 20 : 32), android: 20}),
-    },
-    buttonsContainer: {
         flexDirection: 'row',
         paddingHorizontal: 20,
     },
@@ -55,33 +52,36 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme, isTablet: boolean) 
 
 const PostPriorityPickerFooter = ({onCancel, onSubmit, ...props}: Props) => {
     const theme = useTheme();
-    const style = getStyleSheet(theme, useIsTablet());
+    const style = getStyleSheet(theme);
+    const isTablet = useIsTablet();
 
     return (
         <BottomSheetFooter {...props}>
-            <View style={style.container}>
-                <View style={style.buttonsContainer}>
-                    <TouchableOpacity
-                        onPress={onCancel}
-                        style={style.cancelButton}
-                    >
-                        <FormattedText
-                            id='post_priority.picker.cancel'
-                            defaultMessage='Cancel'
-                            style={style.cancelButtonText}
-                        />
-                    </TouchableOpacity>
-                    <TouchableOpacity
-                        onPress={onSubmit}
-                        style={style.applyButton}
-                    >
-                        <FormattedText
-                            id='post_priority.picker.apply'
-                            defaultMessage='Apply'
-                            style={style.applyButtonText}
-                        />
-                    </TouchableOpacity>
-                </View>
+            <View
+                style={[style.container, {
+                    paddingBottom: Platform.select({ios: (isTablet ? 20 : 32), android: 20}),
+                }]}
+            >
+                <TouchableOpacity
+                    onPress={onCancel}
+                    style={style.cancelButton}
+                >
+                    <FormattedText
+                        id='post_priority.picker.cancel'
+                        defaultMessage='Cancel'
+                        style={style.cancelButtonText}
+                    />
+                </TouchableOpacity>
+                <TouchableOpacity
+                    onPress={onSubmit}
+                    style={style.applyButton}
+                >
+                    <FormattedText
+                        id='post_priority.picker.apply'
+                        defaultMessage='Apply'
+                        style={style.applyButtonText}
+                    />
+                </TouchableOpacity>
             </View>
         </BottomSheetFooter>
     );

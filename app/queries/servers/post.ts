@@ -279,9 +279,5 @@ export const getUsersCountFromMentions = async (database: Database, mentions: st
     const groupsQuery = queryGroupsByNames(database, mentions).fetch();
     const usersQuery = queryUsersByUsername(database, mentions).fetchCount();
     const [groups, usersCount] = await Promise.all([groupsQuery, usersQuery]);
-    let count = usersCount;
-    groups.forEach((group) => {
-        count += group.memberCount;
-    });
-    return count;
+    return groups.reduce((acc, v) => acc + v.memberCount, usersCount);
 };

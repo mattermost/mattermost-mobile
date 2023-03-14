@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, TouchableOpacity} from 'react-native';
+import {View, Text, TouchableOpacity, useWindowDimensions} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {acknowledgePost, unacknowledgePost} from '@actions/remote/post';
@@ -79,6 +79,7 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
     const isTablet = useIsTablet();
     const {bottom} = useSafeAreaInsets();
     const serverUrl = useServerUrl();
+    const {height} = useWindowDimensions();
 
     const style = getStyleSheet(theme);
 
@@ -146,9 +147,11 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
             </>
         );
 
-        const snapPoints: BottomSheetProps['snapPoints'] = [1, bottomSheetSnapPoint(Math.min(userIds.length, 5), USER_ROW_HEIGHT, bottom) + TITLE_HEIGHT];
-        if (userIds.length > 5) {
-            snapPoints.push('80%');
+        const snapPoint1 = bottomSheetSnapPoint(Math.min(userIds.length, 5), USER_ROW_HEIGHT, bottom) + TITLE_HEIGHT;
+        const snapPoint2 = height * 0.8;
+        const snapPoints: BottomSheetProps['snapPoints'] = [1, Math.min(snapPoint1, snapPoint2)];
+        if (userIds.length > 5 && snapPoint1 < snapPoint2) {
+            snapPoints.push(snapPoint2);
         }
 
         bottomSheet({

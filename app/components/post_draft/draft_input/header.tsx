@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
+import {Platform, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
@@ -31,15 +31,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
+const paddingTop = Platform.select({
+    ios: 6,
+    android: 8,
+});
+
 export default function DraftInputHeader({
     postPriority,
     noMentionsError,
 }: Props) {
     const theme = useTheme();
+    const hasLabels = postPriority.priority !== '' || postPriority.requested_ack;
     const style = getStyleSheet(theme);
 
     return (
-        <View style={style.container}>
+        <View style={[style.container, {paddingTop: hasLabels ? paddingTop : 0}]}>
             {postPriority.priority && (
                 <PostPriorityLabel label={postPriority.priority}/>
             )}

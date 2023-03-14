@@ -35,8 +35,21 @@ const enhance = withObservables(['channel', 'showTeamName'], ({
     const currentUserId = observeCurrentUserId(database);
     const myChannel = observeMyChannel(database, channel.id);
 
-    const hasDraft = queryDraft(database, channel.id).observeWithColumns(['message', 'files']).pipe(
-        switchMap((draft) => of$(draft.length > 0)),
+    const hasDraft = queryDraft(database, channel.id).observeWithColumns(['message', 'files', 'metadata']).pipe(
+        switchMap((drafts) => {
+            if (!drafts.length) {
+                return of$(false);
+            }
+
+            const draft = drafts[0];
+            const standardPriority = draft?.metadata?.priority?.priority === '';
+
+            if (!draft.message && !draft.files.length && standardPriority) {
+                return of$(false);
+            }
+
+            return of$(true);
+        }),
         distinctUntilChanged(),
     );
 

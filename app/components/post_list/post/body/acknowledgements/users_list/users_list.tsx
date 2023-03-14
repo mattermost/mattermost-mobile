@@ -28,7 +28,7 @@ const UsersList = ({channelId, location, users, userAcknowledgements, timezone}:
             userAcknowledgement={userAcknowledgements[item.id]}
             timezone={timezone}
         />
-    ), [channelId, location, userAcknowledgements, timezone]);
+    ), [channelId, location, timezone]);
 
     return (
         <FlatList
@@ -36,7 +36,6 @@ const UsersList = ({channelId, location, users, userAcknowledgements, timezone}:
             ref={listRef}
             renderItem={renderItem}
             overScrollMode={'always'}
-            scrollEventThrottle={60}
         />
     );
 };

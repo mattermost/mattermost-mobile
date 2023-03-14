@@ -161,10 +161,6 @@ export async function updateDraftPriority(serverUrl: string, channelId: string, 
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const draft = await getDraft(database, channelId, rootId);
         if (!draft) {
-            if (!postPriority) {
-                return {};
-            }
-
             const newDraft: Draft = {
                 channel_id: channelId,
                 root_id: rootId,
