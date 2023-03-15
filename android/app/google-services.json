@@ -1,34 +1,77 @@
 {
   "project_info": {
-    "project_number": "183107450695",
-    "project_id": "mattermost-c3cee",
-    "storage_bucket": "mattermost-c3cee.appspot.com"
+    "project_number": "315644646760",
+    "project_id": "vuongphat-af624",
+    "storage_bucket": "vuongphat-af624.appspot.com"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:183107450695:android:7aa0de4d1cf9571defbe62",
+        "mobilesdk_app_id": "1:315644646760:android:8cfad8729c7350246d72dd",
         "android_client_info": {
-          "package_name": "com.mattermost.rnbeta"
+          "package_name": "com.vps.lcnktalk"
         }
       },
       "oauth_client": [
         {
-          "client_id": "183107450695-e1mvjlu83sukgjqvhd90sh5ttde8t02e.apps.googleusercontent.com",
+          "client_id": "315644646760-55b3qv0epilom6pld9qrf9m933fkqn81.apps.googleusercontent.com",
           "client_type": 3
         }
       ],
       "api_key": [
         {
-          "current_key": "AIzaSyDdBeRxAleIqAQ5C_umSUKXAM-c6DDeN-8"
+          "current_key": "AIzaSyChJAUr2FMzdCzamfYR5D5lakKXRJReJRU"
         }
       ],
       "services": {
         "appinvite_service": {
           "other_platform_oauth_client": [
             {
-              "client_id": "183107450695-e1mvjlu83sukgjqvhd90sh5ttde8t02e.apps.googleusercontent.com",
+              "client_id": "315644646760-55b3qv0epilom6pld9qrf9m933fkqn81.apps.googleusercontent.com",
               "client_type": 3
+            },
+            {
+              "client_id": "315644646760-jvifspsb2nklbcbd80i3rbg27k92r0f0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "vn.app.vpssocial"
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:315644646760:android:6b4554309d7ae0f46d72dd",
+        "android_client_info": {
+          "package_name": "vn.app.vuongphatvpn"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "315644646760-55b3qv0epilom6pld9qrf9m933fkqn81.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyChJAUr2FMzdCzamfYR5D5lakKXRJReJRU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "315644646760-55b3qv0epilom6pld9qrf9m933fkqn81.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "315644646760-jvifspsb2nklbcbd80i3rbg27k92r0f0.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "vn.app.vpssocial"
+              }
             }
           ]
         }

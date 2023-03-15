@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <resources>
-    <string name="app_name">VPS Takl</string>
+    <string name="app_name">VPS Talk</string>
     <string name="inAppPinCode_title">in-App Pincode</string>
     <string name="inAppPinCode_description">Require users to authenticate as the owner of the phone before using the app. Prompts for fingerprint or passcode when the app first opens and when the app has been in the background for more than 5 minutes.</string>
     <string name="blurApplicationScreen_title">Blur Application Screen</string>
