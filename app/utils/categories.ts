@@ -191,7 +191,7 @@ export const sortChannels = (sorting: CategorySorting, channelsWithMyChannel: Ch
 
 export const getUnreadIds = (cwms: ChannelWithMyChannel[], notifyPropsPerChannel: Record<string, Partial<ChannelNotifyProps>>, lastUnreadId?: string) => {
     return cwms.reduce<Set<string>>((result, cwm) => {
-        if (isUnreadChannel(cwm.myChannel, notifyPropsPerChannel, lastUnreadId)) {
+        if (isUnreadChannel(cwm.myChannel, notifyPropsPerChannel[cwm.channel.id], lastUnreadId)) {
             result.add(cwm.channel.id);
         }
 
