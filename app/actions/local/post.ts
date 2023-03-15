@@ -5,7 +5,7 @@ import {fetchPostAuthors} from '@actions/remote/post';
 import {ActionType, Post} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
-import {getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
+import {countUsersFromMentions, getPostById, prepareDeletePost, queryPostsById} from '@queries/servers/post';
 import {getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {generateId} from '@utils/general';
@@ -339,5 +339,14 @@ export async function deletePosts(serverUrl: string, postIds: string[]) {
         return {error: false};
     } catch (error) {
         return {error};
+    }
+}
+
+export function getUsersCountFromMentions(serverUrl: string, mentions: string[]): Promise<number> {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        return countUsersFromMentions(database, mentions);
+    } catch (error) {
+        return Promise.resolve(0);
     }
 }

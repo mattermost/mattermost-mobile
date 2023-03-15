@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {General} from '@constants';
@@ -11,9 +11,7 @@ import {MENTIONS_REGEX} from '@constants/autocomplete';
 import {PostPriorityType} from '@constants/post';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import DatabaseManager from '@database/manager';
-import {getUsersCountFromMentions} from '@queries/servers/post';
-import {hasSpecialMentions} from '@utils/post';
+import {persistentNotificationsConfirmation} from '@utils/post';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import PostInput from '../post_input';
@@ -134,8 +132,6 @@ export default function DraftInput({
     const serverUrl = useServerUrl();
     const theme = useTheme();
 
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-
     const handleLayout = useCallback((e: LayoutChangeEvent) => {
         updatePostInputTop(e.nativeEvent.layout.height);
     }, []);
@@ -168,83 +164,11 @@ export default function DraftInput({
 
     const handleSendMessage = useCallback(async () => {
         if (persistenNotificationsEnabled) {
-            let title = '';
-            let description = '';
-            let error = true;
-            if (hasSpecialMentions(value)) {
-                description = intl.formatMessage({
-                    id: 'persistent_notifications.error.special_mentions',
-                    defaultMessage: 'Cannot use @channel, @all or @here to mention recipients of persistent notifications.',
-                });
-            } else {
-                // removes the @ from the mention
-                const formattedMentionsList = mentionsList.map((mention) => mention.slice(1));
-                const usersCount = database ? await getUsersCountFromMentions(database, formattedMentionsList) : 0;
-                if (usersCount > persistentNotificationMaxRecipients) {
-                    title = intl.formatMessage({
-                        id: 'persistent_notifications.error.max_recipients.title',
-                        defaultMessage: 'Too many recipients',
-                    });
-                    description = intl.formatMessage({
-                        id: 'persistent_notifications.error.max_recipients.description',
-                        defaultMessage: 'You can send persistent notifications to a maximum of {max} recipients. There are {count} recipients mentioned in your message. You’ll need to change who you’ve mentioned before you can send.',
-                    }, {
-                        max: persistentNotificationMaxRecipients,
-                        count: mentionsList.length,
-                    });
-                } else if (usersCount === 0) {
-                    title = intl.formatMessage({
-                        id: 'persistent_notifications.error.no_mentions.title',
-                        defaultMessage: 'Recipients must be @mentioned',
-                    });
-                    description = intl.formatMessage({
-                        id: 'persistent_notifications.error.no_mentions.description',
-                        defaultMessage: 'There are no recipients mentioned in your message. You’ll need add mentions to be able to send persistent notifications.',
-                    });
-                } else {
-                    error = false;
-                    title = intl.formatMessage({
-                        id: 'persistent_notifications.confirm.title',
-                        defaultMessage: 'Send persistent notifications',
-                    });
-                    description = intl.formatMessage({
-                        id: 'persistent_notifications.confirm.description',
-                        defaultMessage: '@mentioned recipients will be notified every {interval, plural, one {1 minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
-                    }, {
-                        interval: persistentNotificationInterval,
-                    });
-                }
-            }
-            Alert.alert(
-                title,
-                description,
-                error ? [{
-                    text: intl.formatMessage({
-                        id: 'persistent_notifications.error.okay',
-                        defaultMessage: 'Okay',
-                    }),
-                    style: 'cancel',
-                }] : [
-                    {
-                        text: intl.formatMessage({
-                            id: 'persistent_notifications.confirm.cancel',
-                            defaultMessage: 'Cancel',
-                        }),
-                        style: 'cancel',
-                    },
-                    {
-                        text: intl.formatMessage({
-                            id: 'persistent_notifications.confirm.send',
-                            defaultMessage: 'Send',
-                        }),
-                        onPress: sendMessage,
-                    },
-                ],
-            );
+            persistentNotificationsConfirmation(serverUrl, value, mentionsList, intl, sendMessage, persistentNotificationMaxRecipients, persistentNotificationInterval);
         } else {
             sendMessage();
         }
-    }, [database, mentionsList, persistenNotificationsEnabled, persistentNotificationMaxRecipients, sendMessage, value]);
+    }, [serverUrl, mentionsList, persistenNotificationsEnabled, persistentNotificationMaxRecipients, sendMessage, value]);
 
     const sendActionDisabled = !canSend || noMentionsError;
 
@@ -286,7 +210,7 @@ export default function DraftInput({
                         updateValue={updateValue}
                         value={value}
                         addFiles={addFiles}
-                        sendMessage={sendMessage}
+                        sendMessage={handleSendMessage}
                         inputRef={inputRef}
                         setIsFocused={setIsFocused}
                     />

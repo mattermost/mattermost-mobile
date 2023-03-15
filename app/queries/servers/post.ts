@@ -275,7 +275,7 @@ export const observePersistentNotificationsEnabled = (database: Database) => {
     );
 };
 
-export const getUsersCountFromMentions = async (database: Database, mentions: string[]) => {
+export const countUsersFromMentions = async (database: Database, mentions: string[]) => {
     const groupsQuery = queryGroupsByNames(database, mentions).fetch();
     const usersQuery = queryUsersByUsername(database, mentions).fetchCount();
     const [groups, usersCount] = await Promise.all([groupsQuery, usersQuery]);
