@@ -98,6 +98,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         copyInfoButtonContainer: {
             width: 120,
             marginTop: 10,
+            position: 'relative',
         },
     };
 });
@@ -285,13 +286,13 @@ const About = ({componentId, config, license}: AboutProps) => {
                 <TouchableOpacity style={styles.copyInfoButtonContainer}>
                     <Button
                         theme={theme}
-                        backgroundStyle={buttonBackgroundStyle(theme, 'lg', 'tertiary')}
+                        backgroundStyle={buttonBackgroundStyle(theme, 'm', 'tertiary')}
                         onPress={copyToClipboard}
-                        textStyle={buttonTextStyle(theme, 'lg', 'tertiary', 'default')}
+                        textStyle={buttonTextStyle(theme, 'm', 'tertiary', 'default')}
                         text={'Copy info'}
-                        testID={'settings.about.copy_info'}
+                        testID={'about.copy_info'}
                         iconName='content-copy'
-                        iconSize={18}
+                        iconSize={12}
                         buttonType={'default'}
                     />
                 </TouchableOpacity>
