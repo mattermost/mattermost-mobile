@@ -1,4 +1,4 @@
-package com.mattermost.rnbeta;
+package com.vps.lcnktalk;
 
 import android.content.Context;
 import android.os.Bundle;
@@ -81,10 +81,10 @@ public class MainApplication extends NavigationApplication implements INotificat
                 public ReactModuleInfoProvider getReactModuleInfoProvider() {
                   return () -> {
                     Map<String, ReactModuleInfo> map = new HashMap<>();
-                    map.put("MattermostManaged", new ReactModuleInfo("MattermostManaged", "com.mattermost.rnbeta.MattermostManagedModule", false, false, false, false, false));
+                    map.put("MattermostManaged", new ReactModuleInfo("MattermostManaged", "com.vps.lcnktalk.MattermostManagedModule", false, false, false, false, false));
                     map.put("MattermostShare", new ReactModuleInfo("MattermostShare", "com.mattermost.share.ShareModule", false, false, true, false, false));
-                    map.put("Notifications", new ReactModuleInfo("Notifications", "com.mattermost.rnbeta.NotificationsModule", false, false, false, false, false));
-                    map.put("SplitView", new ReactModuleInfo("SplitView", "com.mattermost.rnbeta.SplitViewModule", false, false, false, false, false));
+                    map.put("Notifications", new ReactModuleInfo("Notifications", "com.vps.lcnktalk.NotificationsModule", false, false, false, false, false));
+                    map.put("SplitView", new ReactModuleInfo("SplitView", "com.vps.lcnktalk.SplitViewModule", false, false, false, false, false));
                     return map;
                   };
                 }

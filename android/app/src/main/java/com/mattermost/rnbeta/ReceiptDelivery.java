@@ -1,4 +1,4 @@
-package com.mattermost.rnbeta;
+package com.vps.lcnktalk;
 
 import android.os.Bundle;
 import android.util.Log;

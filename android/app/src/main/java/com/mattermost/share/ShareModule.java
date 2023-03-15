@@ -9,7 +9,7 @@ import com.facebook.react.bridge.ReactMethod;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.Arguments;
 import com.mattermost.helpers.Credentials;
-import com.mattermost.rnbeta.MainApplication;
+import com.vps.lcnktalk.MainApplication;
 import com.mattermost.helpers.RealPathUtil;
 
 import android.app.Activity;

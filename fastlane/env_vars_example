@@ -27,7 +27,7 @@ export FASTLANE_PASSWORD=<itunes connect password>
 export MATCH_PASSWORD=<itunes connect password>
 export MATCH_KEYCHAIN_PASSWORD=<the password of the user running the build in the build machine>
 export MATCH_GIT_URL=<private git repository to allow match sync the provisioning profiles>
-export MATCH_APP_IDENTIFIER=com.mattermost.rnbeta.NotificationService,com.mattermost.rnbeta.MattermostShare,com.mattermost.rnbeta
+export MATCH_APP_IDENTIFIER=com.vps.lcnktalk.NotificationService,com.vps.lcnktalk.MattermostShare,com.vps.lcnktalk
 export MATCH_TYPE=appstore
 export MATCH_SHALLOW_CLONE=true
 export MATCH_SKIP_DOCS=true
@@ -40,7 +40,7 @@ export PILOT_SKIP_WAITING_FOR_BUILD_PROCESSING=true
 
 ############ NEEDED TO UPLOAD THE BUILD TO GOOGLE PLAY ############
 export SUPPLY_TRACK=alpha
-export SUPPLY_PACKAGE_NAME=com.mattermost.rnbeta
+export SUPPLY_PACKAGE_NAME=com.vps.lcnktalk
 export SUPPLY_JSON_KEY=<The path to the service account json file used to authenticate with Google>
 export SUPPLY_VALIDATE_ONLY=false
 
@@ -50,11 +50,11 @@ export BUILD_FOR_RELEASE=true
 export REPLACE_ASSETS=false
 
 ############ APP IDENTIFIERS ############
-export MAIN_APP_IDENTIFIER=com.mattermost.rnbeta
-export EXTENSION_APP_IDENTIFIER=com.mattermost.rnbeta.MattermostShare
-export NOTIFICATION_SERVICE_IDENTIFIER=com.mattermost.rnbeta.NotificationService
-export IOS_APP_GROUP=group.com.mattermost.rnbeta
-export IOS_ICLOUD_CONTAINER=iCloud.com.mattermost.rnbeta
+export MAIN_APP_IDENTIFIER=com.vps.lcnktalk
+export EXTENSION_APP_IDENTIFIER=com.vps.lcnktalk.MattermostShare
+export NOTIFICATION_SERVICE_IDENTIFIER=com.vps.lcnktalk.NotificationService
+export IOS_APP_GROUP=group.com.vps.lcnktalk
+export IOS_ICLOUD_CONTAINER=iCloud.com.vps.lcnktalk
 export IOS_BUILD_EXPORT_METHOD=app-store
 
 ############ SET TO TRUE TO UPLOAD THE BUILDS TO TESTFLIGH AND GOOGLE PLAY ############

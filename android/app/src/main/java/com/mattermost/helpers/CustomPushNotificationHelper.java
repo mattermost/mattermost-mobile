@@ -27,7 +27,7 @@ import androidx.core.app.Person;
 import androidx.core.app.RemoteInput;
 import androidx.core.graphics.drawable.IconCompat;
 
-import com.mattermost.rnbeta.*;
+import com.vps.lcnktalk.*;
 
 import java.io.IOException;
 import java.util.Date;

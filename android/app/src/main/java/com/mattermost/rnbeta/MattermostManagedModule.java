@@ -1,4 +1,4 @@
-package com.mattermost.rnbeta;
+package com.vps.lcnktalk;
 
 import android.app.Activity;
 import android.content.Context;

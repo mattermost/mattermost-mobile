@@ -28,7 +28,7 @@ import TosPrivacyContainer from './tos_privacy';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
+const MATTERMOST_BUNDLE_IDS = ['com.vps.lcnktalk', 'com.mattermost.rn'];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -99,7 +99,7 @@ type AboutProps = {
     componentId: AvailableScreens;
     config: ClientConfig;
     license: ClientLicense;
-}
+};
 const About = ({componentId, config, license}: AboutProps) => {
     const intl = useIntl();
     const theme = useTheme();
@@ -122,25 +122,40 @@ const About = ({componentId, config, license}: AboutProps) => {
         tryOpenURL(url, onError);
     }, []);
 
-    const handleAboutTeam = useCallback(preventDoubleTap(() => {
-        return openURL(Config.WebsiteURL);
-    }), []);
+    const handleAboutTeam = useCallback(
+        preventDoubleTap(() => {
+            return openURL(Config.WebsiteURL);
+        }),
+        [],
+    );
 
-    const handlePlatformNotice = useCallback(preventDoubleTap(() => {
-        return openURL(Config.ServerNoticeURL);
-    }), []);
+    const handlePlatformNotice = useCallback(
+        preventDoubleTap(() => {
+            return openURL(Config.ServerNoticeURL);
+        }),
+        [],
+    );
 
-    const handleMobileNotice = useCallback(preventDoubleTap(() => {
-        return openURL(Config.MobileNoticeURL);
-    }), []);
+    const handleMobileNotice = useCallback(
+        preventDoubleTap(() => {
+            return openURL(Config.MobileNoticeURL);
+        }),
+        [],
+    );
 
-    const handleTermsOfService = useCallback(preventDoubleTap(() => {
-        return openURL(AboutLinks.TERMS_OF_SERVICE);
-    }), []);
+    const handleTermsOfService = useCallback(
+        preventDoubleTap(() => {
+            return openURL(AboutLinks.TERMS_OF_SERVICE);
+        }),
+        [],
+    );
 
-    const handlePrivacyPolicy = useCallback(preventDoubleTap(() => {
-        return openURL(AboutLinks.PRIVACY_POLICY);
-    }), []);
+    const handlePrivacyPolicy = useCallback(
+        preventDoubleTap(() => {
+            return openURL(AboutLinks.PRIVACY_POLICY);
+        }),
+        [],
+    );
 
     const serverVersion = useMemo(() => {
         const buildNumber = config.BuildNumber;
@@ -163,7 +178,9 @@ const About = ({componentId, config, license}: AboutProps) => {
         }
 
         return {
-            id, defaultMessage, values,
+            id,
+            defaultMessage,
+            values,
         };
     }, [config]);
 
@@ -193,14 +210,25 @@ const About = ({componentId, config, license}: AboutProps) => {
                         style={styles.leftHeading}
                         testID='about.app_version.title'
                     >
-                        {intl.formatMessage({id: 'settings.about.version', defaultMessage: 'App Version:'})}
+                        {intl.formatMessage({
+                            id: 'settings.about.version',
+                            defaultMessage: 'App Version:',
+                        })}
                     </Text>
                     <Text
                         style={styles.rightHeading}
                         testID='about.app_version.value'
                     >
-                        {intl.formatMessage({id: 'settings.about.build', defaultMessage: '{version} (Build {number})'},
-                            {version: DeviceInfo.getVersion(), number: DeviceInfo.getBuildNumber()})}
+                        {intl.formatMessage(
+                            {
+                                id: 'settings.about.build',
+                                defaultMessage: '{version} (Build {number})',
+                            },
+                            {
+                                version: DeviceInfo.getVersion(),
+                                number: DeviceInfo.getBuildNumber(),
+                            },
+                        )}
                     </Text>
                 </View>
                 <View style={styles.group}>
@@ -208,13 +236,22 @@ const About = ({componentId, config, license}: AboutProps) => {
                         style={styles.leftHeading}
                         testID='about.server_version.title'
                     >
-                        {intl.formatMessage({id: 'settings.about.server.version.desc', defaultMessage: 'Server Version:'})}
+                        {intl.formatMessage({
+                            id: 'settings.about.server.version.desc',
+                            defaultMessage: 'Server Version:',
+                        })}
                     </Text>
                     <Text
                         style={styles.rightHeading}
                         testID='about.server_version.value'
                     >
-                        {intl.formatMessage({id: serverVersion.id, defaultMessage: serverVersion.defaultMessage}, serverVersion.values)}
+                        {intl.formatMessage(
+                            {
+                                id: serverVersion.id,
+                                defaultMessage: serverVersion.defaultMessage,
+                            },
+                            serverVersion.values,
+                        )}
                     </Text>
                 </View>
                 <View style={styles.group}>
@@ -222,13 +259,19 @@ const About = ({componentId, config, license}: AboutProps) => {
                         style={styles.leftHeading}
                         testID='about.database.title'
                     >
-                        {intl.formatMessage({id: 'settings.about.database', defaultMessage: 'Database:'})}
+                        {intl.formatMessage({
+                            id: 'settings.about.database',
+                            defaultMessage: 'Database:',
+                        })}
                     </Text>
                     <Text
                         style={styles.rightHeading}
                         testID='about.database.value'
                     >
-                        {intl.formatMessage({id: 'settings.about.database.value', defaultMessage: `${config.SQLDriverName}`})}
+                        {intl.formatMessage({
+                            id: 'settings.about.database.value',
+                            defaultMessage: `${config.SQLDriverName}`,
+                        })}
                     </Text>
                 </View>
                 <View style={styles.group}>
@@ -236,7 +279,10 @@ const About = ({componentId, config, license}: AboutProps) => {
                         style={styles.leftHeading}
                         testID='about.database_schema_version.title'
                     >
-                        {intl.formatMessage({id: 'settings.about.database.schema', defaultMessage: 'Database Schema Version:'})}
+                        {intl.formatMessage({
+                            id: 'settings.about.database.schema',
+                            defaultMessage: 'Database Schema Version:',
+                        })}
                     </Text>
                     <Text
                         style={styles.rightHeading}
@@ -263,7 +309,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                     config={config}
                     onPress={handleAboutTeam}
                 />
-                {!MATTERMOST_BUNDLE_IDS.includes(DeviceInfo.getBundleId()) &&
+                {!MATTERMOST_BUNDLE_IDS.includes(DeviceInfo.getBundleId()) && (
                     <FormattedText
                         defaultMessage='{site} is powered by Mattermost'
                         id={t('settings.about.powered_by')}
@@ -271,7 +317,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                         testID='about.powered_by'
                         values={{site: config.SiteName}}
                     />
-                }
+                )}
                 <FormattedText
                     defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
                     id={t('settings.about.copyright')}
