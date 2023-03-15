@@ -17,7 +17,7 @@ import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
-import {logError, logDebug, logWarning} from '@utils/log';
+import {logError, logDebug, logWarning, logInfo} from '@utils/log';
 
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
@@ -206,8 +206,12 @@ export async function newConnection(
 
         peer = new RTCPeer({
             iceServers: iceConfigs || [],
-            logDebug,
-            logErr: logError,
+            logger: {
+                logDebug,
+                logErr: logError,
+                logWarn: logWarning,
+                logInfo,
+            },
             webrtc: {
                 MediaStream,
                 RTCPeerConnection,

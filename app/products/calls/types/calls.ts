@@ -147,10 +147,3 @@ export type ReactionStreamEmoji = {
     count: number;
     literal?: string;
 };
-
-export type RecordingState = {
-    init_at: number;
-    start_at: number;
-    end_at: number;
-    err?: string;
-}

@@ -20,7 +20,7 @@
     "@mattermost/react-native-paste-input": "0.6.2",
     "@mattermost/react-native-turbo-log": "0.2.3",
     "@mattermost/react-native-turbo-mailer": "0.2.4",
-    "@mmcalls/common": "github:cpoile/calls-common",
+    "@mmcalls/common": "github:mattermost/calls-common#02c52be",
     "@msgpack/msgpack": "2.8.0",
     "@nozbe/watermelondb": "0.25.5",
     "@nozbe/with-observables": "1.4.1",
