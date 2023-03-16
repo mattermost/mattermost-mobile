@@ -1,0 +1,46 @@
+name: prepare-mobile-build
+description: Action to prepare environment for mobile build
+
+runs:
+  using: composite
+  steps:
+    - name: ci/setup-node
+      uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
+      with:
+        node-version: "${{ env.NODE_VERSION }}"
+        cache: "npm"
+        cache-dependency-path: package-lock.json
+
+    - uses: ruby/setup-ruby@9669f3ee51dc3f4eda8447ab696b3ab19a90d14b # v1.144.0
+      with:
+        ruby-version: "2.7"
+
+    - name: ci/setup-fastlane-dependencies
+      shell: bash
+      run: bundle install
+      working-directory: ./fastlane
+
+    - name: ci/install-npm-dependencies
+      shell: bash
+      env:
+        NODE_ENV: development
+      run: |
+        npm ci --ignore-scripts
+        node node_modules/\@sentry/cli/scripts/install.js
+        node node_modules/react-native-webrtc/tools/downloadWebRTC.js
+
+    - name: ci/patch-npm-dependencies
+      shell: bash
+      run: npx patch-package
+
+    - name: ci/genereate-assets
+      shell: bash
+      run: node ./scripts/generate-assets.js
+
+    - name: ci/import-compass-icon
+      shell: bash
+      env:
+        COMPASS_ICONS: "node_modules/@mattermost/compass-icons/font/compass-icons.ttf"
+      run: |
+        cp "$COMPASS_ICONS" "assets/fonts/"
+        cp "$COMPASS_ICONS" "android/app/src/main/assets/fonts"
