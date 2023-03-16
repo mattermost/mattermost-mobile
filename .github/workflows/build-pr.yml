@@ -23,7 +23,7 @@ jobs:
 
   build-ios-pr:
     runs-on: macos-12
-    if: startsWith(github.ref_name, 'ios') || startsWith(github.ref_name, 'build')
+    if: ${{ !startsWith(github.ref_name, 'android') }}
     needs:
       - test
     steps:
@@ -56,7 +56,7 @@ jobs:
 
   build-android-pr:
     runs-on: ubuntu-22.04
-    if: startsWith(github.ref_name, 'android') || startsWith(github.ref_name, 'build')
+    if: ${{ !startsWith(github.ref_name, 'ios') }}
     needs:
       - test
     steps:

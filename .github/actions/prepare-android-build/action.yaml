@@ -15,11 +15,17 @@ runs:
     - name: ci/install-gradle-dependencies
       shell: bash
       working-directory: android
-      run: ./gradlew dependencies
+      run: |
+        echo "::group::install-gradle-dependencies"
+        ./gradlew dependencies
+        echo "::endgroup::"
 
     - name: ci/jetify-android-libraries
       shell: bash
-      run: ./node_modules/.bin/jetify
+      run: |
+        echo "::group::jetify-android-libraries"
+        ./node_modules/.bin/jetify
+        echo "::endgroup::"
 
     - name: ci/checkout-private-repo
       if: ${{ inputs.sign == "true" }}
@@ -37,8 +43,10 @@ runs:
         STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
         STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
       run: |
+        echo "::group::append-keystore-to-android-build-for-signing"
         cp ${{ github.workspace }}/mattermost-mobile-private/android/${STORE_FILE} android/app/${STORE_FILE}
         echo "" | tee -a android/gradle.properties > /dev/null
         echo MATTERMOST_RELEASE_STORE_FILE=${STORE_FILE} | tee -a android/gradle.properties > /dev/null
         echo ${STORE_ALIAS} | tee -a android/gradle.properties > /dev/null
         echo ${STORE_PASSWORD} | tee -a android/gradle.properties > /dev/null
+        echo "::endgroup::"

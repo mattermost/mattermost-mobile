@@ -17,7 +17,10 @@ runs:
 
     - name: ci/setup-fastlane-dependencies
       shell: bash
-      run: bundle install
+      run: |
+        echo "::group::setup-fastlane-dependencies"
+        bundle install
+        echo "::endgroup::"
       working-directory: ./fastlane
 
     - name: ci/install-npm-dependencies
@@ -25,22 +28,32 @@ runs:
       env:
         NODE_ENV: development
       run: |
+        echo "::group::install-npm-dependencies"
         npm ci --ignore-scripts
         node node_modules/\@sentry/cli/scripts/install.js
         node node_modules/react-native-webrtc/tools/downloadWebRTC.js
+        echo "::endgroup::"
 
     - name: ci/patch-npm-dependencies
       shell: bash
-      run: npx patch-package
+      run: |
+        echo "::group::patch-npm-dependencies"
+        npx patch-package
+        echo "::endgroup::"
 
-    - name: ci/genereate-assets
+    - name: ci/generate-assets
       shell: bash
-      run: node ./scripts/generate-assets.js
+      run: |
+        echo "::group::generate-assets"
+        node ./scripts/generate-assets.js
+        echo "::endgroup::"
 
     - name: ci/import-compass-icon
       shell: bash
       env:
         COMPASS_ICONS: "node_modules/@mattermost/compass-icons/font/compass-icons.ttf"
       run: |
+        echo "::group::import-compass-icon"
         cp "$COMPASS_ICONS" "assets/fonts/"
         cp "$COMPASS_ICONS" "android/app/src/main/assets/fonts"
+        echo "::endgroup::"

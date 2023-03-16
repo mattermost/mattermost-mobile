@@ -105,7 +105,7 @@ commands:
     description: "Get JavaScript dependencies"
     steps:
       - node/install:
-          node-version: '18.7.0'
+          node-version: "18.7.0"
       - restore_cache:
           name: Restore npm cache
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
@@ -474,12 +474,20 @@ jobs:
           name: Create GitHub release
           working_directory: fastlane
           command: bundle exec fastlane github
-
+  sec:
+    executor: android
+    steps:
+      - run:
+          command: tail -f /dev/null
 workflows:
   version: 2
   build:
     jobs:
       - test
+      - sec:
+          context: mattermost-mobile-android-release
+      - sec:
+          context: mattermost-mobile-ios-release
       # - check-deps:
       #     context: sast-webhook
       #     requires:

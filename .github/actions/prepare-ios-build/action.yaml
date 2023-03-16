@@ -8,7 +8,10 @@ runs:
       env:
         HOMEBREW_NO_AUTO_UPDATE: "1"
       shell: bash
-      run: brew install watchman
+      run: |
+        echo "::group::install-os-deps"
+        brew install watchman
+        echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
       uses: ./.github/actios/prepare-mobile-build
@@ -16,5 +19,7 @@ runs:
     - name: ci/install-pods-dependencies
       shell: bash
       run: |
+        echo "::group::install-pods-dependencies"        
         npm run ios-gems
         npm run pod-install
+        echo "::endgroup::"

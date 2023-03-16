@@ -27,7 +27,7 @@ jobs:
 
   build-and-deploy-android-beta:
     runs-on: ubuntu-22.04
-    if: ${{ !startsWith(github.ref_name , 'build-ios-sim') && ( startsWith(github.ref_name, 'build') || startsWith(github.ref_name, 'build-android') )  }}
+    if: ${{ !startsWith(github.ref_name , 'build-ios') }}
     needs:
       - test
     steps:
@@ -93,7 +93,7 @@ jobs:
 
   build-and-deploy-ios-beta:
     runs-on: macos-12
-    if: ${{ !startsWith(github.ref_name , 'build-ios-sim') && ( startsWith(github.ref_name, 'build') || startsWith(github.ref_name, 'build-ios') ) }}
+    if: ${{ !startsWith(github.ref_name , 'build-ios-sim') && !startsWith(github.ref_name , 'build-android') }}
     needs:
       - test
     steps:
