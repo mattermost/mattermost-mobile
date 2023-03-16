@@ -13,36 +13,5 @@ jobs:
     steps:
       - name: ci/checkout-repo
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
-      - name: ci/setup-node
-        uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
-        with:
-          node-version: "${{ env.NODE_VERSION }}"
-          cache: "npm"
-          cache-dependency-path: package-lock.json
-      - name: ci/install-npm-dependencies
-        shell: bash
-        env:
-          NODE_ENV: development
-        run: |
-          npm ci --ignore-scripts
-          node node_modules/\@sentry/cli/scripts/install.js
-          node node_modules/react-native-webrtc/tools/downloadWebRTC.js
-      - name: ci/patch-npm-dependencies
-        shell: bash
-        run: npx patch-package
-      - name: ci/genereate-assets
-        shell: bash
-        run: node ./scripts/generate-assets.js
-      - name: ci/import-compass-icon
-        shell: bash
-        env:
-          COMPASS_ICONS: "node_modules/@mattermost/compass-icons/font/compass-icons.ttf"
-        run: |
-          cp "$COMPASS_ICONS" "assets/fonts/"
-          cp "$COMPASS_ICONS" "android/app/src/main/assets/fonts"
-      - name: ci/check-styles
-        run: npm run check
-      - name: ci/run-tests
-        run: npm test
-      - name: ci/check-i18n
-        run: ./scripts/precommit/i18n.sh
+      - name: ci/test
+        uses: ./.github/actios/test
