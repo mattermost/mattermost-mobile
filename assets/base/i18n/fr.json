@@ -992,5 +992,10 @@
     "invite.members.user_is_guest": "",
     "invite.members.already_member": "",
     "mobile.calls_start_call_exists": "",
-    "mobile.calls_not_connected": ""
+    "mobile.calls_not_connected": "",
+    "channel_notification_preferences.notification.thread_replies": "M'avertir des réponses aux fils de discussion que je suis sur cette chaîne",
+    "channel_notification_preferences.notification.mention": "Mentions, messages directs uniquement",
+    "channel_notification_preferences.notification.all": "Tous les nouveaux messages",
+    "channel_notification_preferences.muted_title": "Ce canal est en sourdine",
+    "channel_notification_preferences.muted_content": "Vous pouvez modifier les paramètres de notification, mais vous ne recevrez pas de notifications tant que le canal n'aura pas été désactivé."
 }
