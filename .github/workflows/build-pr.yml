@@ -30,17 +30,6 @@ jobs:
       - name: ci/checkout-repo
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
-      - name: ci/output-ssh-private-key
-        shell: bash
-        run: |
-          SSH_KEY_PATH=~/.ssh/id_ed25519
-          if [ -n "${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}" ]; then
-            mkdir -p ~/.ssh
-            echo -e '${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}' > ${SSH_KEY_PATH}
-            chmod 0600 ${SSH_KEY_PATH}
-            ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
-          fi
-
       - name: ci/prepare-ios-build
         uses: ./.github/actios/prepare-ios-build
 
