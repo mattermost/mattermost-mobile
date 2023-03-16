@@ -214,7 +214,7 @@ const ProfileForm = ({
                 fieldRef={nicknameRef}
                 isDisabled={userProfileFields.nickname.isDisabled}
                 label={formatMessage(FIELDS.nickname)}
-                maxLength={22}
+                maxLength={64}
                 testID='edit_profile_form.nickname'
                 value={userInfo.nickname}
                 {...fieldConfig}
