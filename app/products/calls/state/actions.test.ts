@@ -312,6 +312,66 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], expectedCurrentCallState);
     });
 
+    it('leftCall with screensharing on', () => {
+        const initialCallsState: CallsState = {
+            ...DefaultCallsState,
+            calls: {
+                'channel-1': {
+                    ...call1,
+                    screenOn: 'user-1',
+                },
+            },
+        };
+        const initialChannelsWithCallsState = {
+            'channel-1': true,
+        };
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+            screenOn: 'user-1',
+        };
+        const expectedCallsState = {
+            'channel-1': {
+                participants: {
+                    'user-2': {id: 'user-2', muted: true, raisedHand: 0},
+                },
+                channelId: 'channel-1',
+                startTime: 123,
+                threadId: 'thread-1',
+                ownerId: 'user-1',
+                hostId: 'user-1',
+                screenOn: '',
+            },
+        };
+        const expectedChannelsWithCallsState = initialChannelsWithCallsState;
+        const expectedCurrentCallState: CurrentCall = {
+            ...initialCurrentCallState,
+            ...expectedCallsState['channel-1'],
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useChannelsWithCalls('server1'), useCurrentCall()];
+        });
+        act(() => {
+            setCallsState('server1', initialCallsState);
+            setChannelsWithCalls('server1', initialChannelsWithCallsState);
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], initialChannelsWithCallsState);
+        assert.deepEqual(result.current[2], initialCurrentCallState);
+
+        // test
+        act(() => userLeftCall('server1', 'channel-1', 'user-1'));
+        assert.deepEqual((result.current[0] as CallsState).calls, expectedCallsState);
+        assert.deepEqual(result.current[1], expectedChannelsWithCallsState);
+        assert.deepEqual(result.current[2], expectedCurrentCallState);
+    });
+
     it('callStarted', () => {
         // setup
         const {result} = renderHook(() => {
