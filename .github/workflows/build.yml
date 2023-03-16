@@ -1,0 +1,156 @@
+---
+name: build
+
+on:
+  push:
+    branches:
+      # TODO: remove the `gha-` to match the current workflow again
+      - build-gha-\d+$
+      - build-gha-ios-\d+$
+      - build-gha-ios-beta-\d+$
+      - build-gha-ios-sim-\d+$
+      - build-gha-android-\d+$
+      - build-gha-android-beta-\d+$
+
+env:
+  NODE_VERSION: 18.7.0
+  TERM: xterm
+
+jobs:
+  test:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+      - name: ci/test
+        uses: ./.github/actios/test
+
+  build-and-deploy-android-beta:
+    runs-on: ubuntu-22.04
+    if: ${{ !startsWith(github.ref_name , 'build-ios-sim') && ( startsWith(github.ref_name, 'build') || startsWith(github.ref_name, 'build-android') )  }}
+    needs:
+      - test
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+
+      - name: ci/prepare-android-build
+        uses: ./.github/actios/prepare-android-build
+        with:
+          sign: true
+
+      - name: ci/build-android-beta
+        env:
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
+          SENTRY_AUTH_TOKEN: "${{ secrets.MM_MOBILE_SENTRY_AUTH_TOKEN }}"
+          SENTRY_PROJECT_ANDROID: "${{ secrets.MM_MOBILE_SENTRY_PROJECT_ANDROID }}"
+          SENTRY_ORG: "${{ secrets.MM_MOBILE_SENTRY_ORG }}"
+          SENTRY_DSN_ANDROID: ${{ secrets.MM_MOBILE_SENTRY_DSN_ANDROID }}
+          SUPPLY_JSON_KEY: ${{ github.workspace }}/mattermost-mobile-private/android/mattermost-credentials.json
+        run: |
+          echo "::group::Build"
+          export SUPPLY_TRACK=beta
+          bundle exec fastlane android build --env android.beta
+          echo "::endgroup::"
+          echo "::group::Deploy to Play Store"
+          export SUPPLY_TRACK=alpha
+          bundle exec fastlane android deploy file:"${{ github.workspace }}/*.apk" --env android.beta
+          echo "::endgroup::"
+        working-directory: ./fastlane
+
+      - name: ci/upload-android-beta-build
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: android-build-beta-${{ github.run_id }}
+          path: "*.apk"
+
+  build-ios-simulator:
+    runs-on: macos-12
+    if: ${{ !startsWith(github.ref_name , 'build-android') }}
+    needs:
+      - test
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+
+      - name: ci/output-ssh-private-key
+        shell: bash
+        run: |
+          SSH_KEY_PATH=~/.ssh/id_ed25519
+          if [ -n "${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}" ]; then
+            mkdir -p ~/.ssh
+            echo -e '${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}' > ${SSH_KEY_PATH}
+            chmod 0600 ${SSH_KEY_PATH}
+            ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
+          fi
+
+      - name: ci/prepare-ios-build
+        uses: ./.github/actios/prepare-ios-build
+
+      - name: ci/build-ios-simulator
+        env:
+          TAG: "${{ github.ref_name }}"
+          GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
+        run: bundle exec fastlane ios simulator
+        working-directory: ./fastlane
+
+      - name: ci/upload-ios-pr-simulator
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: ios-build-simulator-${{ github.run_id }}
+          path: Mattermost-simulator-x86_64.app.zip
+
+  build-and-deploy-ios-beta:
+    runs-on: macos-12
+    if: ${{ !startsWith(github.ref_name , 'build-ios-sim') && ( startsWith(github.ref_name, 'build') || startsWith(github.ref_name, 'build-ios') ) }}
+    needs:
+      - test
+    steps:
+      - name: ci/checkout-repo
+        uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
+
+      - name: ci/output-ssh-private-key
+        shell: bash
+        run: |
+          SSH_KEY_PATH=~/.ssh/id_ed25519
+          if [ -n "${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}" ]; then
+            mkdir -p ~/.ssh
+            echo -e '${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}' > ${SSH_KEY_PATH}
+            chmod 0600 ${SSH_KEY_PATH}
+            ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
+          fi
+
+      - name: ci/prepare-ios-build
+        uses: ./.github/actios/prepare-ios-build
+
+      - name: ci/build-and-deploy-ios-beta
+        env:
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          FASTLANE_TEAM_ID: "${{ secrets.MM_MOBILE_FASTLANE_TEAM_ID }}"
+          IOS_API_ISSUER_ID: "${{ secrets.MM_MOBILE_IOS_API_ISSUER_ID }}"
+          IOS_API_KEY: "${{ secrets.MM_MOBILE_IOS_API_KEY }}"
+          IOS_API_KEY_ID: "${{ secrets.MM_MOBILE_IOS_API_KEY_ID }}"
+          MATCH_GIT_URL: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
+          MATCH_PASSWORD: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
+          SENTRY_AUTH_TOKEN: "${{ secrets.MM_MOBILE_SENTRY_AUTH_TOKEN }}"
+          SENTRY_DSN_IOS: "${{ secrets.MM_MOBILE_SENTRY_DSN_IOS }}"
+          SENTRY_ORG: "${{ secrets.MM_MOBILE_SENTRY_ORG }}"
+          SENTRY_PROJECT_IOS: "${{ secrets.MM_MOBILE_SENTRY_PROJECT_IOS }}"
+        run: |
+          echo "::group::Build"
+          bundle exec fastlane ios build --env ios.beta
+          echo "::endgroup::"
+          echo "::group::Deploy to TestFlight"
+          bundle exec fastlane ios deploy file:"${{ github.workspace }}/*.ipa" --env ios.beta
+          echo "::endgroup::"
+        working-directory: ./fastlane
+
+      - name: ci/upload-ios-beta-build
+        uses: actions/upload-artifact@0b7f8abb1508181956e8e162db84b466c27e18ce # v3.1.2
+        with:
+          name: ios-build-beta-${{ github.run_id }}
+          path: "*.ipa"
