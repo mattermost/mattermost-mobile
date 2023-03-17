@@ -308,7 +308,7 @@ export default function SelectedUsers({
                         onPress={handlePress}
                         iconName={buttonIcon}
                         text={buttonText}
-                        iconSize={24}
+                        iconSize={20}
                         theme={theme}
                         buttonType={isDisabled ? 'disabled' : 'default'}
                         emphasis={'primary'}

@@ -36,7 +36,7 @@ export const showFavoriteChannelSnackbar = (favorited: boolean, onAction: () => 
 export const showAddChannelMembersSnackbar = (count: number) => {
     return showSnackBar({
         barType: SNACK_BAR_TYPE.ADD_CHANNEL_MEMBERS,
-        sourceScreen: Screens.CHANNEL_ADD_PEOPLE,
+        sourceScreen: Screens.CHANNEL_ADD_MEMBERS,
         messageValues: {numMembers: count},
     });
 };

@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {observeChannel} from '@queries/servers/channel';
 
-import AddPeopleBox from './add_people_box';
+import AddMembersBox from './add_members_box';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -25,4 +25,4 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: Props) =
     };
 });
 
-export default withDatabase(enhanced(AddPeopleBox));
+export default withDatabase(enhanced(AddMembersBox));

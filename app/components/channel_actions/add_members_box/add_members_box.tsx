@@ -4,10 +4,10 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
+import {getHeaderOptions} from '@app/screens/channel_add_members/channel_add_members';
 import OptionBox from '@components/option_box';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {getHeaderOptions} from '@screens/channel_add_people/channel_add_people';
 import {dismissBottomSheet, goToScreen, showModal} from '@screens/navigation';
 
 import type {StyleProp, ViewStyle} from 'react-native';
@@ -20,7 +20,7 @@ type Props = {
     testID: string;
 }
 
-const AddPeopleBox = ({
+const AddMembersBox = ({
     channelId,
     displayName,
     inModal,
@@ -30,27 +30,27 @@ const AddPeopleBox = ({
     const intl = useIntl();
     const theme = useTheme();
 
-    const onAddPeople = useCallback(async () => {
-        const title = intl.formatMessage({id: 'intro.add_people', defaultMessage: 'Add People'});
+    const onAddMembers = useCallback(async () => {
+        const title = intl.formatMessage({id: 'intro.add_members', defaultMessage: 'Add members'});
         const options = await getHeaderOptions(theme, displayName, inModal);
         if (inModal) {
-            goToScreen(Screens.CHANNEL_ADD_PEOPLE, title, {channelId, inModal}, options);
+            goToScreen(Screens.CHANNEL_ADD_MEMBERS, title, {channelId, inModal}, options);
             return;
         }
 
         await dismissBottomSheet();
-        showModal(Screens.CHANNEL_ADD_PEOPLE, title, {channelId, inModal}, options);
+        showModal(Screens.CHANNEL_ADD_MEMBERS, title, {channelId, inModal}, options);
     }, [intl, channelId, inModal, testID, displayName]);
 
     return (
         <OptionBox
             containerStyle={containerStyle}
             iconName='account-plus-outline'
-            onPress={onAddPeople}
+            onPress={onAddMembers}
             testID={testID}
-            text={intl.formatMessage({id: 'intro.add_people', defaultMessage: 'Add People'})}
+            text={intl.formatMessage({id: 'intro.add_members', defaultMessage: 'Add members'})}
         />
     );
 };
 
-export default AddPeopleBox;
+export default AddMembersBox;

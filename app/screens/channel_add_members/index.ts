@@ -9,7 +9,7 @@ import {observeTutorialWatched} from '@queries/app/global';
 import {observeChannel} from '@queries/servers/channel';
 import {observeTeammateNameDisplay} from '@queries/servers/user';
 
-import ChannelAddPeople from './channel_add_people';
+import ChannelAddMembers from './channel_add_members';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -26,4 +26,4 @@ const enhanced = withObservables(['channelId'], ({database, channelId}: OwnProps
     };
 });
 
-export default withDatabase(enhanced(ChannelAddPeople));
+export default withDatabase(enhanced(ChannelAddMembers));

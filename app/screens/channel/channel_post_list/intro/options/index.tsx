@@ -4,7 +4,7 @@
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
 
-// import AddPeopleBox from '@components/channel_actions/add_people_box';
+import AddMembersBox from '@components/channel_actions/add_members_box';
 import FavoriteBox from '@components/channel_actions/favorite_box';
 import InfoBox from '@components/channel_actions/info_box';
 import SetHeaderBox from '@components/channel_actions/set_header_box';
@@ -13,7 +13,7 @@ type Props = {
     channelId: string;
     header?: boolean;
     favorite?: boolean;
-    people?: boolean;
+    canAddMembers?: boolean;
 }
 
 const styles = StyleSheet.create({
@@ -39,18 +39,18 @@ const styles = StyleSheet.create({
     },
 });
 
-const IntroOptions = ({channelId, header, favorite}: Props) => {
+const IntroOptions = ({channelId, header, favorite, canAddMembers}: Props) => {
     return (
         <View style={styles.container}>
-            {/* Add back in after MM-47655 is resolved. https://mattermost.atlassian.net/browse/MM-47655
-            {people &&
-            <AddPeopleBox
+            {canAddMembers &&
+            <AddMembersBox
                 channelId={channelId}
                 containerStyle={[styles.item, styles.margin]}
-                testID='channel_post_list.intro_options.add_people.action'
+                testID='channel_post_list.intro_options.add_members.action'
+                inModal={false}
             />
             }
-            */}
+
             {header &&
             <SetHeaderBox
                 channelId={channelId}

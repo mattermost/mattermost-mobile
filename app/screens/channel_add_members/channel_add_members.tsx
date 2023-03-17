@@ -30,8 +30,8 @@ import {typography} from '@utils/typography';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
-const CLOSE_BUTTON_ID = 'close-add-people';
-const TEST_ID = 'add_people';
+const CLOSE_BUTTON_ID = 'close-add-member';
+const TEST_ID = 'add_members';
 const CLOSE_BUTTON_TEST_ID = 'close.button';
 
 export const getHeaderOptions = async (theme: Theme, displayName: string, inModal = false) => {
@@ -111,7 +111,7 @@ function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
     return newSelectedIds;
 }
 
-export default function ChannelAddPeople({
+export default function ChannelAddMembers({
     componentId,
     channel,
     currentUserId,
@@ -159,7 +159,7 @@ export default function ChannelAddPeople({
         const result = await addMembersToChannel(serverUrl, channel.id, idsToUse);
 
         if (result.error) {
-            alertErrorWithFallback(intl, result.error, {id: t('mobile.channel_add_people.error'), defaultMessage: 'We could not add those users to the channel. Please check your connection and try again.'});
+            alertErrorWithFallback(intl, result.error, {id: t('mobile.channel_add_members.error'), defaultMessage: 'We could not add those users to the channel. Please check your connection and try again.'});
             setAddingMembers(false);
         } else {
             close();

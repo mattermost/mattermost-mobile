@@ -5,7 +5,7 @@ import React, {useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import ChannelInfoStartButton from '@calls/components/channel_info_start';
-import AddPeopleBox from '@components/channel_actions/add_people_box';
+import AddMembersBox from '@components/channel_actions/add_members_box';
 import CopyChannelLinkBox from '@components/channel_actions/copy_channel_link_box';
 import FavoriteBox from '@components/channel_actions/favorite_box';
 import MutedBox from '@components/channel_actions/mute_box';
@@ -13,8 +13,6 @@ import SetHeaderBox from '@components/channel_actions/set_header_box';
 import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
-
-// import AddPeopleBox from '@components/channel_actions/add_people_box';
 
 type Props = {
     channelId: string;
@@ -72,10 +70,10 @@ const ChannelActions = ({channelId, channelType, inModal = false, dismissChannel
                 />
             }
             {!isDM &&
-                <AddPeopleBox
+                <AddMembersBox
                     channelId={channelId}
                     inModal={inModal}
-                    testID={`${testID}.add_people.action`}
+                    testID={`${testID}.add_members.action`}
                 />
             }
             {!isDM && !callsEnabled &&

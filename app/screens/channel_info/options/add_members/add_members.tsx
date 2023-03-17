@@ -5,10 +5,10 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
+import {getHeaderOptions} from '@app/screens/channel_add_members/channel_add_members';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
-import {getHeaderOptions} from '@screens/channel_add_people/channel_add_people';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 
@@ -24,7 +24,7 @@ const AddMembers = ({displayName, channelId}: Props) => {
 
     const goToAddMembers = preventDoubleTap(async () => {
         const options = await getHeaderOptions(theme, displayName, true);
-        goToScreen(Screens.CHANNEL_ADD_PEOPLE, title, {channelId, inModal: true}, options);
+        goToScreen(Screens.CHANNEL_ADD_MEMBERS, title, {channelId, inModal: true}, options);
     });
 
     return (
