@@ -142,6 +142,7 @@ export default {
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     BROWSE_CHANNELS,
     CHANNEL_INFO,
+    CHANNEL_ADD_PEOPLE,
     CREATE_DIRECT_MESSAGE,
     CREATE_TEAM,
     CUSTOM_STATUS,
@@ -171,6 +172,5 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
 ]);
 
 export const NOT_READY = [
-    CHANNEL_ADD_PEOPLE,
     CREATE_TEAM,
 ];

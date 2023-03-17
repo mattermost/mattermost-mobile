@@ -100,6 +100,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CREATE_DIRECT_MESSAGE:
             screen = withServerDatabase(require('@screens/create_direct_message').default);
             break;
+        case Screens.CHANNEL_ADD_PEOPLE:
+            screen = withServerDatabase(require('@screens/channel_add_people').default);
+            break;
         case Screens.EDIT_POST:
             screen = withServerDatabase(require('@screens/edit_post').default);
             break;

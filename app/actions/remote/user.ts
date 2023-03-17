@@ -531,6 +531,36 @@ export const fetchProfilesInTeam = async (serverUrl: string, teamId: string, pag
     }
 };
 
+export const fetchProfilesNotInChannel = async (
+    serverUrl: string,
+    teamId: string,
+    channelId: string,
+    groupConstrained = false,
+    page = 0,
+    perPage: number = General.PROFILE_CHUNK_SIZE,
+    fetchOnly = false,
+) => {
+    try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+        const users = await client.getProfilesNotInChannel(teamId, channelId, groupConstrained, page, perPage);
+
+        if (!fetchOnly && users.length) {
+            const currentUserId = await getCurrentUserId(operator.database);
+            const toStore = removeUserFromList(currentUserId, users);
+            await operator.handleUsers({
+                users: toStore,
+                prepareRecordsOnly: false,
+            });
+        }
+
+        return {users};
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        return {error};
+    }
+};
+
 export const searchProfiles = async (serverUrl: string, term: string, options: SearchUserOptions, fetchOnly = false) => {
     let client: Client;
     try {

@@ -164,10 +164,12 @@ export async function addMembersToChannel(serverUrl: string, channelId: string, 
 
         if (!fetchOnly) {
             const modelPromises: Array<Promise<Model[]>> = [];
-            modelPromises.push(operator.handleUsers({
-                users,
-                prepareRecordsOnly: true,
-            }));
+            if (users?.length) {
+                modelPromises.push(operator.handleUsers({
+                    users,
+                    prepareRecordsOnly: true,
+                }));
+            }
             modelPromises.push(operator.handleChannelMembership({
                 channelMemberships,
                 prepareRecordsOnly: true,
