@@ -39,15 +39,13 @@ jobs:
         with:
           sign: true
 
-      - name: ci/build-android-beta
+      - name: ci/build-and-deploy-android-beta
         env:
           AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           SENTRY_AUTH_TOKEN: "${{ secrets.MM_MOBILE_SENTRY_AUTH_TOKEN }}"
-          SENTRY_PROJECT_ANDROID: "${{ secrets.MM_MOBILE_SENTRY_PROJECT_ANDROID }}"
-          SENTRY_ORG: "${{ secrets.MM_MOBILE_SENTRY_ORG }}"
-          SENTRY_DSN_ANDROID: ${{ secrets.MM_MOBILE_SENTRY_DSN_ANDROID }}
+          SENTRY_DSN_ANDROID: ${{ secrets.MM_MOBILE_BETA_SENTRY_DSN_ANDROID }}
           SUPPLY_JSON_KEY: ${{ github.workspace }}/mattermost-mobile-private/android/mattermost-credentials.json
         run: |
           echo "::group::Build"
@@ -118,17 +116,15 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
           AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           FASTLANE_TEAM_ID: "${{ secrets.MM_MOBILE_FASTLANE_TEAM_ID }}"
           IOS_API_ISSUER_ID: "${{ secrets.MM_MOBILE_IOS_API_ISSUER_ID }}"
           IOS_API_KEY: "${{ secrets.MM_MOBILE_IOS_API_KEY }}"
           IOS_API_KEY_ID: "${{ secrets.MM_MOBILE_IOS_API_KEY_ID }}"
           MATCH_GIT_URL: "${{ secrets.MM_MOBILE_MATCH_GIT_URL }}"
           MATCH_PASSWORD: "${{ secrets.MM_MOBILE_MATCH_PASSWORD }}"
-          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           SENTRY_AUTH_TOKEN: "${{ secrets.MM_MOBILE_SENTRY_AUTH_TOKEN }}"
-          SENTRY_DSN_IOS: "${{ secrets.MM_MOBILE_SENTRY_DSN_IOS }}"
-          SENTRY_ORG: "${{ secrets.MM_MOBILE_SENTRY_ORG }}"
-          SENTRY_PROJECT_IOS: "${{ secrets.MM_MOBILE_SENTRY_PROJECT_IOS }}"
+          SENTRY_DSN_IOS: "${{ secrets.MM_MOBILE_BETA_SENTRY_DSN_IOS }}"
         run: |
           echo "::group::Build"
           bundle exec fastlane ios build --env ios.beta
