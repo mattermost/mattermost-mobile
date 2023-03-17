@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, LayoutChangeEvent, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
@@ -12,11 +12,10 @@ import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import SelectedUsers from '@components/selected_users';
-import UserList from '@components/user_list';
+import ServerUserList from '@components/server_user_list';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {debounce} from '@helpers/api/general';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useModalPosition} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
@@ -27,7 +26,6 @@ import {mergeNavigationOptions} from '@utils/navigation';
 import {showAddChannelMembersSnackbar} from '@utils/snack_bar';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {filterProfilesMatchingTerm} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -113,8 +111,6 @@ function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
     return newSelectedIds;
 }
 
-const EMPTY_PROFILES: UserProfile[] = [];
-
 export default function ChannelAddPeople({
     componentId,
     channel,
@@ -129,67 +125,17 @@ export default function ChannelAddPeople({
     const intl = useIntl();
     const {formatMessage} = intl;
 
-    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
-    const next = useRef(true);
-    const page = useRef(-1);
-    const mounted = useRef(false);
     const mainView = useRef<View>(null);
     const modalPosition = useModalPosition(mainView);
 
-    const [profiles, setProfiles] = useState(EMPTY_PROFILES);
-    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
-    const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
     const [addingMembers, setAddingMembers] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const [containerHeight, setContainerHeight] = useState(0);
 
-    const isSearch = Boolean(term);
-
-    const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
-        if (mounted.current) {
-            if (!users || !users.length) {
-                next.current = false;
-            }
-
-            page.current += 1;
-            if (users?.length) {
-                setProfiles((v) => [...v, ...users]);
-            }
-            setLoading(false);
-        }
-    };
-
-    const data = useMemo(() => {
-        if (isSearch) {
-            const exactMatches: UserProfile[] = [];
-            const filterByTerm = (p: UserProfile) => {
-                if (p.username === term || p.username.startsWith(term)) {
-                    exactMatches.push(p);
-                    return false;
-                }
-
-                return true;
-            };
-
-            const profilesToFilter = searchResults.length ? searchResults : profiles;
-            const results = filterProfilesMatchingTerm(profilesToFilter, term).filter(filterByTerm);
-            return [...exactMatches, ...results];
-        }
-        return profiles;
-    }, [term, isSearch && searchResults, profiles]);
-
     const clearSearch = useCallback(() => {
         setTerm('');
-        setSearchResults([]);
     }, []);
-
-    const getProfiles = useCallback(debounce(() => {
-        if (next.current && !loading && !term && mounted.current && channel) {
-            setLoading(true);
-            fetchProfilesNotInChannel(serverUrl, channel.teamId, channel.id, channel.isGroupConstrained, page.current + 1, General.PROFILE_CHUNK_SIZE).then(loadedProfiles);
-        }
-    }, 100), [loading, isSearch, serverUrl, channel]);
 
     const handleRemoveProfile = useCallback((id: string) => {
         setSelectedIds((current) => removeProfileFromList(current, id));
@@ -235,58 +181,60 @@ export default function ChannelAddPeople({
         });
     }, [currentUserId, clearSearch]);
 
-    const searchUsers = useCallback(async (searchTerm: string) => {
-        if (!channel) {
-            return;
-        }
-        const lowerCasedTerm = searchTerm.toLowerCase();
-        setLoading(true);
-        const results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: channel.teamId, not_in_channel_id: channel.id, allow_inactive: true});
-
-        const searchData: UserProfile[] = results.data || EMPTY_PROFILES;
-
-        setSearchResults(searchData);
-        setLoading(false);
-    }, [channel, serverUrl]);
-
-    const search = useCallback(() => {
-        searchUsers(term);
-    }, [searchUsers, term]);
+    const onTextChange = useCallback((searchTerm: string) => {
+        setTerm(searchTerm);
+    }, []);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
-
-    const onSearch = useCallback((text: string) => {
-        if (text) {
-            setTerm(text);
-            if (searchTimeoutId.current) {
-                clearTimeout(searchTimeoutId.current);
-            }
-
-            searchTimeoutId.current = setTimeout(() => {
-                searchUsers(text);
-            }, General.SEARCH_TIMEOUT_MILLISECONDS);
-        } else {
-            clearSearch();
-        }
-    }, [searchUsers, clearSearch]);
 
     const updateNavigationButtons = useCallback(async () => {
         const options = await getHeaderOptions(theme, channel?.displayName || '', inModal);
         mergeNavigationOptions(componentId, options);
     }, [theme, channel?.displayName, inModal, componentId]);
 
-    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
-    useAndroidHardwareBackHandler(componentId, close);
+    const userFetchFunction = useCallback(async (page: number) => {
+        if (!channel) {
+            return [];
+        }
 
-    useEffect(() => {
-        mounted.current = true;
-        getProfiles();
-        return () => {
-            mounted.current = false;
+        const result = await fetchProfilesNotInChannel(serverUrl, channel.teamId, channel.id, channel.isGroupConstrained, page, General.PROFILE_CHUNK_SIZE);
+        if (result.users?.length) {
+            return result.users;
+        }
+
+        return [];
+    }, [serverUrl, channel]);
+
+    const userSearchFunction = useCallback(async (searchTerm: string) => {
+        if (!channel) {
+            return [];
+        }
+
+        const lowerCasedTerm = searchTerm.toLowerCase();
+        const results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: channel.teamId, not_in_channel_id: channel.id, allow_inactive: true});
+
+        if (results.data) {
+            return results.data;
+        }
+
+        return [];
+    }, [serverUrl, channel]);
+
+    const createUserFilter = useCallback((exactMatches: UserProfile[], searchTerm: string) => {
+        return (p: UserProfile) => {
+            if (p.username === searchTerm || p.username.startsWith(searchTerm)) {
+                exactMatches.push(p);
+                return false;
+            }
+
+            return true;
         };
     }, []);
+
+    useNavButtonPressed(CLOSE_BUTTON_ID, componentId, close, [close]);
+    useAndroidHardwareBackHandler(componentId, close);
 
     useEffect(() => {
         updateNavigationButtons();
@@ -303,37 +251,35 @@ export default function ChannelAddPeople({
     return (
         <SafeAreaView
             style={style.container}
-            testID='create_direct_message.screen'
+            testID={`${TEST_ID}.screen`}
             onLayout={onLayout}
             ref={mainView}
             edges={['top', 'left', 'right']}
         >
             <View style={style.searchBar}>
                 <Search
-                    testID='create_direct_message.search_bar'
+                    testID={`${TEST_ID}.search_bar`}
                     placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    onChangeText={onSearch}
-                    onSubmitEditing={search}
+                    onChangeText={onTextChange}
                     onCancel={clearSearch}
                     autoCapitalize='none'
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
                 />
             </View>
-            <UserList
+            <ServerUserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
-                loading={loading}
-                profiles={data}
                 selectedIds={selectedIds}
-                showNoResults={!loading && page.current !== -1}
                 teammateNameDisplay={teammateNameDisplay}
-                fetchMore={getProfiles}
                 term={term}
-                testID='create_direct_message.user_list'
+                testID={`${TEST_ID}.user_list`}
                 tutorialWatched={tutorialWatched}
+                fetchFunction={userFetchFunction}
+                searchFunction={userSearchFunction}
+                createFilter={createUserFilter}
             />
             <SelectedUsers
                 containerHeight={containerHeight}
@@ -343,8 +289,8 @@ export default function ChannelAddPeople({
                 teammateNameDisplay={teammateNameDisplay}
                 onPress={addMembers}
                 buttonIcon={'account-plus-outline'}
-                buttonText={formatMessage({id: 'channel_add_people.add_members.button', defaultMessage: 'Add Members'})}
-                testID={TEST_ID}
+                buttonText={formatMessage({id: 'channel_add_members.add_members.button', defaultMessage: 'Add Members'})}
+                testID={`${TEST_ID}.selected`}
             />
         </SafeAreaView>
     );

@@ -485,10 +485,12 @@ export const fetchProfiles = async (serverUrl: string, page = 0, perPage: number
         if (!fetchOnly) {
             const currentUserId = await getCurrentUserId(operator.database);
             const toStore = removeUserFromList(currentUserId, users);
-            await operator.handleUsers({
-                users: toStore,
-                prepareRecordsOnly: false,
-            });
+            if (toStore.length) {
+                await operator.handleUsers({
+                    users: toStore,
+                    prepareRecordsOnly: false,
+                });
+            }
         }
 
         return {users};
@@ -517,11 +519,12 @@ export const fetchProfilesInTeam = async (serverUrl: string, teamId: string, pag
         if (!fetchOnly) {
             const currentUserId = await getCurrentUserId(operator.database);
             const toStore = removeUserFromList(currentUserId, users);
-
-            await operator.handleUsers({
-                users: toStore,
-                prepareRecordsOnly: false,
-            });
+            if (toStore.length) {
+                await operator.handleUsers({
+                    users: toStore,
+                    prepareRecordsOnly: false,
+                });
+            }
         }
 
         return {users};
