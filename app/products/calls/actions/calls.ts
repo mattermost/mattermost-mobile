@@ -279,7 +279,6 @@ export const leaveCall = () => {
         connection.disconnect();
         connection = null;
     }
-    setSpeakerphoneOn(false);
 };
 
 export const leaveCallPopCallScreen = async () => {
