@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RTCPeer} from '@mmcalls/common/lib';
+import {RTCPeer} from '@mattermost/calls/lib';
 import {deflate} from 'pako';
 import {DeviceEventEmitter, EmitterSubscription} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
@@ -22,7 +22,7 @@ import {logError, logDebug, logWarning, logInfo} from '@utils/log';
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
 import type {CallsConnection} from '@calls/types/calls';
-import type {EmojiData} from '@mmcalls/common/lib/types';
+import type {EmojiData} from '@mattermost/calls/lib/types';
 
 const peerConnectTimeout = 5000;
 

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {CallRecordingState, CallsConfig, EmojiData, UserReactionData} from '@mmcalls/common/lib/types';
+import type {CallRecordingState, CallsConfig, EmojiData, UserReactionData} from '@mattermost/calls/lib/types';
 import type UserModel from '@typings/database/models/servers/user';
 
 export type GlobalCallsState = {

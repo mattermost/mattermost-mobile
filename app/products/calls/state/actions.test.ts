@@ -52,7 +52,7 @@ import {
 } from '@calls/types/calls';
 import {License} from '@constants';
 
-import type {CallRecordingState} from '@mmcalls/common/lib/types';
+import type {CallRecordingState} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
 

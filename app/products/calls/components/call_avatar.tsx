@@ -8,7 +8,7 @@ import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
 import ProfilePicture from '@components/profile_picture';
 
-import type {EmojiData} from '@mmcalls/common/lib/types';
+import type {EmojiData} from '@mattermost/calls/lib/types';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {

@@ -49,7 +49,7 @@ import type {
 } from '@calls/types/calls';
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
-import type {CallRecordingState, EmojiData} from '@mmcalls/common/lib/types';
+import type {CallRecordingState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
 let connection: CallsConnection | null = null;

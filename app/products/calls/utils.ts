@@ -9,7 +9,7 @@ import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
 import type {CallParticipant} from '@calls/types/calls';
-import type {CallsConfig} from '@mmcalls/common/lib/types';
+import type {CallsConfig} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
 import type {IntlShape} from 'react-intl';
 import type {RTCIceServer} from 'react-native-webrtc';

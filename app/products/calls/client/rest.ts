@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import type {ServerChannelState, ApiResp} from '@calls/types/calls';
-import type {CallRecordingState, CallsConfig} from '@mmcalls/common/lib/types';
+import type {CallRecordingState, CallsConfig} from '@mattermost/calls/lib/types';
 import type {RTCIceServer} from 'react-native-webrtc';
 
 export interface ClientCallsMix {

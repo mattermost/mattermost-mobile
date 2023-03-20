@@ -25,7 +25,7 @@ import {
 } from '@calls/types/calls';
 import {REACTION_LIMIT, REACTION_TIMEOUT} from '@constants/calls';
 
-import type {CallRecordingState, UserReactionData} from '@mmcalls/common/lib/types';
+import type {CallRecordingState, UserReactionData} from '@mattermost/calls/lib/types';
 
 export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(

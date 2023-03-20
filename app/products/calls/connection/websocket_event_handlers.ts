@@ -29,7 +29,7 @@ import type {
     UserConnectedData,
     UserDisconnectedData, UserMutedUnmutedData, UserRaiseUnraiseHandData,
     UserReactionData, UserScreenOnOffData, UserVoiceOnOffData,
-} from '@mmcalls/common/lib/types';
+} from '@mattermost/calls/lib/types';
 
 export const handleCallUserConnected = (serverUrl: string, msg: WebSocketMessage<UserConnectedData>) => {
     // Load user model async (if needed).
