@@ -141,6 +141,12 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
         participants: {...callsState.calls[channelId].participants},
     };
     delete nextCall.participants[userId];
+
+    // If they were screensharing, remove that.
+    if (nextCall.screenOn === userId) {
+        nextCall.screenOn = '';
+    }
+
     const nextCalls = {...callsState.calls};
     if (Object.keys(nextCall.participants).length === 0) {
         delete nextCalls[channelId];
@@ -177,6 +183,12 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
         voiceOn,
     };
     delete nextCurrentCall.participants[userId];
+
+    // If they were screensharing, remove that.
+    if (nextCurrentCall.screenOn === userId) {
+        nextCurrentCall.screenOn = '';
+    }
+
     setCurrentCall(nextCurrentCall);
 };
 
