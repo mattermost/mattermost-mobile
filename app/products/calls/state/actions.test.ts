@@ -40,8 +40,6 @@ import {
     setPluginEnabled,
     setUserVoiceOn,
 } from '@calls/state/actions';
-import {License} from '@constants';
-
 import {
     Call,
     CallsState,
@@ -51,8 +49,10 @@ import {
     DefaultCurrentCall,
     DefaultGlobalCallsState,
     GlobalCallsState,
-    RecordingState,
-} from '../types/calls';
+} from '@calls/types/calls';
+import {License} from '@constants';
+
+import type {CallRecordingState} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
 
@@ -857,6 +857,7 @@ describe('useCallsState', () => {
 
     it('config', () => {
         const newConfig = {
+            ...DefaultCallsConfig,
             ICEServers: [],
             ICEServersConfigs: [
                 {
@@ -974,7 +975,7 @@ describe('useCallsState', () => {
             myUserId: 'myUserId',
             ...call1,
         };
-        const recState: RecordingState = {
+        const recState: CallRecordingState = {
             init_at: 123,
             start_at: 231,
             end_at: 345,
