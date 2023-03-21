@@ -16,6 +16,7 @@ import {changeOpacity} from '@utils/theme';
 
 import type ServersModel from '@typings/database/models/app/servers';
 import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
+import { logDebug } from '@utils/log';
 
 type Props = {
     isFocused: boolean;
@@ -56,9 +57,11 @@ const Home = ({isFocused, theme}: Props) => {
         if (Platform.OS === 'ios') {
             NativeNotification.getDeliveredNotifications().then((delivered) => {
                 if (mentions === 0 && delivered.length > 0) {
+                    logDebug('Not updating badge count, since we have no mentions in the database, and the number of notifications in the notification center is', delivered.length);
                     return;
                 }
 
+                logDebug('Setting the badge count based on database values to', mentions);
                 Notifications.ios.setBadgeCount(mentions);
             });
         }

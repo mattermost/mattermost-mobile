@@ -13,6 +13,7 @@ import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
 import type {ClientResponse} from '@mattermost/react-native-network-client';
+import { logDebug } from '@utils/log';
 
 async function getDeviceIdForPing(serverUrl: string, checkDeviceId: boolean) {
     if (!checkDeviceId) {
@@ -63,10 +64,12 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
         }
 
         if (!response.ok) {
+            logDebug('Server ping returned not ok response', response);
             NetworkManager.invalidateClient(serverUrl);
             return {error: {intl: pingError}};
         }
     } catch (error) {
+        logDebug('Server ping threw an exception', error);
         NetworkManager.invalidateClient(serverUrl);
         return {error: {intl: pingError}};
     }
