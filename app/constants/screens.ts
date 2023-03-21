@@ -9,6 +9,8 @@ export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CALL = 'Call';
 export const CHANNEL = 'Channel';
 export const CHANNEL_ADD_MEMBERS = 'ChannelAddMembers';
+export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
+export const CHANNEL_FILES = 'ChannelFiles';
 export const CHANNEL_INFO = 'ChannelInfo';
 export const CHANNEL_NOTIFICATION_PREFERENCES = 'ChannelNotificationPreferences';
 export const CODE = 'Code';
@@ -78,6 +80,8 @@ export default {
     CALL,
     CHANNEL,
     CHANNEL_ADD_MEMBERS,
+    CHANNEL_ADD_PEOPLE,
+    CHANNEL_FILES,
     CHANNEL_INFO,
     CHANNEL_NOTIFICATION_PREFERENCES,
     CODE,
