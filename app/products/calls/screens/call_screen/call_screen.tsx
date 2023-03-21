@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {
     DeviceEventEmitter,
     Keyboard,
+    NativeModules,
     Platform,
     Pressable,
     SafeAreaView,
@@ -42,6 +43,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import WebsocketManager from '@managers/websocket_manager';
 import {
+    allOrientations,
     bottomSheet,
     dismissAllModalsAndPopToScreen,
     dismissBottomSheet,
@@ -50,6 +52,7 @@ import {
     setScreensOrientation,
 } from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import {freezeOtherScreens} from '@utils/gallery';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -108,7 +111,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         top: 0,
         backgroundColor: 'rgba(0,0,0,0.64)',
         height: 64,
-        padding: 0,
+        paddingTop: 0,
     },
     headerLandscapeNoControls: {
         top: -1000,
@@ -164,6 +167,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         position: 'absolute',
         backgroundColor: 'rgba(0,0,0,0.64)',
         bottom: 0,
+        justifyContent: 'center',
+    },
+    buttonsLandscapeWithReactions: {
+        height: 192,
     },
     buttonsLandscapeNoControls: {
         bottom: 1000,
@@ -285,11 +292,24 @@ const CallScreen = ({
         mergeNavigationOptions('Call', {
             layout: {
                 componentBackgroundColor: 'black',
+                orientation: allOrientations,
             },
             topBar: {
                 visible: false,
             },
         });
+        if (Platform.OS === 'ios') {
+            NativeModules.SplitView.unlockOrientation();
+        }
+
+        return () => {
+            setScreensOrientation(isTablet);
+            if (Platform.OS === 'ios' && !isTablet) {
+                // We need both the navigation & the module
+                NativeModules.SplitView.lockPortrait();
+            }
+            freezeOtherScreens(false);
+        };
     }, []);
 
     const leaveCallHandler = useCallback(() => {
@@ -473,12 +493,14 @@ const CallScreen = ({
                     streamURL={currentCall.screenShareURL}
                     style={style.screenShareImage}
                 />
-                <FormattedText
-                    id={'mobile.calls_viewing_screen'}
-                    defaultMessage={'You are viewing {name}\'s screen'}
-                    values={{name: displayUsername(participantsDict[currentCall.screenOn].userModel, intl.locale, teammateNameDisplay)}}
-                    style={style.screenShareText}
-                />
+                {!isLandscape &&
+                    <FormattedText
+                        id={'mobile.calls_viewing_screen'}
+                        defaultMessage={'You are viewing {name}\'s screen'}
+                        values={{name: displayUsername(participantsDict[currentCall.screenOn].userModel, intl.locale, teammateNameDisplay)}}
+                        style={style.screenShareText}
+                    />
+                }
             </Pressable>
         );
     }
@@ -565,11 +587,20 @@ const CallScreen = ({
                 {usersList}
                 {screenShareView}
                 {micPermissionsError && <PermissionErrorBar/>}
-                <EmojiList reactionStream={currentCall.reactionStream}/>
-                {showReactions && <ReactionBar raisedHand={myParticipant.raisedHand}/>}
+                {!isLandscape &&
+                    <EmojiList reactionStream={currentCall.reactionStream}/>
+                }
                 <View
-                    style={[style.buttons, isLandscape && style.buttonsLandscape, !showControls && style.buttonsLandscapeNoControls]}
+                    style={[
+                        style.buttons,
+                        isLandscape && style.buttonsLandscape,
+                        isLandscape && showReactions && style.buttonsLandscapeWithReactions,
+                        !showControls && style.buttonsLandscapeNoControls,
+                    ]}
                 >
+                    {showReactions &&
+                        <ReactionBar raisedHand={myParticipant.raisedHand}/>
+                    }
                     {!isLandscape &&
                         <Pressable
                             testID='mute-unmute'

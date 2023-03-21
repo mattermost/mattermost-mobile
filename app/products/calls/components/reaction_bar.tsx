@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Pressable, StyleSheet, View} from 'react-native';
+import {Pressable, StyleSheet, useWindowDimensions, View} from 'react-native';
 
 import {raiseHand, unraiseHand} from '@calls/actions';
 import {sendReaction} from '@calls/actions/calls';
@@ -16,11 +16,13 @@ const styles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'flex-end',
         justifyContent: 'space-between',
-        backgroundColor: 'rgba(255,255,255,0.16)',
         width: '100%',
         height: 64,
         paddingLeft: 16,
         paddingRight: 16,
+    },
+    containerInLandscape: {
+        paddingBottom: 6,
     },
     button: {
         display: 'flex',
@@ -54,6 +56,9 @@ interface Props {
 }
 
 const ReactionBar = ({raisedHand}: Props) => {
+    const {width, height} = useWindowDimensions();
+    const isLandscape = width > height;
+
     const LowerHandText = (
         <FormattedText
             id={'mobile.calls_lower_hand'}
@@ -77,7 +82,7 @@ const ReactionBar = ({raisedHand}: Props) => {
     }, [raisedHand]);
 
     return (
-        <View style={styles.container}>
+        <View style={[styles.container, isLandscape && styles.containerInLandscape]}>
             <Pressable
                 style={[styles.button, Boolean(raisedHand) && styles.buttonPressed]}
                 onPress={toggleRaiseHand}
