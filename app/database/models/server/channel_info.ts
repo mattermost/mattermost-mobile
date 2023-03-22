@@ -37,7 +37,7 @@ export default class ChannelInfoModel extends Model implements ChannelInfoInterf
     /** pinned_post_count : The number of post pinned in this channel */
     @field('pinned_post_count') pinnedPostCount!: number;
 
-    /** pinned_post_count : The number of files in this channel */
+    /** files_count : The number of files in this channel */
     @field('files_count') filesCount!: number;
 
     /** purpose: The intention behind this channel */
