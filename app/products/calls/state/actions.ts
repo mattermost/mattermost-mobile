@@ -16,16 +16,16 @@ import {
 } from '@calls/state';
 import {
     Call,
-    CallReaction,
-    CallsConfig,
+    CallsConfigState,
     ChannelsWithCalls,
     CurrentCall,
     DefaultCall,
     DefaultCurrentCall,
     ReactionStreamEmoji,
-    RecordingState,
 } from '@calls/types/calls';
 import {REACTION_LIMIT, REACTION_TIMEOUT} from '@constants/calls';
+
+import type {CallRecordingState, UserReactionData} from '@mattermost/calls/lib/types';
 
 export const setCalls = (serverUrl: string, myUserId: string, calls: Dictionary<Call>, enabled: Dictionary<boolean>) => {
     const channelsWithCalls = Object.keys(calls).reduce(
@@ -141,6 +141,12 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
         participants: {...callsState.calls[channelId].participants},
     };
     delete nextCall.participants[userId];
+
+    // If they were screensharing, remove that.
+    if (nextCall.screenOn === userId) {
+        nextCall.screenOn = '';
+    }
+
     const nextCalls = {...callsState.calls};
     if (Object.keys(nextCall.participants).length === 0) {
         delete nextCalls[channelId];
@@ -177,6 +183,12 @@ export const userLeftCall = (serverUrl: string, channelId: string, userId: strin
         voiceOn,
     };
     delete nextCurrentCall.participants[userId];
+
+    // If they were screensharing, remove that.
+    if (nextCurrentCall.screenOn === userId) {
+        nextCurrentCall.screenOn = '';
+    }
+
     setCurrentCall(nextCurrentCall);
 };
 
@@ -390,7 +402,7 @@ export const setSpeakerPhone = (speakerphoneOn: boolean) => {
     }
 };
 
-export const setConfig = (serverUrl: string, config: Partial<CallsConfig>) => {
+export const setConfig = (serverUrl: string, config: Partial<CallsConfigState>) => {
     const callsConfig = getCallsConfig(serverUrl);
     setCallsConfig(serverUrl, {...callsConfig, ...config});
 };
@@ -423,7 +435,7 @@ export const setMicPermissionsErrorDismissed = () => {
     setCurrentCall(nextCurrentCall);
 };
 
-export const userReacted = (serverUrl: string, channelId: string, reaction: CallReaction) => {
+export const userReacted = (serverUrl: string, channelId: string, reaction: UserReactionData) => {
     // Note: Simplification for performance:
     //  If you are not in the call with the reaction, ignore it. There could be many calls ongoing in your
     //  servers, do we want to be tracking reactions and setting timeouts for all those calls? No.
@@ -475,7 +487,7 @@ export const userReacted = (serverUrl: string, channelId: string, reaction: Call
     }, REACTION_TIMEOUT);
 };
 
-const userReactionTimeout = (serverUrl: string, channelId: string, reaction: CallReaction) => {
+const userReactionTimeout = (serverUrl: string, channelId: string, reaction: UserReactionData) => {
     const currentCall = getCurrentCall();
     if (currentCall?.channelId !== channelId) {
         return;
@@ -499,7 +511,7 @@ const userReactionTimeout = (serverUrl: string, channelId: string, reaction: Cal
     setCurrentCall(nextCurrentCall);
 };
 
-export const setRecordingState = (serverUrl: string, channelId: string, recState: RecordingState) => {
+export const setRecordingState = (serverUrl: string, channelId: string, recState: CallRecordingState) => {
     const callsState = getCallsState(serverUrl);
     if (!callsState.calls[channelId]) {
         return;
