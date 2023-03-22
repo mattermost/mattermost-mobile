@@ -12,11 +12,11 @@ import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useAppState} from '@hooks/device';
 import NativeNotification from '@notifications';
+import {logDebug} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
 
 import type ServersModel from '@typings/database/models/app/servers';
 import type {UnreadMessages, UnreadSubscription} from '@typings/database/subscriptions';
-import { logDebug } from '@utils/log';
 
 type Props = {
     isFocused: boolean;
