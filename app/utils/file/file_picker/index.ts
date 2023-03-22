@@ -109,7 +109,7 @@ export default class FilePickerUtil {
     };
 
     private getPermissionDeniedMessage = (source?: PermissionSource) => {
-        const sources = ['camera', 'storage', 'photo'];
+        const sources = ['camera', 'storage'];
         const deniedSource: PermissionSource = Platform.select({android: 'denied_android', ios: 'denied_ios'})!;
         const msgForSource = source && sources.includes(source) ? source : deniedSource;
 
