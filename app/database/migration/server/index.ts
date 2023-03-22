@@ -4,6 +4,22 @@
 // NOTE : To implement migration, please follow this document
 // https://nozbe.github.io/WatermelonDB/Advanced/Migrations.html
 
-import {schemaMigrations} from '@nozbe/watermelondb/Schema/migrations';
+import {addColumns, schemaMigrations} from '@nozbe/watermelondb/Schema/migrations';
 
-export default schemaMigrations({migrations: []});
+import {MM_TABLES} from '@constants/database';
+
+const {CHANNEL_INFO} = MM_TABLES.SERVER;
+
+export default schemaMigrations({migrations: [
+    {
+        toVersion: 2,
+        steps: [
+            addColumns({
+                table: CHANNEL_INFO,
+                columns: [
+                    {name: 'files_count', type: 'number'},
+                ],
+            }),
+        ],
+    },
+]});

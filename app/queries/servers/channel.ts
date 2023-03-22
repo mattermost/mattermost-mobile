@@ -41,6 +41,7 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
             guest_count: 0,
             member_count: 0,
             pinned_post_count: 0,
+            files_count: 0,
         });
     }
 
@@ -95,12 +96,14 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
         let member_count = 0;
         let guest_count = 0;
         let pinned_post_count = 0;
+        let files_count = 0;
         if (storedChannel) {
             storedInfo = allChannelsInfoForTeam[c.id];
             if (storedInfo) {
                 member_count = storedInfo.memberCount;
                 guest_count = storedInfo.guestCount;
                 pinned_post_count = storedInfo.pinnedPostCount;
+                files_count = storedInfo.filesCount;
             }
         }
 
@@ -111,6 +114,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
             guest_count,
             member_count,
             pinned_post_count,
+            files_count,
         });
     }
 

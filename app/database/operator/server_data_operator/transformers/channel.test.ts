@@ -103,6 +103,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
                     header: 'channel info header',
                     member_count: 10,
                     pinned_post_count: 3,
+                    files_count: 0,
                     purpose: 'sample channel ',
                 },
             },
