@@ -63,6 +63,7 @@ export SUBMIT_ANDROID_TO_GOOGLE_PLAY=false
 
 ############ OPTIONAL ############
 #export SENTRY_ENABLED=<set to true if you want to use sentry http://sentry.io/ to track crash and error reports>
+#export SENTRY_URL=<set your sentry host URL, if you use self-hosted sentry>
 #export SENTRY_ORG=<your sentry org>
 #export SENTRY_PROJECT_IOS=<your sentry ios project>
 #export SENTRY_DSN_IOS=<your sentry DSN for the ios project>
