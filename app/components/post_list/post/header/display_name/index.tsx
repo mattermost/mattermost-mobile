@@ -5,7 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
-import CustomStatusEmoji from '@app/components/custom_status/custom_status_emoji';
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {openAsBottomSheet} from '@screens/navigation';
