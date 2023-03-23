@@ -23,6 +23,7 @@ const styles = StyleSheet.create({
     },
     containerInLandscape: {
         paddingBottom: 6,
+        justifyContent: 'center',
     },
     button: {
         display: 'flex',
@@ -34,6 +35,10 @@ const styles = StyleSheet.create({
         maxWidth: 160,
         paddingLeft: 10,
         paddingRight: 10,
+    },
+    buttonLandscape: {
+        marginRight: 12,
+        marginLeft: 12,
     },
     buttonPressed: {
         backgroundColor: 'rgba(245, 171, 0, 0.24)',
@@ -84,7 +89,7 @@ const ReactionBar = ({raisedHand}: Props) => {
     return (
         <View style={[styles.container, isLandscape && styles.containerInLandscape]}>
             <Pressable
-                style={[styles.button, Boolean(raisedHand) && styles.buttonPressed]}
+                style={[styles.button, isLandscape && styles.buttonLandscape, Boolean(raisedHand) && styles.buttonPressed]}
                 onPress={toggleRaiseHand}
             >
                 <CompassIcon
@@ -99,7 +104,7 @@ const ReactionBar = ({raisedHand}: Props) => {
                     <EmojiButton
                         key={name}
                         emojiName={name}
-                        style={styles.button}
+                        style={[styles.button, isLandscape && styles.buttonLandscape]}
                         onPress={() => sendReaction({name, unified})}
                     />
                 ))

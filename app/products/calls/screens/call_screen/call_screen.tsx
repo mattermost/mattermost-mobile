@@ -163,14 +163,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         }),
     },
     buttonsLandscape: {
-        height: 128,
+        height: 110,
         position: 'absolute',
         backgroundColor: 'rgba(0,0,0,0.64)',
         bottom: 0,
-        justifyContent: 'center',
     },
     buttonsLandscapeWithReactions: {
-        height: 192,
+        height: 174,
     },
     buttonsLandscapeNoControls: {
         bottom: 1000,
@@ -179,6 +178,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'column',
         alignItems: 'center',
         flex: 1,
+    },
+    buttonLandscape: {
+        flex: 0,
     },
     mute: {
         flexDirection: 'column',
@@ -205,7 +207,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     otherButtons: {
         flexDirection: 'row',
         alignItems: 'center',
-        alignContent: 'space-between',
+    },
+    otherButtonsLandscape: {
+        justifyContent: 'center',
     },
     collapseIcon: {
         color: theme.sidebarText,
@@ -236,6 +240,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 68,
         margin: 10,
         overflow: 'hidden',
+    },
+    buttonIconLandscape: {
+        borderRadius: 26,
+        paddingTop: 14,
+        paddingRight: 16,
+        paddingBottom: 16,
+        paddingLeft: 14,
+        width: 52,
+        height: 52,
+        marginLeft: 12,
+        marginRight: 12,
     },
     hangUpIcon: {
         backgroundColor: Preferences.THEMES.denim.dndIndicator,
@@ -279,7 +294,6 @@ const CallScreen = ({
 
     const style = getStyleSheet(theme);
     const isLandscape = width > height;
-    const showControls = !isLandscape || showControlsInLandscape;
     const myParticipant = currentCall?.participants[currentCall.myUserId];
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
 
@@ -567,7 +581,11 @@ const CallScreen = ({
         <SafeAreaView style={style.wrapper}>
             <View style={style.container}>
                 <View
-                    style={[style.header, isLandscape && style.headerLandscape, !showControls && style.headerLandscapeNoControls]}
+                    style={[
+                        style.header,
+                        isLandscape && style.headerLandscape,
+                        isLandscape && !showControlsInLandscape && style.headerLandscapeNoControls,
+                    ]}
                 >
                     {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
                     {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
@@ -595,7 +613,7 @@ const CallScreen = ({
                         style.buttons,
                         isLandscape && style.buttonsLandscape,
                         isLandscape && showReactions && style.buttonsLandscapeWithReactions,
-                        !showControls && style.buttonsLandscapeNoControls,
+                        isLandscape && !showControlsInLandscape && style.buttonsLandscapeNoControls,
                     ]}
                 >
                     {showReactions &&
@@ -615,17 +633,18 @@ const CallScreen = ({
                                 style={style.muteIcon}
                             />
                             {myParticipant.muted ? UnmuteText : MuteText}
-                        </Pressable>}
-                    <View style={style.otherButtons}>
+                        </Pressable>
+                    }
+                    <View style={[style.otherButtons, isLandscape && style.otherButtonsLandscape]}>
                         <Pressable
                             testID='leave'
-                            style={style.button}
+                            style={[style.button, isLandscape && style.buttonLandscape]}
                             onPress={leaveCallHandler}
                         >
                             <CompassIcon
                                 name='phone-hangup'
                                 size={24}
-                                style={{...style.buttonIcon, ...style.hangUpIcon}}
+                                style={[style.buttonIcon, isLandscape && style.buttonIconLandscape, style.hangUpIcon]}
                             />
                             <FormattedText
                                 id={'mobile.calls_leave'}
@@ -635,13 +654,18 @@ const CallScreen = ({
                         </Pressable>
                         <Pressable
                             testID={'toggle-speakerphone'}
-                            style={style.button}
+                            style={[style.button, isLandscape && style.buttonLandscape]}
                             onPress={toggleSpeakerPhone}
                         >
                             <CompassIcon
                                 name={'volume-high'}
                                 size={24}
-                                style={[style.buttonIcon, style.speakerphoneIcon, currentCall.speakerphoneOn && style.buttonOn]}
+                                style={[
+                                    style.buttonIcon,
+                                    isLandscape && style.buttonIconLandscape,
+                                    style.speakerphoneIcon,
+                                    currentCall.speakerphoneOn && style.buttonOn,
+                                ]}
                             />
                             <FormattedText
                                 id={'mobile.calls_speaker'}
@@ -650,13 +674,13 @@ const CallScreen = ({
                             />
                         </Pressable>
                         <Pressable
-                            style={style.button}
+                            style={[style.button, isLandscape && style.buttonLandscape]}
                             onPress={toggleReactions}
                         >
                             <CompassIcon
                                 name={'emoticon-happy-outline'}
                                 size={24}
-                                style={[style.buttonIcon, showReactions && style.buttonOn]}
+                                style={[style.buttonIcon, isLandscape && style.buttonIconLandscape, showReactions && style.buttonOn]}
                             />
                             <FormattedText
                                 id={'mobile.calls_react'}
@@ -665,13 +689,13 @@ const CallScreen = ({
                             />
                         </Pressable>
                         <Pressable
-                            style={style.button}
+                            style={[style.button, isLandscape && style.buttonLandscape]}
                             onPress={showOtherActions}
                         >
                             <CompassIcon
                                 name='dots-horizontal'
                                 size={24}
-                                style={style.buttonIcon}
+                                style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
                             />
                             <FormattedText
                                 id={'mobile.calls_more'}
@@ -682,16 +706,22 @@ const CallScreen = ({
                         {isLandscape &&
                             <Pressable
                                 testID='mute-unmute'
-                                style={style.button}
+                                style={[style.button, style.buttonLandscape]}
                                 onPress={muteUnmuteHandler}
                             >
                                 <CompassIcon
                                     name={myParticipant.muted ? 'microphone-off' : 'microphone'}
                                     size={24}
-                                    style={[style.buttonIcon, style.muteIconLandscape, myParticipant?.muted && style.muteIconLandscapeMuted]}
+                                    style={[
+                                        style.buttonIcon,
+                                        isLandscape && style.buttonIconLandscape,
+                                        style.muteIconLandscape,
+                                        myParticipant?.muted && style.muteIconLandscapeMuted,
+                                    ]}
                                 />
                                 {myParticipant.muted ? UnmuteText : MuteText}
-                            </Pressable>}
+                            </Pressable>
+                        }
                     </View>
                 </View>
             </View>
