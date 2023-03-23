@@ -110,7 +110,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         position: 'absolute',
         top: 0,
         backgroundColor: 'rgba(0,0,0,0.64)',
-        height: 64,
+        height: 52,
         paddingTop: 0,
     },
     headerLandscapeNoControls: {
@@ -218,6 +218,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: 'rgba(255,255,255,0.12)',
         borderRadius: 4,
         overflow: 'hidden',
+    },
+    collapseIconLandscape: {
+        margin: 10,
+        padding: 0,
+        backgroundColor: 'transparent',
+        borderRadius: 0,
     },
     muteIcon: {
         color: theme.sidebarText,
@@ -598,7 +604,7 @@ const CallScreen = ({
                         <CompassIcon
                             name='arrow-collapse'
                             size={24}
-                            style={style.collapseIcon}
+                            style={[style.collapseIcon, isLandscape && style.collapseIconLandscape]}
                         />
                     </Pressable>
                 </View>
