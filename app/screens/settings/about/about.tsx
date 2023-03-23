@@ -290,7 +290,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                         text={'Copy info'}
                         testID={'about.copy_info'}
                         iconName='content-copy'
-                        iconSize={12}
+                        iconSize={15}
                         buttonType={'default'}
                     />
                 </View>
