@@ -6,7 +6,6 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, Text, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
-import {TouchableOpacity} from 'react-native-gesture-handler';
 
 import {buttonBackgroundStyle, buttonTextStyle} from '@app/utils/buttonStyles';
 import Config from '@assets/config.json';
@@ -83,7 +82,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
         footerText: {
             color: changeOpacity(theme.centerChannelColor, 0.64),
             ...typography('Body', 50),
-            marginBottom: 10,
+            marginVertical: 10,
         },
         copyrightText: {
             marginBottom: 0,
@@ -99,6 +98,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             width: 120,
             marginTop: 10,
             position: 'relative',
+        },
+        thinLine: {
+            height: 0.2,
+            backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
+            alignSelf: 'stretch',
+            marginVertical: 20,
         },
     };
 });
@@ -209,18 +214,11 @@ const About = ({componentId, config, license}: AboutProps) => {
                     license={license}
                 />
                 <Subtitle config={config}/>
+                <View
+                    style={styles.thinLine}
+                />
             </View>
-            <View
-                style={{
-                    height: 0.5,
-                    backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-                    alignSelf: 'stretch',
-                    marginTop: 30,
-                    marginBottom: 20,
-                    marginHorizontal: 20,
-                    padding: 0,
-                }}
-            />
+
             <View style={styles.infoContainer}>
                 <View style={styles.group}>
                     <Text
@@ -283,7 +281,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                     </Text>
                 </View>
 
-                <TouchableOpacity style={styles.copyInfoButtonContainer}>
+                <View style={styles.copyInfoButtonContainer}>
                     <Button
                         theme={theme}
                         backgroundStyle={buttonBackgroundStyle(theme, 'm', 'tertiary')}
@@ -295,7 +293,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                         iconSize={12}
                         buttonType={'default'}
                     />
-                </TouchableOpacity>
+                </View>
 
                 {license.IsLicensed === 'true' && (
                     <View style={styles.licenseContainer}>
@@ -322,12 +320,7 @@ const About = ({componentId, config, license}: AboutProps) => {
                     />
                 }
                 <View
-                    style={{
-                        height: 0.5,
-                        backgroundColor: changeOpacity(theme.centerChannelColor, 0.2),
-                        alignSelf: 'stretch',
-                        marginBottom: 20,
-                    }}
+                    style={styles.thinLine}
                 />
                 <FormattedText
                     defaultMessage='Copyright 2015-{currentYear} Mattermost, Inc. All rights reserved'
