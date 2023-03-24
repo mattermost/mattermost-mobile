@@ -16,7 +16,7 @@ import type {IntlShape} from 'react-intl';
 
 const MattermostManaged = NativeModules.MattermostManaged;
 
-type PermissionSource = 'camera' | 'storage' | 'denied_android' | 'denied_ios' | 'photo';
+type PermissionSource = 'camera' | 'storage' | 'photo_android' | 'photo_ios' | 'photo';
 
 export default class FilePickerUtil {
     private readonly uploadFiles: (files: ExtractedFileInfo[]) => void;
@@ -64,7 +64,7 @@ export default class FilePickerUtil {
                         'Upload files to your server. Open Settings to grant {applicationName} Read and Write access to files on this device.',
                 }, {applicationName}),
             },
-            denied_ios: {
+            photo_ios: {
                 title: formatMessage(
                     {
                         id: 'mobile.ios.photos_permission_denied_title',
@@ -79,7 +79,7 @@ export default class FilePickerUtil {
                         'Upload photos and videos to your server or save them to your device. Open Settings to grant {applicationName} Read and Write access to your photo and video library.',
                 }, {applicationName}),
             },
-            denied_android: {
+            photo_android: {
                 title: formatMessage(
                     {
                         id: 'mobile.android.photos_permission_denied_title',
@@ -110,7 +110,7 @@ export default class FilePickerUtil {
 
     private getPermissionDeniedMessage = (source?: PermissionSource) => {
         const sources = ['camera', 'storage'];
-        const deniedSource: PermissionSource = Platform.select({android: 'denied_android', ios: 'denied_ios'})!;
+        const deniedSource: PermissionSource = Platform.select({android: 'photo_android', ios: 'photo_ios'})!;
         const msgForSource = source && sources.includes(source) ? source : deniedSource;
 
         return this.getPermissionMessages(msgForSource);
