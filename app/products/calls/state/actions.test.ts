@@ -40,8 +40,6 @@ import {
     setPluginEnabled,
     setUserVoiceOn,
 } from '@calls/state/actions';
-import {License} from '@constants';
-
 import {
     Call,
     CallsState,
@@ -51,8 +49,10 @@ import {
     DefaultCurrentCall,
     DefaultGlobalCallsState,
     GlobalCallsState,
-    RecordingState,
-} from '../types/calls';
+} from '@calls/types/calls';
+import {License} from '@constants';
+
+import type {CallRecordingState} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
 
@@ -307,6 +307,66 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], expectedChannelsWithCallsState);
         assert.deepEqual(result.current[2], expectedCurrentCallState);
         act(() => userLeftCall('server1', 'invalid-channel', 'user-2'));
+        assert.deepEqual((result.current[0] as CallsState).calls, expectedCallsState);
+        assert.deepEqual(result.current[1], expectedChannelsWithCallsState);
+        assert.deepEqual(result.current[2], expectedCurrentCallState);
+    });
+
+    it('leftCall with screensharing on', () => {
+        const initialCallsState: CallsState = {
+            ...DefaultCallsState,
+            calls: {
+                'channel-1': {
+                    ...call1,
+                    screenOn: 'user-1',
+                },
+            },
+        };
+        const initialChannelsWithCallsState = {
+            'channel-1': true,
+        };
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: true,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+            screenOn: 'user-1',
+        };
+        const expectedCallsState = {
+            'channel-1': {
+                participants: {
+                    'user-2': {id: 'user-2', muted: true, raisedHand: 0},
+                },
+                channelId: 'channel-1',
+                startTime: 123,
+                threadId: 'thread-1',
+                ownerId: 'user-1',
+                hostId: 'user-1',
+                screenOn: '',
+            },
+        };
+        const expectedChannelsWithCallsState = initialChannelsWithCallsState;
+        const expectedCurrentCallState: CurrentCall = {
+            ...initialCurrentCallState,
+            ...expectedCallsState['channel-1'],
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useChannelsWithCalls('server1'), useCurrentCall()];
+        });
+        act(() => {
+            setCallsState('server1', initialCallsState);
+            setChannelsWithCalls('server1', initialChannelsWithCallsState);
+            setCurrentCall(initialCurrentCallState);
+        });
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], initialChannelsWithCallsState);
+        assert.deepEqual(result.current[2], initialCurrentCallState);
+
+        // test
+        act(() => userLeftCall('server1', 'channel-1', 'user-1'));
         assert.deepEqual((result.current[0] as CallsState).calls, expectedCallsState);
         assert.deepEqual(result.current[1], expectedChannelsWithCallsState);
         assert.deepEqual(result.current[2], expectedCurrentCallState);
@@ -797,6 +857,7 @@ describe('useCallsState', () => {
 
     it('config', () => {
         const newConfig = {
+            ...DefaultCallsConfig,
             ICEServers: [],
             ICEServersConfigs: [
                 {
@@ -845,8 +906,8 @@ describe('useCallsState', () => {
         const expectedCurrentCallState: CurrentCall = {
             ...initialCurrentCallState,
             reactionStream: [
-                {name: 'smile', latestTimestamp: 202, count: 1},
-                {name: '+1', latestTimestamp: 145, count: 2},
+                {name: 'smile', latestTimestamp: 202, count: 1, literal: undefined},
+                {name: '+1', latestTimestamp: 145, count: 2, literal: undefined},
             ],
             participants: {
                 ...initialCurrentCallState.participants,
@@ -914,7 +975,7 @@ describe('useCallsState', () => {
             myUserId: 'myUserId',
             ...call1,
         };
-        const recState: RecordingState = {
+        const recState: CallRecordingState = {
             init_at: 123,
             start_at: 231,
             end_at: 345,

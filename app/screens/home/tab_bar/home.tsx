@@ -12,6 +12,7 @@ import {subscribeAllServers} from '@database/subscription/servers';
 import {subscribeUnreadAndMentionsByServer, UnreadObserverArgs} from '@database/subscription/unreads';
 import {useAppState} from '@hooks/device';
 import NativeNotification from '@notifications';
+import {logDebug} from '@utils/log';
 import {changeOpacity} from '@utils/theme';
 
 import type ServersModel from '@typings/database/models/app/servers';
@@ -56,9 +57,11 @@ const Home = ({isFocused, theme}: Props) => {
         if (Platform.OS === 'ios') {
             NativeNotification.getDeliveredNotifications().then((delivered) => {
                 if (mentions === 0 && delivered.length > 0) {
+                    logDebug('Not updating badge count, since we have no mentions in the database, and the number of notifications in the notification center is', delivered.length);
                     return;
                 }
 
+                logDebug('Setting the badge count based on database values to', mentions);
                 Notifications.ios.setBadgeCount(mentions);
             });
         }

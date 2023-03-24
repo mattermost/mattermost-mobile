@@ -8,6 +8,7 @@ import {t} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpandedLinks, getPushVerificationStatus} from '@queries/servers/system';
+import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -63,10 +64,12 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
         }
 
         if (!response.ok) {
+            logDebug('Server ping returned not ok response', response);
             NetworkManager.invalidateClient(serverUrl);
             return {error: {intl: pingError}};
         }
     } catch (error) {
+        logDebug('Server ping threw an exception', error);
         NetworkManager.invalidateClient(serverUrl);
         return {error: {intl: pingError}};
     }

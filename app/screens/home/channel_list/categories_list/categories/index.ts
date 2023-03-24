@@ -4,13 +4,13 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
+import {switchMap, combineLatestWith} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
-import {getSidebarPreferenceAsBool} from '@helpers/api/preference';
+import {getPreferenceValue} from '@helpers/api/preference';
 import {queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {querySidebarPreferences} from '@queries/servers/preference';
-import {observeCurrentTeamId, observeOnlyUnreads} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentTeamId, observeOnlyUnreads} from '@queries/servers/system';
 
 import Categories from './categories';
 
@@ -23,12 +23,24 @@ const enhanced = withObservables(
         const currentTeamId = observeCurrentTeamId(database);
         const categories = currentTeamId.pipe(switchMap((ctid) => queryCategoriesByTeamIds(database, [ctid]).observeWithColumns(['sort_order'])));
 
-        const unreadsOnTop = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
+        const unreadsOnTopUserPreference = querySidebarPreferences(database, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS).
             observeWithColumns(['value']).
             pipe(
-                switchMap((prefs: PreferenceModel[]) => of$(getSidebarPreferenceAsBool(prefs, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
+                switchMap((prefs: PreferenceModel[]) => of$(getPreferenceValue<string>(prefs, Preferences.CATEGORIES.SIDEBAR_SETTINGS, Preferences.CHANNEL_SIDEBAR_GROUP_UNREADS))),
             );
 
+        const unreadsOnTopServerPreference = observeConfigBooleanValue(database, 'ExperimentalGroupUnreadChannels');
+
+        const unreadsOnTop = unreadsOnTopServerPreference.pipe(
+            combineLatestWith(unreadsOnTopUserPreference),
+            switchMap(([s, u]) => {
+                if (!u) {
+                    return of$(s);
+                }
+
+                return of$(u !== 'false');
+            }),
+        );
         return {
             categories,
             onlyUnreads: observeOnlyUnreads(database),

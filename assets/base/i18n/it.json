@@ -3,11 +3,11 @@
     "about.enterpriseEditione1": "Edizione Enterprise",
     "about.enterpriseEditionLearn": "Maggiori informazioni sulla Edizione Enterprise a ",
     "about.enterpriseEditionSt": "Comunicazioni moderne da dietro il tuo firewall.",
-    "about.hash": "Hash di compilazione:",
-    "about.hashee": "Hash di compilazione EE:",
+    "about.hash": "Hash di build:",
+    "about.hashee": "Hash di build EE:",
     "about.teamEditionLearn": "Entra nella comunità Mattermost su",
     "about.teamEditionSt": "Tutte le tue comunicazioni in un posto, istantaneamente ricercabili e accessibili ovunque.",
-    "about.teamEditiont0": "Edizione squadra",
+    "about.teamEditiont0": "Edizione Team",
     "about.teamEditiont1": "Edizione Enterprise",
     "api.channel.add_member.added": "{addedUsername} aggiunto al canale da {username}.",
     "apps.error": "Errore: {error}",
@@ -992,5 +992,9 @@
     "alert.removed_from_team.title": "Rimosso dal team",
     "alert.removed_from_team.description": "Sei stato rimosso dal team {displayName}.",
     "alert.removed_from_channel.title": "Rimosso dal canale",
-    "alert.removed_from_channel.description": "Sei stato rimosso dal canale {displayName}."
+    "alert.removed_from_channel.description": "Sei stato rimosso dal canale {displayName}.",
+    "channel_notification_preferences.notification.none": "Niente",
+    "channel_notification_preferences.notification.all": "Tutti i nuovi messaggi",
+    "channel_notification_preferences.muted_title": "Questo canale è silenziato",
+    "channel_notification_preferences.default": "(default)"
 }

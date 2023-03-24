@@ -216,6 +216,7 @@ export default function ManageChannelMembers({
 
     useEffect(() => {
         mounted.current = true;
+        getProfiles();
         return () => {
             mounted.current = false;
         };
@@ -260,7 +261,6 @@ export default function ManageChannelMembers({
             {/* fix flashing No Results page when results are present */}
             <UserList
                 currentUserId={currentUserId}
-                fetchMore={getProfiles}
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 manageMode={true} // default true to change row select icon to a dropdown
