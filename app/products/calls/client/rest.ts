@@ -1,24 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {
-    ServerChannelState,
-    ServerCallsConfig,
-    ApiResp,
-    RecordingState,
-} from '@calls/types/calls';
+import type {ServerChannelState, ApiResp} from '@calls/types/calls';
+import type {CallRecordingState, CallsConfig} from '@mattermost/calls/lib/types';
 import type {RTCIceServer} from 'react-native-webrtc';
 
 export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;
     getCalls: () => Promise<ServerChannelState[]>;
     getCallForChannel: (channelId: string) => Promise<ServerChannelState>;
-    getCallsConfig: () => Promise<ServerCallsConfig>;
+    getCallsConfig: () => Promise<CallsConfig>;
     enableChannelCalls: (channelId: string, enable: boolean) => Promise<ServerChannelState>;
     endCall: (channelId: string) => Promise<ApiResp>;
     genTURNCredentials: () => Promise<RTCIceServer[]>;
-    startCallRecording: (callId: string) => Promise<ApiResp | RecordingState>;
-    stopCallRecording: (callId: string) => Promise<ApiResp | RecordingState>;
+    startCallRecording: (callId: string) => Promise<ApiResp | CallRecordingState>;
+    stopCallRecording: (callId: string) => Promise<ApiResp | CallRecordingState>;
 }
 
 const ClientCalls = (superclass: any) => class extends superclass {
@@ -52,7 +48,7 @@ const ClientCalls = (superclass: any) => class extends superclass {
         return this.doFetch(
             `${this.getCallsRoute()}/config`,
             {method: 'get'},
-        ) as ServerCallsConfig;
+        ) as CallsConfig;
     };
 
     enableChannelCalls = async (channelId: string, enable: boolean) => {

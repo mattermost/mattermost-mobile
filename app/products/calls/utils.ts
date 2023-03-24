@@ -8,9 +8,11 @@ import Calls from '@constants/calls';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
-import type {CallParticipant, ServerCallsConfig} from '@calls/types/calls';
+import type {CallParticipant} from '@calls/types/calls';
+import type {CallsConfig} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
 import type {IntlShape} from 'react-intl';
+import type {RTCIceServer} from 'react-native-webrtc';
 
 export function sortParticipants(teammateNameDisplay: string, participants?: Dictionary<CallParticipant>, presenterID?: string): CallParticipant[] {
     if (!participants) {
@@ -38,18 +40,18 @@ const sortByState = (presenterID?: string) => {
             return 1;
         }
 
-        if (!a.muted && b.muted) {
-            return -1;
-        } else if (!b.muted && a.muted) {
-            return 1;
-        }
-
         if (a.raisedHand && !b.raisedHand) {
             return -1;
         } else if (b.raisedHand && !a.raisedHand) {
             return 1;
         } else if (a.raisedHand && b.raisedHand) {
             return a.raisedHand - b.raisedHand;
+        }
+
+        if (!a.muted && b.muted) {
+            return -1;
+        } else if (!b.muted && a.muted) {
+            return 1;
         }
 
         return 0;
@@ -106,7 +108,7 @@ export function errorAlert(error: string, intl: IntlShape) {
     );
 }
 
-export function getICEServersConfigs(config: ServerCallsConfig) {
+export function getICEServersConfigs(config: CallsConfig): RTCIceServer[] {
     // if ICEServersConfigs is set, we can trust this to be complete and
     // coming from an updated API.
     if (config.ICEServersConfigs && config.ICEServersConfigs.length > 0) {
