@@ -7,6 +7,8 @@ import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import {observeChannel} from '@queries/servers/channel';
+import {observeCanManageChannelMembers} from '@queries/servers/role';
+import {observeCurrentUser} from '@queries/servers/user';
 
 import ChannelActions from './channel_actions';
 
@@ -21,8 +23,12 @@ const enhanced = withObservables(['channelId'], ({channelId, database}: OwnProps
         switchMap((c) => of$(c?.type)),
     );
 
+    const canManageMembers = observeCurrentUser(database).pipe(
+        switchMap((u) => (u ? observeCanManageChannelMembers(database, channelId, u) : of$(false))),
+    );
     return {
         channelType,
+        canManageMembers,
     };
 });
 

@@ -52,10 +52,14 @@ const Button = ({
         textStyle,
     ], [theme, textStyle, size, emphasis, buttonType]);
 
-    const containerStyle = useMemo(() => [
-        styles.container,
-        {minHeight: iconSize},
-    ], [iconSize]);
+    const containerStyle = useMemo(
+        () =>
+            (iconSize ? [
+                styles.container,
+                {minHeight: iconSize},
+            ] : styles.container),
+        [iconSize],
+    );
 
     return (
         <RNButton

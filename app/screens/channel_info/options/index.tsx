@@ -18,9 +18,15 @@ type Props = {
     channelId: string;
     type?: ChannelType;
     callsEnabled: boolean;
+    canManageMembers: boolean;
 }
 
-const Options = ({channelId, type, callsEnabled}: Props) => {
+const Options = ({
+    channelId,
+    type,
+    callsEnabled,
+    canManageMembers,
+}: Props) => {
     const isDMorGM = isTypeDMorGM(type);
 
     return (
@@ -33,7 +39,7 @@ const Options = ({channelId, type, callsEnabled}: Props) => {
             {type !== General.DM_CHANNEL &&
                 <Members channelId={channelId}/>
             }
-            {!isDMorGM &&
+            {canManageMembers &&
                 <AddMembers channelId={channelId}/>
             }
             {callsEnabled && !isDMorGM && // if calls is not enabled, copy link will show in the channel actions

@@ -159,7 +159,7 @@ export default function ChannelAddMembers({
         const result = await addMembersToChannel(serverUrl, channel.id, idsToUse);
 
         if (result.error) {
-            alertErrorWithFallback(intl, result.error, {id: t('mobile.channel_add_members.error'), defaultMessage: 'We could not add those users to the channel. Please check your connection and try again.'});
+            alertErrorWithFallback(intl, result.error, {id: t('mobile.channel_add_members.error'), defaultMessage: 'There has been an error and we could not add those users to the channel.'});
             setAddingMembers(false);
         } else {
             close();

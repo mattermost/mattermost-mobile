@@ -21,6 +21,7 @@ type Props = {
     dismissChannelInfo: () => void;
     callsEnabled: boolean;
     testID?: string;
+    canManageMembers: boolean;
 }
 
 export const CHANNEL_ACTIONS_OPTIONS_HEIGHT = 62;
@@ -35,7 +36,15 @@ const styles = StyleSheet.create({
     },
 });
 
-const ChannelActions = ({channelId, channelType, inModal = false, dismissChannelInfo, callsEnabled, testID}: Props) => {
+const ChannelActions = ({
+    channelId,
+    channelType,
+    inModal = false,
+    dismissChannelInfo,
+    callsEnabled,
+    canManageMembers,
+    testID,
+}: Props) => {
     const serverUrl = useServerUrl();
 
     const onCopyLinkAnimationEnd = useCallback(() => {
@@ -69,7 +78,7 @@ const ChannelActions = ({channelId, channelType, inModal = false, dismissChannel
                     testID={`${testID}.set_header.action`}
                 />
             }
-            {!isDM &&
+            {canManageMembers &&
                 <AddMembersBox
                     channelId={channelId}
                     inModal={inModal}

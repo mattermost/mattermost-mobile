@@ -4,10 +4,10 @@
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 
-import {getHeaderOptions} from '@app/screens/channel_add_members/channel_add_members';
 import OptionBox from '@components/option_box';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {getHeaderOptions} from '@screens/channel_add_members/channel_add_members';
 import {dismissBottomSheet, goToScreen, showModal} from '@screens/navigation';
 
 import type {StyleProp, ViewStyle} from 'react-native';
