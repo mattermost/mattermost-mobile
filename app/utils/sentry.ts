@@ -43,6 +43,8 @@ export function initializeSentry() {
         attachStacktrace: isBetaApp, // For Beta, stack traces are automatically attached to all messages logged
     };
 
+    const eventFilter = Array.isArray(Config.SentryOptions?.severityLevelFilter) ? Config.SentryOptions.severityLevelFilter : [];
+
     Sentry.init({
         dsn,
         sendDefaultPii: false,
@@ -58,7 +60,7 @@ export function initializeSentry() {
             }),
         ],
         beforeSend: (event: Event) => {
-            if (isBetaApp || event?.level === 'fatal') {
+            if (isBetaApp || eventFilter.includes(event?.level)) {
                 return event;
             }
 
