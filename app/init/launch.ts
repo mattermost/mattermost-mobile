@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import Emm from '@mattermost/react-native-emm';
-import {Alert, DeviceEventEmitter, Linking, Platform} from 'react-native';
+import {Alert, AppState, DeviceEventEmitter, Linking, Platform} from 'react-native';
 import {Notifications} from 'react-native-notifications';
 
 import {appEntry, pushNotificationEntry, upgradeEntry} from '@actions/remote/entry';
@@ -168,7 +168,7 @@ const launchToHome = async (props: LaunchProps) => {
             break;
         }
         case Launch.Normal:
-            if (props.coldStart) {
+            if (props.coldStart || AppState.currentState === 'active') {
                 appEntry(props.serverUrl!);
             }
             break;
