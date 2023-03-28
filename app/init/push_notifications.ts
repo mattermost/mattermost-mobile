@@ -25,7 +25,7 @@ import NativeNotifications from '@notifications';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
-import {dismissOverlay, showOverlay} from '@screens/navigation';
+import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isBetaApp} from '@utils/general';
@@ -139,6 +139,7 @@ class PushNotifications {
             const condition3 = isInThreadScreen && !isSameThreadNotification;
 
             if (condition1 || condition2 || condition3) {
+                // Dismiss the screen if it's already visible or else it blocks the navigation
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
 
                 const screen = Screens.IN_APP_NOTIFICATION;
@@ -147,9 +148,6 @@ class PushNotifications {
                     serverName,
                     serverUrl,
                 };
-
-                // Dismiss the screen if it's already visible or else it blocks the navigation
-                await dismissOverlay(screen);
 
                 showOverlay(screen, passProps);
             }
