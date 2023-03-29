@@ -47,8 +47,8 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChan
                 onPress={onChannelSwitch}
                 key={item.id}
                 testID={`channel_list.category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_item`}
-                highlightActive={true}
-                highlightState={true}
+                shouldHighlightActive={true}
+                shouldHighlightState={true}
             />
         );
     }, [onChannelSwitch]);

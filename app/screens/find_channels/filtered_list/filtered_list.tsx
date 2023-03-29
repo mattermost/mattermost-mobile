@@ -223,10 +223,10 @@ const FilteredList = ({
             return (
                 <ChannelItem
                     channel={item}
-                    onCenterBg={true}
+                    isOnCenterBg={true}
                     onPress={onSwitchToChannel}
                     showTeamName={showTeamName}
-                    highlightState={true}
+                    shouldHighlightState={true}
                     testID='find_channels.filtered_list.channel_item'
                 />
             );
@@ -246,7 +246,7 @@ const FilteredList = ({
                 channel={item}
                 onPress={onJoinChannel}
                 showTeamName={showTeamName}
-                highlightState={true}
+                shouldHighlightState={true}
                 testID='find_channels.filtered_list.remote_channel_item'
             />
         );

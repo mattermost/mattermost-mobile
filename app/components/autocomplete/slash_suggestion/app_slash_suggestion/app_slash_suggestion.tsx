@@ -131,7 +131,7 @@ const AppSlashSuggestion = ({
                         channel={channel}
                         onPress={completeIgnoringSuggestion(item.Complete)}
                         testID='autocomplete.slash_suggestion.channel_mention_item'
-                        onCenterBg={true}
+                        isOnCenterBg={true}
                         showChannelName={true}
                     />
                 );

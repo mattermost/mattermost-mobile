@@ -12,11 +12,10 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     author?: UserModel;
-    onCenterBg?: boolean;
+    isOnCenterBg?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {marginLeft: 4},
     status: {
         backgroundColor: theme.sidebarBg,
         borderWidth: 0,
@@ -33,7 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const DmAvatar = ({author, onCenterBg}: Props) => {
+const DmAvatar = ({author, isOnCenterBg}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
@@ -41,7 +40,7 @@ const DmAvatar = ({author, onCenterBg}: Props) => {
         return (
             <CompassIcon
                 name='archive-outline'
-                style={[style.icon, onCenterBg && style.iconOnCenterBg]}
+                style={[style.icon, isOnCenterBg && style.iconOnCenterBg]}
                 size={24}
             />
         );
@@ -53,7 +52,7 @@ const DmAvatar = ({author, onCenterBg}: Props) => {
             size={24}
             showStatus={true}
             statusSize={12}
-            statusStyle={[style.status, onCenterBg && style.statusOnCenterBg]}
+            statusStyle={[style.status, isOnCenterBg && style.statusOnCenterBg]}
         />
     );
 };

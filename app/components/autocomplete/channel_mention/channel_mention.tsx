@@ -259,7 +259,7 @@ const ChannelMention = ({
                 channel={item}
                 onPress={completeMention}
                 testID='autocomplete.channel_mention_item'
-                onCenterBg={true}
+                isOnCenterBg={true}
                 showChannelName={true}
             />
         );

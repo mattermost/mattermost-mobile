@@ -66,9 +66,9 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, te
             <ChannelItem
                 channel={item}
                 onPress={onPress}
-                onCenterBg={true}
+                isOnCenterBg={true}
                 showTeamName={showTeamName}
-                highlightState={true}
+                shouldHighlightState={true}
                 testID={`${testID}.channel_item`}
             />
         );

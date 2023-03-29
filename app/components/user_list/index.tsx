@@ -8,6 +8,7 @@ import {FlatList, Keyboard, ListRenderItemInfo, Platform, SectionList, SectionLi
 import {storeProfile} from '@actions/local/user';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
+import UserListRow from '@components/user_list_row';
 import {General, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -19,8 +20,6 @@ import {
     makeStyleSheetFromTheme,
 } from '@utils/theme';
 import {typography} from '@utils/typography';
-
-import UserListRow from '../user_list_row';
 
 import type UserModel from '@typings/database/models/servers/user';
 

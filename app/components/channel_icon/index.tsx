@@ -16,7 +16,7 @@ type ChannelIconProps = {
     hasDraft?: boolean;
     isActive?: boolean;
     isArchived?: boolean;
-    onCenterBg?: boolean;
+    isOnCenterBg?: boolean;
     isUnread?: boolean;
     isMuted?: boolean;
     membersCount?: number;
@@ -88,7 +88,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const ChannelIcon = ({
     hasDraft = false, isActive = false, isArchived = false,
-    onCenterBg = false, isUnread = false, isMuted = false,
+    isOnCenterBg = false, isUnread = false, isMuted = false,
     membersCount = 0, name,
     shared, size = 12, style, testID, type,
 }: ChannelIconProps) => {
@@ -115,7 +115,7 @@ const ChannelIcon = ({
         activeGroup = styles.groupActive;
     }
 
-    if (onCenterBg) {
+    if (isOnCenterBg) {
         activeIcon = isUnread && !isMuted ? styles.iconUnreadOnCenterBg : styles.iconOnCenterBg;
         activeGroupBox = styles.groupBoxOnCenterBg;
         activeGroup = isUnread ? styles.groupUnreadOnCenterBg : styles.groupOnCenterBg;
@@ -186,7 +186,7 @@ const ChannelIcon = ({
         icon = (
             <DmAvatar
                 channelName={name}
-                onCenterBg={onCenterBg}
+                isOnCenterBg={isOnCenterBg}
             />
         );
     }

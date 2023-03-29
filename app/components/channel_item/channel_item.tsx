@@ -5,13 +5,13 @@ import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {StyleSheet, TouchableOpacity, View} from 'react-native';
 
-import {isDMorGM} from '@app/utils/channel';
 import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {isDMorGM} from '@utils/channel';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {getUserIdFromChannelName} from '@utils/user';
@@ -34,7 +34,7 @@ type Props = {
     teamDisplayName?: string;
     testID?: string;
     hasCall: boolean;
-    onCenterBg?: boolean;
+    isOnCenterBg?: boolean;
     showChannelName?: boolean;
 }
 
@@ -92,6 +92,9 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     hasCall: {
         textAlign: 'right',
     },
+    filler: {
+        flex: 1,
+    },
 }));
 
 export const textStyle = StyleSheet.create({
@@ -113,7 +116,7 @@ const ChannelItem = ({
     teamDisplayName = '',
     testID,
     hasCall,
-    onCenterBg = false,
+    isOnCenterBg = false,
     showChannelName = false,
 }: Props) => {
     const {formatMessage} = useIntl();
@@ -150,10 +153,10 @@ const ChannelItem = ({
         styles.text,
         isBolded && styles.highlight,
         isActive && isTablet ? styles.textActive : null,
-        onCenterBg ? styles.textOnCenterBg : null,
+        isOnCenterBg ? styles.textOnCenterBg : null,
         isMuted && styles.muted,
-        isMuted && onCenterBg && styles.mutedOnCenterBg,
-    ], [isBolded, styles, isMuted, isActive, isTablet, onCenterBg]);
+        isMuted && isOnCenterBg && styles.mutedOnCenterBg,
+    ], [isBolded, styles, isMuted, isActive, isTablet, isOnCenterBg]);
 
     const containerStyle = useMemo(() => [
         styles.container,
@@ -174,7 +177,7 @@ const ChannelItem = ({
                 <ChannelIcon
                     hasDraft={hasDraft}
                     isActive={isTablet && isActive}
-                    onCenterBg={onCenterBg}
+                    isOnCenterBg={isOnCenterBg}
                     isUnread={isBolded}
                     isArchived={deleteAt > 0}
                     membersCount={membersCount}
@@ -194,17 +197,17 @@ const ChannelItem = ({
                     textStyles={textStyles}
                     channelName={channelName}
                 />
-                <View style={{flex: 1}}/>
+                <View style={styles.filler}/>
                 <Badge
                     visible={mentionsCount > 0}
                     value={mentionsCount}
-                    style={[styles.badge, isMuted && styles.mutedBadge, onCenterBg && styles.badgeOnCenterBg]}
+                    style={[styles.badge, isMuted && styles.mutedBadge, isOnCenterBg && styles.badgeOnCenterBg]}
                 />
                 {hasCall &&
                 <CompassIcon
                     name='phone-in-talk'
                     size={16}
-                    style={[...textStyles, styles.hasCall]}
+                    style={[textStyles, styles.hasCall]}
                 />
                 }
             </View>

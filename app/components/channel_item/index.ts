@@ -24,34 +24,34 @@ type EnhanceProps = WithDatabaseArgs & {
     channel: ChannelModel | Channel;
     showTeamName?: boolean;
     serverUrl?: string;
-    highlightActive?: boolean;
-    highlightState?: boolean;
+    shouldHighlightActive?: boolean;
+    shouldHighlightState?: boolean;
 }
 
-const enhance = withObservables(['channel', 'showTeamName', 'highlightActive', 'highlightState'], ({
+const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActive', 'shouldHighlightState'], ({
     channel,
     database,
     serverUrl,
     showTeamName = false,
-    highlightActive = false,
-    highlightState = false,
+    shouldHighlightActive = false,
+    shouldHighlightState = false,
 }: EnhanceProps) => {
     const currentUserId = observeCurrentUserId(database);
     const myChannel = observeMyChannel(database, channel.id);
 
-    const hasDraft = highlightState ?
+    const hasDraft = shouldHighlightState ?
         queryDraft(database, channel.id).observeWithColumns(['message', 'files']).pipe(
             switchMap((draft) => of$(draft.length > 0)),
             distinctUntilChanged(),
         ) : of$(false);
 
-    const isActive = highlightActive ?
+    const isActive = shouldHighlightActive ?
         observeCurrentChannelId(database).pipe(
             switchMap((id) => of$(id ? id === channel.id : false)),
             distinctUntilChanged(),
         ) : of$(false);
 
-    const isMuted = highlightState ?
+    const isMuted = shouldHighlightState ?
         myChannel.pipe(
             switchMap((mc) => {
                 if (!mc) {
@@ -72,13 +72,13 @@ const enhance = withObservables(['channel', 'showTeamName', 'highlightActive', '
         queryChannelMembers(database, channel.id).observeCount(false) :
         of$(0);
 
-    const isUnread = highlightState ?
+    const isUnread = shouldHighlightState ?
         myChannel.pipe(
             switchMap((mc) => of$(mc?.isUnread)),
             distinctUntilChanged(),
         ) : of$(false);
 
-    const mentionsCount = highlightState ?
+    const mentionsCount = shouldHighlightState ?
         myChannel.pipe(
             switchMap((mc) => of$(mc?.mentionsCount)),
             distinctUntilChanged(),

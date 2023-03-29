@@ -55,8 +55,8 @@ const UnreadCategories = ({onChannelSwitch, onlyUnreads, unreadChannels, unreadT
                 channel={item}
                 onPress={onChannelSwitch}
                 testID='channel_list.category.unreads.channel_item'
-                highlightActive={true}
-                highlightState={true}
+                shouldHighlightActive={true}
+                shouldHighlightState={true}
             />
         );
     }, [onChannelSwitch]);
