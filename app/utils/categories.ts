@@ -24,7 +24,7 @@ export function makeCategoryChannelId(teamId: string, channelId: string) {
 
 export const isUnreadChannel = (myChannel: MyChannelModel, notifyProps?: Partial<ChannelNotifyProps>, lastUnreadChannelId?: string) => {
     const isMuted = notifyProps?.mark_unread === General.MENTION;
-    return (isMuted && myChannel.mentionsCount) || (!isMuted && myChannel.isUnread) || (myChannel.id === lastUnreadChannelId);
+    return myChannel.mentionsCount || (!isMuted && myChannel.isUnread) || (myChannel.id === lastUnreadChannelId);
 };
 
 export const filterArchivedChannels = (channelsWithMyChannel: ChannelWithMyChannel[], currentChannelId: string) => {
