@@ -20,11 +20,6 @@ export default schemaMigrations({migrations: [
                     {name: 'files_count', type: 'number'},
                 ],
             }),
-        ],
-    },
-    {
-        toVersion: 3,
-        steps: [
             addColumns({
                 table: DRAFT,
                 columns: [
