@@ -526,43 +526,39 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
             }
         }
 
-        try {
-            const promises: Array<Promise<UserProfile[]>> = [];
-            if (userIdsToLoad.size) {
-                promises.push(client.getProfilesByIds(Array.from(userIdsToLoad)));
-            }
-
-            if (usernamesToLoad.size) {
-                promises.push(client.getProfilesByUsernames(Array.from(usernamesToLoad)));
-            }
-
-            if (promises.length) {
-                const authorsResult = await Promise.allSettled(promises);
-                const result = authorsResult.reduce<UserProfile[][]>((acc, item) => {
-                    if (item.status === 'fulfilled') {
-                        acc.push(item.value);
-                    }
-                    return acc;
-                }, []);
-
-                const authors = result.flat();
-                if (!fetchOnly && authors.length) {
-                    await operator.handleUsers({
-                        users: authors,
-                        prepareRecordsOnly: false,
-                    });
-                }
-
-                return {authors};
-            }
-
-            return {authors: [] as UserProfile[]};
-        } catch (error) {
-            logError('FETCH AUTHORS ERROR', error);
-            forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-            return {error};
+        const promises: Array<Promise<UserProfile[]>> = [];
+        if (userIdsToLoad.size) {
+            promises.push(client.getProfilesByIds(Array.from(userIdsToLoad)));
         }
+
+        if (usernamesToLoad.size) {
+            promises.push(client.getProfilesByUsernames(Array.from(usernamesToLoad)));
+        }
+
+        if (promises.length) {
+            const authorsResult = await Promise.allSettled(promises);
+            const result = authorsResult.reduce<UserProfile[][]>((acc, item) => {
+                if (item.status === 'fulfilled') {
+                    acc.push(item.value);
+                }
+                return acc;
+            }, []);
+
+            const authors = result.flat();
+            if (!fetchOnly && authors.length) {
+                await operator.handleUsers({
+                    users: authors,
+                    prepareRecordsOnly: false,
+                });
+            }
+
+            return {authors};
+        }
+
+        return {authors: [] as UserProfile[]};
     } catch (error) {
+        logError('FETCH AUTHORS ERROR', error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 };
@@ -1131,17 +1127,13 @@ export async function acknowledgePost(serverUrl: string, postId: string) {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
 
-        try {
-            const userId = await getCurrentUserId(database);
-            const data = await client.acknowledgePost(postId, userId);
-            return {
-                data,
-            };
-        } catch (error) {
-            forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-            return {error};
-        }
+        const userId = await getCurrentUserId(database);
+        const data = await client.acknowledgePost(postId, userId);
+        return {
+            data,
+        };
     } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 }
@@ -1150,18 +1142,13 @@ export async function unacknowledgePost(serverUrl: string, postId: string) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
-
-        try {
-            const userId = await getCurrentUserId(database);
-            const data = await client.unacknowledgePost(postId, userId);
-            return {
-                data,
-            };
-        } catch (error) {
-            forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-            return {error};
-        }
+        const userId = await getCurrentUserId(database);
+        const data = await client.unacknowledgePost(postId, userId);
+        return {
+            data,
+        };
     } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }
 }

@@ -152,7 +152,7 @@ export async function persistentNotificationsConfirmation(serverUrl: string, val
             });
             description = intl.formatMessage({
                 id: 'persistent_notifications.confirm.description',
-                defaultMessage: '@mentioned recipients will be notified every {interval, plural, one {1 minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
+                defaultMessage: '@mentioned recipients will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
             }, {
                 interval: persistentNotificationInterval,
             });

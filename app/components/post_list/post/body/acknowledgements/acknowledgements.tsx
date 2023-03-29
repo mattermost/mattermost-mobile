@@ -27,7 +27,8 @@ import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    currentUser: UserModel;
+    currentUserId: UserModel['id'];
+    currentUserTimezone: UserModel['timezone'];
     hasReactions: boolean;
     location: string;
     post: PostModel;
@@ -74,7 +75,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Props) => {
+const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, location, post, theme}: Props) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
     const {bottom} = useSafeAreaInsets();
@@ -83,12 +84,12 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
 
     const style = getStyleSheet(theme);
 
-    const isCurrentAuthor = post.userId === currentUser.id;
+    const isCurrentAuthor = post.userId === currentUserId;
     const acknowledgements = post.metadata?.acknowledgements || [];
 
     const acknowledgedAt = useMemo(() => {
         if (acknowledgements.length > 0) {
-            const ack = acknowledgements.find((item) => item.user_id === currentUser.id);
+            const ack = acknowledgements.find((item) => item.user_id === currentUserId);
 
             if (ack) {
                 return ack.acknowledged_at;
@@ -142,7 +143,7 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
                     location={location}
                     userAcknowledgements={userAcknowledgements}
                     userIds={userIds}
-                    timezone={currentUser.timezone || undefined}
+                    timezone={currentUserTimezone || undefined}
                 />
             </>
         );
@@ -162,7 +163,7 @@ const Acknowledgements = ({currentUser, hasReactions, location, post, theme}: Pr
             title: intl.formatMessage({id: 'mobile.acknowledgements.header', defaultMessage: 'Acknowledgements'}),
             theme,
         });
-    }, [bottom, intl, isTablet, acknowledgements, theme, location, post.channelId, currentUser.timezone]);
+    }, [bottom, intl, isTablet, acknowledgements, theme, location, post.channelId, currentUserTimezone]);
 
     return (
         <>

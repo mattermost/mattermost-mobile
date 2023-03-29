@@ -22,19 +22,19 @@ type Props = Omit<OptionItemProps, 'type'> & {
     type?: OptionType;
 }
 
-const PickerOption = (props: Props) => {
+const PickerOption = ({type, ...rest}: Props) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
 
-    const testID = `post_priority_picker_item.${props.value || 'standard'}`;
+    const testID = `post_priority_picker_item.${rest.value || 'standard'}`;
 
     return (
         <OptionItem
             labelContainerStyle={style.labelContainer}
             optionLabelTextStyle={style.optionLabelText}
             testID={testID}
-            {...props}
-            type={props.type || 'select'}
+            type={type || 'select'}
+            {...rest}
         />
     );
 };

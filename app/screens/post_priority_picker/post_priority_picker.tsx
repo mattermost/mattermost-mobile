@@ -19,8 +19,9 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import PickerOption from './components/picker_option';
 import Footer from './footer';
-import PickerOption from './picker_option';
+import {labels} from './utils';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -105,10 +106,10 @@ const PostPriorityPicker = ({
 
         if (isPostAcknowledgementEnabled) {
             COMPONENT_HEIGHT += 75;
-        }
 
-        if (displayPersistentNotifications) {
-            COMPONENT_HEIGHT += 75;
+            if (displayPersistentNotifications) {
+                COMPONENT_HEIGHT += 75;
+            }
         }
 
         return [1, bottomSheetSnapPoint(1, COMPONENT_HEIGHT, bottom)];
@@ -135,52 +136,6 @@ const PostPriorityPicker = ({
         close();
     }, [data]);
 
-    const renderAcknowledgementOption = () => (
-        <View style={style.toggleOptionContainer}>
-            <PickerOption
-                action={handleUpdateRequestedAck}
-                label={
-                    intl.formatMessage({
-                        id: 'post_priority.picker.label.request_ack',
-                        defaultMessage: 'Request acknowledgement',
-                    })
-                }
-                description={
-                    intl.formatMessage({
-                        id: 'post_priority.picker.label.request_ack.description',
-                        defaultMessage: 'An acknowledgement button appears with your message.',
-                    })
-                }
-                icon='check-circle-outline'
-                type='toggle'
-                selected={data.requested_ack}
-            />
-        </View>
-    );
-
-    const renderPersistentNotificationsOption = () => (
-        <View style={style.toggleOptionContainer}>
-            <PickerOption
-                action={handleUpdatePersistentNotifications}
-                label={
-                    intl.formatMessage({
-                        id: 'post_priority.picker.label.persistent_notifications',
-                        defaultMessage: 'Send persistent notifications',
-                    })
-                }
-                description={
-                    intl.formatMessage({
-                        id: 'post_priority.picker.label.persistent_notifications.description',
-                        defaultMessage: 'Recipients are notified every five minutes until they acknowledge or reply.',
-                    })
-                }
-                icon='bell-ring-outline'
-                type='toggle'
-                selected={data.persistent_notifications}
-            />
-        </View>
-    );
-
     const renderContent = () => (
         <View style={style.container}>
             {!isTablet &&
@@ -203,10 +158,7 @@ const PostPriorityPicker = ({
                 <PickerOption
                     action={handleUpdatePriority}
                     icon='message-text-outline'
-                    label={intl.formatMessage({
-                        id: 'post_priority.picker.label.standard',
-                        defaultMessage: 'Standard',
-                    })}
+                    label={intl.formatMessage(labels.standard.label)}
                     selected={data.priority === ''}
                     value={PostPriorityType.STANDARD}
                 />
@@ -214,10 +166,7 @@ const PostPriorityPicker = ({
                     action={handleUpdatePriority}
                     icon='alert-circle-outline'
                     iconColor={PostPriorityColors.IMPORTANT}
-                    label={intl.formatMessage({
-                        id: 'post_priority.picker.label.important',
-                        defaultMessage: 'Important',
-                    })}
+                    label={intl.formatMessage(labels.important.label)}
                     selected={data.priority === PostPriorityType.IMPORTANT}
                     value={PostPriorityType.IMPORTANT}
                 />
@@ -225,18 +174,35 @@ const PostPriorityPicker = ({
                     action={handleUpdatePriority}
                     icon='alert-outline'
                     iconColor={PostPriorityColors.URGENT}
-                    label={intl.formatMessage({
-                        id: 'post_priority.picker.label.urgent',
-                        defaultMessage: 'Urgent',
-                    })}
+                    label={intl.formatMessage(labels.urgent.label)}
                     selected={data.priority === PostPriorityType.URGENT}
                     value={PostPriorityType.URGENT}
                 />
                 {(isPostAcknowledgementEnabled) && (
                     <>
                         <View style={style.optionsSeparator}/>
-                        {renderAcknowledgementOption()}
-                        {displayPersistentNotifications && renderPersistentNotificationsOption()}
+                        <View style={style.toggleOptionContainer}>
+                            <PickerOption
+                                action={handleUpdateRequestedAck}
+                                label={intl.formatMessage(labels.requestAck.label)}
+                                description={intl.formatMessage(labels.requestAck.description)}
+                                icon='check-circle-outline'
+                                type='toggle'
+                                selected={data.requested_ack}
+                            />
+                        </View>
+                        {displayPersistentNotifications && (
+                            <View style={style.toggleOptionContainer}>
+                                <PickerOption
+                                    action={handleUpdatePersistentNotifications}
+                                    label={intl.formatMessage(labels.persistentNotifications.label)}
+                                    description={intl.formatMessage(labels.persistentNotifications.description)}
+                                    icon='bell-ring-outline'
+                                    type='toggle'
+                                    selected={data.persistent_notifications}
+                                />
+                            </View>
+                        )}
                     </>
                 )}
             </View>

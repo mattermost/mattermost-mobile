@@ -29,12 +29,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     acknowledgements: {
         color: theme.onlineIndicator,
     },
+    paddingTopStyle: {
+        paddingTop: Platform.select({ios: 6, android: 8}),
+    },
 }));
-
-const paddingTop = Platform.select({
-    ios: 6,
-    android: 8,
-});
 
 export default function DraftInputHeader({
     postPriority,
@@ -45,7 +43,7 @@ export default function DraftInputHeader({
     const style = getStyleSheet(theme);
 
     return (
-        <View style={[style.container, {paddingTop: hasLabels ? paddingTop : 0}]}>
+        <View style={[style.container, hasLabels ? style.paddingTopStyle : undefined]}>
             {postPriority.priority && (
                 <PostPriorityLabel label={postPriority.priority}/>
             )}

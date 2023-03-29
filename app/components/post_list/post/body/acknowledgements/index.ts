@@ -4,6 +4,8 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import compose from 'lodash/fp/compose';
+import {of as of$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
 import {observeCurrentUser} from '@queries/servers/user';
 
@@ -16,7 +18,8 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs) => {
     const currentUser = observeCurrentUser(database);
 
     return {
-        currentUser,
+        currentUserId: currentUser.pipe(switchMap((c) => of$(c?.id))),
+        currentUserTimezone: currentUser.pipe(switchMap((c) => of$(c?.timezone))),
     };
 });
 

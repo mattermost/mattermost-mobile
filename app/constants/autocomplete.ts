@@ -17,7 +17,7 @@ export const ALL_SEARCH_FLAGS_REGEX = /\b\w+:/g;
 
 export const CODE_REGEX = /(`+)([^`]|[^`][\s\S]*?[^`])\1(?!`)| *(`{3,}|~{3,})[ .]*(\S+)? *\n([\s\S]*?\s*)\3 *(?:\n+|$)/g;
 
-export const MENTIONS_REGEX = /(?:\B|\b_+)@([a-z0-9.\-_]+)/gui;
+export const MENTIONS_REGEX = /(?:\B|\b_+)@([\p{L}0-9.\-_]+)/gui;
 
 export const SPECIAL_MENTIONS_REGEX = /(?:\B|\b_+)@(channel|all|here)(?!(\.|-|_)*[^\W_])/gi;
 
