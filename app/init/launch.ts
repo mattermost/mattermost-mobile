@@ -45,7 +45,8 @@ export const initialLaunch = async () => {
         return launchAppFromNotification(convertToNotificationData(notification!), true);
     }
 
-    return launchApp({launchType: Launch.Normal, coldStart: notification ? tapped : true});
+    const coldStart = notification ? (tapped || AppState.currentState === 'active') : true;
+    return launchApp({launchType: Launch.Normal, coldStart});
 };
 
 const launchAppFromDeepLink = async (deepLinkUrl: string, coldStart = false) => {
@@ -168,7 +169,7 @@ const launchToHome = async (props: LaunchProps) => {
             break;
         }
         case Launch.Normal:
-            if (props.coldStart || AppState.currentState === 'active') {
+            if (props.coldStart) {
                 appEntry(props.serverUrl!);
             }
             break;
