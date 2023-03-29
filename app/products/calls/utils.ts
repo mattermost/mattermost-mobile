@@ -40,18 +40,18 @@ const sortByState = (presenterID?: string) => {
             return 1;
         }
 
-        if (!a.muted && b.muted) {
-            return -1;
-        } else if (!b.muted && a.muted) {
-            return 1;
-        }
-
         if (a.raisedHand && !b.raisedHand) {
             return -1;
         } else if (b.raisedHand && !a.raisedHand) {
             return 1;
         } else if (a.raisedHand && b.raisedHand) {
             return a.raisedHand - b.raisedHand;
+        }
+
+        if (!a.muted && b.muted) {
+            return -1;
+        } else if (!b.muted && a.muted) {
+            return 1;
         }
 
         return 0;
