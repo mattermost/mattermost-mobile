@@ -429,6 +429,7 @@ export async function fetchChannelStats(serverUrl: string, channelId: string, fe
                     id: channelId,
                     member_count: stats.member_count,
                     pinned_post_count: stats.pinnedpost_count,
+                    files_count: stats.files_count,
                 }];
                 await operator.handleChannelInfo({channelInfos, prepareRecordsOnly: false});
             }

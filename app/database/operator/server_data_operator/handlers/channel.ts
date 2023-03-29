@@ -188,6 +188,7 @@ const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(super
                 ci.member_count !== e.memberCount ||
                 ci.header !== e.header ||
                 ci.pinned_post_count !== e.pinnedPostCount ||
+                ci.files_count !== e.filesCount ||
                 ci.purpose !== e.purpose
             ) {
                 res.push(ci);
