@@ -1005,5 +1005,10 @@
     "channel_notification_preferences.notification.all": "Alle neuen Nachrichten",
     "channel_notification_preferences.muted_title": "Dieser Kanal ist stummgeschaltet",
     "channel_notification_preferences.muted_content": "Du kannst die Benachrichtigungseinstellungen ändern, erhältst aber keine Benachrichtigungen, bis der Kanal wieder freigeschaltet wird.",
-    "channel_notification_preferences.default": "(Standard)"
+    "channel_notification_preferences.default": "(Standard)",
+    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {Mitglied} other {Mitglieder}} hinzugefügt",
+    "mobile.channel_add_members.error": "Es ist ein Fehler aufgetreten und wir konnten diese Benutzer nicht zum Kanal hinzufügen.",
+    "intro.add_members": "Mitglieder hinzufügen",
+    "channel_info.add_members": "Mitglieder hinzufügen",
+    "channel_add_members.add_members.button": "Mitglieder hinzufügen"
 }
