@@ -419,7 +419,6 @@
     "intro.private_channel": "비공개 채널",
     "intro.created_by": "{date}에 {creator}님이 만들었습니다.",
     "intro.channel_info": "정보",
-    "intro.add_people": "구성원 추가",
     "interactive_dialog.submit": "확인",
     "integration_selector.multiselect.submit": "완료",
     "home.header.plus_menu": "설정",

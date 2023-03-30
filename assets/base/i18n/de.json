@@ -403,7 +403,6 @@
     "intro.direct_message": "Dies ist der Beginn deiner Unterhaltung mit {teammate}. Die hier geteilten Nachrichten und Dateien werden niemandem sonst gezeigt.",
     "intro.created_by": "Erstellt von {creator} am {date}.",
     "intro.channel_info": "Info",
-    "intro.add_people": "Personen hinzufügen",
     "interactive_dialog.submit": "Absenden",
     "home.header.plus_menu": "Optionen",
     "global_threads.options.title": "Unterhaltungsaktionen",

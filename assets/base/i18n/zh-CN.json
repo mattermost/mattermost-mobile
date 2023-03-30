@@ -750,7 +750,6 @@
     "intro.direct_message": "这是您与{teammate}开始的对话。消息和文件保存在这里的不会对其他任何人显示。",
     "intro.created_by": "由{creator}在{date}创建。",
     "intro.channel_info": "信息",
-    "intro.add_people": "添加新人",
     "interactive_dialog.submit": "发送",
     "integration_selector.multiselect.submit": "完成",
     "screen.search.results.filter.spreadsheets": "电子表格",

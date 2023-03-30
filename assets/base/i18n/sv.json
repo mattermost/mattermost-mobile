@@ -564,7 +564,6 @@
     "intro.direct_message": "Detta är början på ditt samtal med {teammate}. Meddelanden och filer som delas här visas inte för någon annan.",
     "intro.created_by": "Skapad av {creator} den {date}.",
     "intro.channel_info": "Info",
-    "intro.add_people": "Lägg till personer",
     "interactive_dialog.submit": "Skicka",
     "home.header.plus_menu": "Alternativ",
     "global_threads.options.title": "Åtgärder i tråden",
