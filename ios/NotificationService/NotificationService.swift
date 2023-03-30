@@ -27,7 +27,7 @@ class NotificationService: UNNotificationServiceExtension {
             })
           } else {
             bestAttemptContent.badge = Gekidou.Database.default.getTotalMentions() as NSNumber
-            os_log(OSLogType.default, "Mattermost Notifications: app in the foreground, no data processed. Will call sendMessageIntent")
+            os_log(OSLogType.default, "Mattermost Notifications: app in use, no data processed. Will call sendMessageIntent")
             self?.sendMessageIntent()
           }
           return
@@ -55,10 +55,8 @@ class NotificationService: UNNotificationServiceExtension {
     if #available(iOSApplicationExtension 15.0, *) {
       let overrideUsername = notification.userInfo["override_username"] as? String
       let senderId = notification.userInfo["sender_id"] as? String
-      let sender = overrideUsername ?? senderId
 
-      guard let serverUrl = notification.userInfo["server_url"] as? String,
-              let sender = sender
+      guard let serverUrl = notification.userInfo["server_url"] as? String
       else {
         os_log(OSLogType.default, "Mattermost Notifications: No intent created. will call contentHandler to present notification")
         self.contentHandler?(notification)
@@ -66,10 +64,13 @@ class NotificationService: UNNotificationServiceExtension {
       }
 
       let overrideIconUrl = notification.userInfo["override_icon_url"] as? String
-      os_log(OSLogType.default, "Mattermost Notifications: Fetching profile Image in server %{public}@ for sender %{public}@", serverUrl, sender)
-        
-      PushNotification.default.fetchProfileImageSync(serverUrl, senderId: sender, overrideIconUrl: overrideIconUrl) {[weak self] data in
-        self?.sendMessageIntentCompletion(data)
+      os_log(OSLogType.default, "Mattermost Notifications: Fetching profile Image in server %{public}@ for sender %{public}@", serverUrl, senderId ?? overrideUsername ?? "no sender is set")
+      if senderId != nil || overrideIconUrl != nil {
+        PushNotification.default.fetchProfileImageSync(serverUrl, senderId: senderId ?? "", overrideIconUrl: overrideIconUrl) {[weak self] data in
+          self?.sendMessageIntentCompletion(data)
+        }
+      } else {
+        self.sendMessageIntentCompletion(nil)
       }
     }
   }

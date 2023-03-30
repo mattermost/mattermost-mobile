@@ -30,6 +30,7 @@ type InAppNotificationProps = {
 }
 
 const AUTO_DISMISS_TIME_MILLIS = 5000;
+const noInsets = {top: 0, bottom: 0, left: 0, right: 0};
 
 const styles = StyleSheet.create({
     container: {
@@ -69,11 +70,10 @@ const InAppNotification = ({componentId, serverName, serverUrl, notification}: I
     const dismissTimerRef = useRef<NodeJS.Timeout | null>(null);
     const initial = useSharedValue(-130);
     const isTablet = useIsTablet();
-    let insets = {top: 0};
-    if (Platform.OS === 'ios') {
+    let insets = useSafeAreaInsets();
+    if (Platform.OS === 'android') {
         // on Android we disable the safe area provider as it conflicts with the gesture system
-        // eslint-disable-next-line react-hooks/rules-of-hooks
-        insets = useSafeAreaInsets();
+        insets = noInsets;
     }
 
     const tapped = useRef<boolean>(false);
