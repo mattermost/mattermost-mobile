@@ -131,7 +131,7 @@ This product contains '@mattermost/calls' by Mattermost.
 Calls enables voice calling and screen sharing functionality in Mattermost channels.
 
 * HOMEPAGE:
-  * https://github.com/mattermost/mattermost-plugin-calls
+  * https://github.com/mattermost/calls-common
 
 * LICENSE: Apache License
 
