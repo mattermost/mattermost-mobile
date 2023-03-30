@@ -461,7 +461,6 @@
     "intro.direct_message": "To jest początek Twojej rozmowy z {teammate}. Wiadomości i pliki udostępnione tutaj nie są pokazywane nikomu innemu.",
     "intro.created_by": "stworzony przez {creator} w dniu {date}.",
     "intro.channel_info": "Informacje",
-    "intro.add_people": "Dodaj Osoby",
     "interactive_dialog.submit": "Wyślij",
     "home.header.plus_menu": "Opcje",
     "global_threads.options.title": "Wątek Akcji",

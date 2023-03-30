@@ -723,7 +723,6 @@
     "intro.private_channel": "کانال خصوصی",
     "intro.created_by": "ساخته‌شده توسط {creator} در {date}.",
     "intro.channel_info": "اطلاعات",
-    "intro.add_people": "افزودن کاربر",
     "interactive_dialog.submit": "ثبت",
     "integration_selector.multiselect.submit": "انجام شد",
     "home.header.plus_menu": "امکانات",

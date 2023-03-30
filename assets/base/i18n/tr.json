@@ -483,7 +483,6 @@
     "download.error": "Dosya indirilemedi. Bir süre sonra yeniden deneyin",
     "intro.created_by": "{creator} tarafından {date} tarihinde oluşturuldu.",
     "intro.channel_info": "Bilgiler",
-    "intro.add_people": "Kişi ekle",
     "interactive_dialog.submit": "Gönder",
     "home.header.plus_menu": "Seçenekler",
     "global_threads.options.title": "Konu işlemleri",

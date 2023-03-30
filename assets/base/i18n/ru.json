@@ -500,7 +500,6 @@
     "channel_modal.purposeEx": "Канал для отправки сообщений об ошибках и улучшениях",
     "intro.created_by": "создано {creator} {date}.",
     "intro.channel_info": "Информация",
-    "intro.add_people": "Добавить людей",
     "integration_selector.multiselect.submit": "Готово",
     "home.header.plus_menu": "Опции",
     "global_threads.options.title": "Действия обсуждений",
