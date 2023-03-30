@@ -27,7 +27,7 @@ type ImagePreviewProps = {
     link: string;
     layoutWidth?: number;
     location: string;
-    metadata: PostMetadata;
+    metadata: PostMetadata | undefined | null;
     postId: string;
     theme: Theme;
 }
@@ -54,8 +54,8 @@ const ImagePreview = ({expandedLink, isReplyPost, layoutWidth, link, location, m
     const fileId = useRef(generateId('uid')).current;
     const [imageUrl, setImageUrl] = useState(expandedLink || link);
     const isTablet = useIsTablet();
-    const imageProps = metadata.images![link];
-    const dimensions = calculateDimensions(imageProps.height, imageProps.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
+    const imageProps = metadata?.images?.[link];
+    const dimensions = calculateDimensions(imageProps?.height, imageProps?.width, layoutWidth || getViewPortWidth(isReplyPost, isTablet));
 
     const onError = useCallback(() => {
         setError(true);
@@ -66,8 +66,8 @@ const ImagePreview = ({expandedLink, isReplyPost, layoutWidth, link, location, m
             id: fileId,
             postId,
             uri: imageUrl,
-            width: imageProps.width,
-            height: imageProps.height,
+            width: imageProps?.width || 0,
+            height: imageProps?.height || 0,
             name: extractFilenameFromUrl(imageUrl) || 'imagePreview.png',
             mime_type: lookupMimeType(imageUrl) || 'image/png',
             type: 'image',

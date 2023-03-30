@@ -15,7 +15,7 @@ type Props = {
     channelId: string;
     fields: MessageAttachmentField[];
     location: string;
-    metadata?: PostMetadata;
+    metadata?: PostMetadata | null;
     textStyles?: MarkdownTextStyles;
     theme: Theme;
 }

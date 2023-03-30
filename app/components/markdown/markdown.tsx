@@ -55,7 +55,7 @@ type MarkdownProps = {
     disableTables?: boolean;
     enableLatex: boolean;
     enableInlineLatex: boolean;
-    imagesMetadata?: Record<string, PostImage>;
+    imagesMetadata?: Record<string, PostImage | undefined>;
     isEdited?: boolean;
     isReplyPost?: boolean;
     isSearchResult?: boolean;
