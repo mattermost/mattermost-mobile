@@ -8,12 +8,18 @@ import {addColumns, schemaMigrations} from '@nozbe/watermelondb/Schema/migration
 
 import {MM_TABLES} from '@constants/database';
 
-const {DRAFT} = MM_TABLES.SERVER;
+const {CHANNEL_INFO, DRAFT} = MM_TABLES.SERVER;
 
 export default schemaMigrations({migrations: [
     {
         toVersion: 2,
         steps: [
+            addColumns({
+                table: CHANNEL_INFO,
+                columns: [
+                    {name: 'files_count', type: 'number'},
+                ],
+            }),
             addColumns({
                 table: DRAFT,
                 columns: [

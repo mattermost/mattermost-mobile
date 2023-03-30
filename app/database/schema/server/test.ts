@@ -92,6 +92,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         header: {name: 'header', type: 'string'},
                         member_count: {name: 'member_count', type: 'number'},
                         pinned_post_count: {name: 'pinned_post_count', type: 'number'},
+                        files_count: {name: 'files_count', type: 'number'},
                         purpose: {name: 'purpose', type: 'string'},
                     },
                     columnArray: [
@@ -99,6 +100,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'header', type: 'string'},
                         {name: 'member_count', type: 'number'},
                         {name: 'pinned_post_count', type: 'number'},
+                        {name: 'files_count', type: 'number'},
                         {name: 'purpose', type: 'string'},
                     ],
                 },

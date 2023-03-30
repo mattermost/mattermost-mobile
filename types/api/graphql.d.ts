@@ -174,6 +174,7 @@ type GQLStats = {
     guestCount: number;
     memberCount: number;
     pinnePostCount: number;
+    filesCount: number;
 }
 
 type GQLRole = {

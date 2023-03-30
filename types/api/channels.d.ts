@@ -6,6 +6,7 @@ type ChannelStats = {
     guest_count: number;
     member_count: number;
     pinnedpost_count: number;
+    files_count: number;
 };
 
 type NotificationLevel = 'default' | 'all' | 'mention' | 'none';

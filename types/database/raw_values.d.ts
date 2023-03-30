@@ -13,6 +13,7 @@ type ChannelInfo = {
     header: string;
     member_count: number;
     pinned_post_count: number;
+    files_count: number;
     purpose: string;
 };
 
