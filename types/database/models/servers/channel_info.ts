@@ -26,6 +26,9 @@ declare class ChannelInfoModel extends Model {
     /** pinned_post_count : The number of post pinned in this channel */
     pinnedPostCount: number;
 
+    /** files_count : The number of files in this channel */
+    filesCount: number;
+
     /** purpose: The intention behind this channel */
     purpose: string;
 

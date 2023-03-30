@@ -6,6 +6,7 @@ import {useIntl} from 'react-intl';
 import {
     DeviceEventEmitter,
     Keyboard,
+    NativeModules,
     Platform,
     Pressable,
     SafeAreaView,
@@ -42,6 +43,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import WebsocketManager from '@managers/websocket_manager';
 import {
+    allOrientations,
     bottomSheet,
     dismissAllModalsAndPopToScreen,
     dismissBottomSheet,
@@ -50,6 +52,7 @@ import {
     setScreensOrientation,
 } from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
+import {freezeOtherScreens} from '@utils/gallery';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -107,8 +110,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         position: 'absolute',
         top: 0,
         backgroundColor: 'rgba(0,0,0,0.64)',
-        height: 64,
-        padding: 0,
+        height: 52,
+        paddingTop: 0,
     },
     headerLandscapeNoControls: {
         top: -1000,
@@ -160,10 +163,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         }),
     },
     buttonsLandscape: {
-        height: 128,
+        height: 110,
         position: 'absolute',
         backgroundColor: 'rgba(0,0,0,0.64)',
         bottom: 0,
+    },
+    buttonsLandscapeWithReactions: {
+        height: 174,
     },
     buttonsLandscapeNoControls: {
         bottom: 1000,
@@ -172,6 +178,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flexDirection: 'column',
         alignItems: 'center',
         flex: 1,
+    },
+    buttonLandscape: {
+        flex: 0,
     },
     mute: {
         flexDirection: 'column',
@@ -198,7 +207,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     otherButtons: {
         flexDirection: 'row',
         alignItems: 'center',
-        alignContent: 'space-between',
+    },
+    otherButtonsLandscape: {
+        justifyContent: 'center',
     },
     collapseIcon: {
         color: theme.sidebarText,
@@ -207,6 +218,12 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: 'rgba(255,255,255,0.12)',
         borderRadius: 4,
         overflow: 'hidden',
+    },
+    collapseIconLandscape: {
+        margin: 10,
+        padding: 0,
+        backgroundColor: 'transparent',
+        borderRadius: 0,
     },
     muteIcon: {
         color: theme.sidebarText,
@@ -229,6 +246,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         height: 68,
         margin: 10,
         overflow: 'hidden',
+    },
+    buttonIconLandscape: {
+        borderRadius: 26,
+        paddingTop: 14,
+        paddingRight: 16,
+        paddingBottom: 16,
+        paddingLeft: 14,
+        width: 52,
+        height: 52,
+        marginLeft: 12,
+        marginRight: 12,
     },
     hangUpIcon: {
         backgroundColor: Preferences.THEMES.denim.dndIndicator,
@@ -272,7 +300,6 @@ const CallScreen = ({
 
     const style = getStyleSheet(theme);
     const isLandscape = width > height;
-    const showControls = !isLandscape || showControlsInLandscape;
     const myParticipant = currentCall?.participants[currentCall.myUserId];
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
 
@@ -285,11 +312,24 @@ const CallScreen = ({
         mergeNavigationOptions('Call', {
             layout: {
                 componentBackgroundColor: 'black',
+                orientation: allOrientations,
             },
             topBar: {
                 visible: false,
             },
         });
+        if (Platform.OS === 'ios') {
+            NativeModules.SplitView.unlockOrientation();
+        }
+
+        return () => {
+            setScreensOrientation(isTablet);
+            if (Platform.OS === 'ios' && !isTablet) {
+                // We need both the navigation & the module
+                NativeModules.SplitView.lockPortrait();
+            }
+            freezeOtherScreens(false);
+        };
     }, []);
 
     const leaveCallHandler = useCallback(() => {
@@ -473,12 +513,14 @@ const CallScreen = ({
                     streamURL={currentCall.screenShareURL}
                     style={style.screenShareImage}
                 />
-                <FormattedText
-                    id={'mobile.calls_viewing_screen'}
-                    defaultMessage={'You are viewing {name}\'s screen'}
-                    values={{name: displayUsername(participantsDict[currentCall.screenOn].userModel, intl.locale, teammateNameDisplay)}}
-                    style={style.screenShareText}
-                />
+                {!isLandscape &&
+                    <FormattedText
+                        id={'mobile.calls_viewing_screen'}
+                        defaultMessage={'You are viewing {name}\'s screen'}
+                        values={{name: displayUsername(participantsDict[currentCall.screenOn].userModel, intl.locale, teammateNameDisplay)}}
+                        style={style.screenShareText}
+                    />
+                }
             </Pressable>
         );
     }
@@ -545,7 +587,11 @@ const CallScreen = ({
         <SafeAreaView style={style.wrapper}>
             <View style={style.container}>
                 <View
-                    style={[style.header, isLandscape && style.headerLandscape, !showControls && style.headerLandscapeNoControls]}
+                    style={[
+                        style.header,
+                        isLandscape && style.headerLandscape,
+                        isLandscape && !showControlsInLandscape && style.headerLandscapeNoControls,
+                    ]}
                 >
                     {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
                     {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
@@ -558,18 +604,27 @@ const CallScreen = ({
                         <CompassIcon
                             name='arrow-collapse'
                             size={24}
-                            style={style.collapseIcon}
+                            style={[style.collapseIcon, isLandscape && style.collapseIconLandscape]}
                         />
                     </Pressable>
                 </View>
                 {usersList}
                 {screenShareView}
                 {micPermissionsError && <PermissionErrorBar/>}
-                <EmojiList reactionStream={currentCall.reactionStream}/>
-                {showReactions && <ReactionBar raisedHand={myParticipant.raisedHand}/>}
+                {!isLandscape &&
+                    <EmojiList reactionStream={currentCall.reactionStream}/>
+                }
                 <View
-                    style={[style.buttons, isLandscape && style.buttonsLandscape, !showControls && style.buttonsLandscapeNoControls]}
+                    style={[
+                        style.buttons,
+                        isLandscape && style.buttonsLandscape,
+                        isLandscape && showReactions && style.buttonsLandscapeWithReactions,
+                        isLandscape && !showControlsInLandscape && style.buttonsLandscapeNoControls,
+                    ]}
                 >
+                    {showReactions &&
+                        <ReactionBar raisedHand={myParticipant.raisedHand}/>
+                    }
                     {!isLandscape &&
                         <Pressable
                             testID='mute-unmute'
@@ -584,17 +639,18 @@ const CallScreen = ({
                                 style={style.muteIcon}
                             />
                             {myParticipant.muted ? UnmuteText : MuteText}
-                        </Pressable>}
-                    <View style={style.otherButtons}>
+                        </Pressable>
+                    }
+                    <View style={[style.otherButtons, isLandscape && style.otherButtonsLandscape]}>
                         <Pressable
                             testID='leave'
-                            style={style.button}
+                            style={[style.button, isLandscape && style.buttonLandscape]}
                             onPress={leaveCallHandler}
                         >
                             <CompassIcon
                                 name='phone-hangup'
                                 size={24}
-                                style={{...style.buttonIcon, ...style.hangUpIcon}}
+                                style={[style.buttonIcon, isLandscape && style.buttonIconLandscape, style.hangUpIcon]}
                             />
                             <FormattedText
                                 id={'mobile.calls_leave'}
@@ -604,13 +660,18 @@ const CallScreen = ({
                         </Pressable>
                         <Pressable
                             testID={'toggle-speakerphone'}
-                            style={style.button}
+                            style={[style.button, isLandscape && style.buttonLandscape]}
                             onPress={toggleSpeakerPhone}
                         >
                             <CompassIcon
                                 name={'volume-high'}
                                 size={24}
-                                style={[style.buttonIcon, style.speakerphoneIcon, currentCall.speakerphoneOn && style.buttonOn]}
+                                style={[
+                                    style.buttonIcon,
+                                    isLandscape && style.buttonIconLandscape,
+                                    style.speakerphoneIcon,
+                                    currentCall.speakerphoneOn && style.buttonOn,
+                                ]}
                             />
                             <FormattedText
                                 id={'mobile.calls_speaker'}
@@ -619,13 +680,13 @@ const CallScreen = ({
                             />
                         </Pressable>
                         <Pressable
-                            style={style.button}
+                            style={[style.button, isLandscape && style.buttonLandscape]}
                             onPress={toggleReactions}
                         >
                             <CompassIcon
                                 name={'emoticon-happy-outline'}
                                 size={24}
-                                style={[style.buttonIcon, showReactions && style.buttonOn]}
+                                style={[style.buttonIcon, isLandscape && style.buttonIconLandscape, showReactions && style.buttonOn]}
                             />
                             <FormattedText
                                 id={'mobile.calls_react'}
@@ -634,13 +695,13 @@ const CallScreen = ({
                             />
                         </Pressable>
                         <Pressable
-                            style={style.button}
+                            style={[style.button, isLandscape && style.buttonLandscape]}
                             onPress={showOtherActions}
                         >
                             <CompassIcon
                                 name='dots-horizontal'
                                 size={24}
-                                style={style.buttonIcon}
+                                style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
                             />
                             <FormattedText
                                 id={'mobile.calls_more'}
@@ -651,16 +712,22 @@ const CallScreen = ({
                         {isLandscape &&
                             <Pressable
                                 testID='mute-unmute'
-                                style={style.button}
+                                style={[style.button, style.buttonLandscape]}
                                 onPress={muteUnmuteHandler}
                             >
                                 <CompassIcon
                                     name={myParticipant.muted ? 'microphone-off' : 'microphone'}
                                     size={24}
-                                    style={[style.buttonIcon, style.muteIconLandscape, myParticipant?.muted && style.muteIconLandscapeMuted]}
+                                    style={[
+                                        style.buttonIcon,
+                                        isLandscape && style.buttonIconLandscape,
+                                        style.muteIconLandscape,
+                                        myParticipant?.muted && style.muteIconLandscapeMuted,
+                                    ]}
                                 />
                                 {myParticipant.muted ? UnmuteText : MuteText}
-                            </Pressable>}
+                            </Pressable>
+                        }
                     </View>
                 </View>
             </View>

@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Text, TouchableOpacity, useWindowDimensions, View} from 'react-native';
 
+import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import {openAsBottomSheet} from '@screens/navigation';
@@ -23,6 +24,8 @@ type HeaderDisplayNameProps = {
     userIconOverride?: string;
     userId: string;
     usernameOverride?: string;
+    showCustomStatusEmoji: boolean;
+    customStatus: UserCustomStatus;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -30,11 +33,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         displayName: {
             color: theme.centerChannelColor,
             flexGrow: 1,
+            marginRight: 5,
             ...typography('Body', 200, 'SemiBold'),
+        },
+        displayNameCustomEmojiWidth: {
+            maxWidth: '90%',
         },
         displayNameContainer: {
             maxWidth: '60%',
-            marginRight: 5,
+            flexDirection: 'row',
+            alignItems: 'center',
         },
         displayNameContainerBotReplyWidth: {
             maxWidth: '50%',
@@ -45,7 +53,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         displayNameContainerLandscapeBotReplyWidth: {
             maxWidth: '70%',
         },
-
+        customStatusEmoji: {
+            color: theme.centerChannelColor,
+            marginRight: 4,
+        },
     };
 });
 
@@ -54,6 +65,7 @@ const HeaderDisplayName = ({
     location, rootPostAuthor,
     shouldRenderReplyButton, theme,
     userIconOverride, userId, usernameOverride,
+    showCustomStatusEmoji, customStatus,
 }: HeaderDisplayNameProps) => {
     const dimensions = useWindowDimensions();
     const intl = useIntl();
@@ -85,12 +97,17 @@ const HeaderDisplayName = ({
     };
 
     const displayNameWidth = calcNameWidth();
-    const displayNameStyle = [style.displayNameContainer, displayNameWidth];
+    const displayNameContainerStyle = [style.displayNameContainer, displayNameWidth];
+
+    const displayNameStyle = showCustomStatusEmoji ? style.displayNameCustomEmojiWidth : null;
 
     if (displayName) {
         return (
-            <View style={displayNameStyle}>
-                <TouchableOpacity onPress={onPress}>
+            <TouchableOpacity
+                style={displayNameContainerStyle}
+                onPress={onPress}
+            >
+                <View style={displayNameStyle}>
                     <Text
                         style={style.displayName}
                         ellipsizeMode={'tail'}
@@ -99,8 +116,14 @@ const HeaderDisplayName = ({
                     >
                         {displayName}
                     </Text>
-                </TouchableOpacity>
-            </View>
+                </View>
+                {showCustomStatusEmoji && (
+                    <CustomStatusEmoji
+                        customStatus={customStatus!}
+                        style={[style.customStatusEmoji]}
+                    />
+                )}
+            </TouchableOpacity>
         );
     }
 

@@ -162,6 +162,34 @@ index a34598c..b035a76 100644
          if (navigationActivity != null) {
              navigationActivity.onCatalystInstanceDestroy();
          }
+diff --git a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/MotionEvent.kt b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/MotionEvent.kt
+index a79e487..dba9b65 100644
+--- a/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/MotionEvent.kt
++++ b/node_modules/react-native-navigation/lib/android/app/src/main/java/com/reactnativenavigation/utils/MotionEvent.kt
+@@ -3,11 +3,20 @@ package com.reactnativenavigation.utils
+ import android.graphics.Rect
+ import android.view.MotionEvent
+ import android.view.View
++import android.view.ViewGroup
+ 
+ val hitRect = Rect()
+ 
+ fun MotionEvent.coordinatesInsideView(view: View?): Boolean {
+     view ?: return false
+-    view.getHitRect(hitRect)
+-    return hitRect.contains(x.toInt(), y.toInt())
++    val viewGroup = (view as ViewGroup).getChildAt(0) as ViewGroup
++    return if (viewGroup.childCount > 0) {
++        val content = viewGroup.getChildAt(0)
++
++        content.getHitRect(hitRect)
++
++        hitRect.contains(x.toInt(), y.toInt())
++    } else {
++        false
++    }
+ }
+\ No newline at end of file
 diff --git a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java b/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java
 index 035ec31..630b8d4 100644
 --- a/node_modules/react-native-navigation/lib/android/app/src/reactNative71/java/com/reactnativenavigation/react/ReactGateway.java

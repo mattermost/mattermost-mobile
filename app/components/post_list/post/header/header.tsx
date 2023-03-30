@@ -4,7 +4,6 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedTime from '@components/formatted_time';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {CHANNEL, THREAD} from '@constants/screens';
@@ -67,11 +66,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignSelf: 'center',
             marginLeft: 6,
         },
-        customStatusEmoji: {
-            color: theme.centerChannelColor,
-            marginRight: 4,
-            marginTop: 2,
-        },
     };
 });
 
@@ -89,11 +83,10 @@ const Header = (props: HeaderProps) => {
     const displayName = postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride);
     const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser.locale, teammateNameDisplay, true) : undefined;
     const customStatus = getUserCustomStatus(author);
-    const customStatusExpired = isCustomStatusExpired(author);
     const showCustomStatusEmoji = Boolean(
         isCustomStatusEnabled && displayName && customStatus &&
         !(isSystemPost || author?.isBot || isAutoResponse || isWebHook),
-    );
+    ) && !isCustomStatusExpired(author) && Boolean(customStatus?.emoji);
 
     return (
         <>
@@ -110,13 +103,9 @@ const Header = (props: HeaderProps) => {
                         userIconOverride={post.props?.override_icon_url}
                         userId={post.userId}
                         usernameOverride={post.props?.override_username}
+                        showCustomStatusEmoji={showCustomStatusEmoji}
+                        customStatus={customStatus!}
                     />
-                    {showCustomStatusEmoji && !customStatusExpired && Boolean(customStatus?.emoji) && (
-                        <CustomStatusEmoji
-                            customStatus={customStatus!}
-                            style={style.customStatusEmoji}
-                        />
-                    )}
                     {(!isSystemPost || isAutoResponse) &&
                     <HeaderTag
                         isAutoResponder={isAutoResponse}
