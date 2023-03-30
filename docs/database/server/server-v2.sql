@@ -1,8 +1,8 @@
 ﻿-- Exported from QuickDBD: https://www.quickdatabasediagrams.com/
--- Link to schema: https://app.quickdatabasediagrams.com/#/d/EZ0IyA
+-- Link to schema: https://app.quickdatabasediagrams.com/#/d/6OtugI
 -- NOTE! If you have used non-SQL datatypes in your design, you will have to change these here.
 
--- Server Database - Schema Version 1
+-- Server Database - Schema Version 2
 -- Please bump the version by 1, any time the schema changes.
 -- Also, include the migration plan under app/database/migration/server,
 -- update all models, relationships and types.
@@ -66,6 +66,7 @@ CREATE TABLE [ChannelInfo] (
     [header] string  NOT NULL ,
     [member_count] number  NOT NULL ,
     [pinned_post_count] number  NOT NULL ,
+    [files_count] number  NOT NULL ,
     [purpose] string  NOT NULL ,
     CONSTRAINT [PK_ChannelInfo] PRIMARY KEY CLUSTERED (
         [id] ASC
@@ -77,6 +78,7 @@ CREATE TABLE [ChannelMembership] (
     [id] string  NOT NULL ,
     [channel_id] string  NOT NULL ,
     [user_id] string  NOT NULL ,
+    [scheme_admin] bool  NOT NULL ,
     CONSTRAINT [PK_ChannelMembership] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
@@ -332,6 +334,7 @@ CREATE TABLE [TeamMembership] (
     [id] string  NOT NULL ,
     [team_id] string  NOT NULL ,
     [user_id] string  NOT NULL ,
+    [scheme_admin] bool  NOT NULL ,
     CONSTRAINT [PK_TeamMembership] PRIMARY KEY CLUSTERED (
         [id] ASC
     )
@@ -577,6 +580,11 @@ ALTER TABLE [ThreadsInTeam] WITH CHECK ADD CONSTRAINT [FK_ThreadsInTeam_team_id]
 REFERENCES [Team] ([id])
 
 ALTER TABLE [ThreadsInTeam] CHECK CONSTRAINT [FK_ThreadsInTeam_team_id]
+
+ALTER TABLE [ThreadsInTeam] WITH CHECK ADD CONSTRAINT [FK_ThreadsInTeam_thread_id] FOREIGN KEY([thread_id])
+REFERENCES [Thread] ([id])
+
+ALTER TABLE [ThreadsInTeam] CHECK CONSTRAINT [FK_ThreadsInTeam_thread_id]
 
 ALTER TABLE [ThreadParticipant] WITH CHECK ADD CONSTRAINT [FK_ThreadParticipant_thread_id] FOREIGN KEY([thread_id])
 REFERENCES [Thread] ([id])
