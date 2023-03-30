@@ -226,12 +226,14 @@ describe('*** Test schema for SERVER database ***', () => {
                         files: {name: 'files', type: 'string'},
                         message: {name: 'message', type: 'string'},
                         root_id: {name: 'root_id', type: 'string', isIndexed: true},
+                        metadata: {name: 'metadata', type: 'string', isOptional: true},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'files', type: 'string'},
                         {name: 'message', type: 'string'},
                         {name: 'root_id', type: 'string', isIndexed: true},
+                        {name: 'metadata', type: 'string', isOptional: true},
                     ],
                 },
                 [FILE]: {
