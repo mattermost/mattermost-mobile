@@ -30,12 +30,12 @@ class ChannelScreen {
         muteQuickAction: 'channel.quick_actions.mute.action',
         unmuteQuickAction: 'channel.quick_actions.unmute.action',
         setHeaderQuickAction: 'channel.quick_actions.set_header.action',
-        addPeopleQuickAction: 'channel.quick_actions.add_people.action',
+        addMembersQuickAction: 'channel.quick_actions.add_members.action',
         copyChannelLinkQuickAction: 'channel.quick_actions.copy_channel_link.action',
         channelInfoQuickAction: 'channel.quick_actions.channel_info.action',
         leaveChannelQuickAction: 'channel.quick_actions.leave_channel.action',
         introDisplayName: 'channel_post_list.intro.display_name',
-        introAddPeopleAction: 'channel_post_list.intro_options.add_people.action',
+        introAddMembersAction: 'channel_post_list.intro_options.add_members.action',
         introSetHeaderAction: 'channel_post_list.intro_options.set_header.action',
         introFavoriteAction: 'channel_post_list.intro_options.favorite.action',
         introUnfavoriteAction: 'channel_post_list.intro_options.unfavorite.action',
@@ -50,12 +50,12 @@ class ChannelScreen {
     muteQuickAction = element(by.id(this.testID.muteQuickAction));
     unmuteQuickAction = element(by.id(this.testID.unmuteQuickAction));
     setHeaderQuickAction = element(by.id(this.testID.setHeaderQuickAction));
-    addPeopleQuickAction = element(by.id(this.testID.addPeopleQuickAction));
+    addMembersQuickAction = element(by.id(this.testID.addMembersQuickAction));
     copyChannelLinkQuickAction = element(by.id(this.testID.copyChannelLinkQuickAction));
     channelInfoQuickAction = element(by.id(this.testID.channelInfoQuickAction));
     leaveChannelQuickAction = element(by.id(this.testID.leaveChannelQuickAction));
     introDisplayName = element(by.id(this.testID.introDisplayName));
-    introAddPeopleAction = element(by.id(this.testID.introAddPeopleAction));
+    introAddMembersAction = element(by.id(this.testID.introAddMembersAction));
     introSetHeaderAction = element(by.id(this.testID.introSetHeaderAction));
     introFavoriteAction = element(by.id(this.testID.introFavoriteAction));
     introUnfavoriteAction = element(by.id(this.testID.introUnfavoriteAction));
