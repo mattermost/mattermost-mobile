@@ -169,7 +169,6 @@ export default function SelectedUsers({
     const [isVisible, setIsVisible] = useState(false);
     const numberSelectedIds = Object.keys(selectedIds).length;
     const bottomSpace = (dimensions.height - containerHeight - modalPosition);
-    const bottomPaddingBottom = isTablet ? CHIP_HEIGHT_WITH_MARGIN : 0;
 
     const users = useMemo(() => {
         const u = [];
@@ -193,14 +192,14 @@ export default function SelectedUsers({
 
     const totalPanelHeight = useDerivedValue(() => (
         isVisible ?
-            usersChipsHeight.value + SCROLL_MARGIN_BOTTOM + SCROLL_MARGIN_TOP + BUTTON_HEIGHT + bottomPaddingBottom :
+            usersChipsHeight.value + SCROLL_MARGIN_BOTTOM + SCROLL_MARGIN_TOP + BUTTON_HEIGHT :
             0
-    ), [isVisible, isTablet, bottomPaddingBottom]);
+    ), [isVisible]);
 
     const marginBottom = useMemo(() => {
         let margin = keyboard.height && Platform.OS === 'ios' ? keyboard.height - insets.bottom : 0;
         if (isTablet) {
-            margin = keyboard.height ? (keyboard.height - bottomSpace - insets.bottom) : 0;
+            margin = keyboard.height ? Math.max((keyboard.height - bottomSpace - insets.bottom), 0) : 0;
         }
         return margin;
     }, [keyboard, isTablet, insets.bottom, bottomSpace]);
@@ -231,7 +230,7 @@ export default function SelectedUsers({
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         usersChipsHeight.value = Math.min(
-            USERS_CHIPS_MAX_HEIGHT + bottomPaddingBottom,
+            USERS_CHIPS_MAX_HEIGHT,
             e.nativeEvent.layout.height,
         );
     }, []);
@@ -258,10 +257,10 @@ export default function SelectedUsers({
     }, [showToast, keyboard]);
 
     const animatedViewStyle = useAnimatedStyle(() => ({
-        height: withTiming(totalPanelHeight.value + insets.bottom, {duration: 250}),
+        height: withTiming(totalPanelHeight.value, {duration: 250}),
         borderWidth: isVisible ? 1 : 0,
-        maxHeight: isVisible ? PANEL_MAX_HEIGHT + BUTTON_HEIGHT + bottomPaddingBottom + insets.bottom : 0,
-    }), [isVisible, insets, bottomPaddingBottom]);
+        maxHeight: isVisible ? PANEL_MAX_HEIGHT + BUTTON_HEIGHT : 0,
+    }), [isVisible]);
 
     const animatedButtonStyle = useAnimatedStyle(() => ({
         opacity: withTiming(isVisible ? 1 : 0, {duration: isVisible ? 500 : 100}),
