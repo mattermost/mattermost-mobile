@@ -110,7 +110,7 @@ export function useKeyboardHeight(keyboardTracker?: React.RefObject<KeyboardTrac
     return height;
 }
 
-export function useModalPosition(viewRef: RefObject<View>, deps?: React.DependencyList) {
+export function useModalPosition(viewRef: RefObject<View>, deps: React.DependencyList = []) {
     const [modalPosition, setModalPosition] = useState(0);
     const isTablet = useIsTablet();
     const height = useKeyboardHeight();
@@ -123,7 +123,7 @@ export function useModalPosition(viewRef: RefObject<View>, deps?: React.Dependen
                 }
             });
         }
-    }, [...(deps || []), isTablet, height]);
+    }, [...deps, isTablet, height]);
 
     return modalPosition;
 }
