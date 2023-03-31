@@ -46,7 +46,7 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme}: ContentProps
                     isReplyPost={isReplyPost}
                     layoutWidth={layoutWidth}
                     location={location}
-                    metadata={post.metadata!}
+                    metadata={post.metadata}
                     postId={post.id}
                     theme={theme}
                 />
@@ -57,7 +57,7 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme}: ContentProps
                     <YouTube
                         isReplyPost={isReplyPost}
                         layoutWidth={layoutWidth}
-                        metadata={post.metadata!}
+                        metadata={post.metadata}
                     />
                 );
             }
@@ -67,7 +67,7 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme}: ContentProps
                     isReplyPost={isReplyPost}
                     layoutWidth={layoutWidth}
                     location={location}
-                    metadata={post.metadata!}
+                    metadata={post.metadata}
                     postId={post.id}
                     removeLinkPreview={post.props?.remove_link_preview === 'true'}
                     theme={theme}
@@ -81,7 +81,7 @@ const Content = ({isReplyPost, layoutWidth, location, post, theme}: ContentProps
                         channelId={post.channelId}
                         layoutWidth={layoutWidth}
                         location={location}
-                        metadata={post.metadata!}
+                        metadata={post.metadata}
                         postId={post.id}
                         theme={theme}
                     />

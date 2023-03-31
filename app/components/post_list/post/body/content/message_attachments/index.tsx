@@ -11,7 +11,7 @@ type Props = {
     channelId: string;
     layoutWidth?: number;
     location: string;
-    metadata?: PostMetadata;
+    metadata?: PostMetadata | undefined | null;
     postId: string;
     theme: Theme;
 }
