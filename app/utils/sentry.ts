@@ -60,7 +60,7 @@ export function initializeSentry() {
             }),
         ],
         beforeSend: (event: Event) => {
-            if (isBetaApp || eventFilter.includes(event?.level)) {
+            if (isBetaApp || (event?.level && eventFilter.includes(event.level))) {
                 return event;
             }
 
