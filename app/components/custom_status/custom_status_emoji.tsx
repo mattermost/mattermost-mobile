@@ -5,12 +5,13 @@ import React from 'react';
 
 import Emoji from '@components/emoji';
 
-import type {StyleProp, TextStyle} from 'react-native';
+import type {EmojiCommonStyle} from '@typings/components/emoji';
+import type {StyleProp} from 'react-native';
 
 interface ComponentProps {
     customStatus: UserCustomStatus;
     emojiSize?: number;
-    style?: StyleProp<TextStyle>;
+    style?: StyleProp<EmojiCommonStyle>;
 }
 
 const CustomStatusEmoji = ({customStatus, emojiSize = 16, style}: ComponentProps) => {
@@ -19,7 +20,7 @@ const CustomStatusEmoji = ({customStatus, emojiSize = 16, style}: ComponentProps
             <Emoji
                 size={emojiSize}
                 emojiName={customStatus.emoji}
-                textStyle={style}
+                commonStyle={style}
             />
         );
     }

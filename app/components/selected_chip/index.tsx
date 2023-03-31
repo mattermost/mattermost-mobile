@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Text, TouchableOpacity, View} from 'react-native';
+import {Text, TouchableOpacity, useWindowDimensions} from 'react-native';
 import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
@@ -35,11 +35,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             marginRight: 8,
             paddingHorizontal: 7,
         },
-        extraContent: {
-            flexDirection: 'row',
-            alignItems: 'center',
-            color: theme.centerChannelColor,
-        },
         text: {
             marginLeft: 8,
             color: theme.centerChannelColor,
@@ -61,6 +56,7 @@ export default function SelectedChip({
 }: SelectedChipProps) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
+    const dimensions = useWindowDimensions();
 
     const onPress = useCallback(() => {
         onRemove(id);
@@ -73,16 +69,13 @@ export default function SelectedChip({
             style={style.container}
             testID={testID}
         >
-            {extra && (
-                <View style={style.extraContent}>
-                    {extra}
-                </View>
-            )}
+            {extra}
             <Text
-                style={style.text}
+                style={[style.text, {maxWidth: dimensions.width * 0.70}]}
+                numberOfLines={1}
                 testID={`${testID}.display_name`}
             >
-                {text}
+                {text.replace(' ', '\xa0')}
             </Text>
             <TouchableOpacity
                 style={style.remove}

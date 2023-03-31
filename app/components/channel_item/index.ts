@@ -84,11 +84,6 @@ const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActi
             distinctUntilChanged(),
         ) : of$(0);
 
-    const hasMember = myChannel.pipe(
-        switchMap((mc) => of$(Boolean(mc))),
-        distinctUntilChanged(),
-    );
-
     const hasCall = observeChannelsWithCalls(serverUrl || '').pipe(
         switchMap((calls) => of$(Boolean(calls[channel.id]))),
         distinctUntilChanged(),
@@ -104,7 +99,6 @@ const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActi
         isUnread,
         mentionsCount,
         teamDisplayName,
-        hasMember,
         hasCall,
     };
 });

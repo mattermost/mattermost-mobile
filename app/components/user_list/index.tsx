@@ -114,7 +114,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         list: {
             backgroundColor: theme.centerChannelBg,
-            paddingHorizontal: 16,
             flex: 1,
         },
         container: {

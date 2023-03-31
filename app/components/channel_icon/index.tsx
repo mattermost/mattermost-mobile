@@ -125,12 +125,28 @@ const ChannelIcon = ({
         mutedStyle = styles.muted;
     }
 
+    const commonStyles = [
+        style,
+        mutedStyle,
+    ];
+
+    const commonIconStyles = [
+        styles.icon,
+        unreadIcon,
+        activeIcon,
+        commonStyles,
+        {fontSize: size},
+    ];
+
     let icon;
     if (isArchived) {
         icon = (
             <CompassIcon
                 name='archive-outline'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 1}]}
+                style={[
+                    commonIconStyles,
+                    {left: 1},
+                ]}
                 testID={`${testID}.archive`}
             />
         );
@@ -138,7 +154,10 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name='pencil-outline'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 2}]}
+                style={[
+                    commonIconStyles,
+                    {left: 2},
+                ]}
                 testID={`${testID}.draft`}
             />
         );
@@ -148,7 +167,10 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name={iconName}
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
+                style={[
+                    commonIconStyles,
+                    {left: 0.5},
+                ]}
                 testID={sharedTestID}
             />
         );
@@ -156,7 +178,10 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name='globe'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 1}]}
+                style={[
+                    commonIconStyles,
+                    {left: 1},
+                ]}
                 testID={`${testID}.public`}
             />
         );
@@ -164,7 +189,10 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name='lock-outline'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
+                style={[
+                    commonIconStyles,
+                    {left: 0.5},
+                ]}
                 testID={`${testID}.private`}
             />
         );
@@ -172,7 +200,7 @@ const ChannelIcon = ({
         const fontSize = size - 12;
         icon = (
             <View
-                style={[styles.groupBox, unreadGroupBox, activeGroupBox, {width: size, height: size}]}
+                style={[styles.groupBox, unreadGroupBox, activeGroupBox, commonStyles, {width: size, height: size}]}
             >
                 <Text
                     style={[styles.group, unreadGroup, activeGroup, {fontSize}]}
@@ -187,15 +215,13 @@ const ChannelIcon = ({
             <DmAvatar
                 channelName={name}
                 isOnCenterBg={isOnCenterBg}
+                style={commonStyles}
+                size={size}
             />
         );
     }
 
-    return (
-        <View style={[styles.container, {width: size, height: size}, style, mutedStyle]}>
-            {icon}
-        </View>
-    );
+    return (<>{icon}</>);
 };
 
 export default React.memo(ChannelIcon);

@@ -49,6 +49,7 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChan
                 testID={`channel_list.category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_item`}
                 shouldHighlightActive={true}
                 shouldHighlightState={true}
+                isOnHome={true}
             />
         );
     }, [onChannelSwitch]);
@@ -79,7 +80,6 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChan
 
     const listStyle = useMemo(() => ({
         height: category.collapsed ? unreadHeight : height,
-        paddingHorizontal: 20,
     }), [category.collapsed, height, unreadHeight]);
 
     return (

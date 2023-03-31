@@ -189,6 +189,7 @@ function UserListRow({
                 rightDecorator={manageMode ? manageModeIcon : icon}
                 disabled={!(selectable || selected || !disabled)}
                 viewRef={viewRef}
+                padding={20}
             />
             {showTutorial &&
             <TutorialHighlight

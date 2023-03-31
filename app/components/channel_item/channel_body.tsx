@@ -37,6 +37,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
             ...typography('Body', 200),
             color: changeOpacity(theme.centerChannelColor, 0.64),
         },
+        customStatus: {
+            marginLeft: 4,
+        },
     };
 });
 export const ChannelBody = ({
@@ -58,7 +61,7 @@ export const ChannelBody = ({
             style={[textStyles, styles.flex]}
             testID={`${testId}.display_name`}
         >
-            {displayName}
+            {displayName.replace(' ', '\xa0')}
             {Boolean(channelName) && (
                 <Text style={styles.channelName}>
                     {` ~${channelName}`}
@@ -102,15 +105,16 @@ export const ChannelBody = ({
     }
 
     if (teammateId) {
-        const badge = (
+        const customStatus = (
             <CustomStatus
                 userId={teammateId}
+                style={styles.customStatus}
             />
         );
         return (
             <>
                 {channelText}
-                {badge}
+                {customStatus}
             </>
         );
     }

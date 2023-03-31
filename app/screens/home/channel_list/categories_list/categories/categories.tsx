@@ -28,8 +28,6 @@ type Props = {
 const styles = StyleSheet.create({
     mainList: {
         flex: 1,
-        marginLeft: -18,
-        marginRight: -20,
     },
     loadingView: {
         alignItems: 'center',
@@ -40,7 +38,11 @@ const styles = StyleSheet.create({
 
 const extractKey = (item: CategoryModel | 'UNREADS') => (item === 'UNREADS' ? 'UNREADS' : item.id);
 
-const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
+const Categories = ({
+    categories,
+    onlyUnreads,
+    unreadsOnTop,
+}: Props) => {
     const intl = useIntl();
     const listRef = useRef<FlatList>(null);
     const serverUrl = useServerUrl();

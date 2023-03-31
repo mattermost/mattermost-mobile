@@ -8,10 +8,12 @@ import {switchToGlobalThreads} from '@actions/local/thread';
 import Badge from '@components/badge';
 import {
     getStyleSheet as getChannelItemStyleSheet,
+    ROW_HEIGHT,
     textStyle as channelItemTextStyle,
 } from '@components/channel_item/channel_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -41,13 +43,24 @@ type Props = {
     onCenterBg?: boolean;
     onlyUnreads: boolean;
     onPress?: () => void;
+    shouldHighlighActive?: boolean;
     unreadsAndMentions: {
         unreads: boolean;
         mentions: number;
     };
+    isOnHome?: boolean;
 };
 
-const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, onCenterBg, onlyUnreads, onPress, unreadsAndMentions}: Props) => {
+const ThreadsButton = ({
+    currentChannelId,
+    groupUnreadsSeparately,
+    onCenterBg,
+    onlyUnreads,
+    onPress,
+    unreadsAndMentions,
+    shouldHighlighActive = false,
+    isOnHome = false,
+}: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
@@ -64,12 +77,17 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, onCenterBg, on
     }), [onPress, serverUrl]);
 
     const {unreads, mentions} = unreadsAndMentions;
-    const isActive = isTablet && !currentChannelId;
+    const isActive = isTablet && shouldHighlighActive && !currentChannelId;
 
     const [containerStyle, iconStyle, textStyle, badgeStyle] = useMemo(() => {
         const container = [
             styles.container,
+            isOnHome && HOME_PADDING,
             isActive && styles.activeItem,
+            isActive && isOnHome && {
+                paddingLeft: HOME_PADDING.paddingLeft - styles.activeItem.borderLeftWidth,
+            },
+            {minHeight: ROW_HEIGHT},
         ];
 
         const icon = [
@@ -93,7 +111,7 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, onCenterBg, on
         ];
 
         return [container, icon, text, badge];
-    }, [customStyles, isActive, onCenterBg, styles, unreads]);
+    }, [customStyles, isActive, onCenterBg, styles, unreads, isOnHome]);
 
     if (groupUnreadsSeparately && (onlyUnreads && !isActive && !unreads && !mentions)) {
         return null;
@@ -104,23 +122,21 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, onCenterBg, on
             onPress={handlePress}
             testID='channel_list.threads.button'
         >
-            <View>
-                <View style={containerStyle}>
-                    <CompassIcon
-                        name='message-text-outline'
-                        style={iconStyle}
-                    />
-                    <FormattedText
-                        id='threads'
-                        defaultMessage='Threads'
-                        style={textStyle}
-                    />
-                    <Badge
-                        value={mentions}
-                        style={badgeStyle}
-                        visible={mentions > 0}
-                    />
-                </View>
+            <View style={containerStyle}>
+                <CompassIcon
+                    name='message-text-outline'
+                    style={iconStyle}
+                />
+                <FormattedText
+                    id='threads'
+                    defaultMessage='Threads'
+                    style={textStyle}
+                />
+                <Badge
+                    value={mentions}
+                    style={badgeStyle}
+                    visible={mentions > 0}
+                />
             </View>
         </TouchableOpacity>
     );

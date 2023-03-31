@@ -9,6 +9,7 @@ import Badge from '@components/badge';
 import ChannelIcon from '@components/channel_icon';
 import CompassIcon from '@components/compass_icon';
 import {General} from '@constants';
+import {HOME_PADDING} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {isDMorGM} from '@utils/channel';
@@ -30,12 +31,12 @@ type Props = {
     isUnread: boolean;
     mentionsCount: number;
     onPress: (channel: ChannelModel | Channel) => void;
-    hasMember: boolean;
     teamDisplayName?: string;
     testID?: string;
     hasCall: boolean;
     isOnCenterBg?: boolean;
     showChannelName?: boolean;
+    isOnHome?: boolean;
 }
 
 export const ROW_HEIGHT = 40;
@@ -66,6 +67,7 @@ export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     badge: {
         borderColor: theme.sidebarBg,
+        marginLeft: 4,
 
         //Overwrite default badge styles
         position: undefined,
@@ -109,7 +111,6 @@ const ChannelItem = ({
     isActive,
     isMuted,
     membersCount,
-    hasMember,
     isUnread,
     mentionsCount,
     onPress,
@@ -118,6 +119,7 @@ const ChannelItem = ({
     hasCall,
     isOnCenterBg = false,
     showChannelName = false,
+    isOnHome = false,
 }: Props) => {
     const {formatMessage} = useIntl();
     const theme = useTheme();
@@ -128,6 +130,7 @@ const ChannelItem = ({
 
     // Make it bolded if it has unreads or mentions
     const isBolded = isUnread || mentionsCount > 0;
+    const showActive = isActive && isTablet;
 
     const teammateId = (channel.type === General.DM_CHANNEL) ? getUserIdFromChannelName(currentUserId, channel.name) : undefined;
     const isOwnDirectMessage = (channel.type === General.DM_CHANNEL) && currentUserId === teammateId;
@@ -152,21 +155,21 @@ const ChannelItem = ({
         isBolded && !isMuted ? textStyle.bold : textStyle.regular,
         styles.text,
         isBolded && styles.highlight,
-        isActive && isTablet ? styles.textActive : null,
+        showActive ? styles.textActive : null,
         isOnCenterBg ? styles.textOnCenterBg : null,
         isMuted && styles.muted,
         isMuted && isOnCenterBg && styles.mutedOnCenterBg,
-    ], [isBolded, styles, isMuted, isActive, isTablet, isOnCenterBg]);
+    ], [isBolded, styles, isMuted, showActive, isOnCenterBg]);
 
     const containerStyle = useMemo(() => [
         styles.container,
-        isActive && isTablet && styles.activeItem,
+        isOnHome && HOME_PADDING,
+        showActive && styles.activeItem,
+        showActive && isOnHome && {
+            paddingLeft: HOME_PADDING.paddingLeft - styles.activeItem.borderLeftWidth,
+        },
         {minHeight: height},
-    ], [height, isActive, isTablet, styles]);
-
-    if (!hasMember) {
-        return null;
-    }
+    ], [height, showActive, styles, isOnHome]);
 
     return (
         <TouchableOpacity onPress={handleOnPress}>

@@ -29,6 +29,7 @@ type AtMentionItemProps = {
     onUserLongPress?: (user: UserProfile | UserModel) => void;
     disabled?: boolean;
     viewRef?: React.LegacyRef<View>;
+    padding?: number;
 }
 
 const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
@@ -81,6 +82,7 @@ const UserItem = ({
     onUserLongPress,
     disabled = false,
     viewRef,
+    padding,
 }: AtMentionItemProps) => {
     const theme = useTheme();
     const style = getThemedStyles(theme);
@@ -109,9 +111,10 @@ const UserItem = ({
             nonThemedStyles.row,
             {
                 opacity: disabled ? 0.32 : 1,
+                paddingHorizontal: padding || undefined,
             },
         ];
-    }, [disabled]);
+    }, [disabled, padding]);
 
     const onPress = useCallback(() => {
         onUserPress?.(user);

@@ -9,10 +9,13 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {StyleProp, ViewStyle} from 'react-native';
 
 type Props = {
     author?: UserModel;
     isOnCenterBg?: boolean;
+    style: StyleProp<ViewStyle>;
+    size: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -32,15 +35,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const DmAvatar = ({author, isOnCenterBg}: Props) => {
+const DmAvatar = ({author, isOnCenterBg, style, size}: Props) => {
     const theme = useTheme();
-    const style = getStyleSheet(theme);
+    const styles = getStyleSheet(theme);
 
     if (author?.deleteAt) {
         return (
             <CompassIcon
                 name='archive-outline'
-                style={[style.icon, isOnCenterBg && style.iconOnCenterBg]}
+                style={[styles.icon, style, isOnCenterBg && styles.iconOnCenterBg]}
                 size={24}
             />
         );
@@ -49,10 +52,11 @@ const DmAvatar = ({author, isOnCenterBg}: Props) => {
     return (
         <ProfilePicture
             author={author}
-            size={24}
+            size={size}
             showStatus={true}
             statusSize={12}
-            statusStyle={[style.status, isOnCenterBg && style.statusOnCenterBg]}
+            statusStyle={[styles.status, isOnCenterBg && styles.statusOnCenterBg]}
+            containerStyle={style}
         />
     );
 };
