@@ -10,18 +10,21 @@ import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
+import Filter, {
+    DIVIDERS_HEIGHT,
+    FILTER_ITEM_HEIGHT,
+    FilterData,
+    NUMBER_FILTER_ITEMS,
+} from '@screens/home/search/results/filter';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, NUMBER_FILTER_ITEMS} from './filter';
-
 type Props = {
     onFilterChanged: (filter: FileFilter) => void;
     selectedFilter: FileFilter;
-    screenTitle?: string;
 }
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
@@ -52,18 +55,19 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
 const Header = ({
     onFilterChanged,
     selectedFilter,
-    screenTitle,
 }: Props) => {
     const theme = useTheme();
     const styles = getStyleFromTheme(theme);
     const intl = useIntl();
     const {bottom} = useSafeAreaInsets();
     const isTablet = useIsTablet();
-
-    const messagesText = intl.formatMessage({id: 'screen.channel_files.header.recent_files', defaultMessage: 'Recent Files'});
-    const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
-
     const hasFilters = selectedFilter !== FileFilters.ALL;
+
+    let messagesText = intl.formatMessage({id: 'screen.channel_files.header.recent_files', defaultMessage: 'Recent Files'});
+    if (hasFilters) {
+        messagesText = intl.formatMessage({id: FilterData[selectedFilter].id, defaultMessage: FilterData[selectedFilter].defaultMessage});
+    }
+    const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
 
     const snapPoints = useMemo(() => {
         return [
@@ -100,7 +104,7 @@ const Header = ({
                 style={styles.title}
                 testID='channel_files.title'
             >
-                {screenTitle || messagesText }
+                {messagesText}
             </Text>
             <View>
                 <CompassIcon

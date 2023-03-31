@@ -96,18 +96,17 @@ function ChannelFiles({
     const orderedFileInfos = useMemo(() => getOrderedFileInfos(filesForGallery), [fileInfos]);
     const fileInfosIndexes = useMemo(() => getFileInfosIndexes(orderedFileInfos), [fileInfos]);
     const orderedGalleryItems = useMemo(() => getOrderedGalleryItems(orderedFileInfos), [fileInfos]);
-    const screenTitle = filter !== FileFilters.ALL ? filter : '';
 
-    const handleSearch = useCallback(async (searchTerm?: string) => {
-        const searchParams = getSearchParams(channelId, searchTerm, filter);
+    const handleSearch = useCallback(async (ftr: FileFilter) => {
+        const searchParams = getSearchParams(channelId, '', ftr);
         const {files} = await searchFiles(serverUrl, teamId, searchParams);
         setLoading(false);
         setFileInfos(files?.length ? files : emptyFileResults);
     }, [filter]);
 
     useEffect(() => {
-        handleSearch();
-    }, [teamId]);
+        handleSearch(filter);
+    }, [teamId, filter]);
 
     const onPreviewPress = useCallback(preventDoubleTap((idx: number) => {
         openGalleryAtIndex(galleryIdentifier, idx, orderedGalleryItems);
@@ -121,7 +120,6 @@ function ChannelFiles({
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);
         setFilter(filterValue);
-        handleSearch();
     }, []);
 
     const onOptionsPress = useCallback((fInfo: FileInfo) => {
@@ -187,7 +185,6 @@ function ChannelFiles({
                     <Header
                         onFilterChanged={handleFilterChange}
                         selectedFilter={filter}
-                        screenTitle={screenTitle}
                     />
                     <FlatList
                         contentContainerStyle={orderedFileInfos.length ? styles.list : [styles.empty]}
