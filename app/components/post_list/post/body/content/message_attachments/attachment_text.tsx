@@ -17,7 +17,7 @@ type Props = {
     channelId: string;
     hasThumbnail?: boolean;
     location: string;
-    metadata?: PostMetadata;
+    metadata?: PostMetadata | null;
     textStyles?: MarkdownTextStyles;
     theme: Theme;
     value?: string;
