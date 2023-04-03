@@ -1005,5 +1005,9 @@
     "channel_notification_preferences.notification.all": "Все новые сообщения",
     "channel_notification_preferences.muted_title": "На этом канале уведомления отключены",
     "channel_notification_preferences.muted_content": "Вы можете изменить настройки уведомлений, но вы не будете получать уведомления, пока вы не включите их для канала обратно.",
-    "channel_notification_preferences.default": "(по умолчанию)"
+    "channel_notification_preferences.default": "(по умолчанию)",
+    "mobile.channel_add_members.error": "Произошла ошибка, и мы не смогли добавить этих пользователей в канал.",
+    "intro.add_members": "Добавить участников",
+    "channel_info.add_members": "Добавить участников",
+    "channel_add_members.add_members.button": "Добавить участников"
 }
