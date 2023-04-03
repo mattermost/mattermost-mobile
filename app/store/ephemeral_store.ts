@@ -21,6 +21,8 @@ class EphemeralStore {
     private archivingChannels = new Set<string>();
     private convertingChannels = new Set<string>();
     private switchingToChannel = new Set<string>();
+    private acknowledgingPost = new Set<string>();
+    private unacknowledgingPost = new Set<string>();
     private currentThreadId = '';
     private notificationTapped = false;
     private enablingCRT = false;
@@ -151,6 +153,30 @@ class EphemeralStore {
 
     wasNotificationTapped = () => {
         return this.notificationTapped;
+    };
+
+    setAcknowledgingPost = (postId: string) => {
+        this.acknowledgingPost.add(postId);
+    };
+
+    unsetAcknowledgingPost = (postId: string) => {
+        this.acknowledgingPost.delete(postId);
+    };
+
+    isAcknowledgingPost = (postId: string) => {
+        return this.acknowledgingPost.has(postId);
+    };
+
+    setUnacknowledgingPost = (postId: string) => {
+        this.unacknowledgingPost.add(postId);
+    };
+
+    unsetUnacknowledgingPost = (postId: string) => {
+        this.unacknowledgingPost.delete(postId);
+    };
+
+    isUnacknowledgingPost = (postId: string) => {
+        return this.unacknowledgingPost.has(postId);
     };
 }
 

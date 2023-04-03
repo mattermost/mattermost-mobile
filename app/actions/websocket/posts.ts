@@ -16,6 +16,7 @@ import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
@@ -306,6 +307,15 @@ export async function handlePostAcknowledgementAdded(serverUrl: string, msg: Web
     try {
         const acknowledgement = JSON.parse(msg.data.acknowledgement);
         const {user_id, post_id, acknowledged_at} = acknowledgement;
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return;
+        }
+        const currentUserId = getCurrentUserId(database);
+        if (EphemeralStore.isAcknowledgingPost(post_id) && currentUserId === user_id) {
+            return;
+        }
+
         addPostAcknowledgement(serverUrl, post_id, user_id, acknowledged_at);
         fetchMissingProfilesByIds(serverUrl, [user_id]);
     } catch (error) {
@@ -317,6 +327,14 @@ export async function handlePostAcknowledgementRemoved(serverUrl: string, msg: W
     try {
         const acknowledgement = JSON.parse(msg.data.acknowledgement);
         const {user_id, post_id} = acknowledgement;
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return;
+        }
+        const currentUserId = getCurrentUserId(database);
+        if (EphemeralStore.isUnacknowledgingPost(post_id) && currentUserId === user_id) {
+            return;
+        }
         await removePostAcknowledgement(serverUrl, post_id, user_id);
     } catch (error) {
         // Do nothing

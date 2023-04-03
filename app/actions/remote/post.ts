@@ -7,7 +7,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
-import {removePost, storePostsForChannel} from '@actions/local/post';
+import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
@@ -23,6 +23,7 @@ import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {isServerError} from '@utils/errors';
@@ -1126,15 +1127,17 @@ export async function acknowledgePost(serverUrl: string, postId: string) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
+        EphemeralStore.setAcknowledgingPost(postId);
 
         const userId = await getCurrentUserId(database);
-        const data = await client.acknowledgePost(postId, userId);
-        return {
-            data,
-        };
+        const {acknowledged_at: acknowledgedAt} = await client.acknowledgePost(postId, userId);
+
+        return addPostAcknowledgement(serverUrl, postId, userId, acknowledgedAt, false);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
+    } finally {
+        EphemeralStore.unsetAcknowledgingPost(postId);
     }
 }
 
@@ -1142,13 +1145,15 @@ export async function unacknowledgePost(serverUrl: string, postId: string) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
+        EphemeralStore.setUnacknowledgingPost(postId);
         const userId = await getCurrentUserId(database);
-        const data = await client.unacknowledgePost(postId, userId);
-        return {
-            data,
-        };
+        await client.unacknowledgePost(postId, userId);
+
+        return removePostAcknowledgement(serverUrl, postId, userId, false);
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
+    } finally {
+        EphemeralStore.unsetUnacknowledgingPost(postId);
     }
 }
