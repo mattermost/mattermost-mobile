@@ -36,56 +36,59 @@ exports[`Thread item in the channel list Threads Component should match snapshot
   }
   testID="channel_list.threads.button"
 >
-  <View>
-    <View
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        false,
+        false,
+        false,
+        {
+          "minHeight": 40,
+        },
+      ]
+    }
+  >
+    <Icon
+      name="message-text-outline"
       style={
         [
           {
-            "alignItems": "center",
-            "flexDirection": "row",
+            "color": "rgba(255,255,255,0.5)",
+            "fontSize": 24,
+            "marginRight": 12,
           },
           false,
+          undefined,
+        ]
+      }
+    />
+    <Text
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          {
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          {
+            "color": "rgba(255,255,255,0.72)",
+          },
+          false,
+          false,
+          undefined,
         ]
       }
     >
-      <Icon
-        name="message-text-outline"
-        style={
-          [
-            {
-              "color": "rgba(255,255,255,0.5)",
-              "fontSize": 24,
-              "marginRight": 12,
-            },
-            false,
-            undefined,
-          ]
-        }
-      />
-      <Text
-        style={
-          [
-            {
-              "flex": 1,
-            },
-            {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "color": "rgba(255,255,255,0.72)",
-            },
-            false,
-            false,
-            undefined,
-          ]
-        }
-      >
-        Threads
-      </Text>
-    </View>
+      Threads
+    </Text>
   </View>
 </View>
 `;
@@ -126,60 +129,63 @@ exports[`Thread item in the channel list Threads Component should match snapshot
   }
   testID="channel_list.threads.button"
 >
-  <View>
-    <View
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        false,
+        false,
+        false,
+        {
+          "minHeight": 40,
+        },
+      ]
+    }
+  >
+    <Icon
+      name="message-text-outline"
       style={
         [
           {
-            "alignItems": "center",
-            "flexDirection": "row",
+            "color": "rgba(255,255,255,0.5)",
+            "fontSize": 24,
+            "marginRight": 12,
           },
           false,
+          {
+            "color": "rgba(63,67,80,0.72)",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          {
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          {
+            "color": "rgba(255,255,255,0.72)",
+          },
+          false,
+          false,
+          {
+            "color": "#3f4350",
+          },
         ]
       }
     >
-      <Icon
-        name="message-text-outline"
-        style={
-          [
-            {
-              "color": "rgba(255,255,255,0.5)",
-              "fontSize": 24,
-              "marginRight": 12,
-            },
-            false,
-            {
-              "color": "rgba(63,67,80,0.72)",
-            },
-          ]
-        }
-      />
-      <Text
-        style={
-          [
-            {
-              "flex": 1,
-            },
-            {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "color": "rgba(255,255,255,0.72)",
-            },
-            false,
-            false,
-            {
-              "color": "#3f4350",
-            },
-          ]
-        }
-      >
-        Threads
-      </Text>
-    </View>
+      Threads
+    </Text>
   </View>
 </View>
 `;
@@ -222,56 +228,59 @@ exports[`Thread item in the channel list Threads Component should match snapshot
   }
   testID="channel_list.threads.button"
 >
-  <View>
-    <View
+  <View
+    style={
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        false,
+        false,
+        false,
+        {
+          "minHeight": 40,
+        },
+      ]
+    }
+  >
+    <Icon
+      name="message-text-outline"
       style={
         [
           {
-            "alignItems": "center",
-            "flexDirection": "row",
+            "color": "rgba(255,255,255,0.5)",
+            "fontSize": 24,
+            "marginRight": 12,
           },
           false,
+          undefined,
+        ]
+      }
+    />
+    <Text
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          {
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          {
+            "color": "rgba(255,255,255,0.72)",
+          },
+          false,
+          false,
+          undefined,
         ]
       }
     >
-      <Icon
-        name="message-text-outline"
-        style={
-          [
-            {
-              "color": "rgba(255,255,255,0.5)",
-              "fontSize": 24,
-              "marginRight": 12,
-            },
-            false,
-            undefined,
-          ]
-        }
-      />
-      <Text
-        style={
-          [
-            {
-              "flex": 1,
-            },
-            {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "color": "rgba(255,255,255,0.72)",
-            },
-            false,
-            false,
-            undefined,
-          ]
-        }
-      >
-        Threads
-      </Text>
-    </View>
+      Threads
+    </Text>
   </View>
 </View>
 `;

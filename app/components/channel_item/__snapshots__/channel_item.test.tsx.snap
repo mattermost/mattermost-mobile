@@ -43,6 +43,8 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
           "flexDirection": "row",
         },
         false,
+        false,
+        false,
         {
           "minHeight": 40,
         },
@@ -50,42 +52,33 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
     }
     testID="channel_item.hello"
   >
-    <View
+    <Icon
+      name="globe"
       style={
         [
-          {
-            "alignItems": "center",
-            "justifyContent": "center",
-          },
-          {
-            "height": 24,
-            "width": 24,
-          },
-          {
-            "marginRight": 12,
-          },
-          undefined,
-        ]
-      }
-    >
-      <Icon
-        name="globe"
-        style={
           [
             {
               "color": "rgba(255,255,255,0.4)",
             },
             undefined,
             undefined,
+            [
+              {
+                "marginRight": 12,
+              },
+              undefined,
+            ],
             {
               "fontSize": 24,
-              "left": 1,
             },
-          ]
-        }
-        testID="undefined.public"
-      />
-    </View>
+          ],
+          {
+            "left": 1,
+          },
+        ]
+      }
+      testID="undefined.public"
+    />
     <Text
       ellipsizeMode="tail"
       numberOfLines={1}
@@ -171,6 +164,8 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
           "flexDirection": "row",
         },
         false,
+        false,
+        false,
         {
           "minHeight": 40,
         },
@@ -178,42 +173,33 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
     }
     testID="channel_item.hello"
   >
-    <View
+    <Icon
+      name="pencil-outline"
       style={
         [
-          {
-            "alignItems": "center",
-            "justifyContent": "center",
-          },
-          {
-            "height": 24,
-            "width": 24,
-          },
-          {
-            "marginRight": 12,
-          },
-          undefined,
-        ]
-      }
-    >
-      <Icon
-        name="pencil-outline"
-        style={
           [
             {
               "color": "rgba(255,255,255,0.4)",
             },
             undefined,
             undefined,
+            [
+              {
+                "marginRight": 12,
+              },
+              undefined,
+            ],
             {
               "fontSize": 24,
-              "left": 2,
             },
-          ]
-        }
-        testID="undefined.draft"
-      />
-    </View>
+          ],
+          {
+            "left": 2,
+          },
+        ]
+      }
+      testID="undefined.draft"
+    />
     <Text
       ellipsizeMode="tail"
       numberOfLines={1}
@@ -257,20 +243,22 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
       size={16}
       style={
         [
-          {
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
-          {
-            "color": "rgba(255,255,255,0.72)",
-          },
-          false,
-          null,
-          null,
-          false,
-          false,
+          [
+            {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            {
+              "color": "rgba(255,255,255,0.72)",
+            },
+            false,
+            null,
+            null,
+            false,
+            false,
+          ],
           {
             "textAlign": "right",
           },
@@ -324,6 +312,8 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
           "flexDirection": "row",
         },
         false,
+        false,
+        false,
         {
           "minHeight": 40,
         },
@@ -331,42 +321,33 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
     }
     testID="channel_item.hello"
   >
-    <View
+    <Icon
+      name="pencil-outline"
       style={
         [
-          {
-            "alignItems": "center",
-            "justifyContent": "center",
-          },
-          {
-            "height": 24,
-            "width": 24,
-          },
-          {
-            "marginRight": 12,
-          },
-          undefined,
-        ]
-      }
-    >
-      <Icon
-        name="pencil-outline"
-        style={
           [
             {
               "color": "rgba(255,255,255,0.4)",
             },
             undefined,
             undefined,
+            [
+              {
+                "marginRight": 12,
+              },
+              undefined,
+            ],
             {
               "fontSize": 24,
-              "left": 2,
             },
-          ]
-        }
-        testID="undefined.draft"
-      />
-    </View>
+          ],
+          {
+            "left": 2,
+          },
+        ]
+      }
+      testID="undefined.draft"
+    />
     <Text
       ellipsizeMode="tail"
       numberOfLines={1}

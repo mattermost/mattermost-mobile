@@ -68,7 +68,6 @@ exports[`components/channel_list_row should show no results 1`] = `
     {
       "backgroundColor": "#ffffff",
       "flex": 1,
-      "paddingHorizontal": 16,
     }
   }
   testID="UserListRow.section_list"
@@ -163,6 +162,7 @@ exports[`components/channel_list_row should show no results 1`] = `
               },
               {
                 "opacity": 1,
+                "paddingHorizontal": 20,
               },
             ]
           }
@@ -172,9 +172,12 @@ exports[`components/channel_list_row should show no results 1`] = `
             style={
               [
                 {
-                  "borderRadius": 12,
-                  "height": 23,
-                  "width": 23,
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                },
+                {
+                  "height": 24,
+                  "width": 24,
                 },
                 {
                   "marginRight": 12,
@@ -330,7 +333,6 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
     {
       "backgroundColor": "#ffffff",
       "flex": 1,
-      "paddingHorizontal": 16,
     }
   }
   testID="UserListRow.section_list"
@@ -425,6 +427,7 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
               },
               {
                 "opacity": 1,
+                "paddingHorizontal": 20,
               },
             ]
           }
@@ -434,9 +437,12 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
             style={
               [
                 {
-                  "borderRadius": 12,
-                  "height": 23,
-                  "width": 23,
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                },
+                {
+                  "height": 24,
+                  "width": 24,
                 },
                 {
                   "marginRight": 12,
@@ -672,7 +678,6 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
     {
       "backgroundColor": "#ffffff",
       "flex": 1,
-      "paddingHorizontal": 16,
     }
   }
   testID="UserListRow.section_list"
@@ -767,6 +772,7 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
               },
               {
                 "opacity": 1,
+                "paddingHorizontal": 20,
               },
             ]
           }
@@ -776,9 +782,12 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
             style={
               [
                 {
-                  "borderRadius": 12,
-                  "height": 23,
-                  "width": 23,
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                },
+                {
+                  "height": 24,
+                  "width": 24,
                 },
                 {
                   "marginRight": 12,
@@ -966,7 +975,6 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
     {
       "backgroundColor": "#ffffff",
       "flex": 1,
-      "paddingHorizontal": 16,
     }
   }
   testID="UserListRow.section_list"
@@ -1061,6 +1069,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               },
               {
                 "opacity": 1,
+                "paddingHorizontal": 20,
               },
             ]
           }
@@ -1070,9 +1079,12 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             style={
               [
                 {
-                  "borderRadius": 12,
-                  "height": 23,
-                  "width": 23,
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                },
+                {
+                  "height": 24,
+                  "width": 24,
                 },
                 {
                   "marginRight": 12,
@@ -1227,6 +1239,7 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               },
               {
                 "opacity": 1,
+                "paddingHorizontal": 20,
               },
             ]
           }
@@ -1236,9 +1249,12 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
             style={
               [
                 {
-                  "borderRadius": 12,
-                  "height": 23,
-                  "width": 23,
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                },
+                {
+                  "height": 24,
+                  "width": 24,
                 },
                 {
                   "marginRight": 12,
