@@ -156,6 +156,7 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
                 noBorder: true,
                 scrollEdgeAppearance: {
                     noBorder: true,
+                    active: true,
                 },
                 rightButtons,
             },

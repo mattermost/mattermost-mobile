@@ -7,6 +7,7 @@ import CopyChannelLinkOption from '@components/channel_actions/copy_channel_link
 import {General} from '@constants';
 import {isTypeDMorGM} from '@utils/channel';
 
+import AddMembers from './add_members';
 import EditChannel from './edit_channel';
 import IgnoreMentions from './ignore_mentions';
 import Members from './members';
@@ -17,9 +18,15 @@ type Props = {
     channelId: string;
     type?: ChannelType;
     callsEnabled: boolean;
+    canManageMembers: boolean;
 }
 
-const Options = ({channelId, type, callsEnabled}: Props) => {
+const Options = ({
+    channelId,
+    type,
+    callsEnabled,
+    canManageMembers,
+}: Props) => {
     const isDMorGM = isTypeDMorGM(type);
 
     return (
@@ -31,6 +38,9 @@ const Options = ({channelId, type, callsEnabled}: Props) => {
             <PinnedMessages channelId={channelId}/>
             {type !== General.DM_CHANNEL &&
                 <Members channelId={channelId}/>
+            }
+            {canManageMembers &&
+                <AddMembers channelId={channelId}/>
             }
             {callsEnabled && !isDMorGM && // if calls is not enabled, copy link will show in the channel actions
                 <CopyChannelLinkOption

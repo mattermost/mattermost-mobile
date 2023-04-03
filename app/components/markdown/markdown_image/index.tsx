@@ -36,7 +36,7 @@ import type {GalleryItemType} from '@typings/screens/gallery';
 type MarkdownImageProps = {
     disabled?: boolean;
     errorTextStyle: StyleProp<TextStyle>;
-    imagesMetadata: Record<string, PostImage>;
+    imagesMetadata: Record<string, PostImage | undefined>;
     isReplyPost?: boolean;
     linkDestination?: string;
     layoutHeight?: number;
@@ -90,7 +90,7 @@ const MarkdownImage = ({
     const fileInfo = useMemo(() => {
         const link = decodeURIComponent(uri);
         let filename = parseUrl(link.substr(link.lastIndexOf('/'))).pathname.replace('/', '');
-        let extension = metadata.format || filename.split('.').pop();
+        let extension = metadata?.format || filename.split('.').pop();
         if (extension === filename) {
             const ext = filename.indexOf('.') === -1 ? '.png' : filename.substring(filename.lastIndexOf('.'));
             filename = `${filename}${ext}`;

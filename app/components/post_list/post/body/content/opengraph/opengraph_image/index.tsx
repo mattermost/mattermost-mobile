@@ -23,7 +23,7 @@ type OpengraphImageProps = {
     isReplyPost: boolean;
     layoutWidth?: number;
     location: string;
-    metadata: PostMetadata;
+    metadata: PostMetadata | undefined | null;
     openGraphImages: never[];
     postId: string;
     theme: Theme;
@@ -68,7 +68,7 @@ const OpengraphImage = ({isReplyPost, layoutWidth, location, metadata, openGraph
     }), [isReplyPost, dimensions]);
     const bestImage = getNearestPoint(bestDimensions, openGraphImages, 'width', 'height');
     const imageUrl = (bestImage.secure_url || bestImage.url)!;
-    const imagesMetadata = metadata.images;
+    const imagesMetadata = metadata?.images;
 
     let ogImage;
     if (imagesMetadata && imagesMetadata[imageUrl]) {

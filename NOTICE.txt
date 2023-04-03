@@ -124,6 +124,19 @@ SOFTWARE.
 
 ---
 
+## @mattermost/calls
+
+This product contains '@mattermost/calls' by Mattermost.
+
+Calls enables voice calling and screen sharing functionality in Mattermost channels.
+
+* HOMEPAGE:
+  * https://github.com/mattermost/calls-common
+
+* LICENSE: Apache License
+
+---
+
 ## @mattermost/compass-icons
 
 This product contains '@mattermost/compass-icons' by Mattermost.

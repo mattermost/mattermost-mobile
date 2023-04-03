@@ -50,7 +50,7 @@ type PostMetadata = {
     embeds?: PostEmbed[];
     emojis?: CustomEmoji[];
     files?: FileInfo[];
-    images?: Dictionary<PostImage>;
+    images?: Dictionary<PostImage | undefined>;
     reactions?: Reaction[];
     priority?: PostPriority;
 };

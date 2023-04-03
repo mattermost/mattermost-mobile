@@ -18,7 +18,7 @@ import YouTubeLogo from './youtube.svg';
 type YouTubeProps = {
     isReplyPost: boolean;
     layoutWidth?: number;
-    metadata: PostMetadata;
+    metadata: PostMetadata | undefined | null;
 }
 
 const MAX_YOUTUBE_IMAGE_HEIGHT = 280;
@@ -61,7 +61,7 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
     const isTablet = useIsTablet();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
-    const link = metadata.embeds![0].url;
+    const link = metadata?.embeds![0].url;
     const videoId = getYouTubeVideoId(link);
     const dimensions = calculateDimensions(
         MAX_YOUTUBE_IMAGE_HEIGHT,
@@ -70,6 +70,10 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
     );
 
     const playYouTubeVideo = useCallback(() => {
+        if (!link) {
+            return;
+        }
+
         const onError = () => {
             Alert.alert(
                 intl.formatMessage({
@@ -87,13 +91,17 @@ const YouTube = ({isReplyPost, layoutWidth, metadata}: YouTubeProps) => {
     }, [link, intl.locale]);
 
     let imgUrl;
-    if (metadata.images) {
+    if (metadata?.images) {
         imgUrl = Object.keys(metadata.images)[0];
     }
 
     if (!imgUrl) {
         // Fallback to default YouTube thumbnail if available
         imgUrl = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+    }
+
+    if (!link) {
+        return null;
     }
 
     return (

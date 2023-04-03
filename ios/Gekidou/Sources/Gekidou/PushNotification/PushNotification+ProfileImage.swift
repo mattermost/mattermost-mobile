@@ -6,16 +6,19 @@ extension PushNotification {
         var updatedAt: Double = 0
         func processResponse(data: Data?, response: URLResponse?, error: Error?) {
             if let httpResponse = response as? HTTPURLResponse {
-                if (httpResponse.statusCode == 200 && error == nil) {
+                let statusCode = httpResponse.statusCode
+                let errorMessage = error?.localizedDescription ?? ""
+                if (statusCode == 200 && error == nil) {
                     ImageCache.default.insertImage(data, for: senderId, updatedAt: updatedAt, forServer: serverUrl)
                     completionHandler(data)
                 } else {
                     os_log(
                         OSLogType.default,
                         "Mattermost Notifications: Request for profile image failed with status %{public}@ and error %{public}@",
-                        httpResponse.statusCode,
-                        (error?.localizedDescription ?? "")
+                        String(statusCode),
+                        errorMessage
                     )
+                    completionHandler(nil)
                 }
             }
         }

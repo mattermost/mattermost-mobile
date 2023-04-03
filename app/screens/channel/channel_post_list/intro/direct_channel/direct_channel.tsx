@@ -153,7 +153,7 @@ const DirectChannel = ({channel, currentUserId, isBot, members, theme}: Props) =
                 channelId={channel.id}
                 header={true}
                 favorite={true}
-                people={false}
+                canAddMembers={false}
             />
         </View>
     );

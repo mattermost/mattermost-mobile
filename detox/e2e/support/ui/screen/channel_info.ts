@@ -23,7 +23,7 @@ class ChannelInfoScreen {
         muteAction: 'channel_info.channel_actions.mute.action',
         unmuteAction: 'channel_info.channel_actions.unmute.action',
         setHeaderAction: 'channel_info.channel_actions.set_header.action',
-        addPeopleAction: 'channel_info.channel_actions.add_people.action',
+        addMembersAction: 'channel_info.channel_actions.add_members.action',
         copyChannelLinkAction: 'channel_info.channel_actions.copy_channel_link.action',
         joinStartCallAction: 'channel_info.channel_actions.join_start_call.action',
         extraHeader: 'channel_info.extra.header',
@@ -53,7 +53,7 @@ class ChannelInfoScreen {
     muteAction = element(by.id(this.testID.muteAction));
     unmuteAction = element(by.id(this.testID.unmuteAction));
     setHeaderAction = element(by.id(this.testID.setHeaderAction));
-    addPeopleAction = element(by.id(this.testID.addPeopleAction));
+    addMembersAction = element(by.id(this.testID.addMembersAction));
     copyChannelLinkAction = element(by.id(this.testID.copyChannelLinkAction));
     joinStartCallAction = element(by.id(this.testID.joinStartCallAction));
     extraHeader = element(by.id(this.testID.extraHeader));
