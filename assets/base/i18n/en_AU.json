@@ -763,7 +763,6 @@
     "intro.direct_message": "This is the start of your conversation with {teammate}. Messages and files shared here are not shown to anyone else.",
     "intro.created_by": "created by {creator} on {date}.",
     "intro.channel_info": "Info",
-    "intro.add_people": "Add People",
     "interactive_dialog.submit": "Submit",
     "home.header.plus_menu": "Options",
     "global_threads.options.title": "Thread Actions",

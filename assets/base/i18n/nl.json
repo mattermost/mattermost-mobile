@@ -465,7 +465,6 @@
     "intro.direct_message": "Dit is het begin van je gesprek met {teammate}. Berichten en bestanden die hier gedeeld worden, worden aan niemand anders getoond.",
     "intro.created_by": "gemaakt door {creator} op {date}.",
     "intro.channel_info": "Info",
-    "intro.add_people": "Mensen toevoegen",
     "interactive_dialog.submit": "Verzenden",
     "home.header.plus_menu": "Opties",
     "global_threads.options.title": "Acties voor draadjes",
