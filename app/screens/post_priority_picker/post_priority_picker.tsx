@@ -14,7 +14,7 @@ import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import BottomSheet from '@screens/bottom_sheet';
-import {dismissBottomSheet, popTopScreen} from '@screens/navigation';
+import {dismissBottomSheet} from '@screens/navigation';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -88,16 +88,12 @@ const PostPriorityPicker = ({
 
     const style = getStyleSheet(theme);
 
-    const close = useCallback(() => {
+    const closeBottomSheet = useCallback(() => {
         return dismissBottomSheet(Screens.POST_PRIORITY_PICKER);
     }, []);
 
-    const pop = () => {
-        popTopScreen(componentId);
-    };
-
-    useNavButtonPressed(closeButtonId, componentId, close, []);
-    useAndroidHardwareBackHandler(componentId, pop);
+    useNavButtonPressed(closeButtonId, componentId, closeBottomSheet, []);
+    useAndroidHardwareBackHandler(componentId, closeBottomSheet);
 
     const displayPersistentNotifications = isPersistenNotificationsEnabled && data.priority === PostPriorityType.URGENT;
 
@@ -113,7 +109,7 @@ const PostPriorityPicker = ({
         }
 
         return [1, bottomSheetSnapPoint(1, COMPONENT_HEIGHT, bottom)];
-    }, [displayPersistentNotifications, isPostAcknowledgementEnabled]);
+    }, [displayPersistentNotifications, isPostAcknowledgementEnabled, bottom]);
 
     const handleUpdatePriority = useCallback((priority: PostPriority['priority']) => {
         setData((prevData) => ({
@@ -133,7 +129,7 @@ const PostPriorityPicker = ({
 
     const handleSubmit = useCallback(() => {
         updatePostPriority(data);
-        close();
+        closeBottomSheet();
     }, [data]);
 
     const renderContent = () => (
@@ -212,7 +208,7 @@ const PostPriorityPicker = ({
     const renderFooter = (props: BottomSheetFooterProps) => (
         <Footer
             {...props}
-            onCancel={close}
+            onCancel={closeBottomSheet}
             onSubmit={handleSubmit}
         />
     );
