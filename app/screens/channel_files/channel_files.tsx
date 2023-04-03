@@ -1,12 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {useIntl} from 'react-intl';
+import {FlatList, ListRenderItemInfo, Platform, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {searchFiles} from '@actions/remote/search';
 import Loading from '@components/loading';
+import Search from '@components/search';
+import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -23,11 +26,14 @@ import {
 } from '@utils/files';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import Header from './header';
 import NoResults from './no_results';
 
 import type {GalleryAction} from '@typings/screens/gallery';
+
+const TEST_ID = 'channel_files';
 
 type Props = {
     channelId: string;
@@ -53,6 +59,10 @@ const styles = StyleSheet.create({
     loading: {
         justifyContent: 'center',
         flex: 1,
+    },
+    searchBar: {
+        paddingHorizontal: 20,
+        paddingTop: 20,
     },
 });
 
@@ -81,11 +91,13 @@ function ChannelFiles({
     const insets = useSafeAreaInsets();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
-
+    const {formatMessage} = useIntl();
+    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const [action, setAction] = useState<GalleryAction>('none');
     const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [loading, setLoading] = useState(true);
+    const [term, setTerm] = useState('');
     const numOptions = getNumberFileMenuOptions(canDownloadFiles, publicLinkEnabled);
 
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
@@ -97,16 +109,26 @@ function ChannelFiles({
     const fileInfosIndexes = useMemo(() => getFileInfosIndexes(orderedFileInfos), [fileInfos]);
     const orderedGalleryItems = useMemo(() => getOrderedGalleryItems(orderedFileInfos), [fileInfos]);
 
-    const handleSearch = useCallback(async (ftr: FileFilter) => {
-        const searchParams = getSearchParams(channelId, '', ftr);
+    const handleSearch = useCallback(async (searchTerm: string, ftr: FileFilter) => {
+        const searchParams = getSearchParams(channelId, searchTerm, ftr);
         const {files} = await searchFiles(serverUrl, teamId, searchParams);
         setLoading(false);
         setFileInfos(files?.length ? files : emptyFileResults);
     }, [filter]);
 
     useEffect(() => {
-        handleSearch(filter);
-    }, [teamId, filter]);
+        if (term) {
+            if (searchTimeoutId.current) {
+                clearTimeout(searchTimeoutId.current);
+            }
+
+            searchTimeoutId.current = setTimeout(() => {
+                handleSearch(term, filter);
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
+        } else {
+            handleSearch(term, filter);
+        }
+    }, [teamId, filter, term]);
 
     const onPreviewPress = useCallback(preventDoubleTap((idx: number) => {
         openGalleryAtIndex(galleryIdentifier, idx, orderedGalleryItems);
@@ -135,6 +157,15 @@ function ChannelFiles({
             });
         }
     }, [insets, isTablet, numOptions, theme]);
+
+    const clearSearch = useCallback(() => {
+        setTerm('');
+    }, []);
+
+    const onTextChange = useCallback((searchTerm: string) => {
+        setLoading(true);
+        setTerm(searchTerm);
+    }, []);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<FileInfo>) => {
         return (
@@ -171,8 +202,25 @@ function ChannelFiles({
         <SafeAreaView
             edges={edges}
             style={styles.flex}
-            testID='channel_files.screen'
+            testID={`${TEST_ID}.screen`}
         >
+            <View style={styles.searchBar}>
+                <Search
+                    testID={`${TEST_ID}.search_bar`}
+                    placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
+                    cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
+                    placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
+                    onChangeText={onTextChange}
+                    onCancel={clearSearch}
+                    autoCapitalize='none'
+                    keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+                    value={term}
+                />
+            </View>
+            <Header
+                onFilterChanged={handleFilterChange}
+                selectedFilter={filter}
+            />
             {loading &&
                 <Loading
                     color={theme.buttonBg}
@@ -182,10 +230,6 @@ function ChannelFiles({
             }
             {!loading &&
                 <>
-                    <Header
-                        onFilterChanged={handleFilterChange}
-                        selectedFilter={filter}
-                    />
                     <FlatList
                         contentContainerStyle={orderedFileInfos.length ? styles.list : [styles.empty]}
                         ListEmptyComponent={noResults}
@@ -196,7 +240,7 @@ function ChannelFiles({
                         scrollToOverflowEnabled={true}
                         scrollEventThrottle={16}
                         showsVerticalScrollIndicator={true}
-                        testID='channel_files.post_list.flat_list'
+                        testID={`${TEST_ID}.post_list.flat_list`}
                     />
                     <Toasts
                         action={action}

@@ -9,6 +9,8 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+const TEST_ID = 'channel_files';
+
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
         flex: 1,
@@ -41,13 +43,13 @@ function NoResults() {
                 defaultMessage='No files yet'
                 id='channel_files.empty.title'
                 style={styles.title}
-                testID='channel_files.empty.title'
+                testID={`${TEST_ID}.empty.title`}
             />
             <FormattedText
                 defaultMessage={'Files posted in this channel will show here.'}
                 id='channel_files.empty.paragraph'
                 style={styles.paragraph}
-                testID='channel_files.empty.paragraph'
+                testID={`${TEST_ID}.empty.paragraph`}
             />
         </View>
     );

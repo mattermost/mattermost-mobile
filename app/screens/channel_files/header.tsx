@@ -17,6 +17,8 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+const TEST_ID = 'channel_files';
+
 type Props = {
     onFilterChanged: (filter: FileFilter) => void;
     selectedFilter: FileFilter;
@@ -59,11 +61,11 @@ const Header = ({
     const isTablet = useIsTablet();
     const hasFilters = selectedFilter !== FileFilters.ALL;
 
-    let messagesText = intl.formatMessage({id: 'screen.channel_files.header.recent_files', defaultMessage: 'Recent Files'});
+    let messagesText = intl.formatMessage({id: `screen.${TEST_ID}.header.recent_files`, defaultMessage: 'Recent Files'});
     if (hasFilters) {
         messagesText = intl.formatMessage({id: FilterData[selectedFilter].id, defaultMessage: FilterData[selectedFilter].defaultMessage});
     }
-    const title = intl.formatMessage({id: 'screen.search.results.filter.title', defaultMessage: 'Filter by file type'});
+    const title = intl.formatMessage({id: `screen.${TEST_ID}.results.filter.title`, defaultMessage: 'Filter by file type'});
 
     const snapPoints = useMemo(() => {
         return [
@@ -98,7 +100,7 @@ const Header = ({
         <View style={styles.container}>
             <Text
                 style={styles.title}
-                testID='channel_files.title'
+                testID={`${TEST_ID}.title`}
             >
                 {messagesText}
             </Text>
@@ -112,7 +114,7 @@ const Header = ({
                 <Badge
                     style={styles.badge}
                     visible={hasFilters}
-                    testID={'search.filters.badge'}
+                    testID={`${TEST_ID}.filters.badge`}
                     value={-1}
                 />
             </View>
