@@ -24,8 +24,8 @@ import {
 import {openGalleryAtIndex} from '@utils/gallery';
 import {preventDoubleTap} from '@utils/tap';
 
-import EmptyState from './empty';
 import Header from './header';
+import NoResults from './no_results';
 
 import type {GalleryAction} from '@typings/screens/gallery';
 
@@ -161,9 +161,9 @@ function ChannelFiles({
         publicLinkEnabled,
     ]);
 
-    const emptyList = useMemo(() => (
+    const noResults = useMemo(() => (
         <View style={styles.empty}>
-            <EmptyState/>
+            <NoResults/>
         </View>
     ), [theme.buttonBg]);
 
@@ -188,7 +188,7 @@ function ChannelFiles({
                     />
                     <FlatList
                         contentContainerStyle={orderedFileInfos.length ? styles.list : [styles.empty]}
-                        ListEmptyComponent={emptyList}
+                        ListEmptyComponent={noResults}
                         initialNumToRender={10}
                         data={orderedFileInfos}
                         refreshing={false}

@@ -30,7 +30,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-function EmptySavedPosts() {
+function NoResults() {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
@@ -53,4 +53,4 @@ function EmptySavedPosts() {
     );
 }
 
-export default EmptySavedPosts;
+export default NoResults;

@@ -12,7 +12,7 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
-import {FileFilter, FileFilters} from '@utils/file';
+import {FileFilter, FileFilters} from '@utils/file/index';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -86,7 +86,7 @@ type FilterProps = {
     title: string;
 }
 
-const Filter = ({initialFilter, setFilter, title}: FilterProps) => {
+const File_filter = ({initialFilter, setFilter, title}: FilterProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -130,4 +130,4 @@ const Filter = ({initialFilter, setFilter, title}: FilterProps) => {
     );
 };
 
-export default Filter;
+export default File_filter;

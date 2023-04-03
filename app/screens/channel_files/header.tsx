@@ -10,14 +10,9 @@ import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
-import Filter, {
-    DIVIDERS_HEIGHT,
-    FILTER_ITEM_HEIGHT,
-    FilterData,
-    NUMBER_FILTER_ITEMS,
-} from '@screens/home/search/results/filter';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
+import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, FilterData, NUMBER_FILTER_ITEMS} from '@utils/file/file_filter';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -32,7 +27,8 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             flexDirection: 'row',
             justifyContent: 'space-between',
-            padding: 10,
+            paddingHorizontal: 20,
+            paddingTop: 20,
             backgroundColor: theme.centerChannelBg,
         },
         title: {
