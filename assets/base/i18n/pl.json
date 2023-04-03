@@ -1005,5 +1005,10 @@
     "channel_notification_preferences.notification.all": "Wszystkie nowe wiadomości",
     "channel_notification_preferences.muted_title": "Ten kanał jest wyciszony",
     "channel_notification_preferences.muted_content": "Możesz zmienić ustawienia powiadomień, ale nie będziesz otrzymywać powiadomień, dopóki na kanale nie zostanie wyłączone wyciszenie.",
-    "channel_notification_preferences.default": "(domyślne)"
+    "channel_notification_preferences.default": "(domyślne)",
+    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {użytkownik} other {użytkowników}} dodanych",
+    "mobile.channel_add_members.error": "Wystąpił błąd i nie mogliśmy dodać tych użytkowników do kanału.",
+    "intro.add_members": "Dodaj użytkowników",
+    "channel_info.add_members": "Dodaj użytkowników",
+    "channel_add_members.add_members.button": "Dodaj Użytkowników"
 }
