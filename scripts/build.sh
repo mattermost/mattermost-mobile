@@ -86,8 +86,8 @@ function setup() {
         fi
 
         echo "Installing Fastane"
-        if !gem list bundler -i --version 2.3.6 > /dev/null 2>&1; then
-          gem install bundler --versio 2.3.6
+        if !gem list bundler -i --version 2.3.26 > /dev/null 2>&1; then
+          gem install bundler --versio 2.3.26
         fi
         cd fastlane && bundle install && cd .. || exit 1
     fi
