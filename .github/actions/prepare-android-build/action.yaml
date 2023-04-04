@@ -12,13 +12,14 @@ runs:
     - name: ci/prepare-mobile-build
       uses: ./.github/actios/prepare-mobile-build
 
-    - name: ci/install-gradle-dependencies
-      shell: bash
-      working-directory: android
-      run: |
-        echo "::group::install-gradle-dependencies"
-        ./gradlew dependencies
-        echo "::endgroup::"
+    # Disable this since we are not caching anything for now
+    # - name: ci/install-gradle-dependencies
+    #   shell: bash
+    #   working-directory: android
+    #   run: |
+    #     echo "::group::install-gradle-dependencies"
+    #     ./gradlew dependencies
+    #     echo "::endgroup::"
 
     - name: ci/jetify-android-libraries
       shell: bash
