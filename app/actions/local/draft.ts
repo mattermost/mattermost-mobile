@@ -174,6 +174,7 @@ export async function updateDraftPriority(serverUrl: string, channelId: string, 
 
         draft.prepareUpdate((d) => {
             d.metadata = {
+                ...d.metadata,
                 priority: postPriority,
             };
         });

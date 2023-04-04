@@ -65,10 +65,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             marginHorizontal: 8,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.16),
         },
-        listHeader: {
-            marginBottom: 12,
-        },
         listHeaderText: {
+            marginBottom: 12,
             color: theme.centerChannelColor,
             ...typography('Heading', 600, 'SemiBold'),
         },
@@ -107,7 +105,7 @@ const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, loc
         } else {
             acknowledgePost(serverUrl, post.id);
         }
-    }, [acknowledgedAt, isCurrentAuthor, post, serverUrl]);
+    }, [acknowledgedAt, isCurrentAuthor, post.id, serverUrl]);
 
     const handleOnLongPress = useCallback(async () => {
         if (!acknowledgements.length) {
@@ -122,7 +120,7 @@ const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, loc
         });
 
         try {
-            await fetchMissingProfilesByIds(serverUrl, userIds);
+            fetchMissingProfilesByIds(serverUrl, userIds);
         } catch (e) {
             return;
         }
@@ -130,13 +128,11 @@ const Acknowledgements = ({currentUserId, currentUserTimezone, hasReactions, loc
         const renderContent = () => (
             <>
                 {!isTablet && (
-                    <View style={style.listHeader}>
-                        <FormattedText
-                            id='mobile.acknowledgements.header'
-                            defaultMessage={'Acknowledgements'}
-                            style={style.listHeaderText}
-                        />
-                    </View>
+                    <FormattedText
+                        id='mobile.acknowledgements.header'
+                        defaultMessage={'Acknowledgements'}
+                        style={style.listHeaderText}
+                    />
                 )}
                 <UsersList
                     channelId={post.channelId}
