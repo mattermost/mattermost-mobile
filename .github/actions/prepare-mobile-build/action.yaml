@@ -4,13 +4,6 @@ description: Action to prepare environment for mobile build
 runs:
   using: composite
   steps:
-    - name: ci/setup-node
-      uses: actions/setup-node@64ed1c7eab4cce3362f8c340dee64e5eaeef8f7c # v3.6.0
-      with:
-        node-version: "${{ env.NODE_VERSION }}"
-        cache: "npm"
-        cache-dependency-path: package-lock.json
-
     - uses: ruby/setup-ruby@9669f3ee51dc3f4eda8447ab696b3ab19a90d14b # v1.144.0
       with:
         ruby-version: "2.7"
@@ -23,37 +16,5 @@ runs:
         echo "::endgroup::"
       working-directory: ./fastlane
 
-    - name: ci/install-npm-dependencies
-      shell: bash
-      env:
-        NODE_ENV: development
-      run: |
-        echo "::group::install-npm-dependencies"
-        npm ci --ignore-scripts
-        node node_modules/\@sentry/cli/scripts/install.js
-        node node_modules/react-native-webrtc/tools/downloadWebRTC.js
-        echo "::endgroup::"
-
-    - name: ci/patch-npm-dependencies
-      shell: bash
-      run: |
-        echo "::group::patch-npm-dependencies"
-        npx patch-package
-        echo "::endgroup::"
-
-    - name: ci/generate-assets
-      shell: bash
-      run: |
-        echo "::group::generate-assets"
-        node ./scripts/generate-assets.js
-        echo "::endgroup::"
-
-    - name: ci/import-compass-icon
-      shell: bash
-      env:
-        COMPASS_ICONS: "node_modules/@mattermost/compass-icons/font/compass-icons.ttf"
-      run: |
-        echo "::group::import-compass-icon"
-        cp "$COMPASS_ICONS" "assets/fonts/"
-        cp "$COMPASS_ICONS" "android/app/src/main/assets/fonts"
-        echo "::endgroup::"
+    - name: ci/prepare-node-deps
+      uses: ./.github/actions/prepare-node-deps
