@@ -1,5 +1,5 @@
 ---
-name: build
+name: build-beta
 
 on:
   push:
@@ -47,11 +47,9 @@ jobs:
           SUPPLY_JSON_KEY: ${{ github.workspace }}/mattermost-mobile-private/android/mattermost-credentials.json
         run: |
           echo "::group::Build"
-          export SUPPLY_TRACK=beta
           bundle exec fastlane android build --env android.beta
           echo "::endgroup::"
           echo "::group::Deploy to Play Store"
-          export SUPPLY_TRACK=alpha
           bundle exec fastlane android deploy file:"${{ github.workspace }}/*.apk" --env android.beta
           echo "::endgroup::"
         working-directory: ./fastlane
@@ -77,6 +75,7 @@ jobs:
       - name: ci/build-ios-simulator
         env:
           TAG: "${{ github.ref_name }}"
+          MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
         run: bundle exec fastlane ios simulator
         working-directory: ./fastlane
@@ -96,16 +95,17 @@ jobs:
       - name: ci/checkout-repo
         uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
 
-      - name: ci/output-ssh-private-key
-        shell: bash
-        run: |
-          SSH_KEY_PATH=~/.ssh/id_ed25519
-          if [ -n "${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}" ]; then
-            mkdir -p ~/.ssh
-            echo -e '${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}' > ${SSH_KEY_PATH}
-            chmod 0600 ${SSH_KEY_PATH}
-            ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
-          fi
+      # This is not needed probably . We migrated this from CircleCI. We will remove it if not needed
+      # - name: ci/output-ssh-private-key
+      #   shell: bash
+      #   run: |
+      #     SSH_KEY_PATH=~/.ssh/id_ed25519
+      #     if [ -n "${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}" ]; then
+      #       mkdir -p ~/.ssh
+      #       echo -e '${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}' > ${SSH_KEY_PATH}
+      #       chmod 0600 ${SSH_KEY_PATH}
+      #       ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
+      #     fi
 
       - name: ci/prepare-ios-build
         uses: ./.github/actios/prepare-ios-build
