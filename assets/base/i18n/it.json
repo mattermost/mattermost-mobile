@@ -713,7 +713,6 @@
     "intro.direct_message": "Questo è l'inizio della conversazione con {teammate}. I messaggi e i file condivisi qui non vengono mostrati a nessun altro.",
     "intro.created_by": "creato da {creator} in data {date}..",
     "intro.channel_info": "Info",
-    "intro.add_people": "Aggiungi persone",
     "interactive_dialog.submit": "Invia",
     "integration_selector.multiselect.submit": "Fatto",
     "home.header.plus_menu": "Opzioni",

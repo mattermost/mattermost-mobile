@@ -190,7 +190,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
 
         setFileInfos(files?.length ? files : emptyFileResults);
         if (postResults.order) {
-            const postModels = await getPosts(serverUrl, postResults.order);
+            const postModels = await getPosts(serverUrl, postResults.order, 'asc');
             setPosts(postModels.length ? postModels : emptyPosts);
         }
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
