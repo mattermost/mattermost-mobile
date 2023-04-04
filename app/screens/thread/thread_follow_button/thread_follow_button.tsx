@@ -56,7 +56,7 @@ function ThreadFollow({isFollowing, teamId, threadId}: Props) {
     const serverUrl = useServerUrl();
 
     const onPress = preventDoubleTap(() => {
-        updateThreadFollowing(serverUrl, teamId, threadId, !isFollowing);
+        updateThreadFollowing(serverUrl, teamId, threadId, !isFollowing, false);
     });
 
     const containerStyle: StyleProp<ViewStyle> = [styles.container];
