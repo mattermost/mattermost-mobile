@@ -3,6 +3,7 @@
 
 import {markTeamThreadsAsRead, markThreadAsViewed, processReceivedThreads, switchToThread, updateTeamThreadsSync, updateThread} from '@actions/local/thread';
 import {fetchPostThread} from '@actions/remote/post';
+import {showThreadFollowingSnackbar} from '@app/utils/snack_bar';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
@@ -202,7 +203,7 @@ export const markThreadAsUnread = async (serverUrl: string, teamId: string, thre
     }
 };
 
-export const updateThreadFollowing = async (serverUrl: string, teamId: string, threadId: string, state: boolean) => {
+export const updateThreadFollowing = async (serverUrl: string, teamId: string, threadId: string, state: boolean, showSnackBar = false) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
 
     if (!database) {
@@ -227,6 +228,11 @@ export const updateThreadFollowing = async (serverUrl: string, teamId: string, t
 
         // Update locally
         await updateThread(serverUrl, threadId, {is_following: state});
+
+        if (showSnackBar) {
+            const onUndo = () => updateThreadFollowing(serverUrl, teamId, threadId, !state, false);
+            showThreadFollowingSnackbar(state, onUndo);
+        }
 
         return {data};
     } catch (error) {

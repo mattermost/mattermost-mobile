@@ -6,12 +6,14 @@ import keyMirror from '@utils/key_mirror';
 
 export const SNACK_BAR_TYPE = keyMirror({
     FAVORITE_CHANNEL: null,
+    FOLLOW_THREAD: null,
     LINK_COPIED: null,
     MESSAGE_COPIED: null,
     MUTE_CHANNEL: null,
     REMOVE_CHANNEL_USER: null,
     UNFAVORITE_CHANNEL: null,
     UNMUTE_CHANNEL: null,
+    UNFOLLOW_THREAD: null,
 });
 
 type SnackBarConfig = {
@@ -26,6 +28,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         id: t('snack.bar.favorited.channel'),
         defaultMessage: 'This channel was favorited',
         iconName: 'star',
+        canUndo: true,
+    },
+    FOLLOW_THREAD: {
+        id: t('snack.bar.following.thread'),
+        defaultMessage: 'Thread followed',
+        iconName: 'check',
         canUndo: true,
     },
     LINK_COPIED: {
@@ -62,6 +70,12 @@ export const SNACK_BAR_CONFIG: Record<string, SnackBarConfig> = {
         id: t('snack.bar.unmute.channel'),
         defaultMessage: 'This channel was unmuted',
         iconName: 'bell-outline',
+        canUndo: true,
+    },
+    UNFOLLOW_THREAD: {
+        id: t('snack.bar.unfollow.thread'),
+        defaultMessage: 'Thread unfollowed',
+        iconName: 'check',
         canUndo: true,
     },
 };

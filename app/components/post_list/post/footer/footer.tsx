@@ -86,7 +86,7 @@ const Footer = ({channelId, location, participants, teamId, thread}: Props) => {
         if (teamId == null) {
             return;
         }
-        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
+        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing, true);
     }), [thread.isFollowing]);
 
     let repliesComponent;
