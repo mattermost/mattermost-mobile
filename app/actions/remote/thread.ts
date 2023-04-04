@@ -3,7 +3,6 @@
 
 import {markTeamThreadsAsRead, markThreadAsViewed, processReceivedThreads, switchToThread, updateTeamThreadsSync, updateThread} from '@actions/local/thread';
 import {fetchPostThread} from '@actions/remote/post';
-import {showThreadFollowingSnackbar} from '@app/utils/snack_bar';
 import {General} from '@constants';
 import DatabaseManager from '@database/manager';
 import PushNotifications from '@init/push_notifications';
@@ -13,6 +12,7 @@ import {getPostById} from '@queries/servers/post';
 import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById, getTeamThreadsSyncData} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
+import {showThreadFollowingSnackbar} from '@utils/snack_bar';
 import {getThreadsListEdges} from '@utils/thread';
 
 import {forceLogoutIfNecessary} from './session';
@@ -203,7 +203,7 @@ export const markThreadAsUnread = async (serverUrl: string, teamId: string, thre
     }
 };
 
-export const updateThreadFollowing = async (serverUrl: string, teamId: string, threadId: string, state: boolean, showSnackBar = false) => {
+export const updateThreadFollowing = async (serverUrl: string, teamId: string, threadId: string, state: boolean, showSnackBar: boolean) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
 
     if (!database) {
