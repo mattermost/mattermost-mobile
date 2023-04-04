@@ -48,6 +48,8 @@ jobs:
 
       - name: ci/prepare-android-build
         uses: ./.github/actios/prepare-android-build
+        with:
+          sign: false
 
       - name: ci/build-android-beta
         env:

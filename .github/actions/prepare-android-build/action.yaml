@@ -2,9 +2,9 @@ name: prepare-android-build
 description: Action to prepare environment for android build
 
 inputs:
-  sing:
+  sign:
     description: Flag to enable android package signing
-    default: "false"
+    default: "true"
 
 runs:
   using: composite

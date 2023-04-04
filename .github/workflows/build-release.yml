@@ -73,8 +73,6 @@ jobs:
 
       - name: ci/prepare-android-build
         uses: ./.github/actios/prepare-android-build
-        with:
-          sign: true
 
       - name: ci/build-and-deploy-android-release
         env:
