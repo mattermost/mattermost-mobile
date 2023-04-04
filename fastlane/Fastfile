@@ -283,7 +283,7 @@ lane :upload_file_to_s3 do |options|
                                       :title => '',
                                       :thumb_url => 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
                                       :msg => msg,
-                                      :default_payloads => [],
+                                      :default_payloads => [:git_branch, :last_git_commit_hash],
                                       :success => true,
                                   })
     end
