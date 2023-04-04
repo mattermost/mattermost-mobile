@@ -15,6 +15,7 @@ import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 
 import {updateLastPostAt, updateMyChannelLastFetchedAt} from './channel';
 
+import type {Q} from '@nozbe/watermelondb';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
@@ -239,10 +240,10 @@ export async function storePostsForChannel(
     }
 }
 
-export async function getPosts(serverUrl: string, ids: string[]) {
+export async function getPosts(serverUrl: string, ids: string[], sort?: Q.SortOrder) {
     try {
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-        return queryPostsById(database, ids).fetch();
+        return queryPostsById(database, ids, sort).fetch();
     } catch (error) {
         return [];
     }
