@@ -10,6 +10,7 @@ import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
 import {useTheme} from '@context/theme';
+import {nonBreakingString} from '@utils/strings';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername, getUserCustomStatus, isBot, isCustomStatusExpired, isGuest, isShared} from '@utils/user';
@@ -148,13 +149,13 @@ const UserItem = ({
                     numberOfLines={1}
                     testID={`${userItemTestId}.display_name`}
                 >
-                    {displayName}
+                    {nonBreakingString(displayName)}
                     {Boolean(showTeammateDisplay) && (
                         <Text
                             style={style.rowUsername}
                             testID={`${userItemTestId}.username`}
                         >
-                            {` @${user!.username}`}
+                            {nonBreakingString(` @${user!.username}`)}
                         </Text>
                     )}
                     {Boolean(deleteAt) && (
@@ -162,7 +163,7 @@ const UserItem = ({
                             style={style.rowUsername}
                             testID={`${userItemTestId}.deactivated`}
                         >
-                            {` ${intl.formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}`}
+                            {nonBreakingString(` ${intl.formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}`)}
                         </Text>
                     )}
                 </Text>

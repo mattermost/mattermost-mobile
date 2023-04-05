@@ -5,10 +5,10 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
-import {getHeaderOptions} from '@app/screens/channel_add_members/channel_add_members';
 import OptionItem from '@components/option_item';
 import {Screens} from '@constants';
 import {useTheme} from '@context/theme';
+import {getHeaderOptions} from '@screens/channel_add_members/channel_add_members';
 import {goToScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 

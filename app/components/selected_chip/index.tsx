@@ -7,6 +7,7 @@ import Animated, {FadeIn, FadeOut} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
+import {nonBreakingString} from '@utils/strings';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -75,7 +76,7 @@ export default function SelectedChip({
                 numberOfLines={1}
                 testID={`${testID}.display_name`}
             >
-                {text.replace(' ', '\xa0')}
+                {nonBreakingString(text)}
             </Text>
             <TouchableOpacity
                 style={style.remove}

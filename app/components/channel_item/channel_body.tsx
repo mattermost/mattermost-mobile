@@ -5,6 +5,7 @@ import {StyleProp, Text, TextStyle, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {nonBreakingString} from '@utils/strings';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -54,6 +55,7 @@ export const ChannelBody = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const isTablet = useIsTablet();
+    const nonBreakingDisplayName = nonBreakingString(displayName);
     const channelText = (
         <Text
             ellipsizeMode='tail'
@@ -61,10 +63,10 @@ export const ChannelBody = ({
             style={[textStyles, styles.flex]}
             testID={`${testId}.display_name`}
         >
-            {displayName.replace(' ', '\xa0')}
+            {nonBreakingDisplayName}
             {Boolean(channelName) && (
                 <Text style={styles.channelName}>
-                    {` ~${channelName}`}
+                    {nonBreakingString(` ~${channelName}`)}
                 </Text>
             )}
         </Text>
@@ -73,12 +75,12 @@ export const ChannelBody = ({
     if (teamDisplayName) {
         const teamText = (
             <Text
-                ellipsizeMode='tail'
+                ellipsizeMode={isTablet ? undefined : 'tail'} // Handled by the parent text on tablets
                 numberOfLines={isTablet ? undefined : 1} // Handled by the parent text on tablets
                 style={[styles.teamName, isMuted && styles.teamNameMuted, styles.flex]}
                 testID={`${testId}.team_display_name`}
             >
-                {` ${teamDisplayName}`}
+                {nonBreakingString(`${isTablet ? ' ' : ''}${teamDisplayName}`)}
             </Text>
         );
 
@@ -90,7 +92,7 @@ export const ChannelBody = ({
                     style={[textStyles, styles.flex]}
                     testID={`${testId}.display_name`}
                 >
-                    {displayName}
+                    {nonBreakingDisplayName}
                     {teamText}
                 </Text>
             );
