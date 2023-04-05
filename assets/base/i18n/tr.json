@@ -1005,5 +1005,10 @@
     "channel_notification_preferences.notification.none": "Hiçbir şey",
     "channel_notification_preferences.notification.mention": "Anmalar, yalnızca doğrudan iletiler",
     "channel_notification_preferences.notification.all": "Tüm yeni iletiler",
-    "channel_notification_preferences.default": "(varsayılan)"
+    "channel_notification_preferences.default": "(varsayılan)",
+    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {üye} other {üye}} eklendi",
+    "mobile.channel_add_members.error": "Bir sorun çıktığından bu kullanıcılar kanala eklenemedi.",
+    "intro.add_members": "Üye ekle",
+    "channel_info.add_members": "Üye ekle",
+    "channel_add_members.add_members.button": "Üye ekle"
 }
