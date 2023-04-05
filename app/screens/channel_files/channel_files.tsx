@@ -1,42 +1,29 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {StyleSheet, View} from 'react-native';
+import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {searchFiles} from '@actions/remote/search';
+import FileResults from '@components/files_search/file_results';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useIsTablet} from '@hooks/device';
-import {useImageAttachments} from '@hooks/files';
-import {showMobileOptionsBottomSheet} from '@screens/home/search/results/file_options/mobile_options';
-import Toasts from '@screens/home/search/results/file_options/toasts';
-import FileResult from '@screens/home/search/results/file_result';
 import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
-import {
-    getFileInfosIndexes,
-    getNumberFileMenuOptions,
-    getOrderedFileInfos,
-    getOrderedGalleryItems,
-} from '@utils/files';
-import {openGalleryAtIndex} from '@utils/gallery';
-import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, getKeyboardAppearanceFromTheme} from '@utils/theme';
 
 import Header from './header';
-import NoResults from './no_results';
 
-import type {GalleryAction} from '@typings/screens/gallery';
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 const TEST_ID = 'channel_files';
 
 type Props = {
-    channelId: string;
+    channel: ChannelModel;
     teamId: string;
     canDownloadFiles: boolean;
     publicLinkEnabled: boolean;
@@ -79,41 +66,27 @@ const getSearchParams = (channelId: string, searchTerm?: string, filterValue?: F
 
 const emptyFileResults: FileInfo[] = [];
 
-const galleryIdentifier = 'search-files-location';
-
 function ChannelFiles({
-    channelId,
+    channel,
     teamId,
     canDownloadFiles,
     publicLinkEnabled,
 }: Props) {
     const theme = useTheme();
-    const insets = useSafeAreaInsets();
-    const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const {formatMessage} = useIntl();
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
-    const [action, setAction] = useState<GalleryAction>('none');
-    const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [loading, setLoading] = useState(true);
     const [term, setTerm] = useState('');
-    const numOptions = getNumberFileMenuOptions(canDownloadFiles, publicLinkEnabled);
 
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
 
-    const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
-    const filesForGallery = imageAttachments.concat(nonImageAttachments);
-
-    const orderedFileInfos = useMemo(() => getOrderedFileInfos(filesForGallery), [fileInfos]);
-    const fileInfosIndexes = useMemo(() => getFileInfosIndexes(orderedFileInfos), [fileInfos]);
-    const orderedGalleryItems = useMemo(() => getOrderedGalleryItems(orderedFileInfos), [fileInfos]);
-
     const handleSearch = useCallback(async (searchTerm: string, ftr: FileFilter) => {
-        const searchParams = getSearchParams(channelId, searchTerm, ftr);
+        const searchParams = getSearchParams(channel.id, searchTerm, ftr);
         const {files} = await searchFiles(serverUrl, teamId, searchParams);
-        setLoading(false);
         setFileInfos(files?.length ? files : emptyFileResults);
+        setLoading(false);
     }, [filter]);
 
     useEffect(() => {
@@ -130,33 +103,10 @@ function ChannelFiles({
         }
     }, [teamId, filter, term]);
 
-    const onPreviewPress = useCallback(preventDoubleTap((idx: number) => {
-        openGalleryAtIndex(galleryIdentifier, idx, orderedGalleryItems);
-    }), [orderedGalleryItems]);
-
-    const updateFileForGallery = (idx: number, file: FileInfo) => {
-        'worklet';
-        orderedFileInfos[idx] = file;
-    };
-
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);
         setFilter(filterValue);
     }, []);
-
-    const onOptionsPress = useCallback((fInfo: FileInfo) => {
-        setLastViewedFileInfo(fInfo);
-
-        if (!isTablet) {
-            showMobileOptionsBottomSheet({
-                fileInfo: fInfo,
-                insets,
-                numOptions,
-                setAction,
-                theme,
-            });
-        }
-    }, [insets, isTablet, numOptions, theme]);
 
     const clearSearch = useCallback(() => {
         setTerm('');
@@ -166,35 +116,6 @@ function ChannelFiles({
         setLoading(true);
         setTerm(searchTerm);
     }, []);
-
-    const renderItem = useCallback(({item}: ListRenderItemInfo<FileInfo>) => {
-        return (
-            <FileResult
-                canDownloadFiles={canDownloadFiles}
-                channelName={channelId}
-                fileInfo={item}
-                index={fileInfosIndexes[item.id!] || 0}
-                key={`${item.id}-${item.name}`}
-                numOptions={numOptions}
-                onOptionsPress={onOptionsPress}
-                onPress={onPreviewPress}
-                publicLinkEnabled={publicLinkEnabled}
-                setAction={setAction}
-                updateFileForGallery={updateFileForGallery}
-            />
-        );
-    }, [
-        (orderedFileInfos.length === 1) && orderedFileInfos[0].mime_type,
-        canDownloadFiles,
-        fileInfosIndexes,
-        onPreviewPress,
-        setAction,
-        publicLinkEnabled,
-    ]);
-
-    const noResults = useMemo(() => (
-        <NoResults/>
-    ), [theme.buttonBg]);
 
     return (
         <SafeAreaView
@@ -228,22 +149,13 @@ function ChannelFiles({
             }
             {!loading &&
                 <>
-                    <FlatList
-                        contentContainerStyle={orderedFileInfos.length ? styles.list : [styles.empty]}
-                        ListEmptyComponent={noResults}
-                        initialNumToRender={10}
-                        data={orderedFileInfos}
-                        refreshing={false}
-                        renderItem={renderItem}
-                        scrollToOverflowEnabled={true}
-                        scrollEventThrottle={16}
-                        showsVerticalScrollIndicator={true}
-                        testID={`${TEST_ID}.post_list.flat_list`}
-                    />
-                    <Toasts
-                        action={action}
-                        fileInfo={lastViewedFileInfo}
-                        setAction={setAction}
+                    <FileResults
+                        canDownloadFiles={canDownloadFiles}
+                        fileChannels={[channel]}
+                        fileInfos={fileInfos}
+                        paddingTop={{paddingTop: 0}}
+                        publicLinkEnabled={publicLinkEnabled}
+                        searchValue={term}
                     />
                 </>
             }

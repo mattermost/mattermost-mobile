@@ -23,7 +23,7 @@ const enhance = withObservables(['channelId'], ({channelId, database}: Props) =>
     const channel = observeChannel(database, channelId);
     return {
         teamId: team.pipe(switchMap((t) => of$(t?.id))),
-        channelId: channel.pipe(switchMap((c) => of$(c?.id))),
+        channel,
         canDownloadFiles: observeCanDownloadFiles(database),
         publicLinkEnabled: observeConfigBooleanValue(database, 'EnablePublicLink'),
     };

@@ -5,11 +5,11 @@ import React, {useMemo} from 'react';
 import {StyleSheet, useWindowDimensions, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
+import FileResults from '@components/files_search/file_results';
 import Loading from '@components/loading';
 import {useTheme} from '@context/theme';
 import {TabTypes, TabType} from '@utils/search';
 
-import FileResults from './file_results';
 import PostResults from './post_results';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
