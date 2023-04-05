@@ -7,12 +7,12 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
+import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, FilterData, NUMBER_FILTER_ITEMS} from '@components/files/file_filter';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
-import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, FilterData, NUMBER_FILTER_ITEMS} from '@utils/file/file_filter';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
