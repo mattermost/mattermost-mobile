@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, ListRenderItemInfo, Platform, StyleSheet, View} from 'react-native';
+import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {searchFiles} from '@actions/remote/search';
@@ -193,9 +193,7 @@ function ChannelFiles({
     ]);
 
     const noResults = useMemo(() => (
-        <View style={styles.empty}>
-            <NoResults/>
-        </View>
+        <NoResults/>
     ), [theme.buttonBg]);
 
     return (
