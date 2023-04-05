@@ -138,7 +138,7 @@ const ChannelIcon = ({
         {fontSize: size},
     ];
 
-    let icon;
+    let icon = null;
     if (isArchived) {
         icon = (
             <CompassIcon
@@ -221,7 +221,7 @@ const ChannelIcon = ({
         );
     }
 
-    return (<>{icon}</>);
+    return icon;
 };
 
 export default React.memo(ChannelIcon);
