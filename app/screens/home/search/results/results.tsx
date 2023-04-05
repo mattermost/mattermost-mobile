@@ -84,7 +84,7 @@ const Results = ({
     }, [selectedTab, width, !loading]);
 
     const paddingTop = useMemo(() => (
-        {paddingTop: scrollPaddingTop, flexGrow: 1}
+        {paddingTop: scrollPaddingTop}
     ), [scrollPaddingTop]);
 
     return (

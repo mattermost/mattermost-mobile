@@ -5,6 +5,7 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import NoResults from '@components/files_search/no_results';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -34,6 +35,7 @@ type Props = {
     paddingTop: StyleProp<ViewStyle>;
     publicLinkEnabled: boolean;
     searchValue: string;
+    isChannelFiles?: boolean;
 }
 
 const galleryIdentifier = 'search-files-location';
@@ -45,6 +47,7 @@ const FileResults = ({
     paddingTop,
     publicLinkEnabled,
     searchValue,
+    isChannelFiles,
 }: Props) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
@@ -53,7 +56,7 @@ const FileResults = ({
     const [action, setAction] = useState<GalleryAction>('none');
     const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
 
-    const containerStyle = useMemo(() => ([paddingTop, {top: fileInfos.length ? 8 : 0}]), [fileInfos, paddingTop]);
+    const containerStyle = useMemo(() => ([paddingTop, {top: fileInfos.length ? 8 : 0, flexGrow: 1}]), [fileInfos, paddingTop]);
     const numOptions = getNumberFileMenuOptions(canDownloadFiles, publicLinkEnabled);
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
@@ -109,16 +112,24 @@ const FileResults = ({
         channelNames,
         fileInfosIndexes,
         onPreviewPress,
-        setAction,
+        onOptionsPress,
+        numOptions,
         publicLinkEnabled,
     ]);
 
-    const noResults = useMemo(() => (
-        <NoResultsWithTerm
-            term={searchValue}
-            type={TabTypes.FILES}
-        />
-    ), [searchValue]);
+    const noResults = useMemo(() => {
+        if (!searchValue && isChannelFiles) {
+            return (
+                <NoResults/>
+            );
+        }
+        return (
+            <NoResultsWithTerm
+                term={searchValue}
+                type={TabTypes.FILES}
+            />
+        );
+    }, [searchValue]);
 
     return (
         <>

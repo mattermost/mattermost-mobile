@@ -3,12 +3,9 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
-import {switchMap} from 'rxjs/operators';
 
 import {observeChannel} from '@queries/servers/channel';
 import {observeCanDownloadFiles, observeConfigBooleanValue} from '@queries/servers/system';
-import {observeCurrentTeam} from '@queries/servers/team';
 
 import ChannelFiles from './channel_files';
 
@@ -19,10 +16,8 @@ type Props = WithDatabaseArgs & {
 }
 
 const enhance = withObservables(['channelId'], ({channelId, database}: Props) => {
-    const team = observeCurrentTeam(database);
     const channel = observeChannel(database, channelId);
     return {
-        teamId: team.pipe(switchMap((t) => of$(t?.id))),
         channel,
         canDownloadFiles: observeCanDownloadFiles(database),
         publicLinkEnabled: observeConfigBooleanValue(database, 'EnablePublicLink'),

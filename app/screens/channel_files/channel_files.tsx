@@ -24,7 +24,6 @@ const TEST_ID = 'channel_files';
 
 type Props = {
     channel: ChannelModel;
-    teamId: string;
     canDownloadFiles: boolean;
     publicLinkEnabled: boolean;
 }
@@ -68,7 +67,6 @@ const emptyFileResults: FileInfo[] = [];
 
 function ChannelFiles({
     channel,
-    teamId,
     canDownloadFiles,
     publicLinkEnabled,
 }: Props) {
@@ -84,10 +82,10 @@ function ChannelFiles({
 
     const handleSearch = useCallback(async (searchTerm: string, ftr: FileFilter) => {
         const searchParams = getSearchParams(channel.id, searchTerm, ftr);
-        const {files} = await searchFiles(serverUrl, teamId, searchParams);
+        const {files} = await searchFiles(serverUrl, channel.teamId, searchParams);
         setFileInfos(files?.length ? files : emptyFileResults);
         setLoading(false);
-    }, [filter]);
+    }, [serverUrl, channel]);
 
     useEffect(() => {
         if (term) {
@@ -101,7 +99,7 @@ function ChannelFiles({
         } else {
             handleSearch(term, filter);
         }
-    }, [teamId, filter, term]);
+    }, [filter, term]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);
@@ -156,6 +154,7 @@ function ChannelFiles({
                         paddingTop={{paddingTop: 0}}
                         publicLinkEnabled={publicLinkEnabled}
                         searchValue={term}
+                        isChannelFiles={true}
                     />
                 </>
             }

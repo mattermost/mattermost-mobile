@@ -61,11 +61,11 @@ const Header = ({
     const isTablet = useIsTablet();
     const hasFilters = selectedFilter !== FileFilters.ALL;
 
-    let messagesText = intl.formatMessage({id: `screen.${TEST_ID}.header.recent_files`, defaultMessage: 'Recent Files'});
+    let messagesText = intl.formatMessage({id: 'screen.channel_files.header.recent_files', defaultMessage: 'Recent Files'});
     if (hasFilters) {
         messagesText = intl.formatMessage({id: FilterData[selectedFilter].id, defaultMessage: FilterData[selectedFilter].defaultMessage});
     }
-    const title = intl.formatMessage({id: `screen.${TEST_ID}.results.filter.title`, defaultMessage: 'Filter by file type'});
+    const title = intl.formatMessage({id: 'screen.channel_files.results.filter.title', defaultMessage: 'Filter by file type'});
 
     const snapPoints = useMemo(() => {
         return [
