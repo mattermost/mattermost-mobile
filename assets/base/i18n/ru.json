@@ -1009,5 +1009,6 @@
     "mobile.channel_add_members.error": "Произошла ошибка, и мы не смогли добавить этих пользователей в канал.",
     "intro.add_members": "Добавить участников",
     "channel_info.add_members": "Добавить участников",
-    "channel_add_members.add_members.button": "Добавить участников"
+    "channel_add_members.add_members.button": "Добавить участников",
+    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {участник добавлен} few {участника добавлено} other {участников добавлено}}"
 }
