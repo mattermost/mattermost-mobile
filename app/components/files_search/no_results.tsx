@@ -13,11 +13,11 @@ const TEST_ID = 'channel_files';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     container: {
-        flex: 1,
-        alignItems: 'center',
-        justifyContent: 'center',
-        paddingHorizontal: 40,
-        maxWidth: 480,
+        flexGrow: 1,
+        paddingHorizontal: 32,
+        height: '100%',
+        alignItems: 'center' as const,
+        justifyContent: 'center' as const,
     },
     title: {
         color: theme.centerChannelColor,
