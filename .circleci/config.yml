@@ -484,8 +484,8 @@ workflows:
   build:
     jobs:
       - test
-      - sec:
-          context: mattermost-mobile-unsigned
+      # - sec:
+      #     context: mattermost-mobile-unsigned
       # - check-deps:
       #     context: sast-webhook
       #     requires:

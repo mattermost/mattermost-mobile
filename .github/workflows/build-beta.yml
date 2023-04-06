@@ -75,9 +75,11 @@ jobs:
       - name: ci/build-ios-simulator
         env:
           TAG: "${{ github.ref_name }}"
+          AWS_ACCESS_KEY_ID: "${{ secrets.MM_MOBILE_BETA_AWS_ACCESS_KEY_ID }}"
+          AWS_SECRET_ACCESS_KEY: "${{ secrets.MM_MOBILE_BETA_AWS_SECRET_ACCESS_KEY }}"
           MATTERMOST_WEBHOOK_URL: "${{ secrets.MM_MOBILE_BETA_MATTERMOST_WEBHOOK_URL }}"
           GITHUB_TOKEN: "${{ secrets.MM_MOBILE_GITHUB_TOKEN }}"
-        run: bundle exec fastlane ios simulator
+        run: bundle exec fastlane ios simulator --env ios.simulator
         working-directory: ./fastlane
 
       - name: ci/upload-ios-pr-simulator
