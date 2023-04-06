@@ -99,7 +99,7 @@ function ChannelFiles({
         } else {
             handleSearch(term, filter);
         }
-    }, [filter, term]);
+    }, [filter, term, handleSearch]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
         setLoading(true);

@@ -63,9 +63,9 @@ const FileResults = ({
     const filesForGallery = imageAttachments.concat(nonImageAttachments);
 
     const channelNames = useMemo(() => getChannelNamesWithID(fileChannels), [fileChannels]);
-    const orderedFileInfos = useMemo(() => getOrderedFileInfos(filesForGallery), []);
-    const fileInfosIndexes = useMemo(() => getFileInfosIndexes(orderedFileInfos), []);
-    const orderedGalleryItems = useMemo(() => getOrderedGalleryItems(orderedFileInfos), []);
+    const orderedFileInfos = useMemo(() => getOrderedFileInfos(filesForGallery), [filesForGallery]);
+    const fileInfosIndexes = useMemo(() => getFileInfosIndexes(orderedFileInfos), [orderedFileInfos]);
+    const orderedGalleryItems = useMemo(() => getOrderedGalleryItems(orderedFileInfos), [orderedFileInfos]);
 
     const onPreviewPress = useCallback(preventDoubleTap((idx: number) => {
         openGalleryAtIndex(galleryIdentifier, idx, orderedGalleryItems);
@@ -91,10 +91,14 @@ const FileResults = ({
     }, [insets, isTablet, numOptions, theme]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<FileInfo>) => {
+        let channelName: string | undefined;
+        if (!isChannelFiles) {
+            channelName = channelNames[item.channel_id!];
+        }
         return (
             <FileResult
                 canDownloadFiles={canDownloadFiles}
-                channelName={channelNames[item.channel_id!]}
+                channelName={channelName}
                 fileInfo={item}
                 index={fileInfosIndexes[item.id!] || 0}
                 key={`${item.id}-${item.name}`}

@@ -45,7 +45,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
         badge: {
             backgroundColor: theme.buttonBg,
             borderColor: theme.centerChannelBg,
-            marginTop: 8,
+            marginTop: 2,
         },
         buttonsContainer: {
             marginBottom: 12,
