@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, View} from 'react-native';
+import {Platform, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {searchFiles} from '@actions/remote/search';
@@ -47,8 +47,9 @@ const styles = StyleSheet.create({
         flex: 1,
     },
     searchBar: {
-        paddingHorizontal: 20,
-        paddingTop: 20,
+        marginLeft: 20,
+        marginRight: Platform.select({ios: 12, default: 20}),
+        marginTop: 20,
     },
 });
 
@@ -102,7 +103,6 @@ function ChannelFiles({
     }, [filter, term, handleSearch]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
-        setLoading(true);
         setFilter(filterValue);
     }, []);
 
@@ -111,9 +111,11 @@ function ChannelFiles({
     }, []);
 
     const onTextChange = useCallback((searchTerm: string) => {
-        setLoading(true);
-        setTerm(searchTerm);
-    }, []);
+        if (term !== searchTerm){
+            setLoading(true);
+            setTerm(searchTerm);
+        }
+    }, [term]);
 
     return (
         <SafeAreaView
