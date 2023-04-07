@@ -111,7 +111,7 @@ function ChannelFiles({
     }, []);
 
     const onTextChange = useCallback((searchTerm: string) => {
-        if (term !== searchTerm){
+        if (term !== searchTerm) {
             setLoading(true);
             setTerm(searchTerm);
         }
