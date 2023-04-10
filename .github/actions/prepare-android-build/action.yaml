@@ -10,7 +10,7 @@ runs:
   using: composite
   steps:
     - name: ci/prepare-mobile-build
-      uses: ./.github/actios/prepare-mobile-build
+      uses: ./.github/actions/prepare-mobile-build
 
     # Disable this since we are not caching anything for now
     # - name: ci/install-gradle-dependencies
@@ -29,20 +29,16 @@ runs:
         echo "::endgroup::"
 
     - name: ci/checkout-private-repo
-      if: ${{ inputs.sign == "true" }}
+      if: ${{ inputs.sign == 'true' }}
       uses: actions/checkout@ac593985615ec2ede58e132d2e21d2b1cbd6127c # v3.3.0
       with:
         repository: mattermost/mattermost-mobile-private
-        token: ${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}
+        token: ${{ env.MATTERMOST_BUILD_GH_TOKEN }}
         path: ${{ github.workspace }}/mattermost-mobile-private
 
     - name: ci/append-keystore-to-android-build-for-signing
-      if: ${{ inputs.sign == "true" }}
+      if: ${{ inputs.sign == 'true' }}
       shell: bash
-      env:
-        STORE_FILE: ${{ secrets.MM_MOBILE_STORE_FILE }}
-        STORE_ALIAS: ${{ secrets.MM_MOBILE_STORE_ALIAS }}
-        STORE_PASSWORD: ${{ secrets.MM_MOBILE_STORE_PASSWORD }}
       run: |
         echo "::group::append-keystore-to-android-build-for-signing"
         cp ${{ github.workspace }}/mattermost-mobile-private/android/${STORE_FILE} android/app/${STORE_FILE}

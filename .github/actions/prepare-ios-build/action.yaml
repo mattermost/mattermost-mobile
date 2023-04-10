@@ -14,7 +14,7 @@ runs:
         echo "::endgroup::"
 
     - name: ci/prepare-mobile-build
-      uses: ./.github/actios/prepare-mobile-build
+      uses: ./.github/actions/prepare-mobile-build
 
     - name: ci/install-pods-dependencies
       shell: bash

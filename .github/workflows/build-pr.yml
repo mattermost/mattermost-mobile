@@ -65,6 +65,11 @@ jobs:
 
       - name: ci/prepare-android-build
         uses: ./.github/actions/prepare-android-build
+        env:
+          STORE_FILE: "${{ secrets.MM_MOBILE_STORE_FILE }}"
+          STORE_ALIAS: "${{ secrets.MM_MOBILE_STORE_ALIAS }}"
+          STORE_PASSWORD: "${{ secrets.MM_MOBILE_STORE_PASSWORD }}"
+          MATTERMOST_BUILD_GH_TOKEN: "${{ secrets.MATTERMOST_BUILD_GH_TOKEN }}"
 
       - name: ci/build-android-pr
         env:
