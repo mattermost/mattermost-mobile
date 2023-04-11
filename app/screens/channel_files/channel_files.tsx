@@ -78,28 +78,30 @@ function ChannelFiles({
     const [filter, setFilter] = useState<FileFilter>(FileFilters.ALL);
     const [loading, setLoading] = useState(true);
     const [term, setTerm] = useState('');
+    const lastSearchRequest = useRef<number>();
 
     const [fileInfos, setFileInfos] = useState<FileInfo[]>(emptyFileResults);
 
     const handleSearch = useCallback(async (searchTerm: string, ftr: FileFilter) => {
+        const t = Date.now();
+        lastSearchRequest.current = t;
         const searchParams = getSearchParams(channel.id, searchTerm, ftr);
         const {files} = await searchFiles(serverUrl, channel.teamId, searchParams);
+        if (lastSearchRequest.current !== t) {
+            return;
+        }
         setFileInfos(files?.length ? files : emptyFileResults);
         setLoading(false);
     }, [serverUrl, channel]);
 
     useEffect(() => {
-        if (term) {
-            if (searchTimeoutId.current) {
-                clearTimeout(searchTimeoutId.current);
-            }
-
-            searchTimeoutId.current = setTimeout(() => {
-                handleSearch(term, filter);
-            }, General.SEARCH_TIMEOUT_MILLISECONDS);
-        } else {
-            handleSearch(term, filter);
+        if (searchTimeoutId.current) {
+            clearTimeout(searchTimeoutId.current);
         }
+
+        searchTimeoutId.current = setTimeout(() => {
+            handleSearch(term, filter);
+        }, General.SEARCH_TIMEOUT_MILLISECONDS);
     }, [filter, term, handleSearch]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
@@ -148,17 +150,15 @@ function ChannelFiles({
                 />
             }
             {!loading &&
-                <>
-                    <FileResults
-                        canDownloadFiles={canDownloadFiles}
-                        fileChannels={[channel]}
-                        fileInfos={fileInfos}
-                        paddingTop={{paddingTop: 0}}
-                        publicLinkEnabled={publicLinkEnabled}
-                        searchValue={term}
-                        isChannelFiles={true}
-                    />
-                </>
+            <FileResults
+                canDownloadFiles={canDownloadFiles}
+                fileChannels={[channel]}
+                fileInfos={fileInfos}
+                paddingTop={{paddingTop: 0}}
+                publicLinkEnabled={publicLinkEnabled}
+                searchValue={term}
+                isChannelFiles={true}
+            />
             }
         </SafeAreaView>
     );
