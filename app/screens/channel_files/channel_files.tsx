@@ -105,6 +105,7 @@ function ChannelFiles({
     }, [filter, term, handleSearch]);
 
     const handleFilterChange = useCallback(async (filterValue: FileFilter) => {
+        setLoading(true);
         setFilter(filterValue);
     }, []);
 
