@@ -4,10 +4,9 @@ name: build-release
 on:
   push:
     branches:
-      # TODO: remove the `gha-` to match the current workflow again
-      - "build-gha-release-*"
-      - "build-gha-ios-release-*"
-      - "build-gha-android-release-*"
+      - "build-release-*"
+      - "build-ios-release-*"
+      - "build-android-release-*"
 
 env:
   NODE_VERSION: 18.7.0
@@ -33,6 +32,15 @@ jobs:
 
       - name: ci/prepare-ios-build
         uses: ./.github/actions/prepare-ios-build
+
+      - name: ci/output-ssh-private-key
+        shell: bash
+        run: |
+          SSH_KEY_PATH=~/.ssh/id_ed25519
+          mkdir -p ~/.ssh
+          echo -e '${{ secrets.MM_MOBILE_PRIVATE_DEPLOY_KEY }}' > ${SSH_KEY_PATH}
+          chmod 0600 ${SSH_KEY_PATH}
+          ssh-keygen -y -f ${SSH_KEY_PATH} > ${SSH_KEY_PATH}.pub
 
       - name: ci/build-and-deploy-ios-release
         env:

@@ -3,10 +3,9 @@ name: build-pr
 on:
   push:
     branches:
-      # TODO: remove the `gha-` to match the current workflow again
-      - "build-gha-pr-*"
-      - "ios-gha-pr-*"
-      - "android-gha-pr-*"
+      - "build-pr-*"
+      - "ios-pr-*"
+      - "android-pr-*"
 
 env:
   NODE_VERSION: 18.7.0
