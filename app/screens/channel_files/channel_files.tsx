@@ -159,6 +159,7 @@ function ChannelFiles({
                 publicLinkEnabled={publicLinkEnabled}
                 searchValue={term}
                 isChannelFiles={true}
+                isFilterEnabled={filter !== FileFilters.ALL}
             />
             }
         </SafeAreaView>

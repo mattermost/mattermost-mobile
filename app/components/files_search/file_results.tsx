@@ -36,6 +36,7 @@ type Props = {
     publicLinkEnabled: boolean;
     searchValue: string;
     isChannelFiles?: boolean;
+    isFilterEnabled?: boolean;
 }
 
 const galleryIdentifier = 'search-files-location';
@@ -48,6 +49,7 @@ const FileResults = ({
     publicLinkEnabled,
     searchValue,
     isChannelFiles,
+    isFilterEnabled,
 }: Props) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
@@ -124,7 +126,7 @@ const FileResults = ({
     const noResults = useMemo(() => {
         if (!searchValue && isChannelFiles) {
             return (
-                <NoResults/>
+                <NoResults isFilterEnabled={isFilterEnabled}/>
             );
         }
         return (

@@ -98,6 +98,8 @@
   "channel_add_members.add_members.button": "Add Members",
   "channel_files.empty.paragraph": "Files posted in this channel will show here.",
   "channel_files.empty.title": "No files yet",
+  "channel_files.noFiles.paragraph": "This channel doesn't contain any files with the applied filters",
+  "channel_files.noFiles.title": "No files Found",
   "channel_header.directchannel.you": "{displayName} (you)",
   "channel_header.info": "View info",
   "channel_header.member_count": "{count, plural, one {# member} other {# members}}",

@@ -32,25 +32,48 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => ({
     },
 }));
 
-function NoResults() {
+type Props = {
+    isFilterEnabled?: boolean;
+}
+function NoResults({isFilterEnabled}: Props) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
     return (
         <View style={styles.container}>
             <SearchFilesIllustration/>
-            <FormattedText
-                defaultMessage='No files yet'
-                id='channel_files.empty.title'
-                style={styles.title}
-                testID={`${TEST_ID}.empty.title`}
-            />
-            <FormattedText
-                defaultMessage={'Files posted in this channel will show here.'}
-                id='channel_files.empty.paragraph'
-                style={styles.paragraph}
-                testID={`${TEST_ID}.empty.paragraph`}
-            />
+            {!isFilterEnabled && (
+                <>
+                    <FormattedText
+                        defaultMessage='No files yet'
+                        id='channel_files.empty.title'
+                        style={styles.title}
+                        testID={`${TEST_ID}.empty.title`}
+                    />
+                    <FormattedText
+                        defaultMessage={'Files posted in this channel will show here.'}
+                        id='channel_files.empty.paragraph'
+                        style={styles.paragraph}
+                        testID={`${TEST_ID}.empty.paragraph`}
+                    />
+                </>
+            )}
+            {isFilterEnabled && (
+                <>
+                    <FormattedText
+                        defaultMessage='No files Found'
+                        id='channel_files.noFiles.title'
+                        style={styles.title}
+                        testID={`${TEST_ID}.empty.title`}
+                    />
+                    <FormattedText
+                        defaultMessage={'This channel doesn\'t contain any files with the applied filters'}
+                        id='channel_files.noFiles.paragraph'
+                        style={styles.paragraph}
+                        testID={`${TEST_ID}.empty.paragraph`}
+                    />
+                </>
+            )}
         </View>
     );
 }
