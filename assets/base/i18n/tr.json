@@ -869,7 +869,7 @@
     "mobile.calls_limit_msg_GA": "{maxParticipants} üzerinde katılımcılı grup aramaları yapabilmek için Cloud Professional ya da Cloud Enterprise tarifesine yükseltin.",
     "mobile.calls_host_rec_stopped_title": "Kayıt durduruldu. İşleniyor...",
     "mobile.calls_host_rec_stopped": "İşlenmesi tamamlandığında, kaydı bu görüşmenin sohbet konusunda bulabilirsiniz.",
-    "mobile.calls_host_rec": "Bu toplantıyı kaydediyorsunuz. Bu toplantının kaydedildiğinin herkese bildirilmesi değerlendirin.",
+    "mobile.calls_host_rec": "Bu toplantıyı kaydediyorsunuz. Bu toplantının kaydedildiğinin herkese bildirilmesini değerlendirin.",
     "join_team.error.title": "Bir takıma katılınırken sorun çıktı",
     "join_team.error.message": "Takıma katılınırken bir sorun çıktı",
     "join_team.error.group_error": "Bu takıma katılmak için ilişkilendirilmiş bir grubun üyesi olmalısınız.",
