@@ -1010,5 +1010,6 @@
     "mobile.channel_add_members.error": "Bir sorun çıktığından bu kullanıcılar kanala eklenemedi.",
     "intro.add_members": "Üye ekle",
     "channel_info.add_members": "Üye ekle",
-    "channel_add_members.add_members.button": "Üye ekle"
+    "channel_add_members.add_members.button": "Üye ekle",
+    "mobile.diagnostic_id.empty": "Bu sunucu için bir DiagnosticId değeri eksik. Bu değeri gözden geçirmek ve sunucuyu yeniden başlatmak için sistem yöneticinizle görüşün."
 }
