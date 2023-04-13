@@ -938,7 +938,7 @@
     "share_extension.message": "Bir ileti yazın (isteğe bağlı)",
     "share_extension.max_resolution": "Görsel olabilecek en büyük 7680 x 4320 piksel boyutundan büyük",
     "invite.summary.report.notSent": "{count} {count, plural, one {çağrı} other {çağrı}} gönderilemedi",
-    "mobile.calls_start_call_exists": "Kanalda süren bir çağrı var.",
+    "mobile.calls_start_call_exists": "Kanalda zaten süren bir çağrı var.",
     "mobile.calls_not_connected": "Geçerli kanalda bir çağrıya bağlı değilsiniz.",
     "invite.title.summary": "Çağrı özeti",
     "invite.title": "Çağır",
