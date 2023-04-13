@@ -147,3 +147,21 @@ export type ReactionStreamEmoji = {
     count: number;
     literal?: string;
 };
+
+export type ColorRGB = {
+    r: number;
+    g: number;
+    b: number;
+};
+
+export type ColorHSL = {
+    h: number;
+    s: number;
+    l: number;
+};
+
+export type CallsTheme = Theme & {
+    callsBg: string;
+    callsBgRgb: string;
+    callsBadgeBg: string;
+};

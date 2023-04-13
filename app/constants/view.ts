@@ -22,7 +22,7 @@ export const SEARCH_INPUT_HEIGHT = Platform.select({android: 40, default: 36});
 export const SEARCH_INPUT_MARGIN = 5;
 
 export const JOIN_CALL_BAR_HEIGHT = 38;
-export const CURRENT_CALL_BAR_HEIGHT = 74;
+export const CURRENT_CALL_BAR_HEIGHT = 68;
 export const CALL_ERROR_BAR_HEIGHT = 62;
 
 export const ANNOUNCEMENT_BAR_HEIGHT = 40;

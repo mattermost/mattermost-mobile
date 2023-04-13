@@ -20,6 +20,7 @@ const styles = StyleSheet.create({
     loading: {
         paddingLeft: 8,
         paddingRight: 8,
+        marginRight: 8,
         color: 'white',
         height: 34,
         backgroundColor: 'rgba(255, 255, 255, 0.16)',
@@ -27,6 +28,7 @@ const styles = StyleSheet.create({
     recording: {
         paddingLeft: 8,
         paddingRight: 8,
+        marginRight: 8,
         color: 'white',
         height: 34,
         backgroundColor: '#D24B4E',
