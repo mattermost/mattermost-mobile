@@ -587,7 +587,7 @@
     "mobile.calls_viewing_screen": "Вы просматриваете экран {name}",
     "mobile.calls_unmute": "Включить звук",
     "mobile.calls_start_call": "Позвонить",
-    "mobile.calls_speaker": "Докладчик",
+    "mobile.calls_speaker": "Динамик",
     "notification_settings.pushNotification.nothing": "Ничего",
     "notification_settings.pushNotification.mentions_only": "Только упоминания, личные сообщения (по умолчанию)",
     "notification_settings.pushNotification.disabled_long": "Push-уведомления для мобильных устройств были отключены вашим системным администратором.",
