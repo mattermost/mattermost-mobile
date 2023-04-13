@@ -143,7 +143,7 @@ const MoreMessages = ({
                     shownTop + (adjustTop ? 0 : insets.top),
                     shownTop + (adjustTop ? 0 : insets.top),
                 ],
-                Animated.Extrapolate.CLAMP,
+                'clamp',
             ), {damping: 15}),
         }],
     }), [shownTop, insets.top, adjustTop]);
@@ -245,8 +245,8 @@ const MoreMessages = ({
     }, [channelId]);
 
     return (
-        <Animated.View style={[styles.animatedContainer, styles.roundBorder, animatedStyle]}>
-            <View style={styles.container}>
+        <Animated.View style={[styles.animatedContainer, animatedStyle]}>
+            <View style={[styles.container, styles.roundBorder]}>
                 <TouchableWithFeedback
                     type={'opacity'}
                     onPress={onPress}

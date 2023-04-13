@@ -9,7 +9,6 @@ import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
 
 import type {ReadDirItem, StatResult} from 'react-native-fs';
 
-require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 require('isomorphic-fetch');
 
 /* eslint-disable no-console */
@@ -372,6 +371,8 @@ jest.mock('@mattermost/react-native-emm', () => ({
 }));
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
+
+jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
 
 declare const global: {requestAnimationFrame: (callback: any) => void};
 global.requestAnimationFrame = (callback) => {

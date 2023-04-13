@@ -85,18 +85,18 @@ const Pager = ({
 
     // S2: Pager Size & Others
     const [activeIndex, setActiveIndex] = useState(initialIndex);
-    const activeIndexRef = useRef(activeIndex);
+    const activeIndexRef = useSharedValue(activeIndex);
 
     const updateIndex = (nextIndex: number) => {
         setActiveIndex(nextIndex);
-        activeIndexRef.current = nextIndex;
+        activeIndexRef.value = nextIndex;
     };
 
     const index = useSharedValue(initialIndex);
     const length = useSharedValue(totalCount);
     const pagerX = useSharedValue(0);
     const toValueAnimation = useSharedValue(getPageTranslate(initialIndex));
-    const offsetX = useDerivedValue(() => getPageTranslate(activeIndexRef.current), [width]);
+    const offsetX = useDerivedValue(() => getPageTranslate(activeIndexRef.value), [width]);
     const totalWidth = useDerivedValue(() => ((length.value * width) + ((gutterWidthToUse * length.value) - 2)), [width]);
 
     const onIndexChangeCb = useCallback((nextIndex: number) => {
