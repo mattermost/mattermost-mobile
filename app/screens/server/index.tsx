@@ -320,7 +320,7 @@ const Server = ({
         if (!data.config?.DiagnosticId) {
             setUrlError(formatMessage({
                 id: 'mobile.diagnostic_id.empty',
-                defaultMessage: 'The server you are trying to access doesn\'t have a DiagnosticId set. Contact the system admin to check the configuration and make sure the DiagnosticId is set.',
+                defaultMessage: 'A DiagnosticId value is missing for this server. Contact the system admin to ensure this value is set, then try logging in again.',
             }));
             setConnecting(false);
             return;

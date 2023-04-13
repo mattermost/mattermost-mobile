@@ -504,7 +504,7 @@
   "mobile.custom_status.clear_after": "Clear After",
   "mobile.custom_status.clear_after.title": "Clear Custom Status After",
   "mobile.custom_status.modal_confirm": "Done",
-  "mobile.diagnostic_id.empty": "The server you are trying to access doesn't have a DiagnosticId set. Contact the system admin to check the configuration and make sure the DiagnosticId is set.",
+  "mobile.diagnostic_id.empty": "A DiagnosticId value is missing for this server. Contact the system admin to ensure this value is set, then try logging in again.",
   "mobile.direct_message.error": "We couldn't open a DM with {displayName}.",
   "mobile.display_settings.clockDisplay": "Clock Display",
   "mobile.display_settings.crt": "Collapsed Reply Threads",
