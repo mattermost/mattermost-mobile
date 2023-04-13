@@ -385,7 +385,7 @@ PODS:
     - React-Core
   - react-native-netinfo (9.3.7):
     - React-Core
-  - react-native-network-client (1.3.2):
+  - react-native-network-client (1.3.3):
     - Alamofire (~> 5.6.4)
     - React-Core
     - Starscream (~> 4.0.4)
@@ -500,7 +500,7 @@ PODS:
     - React-perflogger (= 0.71.3)
   - ReactNativeExceptionHandler (2.10.10):
     - React-Core
-  - ReactNativeIncallManager (4.0.0):
+  - ReactNativeIncallManager (4.0.1):
     - React-Core
   - ReactNativeKeyboardTrackingView (5.7.0):
     - React
@@ -977,7 +977,7 @@ SPEC CHECKSUMS:
   react-native-image-picker: a5dddebb4d2955ac4712a4ed66b00a85f62a63ac
   react-native-in-app-review: a073f67c5f3392af6ea7fb383217cdb1aa2aa726
   react-native-netinfo: 2517ad504b3d303e90d7a431b0fcaef76d207983
-  react-native-network-client: 08bf5a8ad300192768ffa2c6fc929d2bba9a27aa
+  react-native-network-client: 8435c8ba294738b52988144151e6144dbf125ce8
   react-native-notifications: 83b4fd4a127a6c918fc846cae90da60f84819e44
   react-native-paste-input: 3392800944a47c00dddbff23c31c281482209679
   react-native-safe-area-context: 39c2d8be3328df5d437ac1700f4f3a4f75716acc
@@ -999,7 +999,7 @@ SPEC CHECKSUMS:
   React-runtimeexecutor: 7bf0dafc7b727d93c8cb94eb00a9d3753c446c3e
   ReactCommon: 6f65ea5b7d84deb9e386f670dd11ce499ded7b40
   ReactNativeExceptionHandler: b11ff67c78802b2f62eed0e10e75cb1ef7947c60
-  ReactNativeIncallManager: b169b57d3064d8f62478f8fc3c485da6c75045d1
+  ReactNativeIncallManager: 0d2cf9f4d50359728a30c08549762fe67a2efb81
   ReactNativeKeyboardTrackingView: 02137fac3b2ebd330d74fa54ead48b14750a2306
   ReactNativeNavigation: d79d9d53e6025851936bb8b3d13760b86302a669
   RNCClipboard: 2834e1c4af68697089cdd455ee4a4cdd198fa7dd
@@ -1033,6 +1033,6 @@ SPEC CHECKSUMS:
   Yoga: 5ed1699acbba8863755998a4245daa200ff3817b
   YogaKit: f782866e155069a2cca2517aafea43200b01fd5a
 
-PODFILE CHECKSUM: 831b649321a4d14a86a074af619aa779ebc048c4
+PODFILE CHECKSUM: d9e18775c813b659151191bf022a4919ef99438d
 
 COCOAPODS: 1.11.3

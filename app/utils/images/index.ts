@@ -7,7 +7,7 @@ import 'react-native-reanimated';
 import {View} from '@constants';
 import {IMAGE_MAX_HEIGHT, IMAGE_MIN_DIMENSION, MAX_GIF_SIZE, VIEWPORT_IMAGE_OFFSET, VIEWPORT_IMAGE_REPLY_OFFSET} from '@constants/image';
 
-export const calculateDimensions = (height: number, width: number, viewPortWidth = 0, viewPortHeight = 0) => {
+export const calculateDimensions = (height?: number, width?: number, viewPortWidth = 0, viewPortHeight = 0) => {
     'worklet';
 
     if (!height || !width) {

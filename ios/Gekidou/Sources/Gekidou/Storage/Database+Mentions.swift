@@ -19,7 +19,7 @@ extension Database {
         SELECT SUM(my.mentions_count) \
         FROM MyChannel my \
         INNER JOIN MyChannelSettings mys ON mys.id=my.id \
-        INNER JOIN Channel c ON c.id=my.id \
+        INNER JOIN Channel c INDEXED BY sqlite_autoindex_Channel_1 ON c.id=my.id \
         WHERE c.delete_at = 0 AND mys.notify_props NOT LIKE '%"mark_unread":"mention"%'
         """
         let mentions = try? db.prepare(stmtString).scalar() as? Double
@@ -28,11 +28,12 @@ extension Database {
 
     public func getThreadMentions(_ db: Connection) -> Int {
         let stmtString = """
-        SELECT SUM(unread_mentions) \
-        FROM Thread t
-        INNER JOIN Post p ON t.id=p.id \
-        INNER JOIN Channel c ON p.channel_id=c.id
-        WHERE c.delete_at = 0
+        SELECT SUM(t.unread_mentions) \
+        FROM Thread t \
+        INNER JOIN Post p INDEXED BY Post_channel_id ON t.id=p.id \
+        INNER JOIN Channel c ON p.channel_id=c.id \
+        INNER JOIN MyChannelSettings mys ON mys.id=c.id \
+        WHERE c.delete_at = 0 AND mys.notify_props NOT LIKE '%"mark_unread":"mention"%'
         """
         let mentions = try? db.prepare(stmtString).scalar() as? Double
         return Int(mentions ?? 0)

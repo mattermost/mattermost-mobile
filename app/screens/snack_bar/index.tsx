@@ -28,13 +28,12 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {AvailableScreens} from '@typings/screens/navigation';
+import type {ShowSnackBarArgs} from '@utils/snack_bar';
 
 type SnackBarProps = {
     componentId: AvailableScreens;
-    onAction?: () => void;
-    barType: keyof typeof SNACK_BAR_TYPE;
     sourceScreen: AvailableScreens;
-}
+} & ShowSnackBarArgs;
 
 const SNACK_BAR_WIDTH = 96;
 const SNACK_BAR_HEIGHT = 56;
@@ -81,7 +80,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps) => {
+const SnackBar = ({
+    barType,
+    messageValues,
+    componentId,
+    onAction,
+    sourceScreen,
+}: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
     const theme = useTheme();
@@ -245,7 +250,10 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
                     <Toast
                         animatedStyle={snackBarStyle}
                         iconName={config.iconName}
-                        message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
+                        message={intl.formatMessage(
+                            {id: config.id, defaultMessage: config.defaultMessage},
+                            messageValues,
+                        )}
                         style={[styles.toast, barType === SNACK_BAR_TYPE.LINK_COPIED && {backgroundColor: theme.onlineIndicator}]}
                         textStyle={styles.text}
                     >

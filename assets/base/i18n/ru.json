@@ -352,8 +352,8 @@
     "suggestion.search.public": "Публичные каналы",
     "threads": "Обсуждения",
     "threads.deleted": "Исходное сообщение удалено",
-    "threads.follow": "Следить",
-    "threads.following": "Следующий",
+    "threads.follow": "Отслеживать",
+    "threads.following": "Отслеживается",
     "threads.followMessage": "Подписаться на сообщение",
     "threads.followThread": "Следить за обсуждением",
     "threads.newReplies": "{count} {count, plural, one {новый ответ} few {новых ответа} other {новых ответов}}",
@@ -500,7 +500,6 @@
     "channel_modal.purposeEx": "Канал для отправки сообщений об ошибках и улучшениях",
     "intro.created_by": "создано {creator} {date}.",
     "intro.channel_info": "Информация",
-    "intro.add_people": "Добавить людей",
     "integration_selector.multiselect.submit": "Готово",
     "home.header.plus_menu": "Опции",
     "global_threads.options.title": "Действия обсуждений",
@@ -1006,5 +1005,9 @@
     "channel_notification_preferences.notification.all": "Все новые сообщения",
     "channel_notification_preferences.muted_title": "На этом канале уведомления отключены",
     "channel_notification_preferences.muted_content": "Вы можете изменить настройки уведомлений, но вы не будете получать уведомления, пока вы не включите их для канала обратно.",
-    "channel_notification_preferences.default": "(по умолчанию)"
+    "channel_notification_preferences.default": "(по умолчанию)",
+    "mobile.channel_add_members.error": "Произошла ошибка, и мы не смогли добавить этих пользователей в канал.",
+    "intro.add_members": "Добавить участников",
+    "channel_info.add_members": "Добавить участников",
+    "channel_add_members.add_members.button": "Добавить участников"
 }

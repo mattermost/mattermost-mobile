@@ -18,7 +18,8 @@
         "autoBreadcrumbs": {
             "xhr": false,
             "console": true
-        }
+        },
+        "severityLevelFilter": ["fatal"]
     },
 
     "ShowReview": false,

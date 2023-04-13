@@ -73,16 +73,19 @@ public class PushNotification: NSObject {
             let url = Network.default.buildApiUrl(ackNotification.serverUrl, endpoint)
             Network.default.request(
                 url, withMethod: "POST", withBody: jsonData,
-                andHeaders: headers, forServerUrl: ackNotification.serverUrl) { data, response, error in
-                    if (error != nil && ackNotification.isIdLoaded) {
-                        let backoffInSeconds = self.fibonacciBackoffsInSeconds[self.retryIndex]
-                        self.retryIndex += 1
+                andHeaders: headers, forServerUrl: ackNotification.serverUrl) {[weak self] data, response, error in
+                    if error != nil && ackNotification.isIdLoaded,
+                       let fibonacciBackoffsInSeconds = self?.fibonacciBackoffsInSeconds,
+                       let retryIndex = self?.retryIndex,
+                       fibonacciBackoffsInSeconds.count > retryIndex {
+                        let backoffInSeconds = fibonacciBackoffsInSeconds[retryIndex]
+                        self?.retryIndex += 1
 
                         DispatchQueue.main.asyncAfter(deadline: .now() + backoffInSeconds, execute: {[weak self] in
                             os_log(
                               OSLogType.default,
                               "Mattermost Notifications: receipt retrieval failed. Retry %{public}@",
-                              String(describing: self?.retryIndex)
+                              String(retryIndex)
                             )
                             self?.postNotificationReceiptWithRetry(ackNotification, completionHandler: completionHandler)
                         })
@@ -94,6 +97,7 @@ public class PushNotification: NSObject {
                 }
         } catch {
             os_log(OSLogType.default, "Mattermost Notifications: receipt failed %{public}@", error.localizedDescription)
+            completionHandler(nil)
         }
     }
     

@@ -52,13 +52,22 @@ const Button = ({
         textStyle,
     ], [theme, textStyle, size, emphasis, buttonType]);
 
+    const containerStyle = useMemo(
+        () =>
+            (iconSize ? [
+                styles.container,
+                {minHeight: iconSize},
+            ] : styles.container),
+        [iconSize],
+    );
+
     return (
         <RNButton
             containerStyle={bgStyle}
             onPress={onPress}
             testID={testID}
         >
-            <View style={styles.container}>
+            <View style={containerStyle}>
                 {Boolean(iconName) &&
                 <CompassIcon
                     name={iconName!}

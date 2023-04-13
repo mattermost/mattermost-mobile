@@ -5,6 +5,7 @@ import React, {useCallback} from 'react';
 import {StyleSheet, View} from 'react-native';
 
 import ChannelInfoStartButton from '@calls/components/channel_info_start';
+import AddMembersBox from '@components/channel_actions/add_members_box';
 import CopyChannelLinkBox from '@components/channel_actions/copy_channel_link_box';
 import FavoriteBox from '@components/channel_actions/favorite_box';
 import MutedBox from '@components/channel_actions/mute_box';
@@ -13,8 +14,6 @@ import {useServerUrl} from '@context/server';
 import {dismissBottomSheet} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
 
-// import AddPeopleBox from '@components/channel_actions/add_people_box';
-
 type Props = {
     channelId: string;
     channelType?: ChannelType;
@@ -22,6 +21,7 @@ type Props = {
     dismissChannelInfo: () => void;
     callsEnabled: boolean;
     testID?: string;
+    canManageMembers: boolean;
 }
 
 export const CHANNEL_ACTIONS_OPTIONS_HEIGHT = 62;
@@ -36,7 +36,15 @@ const styles = StyleSheet.create({
     },
 });
 
-const ChannelActions = ({channelId, channelType, inModal = false, dismissChannelInfo, callsEnabled, testID}: Props) => {
+const ChannelActions = ({
+    channelId,
+    channelType,
+    inModal = false,
+    dismissChannelInfo,
+    callsEnabled,
+    canManageMembers,
+    testID,
+}: Props) => {
     const serverUrl = useServerUrl();
 
     const onCopyLinkAnimationEnd = useCallback(() => {
@@ -70,15 +78,13 @@ const ChannelActions = ({channelId, channelType, inModal = false, dismissChannel
                     testID={`${testID}.set_header.action`}
                 />
             }
-            {/* Add back in after MM-47655 is resolved. https://mattermost.atlassian.net/browse/MM-47655
-            {!isDM &&
-                <AddPeopleBox
+            {canManageMembers &&
+                <AddMembersBox
                     channelId={channelId}
                     inModal={inModal}
-                    testID={`${testID}.add_people.action`}
+                    testID={`${testID}.add_members.action`}
                 />
             }
-            */}
             {!isDM && !callsEnabled &&
                 <>
                     <View style={styles.separator}/>

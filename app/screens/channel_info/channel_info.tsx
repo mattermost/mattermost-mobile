@@ -29,6 +29,7 @@ type Props = {
     type?: ChannelType;
     canEnableDisableCalls: boolean;
     isCallsEnabledInChannel: boolean;
+    canManageMembers: boolean;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -55,6 +56,7 @@ const ChannelInfo = ({
     type,
     canEnableDisableCalls,
     isCallsEnabledInChannel,
+    canManageMembers,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -100,6 +102,7 @@ const ChannelInfo = ({
                     channelId={channelId}
                     type={type}
                     callsEnabled={callsAvailable}
+                    canManageMembers={canManageMembers}
                 />
                 <View style={styles.separator}/>
                 {canEnableDisableCalls &&
