@@ -3,25 +3,21 @@
 
 import {RTCPeer} from '@mattermost/calls/lib';
 import {deflate} from 'pako';
-import {DeviceEventEmitter, EmitterSubscription} from 'react-native';
+import {DeviceEventEmitter, EmitterSubscription, Platform} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
-import {
-    MediaStream,
-    MediaStreamTrack,
-    mediaDevices,
-    RTCPeerConnection,
-} from 'react-native-webrtc';
+import {mediaDevices, MediaStream, MediaStreamTrack, RTCPeerConnection} from 'react-native-webrtc';
 
-import {setSpeakerPhone} from '@calls/state';
+import {setPreferredAudioRoute, setSpeakerphoneOn} from '@calls/actions/calls';
+import {setAudioDeviceInfo} from '@calls/state';
+import {AudioDevice, AudioDeviceInfo, AudioDeviceInfoRaw, CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
-import {logError, logDebug, logWarning, logInfo} from '@utils/log';
+import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
-import type {CallsConnection} from '@calls/types/calls';
 import type {EmojiData} from '@mattermost/calls/lib/types';
 
 const peerConnectTimeout = 5000;
@@ -40,6 +36,7 @@ export async function newConnection(
     let voiceTrack: MediaStreamTrack | null = null;
     let isClosed = false;
     let onCallEnd: EmitterSubscription | null = null;
+    let audioDeviceChanged: EmitterSubscription | null = null;
     const streams: MediaStream[] = [];
 
     const initializeVoiceTrack = async () => {
@@ -97,6 +94,7 @@ export async function newConnection(
         peer?.destroy();
         peer = null;
         InCallManager.stop();
+        audioDeviceChanged?.remove();
 
         if (closeCb) {
             closeCb();
@@ -201,8 +199,34 @@ export async function newConnection(
             }
         }
 
-        InCallManager.start({media: 'video'});
-        setSpeakerPhone(true);
+        InCallManager.start();
+        InCallManager.stopProximitySensor();
+
+        let btInitialized = false;
+        let speakerInitialized = false;
+
+        audioDeviceChanged = DeviceEventEmitter.addListener('onAudioDeviceChanged', (data: AudioDeviceInfoRaw) => {
+            const info: AudioDeviceInfo = {
+                availableAudioDeviceList: JSON.parse(data.availableAudioDeviceList),
+                selectedAudioDevice: data.selectedAudioDevice,
+            };
+            setAudioDeviceInfo(info);
+
+            // Auto switch to bluetooth the first time we connect to bluetooth, but not after.
+            if (!btInitialized) {
+                if (info.availableAudioDeviceList.includes(AudioDevice.Bluetooth)) {
+                    setPreferredAudioRoute(AudioDevice.Bluetooth);
+                    btInitialized = true;
+                } else if (!speakerInitialized) {
+                    setPreferredAudioRoute(AudioDevice.Speakerphone);
+                    speakerInitialized = true;
+                }
+            }
+        });
+
+        if (Platform.OS === 'ios') {
+            setSpeakerphoneOn(true);
+        }
 
         peer = new RTCPeer({
             iceServers: iceConfigs || [],

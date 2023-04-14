@@ -45,12 +45,21 @@ export const DefaultCall: Call = {
     hostId: '',
 };
 
+export enum AudioDevice {
+    Earpiece = 'EARPIECE',
+    Speakerphone = 'SPEAKER_PHONE',
+    Bluetooth = 'BLUETOOTH',
+    WiredHeadset = 'WIRED_HEADSET',
+    None = 'NONE',
+}
+
 export type CurrentCall = Call & {
     connected: boolean;
     serverUrl: string;
     myUserId: string;
     screenShareURL: string;
     speakerphoneOn: boolean;
+    audioDeviceInfo: AudioDeviceInfo;
     voiceOn: Dictionary<boolean>;
     micPermissionsErrorDismissed: boolean;
     reactionStream: ReactionStreamEmoji[];
@@ -64,6 +73,7 @@ export const DefaultCurrentCall: CurrentCall = {
     myUserId: '',
     screenShareURL: '',
     speakerphoneOn: false,
+    audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
     voiceOn: {},
     micPermissionsErrorDismissed: false,
     reactionStream: [],
@@ -146,4 +156,14 @@ export type ReactionStreamEmoji = {
     latestTimestamp: number;
     count: number;
     literal?: string;
+};
+
+export type AudioDeviceInfoRaw = {
+    availableAudioDeviceList: string;
+    selectedAudioDevice: AudioDevice;
+};
+
+export type AudioDeviceInfo = {
+    availableAudioDeviceList: AudioDevice[];
+    selectedAudioDevice: AudioDevice;
 };

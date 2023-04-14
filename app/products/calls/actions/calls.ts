@@ -41,6 +41,7 @@ import {newConnection} from '../connection/connection';
 
 import type {
     ApiResp,
+    AudioDevice,
     Call,
     CallParticipant,
     CallsConnection,
@@ -329,6 +330,10 @@ export const sendReaction = (emoji: EmojiData) => {
 export const setSpeakerphoneOn = (speakerphoneOn: boolean) => {
     InCallManager.setForceSpeakerphoneOn(speakerphoneOn);
     setSpeakerPhone(speakerphoneOn);
+};
+
+export const setPreferredAudioRoute = async (audio: AudioDevice) => {
+    return InCallManager.chooseAudioRoute(audio);
 };
 
 export const canEndCall = async (serverUrl: string, channelId: string) => {
