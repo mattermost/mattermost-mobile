@@ -1010,5 +1010,6 @@
     "mobile.channel_add_members.error": "Wystąpił błąd i nie mogliśmy dodać tych użytkowników do kanału.",
     "intro.add_members": "Dodaj użytkowników",
     "channel_info.add_members": "Dodaj użytkowników",
-    "channel_add_members.add_members.button": "Dodaj Użytkowników"
+    "channel_add_members.add_members.button": "Dodaj Użytkowników",
+    "mobile.diagnostic_id.empty": "Brakuje wartości DiagnosticId dla tego serwera. Skontaktuj się z administratorem systemu, aby sprawdzić tę wartość i ponownie uruchomić serwer."
 }
