@@ -8,6 +8,7 @@ import {General} from '@constants';
 import {isTypeDMorGM} from '@utils/channel';
 
 import AddMembers from './add_members';
+import ChannelFiles from './channel_files';
 import EditChannel from './edit_channel';
 import IgnoreMentions from './ignore_mentions';
 import Members from './members';
@@ -36,6 +37,7 @@ const Options = ({
             }
             <NotificationPreference channelId={channelId}/>
             <PinnedMessages channelId={channelId}/>
+            <ChannelFiles channelId={channelId}/>
             {type !== General.DM_CHANNEL &&
                 <Members channelId={channelId}/>
             }
