@@ -613,7 +613,7 @@ platform :ios do
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
     method = ENV['IOS_BUILD_EXPORT_METHOD'].nil? || ENV['IOS_BUILD_EXPORT_METHOD'].empty? ? 'ad-hoc' : ENV['IOS_BUILD_EXPORT_METHOD']
    
-    # Need to add xcargs to only notification and 
+    # Need to add xcargs to only notification and share extensions
     xcargs = ENV['SENTRY_ENABLED'] == 'true' ? "SENTRY_DSN_IOS='#{ENV['SENTRY_DSN_IOS']}' SENTRY_ENABLED='#{ENV['SENTRY_ENABLED']}'" : ''
 
     setup_code_signing
@@ -631,7 +631,7 @@ platform :ios do
             signingStyle: 'manual',
             iCloudContainerEnvironment: 'Production'
         },
-        xcargs:xcargs
+        xcargs: xcargs
     )
   end
 
