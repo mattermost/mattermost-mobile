@@ -47,3 +47,10 @@ export const showRemoveChannelUserSnackbar = () => {
         sourceScreen: Screens.MANAGE_CHANNEL_MEMBERS,
     });
 };
+
+export const showThreadFollowingSnackbar = (following: boolean, onAction: () => void) => {
+    return showSnackBar({
+        onAction,
+        barType: following ? SNACK_BAR_TYPE.FOLLOW_THREAD : SNACK_BAR_TYPE.UNFOLLOW_THREAD,
+    });
+};
