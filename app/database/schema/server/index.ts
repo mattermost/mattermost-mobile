@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppSchema, appSchema} from '@nozbe/watermelondb';
+import {type AppSchema, appSchema} from '@nozbe/watermelondb';
 
 import {
     CategorySchema,

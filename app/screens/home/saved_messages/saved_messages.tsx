@@ -4,9 +4,9 @@
 import {useIsFocused, useRoute} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {DeviceEventEmitter, FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchSavedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';

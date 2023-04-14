@@ -3,13 +3,13 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {StyleSheet, View} from 'react-native';
-import {PanGestureHandler, PanGestureHandlerGestureEvent, TapGestureHandler} from 'react-native-gesture-handler';
-import Animated, {cancelAnimation, runOnJS, SharedValue, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring, WithSpringConfig} from 'react-native-reanimated';
+import {PanGestureHandler, type PanGestureHandlerGestureEvent, TapGestureHandler} from 'react-native-gesture-handler';
+import Animated, {cancelAnimation, runOnJS, type SharedValue, useAnimatedStyle, useDerivedValue, useSharedValue, withSpring, type WithSpringConfig} from 'react-native-reanimated';
 
 import {useAnimatedGestureHandler} from '@hooks/gallery';
 import {clampVelocity, friction, getShouldRender, workletNoop, workletNoopTrue} from '@utils/gallery';
 
-import Page, {PageRefs, RenderPageProps} from './page';
+import Page, {type PageRefs, type RenderPageProps} from './page';
 
 import type {GalleryItemType} from '@typings/screens/gallery';
 

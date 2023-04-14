@@ -5,7 +5,7 @@ import {storeConfigAndLicense} from '@actions/local/systems';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
 import {fetchDataRetentionPolicy} from '@actions/remote/systems';
-import {MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
+import {type MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
 import {autoUpdateTimezone, fetchProfilesInGroupChannels, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
@@ -21,7 +21,7 @@ import {filterAndTransformRoles, getMemberChannelsFromGQLQuery, getMemberTeamsFr
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
-import {teamsToRemove, FETCH_UNREADS_TIMEOUT, entryRest, EntryResponse, entryInitialChannelId, restDeferredAppEntryActions, getRemoveTeamIds} from './common';
+import {teamsToRemove, FETCH_UNREADS_TIMEOUT, entryRest, type EntryResponse, entryInitialChannelId, restDeferredAppEntryActions, getRemoveTeamIds} from './common';
 
 import type {MyChannelsRequest} from '@actions/remote/channel';
 import type ClientError from '@client/rest/error';

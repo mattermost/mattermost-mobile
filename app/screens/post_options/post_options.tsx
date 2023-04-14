@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetProps, BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import {type BottomSheetProps, BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {ScrollView} from 'react-native';

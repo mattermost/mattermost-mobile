@@ -3,7 +3,7 @@
 
 import React, {useMemo, useRef} from 'react';
 import {TouchableWithoutFeedback, useWindowDimensions} from 'react-native';
-import FastImage, {Source} from 'react-native-fast-image';
+import FastImage, {type Source} from 'react-native-fast-image';
 import Animated from 'react-native-reanimated';
 
 import {Device as DeviceConstant, View as ViewConstants} from '@constants';
@@ -13,7 +13,7 @@ import {lookupMimeType} from '@utils/file';
 import {openGalleryAtIndex} from '@utils/gallery';
 import {generateId} from '@utils/general';
 import {calculateDimensions} from '@utils/images';
-import {BestImage, getNearestPoint} from '@utils/opengraph';
+import {type BestImage, getNearestPoint} from '@utils/opengraph';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {extractFilenameFromUrl, isValidUrl} from '@utils/url';
 

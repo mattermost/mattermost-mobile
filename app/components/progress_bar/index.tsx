@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {LayoutChangeEvent, StyleSheet, StyleProp, View, ViewStyle} from 'react-native';
+import {type LayoutChangeEvent, StyleSheet, type StyleProp, View, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
 type ProgressBarProps = {

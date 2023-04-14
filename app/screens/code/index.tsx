@@ -3,8 +3,8 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
-import {StyleSheet, TextStyle} from 'react-native';
-import {SafeAreaView, Edge} from 'react-native-safe-area-context';
+import {StyleSheet, type TextStyle} from 'react-native';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import SyntaxHiglight from '@components/syntax_highlight';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';

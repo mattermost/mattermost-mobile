@@ -11,7 +11,7 @@ import {dismissOverlay, setScreensOrientation} from '@screens/navigation';
 import {freezeOtherScreens} from '@utils/gallery';
 
 import Footer from './footer';
-import Gallery, {GalleryRef} from './gallery';
+import Gallery, {type GalleryRef} from './gallery';
 import Header from './header';
 
 import type {GalleryItemType} from '@typings/screens/gallery';

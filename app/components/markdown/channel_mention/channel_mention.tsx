@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {StyleProp, Text, TextStyle} from 'react-native';
+import {type StyleProp, Text, type TextStyle} from 'react-native';
 
 import {joinChannel, switchToChannelById} from '@actions/remote/channel';
 import {useServerUrl} from '@context/server';

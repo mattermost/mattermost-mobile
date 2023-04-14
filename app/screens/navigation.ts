@@ -5,7 +5,7 @@
 
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
-import {ComponentWillAppearEvent, ImageResource, LayoutOrientation, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton, ScreenPoppedEvent} from 'react-native-navigation';
+import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';

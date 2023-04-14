@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {Animated, Easing, LayoutChangeEvent, StyleProp, Text, TextStyle, View} from 'react-native';
+import {Animated, Easing, type LayoutChangeEvent, type StyleProp, Text, type TextStyle, View} from 'react-native';
 
 interface Props {
     animateToNumber: number;

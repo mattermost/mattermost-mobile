@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {Pressable, PressableStateCallbackType, View} from 'react-native';
+import {Pressable, type PressableStateCallbackType, View} from 'react-native';
 
 import Emoji from '@components/emoji';
 import {useTheme} from '@context/theme';

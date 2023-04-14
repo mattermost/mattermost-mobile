@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {DeviceEventEmitter, StyleProp, Text, TextStyle} from 'react-native';
+import {DeviceEventEmitter, type StyleProp, Text, type TextStyle} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
 import {popToRoot, dismissAllModals} from '@screens/navigation';

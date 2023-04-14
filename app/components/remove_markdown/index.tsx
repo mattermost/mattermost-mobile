@@ -3,8 +3,8 @@
 
 import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {ReactElement, useCallback, useMemo, useRef} from 'react';
-import {StyleProp, Text, TextStyle} from 'react-native';
+import React, {type ReactElement, useCallback, useMemo, useRef} from 'react';
+import {type StyleProp, Text, type TextStyle} from 'react-native';
 
 import Emoji from '@components/emoji';
 import {computeTextStyle} from '@utils/markdown';

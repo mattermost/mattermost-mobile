@@ -4,14 +4,14 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
-import {injectIntl, IntlShape} from 'react-intl';
-import {BackHandler, NativeEventSubscription, SafeAreaView, View} from 'react-native';
+import {injectIntl, type IntlShape} from 'react-intl';
+import {BackHandler, type NativeEventSubscription, SafeAreaView, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
     Navigation,
-    NavigationButtonPressedEvent,
+    type NavigationButtonPressedEvent,
     NavigationComponent,
-    Options,
+    type Options,
 } from 'react-native-navigation';
 
 import {CustomStatusDurationEnum} from '@constants/custom_status';

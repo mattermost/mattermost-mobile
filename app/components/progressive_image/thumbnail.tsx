@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import FastImage, {ImageStyle, Source} from 'react-native-fast-image';
-import Animated, {SharedValue} from 'react-native-reanimated';
+import FastImage, {type ImageStyle, type Source} from 'react-native-fast-image';
+import Animated, {type SharedValue} from 'react-native-reanimated';
 
 import type {ColorValue, StyleProp} from 'react-native';
 

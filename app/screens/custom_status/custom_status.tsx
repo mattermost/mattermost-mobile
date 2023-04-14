@@ -5,7 +5,7 @@ import moment from 'moment-timezone';
 import React, {useCallback, useEffect, useMemo, useReducer} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, KeyboardAvoidingView, Platform, ScrollView, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalCustomStatus} from '@actions/local/user';
 import {removeRecentCustomStatus, updateCustomStatus, unsetCustomStatus} from '@actions/remote/user';

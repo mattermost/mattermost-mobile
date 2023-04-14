@@ -5,7 +5,7 @@ import React from 'react';
 import {useIntl} from 'react-intl';
 import {Platform} from 'react-native';
 
-import OptionItem, {OptionItemProps} from '@components/option_item';
+import OptionItem, {type OptionItemProps} from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
