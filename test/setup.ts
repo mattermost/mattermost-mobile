@@ -11,6 +11,14 @@ import type {ReadDirItem, StatResult} from 'react-native-fs';
 
 require('isomorphic-fetch');
 
+const WebViewMock = () => {
+    return null;
+};
+
+jest.mock('react-native-webview', () => ({
+    WebView: WebViewMock,
+}));
+
 /* eslint-disable no-console */
 jest.mock('@database/manager');
 jest.doMock('react-native', () => {

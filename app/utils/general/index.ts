@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import DeviceInfo from 'react-native-device-info';
-import ReactNativeHapticFeedback, {type HapticFeedbackTypes} from 'react-native-haptic-feedback';
+import ReactNativeHapticFeedback, {HapticFeedbackTypes} from 'react-native-haptic-feedback';
 
 type SortByCreatAt = (Session | Channel | Team | Post) & {
     create_at: number;
@@ -38,7 +38,7 @@ export const generateId = (prefix?: string): string => {
     return id;
 };
 
-export function hapticFeedback(method: HapticFeedbackTypes = 'impactLight') {
+export function hapticFeedback(method: HapticFeedbackTypes = HapticFeedbackTypes.impactLight) {
     ReactNativeHapticFeedback.trigger(method, {
         enableVibrateFallback: false,
         ignoreAndroidSystemSettings: false,
