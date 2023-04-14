@@ -1005,5 +1005,11 @@
     "channel_notification_preferences.notification.all": "すべての新しいメッセージ",
     "channel_notification_preferences.muted_title": "このチャンネルはミュートされています",
     "channel_notification_preferences.muted_content": "通知設定を変更することはできますが、チャンネルのミュートが解除されるまで、通知を受け取ることはできません。",
-    "channel_notification_preferences.default": "(デフォルト)"
+    "channel_notification_preferences.default": "(デフォルト)",
+    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {メンバー} other {メンバー}} が追加されました",
+    "mobile.diagnostic_id.empty": "このサーバーのDiagnosticIdの値が見つかりませんでした。システム管理者に連絡して、この値を確認し、サーバーを再起動してください。",
+    "mobile.channel_add_members.error": "エラーが発生したため、ユーザーをチャンネルに追加できませんでした。",
+    "intro.add_members": "メンバーを追加する",
+    "channel_info.add_members": "メンバーを追加する",
+    "channel_add_members.add_members.button": "メンバーを追加する"
 }
