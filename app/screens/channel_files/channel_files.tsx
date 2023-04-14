@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Platform, StyleSheet, View} from 'react-native';
 import {Edge, SafeAreaView} from 'react-native-safe-area-context';
@@ -51,6 +51,7 @@ const styles = StyleSheet.create({
         marginRight: Platform.select({ios: 12, default: 20}),
         marginTop: 20,
     },
+    noPaddingTop: {paddingTop: 0},
 });
 
 const getSearchParams = (channelId: string, searchTerm?: string, filterValue?: FileFilter) => {
@@ -120,6 +121,8 @@ function ChannelFiles({
         }
     }, [term]);
 
+    const fileChannels = useMemo(() => [channel], [channel]);
+
     return (
         <SafeAreaView
             edges={edges}
@@ -147,15 +150,15 @@ function ChannelFiles({
                 <Loading
                     color={theme.buttonBg}
                     size='large'
-                    containerStyle={[styles.loading]}
+                    containerStyle={styles.loading}
                 />
             }
             {!loading &&
             <FileResults
                 canDownloadFiles={canDownloadFiles}
-                fileChannels={[channel]}
+                fileChannels={fileChannels}
                 fileInfos={fileInfos}
-                paddingTop={{paddingTop: 0}}
+                paddingTop={styles.noPaddingTop}
                 publicLinkEnabled={publicLinkEnabled}
                 searchValue={term}
                 isChannelFiles={true}

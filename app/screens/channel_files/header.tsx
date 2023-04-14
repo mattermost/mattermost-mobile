@@ -10,6 +10,7 @@ import CompassIcon from '@components/compass_icon';
 import Filter, {DIVIDERS_HEIGHT, FILTER_ITEM_HEIGHT, FilterData, NUMBER_FILTER_ITEMS} from '@components/files/file_filter';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {t} from '@i18n';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
 import {FileFilter, FileFilters} from '@utils/file';
@@ -60,11 +61,15 @@ const Header = ({
     const {bottom} = useSafeAreaInsets();
     const isTablet = useIsTablet();
     const hasFilters = selectedFilter !== FileFilters.ALL;
+    const messageObject = hasFilters ? {
+        id: FilterData[selectedFilter].id,
+        defaultMessage: FilterData[selectedFilter].defaultMessage,
+    } : {
+        id: t('screen.channel_files.header.recent_files'),
+        defaultMessage: 'Recent Files',
+    };
 
-    let messagesText = intl.formatMessage({id: 'screen.channel_files.header.recent_files', defaultMessage: 'Recent Files'});
-    if (hasFilters) {
-        messagesText = intl.formatMessage({id: FilterData[selectedFilter].id, defaultMessage: FilterData[selectedFilter].defaultMessage});
-    }
+    const messagesText = intl.formatMessage(messageObject);
     const title = intl.formatMessage({id: 'screen.channel_files.results.filter.title', defaultMessage: 'Filter by file type'});
 
     const snapPoints = useMemo(() => {
@@ -96,6 +101,7 @@ const Header = ({
             title,
         });
     }, [onFilterChanged, selectedFilter]);
+
     return (
         <View style={styles.container}>
             <Text

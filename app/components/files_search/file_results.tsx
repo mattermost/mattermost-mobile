@@ -94,9 +94,10 @@ const FileResults = ({
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<FileInfo>) => {
         let channelName: string | undefined;
-        if (!isChannelFiles) {
-            channelName = channelNames[item.channel_id!];
+        if (!isChannelFiles && item.channel_id) {
+            channelName = channelNames[item.channel_id];
         }
+
         return (
             <FileResult
                 canDownloadFiles={canDownloadFiles}
