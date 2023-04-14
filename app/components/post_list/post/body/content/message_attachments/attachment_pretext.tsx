@@ -13,7 +13,7 @@ type Props = {
     blockStyles?: MarkdownBlockStyles;
     channelId: string;
     location: string;
-    metadata?: PostMetadata;
+    metadata?: PostMetadata | null;
     textStyles?: MarkdownTextStyles;
     theme: Theme;
     value?: string;

@@ -441,7 +441,7 @@ export function resetToTeams() {
     });
 }
 
-export function goToScreen(name: AvailableScreens, title: string, passProps = {}, options = {}) {
+export function goToScreen(name: AvailableScreens, title: string, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return '';
     }

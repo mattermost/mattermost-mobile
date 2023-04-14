@@ -740,7 +740,6 @@
     "intro.direct_message": "Este es el comienzo de tu conversación con {teammate}. Los mensajes y archivos compartidos aquí no se muestran a nadie más.",
     "intro.created_by": "creado por {creator} el {date}.",
     "intro.channel_info": "Información",
-    "intro.add_people": "Añadir personas",
     "interactive_dialog.submit": "Enviar",
     "home.header.plus_menu": "Opciones",
     "global_threads.options.title": "Acciones de hilo",
