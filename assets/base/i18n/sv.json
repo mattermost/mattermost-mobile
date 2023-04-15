@@ -1011,5 +1011,12 @@
     "mobile.channel_add_members.error": "Det har uppstått ett fel och det gick inte att lägga till medlemmarna till kanalen.",
     "intro.add_members": "Lägg till medlemmar",
     "channel_info.add_members": "Lägg till medlemmar",
-    "channel_add_members.add_members.button": "Lägg till medlemmar"
+    "channel_add_members.add_members.button": "Lägg till medlemmar",
+    "screen.channel_files.results.filter.title": "Filtrera efter filtyp",
+    "screen.channel_files.header.recent_files": "Nya filer",
+    "channel_info.channel_files": "Filer",
+    "channel_files.noFiles.title": "Inga filer hittades",
+    "channel_files.noFiles.paragraph": "Den här kanalen innehåller inga filer med det filter som används",
+    "channel_files.empty.title": "Ännu inga filer",
+    "channel_files.empty.paragraph": "Filer postade i kanalen visas här."
 }
