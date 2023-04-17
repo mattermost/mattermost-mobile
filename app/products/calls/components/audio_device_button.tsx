@@ -3,10 +3,10 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, Pressable, Text, View} from 'react-native';
+import {Pressable, StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {setPreferredAudioRoute, setSpeakerphoneOn} from '@calls/actions/calls';
+import {setPreferredAudioRoute} from '@calls/actions/calls';
 import {AudioDevice, CurrentCall} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -16,16 +16,20 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {typography} from '@utils/typography';
 
 type Props = {
-    style: any;
-    isLandscape: boolean;
+    pressableStyle: StyleProp<ViewStyle>;
+    iconStyle: StyleProp<ViewStyle>;
+    buttonTextStyle: StyleProp<TextStyle>;
     currentCall: CurrentCall;
 }
 
-export const AudioDeviceButton = ({style, isLandscape, currentCall}: Props) => {
+const style = {
+    bold: typography('Body', 200, 'SemiBold'),
+};
+
+export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, currentCall}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const {bottom} = useSafeAreaInsets();
-    const bold = typography('Body', 200, 'SemiBold');
     const color = theme.awayIndicator;
     const audioDeviceInfo = currentCall.audioDeviceInfo;
     const earpieceLabel = intl.formatMessage({id: 'mobile.calls_earpiece', defaultMessage: 'Earpiece'});
@@ -48,7 +52,7 @@ export const AudioDeviceButton = ({style, isLandscape, currentCall}: Props) => {
                             icon={'phone-in-talk'}
                             onPress={() => selectDevice(AudioDevice.Earpiece)}
                             text={earpieceLabel}
-                            textStyles={currentDevice === AudioDevice.Earpiece ? {...bold, color} : {}}
+                            textStyles={currentDevice === AudioDevice.Earpiece ? {...style.bold, color} : {}}
                         />
                     }
                     {available.includes(AudioDevice.Speakerphone) &&
@@ -56,7 +60,7 @@ export const AudioDeviceButton = ({style, isLandscape, currentCall}: Props) => {
                             icon={'volume-high'}
                             onPress={() => selectDevice(AudioDevice.Speakerphone)}
                             text={speakerLabel}
-                            textStyles={currentDevice === AudioDevice.Speakerphone ? {...bold, color} : {}}
+                            textStyles={currentDevice === AudioDevice.Speakerphone ? {...style.bold, color} : {}}
                         />
                     }
                     {available.includes(AudioDevice.Bluetooth) &&
@@ -64,7 +68,7 @@ export const AudioDeviceButton = ({style, isLandscape, currentCall}: Props) => {
                             icon={'cellphone'}
                             onPress={() => selectDevice(AudioDevice.Bluetooth)}
                             text={bluetoothLabel}
-                            textStyles={currentDevice === AudioDevice.Bluetooth ? {...bold, color} : {}}
+                            textStyles={currentDevice === AudioDevice.Bluetooth ? {...style.bold, color} : {}}
                         />
                     }
                 </View>
@@ -75,36 +79,10 @@ export const AudioDeviceButton = ({style, isLandscape, currentCall}: Props) => {
             closeButtonId: 'close-other-actions',
             renderContent,
             snapPoints: [1, bottomSheetSnapPoint(audioDeviceInfo.availableAudioDeviceList.length + 1, ITEM_HEIGHT, bottom)],
-            title: intl.formatMessage({id: 'mobile.calls_output_options', defaultMessage: 'Choose preferred output'}),
+            title: intl.formatMessage({id: 'mobile.calls_audio_device', defaultMessage: 'Select audio device'}),
             theme,
         });
-    }, [setPreferredAudioRoute, audioDeviceInfo, bold, color]);
-
-    const toggleSpeakerPhone = useCallback(() => {
-        setSpeakerphoneOn(!currentCall?.speakerphoneOn);
-    }, [currentCall?.speakerphoneOn]);
-
-    if (Platform.OS === 'ios') {
-        return (
-            <Pressable
-                testID={'toggle-speakerphone'}
-                style={[style.button, isLandscape && style.buttonLandscape]}
-                onPress={toggleSpeakerPhone}
-            >
-                <CompassIcon
-                    name={'volume-high'}
-                    size={24}
-                    style={[
-                        style.buttonIcon,
-                        isLandscape && style.buttonIconLandscape,
-                        style.speakerphoneIcon,
-                        currentCall.speakerphoneOn && style.buttonOn,
-                    ]}
-                />
-                <Text style={style.buttonText}>{speakerLabel}</Text>
-            </Pressable>
-        );
-    }
+    }, [setPreferredAudioRoute, audioDeviceInfo, color]);
 
     let icon = 'volume-high';
     let label = speakerLabel;
@@ -122,20 +100,15 @@ export const AudioDeviceButton = ({style, isLandscape, currentCall}: Props) => {
     return (
         <Pressable
             testID={'toggle-speakerphone'}
-            style={[style.button, isLandscape && style.buttonLandscape]}
+            style={pressableStyle}
             onPress={deviceSelector}
         >
             <CompassIcon
                 name={icon}
                 size={24}
-                style={[
-                    style.buttonIcon,
-                    isLandscape && style.buttonIconLandscape,
-                    style.speakerphoneIcon,
-                    currentCall.speakerphoneOn && style.buttonOn,
-                ]}
+                style={iconStyle}
             />
-            <Text style={style.buttonText}>{label}</Text>
+            <Text style={buttonTextStyle}>{label}</Text>
         </Pressable>
     );
 };

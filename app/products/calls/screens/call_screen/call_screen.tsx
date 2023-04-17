@@ -662,8 +662,14 @@ const CallScreen = ({
                             />
                         </Pressable>
                         <AudioDeviceButton
-                            style={style}
-                            isLandscape={isLandscape}
+                            pressableStyle={[style.button, isLandscape && style.buttonLandscape]}
+                            iconStyle={[
+                                style.buttonIcon,
+                                isLandscape && style.buttonIconLandscape,
+                                style.speakerphoneIcon,
+                                currentCall.speakerphoneOn && style.buttonOn,
+                            ]}
+                            buttonTextStyle={style.buttonText}
                             currentCall={currentCall}
                         />
                         <Pressable
