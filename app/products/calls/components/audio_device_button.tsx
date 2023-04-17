@@ -32,7 +32,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
     const {bottom} = useSafeAreaInsets();
     const color = theme.awayIndicator;
     const audioDeviceInfo = currentCall.audioDeviceInfo;
-    const earpieceLabel = intl.formatMessage({id: 'mobile.calls_earpiece', defaultMessage: 'Earpiece'});
+    const phoneLabel = intl.formatMessage({id: 'mobile.calls_phone', defaultMessage: 'Phone'});
     const speakerLabel = intl.formatMessage({id: 'mobile.calls_speaker', defaultMessage: 'SpeakerPhone'});
     const bluetoothLabel = intl.formatMessage({id: 'mobile.calls_bluetooth', defaultMessage: 'Bluetooth'});
 
@@ -49,9 +49,9 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
                 <View>
                     {available.includes(AudioDevice.Earpiece) &&
                         <SlideUpPanelItem
-                            icon={'phone-in-talk'}
+                            icon={'cellphone'}
                             onPress={() => selectDevice(AudioDevice.Earpiece)}
-                            text={earpieceLabel}
+                            text={phoneLabel}
                             textStyles={currentDevice === AudioDevice.Earpiece ? {...style.bold, color} : {}}
                         />
                     }
@@ -88,8 +88,8 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
     let label = speakerLabel;
     switch (audioDeviceInfo.selectedAudioDevice) {
         case AudioDevice.Earpiece:
-            icon = 'phone-in-talk';
-            label = earpieceLabel;
+            icon = 'cellphone';
+            label = phoneLabel;
             break;
         case AudioDevice.Bluetooth:
             icon = 'cellphone';
