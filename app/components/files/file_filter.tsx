@@ -30,43 +30,51 @@ type FilterItem = {
     filterType: FileFilter;
     separator?: boolean;
 }
-
-const data: FilterItem[] = [
-    {
+export const FilterData = {
+    [FileFilters.ALL]: {
         id: t('screen.search.results.filter.all_file_types'),
         defaultMessage: 'All file types',
         filterType: FileFilters.ALL,
-    }, {
+    },
+    [FileFilters.DOCUMENTS]: {
         id: t('screen.search.results.filter.documents'),
         defaultMessage: 'Documents',
         filterType: FileFilters.DOCUMENTS,
-    }, {
+    },
+    [FileFilters.SPREADSHEETS]: {
         id: t('screen.search.results.filter.spreadsheets'),
         defaultMessage: 'Spreadsheets',
         filterType: FileFilters.SPREADSHEETS,
-    }, {
+    },
+    [FileFilters.PRESENTATIONS]: {
         id: t('screen.search.results.filter.presentations'),
         defaultMessage: 'Presentations',
         filterType: FileFilters.PRESENTATIONS,
-    }, {
+    },
+    [FileFilters.CODE]: {
         id: t('screen.search.results.filter.code'),
         defaultMessage: 'Code',
         filterType: FileFilters.CODE,
-    }, {
+    },
+    [FileFilters.IMAGES]: {
         id: t('screen.search.results.filter.images'),
         defaultMessage: 'Images',
         filterType: FileFilters.IMAGES,
-    }, {
+    },
+    [FileFilters.AUDIO]: {
         id: t('screen.search.results.filter.audio'),
         defaultMessage: 'Audio',
         filterType: FileFilters.AUDIO,
-    }, {
+    },
+    [FileFilters.VIDEOS]: {
         id: t('screen.search.results.filter.videos'),
         defaultMessage: 'Videos',
         filterType: FileFilters.VIDEOS,
         separator: false,
     },
-];
+};
+
+const data: FilterItem[] = Object.values(FilterData);
 
 export const NUMBER_FILTER_ITEMS = data.length;
 export const FILTER_ITEM_HEIGHT = ITEM_HEIGHT;
@@ -78,7 +86,7 @@ type FilterProps = {
     title: string;
 }
 
-const Filter = ({initialFilter, setFilter, title}: FilterProps) => {
+const File_filter = ({initialFilter, setFilter, title}: FilterProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
@@ -122,4 +130,4 @@ const Filter = ({initialFilter, setFilter, title}: FilterProps) => {
     );
 };
 
-export default Filter;
+export default File_filter;
