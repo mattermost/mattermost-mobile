@@ -44,7 +44,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     }
     const currentUserId = await getCurrentUserId(database);
 
-    const existing = await getPostById(database, post.pending_post_id);
+    const existing = await getPostById(database, post.pending_post_id) || await getPostById(database, post.id);
 
     if (existing) {
         return;
