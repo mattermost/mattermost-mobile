@@ -1011,5 +1011,12 @@
     "intro.add_members": "Üye ekle",
     "channel_info.add_members": "Üye ekle",
     "channel_add_members.add_members.button": "Üye ekle",
-    "mobile.diagnostic_id.empty": "Bu sunucu için bir DiagnosticId değeri eksik. Bu değeri gözden geçirmek ve sunucuyu yeniden başlatmak için sistem yöneticinizle görüşün."
+    "mobile.diagnostic_id.empty": "Bu sunucu için bir DiagnosticId değeri eksik. Bu değeri gözden geçirmek ve sunucuyu yeniden başlatmak için sistem yöneticinizle görüşün.",
+    "screen.channel_files.results.filter.title": "Dosya türüne göre süzme",
+    "screen.channel_files.header.recent_files": "Son kullanılan dosyalar",
+    "channel_info.channel_files": "Dosyalar",
+    "channel_files.noFiles.title": "Herhangi bir dosya bulunamadı",
+    "channel_files.noFiles.paragraph": "Bu kanalda ayarlanmış süzgeçlere uygun bir dosya yok",
+    "channel_files.empty.title": "Henüz bir dosya yok",
+    "channel_files.empty.paragraph": "Bu kanala eklenmiş dosyalar burada görüntülenir."
 }
