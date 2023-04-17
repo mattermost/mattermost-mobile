@@ -1011,5 +1011,12 @@
     "intro.add_members": "Dodaj użytkowników",
     "channel_info.add_members": "Dodaj użytkowników",
     "channel_add_members.add_members.button": "Dodaj Użytkowników",
-    "mobile.diagnostic_id.empty": "Brakuje wartości DiagnosticId dla tego serwera. Skontaktuj się z administratorem systemu, aby sprawdzić tę wartość i ponownie uruchomić serwer."
+    "mobile.diagnostic_id.empty": "Brakuje wartości DiagnosticId dla tego serwera. Skontaktuj się z administratorem systemu, aby sprawdzić tę wartość i ponownie uruchomić serwer.",
+    "screen.channel_files.results.filter.title": "Filtrowanie według typu pliku",
+    "screen.channel_files.header.recent_files": "Ostatnie pliki",
+    "channel_info.channel_files": "Pliki",
+    "channel_files.noFiles.title": "Nie znaleziono plików",
+    "channel_files.noFiles.paragraph": "Ten kanał nie zawiera żadnych plików z zastosowanymi filtrami",
+    "channel_files.empty.title": "Nie ma jeszcze plików",
+    "channel_files.empty.paragraph": "Pliki umieszczone w tym kanale będą wyświetlane tutaj."
 }
