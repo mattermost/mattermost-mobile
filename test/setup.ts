@@ -25,7 +25,6 @@ jest.doMock('react-native', () => {
     const {
         Platform,
         StyleSheet,
-        PermissionsAndroid,
         requireNativeComponent,
         Alert: RNAlert,
         InteractionManager: RNInteractionManager,
@@ -82,7 +81,6 @@ jest.doMock('react-native', () => {
         RNDocumentPicker: {
             pick: jest.fn(),
         },
-        RNPermissions: {},
         RNFastStorage: {
             setupLibrary: jest.fn(),
             setStringAsync: jest.fn(),
@@ -167,7 +165,6 @@ jest.doMock('react-native', () => {
             },
         },
         StyleSheet,
-        PermissionsAndroid,
         requireNativeComponent,
         Alert,
         InteractionManager,
@@ -381,6 +378,7 @@ jest.mock('@mattermost/react-native-emm', () => ({
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
 
 jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
+jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
 declare const global: {requestAnimationFrame: (callback: any) => void};
 global.requestAnimationFrame = (callback) => {
