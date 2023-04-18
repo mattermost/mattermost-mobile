@@ -55,14 +55,14 @@ const ChannelPostList = ({
     }, [isCRTEnabled, posts, channelId, serverUrl, appState === 'active']);
 
     const onEndReached = useCallback(debounce(async () => {
-        if (!fetchingPosts.current && canLoadPosts.current && posts.length) {
+        if (!fetchingPosts.current && canLoadPosts.current) {
             fetchingPosts.current = true;
             const lastPost = posts[posts.length - 1];
-            const result = await fetchPostsBefore(serverUrl, channelId, lastPost.id);
+            const result = await fetchPostsBefore(serverUrl, channelId, lastPost?.id || '');
             fetchingPosts.current = false;
             canLoadPosts.current = false;
             if (!('error' in result)) {
-                canLoadPosts.current = (result.posts?.length ?? 1) > 0;
+                canLoadPosts.current = (result.posts?.length ?? 0) > 0;
             }
         }
     }, 500), [channelId, posts]);

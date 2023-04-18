@@ -111,7 +111,7 @@ const ClientPosts = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
         );
     };
 
-    getPostsBefore = async (channelId: string, postId: string, page = 0, perPage = PER_PAGE_DEFAULT, collapsedThreads = false, collapsedThreadsExtended = false) => {
+    getPostsBefore = async (channelId: string, postId = '', page = 0, perPage = PER_PAGE_DEFAULT, collapsedThreads = false, collapsedThreadsExtended = false) => {
         this.analytics?.trackAPI('api_posts_get_before', {channel_id: channelId});
 
         return this.doFetch(
