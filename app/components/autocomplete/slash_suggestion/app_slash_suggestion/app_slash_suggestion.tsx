@@ -7,7 +7,7 @@ import {useIntl} from 'react-intl';
 import {FlatList, Platform, StyleProp, ViewStyle} from 'react-native';
 
 import AtMentionItem from '@components/autocomplete/at_mention_item';
-import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
+import ChannelItem from '@components/channel_item';
 import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@constants/apps';
 import {useServerUrl} from '@context/server';
 import analytics from '@managers/analytics';
@@ -98,7 +98,7 @@ const AppSlashSuggestion = ({
         }
     }, [serverUrl, updateValue]);
 
-    const completeIgnoringSuggestion = useCallback((base: string): (toIgnore: string) => void => {
+    const completeIgnoringSuggestion = useCallback((base: string): () => void => {
         return () => {
             completeSuggestion(base);
         };
@@ -127,10 +127,12 @@ const AppSlashSuggestion = ({
                 }
 
                 return (
-                    <ChannelMentionItem
+                    <ChannelItem
                         channel={channel}
                         onPress={completeIgnoringSuggestion(item.Complete)}
                         testID='autocomplete.slash_suggestion.channel_mention_item'
+                        isOnCenterBg={true}
+                        showChannelName={true}
                     />
                 );
             }

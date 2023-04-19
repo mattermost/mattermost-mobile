@@ -121,7 +121,6 @@ const HeaderDisplayName = ({
                     <CustomStatusEmoji
                         customStatus={customStatus!}
                         style={[style.customStatusEmoji]}
-                        testID='post_header'
                     />
                 )}
             </TouchableOpacity>

@@ -27,6 +27,11 @@ export const CALL_ERROR_BAR_HEIGHT = 62;
 
 export const ANNOUNCEMENT_BAR_HEIGHT = 40;
 
+export const HOME_PADDING = {
+    paddingLeft: 18,
+    paddingRight: 20,
+};
+
 export default {
     BOTTOM_TAB_HEIGHT,
     BOTTOM_TAB_ICON_SIZE,

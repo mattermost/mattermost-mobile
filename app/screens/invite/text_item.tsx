@@ -13,7 +13,6 @@ import {typography} from '@utils/typography';
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         item: {
-            paddingHorizontal: 20,
             display: 'flex',
             flexDirection: 'row',
             alignItems: 'center',
@@ -21,7 +20,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         search: {
             height: 40,
             paddingVertical: 8,
-            paddingHorizontal: 16,
         },
         itemText: {
             display: 'flex',

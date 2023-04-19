@@ -38,70 +38,62 @@ exports[`Thread item in the channel list Threads Component should match snapshot
 >
   <View
     style={
-      {
-        "marginLeft": -18,
-        "marginRight": -20,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        false,
+        false,
+        false,
+        {
+          "minHeight": 40,
+        },
+      ]
     }
   >
-    <View
+    <Icon
+      name="message-text-outline"
       style={
         [
           {
-            "alignItems": "center",
-            "flexDirection": "row",
-            "minHeight": 40,
-            "paddingHorizontal": 20,
+            "color": "rgba(255,255,255,0.5)",
+            "fontSize": 24,
+            "marginRight": 12,
           },
           false,
+          undefined,
+        ]
+      }
+    />
+    <Text
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          {
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          {
+            "color": "rgba(255,255,255,0.72)",
+          },
+          false,
+          false,
+          undefined,
         ]
       }
     >
-      <Icon
-        name="message-text-outline"
-        style={
-          [
-            {
-              "color": "rgba(255,255,255,0.5)",
-              "fontSize": 24,
-            },
-            false,
-            undefined,
-          ]
-        }
-      />
-      <Text
-        style={
-          [
-            {
-              "flex": 1,
-            },
-            {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "color": "rgba(255,255,255,0.72)",
-              "marginTop": -1,
-              "paddingLeft": 12,
-              "paddingRight": 20,
-            },
-            false,
-            false,
-            undefined,
-          ]
-        }
-      >
-        Threads
-      </Text>
-    </View>
+      Threads
+    </Text>
   </View>
 </View>
 `;
 
-exports[`Thread item in the channel list Threads Component should match snapshot with isInfo 1`] = `
+exports[`Thread item in the channel list Threads Component should match snapshot with onCenterBg 1`] = `
 <View
   accessibilityState={
     {
@@ -139,70 +131,61 @@ exports[`Thread item in the channel list Threads Component should match snapshot
 >
   <View
     style={
-      {
-        "marginLeft": -18,
-        "marginRight": -20,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        false,
+        false,
+        false,
+        {
+          "minHeight": 40,
+        },
+      ]
     }
   >
-    <View
+    <Icon
+      name="message-text-outline"
       style={
         [
           {
-            "alignItems": "center",
-            "flexDirection": "row",
-            "minHeight": 40,
-            "paddingHorizontal": 20,
+            "color": "rgba(255,255,255,0.5)",
+            "fontSize": 24,
+            "marginRight": 12,
           },
           false,
+          {
+            "color": "rgba(63,67,80,0.72)",
+          },
+        ]
+      }
+    />
+    <Text
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          {
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          {
+            "color": "rgba(255,255,255,0.72)",
+          },
+          false,
+          false,
+          {
+            "color": "#3f4350",
+          },
         ]
       }
     >
-      <Icon
-        name="message-text-outline"
-        style={
-          [
-            {
-              "color": "rgba(255,255,255,0.5)",
-              "fontSize": 24,
-            },
-            false,
-            {
-              "color": "rgba(63,67,80,0.72)",
-            },
-          ]
-        }
-      />
-      <Text
-        style={
-          [
-            {
-              "flex": 1,
-            },
-            {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "color": "rgba(255,255,255,0.72)",
-              "marginTop": -1,
-              "paddingLeft": 12,
-              "paddingRight": 20,
-            },
-            false,
-            false,
-            {
-              "color": "#3f4350",
-              "paddingRight": 20,
-            },
-          ]
-        }
-      >
-        Threads
-      </Text>
-    </View>
+      Threads
+    </Text>
   </View>
 </View>
 `;
@@ -247,65 +230,57 @@ exports[`Thread item in the channel list Threads Component should match snapshot
 >
   <View
     style={
-      {
-        "marginLeft": -18,
-        "marginRight": -20,
-      }
+      [
+        {
+          "alignItems": "center",
+          "flexDirection": "row",
+        },
+        false,
+        false,
+        false,
+        {
+          "minHeight": 40,
+        },
+      ]
     }
   >
-    <View
+    <Icon
+      name="message-text-outline"
       style={
         [
           {
-            "alignItems": "center",
-            "flexDirection": "row",
-            "minHeight": 40,
-            "paddingHorizontal": 20,
+            "color": "rgba(255,255,255,0.5)",
+            "fontSize": 24,
+            "marginRight": 12,
           },
           false,
+          undefined,
+        ]
+      }
+    />
+    <Text
+      style={
+        [
+          {
+            "flex": 1,
+          },
+          {
+            "fontFamily": "OpenSans",
+            "fontSize": 16,
+            "fontWeight": "400",
+            "lineHeight": 24,
+          },
+          {
+            "color": "rgba(255,255,255,0.72)",
+          },
+          false,
+          false,
+          undefined,
         ]
       }
     >
-      <Icon
-        name="message-text-outline"
-        style={
-          [
-            {
-              "color": "rgba(255,255,255,0.5)",
-              "fontSize": 24,
-            },
-            false,
-            undefined,
-          ]
-        }
-      />
-      <Text
-        style={
-          [
-            {
-              "flex": 1,
-            },
-            {
-              "fontFamily": "OpenSans",
-              "fontSize": 16,
-              "fontWeight": "400",
-              "lineHeight": 24,
-            },
-            {
-              "color": "rgba(255,255,255,0.72)",
-              "marginTop": -1,
-              "paddingLeft": 12,
-              "paddingRight": 20,
-            },
-            false,
-            false,
-            undefined,
-          ]
-        }
-      >
-        Threads
-      </Text>
-    </View>
+      Threads
+    </Text>
   </View>
 </View>
 `;

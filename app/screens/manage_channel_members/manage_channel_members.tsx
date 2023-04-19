@@ -30,7 +30,6 @@ type Props = {
     componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
-    teammateNameDisplay: string;
     tutorialWatched: boolean;
 }
 
@@ -69,7 +68,6 @@ export default function ManageChannelMembers({
     componentId,
     currentTeamId,
     currentUserId,
-    teammateNameDisplay,
     tutorialWatched,
 }: Props) {
     const serverUrl = useServerUrl();
@@ -271,7 +269,6 @@ export default function ManageChannelMembers({
                 selectedIds={EMPTY_IDS}
                 showManageMode={canManageAndRemoveMembers && isManageMode}
                 showNoResults={!loading}
-                teammateNameDisplay={teammateNameDisplay}
                 term={term}
                 testID='manage_members.user_list'
                 tutorialWatched={tutorialWatched}
