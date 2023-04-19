@@ -1010,5 +1010,13 @@
     "intro.add_members": "Добавить участников",
     "channel_info.add_members": "Добавить участников",
     "channel_add_members.add_members.button": "Добавить участников",
-    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {участник добавлен} few {участника добавлено} other {участников добавлено}}"
+    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {участник добавлен} few {участника добавлено} other {участников добавлено}}",
+    "screen.channel_files.results.filter.title": "Фильтр по типу файлов",
+    "screen.channel_files.header.recent_files": "Последние файлы",
+    "mobile.diagnostic_id.empty": "Для этого сервера отсутствует значение DiagnosticId. Обратитесь к системному администратору для проверки этого значения и перезапустите сервер.",
+    "channel_info.channel_files": "Файлы",
+    "channel_files.noFiles.title": "Файлы не найдены",
+    "channel_files.noFiles.paragraph": "Этот канал не содержит файлов с примененными фильтрами",
+    "channel_files.empty.title": "Файлов пока нет",
+    "channel_files.empty.paragraph": "Здесь показаны опубликованные в этом канале файлы."
 }
