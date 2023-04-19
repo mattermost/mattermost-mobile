@@ -7,8 +7,6 @@ exports[`components/categories_list should render channels error 1`] = `
       {
         "backgroundColor": "#1e325c",
         "flex": 1,
-        "paddingLeft": 18,
-        "paddingRight": 20,
         "paddingTop": 10,
       },
       {
@@ -19,11 +17,15 @@ exports[`components/categories_list should render channels error 1`] = `
 >
   <View
     style={
-      {
-        "marginLeft": 0,
-        "paddingLeft": 18,
-        "paddingRight": 20,
-      }
+      [
+        {
+          "marginLeft": 0,
+        },
+        {
+          "paddingLeft": 18,
+          "paddingRight": 20,
+        },
+      ]
     }
   >
     <View
@@ -332,8 +334,6 @@ exports[`components/categories_list should render team error 1`] = `
       {
         "backgroundColor": "#1e325c",
         "flex": 1,
-        "paddingLeft": 18,
-        "paddingRight": 20,
         "paddingTop": 10,
       },
       {
@@ -344,11 +344,15 @@ exports[`components/categories_list should render team error 1`] = `
 >
   <View
     style={
-      {
-        "marginLeft": 0,
-        "paddingLeft": 18,
-        "paddingRight": 20,
-      }
+      [
+        {
+          "marginLeft": 0,
+        },
+        {
+          "paddingLeft": 18,
+          "paddingRight": 20,
+        },
+      ]
     }
   >
     <View
