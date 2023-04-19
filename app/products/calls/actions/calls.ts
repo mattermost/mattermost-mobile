@@ -6,6 +6,7 @@ import InCallManager from 'react-native-incall-manager';
 import {Navigation} from 'react-native-navigation';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
+import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveAndJoinWithAlert, needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {
@@ -265,6 +266,17 @@ export const joinCall = async (
 
     try {
         await connection.waitForPeerConnection();
+
+        // Follow the thread.
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return {data: channelId};
+        }
+
+        const call = getCallsState(serverUrl).calls[channelId];
+        const channel = await getChannelById(database, channelId);
+        updateThreadFollowing(serverUrl, channel?.teamId || '', call.threadId, true, false);
+
         return {data: channelId};
     } catch (e) {
         connection.disconnect();
