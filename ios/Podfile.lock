@@ -561,9 +561,9 @@ PODS:
   - RNScreens (3.20.0):
     - React-Core
     - React-RCTImage
-  - RNSentry (4.14.0):
+  - RNSentry (5.3.1):
     - React-Core
-    - Sentry/HybridSDK (= 7.31.5)
+    - Sentry/HybridSDK (= 8.4.0)
   - RNShare (8.2.2):
     - React-Core
   - RNSVG (13.9.0):
@@ -577,7 +577,9 @@ PODS:
   - SDWebImageWebPCoder (0.8.5):
     - libwebp (~> 1.0)
     - SDWebImage/Core (~> 5.10)
-  - Sentry/HybridSDK (7.31.5)
+  - Sentry/HybridSDK (8.4.0):
+    - SentryPrivate (= 8.4.0)
+  - SentryPrivate (8.4.0)
   - simdjson (1.0.0)
   - SocketRocket (0.6.0)
   - Starscream (4.0.4)
@@ -721,6 +723,7 @@ SPEC REPOS:
     - SDWebImage
     - SDWebImageWebPCoder
     - Sentry
+    - SentryPrivate
     - SocketRocket
     - SwiftyJSON
     - Swime
@@ -985,14 +988,15 @@ SPEC CHECKSUMS:
   RNReanimated: b1220a0e5168745283ff5d53bfc7d2144b2cee1b
   RNRudderSdk: 3b9251e2379775b10078cc7ed6ea59d5262ddff3
   RNScreens: 218801c16a2782546d30bd2026bb625c0302d70f
-  RNSentry: 7e90aec2633d2fdad8aeb839c9915e4376fd27d1
+  RNSentry: 68d5b2339fc7cd864e8076279345cc90174fa583
   RNShare: d82e10f6b7677f4b0048c23709bd04098d5aee6c
   RNSVG: 53c661b76829783cdaf9b7a57258f3d3b4c28315
   RNVectorIcons: fcc2f6cb32f5735b586e66d14103a74ce6ad61f8
   Rudder: 41523d90e7f8040605ca6a803f662a538144c90f
   SDWebImage: a47aea9e3d8816015db4e523daff50cfd294499d
   SDWebImageWebPCoder: 908b83b6adda48effe7667cd2b7f78c897e5111d
-  Sentry: 4c9babff9034785067c896fd580b1f7de44da020
+  Sentry: 16d46dd5ca10e7f4469a2611805a3de123188add
+  SentryPrivate: 2bb4f8d9ff558b25ac70b66c1dedc58a7c43630b
   simdjson: c96317b3a50dff3468a42f586ab7ed22c6ab2fd9
   SocketRocket: fccef3f9c5cedea1353a9ef6ada904fde10d6608
   Starscream: 5178aed56b316f13fa3bc55694e583d35dd414d9
