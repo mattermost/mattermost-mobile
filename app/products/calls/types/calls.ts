@@ -133,6 +133,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableRecordings: false,
     MaxRecordingDuration: 60,
     AllowScreenSharing: true,
+    EnableSimulcast: false,
 };
 
 export type ApiResp = {
@@ -146,18 +147,6 @@ export type ReactionStreamEmoji = {
     latestTimestamp: number;
     count: number;
     literal?: string;
-};
-
-export type ColorRGB = {
-    r: number;
-    g: number;
-    b: number;
-};
-
-export type ColorHSL = {
-    h: number;
-    s: number;
-    l: number;
 };
 
 export type CallsTheme = Theme & {
