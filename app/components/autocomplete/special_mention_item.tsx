@@ -18,12 +18,11 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         row: {
             height: 40,
             paddingVertical: 8,
-            paddingHorizontal: 9,
             flexDirection: 'row',
             alignItems: 'center',
         },
         rowPicture: {
-            marginHorizontal: 8,
+            marginRight: 8,
             width: 20,
             alignItems: 'center',
             justifyContent: 'center',

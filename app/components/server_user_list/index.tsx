@@ -11,7 +11,6 @@ import {filterProfilesMatchingTerm} from '@utils/user';
 
 type Props = {
     currentUserId: string;
-    teammateNameDisplay: string;
     tutorialWatched: boolean;
     handleSelectProfile: (user: UserProfile) => void;
     term: string;
@@ -24,7 +23,6 @@ type Props = {
 
 export default function ServerUserList({
     currentUserId,
-    teammateNameDisplay,
     tutorialWatched,
     handleSelectProfile,
     term,
@@ -121,7 +119,6 @@ export default function ServerUserList({
             profiles={data}
             selectedIds={selectedIds}
             showNoResults={!loading && page.current !== -1}
-            teammateNameDisplay={teammateNameDisplay}
             fetchMore={getProfiles}
             term={term}
             testID={testID}

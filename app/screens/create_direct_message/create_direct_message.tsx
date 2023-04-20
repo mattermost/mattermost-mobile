@@ -320,7 +320,6 @@ export default function CreateDirectMessage({
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
                 selectedIds={selectedIds}
-                teammateNameDisplay={teammateNameDisplay}
                 term={term}
                 testID='create_direct_message.user_list'
                 tutorialWatched={tutorialWatched}

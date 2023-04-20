@@ -20,8 +20,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         flex: 1,
         backgroundColor: theme.sidebarBg,
-        paddingLeft: 18,
-        paddingRight: 20,
         paddingTop: 10,
     },
 }));
@@ -68,7 +66,12 @@ const CategoriesList = ({hasChannels, iconPad, isCRTEnabled, moreThanOneTeam}: C
         return (
             <>
                 <SubHeader/>
-                {isCRTEnabled && <ThreadsButton/>}
+                {isCRTEnabled &&
+                    <ThreadsButton
+                        isOnHome={true}
+                        shouldHighlighActive={true}
+                    />
+                }
                 <Categories/>
             </>
         );
@@ -76,9 +79,7 @@ const CategoriesList = ({hasChannels, iconPad, isCRTEnabled, moreThanOneTeam}: C
 
     return (
         <Animated.View style={[styles.container, tabletStyle]}>
-            <ChannelListHeader
-                iconPad={iconPad}
-            />
+            <ChannelListHeader iconPad={iconPad}/>
             {content}
         </Animated.View>
     );

@@ -7,13 +7,13 @@ import {View} from 'react-native';
 import Animated, {FlipOutXUp} from 'react-native-reanimated';
 
 import {toggleMuteChannel} from '@actions/remote/channel';
-import Button from '@app/components/button';
-import CompassIcon from '@app/components/compass_icon';
-import FormattedText from '@app/components/formatted_text';
-import {useServerUrl} from '@app/context/server';
-import {useTheme} from '@app/context/theme';
-import {preventDoubleTap} from '@app/utils/tap';
-import {changeOpacity, makeStyleSheetFromTheme} from '@app/utils/theme';
+import Button from '@components/button';
+import CompassIcon from '@components/compass_icon';
+import FormattedText from '@components/formatted_text';
+import {useServerUrl} from '@context/server';
+import {useTheme} from '@context/theme';
+import {preventDoubleTap} from '@utils/tap';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type Props = {

@@ -43,6 +43,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         listStyle: {
             backgroundColor: theme.centerChannelBg,
             borderRadius: 4,
+            paddingHorizontal: 16,
         },
     };
 });

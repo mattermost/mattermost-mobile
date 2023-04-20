@@ -8,16 +8,15 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
         section: {
             flexDirection: 'row',
-            paddingHorizontal: 16,
         },
         sectionText: {
-            fontSize: 12,
-            fontWeight: '600',
+            ...typography('Body', 75, 'SemiBold'),
             textTransform: 'uppercase',
             color: changeOpacity(theme.centerChannelColor, 0.56),
             paddingTop: 16,

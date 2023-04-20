@@ -1005,5 +1005,10 @@
     "channel_notification_preferences.notification.all": "All new messages",
     "channel_notification_preferences.muted_title": "This channel is muted",
     "channel_notification_preferences.muted_content": "You can change the notification settings, but you will not receive notifications until the channel is unmuted.",
-    "channel_notification_preferences.default": "(default)"
+    "channel_notification_preferences.default": "(default)",
+    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {member} other {members}} added",
+    "mobile.channel_add_members.error": "An error occurred and the selected users could not be added to the channel.",
+    "intro.add_members": "Add members",
+    "channel_info.add_members": "Add members",
+    "channel_add_members.add_members.button": "Add Members"
 }

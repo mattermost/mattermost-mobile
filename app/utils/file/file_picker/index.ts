@@ -223,6 +223,42 @@ export default class FilePickerUtil {
         return true;
     };
 
+    private hasWriteStoragePermission = async () => {
+        if (Platform.OS === 'android' && Platform.Version <= 28) {
+            const storagePermission = Permissions.PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
+            let permissionRequest;
+            const hasPermissionToStorage = await Permissions.check(storagePermission);
+            switch (hasPermissionToStorage) {
+                case Permissions.RESULTS.DENIED:
+                    permissionRequest = await Permissions.request(storagePermission);
+                    return permissionRequest === Permissions.RESULTS.GRANTED;
+                case Permissions.RESULTS.BLOCKED: {
+                    const {title, text} = this.getPermissionDeniedMessage('storage');
+
+                    Alert.alert(title, text, [
+                        {
+                            text: this.intl.formatMessage({
+                                id: 'mobile.permission_denied_dismiss',
+                                defaultMessage: "Don't Allow",
+                            }),
+                        },
+                        {
+                            text: this.intl.formatMessage({
+                                id: 'mobile.permission_denied_retry',
+                                defaultMessage: 'Settings',
+                            }),
+                            onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                        },
+                    ]);
+                    return false;
+                }
+                default: return true;
+            }
+        }
+
+        return true;
+    };
+
     private buildUri = async (doc: DocumentPickerResponse) => {
         let uri: string = doc.uri;
 
@@ -256,7 +292,13 @@ export default class FilePickerUtil {
         }
 
         const hasCameraPermission = await this.hasPhotoPermission('camera');
-        if (hasCameraPermission) {
+
+        let hasWriteToStoragePermission = true;
+        if (Platform.OS === 'android' && Platform.Version <= 28) {
+            hasWriteToStoragePermission = await this.hasWriteStoragePermission();
+        }
+
+        if (hasCameraPermission && hasWriteToStoragePermission) {
             launchCamera(options, async (response: ImagePickerResponse) => {
                 StatusBar.setHidden(false);
 

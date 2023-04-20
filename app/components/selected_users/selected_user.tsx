@@ -8,6 +8,8 @@ import ProfilePicture from '@components/profile_picture';
 import SelectedChip from '@components/selected_chip';
 import {displayUsername} from '@utils/user';
 
+import type UserModel from '@typings/database/models/servers/user';
+
 type Props = {
 
     /*
@@ -18,7 +20,7 @@ type Props = {
     /*
      * The user that this component represents.
      */
-    user: UserProfile;
+    user: UserProfile|UserModel;
 
     /*
      * A handler function that will deselect a user when clicked on.

@@ -13,6 +13,8 @@ exports[`components/channel_list/header Channel List Header Component should mat
   style={
     {
       "marginLeft": 0,
+      "paddingLeft": 18,
+      "paddingRight": 20,
     }
   }
 >

@@ -54,7 +54,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             overflow: 'hidden',
             paddingBottom: 8,
-            paddingHorizontal: 16,
             height: 40,
         },
     };
