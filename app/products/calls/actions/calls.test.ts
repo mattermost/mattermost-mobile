@@ -82,6 +82,12 @@ jest.mock('@actions/remote/thread', () => ({
     updateThreadFollowing: jest.fn(() => Promise.resolve({})),
 }));
 
+jest.mock('@queries/servers/thread', () => ({
+    getThreadById: jest.fn(() => Promise.resolve({
+        isFollowing: false,
+    })),
+}));
+
 jest.mock('@calls/alerts');
 
 const addFakeCall = (serverUrl: string, channelId: string) => {
