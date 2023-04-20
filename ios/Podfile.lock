@@ -393,9 +393,6 @@ PODS:
     - RCTTypeSafety
     - React-Core
     - ReactCommon/turbomodule/core
-  - react-native-turbo-mailer (0.2.4):
-    - RCT-Folly (= 2021.07.22.00)
-    - React-Core
   - react-native-video (5.2.1):
     - React-Core
     - react-native-video/Video (= 5.2.1)
@@ -657,7 +654,6 @@ DEPENDENCIES:
   - react-native-notifications (from `../node_modules/react-native-notifications`)
   - "react-native-paste-input (from `../node_modules/@mattermost/react-native-paste-input`)"
   - react-native-safe-area-context (from `../node_modules/react-native-safe-area-context`)
-  - "react-native-turbo-mailer (from `../node_modules/@mattermost/react-native-turbo-mailer`)"
   - react-native-video (from `../node_modules/react-native-video`)
   - react-native-webrtc (from `../node_modules/react-native-webrtc`)
   - react-native-webview (from `../node_modules/react-native-webview`)
@@ -807,8 +803,6 @@ EXTERNAL SOURCES:
     :path: "../node_modules/@mattermost/react-native-paste-input"
   react-native-safe-area-context:
     :path: "../node_modules/react-native-safe-area-context"
-  react-native-turbo-mailer:
-    :path: "../node_modules/@mattermost/react-native-turbo-mailer"
   react-native-video:
     :path: "../node_modules/react-native-video"
   react-native-webrtc:
@@ -957,7 +951,6 @@ SPEC CHECKSUMS:
   react-native-notifications: 83b4fd4a127a6c918fc846cae90da60f84819e44
   react-native-paste-input: 3392800944a47c00dddbff23c31c281482209679
   react-native-safe-area-context: f5549f36508b1b7497434baa0cd97d7e470920d4
-  react-native-turbo-mailer: dec932ffe8c20dfd22b43c23ee5890ceea909620
   react-native-video: c26780b224543c62d5e1b2a7244a5cd1b50e8253
   react-native-webrtc: a9d4d8ef61adb634e006ffd956c494ad8318d95c
   react-native-webview: 203b6a1c7507737f777c91d7e10c30e7e67c1a17
