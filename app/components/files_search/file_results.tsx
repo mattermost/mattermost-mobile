@@ -5,6 +5,7 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import NoResults from '@components/files_search/no_results';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -34,6 +35,8 @@ type Props = {
     paddingTop: StyleProp<ViewStyle>;
     publicLinkEnabled: boolean;
     searchValue: string;
+    isChannelFiles?: boolean;
+    isFilterEnabled?: boolean;
 }
 
 const galleryIdentifier = 'search-files-location';
@@ -45,6 +48,8 @@ const FileResults = ({
     paddingTop,
     publicLinkEnabled,
     searchValue,
+    isChannelFiles,
+    isFilterEnabled,
 }: Props) => {
     const theme = useTheme();
     const insets = useSafeAreaInsets();
@@ -53,16 +58,16 @@ const FileResults = ({
     const [action, setAction] = useState<GalleryAction>('none');
     const [lastViewedFileInfo, setLastViewedFileInfo] = useState<FileInfo | undefined>(undefined);
 
-    const containerStyle = useMemo(() => ([paddingTop, {top: fileInfos.length ? 8 : 0}]), [fileInfos, paddingTop]);
+    const containerStyle = useMemo(() => ([paddingTop, {top: fileInfos.length ? 8 : 0, flexGrow: 1}]), [fileInfos, paddingTop]);
     const numOptions = getNumberFileMenuOptions(canDownloadFiles, publicLinkEnabled);
 
     const {images: imageAttachments, nonImages: nonImageAttachments} = useImageAttachments(fileInfos, publicLinkEnabled);
-    const filesForGallery = imageAttachments.concat(nonImageAttachments);
+    const filesForGallery = useMemo(() => imageAttachments.concat(nonImageAttachments), [imageAttachments, nonImageAttachments]);
 
     const channelNames = useMemo(() => getChannelNamesWithID(fileChannels), [fileChannels]);
-    const orderedFileInfos = useMemo(() => getOrderedFileInfos(filesForGallery), []);
-    const fileInfosIndexes = useMemo(() => getFileInfosIndexes(orderedFileInfos), []);
-    const orderedGalleryItems = useMemo(() => getOrderedGalleryItems(orderedFileInfos), []);
+    const orderedFileInfos = useMemo(() => getOrderedFileInfos(filesForGallery), [filesForGallery]);
+    const fileInfosIndexes = useMemo(() => getFileInfosIndexes(orderedFileInfos), [orderedFileInfos]);
+    const orderedGalleryItems = useMemo(() => getOrderedGalleryItems(orderedFileInfos), [orderedFileInfos]);
 
     const onPreviewPress = useCallback(preventDoubleTap((idx: number) => {
         openGalleryAtIndex(galleryIdentifier, idx, orderedGalleryItems);
@@ -88,10 +93,15 @@ const FileResults = ({
     }, [insets, isTablet, numOptions, theme]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<FileInfo>) => {
+        let channelName: string | undefined;
+        if (!isChannelFiles && item.channel_id) {
+            channelName = channelNames[item.channel_id];
+        }
+
         return (
             <FileResult
                 canDownloadFiles={canDownloadFiles}
-                channelName={channelNames[item.channel_id!]}
+                channelName={channelName}
                 fileInfo={item}
                 index={fileInfosIndexes[item.id!] || 0}
                 key={`${item.id}-${item.name}`}
@@ -109,16 +119,24 @@ const FileResults = ({
         channelNames,
         fileInfosIndexes,
         onPreviewPress,
-        setAction,
+        onOptionsPress,
+        numOptions,
         publicLinkEnabled,
     ]);
 
-    const noResults = useMemo(() => (
-        <NoResultsWithTerm
-            term={searchValue}
-            type={TabTypes.FILES}
-        />
-    ), [searchValue]);
+    const noResults = useMemo(() => {
+        if (!searchValue && isChannelFiles) {
+            return (
+                <NoResults isFilterEnabled={isFilterEnabled}/>
+            );
+        }
+        return (
+            <NoResultsWithTerm
+                term={searchValue}
+                type={TabTypes.FILES}
+            />
+        );
+    }, [searchValue]);
 
     return (
         <>

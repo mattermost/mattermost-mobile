@@ -34,7 +34,7 @@ const PostResults = ({
     searchValue,
 }: Props) => {
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
-    const containerStyle = useMemo(() => ({top: posts.length ? 4 : 8}), [posts]);
+    const containerStyle = useMemo(() => ({top: posts.length ? 4 : 8, flexGrow: 1}), [posts]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
         switch (item.type) {

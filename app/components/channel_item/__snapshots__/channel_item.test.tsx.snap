@@ -41,11 +41,10 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         {
           "alignItems": "center",
           "flexDirection": "row",
-          "minHeight": 40,
-          "paddingHorizontal": 20,
         },
         false,
-        undefined,
+        false,
+        false,
         {
           "minHeight": 40,
         },
@@ -53,79 +52,71 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
     }
     testID="channel_item.hello"
   >
+    <Icon
+      name="globe"
+      style={
+        [
+          [
+            {
+              "color": "rgba(255,255,255,0.4)",
+            },
+            undefined,
+            undefined,
+            [
+              {
+                "marginRight": 12,
+              },
+              undefined,
+            ],
+            {
+              "fontSize": 24,
+            },
+          ],
+          {
+            "left": 1,
+          },
+        ]
+      }
+      testID="undefined.public"
+    />
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
+      style={
+        [
+          [
+            {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            {
+              "color": "rgba(255,255,255,0.72)",
+            },
+            false,
+            null,
+            null,
+            false,
+            false,
+          ],
+          {
+            "flex": 0,
+            "flexShrink": 1,
+          },
+        ]
+      }
+      testID="channel_item.hello.display_name"
+    >
+      Hello!
+    </Text>
     <View
       style={
         {
           "flex": 1,
-          "flexDirection": "row",
         }
       }
-    >
-      <View
-        style={
-          [
-            {
-              "alignItems": "center",
-              "justifyContent": "center",
-            },
-            {
-              "height": 24,
-              "width": 24,
-            },
-            undefined,
-            undefined,
-          ]
-        }
-      >
-        <Icon
-          name="globe"
-          style={
-            [
-              {
-                "color": "rgba(255,255,255,0.4)",
-              },
-              undefined,
-              undefined,
-              {
-                "fontSize": 24,
-                "left": 1,
-              },
-            ]
-          }
-          testID="undefined.public"
-        />
-      </View>
-      <View>
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            [
-              {
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              },
-              {
-                "color": "rgba(255,255,255,0.72)",
-                "marginTop": -1,
-                "paddingLeft": 12,
-                "paddingRight": 20,
-              },
-              false,
-              null,
-              null,
-              false,
-              false,
-            ]
-          }
-          testID="channel_item.hello.display_name"
-        >
-          Hello!
-        </Text>
-      </View>
-    </View>
+    />
   </View>
 </View>
 `;
@@ -171,11 +162,10 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         {
           "alignItems": "center",
           "flexDirection": "row",
-          "minHeight": 40,
-          "paddingHorizontal": 20,
         },
         false,
-        undefined,
+        false,
+        false,
         {
           "minHeight": 40,
         },
@@ -183,103 +173,93 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
     }
     testID="channel_item.hello"
   >
+    <Icon
+      name="pencil-outline"
+      style={
+        [
+          [
+            {
+              "color": "rgba(255,255,255,0.4)",
+            },
+            undefined,
+            undefined,
+            [
+              {
+                "marginRight": 12,
+              },
+              undefined,
+            ],
+            {
+              "fontSize": 24,
+            },
+          ],
+          {
+            "left": 2,
+          },
+        ]
+      }
+      testID="undefined.draft"
+    />
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
+      style={
+        [
+          [
+            {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            {
+              "color": "rgba(255,255,255,0.72)",
+            },
+            false,
+            null,
+            null,
+            false,
+            false,
+          ],
+          {
+            "flex": 0,
+            "flexShrink": 1,
+          },
+        ]
+      }
+      testID="channel_item.hello.display_name"
+    >
+      Hello!
+    </Text>
     <View
       style={
         {
           "flex": 1,
-          "flexDirection": "row",
         }
       }
-    >
-      <View
-        style={
-          [
-            {
-              "alignItems": "center",
-              "justifyContent": "center",
-            },
-            {
-              "height": 24,
-              "width": 24,
-            },
-            undefined,
-            undefined,
-          ]
-        }
-      >
-        <Icon
-          name="pencil-outline"
-          style={
-            [
-              {
-                "color": "rgba(255,255,255,0.4)",
-              },
-              undefined,
-              undefined,
-              {
-                "fontSize": 24,
-                "left": 2,
-              },
-            ]
-          }
-          testID="undefined.draft"
-        />
-      </View>
-      <View>
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            [
-              {
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              },
-              {
-                "color": "rgba(255,255,255,0.72)",
-                "marginTop": -1,
-                "paddingLeft": 12,
-                "paddingRight": 20,
-              },
-              false,
-              null,
-              null,
-              false,
-              false,
-            ]
-          }
-          testID="channel_item.hello.display_name"
-        >
-          Hello!
-        </Text>
-      </View>
-    </View>
+    />
     <Icon
       name="phone-in-talk"
       size={16}
       style={
         [
+          [
+            {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            {
+              "color": "rgba(255,255,255,0.72)",
+            },
+            false,
+            null,
+            null,
+            false,
+            false,
+          ],
           {
-            "fontFamily": "OpenSans",
-            "fontSize": 16,
-            "fontWeight": "400",
-            "lineHeight": 24,
-          },
-          {
-            "color": "rgba(255,255,255,0.72)",
-            "marginTop": -1,
-            "paddingLeft": 12,
-            "paddingRight": 20,
-          },
-          false,
-          null,
-          null,
-          false,
-          false,
-          {
-            "paddingRight": 0,
             "textAlign": "right",
           },
         ]
@@ -330,11 +310,10 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
         {
           "alignItems": "center",
           "flexDirection": "row",
-          "minHeight": 40,
-          "paddingHorizontal": 20,
         },
         false,
-        undefined,
+        false,
+        false,
         {
           "minHeight": 40,
         },
@@ -342,79 +321,71 @@ exports[`components/channel_list/categories/body/channel_item should match snaps
     }
     testID="channel_item.hello"
   >
+    <Icon
+      name="pencil-outline"
+      style={
+        [
+          [
+            {
+              "color": "rgba(255,255,255,0.4)",
+            },
+            undefined,
+            undefined,
+            [
+              {
+                "marginRight": 12,
+              },
+              undefined,
+            ],
+            {
+              "fontSize": 24,
+            },
+          ],
+          {
+            "left": 2,
+          },
+        ]
+      }
+      testID="undefined.draft"
+    />
+    <Text
+      ellipsizeMode="tail"
+      numberOfLines={1}
+      style={
+        [
+          [
+            {
+              "fontFamily": "OpenSans",
+              "fontSize": 16,
+              "fontWeight": "400",
+              "lineHeight": 24,
+            },
+            {
+              "color": "rgba(255,255,255,0.72)",
+            },
+            false,
+            null,
+            null,
+            false,
+            false,
+          ],
+          {
+            "flex": 0,
+            "flexShrink": 1,
+          },
+        ]
+      }
+      testID="channel_item.hello.display_name"
+    >
+      Hello!
+    </Text>
     <View
       style={
         {
           "flex": 1,
-          "flexDirection": "row",
         }
       }
-    >
-      <View
-        style={
-          [
-            {
-              "alignItems": "center",
-              "justifyContent": "center",
-            },
-            {
-              "height": 24,
-              "width": 24,
-            },
-            undefined,
-            undefined,
-          ]
-        }
-      >
-        <Icon
-          name="pencil-outline"
-          style={
-            [
-              {
-                "color": "rgba(255,255,255,0.4)",
-              },
-              undefined,
-              undefined,
-              {
-                "fontSize": 24,
-                "left": 2,
-              },
-            ]
-          }
-          testID="undefined.draft"
-        />
-      </View>
-      <View>
-        <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
-          style={
-            [
-              {
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              },
-              {
-                "color": "rgba(255,255,255,0.72)",
-                "marginTop": -1,
-                "paddingLeft": 12,
-                "paddingRight": 20,
-              },
-              false,
-              null,
-              null,
-              false,
-              false,
-            ]
-          }
-          testID="channel_item.hello.display_name"
-        >
-          Hello!
-        </Text>
-      </View>
-    </View>
+    />
   </View>
 </View>
 `;

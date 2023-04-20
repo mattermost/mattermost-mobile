@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, TouchableOpacity, View} from 'react-native';
+import {Keyboard} from 'react-native';
 
 import FormattedRelativeTime from '@components/formatted_relative_time';
 import UserItem from '@components/user_item';
@@ -26,9 +26,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         alignItems: 'flex-start',
         width: 40,
     },
-    ackContainer: {
-        paddingLeft: 4,
-    },
     time: {
         color: changeOpacity(theme.centerChannelColor, 0.64),
         ...typography('Body', 75),
@@ -43,41 +40,44 @@ type Props = {
     timezone?: UserTimezone;
 }
 
-const UserListItem = ({channelId, location, user, userAcknowledgement, timezone}: Props) => {
+const UserListItem = ({
+    channelId,
+    location,
+    timezone,
+    user,
+    userAcknowledgement,
+}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
-    const openUserProfile = async () => {
-        if (user) {
+
+    const handleUserPress = useCallback(async (userProfile: UserProfile) => {
+        if (userProfile) {
             await dismissBottomSheet(Screens.BOTTOM_SHEET);
             const screen = Screens.USER_PROFILE;
             const title = intl.formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
             const closeButtonId = 'close-user-profile';
-            const props = {closeButtonId, location, userId: user.id, channelId};
+            const props = {closeButtonId, location, userId: userProfile.id, channelId};
 
             Keyboard.dismiss();
             openAsBottomSheet({screen, title, theme, closeButtonId, props});
         }
-    };
+    }, [channelId, location]);
 
     return (
-        <TouchableOpacity onPress={openUserProfile}>
-            <UserItem
-                FooterComponent={
-                    <View style={style.ackContainer}>
-                        <FormattedRelativeTime
-                            value={userAcknowledgement}
-                            timezone={timezone}
-                            style={style.time}
-                        />
-                    </View>
-                }
-                containerStyle={style.container}
-                pictureContainerStyle={style.pictureContainer}
-                size={40}
-                user={user}
-            />
-        </TouchableOpacity>
+        <UserItem
+            FooterComponent={
+                <FormattedRelativeTime
+                    value={userAcknowledgement}
+                    timezone={timezone}
+                    style={style.time}
+                />
+            }
+            containerStyle={style.container}
+            onUserPress={handleUserPress}
+            size={40}
+            user={user}
+        />
     );
 };
 

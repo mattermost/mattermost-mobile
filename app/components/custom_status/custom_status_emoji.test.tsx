@@ -26,7 +26,6 @@ describe('components/custom_status/custom_status_emoji', () => {
         const wrapper = renderWithEverything(
             <CustomStatusEmoji
                 customStatus={customStatus}
-                testID='test'
             />,
             {database},
         );
@@ -38,7 +37,6 @@ describe('components/custom_status/custom_status_emoji', () => {
             <CustomStatusEmoji
                 customStatus={customStatus}
                 emojiSize={34}
-                testID='test'
             />,
             {database},
         );

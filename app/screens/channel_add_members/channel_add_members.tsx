@@ -273,7 +273,6 @@ export default function ChannelAddMembers({
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
                 selectedIds={selectedIds}
-                teammateNameDisplay={teammateNameDisplay}
                 term={term}
                 testID={`${TEST_ID}.user_list`}
                 tutorialWatched={tutorialWatched}

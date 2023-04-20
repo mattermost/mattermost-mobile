@@ -23,7 +23,7 @@ const styles = StyleSheet.create({
 
 type Props = {
     canDownloadFiles: boolean;
-    channelName: string | undefined;
+    channelName?: string;
     fileInfo: FileInfo;
     index: number;
     numOptions: number;

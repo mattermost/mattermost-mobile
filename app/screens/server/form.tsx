@@ -47,9 +47,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     fullWidth: {
         width: '100%',
     },
-    error: {
-        marginBottom: 18,
-    },
     chooseText: {
         alignSelf: 'flex-start',
         color: changeOpacity(theme.centerChannelColor, 0.64),
@@ -166,7 +163,7 @@ const ServerForm = ({
 
     return (
         <View style={styles.formContainer}>
-            <View style={[styles.fullWidth, urlError?.length ? styles.error : undefined]}>
+            <View style={styles.fullWidth}>
                 <FloatingTextInput
                     autoCorrect={false}
                     autoCapitalize={'none'}
@@ -193,7 +190,7 @@ const ServerForm = ({
                     value={url}
                 />
             </View>
-            <View style={[styles.fullWidth, displayNameError?.length ? styles.error : undefined]}>
+            <View style={styles.fullWidth}>
                 <FloatingTextInput
                     autoCorrect={false}
                     autoCapitalize={'none'}
