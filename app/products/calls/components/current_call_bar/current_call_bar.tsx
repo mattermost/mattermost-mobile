@@ -65,6 +65,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
         },
         profilePic: {
             marginTop: 4,
+            marginRight: Platform.select({android: -8}),
+            marginLeft: Platform.select({android: -8}),
         },
         userInfo: {
             flex: 1,

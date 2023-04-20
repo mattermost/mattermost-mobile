@@ -47,7 +47,6 @@ const getStyleSheet = ({
             height: size + 16,
             width: size + 16,
             padding: 4,
-            marginRight: 4,
             borderRadius: (size + 16) / 2,
         },
         pictureHalo2: {
