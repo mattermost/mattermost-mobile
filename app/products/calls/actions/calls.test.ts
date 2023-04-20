@@ -86,6 +86,7 @@ jest.mock('@queries/servers/thread', () => ({
     getThreadById: jest.fn(() => Promise.resolve({
         isFollowing: false,
     })),
+    getIsCRTEnabled: jest.fn(() => Promise.resolve(true)),
 }));
 
 jest.mock('@calls/alerts');

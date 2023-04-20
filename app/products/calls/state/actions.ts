@@ -27,7 +27,7 @@ import {
 import {REACTION_LIMIT, REACTION_TIMEOUT} from '@constants/calls';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
-import {getThreadById} from '@queries/servers/thread';
+import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 
 import type {CallRecordingState, UserReactionData} from '@mattermost/calls/lib/types';
 
@@ -241,6 +241,11 @@ export const callStarted = async (serverUrl: string, call: Call) => {
     // We started the call, and it succeeded, so follow the call thread.
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
+        return;
+    }
+
+    const isCRTEnabled = await getIsCRTEnabled(database);
+    if (!isCRTEnabled) {
         return;
     }
 

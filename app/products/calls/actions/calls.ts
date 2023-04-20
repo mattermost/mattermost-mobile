@@ -32,7 +32,7 @@ import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
-import {getThreadById} from '@queries/servers/thread';
+import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
@@ -271,6 +271,11 @@ export const joinCall = async (
         // Follow the thread.
         const database = DatabaseManager.serverDatabases[serverUrl]?.database;
         if (!database) {
+            return {data: channelId};
+        }
+
+        const isCRTEnabled = await getIsCRTEnabled(database);
+        if (!isCRTEnabled) {
             return {data: channelId};
         }
 
