@@ -6,9 +6,9 @@ import withObservables from '@nozbe/with-observables';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
-import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
+import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_REGEX_DELAYED, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {observeChannel, queryAllMyChannel, queryChannelsForAutocomplete} from '@queries/servers/channel';
-import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
+import {observeConfigBooleanValue, observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 
 import ChannelMention from './channel_mention';
 
@@ -18,12 +18,13 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 const getMatchTermForChannelMention = (() => {
     let lastMatchTerm: string | null = null;
     let lastValue: string;
+    let lastMatchPattern: RegExp;
     let lastIsSearch: boolean;
-    return (value: string, isSearch: boolean) => {
-        if (value !== lastValue || isSearch !== lastIsSearch) {
-            const regex = isSearch ? CHANNEL_MENTION_SEARCH_REGEX : CHANNEL_MENTION_REGEX;
-            const match = value.match(regex);
+    return (value: string, matchPattern: RegExp, isSearch: boolean) => {
+        if (value !== lastValue || matchPattern !== lastMatchPattern || isSearch !== lastIsSearch) {
+            const match = value.match(matchPattern);
             lastValue = value;
+            lastMatchPattern = matchPattern;
             lastIsSearch = isSearch;
             if (match) {
                 if (isSearch) {
@@ -46,11 +47,16 @@ type WithTeamIdProps = {
     channelId?: string;
 } & WithDatabaseArgs;
 
+type WithMatchProps = {
+    isSearch: boolean;
+} & WithDatabaseArgs;
+
 type OwnProps = {
     value: string;
     isSearch: boolean;
     cursorPosition: number;
     teamId: string;
+    matchPattern: RegExp;
 } & WithDatabaseArgs;
 
 const emptyChannelList: ChannelModel[] = [];
@@ -79,8 +85,23 @@ const withTeamId = withObservables(['teamId', 'channelId'], ({teamId, channelId,
     };
 });
 
-const enhanced = withObservables(['value', 'isSearch', 'teamId', 'cursorPosition'], ({value, isSearch, teamId, cursorPosition, database}: OwnProps) => {
-    const matchTerm = getMatchTermForChannelMention(value.substring(0, cursorPosition), isSearch);
+const withMatchPattern = withObservables(['isSearch'], ({isSearch, database}: WithMatchProps) => {
+    let matchPattern;
+    if (isSearch) {
+        matchPattern = of$(CHANNEL_MENTION_SEARCH_REGEX);
+    } else {
+        matchPattern = observeConfigBooleanValue(database, 'DelayChannelAutocomplete').pipe(switchMap((c) => {
+            return c ? of$(CHANNEL_MENTION_REGEX_DELAYED) : of$(CHANNEL_MENTION_REGEX);
+        }));
+    }
+
+    return {
+        matchPattern,
+    };
+});
+
+const enhanced = withObservables(['value', 'isSearch', 'teamId', 'matchPattern', 'cursorPosition'], ({value, isSearch, teamId, matchPattern, cursorPosition, database}: OwnProps) => {
+    const matchTerm = getMatchTermForChannelMention(value.substring(0, cursorPosition), matchPattern, isSearch);
 
     const localChannels = matchTerm === null ? of$(emptyChannelList) : queryChannelsForAutocomplete(database, matchTerm, isSearch, teamId).observe();
 
@@ -90,4 +111,4 @@ const enhanced = withObservables(['value', 'isSearch', 'teamId', 'cursorPosition
     };
 });
 
-export default withDatabase(withMembers(withTeamId(enhanced(ChannelMention))));
+export default withDatabase(withMembers(withTeamId(withMatchPattern(enhanced(ChannelMention)))));
