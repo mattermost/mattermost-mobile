@@ -14,14 +14,10 @@ interface Props {
 const NUMBERS = Array(10).fill(null).map((_, i) => i);
 
 const usePrevious = (value: number) => {
-    const ref = React.useRef<number|undefined>();
+    const ref = React.useRef<number>(value);
     React.useEffect(() => {
         ref.current = value;
-    });
-
-    if (typeof ref.current === 'undefined') {
-        return 0;
-    }
+    }, [value]);
 
     return ref.current;
 };
@@ -36,18 +32,18 @@ const AnimatedNumber = ({
     const animateToNumberString = String(Math.abs(animateToNumber));
     const prevNumberString = String(Math.abs(prevNumber));
 
-    const animateToNumbersArr = Array.from(animateToNumberString, Number);
+    const numberStringToDigitsArray = Array.from(animateToNumberString, Number);
     const prevNumberersArr = Array.from(prevNumberString, Number);
 
     const [numberHeight, setNumberHeight] = React.useState(0);
-    const animations = useMemo(() => animateToNumbersArr.map((__, index) => {
+    const animations = useMemo(() => numberStringToDigitsArray.map((__, index) => {
         if (typeof prevNumberersArr[index] !== 'number') {
             return new Animated.Value(0);
         }
 
         const animationHeight = -1 * (numberHeight * prevNumberersArr[index]);
         return new Animated.Value(animationHeight);
-    }), [animateToNumbersArr]);
+    }), [numberStringToDigitsArray]);
 
     const setButtonLayout = useCallback((e: LayoutChangeEvent) => {
         setNumberHeight(e.nativeEvent.layout.height);
@@ -56,7 +52,7 @@ const AnimatedNumber = ({
     React.useEffect(() => {
         animations.forEach((animation, index) => {
             Animated.timing(animation, {
-                toValue: -1 * (numberHeight * animateToNumbersArr[index]),
+                toValue: -1 * (numberHeight * numberStringToDigitsArray[index]),
                 duration: animationDuration || 1400,
                 useNativeDriver: true,
                 easing: easing || Easing.elastic(1.2),
@@ -75,7 +71,7 @@ const AnimatedNumber = ({
                     {animateToNumber < 0 && (
                         <Text style={[fontStyle, {height: numberHeight}]}>{'-'}</Text>
                     )}
-                    {animateToNumbersArr.map((n, index) => {
+                    {numberStringToDigitsArray.map((n, index) => {
                         return (
                             <View
                                 key={`${index.toString()}`}
