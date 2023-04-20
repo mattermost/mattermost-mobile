@@ -113,7 +113,7 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         top: -1000,
     },
     time: {
-        color: theme.sidebarText,
+        color: theme.sidebarHeaderTextColor,
         ...typography('Heading', 200),
         width: 60,
     },
@@ -125,7 +125,7 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         height: 48,
     },
     collapseIcon: {
-        color: theme.sidebarText,
+        color: changeOpacity(theme.centerChannelBg, 0.56),
     },
     collapseIconLandscape: {
         margin: 10,
