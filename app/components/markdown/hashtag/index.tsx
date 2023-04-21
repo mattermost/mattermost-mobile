@@ -5,7 +5,7 @@ import React from 'react';
 import {DeviceEventEmitter, StyleProp, Text, TextStyle} from 'react-native';
 
 import {Navigation, Screens} from '@constants';
-import {popToRoot, dismissAllModals} from '@screens/navigation';
+import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
 
 type HashtagProps = {
     hashtag: string;
@@ -15,8 +15,7 @@ type HashtagProps = {
 const Hashtag = ({hashtag, linkStyle}: HashtagProps) => {
     const handlePress = async () => {
         // Close thread view, permalink view, etc
-        await dismissAllModals();
-        await popToRoot();
+        await dismissAllModalsAndPopToRoot();
 
         DeviceEventEmitter.emit(Navigation.NAVIGATE_TO_TAB, {
             screen: Screens.SEARCH,
