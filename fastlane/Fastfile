@@ -556,7 +556,7 @@ platform :ios do
       sh 'cp -R ../dist/assets/release/splash_screen/ios/SplashIcon.imageset ../ios/Mattermost/Images.xcassets/'
     end
 
-    app_name =  ENV['APP_NAME'] || 'Mattermost'
+    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     localization_base_path = '../dist/assets/i18n/'
     Dir.glob('*.json', base: localization_base_path) do |item|
       localization_file = File.read(localization_base_path + item)
