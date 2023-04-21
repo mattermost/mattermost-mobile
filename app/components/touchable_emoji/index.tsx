@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {StyleProp, View, ViewStyle} from 'react-native';
+import {type StyleProp, View, type ViewStyle} from 'react-native';
 
 import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';

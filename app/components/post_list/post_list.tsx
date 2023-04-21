@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
-import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
+import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {DeviceEventEmitter, type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, Platform, type StyleProp, StyleSheet, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';

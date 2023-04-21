@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {PureComponent, ReactNode} from 'react';
-import {injectIntl, IntlShape} from 'react-intl';
-import {Dimensions, EventSubscription, LayoutChangeEvent, Platform, ScaledSize, ScrollView, StyleProp, TouchableOpacity, View, ViewStyle} from 'react-native';
+import React, {PureComponent, type ReactNode} from 'react';
+import {injectIntl, type IntlShape} from 'react-intl';
+import {Dimensions, type EventSubscription, type LayoutChangeEvent, Platform, type ScaledSize, ScrollView, type StyleProp, TouchableOpacity, View, type ViewStyle} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import CompassIcon from '@components/compass_icon';

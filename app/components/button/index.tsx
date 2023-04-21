@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 import RNButton from 'react-native-button';
 
 import CompassIcon from '@components/compass_icon';

@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {setGlobalThreadsTab} from '@actions/local/systems';
 import NavigationHeader from '@components/navigation_header';

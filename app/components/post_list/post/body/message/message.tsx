@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {LayoutChangeEvent, ScrollView, useWindowDimensions, View} from 'react-native';
+import {type LayoutChangeEvent, ScrollView, useWindowDimensions, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import Markdown from '@components/markdown';

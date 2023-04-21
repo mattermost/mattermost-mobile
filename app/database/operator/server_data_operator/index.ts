@@ -2,14 +2,14 @@
 // See LICENSE.txt for license information.
 
 import ServerDataOperatorBase from '@database/operator/server_data_operator/handlers';
-import CategoryHandler, {CategoryHandlerMix} from '@database/operator/server_data_operator/handlers/category';
-import ChannelHandler, {ChannelHandlerMix} from '@database/operator/server_data_operator/handlers/channel';
-import GroupHandler, {GroupHandlerMix} from '@database/operator/server_data_operator/handlers/group';
-import PostHandler, {PostHandlerMix} from '@database/operator/server_data_operator/handlers/post';
-import TeamHandler, {TeamHandlerMix} from '@database/operator/server_data_operator/handlers/team';
-import TeamThreadsSyncHandler, {TeamThreadsSyncHandlerMix} from '@database/operator/server_data_operator/handlers/team_threads_sync';
-import ThreadHandler, {ThreadHandlerMix} from '@database/operator/server_data_operator/handlers/thread';
-import UserHandler, {UserHandlerMix} from '@database/operator/server_data_operator/handlers/user';
+import CategoryHandler, {type CategoryHandlerMix} from '@database/operator/server_data_operator/handlers/category';
+import ChannelHandler, {type ChannelHandlerMix} from '@database/operator/server_data_operator/handlers/channel';
+import GroupHandler, {type GroupHandlerMix} from '@database/operator/server_data_operator/handlers/group';
+import PostHandler, {type PostHandlerMix} from '@database/operator/server_data_operator/handlers/post';
+import TeamHandler, {type TeamHandlerMix} from '@database/operator/server_data_operator/handlers/team';
+import TeamThreadsSyncHandler, {type TeamThreadsSyncHandlerMix} from '@database/operator/server_data_operator/handlers/team_threads_sync';
+import ThreadHandler, {type ThreadHandlerMix} from '@database/operator/server_data_operator/handlers/thread';
+import UserHandler, {type UserHandlerMix} from '@database/operator/server_data_operator/handlers/user';
 import mix from '@utils/mix';
 
 import type {Database} from '@nozbe/watermelondb';

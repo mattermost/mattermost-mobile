@@ -1,11 +1,11 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {memo, RefObject, useCallback} from 'react';
+import React, {memo, type RefObject, useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, TextInputProps, View} from 'react-native';
+import {Platform, type TextInputProps, View} from 'react-native';
 
-import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
+import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';

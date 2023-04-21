@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, StyleProp, StyleSheet, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {Platform, type StyleProp, StyleSheet, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';

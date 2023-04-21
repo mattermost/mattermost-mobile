@@ -5,7 +5,7 @@ import {useManagedConfig} from '@mattermost/react-native-emm';
 import Clipboard from '@react-native-clipboard/clipboard';
 import React, {useCallback, useEffect, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {GestureResponderEvent, Keyboard, StyleProp, StyleSheet, Text, TextStyle, View} from 'react-native';
+import {type GestureResponderEvent, Keyboard, type StyleProp, StyleSheet, Text, type TextStyle, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchUserOrGroupsByMentionsInBatch} from '@actions/remote/user';

@@ -5,7 +5,7 @@
 
 import {debounce} from 'lodash';
 import React, {useState, useEffect, useRef, useImperativeHandle, forwardRef, useMemo, useCallback} from 'react';
-import {GestureResponderEvent, LayoutChangeEvent, NativeSyntheticEvent, StyleProp, TargetedEvent, Text, TextInput, TextInputFocusEventData, TextInputProps, TextStyle, TouchableWithoutFeedback, View, ViewStyle} from 'react-native';
+import {type GestureResponderEvent, type LayoutChangeEvent, type NativeSyntheticEvent, type StyleProp, type TargetedEvent, Text, TextInput, type TextInputFocusEventData, type TextInputProps, type TextStyle, TouchableWithoutFeedback, View, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming, Easing} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';

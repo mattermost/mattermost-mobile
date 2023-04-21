@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import moment from 'moment-timezone';
-import {createIntl, IntlShape} from 'react-intl';
+import {createIntl, type IntlShape} from 'react-intl';
 import {Alert, DeviceEventEmitter} from 'react-native';
 
 import {Events} from '@constants';

@@ -13,7 +13,7 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import {TITLE_SEPARATOR_MARGIN, TITLE_SEPARATOR_MARGIN_TABLET, TITLE_HEIGHT} from '@screens/bottom_sheet/content';
 import {bottomSheet} from '@screens/navigation';
-import {FileFilter, FileFilters} from '@utils/file';
+import {type FileFilter, FileFilters} from '@utils/file';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';

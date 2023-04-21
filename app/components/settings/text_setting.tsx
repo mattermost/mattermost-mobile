@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {View, TextInput, Platform, KeyboardTypeOptions} from 'react-native';
+import {View, TextInput, Platform, type KeyboardTypeOptions} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {

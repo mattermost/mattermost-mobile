@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState, useRef} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
-import {Keyboard, View, LayoutChangeEvent} from 'react-native';
+import {type IntlShape, useIntl} from 'react-intl';
+import {Keyboard, View, type LayoutChangeEvent} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {getTeamMembersByIds, addUsersToTeam, sendEmailInvitesToTeam} from '@actions/remote/team';

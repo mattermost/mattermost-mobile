@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
+import {type IntlShape, useIntl} from 'react-intl';
 import {Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 

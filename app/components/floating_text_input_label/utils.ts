@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {NativeSyntheticEvent, Platform, TargetedEvent, TextInputFocusEventData, TextStyle} from 'react-native';
+import {type NativeSyntheticEvent, Platform, type TargetedEvent, type TextInputFocusEventData, type TextStyle} from 'react-native';
 
 export const onExecution = (
     e: NativeSyntheticEvent<TextInputFocusEventData>,

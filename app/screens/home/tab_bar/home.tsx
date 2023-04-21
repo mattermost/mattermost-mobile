@@ -9,7 +9,7 @@ import Badge from '@components/badge';
 import CompassIcon from '@components/compass_icon';
 import {BOTTOM_TAB_ICON_SIZE} from '@constants/view';
 import {subscribeAllServers} from '@database/subscription/servers';
-import {subscribeUnreadAndMentionsByServer, UnreadObserverArgs} from '@database/subscription/unreads';
+import {subscribeUnreadAndMentionsByServer, type UnreadObserverArgs} from '@database/subscription/unreads';
 import {useAppState} from '@hooks/device';
 import NativeNotification from '@notifications';
 import {logDebug} from '@utils/log';

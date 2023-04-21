@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment, {Moment} from 'moment';
+import moment, {type Moment} from 'moment';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 import {View, TouchableOpacity} from 'react-native';

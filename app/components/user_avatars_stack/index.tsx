@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleProp, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {type StyleProp, Text, TouchableOpacity, View, type ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
