@@ -62,7 +62,7 @@
 	<key>NSBluetoothAlwaysUsageDescription</key>
 	<string>Enabling access to Bluetooth means we can synchronize content across your devices and clients.</string>
 	<key>NSBluetoothPeripheralUsageDescription</key>
-	<string>Enabling access to Bluetooth means we can synchronize content across your devices and clients.</string>
+	<string>Enabling access to Bluetooth means we can connect to audio peripherals for calls, and synchronize content across your devices and clients.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Enabling access to your device cameras means you can take photos or videos and upload them to $(PRODUCT_NAME).</string>
 	<key>NSFaceIDUsageDescription</key>
