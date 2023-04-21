@@ -3,8 +3,7 @@
 
 import {Alert} from 'react-native';
 
-import {Post} from '@constants';
-import Calls from '@constants/calls';
+import {Calls, Post} from '@constants';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 

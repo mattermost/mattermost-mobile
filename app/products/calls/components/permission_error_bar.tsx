@@ -2,16 +2,23 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Pressable, View} from 'react-native';
+import {useIntl} from 'react-intl';
+import {Pressable, Text, View} from 'react-native';
 import Permissions from 'react-native-permissions';
 
-import {setMicPermissionsErrorDismissed} from '@calls/state';
 import CompassIcon from '@components/compass_icon';
-import FormattedText from '@components/formatted_text';
+import {Calls} from '@constants';
 import {CALL_ERROR_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type {MessageBarType} from '@app/constants/calls';
+
+type Props = {
+    type: MessageBarType;
+    onPress: () => void;
+}
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => (
     {
@@ -31,12 +38,18 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => (
             padding: 10,
             alignItems: 'center',
         },
+        warningBar: {
+            backgroundColor: theme.awayIndicator,
+        },
         errorText: {
             flex: 1,
             ...typography('Body', 100, 'SemiBold'),
             color: theme.buttonColor,
         },
-        errorIconContainer: {
+        warningText: {
+            color: theme.centerChannelColor,
+        },
+        iconContainer: {
             width: 42,
             height: 42,
             justifyContent: 'center',
@@ -45,15 +58,21 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => (
             margin: 0,
             padding: 9,
         },
-        pressedErrorIconContainer: {
+        pressedIconContainer: {
             backgroundColor: theme.buttonColor,
         },
         errorIcon: {
             color: theme.buttonColor,
             fontSize: 18,
         },
+        warningIcon: {
+            color: theme.centerChannelColor,
+        },
         pressedErrorIcon: {
             color: theme.dndIndicator,
+        },
+        pressedWarningIcon: {
+            color: theme.awayIndicator,
         },
         paddingRight: {
             paddingRight: 9,
@@ -61,38 +80,64 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => (
     }
 ));
 
-const PermissionErrorBar = () => {
+const MessageBar = ({type, onPress}: Props) => {
+    const intl = useIntl();
     const theme = useTheme();
     const style = getStyleSheet(theme);
+    const warning = type === Calls.MessageBarType.CallQuality;
+
+    let message = '';
+    let icon = <></>;
+    switch (type) {
+        case Calls.MessageBarType.Microphone:
+            message = intl.formatMessage({
+                id: 'mobile.calls_mic_error',
+                defaultMessage: 'To participate, open Settings to grant Mattermost access to your microphone.',
+            });
+            icon = (
+                <CompassIcon
+                    name='microphone-off'
+                    style={[style.errorIcon, style.paddingRight]}
+                />);
+            break;
+        case Calls.MessageBarType.CallQuality:
+            message = intl.formatMessage({
+                id: 'mobile.calls_quality_warning',
+                defaultMessage: 'Call quality may be degraded due to unstable network conditions.',
+            });
+            icon = (
+                <CompassIcon
+                    name='alert-outline'
+                    style={[style.errorIcon, style.warningIcon, style.paddingRight]}
+                />);
+            break;
+    }
 
     return (
         <View style={style.errorWrapper}>
             <Pressable
                 onPress={Permissions.openSettings}
-                style={style.errorBar}
+                style={[style.errorBar, warning && style.warningBar]}
             >
-                <CompassIcon
-                    name='microphone-off'
-                    style={[style.errorIcon, style.paddingRight]}
-                />
-                <FormattedText
-                    id={'mobile.calls_mic_error'}
-                    defaultMessage={'To participate, open Settings to grant Mattermost access to your microphone.'}
-                    style={style.errorText}
-                />
+                {icon}
+                <Text style={[style.errorText, warning && style.warningText]}>{message}</Text>
                 <Pressable
-                    onPress={setMicPermissionsErrorDismissed}
+                    onPress={onPress}
                     hitSlop={5}
                     style={({pressed}) => [
                         style.pressable,
-                        style.errorIconContainer,
-                        pressed && style.pressedErrorIconContainer,
+                        style.iconContainer,
+                        pressed && style.pressedIconContainer,
                     ]}
                 >
                     {({pressed}) => (
                         <CompassIcon
                             name='close'
-                            style={[style.errorIcon, pressed && style.pressedErrorIcon]}
+                            style={[style.errorIcon,
+                                warning && style.warningIcon,
+                                pressed && style.pressedErrorIcon,
+                                pressed && warning && style.pressedWarningIcon,
+                            ]}
                         />
                     )}
                 </Pressable>
@@ -101,4 +146,4 @@ const PermissionErrorBar = () => {
     );
 };
 
-export default PermissionErrorBar;
+export default MessageBar;

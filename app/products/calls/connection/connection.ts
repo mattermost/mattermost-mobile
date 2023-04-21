@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RTCPeer} from '@mattermost/calls/lib';
+import {RTCMonitor, RTCPeer} from '@mattermost/calls/lib';
 import {deflate} from 'pako';
 import {DeviceEventEmitter, EmitterSubscription} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
@@ -12,7 +12,7 @@ import {
     RTCPeerConnection,
 } from 'react-native-webrtc';
 
-import {setSpeakerPhone} from '@calls/state';
+import {processMeanOpinionScore, setSpeakerPhone} from '@calls/state';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
@@ -25,6 +25,7 @@ import type {CallsConnection} from '@calls/types/calls';
 import type {EmojiData} from '@mattermost/calls/lib/types';
 
 const peerConnectTimeout = 5000;
+const rtcMonitorInterval = 4000;
 
 export async function newConnection(
     serverUrl: string,
@@ -41,6 +42,13 @@ export async function newConnection(
     let isClosed = false;
     let onCallEnd: EmitterSubscription | null = null;
     const streams: MediaStream[] = [];
+    let rtcMonitor: RTCMonitor | null = null;
+    const logger = {
+        logDebug,
+        logErr: logError,
+        logWarn: logWarning,
+        logInfo,
+    };
 
     const initializeVoiceTrack = async () => {
         if (voiceTrack) {
@@ -81,6 +89,7 @@ export async function newConnection(
 
         ws.send('leave');
         ws.close();
+        rtcMonitor?.stop();
 
         if (onCallEnd) {
             onCallEnd.remove();
@@ -133,6 +142,14 @@ export async function newConnection(
         if (!peer || !voiceTrack) {
             return;
         }
+
+        // NOTE: we purposely clear the monitor's stats cache upon unmuting
+        // in order to skip some calculations since upon muting we actually
+        // stop sending packets which would result in stats to be skewed as
+        // soon as we resume sending.
+        // This is not perfect but it avoids having to constantly send
+        // silence frames when muted.
+        rtcMonitor?.clearCache();
 
         try {
             if (voiceTrackAdded) {
@@ -206,17 +223,19 @@ export async function newConnection(
 
         peer = new RTCPeer({
             iceServers: iceConfigs || [],
-            logger: {
-                logDebug,
-                logErr: logError,
-                logWarn: logWarning,
-                logInfo,
-            },
+            logger,
             webrtc: {
                 MediaStream,
                 RTCPeerConnection,
             },
         });
+
+        rtcMonitor = new RTCMonitor({
+            peer,
+            logger,
+            monitorInterval: rtcMonitorInterval,
+        });
+        rtcMonitor.on('mos', processMeanOpinionScore);
 
         peer.on('offer', (sdp) => {
             logDebug(`local offer, sending: ${JSON.stringify(sdp)}`);
@@ -296,6 +315,7 @@ export async function newConnection(
             }
             setTimeout(() => {
                 if (peer?.connected) {
+                    rtcMonitor?.start();
                     callback();
                 } else {
                     waitForReadyImpl(callback, fail, timeout - 200);

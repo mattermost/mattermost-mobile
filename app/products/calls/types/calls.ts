@@ -54,7 +54,8 @@ export type CurrentCall = Call & {
     voiceOn: Dictionary<boolean>;
     micPermissionsErrorDismissed: boolean;
     reactionStream: ReactionStreamEmoji[];
-    recAcknowledged: boolean;
+    callQualityAlert: boolean;
+    callQualityAlertDismissed: number;
 }
 
 export const DefaultCurrentCall: CurrentCall = {
@@ -67,7 +68,8 @@ export const DefaultCurrentCall: CurrentCall = {
     voiceOn: {},
     micPermissionsErrorDismissed: false,
     reactionStream: [],
-    recAcknowledged: false,
+    callQualityAlert: false,
+    callQualityAlertDismissed: 0,
 };
 
 export type CallParticipant = {
@@ -133,6 +135,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableRecordings: false,
     MaxRecordingDuration: 60,
     AllowScreenSharing: true,
+    EnableSimulcast: false,
 };
 
 export type ApiResp = {

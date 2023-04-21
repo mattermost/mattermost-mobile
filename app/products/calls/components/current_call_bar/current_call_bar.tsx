@@ -3,16 +3,17 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
+import {Platform, Pressable, Text, TouchableOpacity, View} from 'react-native';
 
 import {muteMyself, unmuteMyself} from '@calls/actions';
-import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
+import {recordingAlert, recordingErrorAlert, recordingWillBePostedAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
-import PermissionErrorBar from '@calls/components/permission_error_bar';
+import MessageBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
+import {setCallQualityAlertDismissed, setMicPermissionsErrorDismissed} from '@calls/state';
 import CompassIcon from '@components/compass_icon';
-import {Screens} from '@constants';
+import {Calls, Screens} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {allOrientations, dismissAllModalsAndPopToScreen} from '@screens/navigation';
@@ -200,7 +201,18 @@ const CurrentCallBar = ({
                     </TouchableOpacity>
                 </View>
             </View>
-            {micPermissionsError && <PermissionErrorBar/>}
+            {micPermissionsError &&
+                <MessageBar
+                    type={Calls.MessageBarType.Microphone}
+                    onPress={setMicPermissionsErrorDismissed}
+                />
+            }
+            {currentCall?.callQualityAlert &&
+                <MessageBar
+                    type={Calls.MessageBarType.CallQuality}
+                    onPress={setCallQualityAlertDismissed}
+                />
+            }
         </>
     );
 };
