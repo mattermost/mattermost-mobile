@@ -869,7 +869,7 @@
     "mobile.calls_limit_msg_GA": "{maxParticipants} üzerinde katılımcılı grup aramaları yapabilmek için Cloud Professional ya da Cloud Enterprise tarifesine yükseltin.",
     "mobile.calls_host_rec_stopped_title": "Kayıt durduruldu. İşleniyor...",
     "mobile.calls_host_rec_stopped": "İşlenmesi tamamlandığında, kaydı bu görüşmenin sohbet konusunda bulabilirsiniz.",
-    "mobile.calls_host_rec": "Bu toplantıyı kaydediyorsunuz. Bu toplantının kaydedildiğinin herkese bildirilmesi değerlendirin.",
+    "mobile.calls_host_rec": "Bu toplantıyı kaydediyorsunuz. Bu toplantının kaydedildiğinin herkese bildirilmesini değerlendirin.",
     "join_team.error.title": "Bir takıma katılınırken sorun çıktı",
     "join_team.error.message": "Takıma katılınırken bir sorun çıktı",
     "join_team.error.group_error": "Bu takıma katılmak için ilişkilendirilmiş bir grubun üyesi olmalısınız.",
@@ -938,7 +938,7 @@
     "share_extension.message": "Bir ileti yazın (isteğe bağlı)",
     "share_extension.max_resolution": "Görsel olabilecek en büyük 7680 x 4320 piksel boyutundan büyük",
     "invite.summary.report.notSent": "{count} {count, plural, one {çağrı} other {çağrı}} gönderilemedi",
-    "mobile.calls_start_call_exists": "Kanalda süren bir çağrı var.",
+    "mobile.calls_start_call_exists": "Kanalda zaten süren bir çağrı var.",
     "mobile.calls_not_connected": "Geçerli kanalda bir çağrıya bağlı değilsiniz.",
     "invite.title.summary": "Çağrı özeti",
     "invite.title": "Çağır",
@@ -1005,5 +1005,11 @@
     "channel_notification_preferences.notification.none": "Hiçbir şey",
     "channel_notification_preferences.notification.mention": "Anmalar, yalnızca doğrudan iletiler",
     "channel_notification_preferences.notification.all": "Tüm yeni iletiler",
-    "channel_notification_preferences.default": "(varsayılan)"
+    "channel_notification_preferences.default": "(varsayılan)",
+    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {üye} other {üye}} eklendi",
+    "mobile.channel_add_members.error": "Bir sorun çıktığından bu kullanıcılar kanala eklenemedi.",
+    "intro.add_members": "Üye ekle",
+    "channel_info.add_members": "Üye ekle",
+    "channel_add_members.add_members.button": "Üye ekle",
+    "mobile.diagnostic_id.empty": "Bu sunucu için bir DiagnosticId değeri eksik. Bu değeri gözden geçirmek ve sunucuyu yeniden başlatmak için sistem yöneticinizle görüşün."
 }
