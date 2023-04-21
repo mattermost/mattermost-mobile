@@ -1011,5 +1011,7 @@
     "intro.add_members": "Voeg leden toe",
     "channel_info.add_members": "Voeg leden toe",
     "channel_add_members.add_members.button": "Voeg leden toe",
-    "mobile.diagnostic_id.empty": "Een DiagnosticId waarde ontbreekt voor deze server. Neem contact op met jouw systeembeheerder om deze waarde te controleren en de server opnieuw op te starten."
+    "mobile.diagnostic_id.empty": "Een DiagnosticId waarde ontbreekt voor deze server. Neem contact op met jouw systeembeheerder om deze waarde te controleren en de server opnieuw op te starten.",
+    "channel_files.empty.title": "Nog geen bestanden",
+    "channel_files.empty.paragraph": "Bestanden geplaatst in dit kanaal worden hier getoond."
 }
