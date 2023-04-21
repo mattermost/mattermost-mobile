@@ -16,7 +16,7 @@ export const iosPermissions = defineMessages({
     },
     NSBluetoothPeripheralUsageDescription: {
         id: t('mobile.ios.plist.NSBluetoothPeripheralUsageDescription'),
-        defaultMessage: 'Enabling access to Bluetooth means we can synchronize content across your devices and clients.',
+        defaultMessage: 'Enabling access to Bluetooth means we can connect to audio peripherals for calls, and synchronize content across your devices and clients.',
     },
     NSCameraUsageDescription: {
         id: t('mobile.ios.plist.NSCameraUsageDescription'),
