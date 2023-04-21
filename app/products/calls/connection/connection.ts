@@ -218,12 +218,14 @@ export async function newConnection(
                     setPreferredAudioRoute(AudioDevice.Bluetooth);
                     btInitialized = true;
                 } else if (!speakerInitialized) {
+                    // If we don't have bluetooth available, default to speakerphone on.
                     setPreferredAudioRoute(AudioDevice.Speakerphone);
                     speakerInitialized = true;
                 }
             }
         });
 
+        // We default to speakerphone on (Android is handled above in the onAudioDeviceChanged handler above).
         if (Platform.OS === 'ios') {
             setSpeakerphoneOn(true);
         }
