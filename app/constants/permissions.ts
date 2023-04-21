@@ -36,7 +36,7 @@ export const iosPermissions = defineMessages({
     },
     NSMicrophoneUsageDescription: {
         id: t('mobile.ios.plist.NSMicrophoneUsageDescription'),
-        defaultMessage: 'Enabling access to your device microphones means you can capture call or video to share in {applicationName}.',
+        defaultMessage: 'Enabling access to your device microphones means you can capture call or video audio to share in {applicationName}.',
     },
     NSPhotoLibraryAddUsageDescription: {
         id: t('mobile.ios.plist.NSPhotoLibraryAddUsageDescription'),
