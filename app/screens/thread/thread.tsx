@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {LayoutChangeEvent, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import CurrentCallBar from '@calls/components/current_call_bar';
 import FloatingCallContainer from '@calls/components/floating_call_container';

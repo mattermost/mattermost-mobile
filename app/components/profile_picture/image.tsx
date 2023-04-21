@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import FastImage, {Source} from 'react-native-fast-image';
+import FastImage, {type Source} from 'react-native-fast-image';
 import Animated from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';

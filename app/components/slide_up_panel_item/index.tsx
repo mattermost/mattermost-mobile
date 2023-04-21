@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {StyleProp, Text, TextStyle, TouchableHighlight, View, ViewStyle} from 'react-native';
-import FastImage, {ImageStyle, Source} from 'react-native-fast-image';
+import {type StyleProp, Text, type TextStyle, TouchableHighlight, View, type ViewStyle} from 'react-native';
+import FastImage, {type ImageStyle, type Source} from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';

@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, ScrollView} from 'react-native';
-import {ImageResource, Navigation} from 'react-native-navigation';
+import {type ImageResource, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {submitInteractiveDialog} from '@actions/remote/integrations';

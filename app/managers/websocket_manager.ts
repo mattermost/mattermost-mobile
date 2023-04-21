@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import NetInfo, {NetInfoState} from '@react-native-community/netinfo';
-import {debounce, DebouncedFunc} from 'lodash';
-import {AppState, AppStateStatus} from 'react-native';
+import NetInfo, {type NetInfoState} from '@react-native-community/netinfo';
+import {debounce, type DebouncedFunc} from 'lodash';
+import {AppState, type AppStateStatus} from 'react-native';
 import BackgroundTimer from 'react-native-background-timer';
 import {BehaviorSubject} from 'rxjs';
 import {distinctUntilChanged} from 'rxjs/operators';

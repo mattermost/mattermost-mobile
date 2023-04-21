@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {LayoutChangeEvent, View} from 'react-native';
+import {type LayoutChangeEvent, View} from 'react-native';
 
 import SettingBlock from '@components/settings/block';
 import SettingOption from '@components/settings/option';

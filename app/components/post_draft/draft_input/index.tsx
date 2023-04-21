@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef} from 'react';
-import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {useTheme} from '@context/theme';

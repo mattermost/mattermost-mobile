@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {MessageDescriptor, useIntl} from 'react-intl';
+import {type MessageDescriptor, useIntl} from 'react-intl';
 import {Alert} from 'react-native';
 
 import {archiveChannel, unarchiveChannel} from '@actions/remote/channel';

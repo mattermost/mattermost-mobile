@@ -7,8 +7,8 @@ import {useIntl} from 'react-intl';
 import {
     FlatList,
     Platform,
-    StyleProp,
-    ViewStyle,
+    type StyleProp,
+    type ViewStyle,
 } from 'react-native';
 
 import {fetchSuggestions} from '@actions/remote/command';

@@ -3,8 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
-import moment, {Moment} from 'moment-timezone';
+import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/datetimepicker';
+import moment, {type Moment} from 'moment-timezone';
 import React, {useState} from 'react';
 import {View, Button, Platform} from 'react-native';
 import {of as of$} from 'rxjs';

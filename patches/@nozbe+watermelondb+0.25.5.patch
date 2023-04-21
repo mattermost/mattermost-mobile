@@ -38,7 +38,7 @@ index 96114ec..ecfe3c1 100644
  
    prepareDestroyPermanently(): this
 diff --git a/node_modules/@nozbe/watermelondb/Model/index.js b/node_modules/@nozbe/watermelondb/Model/index.js
-index b0e3a83..d7ead09 100644
+index b0e3a83..d5e730c 100644
 --- a/node_modules/@nozbe/watermelondb/Model/index.js
 +++ b/node_modules/@nozbe/watermelondb/Model/index.js
 @@ -81,7 +81,17 @@ var Model = /*#__PURE__*/function () {
@@ -68,13 +68,15 @@ index b0e3a83..d7ead09 100644
      (0, _ensureSync.default)(recordUpdater(this));
      this._isEditing = false;
      this._preparedState = 'update'; // TODO: `process.nextTick` doesn't work on React Native
-@@ -107,6 +116,19 @@ var Model = /*#__PURE__*/function () {
+@@ -107,6 +116,21 @@ var Model = /*#__PURE__*/function () {
      return this;
    };
  
 +  _proto.cancelPrepareUpdate = function cancelPrepareUpdate() {
++    var _this = this;
++
 +    if ('test' !== process.env.NODE_ENV && 'undefined' !== typeof process && process) {
-+      (0, _invariant.default)('update' !== _this._preparedState, "Cannot cancel an update on a model that has not been prepared in table " + this.table);
++      (0, _invariant.default)('update' === _this._preparedState, "Cannot cancel an update on a model that has not been prepared in table " + _this.table);
 +    }
 +    this.__changes = null;
 +    this._preparedState = null;
@@ -88,7 +90,7 @@ index b0e3a83..d7ead09 100644
    _proto.prepareMarkAsDeleted = function prepareMarkAsDeleted() {
      (0, _invariant.default)(!this._preparedState, "Cannot mark a record with pending changes as deleted");
  
-@@ -118,7 +140,10 @@ var Model = /*#__PURE__*/function () {
+@@ -118,7 +142,10 @@ var Model = /*#__PURE__*/function () {
    };
  
    _proto.prepareDestroyPermanently = function prepareDestroyPermanently() {

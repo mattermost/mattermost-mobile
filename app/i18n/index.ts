@@ -14,9 +14,9 @@ const deviceLocale = getLocales()[0].languageTag;
 const PRIMARY_LOCALE = 'en';
 export const DEFAULT_LOCALE = getLocaleFromLanguage(deviceLocale);
 
-function loadTranslation(locale?: string) {
+function loadTranslation(locale?: string): {[x: string]: string} {
     try {
-        let translations: Record<string, string>;
+        let translations: {[x: string]: string};
 
         switch (locale) {
             case 'bg':

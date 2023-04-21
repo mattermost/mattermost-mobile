@@ -3,8 +3,8 @@
 
 import React, {useCallback} from 'react';
 import {TouchableOpacity, View} from 'react-native';
-import AnimatedNumbers from 'react-native-animated-numbers';
 
+import AnimatedNumbers from '@components/animated_number';
 import Emoji from '@components/emoji';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -68,7 +68,6 @@ const Reaction = ({count, emojiName, highlight, onPress}: ReactionProps) => {
             </View>
             <View style={styles.countContainer}>
                 <AnimatedNumbers
-                    includeComma={false}
                     fontStyle={[styles.count, (highlight && styles.countHighlight)]}
                     animateToNumber={count}
                     animationDuration={450}

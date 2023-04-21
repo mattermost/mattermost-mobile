@@ -1005,5 +1005,11 @@
     "channel_notification_preferences.notification.all": "Alle nieuwe berichten",
     "channel_notification_preferences.muted_title": "Dit kanaal is gedempt",
     "channel_notification_preferences.muted_content": "Je kan de meldingsinstellingen wijzigen, maar je ontvangt geen meldingen totdat het kanaal niet langer gedempt is.",
-    "channel_notification_preferences.default": "(standaard)"
+    "channel_notification_preferences.default": "(standaard)",
+    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {lid} andere {leden}} toegevoegd",
+    "mobile.channel_add_members.error": "Er is een fout opgetreden en we konden die gebruikers niet aan het kanaal toevoegen.",
+    "intro.add_members": "Voeg leden toe",
+    "channel_info.add_members": "Voeg leden toe",
+    "channel_add_members.add_members.button": "Voeg leden toe",
+    "mobile.diagnostic_id.empty": "Een DiagnosticId waarde ontbreekt voor deze server. Neem contact op met jouw systeembeheerder om deze waarde te controleren en de server opnieuw op te starten."
 }

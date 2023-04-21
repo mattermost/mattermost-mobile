@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef} from 'react';
-import {StyleProp, StyleSheet, ViewStyle} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type StyleProp, StyleSheet, type ViewStyle} from 'react-native';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostsBefore} from '@actions/remote/post';

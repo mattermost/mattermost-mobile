@@ -14,8 +14,8 @@
         "package": "Sentry",
         "repositoryURL": "https://github.com/getsentry/sentry-cocoa.git",
         "state": {
-          "branch": "8.0.0",
-          "revision": "1a18683901844a2970ccfb633e4ebae565361817",
+          "branch": "8.4.0",
+          "revision": "92a6472efc750a4e18bdee21c204942ab0bc4dcd",
           "version": null
         }
       },

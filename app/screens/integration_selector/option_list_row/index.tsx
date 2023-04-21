@@ -10,7 +10,7 @@ import {
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import CustomListRow, {Props as CustomListRowProps} from '../custom_list_row';
+import CustomListRow, {type Props as CustomListRowProps} from '../custom_list_row';
 
 type OptionListRowProps = {
     id: string;

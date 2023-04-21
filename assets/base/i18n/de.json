@@ -1010,5 +1010,13 @@
     "mobile.channel_add_members.error": "Es ist ein Fehler aufgetreten und wir konnten diese Benutzer nicht zum Kanal hinzufügen.",
     "intro.add_members": "Mitglieder hinzufügen",
     "channel_info.add_members": "Mitglieder hinzufügen",
-    "channel_add_members.add_members.button": "Mitglieder hinzufügen"
+    "channel_add_members.add_members.button": "Mitglieder hinzufügen",
+    "mobile.diagnostic_id.empty": "Ein DiagnosticId-Wert fehlt für diesen Server. Wende dich an deinen Systemadministrator, um diesen Wert zu überprüfen und den Server neu zu starten.",
+    "screen.channel_files.results.filter.title": "Nach Dateityp filtern",
+    "screen.channel_files.header.recent_files": "Aktuellste Dateien",
+    "channel_info.channel_files": "Dateien",
+    "channel_files.noFiles.title": "Keine Dateien gefunden",
+    "channel_files.noFiles.paragraph": "Dieser Kanal enthält keine Dateien mit den angewandten Filtern",
+    "channel_files.empty.title": "Noch keine Dateien",
+    "channel_files.empty.paragraph": "Dateien, die in diesem Kanal gepostet wurden, werden hier angezeigt."
 }

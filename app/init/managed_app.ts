@@ -4,7 +4,7 @@
 import Emm from '@mattermost/react-native-emm';
 import deepEqual from 'deep-equal';
 import JailMonkey from 'jail-monkey';
-import {Alert, AlertButton, AppState, AppStateStatus, Platform} from 'react-native';
+import {Alert, type AlertButton, AppState, type AppStateStatus, Platform} from 'react-native';
 
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {toMilliseconds} from '@utils/datetime';

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, ListRenderItemInfo, StyleProp, View, ViewStyle} from 'react-native';
+import {FlatList, type ListRenderItemInfo, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';

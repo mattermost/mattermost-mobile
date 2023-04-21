@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Dispatch, SetStateAction, useCallback, useState} from 'react';
+import React, {type Dispatch, type SetStateAction, useCallback, useState} from 'react';
 import {StyleSheet, Text, useWindowDimensions, View} from 'react-native';
 import FastImage from 'react-native-fast-image';
 import {RectButton, TouchableWithoutFeedback} from 'react-native-gesture-handler';

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {LayoutChangeEvent, Platform, ScrollView, useWindowDimensions, View} from 'react-native';
+import {type LayoutChangeEvent, Platform, ScrollView, useWindowDimensions, View} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 

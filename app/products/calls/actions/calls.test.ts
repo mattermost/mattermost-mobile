@@ -25,10 +25,10 @@ import {
     userJoinedCall,
 } from '@calls/state';
 import {
-    Call,
-    CallsState,
-    ChannelsWithCalls,
-    CurrentCall,
+    type Call,
+    type CallsState,
+    type ChannelsWithCalls,
+    type CurrentCall,
     DefaultCallsConfig,
     DefaultCallsState,
 } from '@calls/types/calls';

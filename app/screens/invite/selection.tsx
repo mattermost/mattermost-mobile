@@ -6,10 +6,10 @@ import {
     Keyboard,
     Platform,
     View,
-    LayoutChangeEvent,
+    type LayoutChangeEvent,
     useWindowDimensions,
     FlatList,
-    ListRenderItemInfo,
+    type ListRenderItemInfo,
     ScrollView,
 } from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, useWindowDimensions, View, type ViewStyle} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import {buildFilePreviewUrl, buildFileThumbnailUrl} from '@actions/remote/file';

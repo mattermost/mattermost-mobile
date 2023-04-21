@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Dispatch, RefObject, SetStateAction} from 'react';
+import React, {type Dispatch, type RefObject, type SetStateAction} from 'react';
 
 import Modifiers from './modifiers';
 import RecentSearches from './recent_searches';

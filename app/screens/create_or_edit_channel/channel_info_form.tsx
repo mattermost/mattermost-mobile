@@ -4,13 +4,13 @@
 import React, {useState, useRef, useCallback, useEffect} from 'react';
 import {useIntl} from 'react-intl';
 import {
-    LayoutChangeEvent,
+    type LayoutChangeEvent,
     TextInput,
     TouchableWithoutFeedback,
     StatusBar,
     View,
-    NativeSyntheticEvent,
-    NativeScrollEvent,
+    type NativeSyntheticEvent,
+    type NativeScrollEvent,
     Platform,
     useWindowDimensions,
 } from 'react-native';

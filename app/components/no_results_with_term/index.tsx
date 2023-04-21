@@ -7,7 +7,7 @@ import {View} from 'react-native';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
-import {TabTypes, TabType} from '@utils/search';
+import {TabTypes, type TabType} from '@utils/search';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 

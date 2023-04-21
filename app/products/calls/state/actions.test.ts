@@ -41,14 +41,14 @@ import {
     setUserVoiceOn,
 } from '@calls/state/actions';
 import {
-    Call,
-    CallsState,
-    CurrentCall,
+    type Call,
+    type CallsState,
+    type CurrentCall,
     DefaultCallsConfig,
     DefaultCallsState,
     DefaultCurrentCall,
     DefaultGlobalCallsState,
-    GlobalCallsState,
+    type GlobalCallsState,
 } from '@calls/types/calls';
 import {License} from '@constants';
 import DatabaseManager from '@database/manager';

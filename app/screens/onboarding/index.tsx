@@ -9,8 +9,8 @@ import {
     ScrollView,
     StyleSheet,
     Platform,
-    NativeSyntheticEvent,
-    NativeScrollEvent,
+    type NativeSyntheticEvent,
+    type NativeScrollEvent,
     BackHandler,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';

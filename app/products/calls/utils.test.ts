@@ -3,7 +3,7 @@
 
 import assert from 'assert';
 
-import {CallsConfigState, DefaultCallsConfig} from '@calls/types/calls';
+import {type CallsConfigState, DefaultCallsConfig} from '@calls/types/calls';
 import {License} from '@constants';
 
 import {getICEServersConfigs} from './utils';

@@ -21,7 +21,7 @@ import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getCommonSystemValues, getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, getLicense, setCurrentChannelId, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {getNthLastChannelFromTeam, getMyTeamById, getTeamByName, queryMyTeams, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
-import {dismissAllModals, popToRoot} from '@screens/navigation';
+import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
 import {generateChannelNameFromDisplayName, getDirectChannelName, isDMorGM} from '@utils/channel';
@@ -1423,8 +1423,7 @@ export const handleKickFromChannel = async (serverUrl: string, channelId: string
         if (currentServer?.url === serverUrl) {
             const channel = await getChannelById(database, channelId);
             DeviceEventEmitter.emit(event, channel?.displayName);
-            await dismissAllModals();
-            await popToRoot();
+            await dismissAllModalsAndPopToRoot();
         }
 
         const tabletDevice = await isTablet();

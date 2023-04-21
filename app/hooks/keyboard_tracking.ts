@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {RefObject, useEffect, useRef} from 'react';
+import {type RefObject, useEffect, useRef} from 'react';
 import {Navigation} from 'react-native-navigation';
 
 import NavigationStore from '@store/navigation_store';
