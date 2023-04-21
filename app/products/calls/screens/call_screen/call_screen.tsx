@@ -113,7 +113,7 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         top: -1000,
     },
     time: {
-        color: theme.sidebarHeaderTextColor,
+        color: theme.buttonColor,
         ...typography('Heading', 200),
         width: 60,
     },
@@ -125,7 +125,7 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         height: 48,
     },
     collapseIcon: {
-        color: changeOpacity(theme.centerChannelBg, 0.56),
+        color: changeOpacity(theme.buttonColor, 0.56),
     },
     collapseIconLandscape: {
         margin: 10,
@@ -233,7 +233,7 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
     },
     muteIconLandscape: {
         backgroundColor: theme.onlineIndicator,
-        padding: 14,
+        padding: 11,
     },
     muteIconLandscapeMuted: {
         backgroundColor: changeOpacity(theme.buttonColor, 0.12),
@@ -259,6 +259,10 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         marginLeft: 12,
         marginRight: 12,
     },
+    errorContainerLandscape: {
+        right: 20,
+        top: 10,
+    },
     hangUpIcon: {
         backgroundColor: Preferences.THEMES.denim.dndIndicator,
     },
@@ -273,7 +277,7 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         margin: 3,
     },
     unavailableText: {
-        color: changeOpacity(theme.sidebarText, 0.32),
+        color: changeOpacity(theme.buttonColor, 0.32),
     },
     denimDND: {
         color: Preferences.THEMES.denim.dndIndicator,
@@ -639,10 +643,8 @@ const CallScreen = ({
                 {usersList}
                 {screenShareView}
                 {isLandscape && header}
+                {!isLandscape && <EmojiList reactionStream={currentCall.reactionStream}/>}
                 {micPermissionsError && <PermissionErrorBar/>}
-                {!isLandscape &&
-                    <EmojiList reactionStream={currentCall.reactionStream}/>
-                }
                 <View style={[style.buttonsContainer, isLandscape && style.buttonsContainerLandscape]}>
                     <View
                         style={[
@@ -747,7 +749,19 @@ const CallScreen = ({
                                     style={[style.button, style.buttonLandscape]}
                                     onPress={muteUnmuteHandler}
                                 >
-                                    <CompassIcon
+                                    <UnavailableIconWrapper
+                                        name={myParticipant.muted ? 'microphone-off' : 'microphone'}
+                                        size={32}
+                                        unavailable={!micPermissionsGranted}
+                                        style={[
+                                            style.buttonIcon,
+                                            isLandscape && style.buttonIconLandscape,
+                                            style.muteIconLandscape,
+                                            myParticipant?.muted && style.muteIconLandscapeMuted,
+                                        ]}
+                                        errorContainerStyle={isLandscape && style.errorContainerLandscape}
+                                    />
+                                    {/*<CompassIcon
                                         name={myParticipant.muted ? 'microphone-off' : 'microphone'}
                                         size={24}
                                         style={[
@@ -756,7 +770,7 @@ const CallScreen = ({
                                             style.muteIconLandscape,
                                             myParticipant?.muted && style.muteIconLandscapeMuted,
                                         ]}
-                                    />
+                                    />*/}
                                     {myParticipant.muted ? UnmuteText : MuteText}
                                 </Pressable>
                             }
