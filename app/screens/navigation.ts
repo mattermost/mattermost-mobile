@@ -518,6 +518,7 @@ export async function popToRoot() {
 
 export async function dismissAllModalsAndPopToRoot() {
     await dismissAllModals();
+    await dismissAllOverlays();
     await popToRoot();
 }
 
@@ -531,6 +532,7 @@ export async function dismissAllModalsAndPopToRoot() {
  */
 export async function dismissAllModalsAndPopToScreen(screenId: AvailableScreens, title: string, passProps = {}, options = {}) {
     await dismissAllModals();
+    await dismissAllOverlays();
     if (NavigationStore.getScreensInStack().includes(screenId)) {
         let mergeOptions = options;
         if (title) {
@@ -750,6 +752,14 @@ export async function dismissOverlay(componentId: AvailableScreens) {
     } catch (error) {
         // RNN returns a promise rejection if there is no modal with
         // this componentId to dismiss. We'll do nothing in this case.
+    }
+}
+
+export async function dismissAllOverlays() {
+    try {
+        await Navigation.dismissAllOverlays();
+    } catch {
+        // do nothing
     }
 }
 

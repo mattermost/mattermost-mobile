@@ -101,6 +101,14 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             }
         }
 
+        if (isFromNotification) {
+            await dismissAllModalsAndPopToRoot();
+            await NavigationStore.waitUntilScreenIsTop(Screens.HOME);
+            if (switchingTeams && isTabletDevice) {
+                DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
+            }
+        }
+
         // Modal right buttons
         const rightButtons = [];
 
@@ -137,13 +145,6 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 
         EphemeralStore.setCurrentThreadId(rootId);
 
-        if (isFromNotification) {
-            await dismissAllModalsAndPopToRoot();
-            await NavigationStore.waitUntilScreenIsTop(Screens.HOME);
-            if (switchingTeams && isTabletDevice) {
-                DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
-            }
-        }
         goToScreen(Screens.THREAD, '', {rootId}, {
             topBar: {
                 title: {
