@@ -3,13 +3,13 @@
 
 import {RTCPeer} from '@mattermost/calls/lib';
 import {deflate} from 'pako';
-import {DeviceEventEmitter, EmitterSubscription, Platform} from 'react-native';
+import {DeviceEventEmitter, type EmitterSubscription, Platform} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import {mediaDevices, MediaStream, MediaStreamTrack, RTCPeerConnection} from 'react-native-webrtc';
 
 import {setPreferredAudioRoute, setSpeakerphoneOn} from '@calls/actions/calls';
 import {setAudioDeviceInfo} from '@calls/state';
-import {AudioDevice, AudioDeviceInfo, AudioDeviceInfoRaw, CallsConnection} from '@calls/types/calls';
+import {AudioDevice, type AudioDeviceInfo, type AudioDeviceInfoRaw, type CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
@@ -225,7 +225,7 @@ export async function newConnection(
             }
         });
 
-        // We default to speakerphone on (Android is handled above in the onAudioDeviceChanged handler above).
+        // We default to speakerphone (Android is handled above in the onAudioDeviceChanged handler above).
         if (Platform.OS === 'ios') {
             setSpeakerphoneOn(true);
         }

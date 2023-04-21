@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {field, immutableRelation} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 

@@ -8,7 +8,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {observeChannel, queryAllMyChannel, queryChannelsForAutocomplete} from '@queries/servers/channel';
-import {observeCurrentTeamId} from '@queries/servers/system';
+import {observeCurrentTeamId, observeCurrentUserId} from '@queries/servers/system';
 
 import ChannelMention from './channel_mention';
 
@@ -58,6 +58,7 @@ const emptyChannelList: ChannelModel[] = [];
 const withMembers = withObservables([], ({database}: WithDatabaseArgs) => {
     return {
         myMembers: queryAllMyChannel(database).observe(),
+        currentUserId: observeCurrentUserId(database),
     };
 });
 

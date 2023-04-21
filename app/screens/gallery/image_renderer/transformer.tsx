@@ -3,15 +3,15 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {StyleSheet} from 'react-native';
-import FastImage, {Source} from 'react-native-fast-image';
+import FastImage, {type Source} from 'react-native-fast-image';
 import {
-    PanGestureHandler, PanGestureHandlerGestureEvent, PinchGestureHandler, PinchGestureHandlerGestureEvent,
-    State, TapGestureHandler, TapGestureHandlerGestureEvent,
+    PanGestureHandler, type PanGestureHandlerGestureEvent, PinchGestureHandler, type PinchGestureHandlerGestureEvent,
+    State, TapGestureHandler, type TapGestureHandlerGestureEvent,
 } from 'react-native-gesture-handler';
 import Animated, {
     cancelAnimation, Easing, runOnJS, useAnimatedReaction, useAnimatedStyle, useDerivedValue,
     useSharedValue,
-    withDecay, withSpring, WithSpringConfig, withTiming, WithTimingConfig,
+    withDecay, withSpring, type WithSpringConfig, withTiming, type WithTimingConfig,
 } from 'react-native-reanimated';
 import {SvgUri} from 'react-native-svg';
 

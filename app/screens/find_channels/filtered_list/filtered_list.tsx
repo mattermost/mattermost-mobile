@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {debounce, DebouncedFunc} from 'lodash';
+import {debounce, type DebouncedFunc} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {Alert, FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import {switchToGlobalThreads} from '@actions/local/thread';
@@ -14,13 +14,11 @@ import ChannelItem from '@components/channel_item';
 import Loading from '@components/loading';
 import NoResultsWithTerm from '@components/no_results_with_term';
 import ThreadsButton from '@components/threads_button';
+import UserItem from '@components/user_item';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {sortChannelsByDisplayName} from '@utils/channel';
 import {displayUsername} from '@utils/user';
-
-import RemoteChannelItem from './remote_channel_item';
-import UserItem from './user_item';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
@@ -144,8 +142,9 @@ const FilteredList = ({
         onLoading(false);
     };
 
-    const onJoinChannel = useCallback(async (channelId: string, displayName: string) => {
-        const {error} = await joinChannelIfNeeded(serverUrl, channelId);
+    const onJoinChannel = useCallback(async (c: Channel | ChannelModel) => {
+        const {error} = await joinChannelIfNeeded(serverUrl, c.id);
+        const displayName = 'display_name' in c ? c.display_name : c.displayName;
         if (error) {
             Alert.alert(
                 '',
@@ -158,11 +157,12 @@ const FilteredList = ({
         }
 
         await close();
-        switchToChannelById(serverUrl, channelId, undefined, true);
+        switchToChannelById(serverUrl, c.id, undefined, true);
     }, [serverUrl, close, locale]);
 
-    const onOpenDirectMessage = useCallback(async (teammateId: string, displayName: string) => {
-        const {data, error} = await makeDirectChannel(serverUrl, teammateId, displayName, false);
+    const onOpenDirectMessage = useCallback(async (u: UserProfile | UserModel) => {
+        const displayName = displayUsername(u, locale, teammateDisplayNameSetting);
+        const {data, error} = await makeDirectChannel(serverUrl, u.id, displayName, false);
         if (error || !data) {
             Alert.alert(
                 '',
@@ -176,11 +176,11 @@ const FilteredList = ({
 
         await close();
         switchToChannelById(serverUrl, data.id);
-    }, [serverUrl, close, locale]);
+    }, [serverUrl, close, locale, teammateDisplayNameSetting]);
 
-    const onSwitchToChannel = useCallback(async (channelId: string) => {
+    const onSwitchToChannel = useCallback(async (c: Channel | ChannelModel) => {
         await close();
-        switchToChannelById(serverUrl, channelId);
+        switchToChannelById(serverUrl, c.id);
     }, [serverUrl, close]);
 
     const onSwitchToThreads = useCallback(async () => {
@@ -214,7 +214,7 @@ const FilteredList = ({
         if (item === 'thread') {
             return (
                 <ThreadsButton
-                    isInfo={true}
+                    onCenterBg={true}
                     onPress={onSwitchToThreads}
                 />
             );
@@ -223,27 +223,30 @@ const FilteredList = ({
             return (
                 <ChannelItem
                     channel={item}
-                    isInfo={true}
+                    isOnCenterBg={true}
                     onPress={onSwitchToChannel}
                     showTeamName={showTeamName}
+                    shouldHighlightState={true}
                     testID='find_channels.filtered_list.channel_item'
                 />
             );
         } else if ('username' in item) {
             return (
                 <UserItem
-                    onPress={onOpenDirectMessage}
+                    onUserPress={onOpenDirectMessage}
                     user={item}
                     testID='find_channels.filtered_list.user_item'
+                    showBadges={true}
                 />
             );
         }
 
         return (
-            <RemoteChannelItem
+            <ChannelItem
                 channel={item}
                 onPress={onJoinChannel}
                 showTeamName={showTeamName}
+                shouldHighlightState={true}
                 testID='find_channels.filtered_list.remote_channel_item'
             />
         );

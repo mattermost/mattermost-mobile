@@ -4,7 +4,7 @@
 import React, {useCallback, useRef} from 'react';
 import {runOnJS} from 'react-native-reanimated';
 
-import ImageRenderer, {Handlers, ImageRendererProps} from '../image_renderer';
+import ImageRenderer, {type Handlers, type ImageRendererProps} from '../image_renderer';
 import Pager from '../pager';
 
 import type {InteractionType} from '../image_renderer/transformer';

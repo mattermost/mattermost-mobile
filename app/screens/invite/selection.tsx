@@ -6,10 +6,10 @@ import {
     Keyboard,
     Platform,
     View,
-    LayoutChangeEvent,
+    type LayoutChangeEvent,
     useWindowDimensions,
     FlatList,
-    ListRenderItemInfo,
+    type ListRenderItemInfo,
     ScrollView,
 } from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
@@ -70,6 +70,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         searchListPadding: {
             paddingVertical: 8,
+            flex: 1,
         },
         searchListShadow: {
             shadowColor: '#000',
@@ -85,6 +86,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         searchListFlatList: {
             backgroundColor: theme.centerChannelBg,
             borderRadius: 4,
+            paddingHorizontal: 16,
         },
         selectedItems: {
             display: 'flex',
@@ -222,12 +224,12 @@ export default function Selection({
 
         style.push(styles.searchListFlatList);
 
-        if (searchResults.length) {
+        if (searchResults.length || (term && !loading)) {
             style.push(styles.searchListBorder, styles.searchListPadding);
         }
 
         return style;
-    }, [searchResults, styles]);
+    }, [searchResults, styles, Boolean(term && !loading)]);
 
     const renderNoResults = useCallback(() => {
         if (!term || loading) {
@@ -235,20 +237,18 @@ export default function Selection({
         }
 
         return (
-            <View style={[styles.searchListBorder, styles.searchListPadding]}>
-                <TextItem
-                    text={term}
-                    type={TextItemType.SEARCH_NO_RESULTS}
-                    testID='invite.search_list_no_results'
-                />
-            </View>
+            <TextItem
+                text={term}
+                type={TextItemType.SEARCH_NO_RESULTS}
+                testID='invite.search_list_no_results'
+            />
         );
     }, [term, loading]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<SearchResult>) => {
         const key = keyExtractor(item);
 
-        return (
+        return typeof item === 'string' ? (
             <TouchableWithFeedback
                 key={key}
                 index={key}
@@ -257,19 +257,18 @@ export default function Selection({
                 type='native'
                 testID={`invite.search_list_item.${key}`}
             >
-                {typeof item === 'string' ? (
-                    <TextItem
-                        text={item}
-                        type={TextItemType.SEARCH_INVITE}
-                        testID='invite.search_list_text_item'
-                    />
-                ) : (
-                    <UserItem
-                        user={item}
-                        testID='invite.search_list_user_item'
-                    />
-                )}
+                <TextItem
+                    text={item}
+                    type={TextItemType.SEARCH_INVITE}
+                    testID='invite.search_list_text_item'
+                />
             </TouchableWithFeedback>
+        ) : (
+            <UserItem
+                user={item}
+                testID='invite.search_list_user_item'
+                onUserPress={onSelectItem}
+            />
         );
     }, [searchResults, onSelectItem]);
 

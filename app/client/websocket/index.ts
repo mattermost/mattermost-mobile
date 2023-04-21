@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ClientHeaders, getOrCreateWebSocketClient, WebSocketClientInterface, WebSocketReadyState} from '@mattermost/react-native-network-client';
+import {type ClientHeaders, getOrCreateWebSocketClient, type WebSocketClientInterface, WebSocketReadyState} from '@mattermost/react-native-network-client';
 import {Platform} from 'react-native';
 
 import {WebsocketEvents} from '@constants';

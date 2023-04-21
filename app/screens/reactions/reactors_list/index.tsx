@@ -3,7 +3,7 @@
 
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, PanResponder} from 'react-native';
+import {type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, PanResponder} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {fetchUsersByIds} from '@actions/remote/user';

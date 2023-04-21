@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import TurboLogger from '@mattermost/react-native-turbo-log';
-import TurboMailer from '@mattermost/react-native-turbo-mailer';
 import React from 'react';
 import {Alert, Platform} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
+import Share from 'react-native-share';
 
 import SettingItem from '@components/settings/item';
 import {useTheme} from '@context/theme';
+import {pathWithPrefix} from '@utils/files';
 import {preventDoubleTap} from '@utils/tap';
 
 type ReportProblemProps = {
@@ -30,24 +31,21 @@ const ReportProblem = ({buildNumber, currentTeamId, currentUserId, siteName, sup
 
         try {
             const logPaths = await TurboLogger.getLogPaths();
-            const attachments = logPaths.map((path) => ({
-                path,
-                mimeType: 'message/rfc822',
-            }));
-
-            await TurboMailer.sendMail({
+            const attachments = logPaths.map((path) => pathWithPrefix('file://', path));
+            await Share.open({
                 subject: `Problem with ${siteName} React Native app`,
-                recipients: [supportEmail],
-                body: [
+                email: supportEmail,
+                failOnCancel: false,
+                urls: attachments,
+                message: [
                     'Please share a description of the problem:\n\n',
                     `Current User Id: ${currentUserId}`,
                     `Current Team Id: ${currentTeamId}`,
                     `Server Version: ${version} (Build ${buildNumber})`,
                     `App Version: ${appVersion} (Build ${appBuild})`,
                     `App Platform: ${Platform.OS}`,
-                    `Device Model: ${deviceId}`, // added this one
+                    `Device Model: ${deviceId}`,
                 ].join('\n'),
-                attachments,
             });
         } catch (e: any) {
             Alert.alert('Error', e.message);

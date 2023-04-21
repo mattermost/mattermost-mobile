@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {RefObject, useEffect, useRef, useState} from 'react';
+import React, {type RefObject, useEffect, useRef, useState} from 'react';
 import {AppState, Keyboard, NativeEventEmitter, NativeModules, Platform, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 

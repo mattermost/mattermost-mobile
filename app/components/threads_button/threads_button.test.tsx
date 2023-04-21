@@ -36,11 +36,11 @@ describe('Thread item in the channel list', () => {
         expect(toJSON()).toMatchSnapshot();
     });
 
-    test('Threads Component should match snapshot with isInfo', () => {
+    test('Threads Component should match snapshot with onCenterBg', () => {
         const {toJSON} = renderWithIntlAndTheme(
             <Threads
                 {...baseProps}
-                isInfo={true}
+                onCenterBg={true}
             />,
         );
 

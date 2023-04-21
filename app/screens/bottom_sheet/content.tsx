@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {GestureResponderEvent, Text, useWindowDimensions, View} from 'react-native';
+import {type GestureResponderEvent, Text, useWindowDimensions, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';

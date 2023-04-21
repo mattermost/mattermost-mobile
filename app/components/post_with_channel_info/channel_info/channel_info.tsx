@@ -5,8 +5,8 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {View, Text, StyleSheet} from 'react-native';
 
 import {switchToChannelById} from '@actions/remote/channel';
-import TouchableWithFeedback from '@app/components/touchable_with_feedback';
-import {useServerUrl} from '@app/context/server';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';

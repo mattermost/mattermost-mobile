@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from 'react-native';
-import {Navigation, Options} from 'react-native-navigation';
+import {Navigation, type Options} from 'react-native-navigation';
 
 import {Screens, ServerErrors} from '@constants';
 import {isServerError} from '@utils/errors';

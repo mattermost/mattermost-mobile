@@ -3,7 +3,7 @@
 
 import React, {useCallback, useState, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {View, TextInput, LayoutChangeEvent} from 'react-native';
+import {View, TextInput, type LayoutChangeEvent} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
+import {type StyleProp, Text, type TextStyle, type ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';

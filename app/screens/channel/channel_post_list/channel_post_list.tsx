@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef} from 'react';
-import {StyleProp, StyleSheet, ViewStyle} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type StyleProp, StyleSheet, type ViewStyle} from 'react-native';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchPostsBefore} from '@actions/remote/post';
@@ -55,14 +55,14 @@ const ChannelPostList = ({
     }, [isCRTEnabled, posts, channelId, serverUrl, appState === 'active']);
 
     const onEndReached = useCallback(debounce(async () => {
-        if (!fetchingPosts.current && canLoadPosts.current && posts.length) {
+        if (!fetchingPosts.current && canLoadPosts.current) {
             fetchingPosts.current = true;
             const lastPost = posts[posts.length - 1];
-            const result = await fetchPostsBefore(serverUrl, channelId, lastPost.id);
+            const result = await fetchPostsBefore(serverUrl, channelId, lastPost?.id || '');
             fetchingPosts.current = false;
             canLoadPosts.current = false;
             if (!('error' in result)) {
-                canLoadPosts.current = (result.posts?.length ?? 1) > 0;
+                canLoadPosts.current = (result.posts?.length ?? 0) > 0;
             }
         }
     }, 500), [channelId, posts]);

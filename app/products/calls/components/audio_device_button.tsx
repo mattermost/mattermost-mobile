@@ -3,11 +3,11 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Pressable, StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
+import {Pressable, type StyleProp, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {setPreferredAudioRoute} from '@calls/actions/calls';
-import {AudioDevice, CurrentCall} from '@calls/types/calls';
+import {AudioDevice, type CurrentCall} from '@calls/types/calls';
 import CompassIcon from '@components/compass_icon';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {useTheme} from '@context/theme';

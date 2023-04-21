@@ -5,6 +5,8 @@ import React, {useEffect} from 'react';
 import {StyleSheet, View} from 'react-native';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 
+import {HOME_PADDING} from '@constants/view';
+
 import SearchField from './search_field';
 import UnreadFilter from './unread_filter';
 
@@ -15,6 +17,7 @@ type Props = {
 const style = StyleSheet.create({
     container: {
         flexDirection: 'row',
+        ...HOME_PADDING,
     },
 });
 

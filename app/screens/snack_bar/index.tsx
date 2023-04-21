@@ -3,11 +3,11 @@
 
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, type ViewStyle} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
-import {ComponentEvent, Navigation} from 'react-native-navigation';
+import {type ComponentEvent, Navigation} from 'react-native-navigation';
 import Animated, {
-    AnimatedStyleProp,
+    type AnimatedStyleProp,
     Extrapolation,
     FadeIn,
     interpolate,

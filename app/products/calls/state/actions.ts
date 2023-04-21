@@ -15,14 +15,14 @@ import {
     setGlobalCallsState,
 } from '@calls/state';
 import {
-    AudioDeviceInfo,
-    Call,
-    CallsConfigState,
-    ChannelsWithCalls,
-    CurrentCall,
+    type AudioDeviceInfo,
+    type Call,
+    type CallsConfigState,
+    type ChannelsWithCalls,
+    type CurrentCall,
     DefaultCall,
     DefaultCurrentCall,
-    ReactionStreamEmoji,
+    type ReactionStreamEmoji,
 } from '@calls/types/calls';
 import {REACTION_LIMIT, REACTION_TIMEOUT} from '@constants/calls';
 

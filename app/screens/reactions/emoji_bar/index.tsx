@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef} from 'react';
-import {ListRenderItemInfo, StyleSheet} from 'react-native';
+import {type ListRenderItemInfo, StyleSheet} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import {useIsTablet} from '@hooks/device';

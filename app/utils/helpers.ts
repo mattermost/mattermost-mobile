@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import moment, {Moment} from 'moment-timezone';
+import moment, {type Moment} from 'moment-timezone';
 import {NativeModules, Platform} from 'react-native';
 
 import {Device} from '@constants';

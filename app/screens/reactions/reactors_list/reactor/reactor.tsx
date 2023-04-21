@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleSheet, TouchableOpacity} from 'react-native';
+import {Keyboard} from 'react-native';
 
 import UserItem from '@components/user_item';
 import {Screens} from '@constants';
@@ -15,19 +15,8 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     channelId: string;
     location: string;
-    user?: UserModel;
+    user: UserModel;
 }
-
-const style = StyleSheet.create({
-    container: {
-        marginBottom: 8,
-        paddingLeft: 0,
-        flexDirection: 'row',
-    },
-    picture: {
-        marginLeft: 0,
-    },
-});
 
 const Reactor = ({channelId, location, user}: Props) => {
     const intl = useIntl();
@@ -46,14 +35,11 @@ const Reactor = ({channelId, location, user}: Props) => {
     };
 
     return (
-        <TouchableOpacity onPress={openUserProfile}>
-            <UserItem
-                containerStyle={style.container}
-                pictureContainerStyle={style.picture}
-                user={user}
-                testID='reactions.reactor_item'
-            />
-        </TouchableOpacity>
+        <UserItem
+            user={user}
+            testID='reactions.reactor_item'
+            onUserPress={openUserProfile}
+        />
     );
 };
 

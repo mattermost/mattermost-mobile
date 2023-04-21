@@ -7,10 +7,10 @@ import {
     NotificationAction,
     NotificationBackgroundFetchResult,
     NotificationCategory,
-    NotificationCompletion,
+    type NotificationCompletion,
     Notifications,
-    NotificationTextInput,
-    Registered,
+    type NotificationTextInput,
+    type Registered,
 } from 'react-native-notifications';
 import {requestNotifications} from 'react-native-permissions';
 

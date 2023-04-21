@@ -4,7 +4,7 @@
 import {useBottomSheet} from '@gorhom/bottom-sheet';
 import React, {useCallback} from 'react';
 
-import SearchBar, {SearchProps} from '@components/search';
+import SearchBar, {type SearchProps} from '@components/search';
 
 import type {NativeSyntheticEvent, TextInputFocusEventData} from 'react-native';
 

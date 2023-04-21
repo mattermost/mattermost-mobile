@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, AlertButton} from 'react-native';
+import {Alert, type AlertButton} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens, Sso, SupportedServer, Launch} from '@constants';

@@ -5,7 +5,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {Platform, Pressable, PressableAndroidRippleConfig, PressableStateCallbackType, StyleProp, ViewStyle} from 'react-native';
+import {Platform, Pressable, type PressableAndroidRippleConfig, type PressableStateCallbackType, type StyleProp, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {changeOpacity} from '@utils/theme';

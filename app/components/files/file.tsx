@@ -11,7 +11,7 @@ import {useGalleryItem} from '@hooks/gallery';
 import {isDocument, isImage, isVideo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import DocumentFile, {DocumentFileRef} from './document_file';
+import DocumentFile, {type DocumentFileRef} from './document_file';
 import FileIcon from './file_icon';
 import FileInfo from './file_info';
 import FileOptionsIcon from './file_options_icon';

@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {AppState, AppStateStatus} from 'react-native';
+import {AppState, type AppStateStatus} from 'react-native';
 
 import {addFilesToDraft} from '@actions/local/draft';
 import {PROGRESS_TIME_TO_STORE} from '@constants/files';

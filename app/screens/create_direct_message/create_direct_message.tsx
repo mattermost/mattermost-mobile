@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, LayoutChangeEvent, Platform, View} from 'react-native';
+import {Keyboard, type LayoutChangeEvent, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
@@ -320,7 +320,6 @@ export default function CreateDirectMessage({
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
                 selectedIds={selectedIds}
-                teammateNameDisplay={teammateNameDisplay}
                 term={term}
                 testID='create_direct_message.user_list'
                 tutorialWatched={tutorialWatched}

@@ -3,7 +3,7 @@
 
 import {Q, Query, Relation} from '@nozbe/watermelondb';
 import {children, field, immutableRelation, lazy} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {LayoutChangeEvent, Platform, StyleProp, Switch, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {type LayoutChangeEvent, Platform, type StyleProp, Switch, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -11,7 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import OptionIcon from './option_icon';
-import RadioItem, {RadioItemProps} from './radio_item';
+import RadioItem, {type RadioItemProps} from './radio_item';
 
 const TouchableOptionTypes = {
     ARROW: 'arrow',

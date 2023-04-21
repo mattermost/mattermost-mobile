@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import PasteInput, {PasteInputRef} from '@mattermost/react-native-paste-input';
+import PasteInput, {type PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {forwardRef, useCallback, useImperativeHandle, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {NativeSyntheticEvent, Platform, TextInputSelectionChangeEventData, useWindowDimensions, View} from 'react-native';
+import {type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData, useWindowDimensions, View} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {emptyFunction} from '@utils/general';

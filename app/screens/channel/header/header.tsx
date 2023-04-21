@@ -206,7 +206,6 @@ const ChannelHeader = ({
                         customStatus={customStatus}
                         emojiSize={13}
                         style={styles.customStatusEmoji}
-                        testID='channel_header'
                     />
                     }
                     <View style={styles.customStatusText}>

@@ -37,7 +37,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             flexDirection: 'row',
             alignItems: 'center',
             paddingBottom: 8,
-            paddingHorizontal: 16,
             overflow: 'hidden',
         },
         slashIcon: {

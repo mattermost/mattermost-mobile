@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Pressable, StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
+import {Pressable, type StyleProp, Text, type TextStyle, type ViewStyle} from 'react-native';
 
 import {setSpeakerphoneOn} from '@calls/actions';
 import CompassIcon from '@components/compass_icon';

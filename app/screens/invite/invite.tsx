@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState, useRef} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
-import {Keyboard, View, LayoutChangeEvent} from 'react-native';
+import {type IntlShape, useIntl} from 'react-intl';
+import {Keyboard, View, type LayoutChangeEvent} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {getTeamMembersByIds, addUsersToTeam, sendEmailInvitesToTeam} from '@actions/remote/team';
@@ -24,6 +24,7 @@ import {isGuest} from '@utils/user';
 import Selection from './selection';
 import Summary from './summary';
 
+import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens, NavButtons} from '@typings/screens/navigation';
 import type {OptionsTopBarButton} from 'react-native-navigation';
 
@@ -69,7 +70,7 @@ const getStyleSheet = makeStyleSheetFromTheme(() => {
 
 export type EmailInvite = string;
 
-export type SearchResult = UserProfile|EmailInvite;
+export type SearchResult = UserProfile|UserModel|EmailInvite;
 
 export type InviteResult = {
     userId: string;
