@@ -26,7 +26,7 @@ import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
 import EmojiList from '@calls/components/emoji_list';
-import MessageBar from '@calls/components/permission_error_bar';
+import MessageBar from '@calls/components/message_bar';
 import ReactionBar from '@calls/components/reaction_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';

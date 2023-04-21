@@ -8,7 +8,7 @@ import {Platform, Pressable, Text, TouchableOpacity, View} from 'react-native';
 import {muteMyself, unmuteMyself} from '@calls/actions';
 import {recordingAlert, recordingErrorAlert, recordingWillBePostedAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
-import MessageBar from '@calls/components/permission_error_bar';
+import MessageBar from '@calls/components/message_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
 import {setCallQualityAlertDismissed, setMicPermissionsErrorDismissed} from '@calls/state';
