@@ -540,7 +540,7 @@
   "mobile.ios.photos_permission_denied_title": "{applicationName} would like to access your photos",
   "mobile.ios.plist.NSAppleMusicUsageDescription": "Enabling access to your media library means you can attach files from your media library to your messages in {applicationName}.",
   "mobile.ios.plist.NSBluetoothAlwaysUsageDescription": "Enabling access to Bluetooth means we can synchronize content across your devices and clients.",
-  "mobile.ios.plist.NSBluetoothPeripheralUsageDescription": "Enabling access to Bluetooth means we can synchronize content across your devices and clients.",
+  "mobile.ios.plist.NSBluetoothPeripheralUsageDescription": "Enabling access to Bluetooth means we can connect to audio peripherals for calls, and synchronize content across your devices and clients.",
   "mobile.ios.plist.NSCameraUsageDescription": "Enabling access to your device cameras means you can take photos or videos and upload them to {applicationName}.",
   "mobile.ios.plist.NSFaceIDUsageDescription": "Enabling access to your Face ID means we can restrict unauthorized users from accessing {applicationName} on your device.",
   "mobile.ios.plist.NSLocationAlwaysUsageDescription": "Enabling access to your location data means we can add location metadata to pictures and videos you share in {applicationName}.",
