@@ -8,30 +8,22 @@ import {getRecentPostsInChannel, getRecentPostsInThread} from '@queries/servers/
 import {queryReaction} from '@queries/servers/reaction';
 import {getCurrentChannelId, getCurrentUserId} from '@queries/servers/system';
 import {getEmojiFirstAlias} from '@utils/emoji/helpers';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
-import type {Client} from '@client/rest';
 import type {Model} from '@nozbe/watermelondb';
 import type PostModel from '@typings/database/models/servers/post';
 
 export async function addReaction(serverUrl: string, postId: string, emojiName: string) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
-        const currentUserId = await getCurrentUserId(operator.database);
+        const currentUserId = await getCurrentUserId(database);
         const emojiAlias = getEmojiFirstAlias(emojiName);
-        const reacted = await queryReaction(operator.database, emojiAlias, postId, currentUserId).fetchCount() > 0;
+        const reacted = await queryReaction(database, emojiAlias, postId, currentUserId).fetchCount() > 0;
         if (!reacted) {
             const reaction = await client.addReaction(currentUserId, postId, emojiAlias);
             const models: Model[] = [];
@@ -64,25 +56,17 @@ export async function addReaction(serverUrl: string, postId: string, emojiName: 
             } as Reaction,
         };
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on addReaction', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }
 
 export const removeReaction = async (serverUrl: string, postId: string, emojiName: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
         const currentUserId = await getCurrentUserId(database);
         const emojiAlias = getEmojiFirstAlias(emojiName);
         await client.removeReaction(currentUserId, postId, emojiAlias);
@@ -98,24 +82,21 @@ export const removeReaction = async (serverUrl: string, postId: string, emojiNam
 
         return {reaction};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on removeReaction', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const handleReactionToLatestPost = async (serverUrl: string, emojiName: string, add: boolean, rootId?: string) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         let posts: PostModel[];
         if (rootId) {
-            posts = await getRecentPostsInThread(operator.database, rootId);
+            posts = await getRecentPostsInThread(database, rootId);
         } else {
-            const channelId = await getCurrentChannelId(operator.database);
-            posts = await getRecentPostsInChannel(operator.database, channelId);
+            const channelId = await getCurrentChannelId(database);
+            posts = await getRecentPostsInChannel(database, channelId);
         }
 
         if (add) {

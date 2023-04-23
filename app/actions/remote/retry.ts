@@ -30,7 +30,6 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-
     const {database} = operator;
 
     try {
@@ -139,7 +138,6 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-
     const {database} = operator;
 
     try {

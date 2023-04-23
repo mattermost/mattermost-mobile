@@ -98,7 +98,7 @@ const SlashSuggestion = ({
             if (!mounted.current) {
                 return;
             }
-            if (res.error) {
+            if ('error' in res) {
                 updateSuggestions(emptySuggestionList);
             } else if (res.suggestions.length === 0) {
                 updateSuggestions(emptySuggestionList);

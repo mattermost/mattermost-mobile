@@ -240,14 +240,14 @@ const ServerItem = ({
         setSwitching(true);
         const result = await doPing(server.url, true);
         if (result.error) {
-            alertServerError(intl, result.error as ClientErrorProps);
+            alertServerError(intl, result.error);
             setSwitching(false);
             return;
         }
 
         const data = await fetchConfigAndLicense(server.url, true);
         if (data.error) {
-            alertServerError(intl, data.error as ClientErrorProps);
+            alertServerError(intl, data.error);
             setSwitching(false);
             return;
         }

@@ -88,6 +88,7 @@ class NetworkManager {
                     defaultMessage: 'Can’t find this server. Check spelling and URL format.',
                 },
                 url: serverUrl,
+                details: error,
             });
         }
 

@@ -10,15 +10,12 @@ import {getCurrentUser} from '@queries/servers/user';
 import type {Model} from '@nozbe/watermelondb';
 
 export async function handleRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
-    // only update Role records that exist in the Role Table
     try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        // only update Role records that exist in the Role Table
         const role: Role = JSON.parse(msg.data.role);
-        const dbRole = await getRoleById(operator.database, role.id);
+        const dbRole = await getRoleById(database, role.id);
         if (!dbRole) {
             return;
         }
@@ -37,8 +34,9 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
     if (!operator) {
         return;
     }
+    const {database} = operator;
 
-    const currentUserId = await getCurrentUserId(operator.database);
+    const currentUserId = await getCurrentUserId(database);
     if (currentUserId !== msg.data.user_id) {
         return;
     }
@@ -58,7 +56,7 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
     }
 
     // update User Table record
-    const user = await getCurrentUser(operator.database);
+    const user = await getCurrentUser(database);
     if (user) {
         user!.prepareUpdate((u) => {
             u.roles = msg.data.roles;
@@ -70,19 +68,16 @@ export async function handleUserRoleUpdatedEvent(serverUrl: string, msg: WebSock
 }
 
 export async function handleTeamMemberRoleUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
     try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const member: TeamMembership = JSON.parse(msg.data.member);
 
         if (member.delete_at > 0) {
             return;
         }
 
-        const currentUserId = await getCurrentUserId(operator.database);
+        const currentUserId = await getCurrentUserId(database);
         if (currentUserId !== member.user_id) {
             return;
         }

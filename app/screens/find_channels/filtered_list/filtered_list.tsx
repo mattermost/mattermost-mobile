@@ -143,9 +143,9 @@ const FilteredList = ({
     };
 
     const onJoinChannel = useCallback(async (c: Channel | ChannelModel) => {
-        const {error} = await joinChannelIfNeeded(serverUrl, c.id);
+        const res = await joinChannelIfNeeded(serverUrl, c.id);
         const displayName = 'display_name' in c ? c.display_name : c.displayName;
-        if (error) {
+        if ('error' in res) {
             Alert.alert(
                 '',
                 formatMessage({

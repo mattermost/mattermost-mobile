@@ -17,6 +17,7 @@ import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
+import {getFullErrorMessage} from '@utils/errors';
 import {logError, logDebug, logWarning, logInfo} from '@utils/log';
 
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
@@ -188,7 +189,7 @@ export async function newConnection(
         try {
             config = await client.getCallsConfig();
         } catch (err) {
-            logError('FETCHING CALLS CONFIG:', err);
+            logError('FETCHING CALLS CONFIG:', getFullErrorMessage(err));
             return;
         }
 
@@ -197,7 +198,7 @@ export async function newConnection(
             try {
                 iceConfigs.push(...await client.genTURNCredentials());
             } catch (err) {
-                logWarning('failed to fetch TURN credentials:', err);
+                logWarning('failed to fetch TURN credentials:', getFullErrorMessage(err));
             }
         }
 

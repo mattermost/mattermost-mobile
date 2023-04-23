@@ -25,7 +25,7 @@ import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers
 import {queryAllUsers} from '@queries/servers/user';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
-import {isServerError} from '@utils/errors';
+import {getFullErrorMessage, isServerError} from '@utils/errors';
 import {logDebug, logError} from '@utils/log';
 import {processPostsFetched} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
@@ -60,6 +60,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+    const {database} = operator;
 
     let client: Client;
     try {
@@ -67,8 +68,6 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
     } catch (error) {
         return {error};
     }
-
-    const {database} = operator;
 
     const currentUserId = await getCurrentUserId(database);
     const timestamp = Date.now();
@@ -136,7 +135,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
     try {
         created = await client.createPost(newPost);
     } catch (error) {
-        logDebug('Error sending a post', error);
+        logDebug('Error sending a post', getFullErrorMessage(error));
         const errorPost = {
             ...newPost,
             id: pendingPostId,
@@ -205,6 +204,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+    const {database} = operator;
 
     let client: Client;
     try {
@@ -213,7 +213,6 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
         return {error};
     }
 
-    const {database} = operator;
     const isCRTEnabled = await getIsCRTEnabled(database);
 
     try {
@@ -256,6 +255,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
         }
         await operator.batchRecords(models, 'retryFailedPost - success update');
     } catch (error) {
+        logDebug('error on retryFailedPost', getFullErrorMessage(error));
         if (isServerError(error) && (
             error.server_error_id === ServerErrors.DELETED_ROOT_POST_ERROR ||
             error.server_error_id === ServerErrors.TOWN_SQUARE_READ_ONLY_ERROR ||
@@ -275,7 +275,7 @@ export const retryFailedPost = async (serverUrl: string, post: PostModel) => {
         return {error};
     }
 
-    return {error: undefined};
+    return {};
 };
 
 export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
@@ -325,33 +325,27 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
 
         return {posts: data.posts, order: data.order, authors, actionType, previousPostId: data.previousPostId};
     } catch (error) {
-        logError('FetchPostsForChannel', error);
+        logDebug('error on fetchPostsForChannel', getFullErrorMessage(error));
         return {error};
     }
 }
 
 export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: Channel[], memberships: ChannelMembership[], excludeChannelId?: string) => {
-    try {
-        const promises = [];
-        for (const member of memberships) {
-            const channel = channels.find((c) => c.id === member.channel_id);
-            if (channel && (channel.total_msg_count - member.msg_count) > 0 && channel.id !== excludeChannelId) {
-                promises.push(fetchPostsForChannel(serverUrl, channel.id));
-            }
+    const promises = [];
+    for (const member of memberships) {
+        const channel = channels.find((c) => c.id === member.channel_id);
+        if (channel && (channel.total_msg_count - member.msg_count) > 0 && channel.id !== excludeChannelId) {
+            promises.push(fetchPostsForChannel(serverUrl, channel.id));
         }
-        await Promise.all(promises);
-    } catch (error) {
-        return {error};
     }
-
-    return {error: undefined};
+    await Promise.all(promises);
 };
 
 export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false): Promise<PostsRequest> {
     try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
-        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const isCRTEnabled = await getIsCRTEnabled(database);
         const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled);
         const result = processPostsFetched(data);
         if (!fetchOnly) {
@@ -380,35 +374,29 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
         }
         return result;
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchPosts', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }
 
 export async function fetchPostsBefore(serverUrl: string, channelId: string, postId: string, perPage = General.POST_CHUNK_SIZE, fetchOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
+    let loading = false;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    const activeServerUrl = await DatabaseManager.getActiveServerUrl();
-
-    try {
+        const activeServerUrl = await DatabaseManager.getActiveServerUrl();
         if (activeServerUrl === serverUrl) {
+            loading = true;
             DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, true);
         }
-        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const isCRTEnabled = await getIsCRTEnabled(database);
         const data = await client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled);
         const result = processPostsFetched(data);
 
         if (activeServerUrl === serverUrl) {
+            loading = false;
             DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
         }
 
@@ -443,8 +431,9 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
 
         return result;
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        if (activeServerUrl === serverUrl) {
+        logDebug('error on fetchPostsBefore', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
+        if (loading) {
             DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
         }
         return {error};
@@ -452,20 +441,11 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
 }
 
 export async function fetchPostsSince(serverUrl: string, channelId: string, since: number, fetchOnly = false): Promise<PostsRequest> {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
-        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const isCRTEnabled = await getIsCRTEnabled(database);
         const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled);
         const result = await processPostsFetched(data);
         if (!fetchOnly) {
@@ -494,47 +474,38 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
         }
         return result;
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchPostsSince', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }
 
 export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOnly = false): Promise<AuthorsRequest> => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    const currentUserId = await getCurrentUserId(operator.database);
-    const users = await queryAllUsers(operator.database).fetch();
-    const existingUserIds = new Set<string>();
-    const existingUserNames = new Set<string>();
-    let excludeUsername;
-    users.forEach((u) => {
-        existingUserIds.add(u.id);
-        existingUserNames.add(u.username);
-        if (u.id === currentUserId) {
-            excludeUsername = u.username;
+        const currentUserId = await getCurrentUserId(database);
+        const users = await queryAllUsers(database).fetch();
+        const existingUserIds = new Set<string>();
+        const existingUserNames = new Set<string>();
+        let excludeUsername;
+        users.forEach((u) => {
+            existingUserIds.add(u.id);
+            existingUserNames.add(u.username);
+            if (u.id === currentUserId) {
+                excludeUsername = u.username;
+            }
+        });
+
+        const usernamesToLoad = getNeededAtMentionedUsernames(existingUserNames, posts, excludeUsername);
+        const userIdsToLoad = new Set<string>();
+        for (const p of posts) {
+            const {user_id} = p;
+            if (user_id !== currentUserId) {
+                userIdsToLoad.add(user_id);
+            }
         }
-    });
-
-    const usernamesToLoad = getNeededAtMentionedUsernames(existingUserNames, posts, excludeUsername);
-    const userIdsToLoad = new Set<string>();
-    for (const p of posts) {
-        const {user_id} = p;
-        if (user_id !== currentUserId) {
-            userIdsToLoad.add(user_id);
-        }
-    }
-
-    try {
         const promises: Array<Promise<UserProfile[]>> = [];
         if (userIdsToLoad.size) {
             promises.push(client.getProfilesByIds(Array.from(userIdsToLoad)));
@@ -566,29 +537,20 @@ export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOn
 
         return {authors: [] as UserProfile[]};
     } catch (error) {
-        logError('FETCH AUTHORS ERROR', error);
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchPostAuthors', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export async function fetchPostThread(serverUrl: string, postId: string, options?: FetchPaginatedThreadOptions, fetchOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        setFetchingThreadState(postId, true);
+        const client = NetworkManager.getClient(serverUrl);
 
-    setFetchingThreadState(postId, true);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
-        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const isCRTEnabled = await getIsCRTEnabled(database);
 
         // Not doing any version check as server versions below 6.7 will ignore the additional params from the client.
         const data = await client.getPostThread(postId, {
@@ -627,26 +589,18 @@ export async function fetchPostThread(serverUrl: string, postId: string, options
         setFetchingThreadState(postId, false);
         return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchPostThread', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         setFetchingThreadState(postId, false);
         return {error};
     }
 }
 
 export async function fetchPostsAround(serverUrl: string, channelId: string, postId: string, perPage = General.POST_AROUND_CHUNK_SIZE, isCRTEnabled = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
         const [after, post, before] = await Promise.all<PostsObjectsRequest>([
             client.getPostsAfter(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled),
             client.getPostThread(postId, {
@@ -703,27 +657,18 @@ export async function fetchPostsAround(serverUrl: string, channelId: string, pos
 
         return {posts: extractRecordsForTable<PostModel>(posts, MM_TABLES.SERVER.POST)};
     } catch (error) {
-        logError('FETCH POSTS AROUND ERROR', error);
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchPostsAround', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }
 
 export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Post[], fetchOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
-        const channelIds = new Set(await queryAllMyChannel(operator.database).fetchIds());
+        const channelIds = new Set(await queryAllMyChannel(database).fetchIds());
         const channelPromises: Array<Promise<Channel>> = [];
         const userPromises: Array<Promise<ChannelMembership>> = [];
 
@@ -740,7 +685,7 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
         const channelMemberships = await Promise.all(userPromises);
 
         if (!fetchOnly && channels.length && channelMemberships.length) {
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            const isCRTEnabled = await getIsCRTEnabled(database);
             const modelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships, isCRTEnabled);
             if (modelPromises.length) {
                 const channelModelsArray = await Promise.all(modelPromises);
@@ -763,25 +708,16 @@ export async function fetchMissingChannelsFromPosts(serverUrl: string, posts: Po
             channelMemberships,
         };
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchMissingChannelsFromPosts', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }
 
 export async function fetchPostById(serverUrl: string, postId: string, fetchOnly = false) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const post = await client.getPost(postId);
         if (!fetchOnly) {
             const models: Model[] = [];
@@ -802,7 +738,7 @@ export async function fetchPostById(serverUrl: string, postId: string, fetchOnly
                 models.push(...users);
             }
 
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            const isCRTEnabled = await getIsCRTEnabled(database);
             if (isCRTEnabled) {
                 const threadModels = await prepareThreadsFromReceivedPosts(operator, [post], false);
                 if (threadModels?.length) {
@@ -815,25 +751,17 @@ export async function fetchPostById(serverUrl: string, postId: string, fetchOnly
 
         return {post};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchPostById', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }
 
 export const togglePinPost = async (serverUrl: string, postId: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
         const post = await getPostById(database, postId);
         if (post) {
             const isPinned = post.isPinned;
@@ -848,25 +776,15 @@ export const togglePinPost = async (serverUrl: string, postId: string) => {
         }
         return {post};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on togglePinPost', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const deletePost = async (serverUrl: string, postToDelete: PostModel | Post) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         if (postToDelete.type === Post.POST_TYPES.COMBINED_USER_ACTIVITY && postToDelete.props?.system_post_ids) {
             const systemPostIds = getPostIdsForCombinedUserActivityPost(postToDelete.id);
             const promises = systemPostIds.map((id) => client.deletePost(id));
@@ -878,24 +796,17 @@ export const deletePost = async (serverUrl: string, postToDelete: PostModel | Po
         const post = await removePost(serverUrl, postToDelete);
         return {post};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on deletePost', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const markPostAsUnread = async (serverUrl: string, postId: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
         const [userId, post] = await Promise.all([getCurrentUserId(database), getPostById(database, postId)]);
         if (post && userId) {
             await client.markPostAsUnread(userId, postId);
@@ -919,33 +830,22 @@ export const markPostAsUnread = async (serverUrl: string, postId: string) => {
 
                 const messageCount = totalMessages - messages;
                 await markChannelAsUnread(serverUrl, channelId, messageCount, mentionCount, post.createAt);
-                return {
-                    post,
-                };
+                return {post};
             }
         }
-        return {
-            post,
-        };
+        return {post};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on markPostAsUnread', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const editPost = async (serverUrl: string, postId: string, postMessage: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
         const post = await getPostById(database, postId);
         if (post) {
             const {update_at, edit_at, message: updatedMessage} = await client.patchPost({message: postMessage, id: postId});
@@ -957,29 +857,20 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
                 });
             });
         }
-        return {
-            post,
-        };
+        return {post};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on editPost', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export async function fetchSavedPosts(serverUrl: string, teamId?: string, channelId?: string, page?: number, perPage?: number) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
-        const userId = await getCurrentUserId(operator.database);
+        const userId = await getCurrentUserId(database);
         const data = await client.getSavedPosts(userId, channelId, teamId, page, perPage);
         const posts = data.posts || {};
         const order = data.order || [];
@@ -1007,7 +898,7 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
         }
 
         if (channels?.length && channelMemberships?.length) {
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            const isCRTEnabled = await getIsCRTEnabled(database);
             const channelPromises = prepareMissingChannelsForAllTeams(operator, channels, channelMemberships, isCRTEnabled);
             if (channelPromises.length) {
                 promises.push(...channelPromises);
@@ -1024,7 +915,7 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
             }),
         );
 
-        const isCRTEnabled = await getIsCRTEnabled(operator.database);
+        const isCRTEnabled = await getIsCRTEnabled(database);
         if (isCRTEnabled) {
             promises.push(prepareThreadsFromReceivedPosts(operator, postsArray, false));
         }
@@ -1044,24 +935,17 @@ export async function fetchSavedPosts(serverUrl: string, teamId?: string, channe
             posts: postsArray,
         };
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchSavedPosts', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }
 
 export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
         const data = await client.getPinnedPosts(channelId);
         const posts = data.posts || {};
         const order = data.order || [];
@@ -1075,7 +959,6 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
         }
 
         const promises: Array<Promise<Model[]>> = [];
-        const {database} = operator;
         const isCRTEnabled = await getIsCRTEnabled(database);
 
         const {authors} = await fetchPostAuthors(serverUrl, postsArray, true);
@@ -1126,7 +1009,8 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
             posts: postsArray,
         };
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchPinnedPosts', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 }

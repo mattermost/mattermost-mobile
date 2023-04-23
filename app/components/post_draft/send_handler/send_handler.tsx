@@ -18,6 +18,7 @@ import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
 import {isReactionMatch} from '@utils/emoji/helpers';
+import {getFullErrorMessage} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
@@ -180,7 +181,7 @@ export default function SendHandler({
         setSendingMessage(false);
 
         if (error) {
-            const errorMessage = typeof (error) === 'string' ? error : error.message;
+            const errorMessage = getFullErrorMessage(error);
             DraftUtils.alertSlashCommandFailed(intl, errorMessage);
             return;
         }

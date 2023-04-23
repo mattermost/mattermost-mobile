@@ -3,12 +3,12 @@
 
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import NetworkManager from '@managers/network_manager';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
 import type {Client} from '@client/rest';
-import type ClientError from '@client/rest/error';
 import type {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 
 export const downloadFile = (serverUrl: string, fileId: string, desitnation: string) => { // Let it throw and handle it accordingly
@@ -30,29 +30,23 @@ export const uploadFile = (
     onError: (response: ClientResponseError) => void = () => {/*Do Nothing*/},
     skipBytes = 0,
 ) => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
         return {cancel: client.uploadPostAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
     } catch (error) {
-        logDebug('uploadFile', error);
-        return {error: error as ClientError};
+        logDebug('error on uploadFile', getFullErrorMessage(error));
+        return {error};
     }
 };
 
 export const fetchPublicLink = async (serverUrl: string, fileId: string) => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error: error as ClientError};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         const publicLink = await client!.getFilePublicLink(fileId);
         return publicLink;
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchPublicLink', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };

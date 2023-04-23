@@ -8,6 +8,7 @@ import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getConfig, getCurrentChannelId, getCurrentTeamId, getCurrentUserId, observeConfigBooleanValue} from '@queries/servers/system';
 import {validateBindings} from '@utils/apps';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
 import NetworkManager from './network_manager';
@@ -129,7 +130,7 @@ class AppsManager {
                 this.commandForms[serverUrl] = {};
             }
         } catch (error) {
-            logDebug('Error fetching apps', error);
+            logDebug('error on fetchBindings', getFullErrorMessage(error));
             this.handleError(serverUrl);
         }
     };
