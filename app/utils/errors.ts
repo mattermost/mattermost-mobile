@@ -70,7 +70,7 @@ export const getFullErrorMessage = (error: unknown, intl?: IntlShape, depth = 0)
             return `${message}; ${getErrorMessage(error, intl)}`;
         }
 
-        return `${message}; ${getFullErrorMessage(error, intl, depth + 1)}`;
+        return `${message}; ${getFullErrorMessage(error.details, intl, depth + 1)}`;
     }
 
     return message;
