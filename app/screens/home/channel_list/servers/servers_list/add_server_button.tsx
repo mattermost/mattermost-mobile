@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetFooter, BottomSheetFooterProps} from '@gorhom/bottom-sheet';
+import {BottomSheetFooter, type BottomSheetFooterProps} from '@gorhom/bottom-sheet';
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
 

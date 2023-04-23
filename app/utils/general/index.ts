@@ -38,7 +38,7 @@ export const generateId = (prefix?: string): string => {
     return id;
 };
 
-export function hapticFeedback(method: HapticFeedbackTypes = 'impactLight') {
+export function hapticFeedback(method: HapticFeedbackTypes = HapticFeedbackTypes.impactLight) {
     ReactNativeHapticFeedback.trigger(method, {
         enableVibrateFallback: false,
         ignoreAndroidSystemSettings: false,

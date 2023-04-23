@@ -45,18 +45,22 @@ export function initializeSentry() {
     };
 
     const eventFilter = Array.isArray(Config.SentryOptions?.severityLevelFilter) ? Config.SentryOptions.severityLevelFilter : [];
+    const sentryOptions = {...Config.SentryOptions};
+    Reflect.deleteProperty(sentryOptions, 'severityLevelFilter');
 
     Sentry.init({
         dsn,
         sendDefaultPii: false,
         ...mmConfig,
-        ...Config.SentryOptions,
+        ...sentryOptions,
+        enableCaptureFailedRequests: false,
         integrations: [
             new Sentry.ReactNativeTracing({
 
                 // Pass instrumentation to be used as `routingInstrumentation`
                 routingInstrumentation: new Sentry.ReactNativeNavigationInstrumentation(
                     Navigation,
+                    {enableTabsInstrumentation: false},
                 ),
             }),
         ],

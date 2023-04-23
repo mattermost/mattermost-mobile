@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
+import {type StyleProp, Text, type TextStyle, type ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {getErrorMessage} from '@utils/errors';

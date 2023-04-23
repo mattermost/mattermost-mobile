@@ -3,7 +3,7 @@
 
 import React, {forwardRef, useImperativeHandle, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, StatusBar, StatusBarStyle, StyleSheet, TouchableOpacity, View} from 'react-native';
+import {Platform, StatusBar, type StatusBarStyle, StyleSheet, TouchableOpacity, View} from 'react-native';
 import FileViewer from 'react-native-file-viewer';
 import FileSystem from 'react-native-fs';
 import tinyColor from 'tinycolor2';

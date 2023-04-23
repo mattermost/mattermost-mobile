@@ -4,7 +4,7 @@
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
-import FastImage, {Source} from 'react-native-fast-image';
+import FastImage, {type Source} from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
 import NetworkManager from '@managers/network_manager';

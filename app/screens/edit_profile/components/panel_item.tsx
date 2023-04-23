@@ -2,13 +2,12 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {useIntl} from 'react-intl';
+import {type MessageDescriptor, useIntl} from 'react-intl';
 import DocumentPicker from 'react-native-document-picker';
 
 import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {dismissBottomSheet} from '@screens/navigation';
 
-import type {MessageDescriptor} from '@formatjs/intl/src/types';
 import type PickerUtil from '@utils/file/file_picker';
 import type {Source} from 'react-native-fast-image';
 

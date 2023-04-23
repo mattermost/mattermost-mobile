@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {TouchableOpacity} from 'react-native';
-import Animated, {SharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import Animated, {type SharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';

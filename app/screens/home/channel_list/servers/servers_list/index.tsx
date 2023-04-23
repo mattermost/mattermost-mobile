@@ -4,7 +4,7 @@
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';

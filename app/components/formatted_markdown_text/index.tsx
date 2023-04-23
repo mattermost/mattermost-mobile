@@ -3,9 +3,9 @@
 
 import {Parser} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {ReactElement, useRef} from 'react';
+import React, {type ReactElement, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {GestureResponderEvent, StyleProp, Text, TextStyle, ViewStyle} from 'react-native';
+import {type GestureResponderEvent, type StyleProp, Text, type TextStyle, type ViewStyle} from 'react-native';
 
 import AtMention from '@components/markdown/at_mention';
 import MarkdownLink from '@components/markdown/markdown_link';

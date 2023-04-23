@@ -3,6 +3,10 @@
 
 import {BehaviorSubject} from 'rxjs';
 
+import {toMilliseconds} from '@utils/datetime';
+
+const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
+
 class EphemeralStore {
     theme: Theme | undefined;
     creatingChannel = false;
@@ -10,6 +14,9 @@ class EphemeralStore {
 
     private pushProxyVerification: {[serverUrl: string]: string | undefined} = {};
     private canJoinOtherTeams: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
+
+    private websocketEditingPost: {[serverUrl: string]: {[id: string]: {post: Post; timeout: NodeJS.Timeout} | undefined} | undefined} = {};
+    private websocketRemovingPost: {[serverUrl: string]: Set<string> | undefined} = {};
 
     // As of today, the server sends a duplicated event to add the user to the team.
     // If we do not handle this, this ends up showing some errors in the database, apart
@@ -24,6 +31,66 @@ class EphemeralStore {
     private currentThreadId = '';
     private notificationTapped = false;
     private enablingCRT = false;
+
+    // Ephemeral control for out of order websocket events
+    addEditingPost = (serverUrl: string, post: Post) => {
+        if (this.websocketRemovingPost[serverUrl]?.has(post.id)) {
+            return;
+        }
+
+        const lastEdit = this.websocketEditingPost[serverUrl]?.[post.id];
+        if (lastEdit && post.edit_at < lastEdit.post.update_at) {
+            return;
+        }
+
+        if (!this.websocketEditingPost[serverUrl]) {
+            this.websocketEditingPost[serverUrl] = {};
+        }
+        const serverEditing = this.websocketEditingPost[serverUrl]!;
+
+        if (lastEdit?.timeout) {
+            clearTimeout(lastEdit.timeout);
+        }
+
+        const timeout = setTimeout(() => {
+            delete serverEditing[post.id];
+        }, TIME_TO_CLEAR_WEBSOCKET_ACTIONS);
+
+        serverEditing[post.id] = {post, timeout};
+    };
+
+    addRemovingPost = (serverUrl: string, postId: string) => {
+        if (this.websocketRemovingPost[serverUrl]?.has(postId)) {
+            return;
+        }
+
+        if (this.websocketEditingPost[serverUrl]?.[postId]) {
+            clearTimeout(this.websocketEditingPost[serverUrl]![postId]!.timeout);
+            delete this.websocketEditingPost[serverUrl]![postId];
+        }
+
+        if (!this.websocketRemovingPost[serverUrl]) {
+            this.websocketRemovingPost[serverUrl] = new Set();
+        }
+
+        setTimeout(() => {
+            this.websocketRemovingPost[serverUrl]?.delete(postId);
+        }, TIME_TO_CLEAR_WEBSOCKET_ACTIONS);
+
+        this.websocketRemovingPost[serverUrl]?.add(postId);
+    };
+
+    getLastPostWebsocketEvent = (serverUrl: string, postId: string) => {
+        if (this.websocketRemovingPost[serverUrl]?.has(postId)) {
+            return {deleted: true, post: undefined};
+        }
+
+        if (this.websocketEditingPost[serverUrl]?.[postId]) {
+            return {deleted: false, post: this.websocketEditingPost[serverUrl]![postId]!.post};
+        }
+
+        return undefined;
+    };
 
     // Ephemeral control when (un)archiving a channel locally
     addArchivingChannel = (channelId: string) => {

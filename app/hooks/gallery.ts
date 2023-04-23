@@ -6,7 +6,7 @@ import {Platform} from 'react-native';
 import {
     Easing, makeRemote, runOnJS, useAnimatedRef, useAnimatedStyle, useEvent,
     useSharedValue,
-    withTiming, WithTimingConfig,
+    withTiming, type WithTimingConfig,
 } from 'react-native-reanimated';
 
 import {useGallery} from '@context/gallery';

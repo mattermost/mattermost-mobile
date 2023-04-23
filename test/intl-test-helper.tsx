@@ -3,7 +3,7 @@
 
 import DatabaseProvider from '@nozbe/watermelondb/DatabaseProvider';
 import {render} from '@testing-library/react-native';
-import React, {ReactElement} from 'react';
+import React, {type ReactElement} from 'react';
 import {createIntl, IntlProvider} from 'react-intl';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
 

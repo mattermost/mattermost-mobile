@@ -69,8 +69,8 @@ export const observeThreadById = (database: Database, threadId: string) => {
     );
 };
 
-export const observeTeamIdByThread = (database: Database, thread: ThreadModel) => {
-    return observePost(database, thread.id).pipe(
+export const observeTeamIdByThreadId = (database: Database, threadId: string) => {
+    return observePost(database, threadId).pipe(
         switchMap((post) => {
             if (!post) {
                 return of$(undefined);
@@ -80,6 +80,10 @@ export const observeTeamIdByThread = (database: Database, thread: ThreadModel) =
             );
         }),
     );
+};
+
+export const observeTeamIdByThread = (database: Database, thread: ThreadModel) => {
+    return observeTeamIdByThreadId(database, thread.id);
 };
 
 export const observeUnreadsAndMentionsInTeam = (database: Database, teamId?: string, includeDmGm?: boolean): Observable<{unreads: boolean; mentions: number}> => {

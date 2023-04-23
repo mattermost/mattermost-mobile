@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {ListRenderItemInfo, View} from 'react-native';
+import {type ListRenderItemInfo, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import OptionItem, {ITEM_HEIGHT} from '@components/option_item';
@@ -12,7 +12,7 @@ import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import BottomSheetContent from '@screens/bottom_sheet/content';
 import {dismissBottomSheet} from '@screens/navigation';
-import {FileFilter, FileFilters} from '@utils/file';
+import {type FileFilter, FileFilters} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {

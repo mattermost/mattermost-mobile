@@ -1,27 +1,27 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import ClientCalls, {ClientCallsMix} from '@calls/client/rest';
-import ClientPlugins, {ClientPluginsMix} from '@client/rest/plugins';
+import ClientCalls, {type ClientCallsMix} from '@calls/client/rest';
+import ClientPlugins, {type ClientPluginsMix} from '@client/rest/plugins';
 import mix from '@utils/mix';
 
-import ClientApps, {ClientAppsMix} from './apps';
+import ClientApps, {type ClientAppsMix} from './apps';
 import ClientBase from './base';
-import ClientCategories, {ClientCategoriesMix} from './categories';
-import ClientChannels, {ClientChannelsMix} from './channels';
+import ClientCategories, {type ClientCategoriesMix} from './categories';
+import ClientChannels, {type ClientChannelsMix} from './channels';
 import {DEFAULT_LIMIT_AFTER, DEFAULT_LIMIT_BEFORE, HEADER_X_VERSION_ID} from './constants';
-import ClientEmojis, {ClientEmojisMix} from './emojis';
-import ClientFiles, {ClientFilesMix} from './files';
-import ClientGeneral, {ClientGeneralMix} from './general';
-import ClientGroups, {ClientGroupsMix} from './groups';
-import ClientIntegrations, {ClientIntegrationsMix} from './integrations';
-import ClientNPS, {ClientNPSMix} from './nps';
-import ClientPosts, {ClientPostsMix} from './posts';
-import ClientPreferences, {ClientPreferencesMix} from './preferences';
-import ClientTeams, {ClientTeamsMix} from './teams';
-import ClientThreads, {ClientThreadsMix} from './threads';
-import ClientTos, {ClientTosMix} from './tos';
-import ClientUsers, {ClientUsersMix} from './users';
+import ClientEmojis, {type ClientEmojisMix} from './emojis';
+import ClientFiles, {type ClientFilesMix} from './files';
+import ClientGeneral, {type ClientGeneralMix} from './general';
+import ClientGroups, {type ClientGroupsMix} from './groups';
+import ClientIntegrations, {type ClientIntegrationsMix} from './integrations';
+import ClientNPS, {type ClientNPSMix} from './nps';
+import ClientPosts, {type ClientPostsMix} from './posts';
+import ClientPreferences, {type ClientPreferencesMix} from './preferences';
+import ClientTeams, {type ClientTeamsMix} from './teams';
+import ClientThreads, {type ClientThreadsMix} from './threads';
+import ClientTos, {type ClientTosMix} from './tos';
+import ClientUsers, {type ClientUsersMix} from './users';
 
 import type {APIClientInterface} from '@mattermost/react-native-network-client';
 

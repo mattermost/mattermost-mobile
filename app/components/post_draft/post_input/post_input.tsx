@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import PasteableTextInput, {PastedFile, PasteInputRef} from '@mattermost/react-native-paste-input';
+import PasteableTextInput, {type PastedFile, type PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
+import {type IntlShape, useIntl} from 'react-intl';
 import {
-    Alert, AppState, AppStateStatus, DeviceEventEmitter, EmitterSubscription, Keyboard,
-    NativeSyntheticEvent, Platform, TextInputSelectionChangeEventData,
+    Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
+    type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
 } from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
