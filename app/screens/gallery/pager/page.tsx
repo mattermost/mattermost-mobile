@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
-import {SharedValue, useDerivedValue} from 'react-native-reanimated';
+import {type SharedValue, useDerivedValue} from 'react-native-reanimated';
 
 import {typedMemo} from '@utils/gallery';
 

@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, StyleProp, StyleSheet, ViewStyle} from 'react-native';
+import {Keyboard, type StyleProp, StyleSheet, type ViewStyle} from 'react-native';
 
 import ProfilePicture from '@components/profile_picture';
 import TouchableWithFeedback from '@components/touchable_with_feedback';

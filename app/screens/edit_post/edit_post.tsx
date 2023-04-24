@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
+import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
@@ -21,7 +21,7 @@ import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import EditPostInput, {EditPostInputRef} from './edit_post_input';
+import EditPostInput, {type EditPostInputRef} from './edit_post_input';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import * as React from 'react';
-import {Animated, Platform, StyleProp, StyleSheet, TextStyle} from 'react-native';
+import {Animated, Platform, type StyleProp, StyleSheet, type TextStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 

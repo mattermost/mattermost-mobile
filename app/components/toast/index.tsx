@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleProp, Text, TextStyle, useWindowDimensions, View, ViewStyle} from 'react-native';
-import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
+import {type StyleProp, Text, type TextStyle, useWindowDimensions, View, type ViewStyle} from 'react-native';
+import Animated, {type AnimatedStyleProp} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';

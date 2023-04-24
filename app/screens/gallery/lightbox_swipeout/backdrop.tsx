@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleSheet, ViewStyle} from 'react-native';
-import Animated, {AnimatedStyleProp, Extrapolate, interpolate, SharedValue, useAnimatedStyle} from 'react-native-reanimated';
+import {StyleSheet, type ViewStyle} from 'react-native';
+import Animated, {type AnimatedStyleProp, Extrapolate, interpolate, type SharedValue, useAnimatedStyle} from 'react-native-reanimated';
 
 export type BackdropProps = {
     animatedStyles: AnimatedStyleProp<ViewStyle>;

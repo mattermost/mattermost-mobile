@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useState} from 'react';
-import {Pressable, PressableStateCallbackType, StyleProp, Text, ViewStyle} from 'react-native';
+import {Pressable, type PressableStateCallbackType, type StyleProp, Text, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
+import {type StyleProp, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';

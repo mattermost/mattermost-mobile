@@ -3,15 +3,15 @@
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useRef, useState} from 'react';
 import {BackHandler} from 'react-native';
-import FastImage, {ImageStyle} from 'react-native-fast-image';
+import FastImage, {type ImageStyle} from 'react-native-fast-image';
 import Animated, {runOnJS, runOnUI, useAnimatedReaction} from 'react-native-reanimated';
 
 import {useGallery} from '@context/gallery';
 import {freezeOtherScreens, measureItem} from '@utils/gallery';
 
 import DocumentRenderer from './document_renderer';
-import LightboxSwipeout, {LightboxSwipeoutRef, RenderItemInfo} from './lightbox_swipeout';
-import Backdrop, {BackdropProps} from './lightbox_swipeout/backdrop';
+import LightboxSwipeout, {type LightboxSwipeoutRef, type RenderItemInfo} from './lightbox_swipeout';
+import Backdrop, {type BackdropProps} from './lightbox_swipeout/backdrop';
 import VideoRenderer from './video_renderer';
 import GalleryViewer from './viewer';
 

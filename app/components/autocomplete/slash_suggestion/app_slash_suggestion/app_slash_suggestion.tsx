@@ -4,7 +4,7 @@
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, Platform, StyleProp, ViewStyle} from 'react-native';
+import {FlatList, Platform, type StyleProp, type ViewStyle} from 'react-native';
 
 import AtMentionItem from '@components/autocomplete/at_mention_item';
 import ChannelItem from '@components/channel_item';
@@ -12,7 +12,7 @@ import {COMMAND_SUGGESTION_CHANNEL, COMMAND_SUGGESTION_USER} from '@constants/ap
 import {useServerUrl} from '@context/server';
 import analytics from '@managers/analytics';
 
-import {AppCommandParser, ExtendedAutocompleteSuggestion} from '../app_command_parser/app_command_parser';
+import {AppCommandParser, type ExtendedAutocompleteSuggestion} from '../app_command_parser/app_command_parser';
 import SlashSuggestionItem from '../slash_suggestion_item';
 
 export type Props = {

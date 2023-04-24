@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {View, Text, StyleProp, TextStyle} from 'react-native';
+import {View, Text, type StyleProp, type TextStyle} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import {useServerUrl} from '@context/server';

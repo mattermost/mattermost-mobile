@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {RefObject, useEffect, useState} from 'react';
+import React, {type RefObject, useEffect, useState} from 'react';
 import {Platform} from 'react-native';
-import {KeyboardTrackingView, KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
+import {KeyboardTrackingView, type KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import Autocomplete from '@components/autocomplete';

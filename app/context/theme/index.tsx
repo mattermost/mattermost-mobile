@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import withObservables from '@nozbe/with-observables';
-import React, {ComponentType, createContext, useEffect, useState} from 'react';
+import React, {type ComponentType, createContext, useEffect, useState} from 'react';
 import {Appearance} from 'react-native';
 
 import {Preferences} from '@constants';

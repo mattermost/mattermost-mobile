@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchPostThread} from '@actions/remote/post';
 import {markThreadAsRead} from '@actions/remote/thread';

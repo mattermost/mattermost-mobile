@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {Platform, RefreshControl, StyleProp, ViewStyle} from 'react-native';
+import {Platform, RefreshControl, type StyleProp, type ViewStyle} from 'react-native';
 
 type Props = {
     children: React.ReactElement;

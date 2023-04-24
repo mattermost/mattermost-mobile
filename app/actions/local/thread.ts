@@ -8,7 +8,7 @@ import DatabaseManager from '@database/manager';
 import {getTranslations, t} from '@i18n';
 import {getChannelById} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
-import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, PrepareCommonSystemValuesArgs, setCurrentTeamAndChannelId} from '@queries/servers/system';
+import {getCurrentTeamId, getCurrentUserId, prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, setCurrentTeamAndChannelId} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory} from '@queries/servers/team';
 import {getIsCRTEnabled, getThreadById, prepareThreadsFromReceivedPosts, queryThreadsInTeam} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
@@ -101,6 +101,14 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
             }
         }
 
+        if (isFromNotification) {
+            await dismissAllModalsAndPopToRoot();
+            await NavigationStore.waitUntilScreenIsTop(Screens.HOME);
+            if (switchingTeams && isTabletDevice) {
+                DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
+            }
+        }
+
         // Modal right buttons
         const rightButtons = [];
 
@@ -137,13 +145,6 @@ export const switchToThread = async (serverUrl: string, rootId: string, isFromNo
 
         EphemeralStore.setCurrentThreadId(rootId);
 
-        if (isFromNotification) {
-            await dismissAllModalsAndPopToRoot();
-            await NavigationStore.waitUntilScreenIsTop(Screens.HOME);
-            if (switchingTeams && isTabletDevice) {
-                DeviceEventEmitter.emit(Navigation.NAVIGATION_HOME, Screens.GLOBAL_THREADS);
-            }
-        }
         goToScreen(Screens.THREAD, '', {rootId}, {
             topBar: {
                 title: {
