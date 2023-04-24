@@ -1016,5 +1016,18 @@
     "channel_files.noFiles.title": "Nie znaleziono plików",
     "channel_files.noFiles.paragraph": "Ten kanał nie zawiera żadnych plików z zastosowanymi filtrami",
     "channel_files.empty.title": "Nie ma jeszcze plików",
-    "channel_files.empty.paragraph": "Pliki umieszczone w tym kanale będą wyświetlane tutaj."
+    "channel_files.empty.paragraph": "Pliki umieszczone w tym kanale będą wyświetlane tutaj.",
+    "snack.bar.unfollow.thread": "Wątek nie śledzony",
+    "snack.bar.following.thread": "Wątek śledzony",
+    "mobile.ios.plist.NSSpeechRecognitionUsageDescription": "Zezwolenie urządzeniu na wysyłanie danych użytkownika do Apple oznacza możliwość wysyłania wiadomości głosowych na adres {applicationName}.",
+    "mobile.ios.plist.NSPhotoLibraryUsageDescription": "Włączenie dostępu do odczytu do biblioteki zdjęć oznacza możliwość przesyłania zdjęć i filmów z urządzenia do {applicationName}.",
+    "mobile.ios.plist.NSPhotoLibraryAddUsageDescription": "Włączenie dostępu do zapisu w bibliotece zdjęć oznacza możliwość zapisywania pobranych zdjęć i filmów z {applicationName} w urządzeniu.",
+    "mobile.ios.plist.NSMicrophoneUsageDescription": "Umożliwienie dostępu do mikrofonów urządzenia oznacza możliwość rejestrowania dźwięku podczas rozmów lub nagrywania filmów w celu udostępnienia ich w witrynie {applicationName}.",
+    "mobile.ios.plist.NSLocationWhenInUseUsageDescription": "Umożliwienie dostępu do danych o lokalizacji oznacza, że możemy dodawać metadane dotyczące lokalizacji do zdjęć i filmów udostępnianych w {applicationName}.",
+    "mobile.ios.plist.NSLocationAlwaysUsageDescription": "Umożliwienie dostępu do danych o lokalizacji oznacza, że możemy dodawać metadane dotyczące lokalizacji do zdjęć i filmów udostępnianych w {applicationName}.",
+    "mobile.ios.plist.NSFaceIDUsageDescription": "Włączenie dostępu do Face ID oznacza, że możemy ograniczyć dostęp nieupoważnionych użytkowników do strony {applicationName} na urządzeniu.",
+    "mobile.ios.plist.NSCameraUsageDescription": "Umożliwienie dostępu do kamer urządzenia oznacza, że można robić zdjęcia lub filmy i przesyłać je do witryny {applicationName}.",
+    "mobile.ios.plist.NSBluetoothPeripheralUsageDescription": "Umożliwienie dostępu do Bluetooth oznacza, że możemy połączyć się z urządzeniami peryferyjnymi audio w celu prowadzenia rozmów, a także synchronizować zawartość pomiędzy urządzeniami i klientami.",
+    "mobile.ios.plist.NSBluetoothAlwaysUsageDescription": "Umożliwienie dostępu do Bluetooth oznacza, że możemy synchronizować treści pomiędzy urządzeniami i klientami.",
+    "mobile.ios.plist.NSAppleMusicUsageDescription": "Włączenie dostępu do biblioteki multimediów oznacza, że możesz dołączać pliki z biblioteki multimediów do swoich wiadomości w {applicationName}."
 }
