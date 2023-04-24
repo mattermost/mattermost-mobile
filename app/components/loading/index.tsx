@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {ActivityIndicator, StyleProp, View, ViewStyle} from 'react-native';
+import {ActivityIndicator, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 

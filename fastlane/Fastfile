@@ -555,6 +555,29 @@ platform :ios do
       sh 'cp -R ../dist/assets/release/splash_screen/ios/SplashBackground.imageset ../ios/Mattermost/Images.xcassets/'
       sh 'cp -R ../dist/assets/release/splash_screen/ios/SplashIcon.imageset ../ios/Mattermost/Images.xcassets/'
     end
+
+    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    localization_base_path = '../dist/assets/i18n/'
+    Dir.glob('*.json', base: localization_base_path) do |item|
+      localization_file = File.read(localization_base_path + item)
+      json = JSON.parse(localization_file)
+
+      plist_strings = ''
+      json.each do |key, value|
+        if key.match?('mobile.ios.plist')
+          unless value.nil? || value.empty?
+            plist_strings.concat("#{key.split('.').last} = \"#{value}\";\n")
+          end
+        end
+      end
+
+      plist_strings.gsub!('{applicationName}', "#{app_name}")
+
+      language = item.split('.').first
+      project_localization_path = "../ios/Mattermost/i18n/#{language}.lproj"
+      FileUtils.mkdir_p project_localization_path
+      File.write("#{project_localization_path}/InfoPlist.strings", plist_strings)
+    end
   end
 
   lane :deploy do |options|

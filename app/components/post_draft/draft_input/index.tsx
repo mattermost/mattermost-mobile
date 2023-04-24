@@ -3,8 +3,8 @@
 
 import React, {useCallback, useMemo, useRef} from 'react';
 import {useIntl} from 'react-intl';
-import {LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type LayoutChangeEvent, Platform, ScrollView, View} from 'react-native';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {General} from '@constants';
 import {MENTIONS_REGEX} from '@constants/autocomplete';

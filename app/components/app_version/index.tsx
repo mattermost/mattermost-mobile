@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect} from 'react';
-import {Keyboard, StyleSheet, TextStyle, View} from 'react-native';
+import {Keyboard, StyleSheet, type TextStyle, View} from 'react-native';
 import DeviceInfo from 'react-native-device-info';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
 

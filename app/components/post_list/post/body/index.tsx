@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {LayoutChangeEvent, StyleProp, View, ViewStyle} from 'react-native';
+import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import Files from '@components/files';
 import FormattedText from '@components/formatted_text';

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useRef} from 'react';
-import {MessageDescriptor, useIntl} from 'react-intl';
+import {type MessageDescriptor, useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
 import {useTheme} from '@context/theme';

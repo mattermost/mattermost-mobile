@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import BottomSheetM, {BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetFooterProps} from '@gorhom/bottom-sheet';
-import React, {ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, Handle, InteractionManager, Keyboard, StyleProp, View, ViewStyle} from 'react-native';
+import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps, type BottomSheetFooterProps} from '@gorhom/bottom-sheet';
+import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
+import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';

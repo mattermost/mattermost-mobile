@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {TouchableOpacity, View, ViewStyle} from 'react-native';
+import {TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import CompassIcon from '@components/compass_icon';

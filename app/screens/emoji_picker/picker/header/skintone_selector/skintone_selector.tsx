@@ -4,8 +4,8 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {InteractionManager, Platform, StyleSheet} from 'react-native';
 import Animated, {
-    EntryAnimationsValues, ExitAnimationsValues, FadeIn, FadeOut,
-    SharedValue, useAnimatedStyle, withDelay, withTiming,
+    type EntryAnimationsValues, type ExitAnimationsValues, FadeIn, FadeOut,
+    type SharedValue, useAnimatedStyle, withDelay, withTiming,
 } from 'react-native-reanimated';
 import Tooltip from 'react-native-walkthrough-tooltip';
 

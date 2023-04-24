@@ -3,7 +3,7 @@
 
 import moment from 'moment-timezone';
 import React, {useEffect, useState} from 'react';
-import {Text, TextProps} from 'react-native';
+import {Text, type TextProps} from 'react-native';
 
 import {toMilliseconds} from '@utils/datetime';
 

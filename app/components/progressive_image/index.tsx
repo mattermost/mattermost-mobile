@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode, useEffect, useState} from 'react';
-import {ImageBackground, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
-import FastImage, {ImageStyle, ResizeMode} from 'react-native-fast-image';
+import React, {type ReactNode, useEffect, useState} from 'react';
+import {ImageBackground, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
+import FastImage, {type ImageStyle, type ResizeMode} from 'react-native-fast-image';
 import Animated, {interpolate, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';

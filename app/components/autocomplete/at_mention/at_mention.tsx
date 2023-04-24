@@ -3,7 +3,7 @@
 
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
+import {Platform, SectionList, type SectionListData, type SectionListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
 
 import {searchGroupsByName, searchGroupsByNameInChannel, searchGroupsByNameInTeam} from '@actions/local/group';
 import {searchUsers} from '@actions/remote/user';

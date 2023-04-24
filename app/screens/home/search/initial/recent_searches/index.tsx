@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, ListRenderItemInfo, Text, View} from 'react-native';
+import {FlatList, type ListRenderItemInfo, Text, View} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';

@@ -3,7 +3,7 @@
 
 import {createElement, isValidElement} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleProp, Text, TextProps, TextStyle} from 'react-native';
+import {type StyleProp, Text, type TextProps, type TextStyle} from 'react-native';
 
 type FormattedTextProps = TextProps & {
     id: string;

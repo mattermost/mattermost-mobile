@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {debounce, DebouncedFunc} from 'lodash';
+import {debounce, type DebouncedFunc} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {Alert, FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import {switchToGlobalThreads} from '@actions/local/thread';

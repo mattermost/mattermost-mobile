@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {defineMessages, IntlShape, useIntl} from 'react-intl';
-import {FlatList, Keyboard, ListRenderItemInfo, Platform, SectionList, SectionListData, Text, View} from 'react-native';
+import {defineMessages, type IntlShape, useIntl} from 'react-intl';
+import {FlatList, Keyboard, type ListRenderItemInfo, Platform, SectionList, type SectionListData, Text, View} from 'react-native';
 
 import {storeProfile} from '@actions/local/user';
 import Loading from '@components/loading';

@@ -164,6 +164,20 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         actionType = ActionType.POSTS.RECEIVED_IN_THREAD;
     }
 
+    const outOfOrderWebsocketEvent = EphemeralStore.getLastPostWebsocketEvent(serverUrl, post.id);
+    if (outOfOrderWebsocketEvent?.deleted) {
+        for (const model of models) {
+            if (model._preparedState === 'update') {
+                model.cancelPrepareUpdate();
+            }
+        }
+        return;
+    }
+
+    if (outOfOrderWebsocketEvent?.post) {
+        post = outOfOrderWebsocketEvent.post;
+    }
+
     const postModels = await operator.handlePosts({
         actionType,
         order: [post.id],
@@ -193,7 +207,12 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     const {database} = operator;
 
     const oldPost = await getPostById(database, post.id);
-    if (oldPost && oldPost.isPinned !== post.is_pinned) {
+    if (!oldPost) {
+        EphemeralStore.addEditingPost(serverUrl, post);
+        return;
+    }
+
+    if (oldPost.isPinned !== post.is_pinned) {
         fetchChannelStats(serverUrl, post.channel_id);
     }
 
@@ -229,6 +248,12 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
         const {database} = operator;
 
         const post: Post = JSON.parse(msg.data.post);
+
+        const oldPost = await getPostById(database, post.id);
+        if (!oldPost) {
+            EphemeralStore.addRemovingPost(serverUrl, post.id);
+            return;
+        }
 
         const models: Model[] = [];
 

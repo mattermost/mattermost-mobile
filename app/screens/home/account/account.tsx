@@ -5,7 +5,7 @@ import {useRoute} from '@react-navigation/native';
 import React, {useCallback, useState} from 'react';
 import {ScrollView, View} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {View as ViewConstants} from '@constants';
 import {useTheme} from '@context/theme';

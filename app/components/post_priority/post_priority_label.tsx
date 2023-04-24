@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {StyleProp, StyleSheet, Text, View, ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, Text, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {PostPriorityColors, PostPriorityType} from '@constants/post';

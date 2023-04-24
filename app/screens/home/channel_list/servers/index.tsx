@@ -10,7 +10,7 @@ import ServerIcon from '@components/server_icon';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {subscribeAllServers} from '@database/subscription/servers';
-import {subscribeUnreadAndMentionsByServer, UnreadObserverArgs} from '@database/subscription/unreads';
+import {subscribeUnreadAndMentionsByServer, type UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
 import {BUTTON_HEIGHT, TITLE_HEIGHT} from '@screens/bottom_sheet';
 import {bottomSheet} from '@screens/navigation';

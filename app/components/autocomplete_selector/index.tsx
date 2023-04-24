@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React, {useCallback, useEffect, useState} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
+import {type IntlShape, useIntl} from 'react-intl';
 import {Text, View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';

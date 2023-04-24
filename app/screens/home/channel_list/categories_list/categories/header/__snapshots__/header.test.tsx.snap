@@ -52,33 +52,25 @@ exports[`components/channel_list/categories/header should match snapshot 1`] = `
     }
   >
     <Icon
-      animatedStyle={
-        {
-          "value": {
+      name="chevron-down"
+      size={20}
+      style={
+        [
+          {
+            "color": "rgba(255,255,255,0.64)",
+            "height": 20,
+            "marginRight": 2,
+            "marginTop": -2,
+            "width": 20,
+          },
+          {
             "transform": [
               {
                 "rotate": "0deg",
               },
             ],
           },
-        }
-      }
-      collapsable={false}
-      name="chevron-down"
-      size={20}
-      style={
-        {
-          "color": "rgba(255,255,255,0.64)",
-          "height": 20,
-          "marginRight": 2,
-          "marginTop": -2,
-          "transform": [
-            {
-              "rotate": "0deg",
-            },
-          ],
-          "width": 20,
-        }
+        ]
       }
     />
     <Text

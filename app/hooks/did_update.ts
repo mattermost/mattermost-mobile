@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {useRef, useEffect, EffectCallback, DependencyList} from 'react';
+import {useRef, useEffect, type EffectCallback, type DependencyList} from 'react';
 
 function useDidUpdate(callback: EffectCallback, deps?: DependencyList) {
     const hasMount = useRef(false);

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';

@@ -4,7 +4,7 @@
 import React from 'react';
 import {Platform, ScrollView, Text, View} from 'react-native';
 import MathView from 'react-native-math-view';
-import {SafeAreaView, Edge} from 'react-native-safe-area-context';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';

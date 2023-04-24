@@ -3,7 +3,7 @@
 
 import React from 'react';
 
-import OptionItem, {OptionItemProps, OptionType} from '@components/option_item';
+import OptionItem, {type OptionItemProps, type OptionType} from '@components/option_item';
 import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
