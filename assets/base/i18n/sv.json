@@ -1016,5 +1016,18 @@
     "channel_files.noFiles.title": "Inga filer hittades",
     "channel_files.noFiles.paragraph": "Den här kanalen innehåller inga filer med det filter som används",
     "channel_files.empty.title": "Ännu inga filer",
-    "channel_files.empty.paragraph": "Filer postade i kanalen visas här."
+    "channel_files.empty.paragraph": "Filer postade i kanalen visas här.",
+    "snack.bar.following.thread": "Följer tråden",
+    "mobile.ios.plist.NSSpeechRecognitionUsageDescription": "Om du tillåter din enhet att skicka användardata till Apple kan du skicka röstmeddelanden till {applicationName}.",
+    "mobile.ios.plist.NSPhotoLibraryUsageDescription": "Om du tillåter läsåtkomst till ditt fotobibliotek kan du ladda upp foton och videor från enheten till {applicationName}.",
+    "mobile.ios.plist.NSPhotoLibraryAddUsageDescription": "Om du tillåter skrivåtkomst till ditt fotobibliotek kan du spara nedladdade foton och videor från {applicationName} på enheten.",
+    "mobile.ios.plist.NSMicrophoneUsageDescription": "Genom att tillåta tillgång till enhetens mikrofoner kan du använda ljud för samtal eller videor för att dela dem på {applicationName}.",
+    "mobile.ios.plist.NSLocationWhenInUseUsageDescription": "Om du tillåter åtkomst till platsdata kan vi lägga till platsmetadata till bilder och videor som du delar på {applicationName}.",
+    "mobile.ios.plist.NSLocationAlwaysUsageDescription": "Om du tillåter åtkomst till platsdata kan vi lägga till platsmetadata till bilder och videor som du delar på {applicationName}.",
+    "mobile.ios.plist.NSFaceIDUsageDescription": "Om du tillåter åtkomst till Face ID kan vi begränsa obehöriga användares åtkomst till {applicationName} på din enhet.",
+    "mobile.ios.plist.NSCameraUsageDescription": "Om du tillåter åtkomst till enhetens kameror kan du ta foton eller videor och ladda upp dem till {applicationName}.",
+    "mobile.ios.plist.NSBluetoothPeripheralUsageDescription": "Genom att aktivera tillgång till Bluetooth kan vi ansluta till ljudenheter för samtal och synkronisera innehåll mellan dina enheter och klienter.",
+    "mobile.ios.plist.NSBluetoothAlwaysUsageDescription": "Genom att aktivera Bluetooth kan vi synkronisera innehåll mellan dina enheter och klienter.",
+    "mobile.ios.plist.NSAppleMusicUsageDescription": "Om du tillåter åtkomst till ditt mediebibliotek kan du bifoga filer från ditt mediebibliotek till dina meddelanden på {applicationName}.",
+    "snack.bar.unfollow.thread": "Tråden följs inte"
 }
