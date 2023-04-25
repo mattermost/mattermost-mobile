@@ -51,7 +51,7 @@ const ChannelPostList = ({
     const oldPostsCount = useRef<number>(posts.length);
 
     const onEndReached = useCallback(debounce(async () => {
-        if (!fetchingPosts && canLoadPostsBefore.current) {
+        if (!fetchingPosts && canLoadPostsBefore.current && posts.length) {
             const lastPost = posts[posts.length - 1];
             const result = await fetchPostsBefore(serverUrl, channelId, lastPost?.id || '');
             canLoadPostsBefore.current = false;
@@ -75,10 +75,9 @@ const ChannelPostList = ({
         // If we have too few posts so the onEndReached may have been called while fetching
         // we call fetchPosts to make sure we have at least the latest page of posts
         if (!fetchingPosts && canLoadPost.current && posts.length < PER_PAGE_DEFAULT) {
-            fetchPosts(serverUrl, channelId).then(() => {
-                // We do this just once
-                canLoadPost.current = false;
-            });
+            // We do this just once
+            canLoadPost.current = false;
+            fetchPosts(serverUrl, channelId)
         }
     }, [fetchingPosts, posts]);
 

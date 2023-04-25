@@ -362,7 +362,7 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled);
         const result = processPostsFetched(data);
-        if (!fetchOnly) {
+        if (!fetchOnly && result.posts.length) {
             const models = await operator.handlePosts({
                 ...result,
                 actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
