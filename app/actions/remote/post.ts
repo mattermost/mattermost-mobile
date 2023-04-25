@@ -4,13 +4,11 @@
 
 /* eslint-disable max-lines */
 
-import {DeviceEventEmitter} from 'react-native';
-
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
 import {removePost, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
-import {ActionType, Events, General, Post, ServerErrors} from '@constants';
+import {ActionType, General, Post, ServerErrors} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {filterPostsInOrderedArray} from '@helpers/api/post';
@@ -23,6 +21,7 @@ import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {isServerError} from '@utils/errors';
@@ -290,6 +289,9 @@ export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
 
 export async function fetchPostsForChannel(serverUrl: string, channelId: string, fetchOnly = false) {
     try {
+        if (!fetchOnly) {
+            EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
+        }
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         let postAction: Promise<PostsRequest>|undefined;
         let actionType: string|undefined;
@@ -308,7 +310,6 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         if (data.error) {
             throw data.error;
         }
-
         let authors: UserProfile[] = [];
         if (data.posts?.length && data.order?.length) {
             const {authors: fetchedAuthors} = await fetchPostAuthors(serverUrl, data.posts, true);
@@ -327,6 +328,10 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
     } catch (error) {
         logError('FetchPostsForChannel', error);
         return {error};
+    } finally {
+        if (!fetchOnly) {
+            EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
+        }
     }
 }
 
@@ -349,6 +354,9 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
 
 export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false): Promise<PostsRequest> {
     try {
+        if (!fetchOnly) {
+            EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
+        }
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
@@ -357,7 +365,7 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
         if (!fetchOnly) {
             const models = await operator.handlePosts({
                 ...result,
-                actionType: ActionType.POSTS.RECEIVED_SINCE,
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 prepareRecordsOnly: true,
             });
 
@@ -382,6 +390,10 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
+    } finally {
+        if (!fetchOnly) {
+            EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
+        }
     }
 }
 
@@ -398,19 +410,13 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
         return {error};
     }
 
-    const activeServerUrl = await DatabaseManager.getActiveServerUrl();
-
     try {
-        if (activeServerUrl === serverUrl) {
-            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, true);
+        if (!fetchOnly) {
+            EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
         }
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled);
         const result = processPostsFetched(data);
-
-        if (activeServerUrl === serverUrl) {
-            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
-        }
 
         if (result.posts.length && !fetchOnly) {
             try {
@@ -440,14 +446,14 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
                 logError('FETCH POSTS BEFORE ERROR', error);
             }
         }
-
         return result;
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
-        if (activeServerUrl === serverUrl) {
-            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
-        }
         return {error};
+    } finally {
+        if (!fetchOnly) {
+            EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
+        }
     }
 }
 
@@ -465,6 +471,9 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
     }
 
     try {
+        if (!fetchOnly) {
+            EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
+        }
         const isCRTEnabled = await getIsCRTEnabled(operator.database);
         const data = await client.getPostsSince(channelId, since, isCRTEnabled, isCRTEnabled);
         const result = await processPostsFetched(data);
@@ -494,6 +503,9 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
         }
         return result;
     } catch (error) {
+        if (!fetchOnly) {
+            EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
+        }
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
     }

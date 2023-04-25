@@ -1,17 +1,18 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useRef} from 'react';
-import {type StyleProp, StyleSheet, type ViewStyle} from 'react-native';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
+import {type StyleProp, StyleSheet, type ViewStyle, DeviceEventEmitter} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {markChannelAsRead} from '@actions/remote/channel';
-import {fetchPostsBefore} from '@actions/remote/post';
+import {fetchPosts, fetchPostsBefore} from '@actions/remote/post';
 import PostList from '@components/post_list';
-import {Screens} from '@constants';
+import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {debounce} from '@helpers/api/general';
 import {useAppState, useIsTablet} from '@hooks/device';
+import EphemeralStore from '@store/ephemeral_store';
 
 import Intro from './intro';
 
@@ -44,28 +45,47 @@ const ChannelPostList = ({
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const canLoadPosts = useRef(true);
-    const fetchingPosts = useRef(false);
-
+    const [fetchingPosts, setFetchingPosts] = useState(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
     const oldPostsCount = useRef<number>(posts.length);
+
+    const onEndReached = useCallback(debounce(async () => {
+        if (!fetchingPosts && canLoadPosts.current) {
+            const lastPost = posts[posts.length - 1];
+            const result = await fetchPostsBefore(serverUrl, channelId, lastPost?.id || '');
+            canLoadPosts.current = false;
+            if (!('error' in result)) {
+                canLoadPosts.current = (result.posts?.length ?? 0) > 0;
+            }
+        }
+    }, 500), [fetchingPosts, serverUrl, channelId, posts]);
+
+    useEffect(() => {
+        const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, ({serverUrl: eventServerUrl, channelId: eventChannelId, value}) => {
+            if (eventServerUrl === serverUrl && eventChannelId === channelId) {
+                setFetchingPosts(value);
+            }
+        });
+
+        return () => listener.remove();
+    }, [serverUrl, channelId]);
+
+    useEffect(() => {
+        if (!fetchingPosts && canLoadPosts.current && posts.length === 0) {
+            fetchPosts(serverUrl, channelId).then((result) => {
+                canLoadPosts.current = false;
+                if (!('error' in result)) {
+                    canLoadPosts.current = (result.posts?.length ?? 0) > 0;
+                }
+            });
+        }
+    }, [fetchingPosts, posts]);
+
     useEffect(() => {
         if (oldPostsCount.current < posts.length && appState === 'active') {
             oldPostsCount.current = posts.length;
             markChannelAsRead(serverUrl, channelId, true);
         }
     }, [isCRTEnabled, posts, channelId, serverUrl, appState === 'active']);
-
-    const onEndReached = useCallback(debounce(async () => {
-        if (!fetchingPosts.current && canLoadPosts.current) {
-            fetchingPosts.current = true;
-            const lastPost = posts[posts.length - 1];
-            const result = await fetchPostsBefore(serverUrl, channelId, lastPost?.id || '');
-            fetchingPosts.current = false;
-            canLoadPosts.current = false;
-            if (!('error' in result)) {
-                canLoadPosts.current = (result.posts?.length ?? 0) > 0;
-            }
-        }
-    }, 500), [channelId, posts]);
 
     const intro = (
         <Intro

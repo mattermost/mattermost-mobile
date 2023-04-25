@@ -220,8 +220,10 @@ const MoreMessages = ({
     }, [newMessageLineIndex]);
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, (value: boolean) => {
-            setLoading(value);
+        const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, ({serverUrl: eventServerUrl, channelId: eventChannelId, value}) => {
+            if (eventServerUrl === serverUrl && eventChannelId === channelId) {
+                setLoading(value);
+            }
         });
 
         return () => listener.remove();

@@ -5,6 +5,7 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {ActivityIndicator, DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 
 import {Events, General} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 
 import DirectChannel from './direct_channel';
@@ -38,6 +39,8 @@ const styles = StyleSheet.create({
 const Intro = ({channel, hasPosts, roles}: Props) => {
     const [fetching, setFetching] = useState(!hasPosts);
     const theme = useTheme();
+    const serverUrl = useServerUrl();
+
     const element = useMemo(() => {
         if (!channel) {
             return null;
@@ -75,8 +78,10 @@ const Intro = ({channel, hasPosts, roles}: Props) => {
     }, [channel, roles, theme]);
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, (value: boolean) => {
-            setFetching(value);
+        const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, ({serverUrl: eventServerUrl, channelId: eventChannelId, value}) => {
+            if (eventServerUrl === serverUrl && eventChannelId === channel?.id) {
+                setFetching(value);
+            }
         });
 
         return () => listener.remove();
