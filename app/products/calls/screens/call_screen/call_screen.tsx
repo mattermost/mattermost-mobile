@@ -145,6 +145,10 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
     },
     usersScrollContainer: {
         flex: 1,
+        width: '100%',
+    },
+    usersScrollContainerScreenOn: {
+        marginTop: -20,
     },
     usersScrollViewCentered: {
         flex: 1,
@@ -161,8 +165,8 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         margin: 10,
     },
     userScreenOn: {
-        marginTop: 6,
-        marginBottom: -20,
+        marginTop: 5,
+        marginBottom: 0,
     },
     username: {
         marginTop: 10,
@@ -172,6 +176,7 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         ...typography('Body', 100, 'SemiBold'),
     },
     usernameShort: {
+        marginTop: 0,
         width: usernameM,
     },
     buttonsContainer: {
@@ -285,7 +290,7 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         backgroundColor: Preferences.THEMES.denim.dndIndicator,
     },
     screenShareImage: {
-        flex: 3,
+        flex: 2,
         width: '100%',
         height: '100%',
         alignItems: 'center',
@@ -329,7 +334,8 @@ const CallScreen = ({
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
     const screenShareOn = Boolean(currentCall?.screenOn);
     const isLandscape = width > height;
-    const avatarSize = isLandscape || screenShareOn ? avatarM : avatarL;
+    const smallerAvatar = isLandscape || screenShareOn;
+    const avatarSize = smallerAvatar ? avatarM : avatarL;
     const numParticipants = Object.keys(participantsDict).length;
 
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
@@ -528,17 +534,20 @@ const CallScreen = ({
     }, [isTablet]);
 
     useEffect(() => {
-        if (!layout) {
+        if (!layout || !layout.height || !layout.width) {
             return;
         }
 
         const avatarCellHeight = avatarSize + 20 + 20 + 20; // avatar + name + host pill + padding
-        const usernameSize = isLandscape || screenShareOn ? usernameM : usernameL;
+        const usernameSize = smallerAvatar ? usernameM : usernameL;
         const avatarCellWidth = usernameSize + 20; // name width + padding
 
         const perRow = Math.floor(layout.width / avatarCellWidth);
         const totalHeight = Math.ceil(numParticipants / perRow) * avatarCellHeight;
-        if (totalHeight > layout.height) {
+        const totalWidth = numParticipants * avatarCellWidth;
+
+        // If screenShareOn, we care about width, otherwise we care about height.
+        if ((screenShareOn && totalWidth > layout.width) || (!screenShareOn && totalHeight > layout.height)) {
             setCenterUsers(false);
         } else {
             setCenterUsers(true);
@@ -589,7 +598,7 @@ const CallScreen = ({
     let usersList = null;
     if (!screenShareOn || !isLandscape) {
         usersList = (
-            <View style={style.usersScrollContainer}>
+            <View style={[style.usersScrollContainer, screenShareOn && style.usersScrollContainerScreenOn]}>
                 <ScrollView
                     alwaysBounceVertical={false}
                     horizontal={screenShareOn}
@@ -618,7 +627,7 @@ const CallScreen = ({
                                         serverUrl={currentCall.serverUrl}
                                     />
                                     <Text
-                                        style={[style.username, (isLandscape || screenShareOn) && style.usernameShort]}
+                                        style={[style.username, smallerAvatar && style.usernameShort]}
                                         numberOfLines={1}
                                     >
                                         {displayUsername(user.userModel, intl.locale, teammateNameDisplay)}
@@ -691,7 +700,9 @@ const CallScreen = ({
                 {usersList}
                 {screenShareView}
                 {isLandscape && header}
-                {!isLandscape && <EmojiList reactionStream={currentCall.reactionStream}/>}
+                {!isLandscape && currentCall.reactionStream.length > 0 &&
+                    <EmojiList reactionStream={currentCall.reactionStream}/>
+                }
                 {micPermissionsError && <PermissionErrorBar/>}
                 <View style={[style.buttonsContainer, isLandscape && style.buttonsContainerLandscape]}>
                     <View
