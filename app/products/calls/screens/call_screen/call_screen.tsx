@@ -181,12 +181,6 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
     },
     buttonsContainer: {
         alignItems: 'center',
-        paddingLeft: 10,
-        paddingRight: 10,
-    },
-    buttonsContainerLandscape: {
-        paddingLeft: 0,
-        paddingRight: 0,
     },
     buttons: {
         flexDirection: 'column',
@@ -241,7 +235,7 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         backgroundColor: changeOpacity(theme.buttonColor, 0.12),
     },
     buttonOn: {
-        color: 'black',
+        color: theme.callsBg,
         backgroundColor: 'white',
     },
     otherButtons: {
@@ -704,7 +698,7 @@ const CallScreen = ({
                     <EmojiList reactionStream={currentCall.reactionStream}/>
                 }
                 {micPermissionsError && <PermissionErrorBar/>}
-                <View style={[style.buttonsContainer, isLandscape && style.buttonsContainerLandscape]}>
+                <View style={[style.buttonsContainer]}>
                     <View
                         style={[
                             style.buttons,
