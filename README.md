@@ -4,7 +4,7 @@
 - **Supported iOS versions:** 12.1+
 - **Supported Android versions:** 7.0+
 
-Mattermost is an open source Slack-alternative used by thousands of companies around the world in 21 languages. Learn more at [https://about.mattermost.com](https://mattermost.com).
+Mattermost is an open source Slack-alternative used by thousands of companies around the world in 21 languages. Learn more at [https://mattermost.com](https://mattermost.com).
 
 You can download our apps from the [App Store](https://mattermost.com/mattermost-ios-app/) or [Google Play Store](https://mattermost.com/mattermost-android-app/), or [build them yourself](https://developers.mattermost.com/contribute/mobile/build-your-own/). 
 
