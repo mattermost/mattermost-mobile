@@ -7,6 +7,7 @@ import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {markChannelAsRead} from '@actions/remote/channel';
 import {fetchPosts, fetchPostsBefore} from '@actions/remote/post';
+import {PER_PAGE_DEFAULT} from '@client/rest/constants';
 import PostList from '@components/post_list';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -44,17 +45,18 @@ const ChannelPostList = ({
     const appState = useAppState();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
-    const canLoadPosts = useRef(true);
+    const canLoadPostsBefore = useRef(true);
+    const canLoadPost = useRef(true);
     const [fetchingPosts, setFetchingPosts] = useState(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
     const oldPostsCount = useRef<number>(posts.length);
 
     const onEndReached = useCallback(debounce(async () => {
-        if (!fetchingPosts && canLoadPosts.current) {
+        if (!fetchingPosts && canLoadPostsBefore.current) {
             const lastPost = posts[posts.length - 1];
             const result = await fetchPostsBefore(serverUrl, channelId, lastPost?.id || '');
-            canLoadPosts.current = false;
+            canLoadPostsBefore.current = false;
             if (!('error' in result)) {
-                canLoadPosts.current = (result.posts?.length ?? 0) > 0;
+                canLoadPostsBefore.current = (result.posts?.length ?? 0) > 0;
             }
         }
     }, 500), [fetchingPosts, serverUrl, channelId, posts]);
@@ -70,12 +72,12 @@ const ChannelPostList = ({
     }, [serverUrl, channelId]);
 
     useEffect(() => {
-        if (!fetchingPosts && canLoadPosts.current && posts.length === 0) {
-            fetchPosts(serverUrl, channelId).then((result) => {
-                canLoadPosts.current = false;
-                if (!('error' in result)) {
-                    canLoadPosts.current = (result.posts?.length ?? 0) > 0;
-                }
+        // If we have too few posts so the onEndReached may have been called while fetching
+        // we call fetchPosts to make sure we have at least the latest page of posts
+        if (!fetchingPosts && canLoadPost.current && posts.length < PER_PAGE_DEFAULT) {
+            fetchPosts(serverUrl, channelId).then(() => {
+                // We do this just once
+                canLoadPost.current = false;
             });
         }
     }, [fetchingPosts, posts]);

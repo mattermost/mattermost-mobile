@@ -517,14 +517,10 @@ const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(supercla
             return [];
         }
 
-        const models = [];
-
         // We've got new posts that belong to this chunk
-        models.push(targetChunk.prepareUpdate((record) => {
+        const models = [targetChunk.prepareUpdate((record) => {
             record.latest = Math.max(record.latest, latest);
-        }));
-
-        models.push(...(await this._mergePostInChannelChunks(targetChunk, chunks, prepareRecordsOnly)));
+        })];
 
         if (!prepareRecordsOnly) {
             this.batchRecords(models, 'handleReceivedPostsInChannelSince');
