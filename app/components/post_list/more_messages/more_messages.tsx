@@ -14,6 +14,8 @@ import {Events} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT, JOIN_CALL_BAR_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
+import EphemeralStore from '@store/ephemeral_store';
 import {makeStyleSheetFromTheme, hexToHue} from '@utils/theme';
 import {typography} from '@utils/typography';
 
@@ -117,7 +119,7 @@ const MoreMessages = ({
     const pressed = useRef(false);
     const resetting = useRef(false);
     const initialScroll = useRef(false);
-    const [loading, setLoading] = useState(false);
+    const [loading, setLoading] = useState(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
     const [remaining, setRemaining] = useState(0);
     const underlayColor = useMemo(() => `hsl(${hexToHue(theme.buttonBg)}, 50%, 38%)`, [theme]);
     const top = useSharedValue(0);
@@ -219,6 +221,10 @@ const MoreMessages = ({
         scrollToIndex(newMessageLineIndex, true);
     }, [newMessageLineIndex]);
 
+    useDidUpdate(() => {
+        setLoading(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
+    }, [serverUrl, channelId]);
+
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, ({serverUrl: eventServerUrl, channelId: eventChannelId, value}) => {
             if (eventServerUrl === serverUrl && eventChannelId === channelId) {
@@ -227,7 +233,7 @@ const MoreMessages = ({
         });
 
         return () => listener.remove();
-    }, []);
+    }, [serverUrl, channelId]);
 
     useEffect(() => {
         const unregister = registerScrollEndIndexListener(onScrollEndIndex);

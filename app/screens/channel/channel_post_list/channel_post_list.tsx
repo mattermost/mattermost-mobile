@@ -13,6 +13,7 @@ import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {debounce} from '@helpers/api/general';
 import {useAppState, useIsTablet} from '@hooks/device';
+import useDidUpdate from '@hooks/did_update';
 import EphemeralStore from '@store/ephemeral_store';
 
 import Intro from './intro';
@@ -61,6 +62,10 @@ const ChannelPostList = ({
         }
     }, 500), [fetchingPosts, serverUrl, channelId, posts]);
 
+    useDidUpdate(() => {
+        setFetchingPosts(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channelId));
+    }, [serverUrl, channelId]);
+
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, ({serverUrl: eventServerUrl, channelId: eventChannelId, value}) => {
             if (eventServerUrl === serverUrl && eventChannelId === channelId) {
@@ -77,7 +82,7 @@ const ChannelPostList = ({
         if (!fetchingPosts && canLoadPost.current && posts.length < PER_PAGE_DEFAULT) {
             // We do this just once
             canLoadPost.current = false;
-            fetchPosts(serverUrl, channelId)
+            fetchPosts(serverUrl, channelId);
         }
     }, [fetchingPosts, posts]);
 
@@ -88,12 +93,7 @@ const ChannelPostList = ({
         }
     }, [isCRTEnabled, posts, channelId, serverUrl, appState === 'active']);
 
-    const intro = (
-        <Intro
-            channelId={channelId}
-            hasPosts={posts.length > 0}
-        />
-    );
+    const intro = (<Intro channelId={channelId}/>);
 
     const postList = (
         <PostList
