@@ -6,11 +6,15 @@ import {useIntl} from 'react-intl';
 import {
     DeviceEventEmitter,
     Keyboard,
+    type LayoutChangeEvent,
+    type LayoutRectangle,
     NativeModules,
     Platform,
     Pressable,
     SafeAreaView,
-    ScrollView, StyleSheet,
+    ScrollView,
+    StatusBar,
+    StyleSheet,
     Text,
     useWindowDimensions,
     View,
@@ -63,6 +67,11 @@ import {displayUsername} from '@utils/user';
 import type {CallParticipant, CallsTheme, CurrentCall} from '@calls/types/calls';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
+const avatarL = 96;
+const avatarM = 72;
+const usernameL = 110;
+const usernameM = 92;
+
 export type Props = {
     componentId: AvailableScreens;
     currentCall: CurrentCall | null;
@@ -75,6 +84,7 @@ export type Props = {
 const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
     wrapper: {
         flex: 1,
+        backgroundColor: theme.callsBg,
     },
     container: {
         ...Platform.select({
@@ -133,6 +143,13 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         backgroundColor: 'transparent',
         borderRadius: 0,
     },
+    usersScrollContainer: {
+        flex: 1,
+    },
+    usersScrollViewCentered: {
+        flex: 1,
+        justifyContent: 'center',
+    },
     users: {
         flexDirection: 'row',
         flexWrap: 'wrap',
@@ -148,13 +165,14 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         marginBottom: -20,
     },
     username: {
-        marginTop: 12,
-        width: 110,
+        marginTop: 10,
+        width: usernameL,
         textAlign: 'center',
         color: theme.buttonColor,
+        ...typography('Body', 100, 'SemiBold'),
     },
     usernameShort: {
-        width: 92,
+        width: usernameM,
     },
     buttonsContainer: {
         alignItems: 'center',
@@ -267,7 +285,7 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         backgroundColor: Preferences.THEMES.denim.dndIndicator,
     },
     screenShareImage: {
-        flex: 7,
+        flex: 3,
         width: '100%',
         height: '100%',
         alignItems: 'center',
@@ -302,14 +320,17 @@ const CallScreen = ({
     usePermissionsChecker(micPermissionsGranted);
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
     const [showReactions, setShowReactions] = useState(false);
-
-    const isLandscape = width > height;
     const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
     const style = getStyleSheet(callsTheme);
+    const [centerUsers, setCenterUsers] = useState(false);
+    const [layout, setLayout] = useState<LayoutRectangle | null>(null);
+
     const myParticipant = currentCall?.participants[currentCall.myUserId];
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
     const screenShareOn = Boolean(currentCall?.screenOn);
-    const avatarSize = isLandscape || screenShareOn ? 72 : 96;
+    const isLandscape = width > height;
+    const avatarSize = isLandscape || screenShareOn ? avatarM : avatarL;
+    const numParticipants = Object.keys(participantsDict).length;
 
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
     const recordOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Record'});
@@ -325,7 +346,7 @@ const CallScreen = ({
     useEffect(() => {
         mergeNavigationOptions('Call', {
             layout: {
-                componentBackgroundColor: 'black',
+                componentBackgroundColor: callsTheme.callsBg,
                 orientation: allOrientations,
             },
             topBar: {
@@ -506,6 +527,28 @@ const CallScreen = ({
         return () => didDismissListener.remove();
     }, [isTablet]);
 
+    useEffect(() => {
+        if (!layout) {
+            return;
+        }
+
+        const avatarCellHeight = avatarSize + 20 + 20 + 20; // avatar + name + host pill + padding
+        const usernameSize = isLandscape || screenShareOn ? usernameM : usernameL;
+        const avatarCellWidth = usernameSize + 20; // name width + padding
+
+        const perRow = Math.floor(layout.width / avatarCellWidth);
+        const totalHeight = Math.ceil(numParticipants / perRow) * avatarCellHeight;
+        if (totalHeight > layout.height) {
+            setCenterUsers(false);
+        } else {
+            setCenterUsers(true);
+        }
+    }, [layout, numParticipants]);
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setLayout(e.nativeEvent.layout);
+    }, []);
+
     if (!currentCall || !myParticipant) {
         // Note: this happens because the screen is "rendered", even after the screen has been popped, and the
         // currentCall will have already been set to null when those extra renders run. We probably don't ever need
@@ -546,46 +589,50 @@ const CallScreen = ({
     let usersList = null;
     if (!screenShareOn || !isLandscape) {
         usersList = (
-            <ScrollView
-                alwaysBounceVertical={false}
-                horizontal={screenShareOn}
-            >
-                <Pressable
-                    testID='users-list'
-                    onPress={toggleControlsInLandscape}
-                    style={style.users}
+            <View style={style.usersScrollContainer}>
+                <ScrollView
+                    alwaysBounceVertical={false}
+                    horizontal={screenShareOn}
+                    onLayout={onLayout}
+                    contentContainerStyle={centerUsers && style.usersScrollViewCentered}
                 >
-                    {participants.map((user) => {
-                        return (
-                            <View
-                                style={[style.user, screenShareOn && style.userScreenOn]}
-                                key={user.id}
-                            >
-                                <CallAvatar
-                                    userModel={user.userModel}
-                                    volume={currentCall.voiceOn[user.id] ? 1 : 0}
-                                    muted={user.muted}
-                                    sharingScreen={user.id === currentCall.screenOn}
-                                    raisedHand={Boolean(user.raisedHand)}
-                                    reaction={user.reaction?.emoji}
-                                    size={avatarSize}
-                                    serverUrl={currentCall.serverUrl}
-                                />
-                                <Text
-                                    style={[style.username, (isLandscape || screenShareOn) && style.usernameShort]}
-                                    numberOfLines={1}
+                    <Pressable
+                        testID='users-list'
+                        onPress={toggleControlsInLandscape}
+                        style={style.users}
+                    >
+                        {participants.map((user) => {
+                            return (
+                                <View
+                                    style={[style.user, screenShareOn && style.userScreenOn]}
+                                    key={user.id}
                                 >
-                                    {displayUsername(user.userModel, intl.locale, teammateNameDisplay)}
-                                    {user.id === myParticipant.id &&
-                                        ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
-                                    }
-                                </Text>
-                                {user.id === currentCall.hostId && <CallsBadge type={CallsBadgeType.Host}/>}
-                            </View>
-                        );
-                    })}
-                </Pressable>
-            </ScrollView>
+                                    <CallAvatar
+                                        userModel={user.userModel}
+                                        volume={currentCall.voiceOn[user.id] ? 1 : 0}
+                                        muted={user.muted}
+                                        sharingScreen={user.id === currentCall.screenOn}
+                                        raisedHand={Boolean(user.raisedHand)}
+                                        reaction={user.reaction?.emoji}
+                                        size={avatarSize}
+                                        serverUrl={currentCall.serverUrl}
+                                    />
+                                    <Text
+                                        style={[style.username, (isLandscape || screenShareOn) && style.usernameShort]}
+                                        numberOfLines={1}
+                                    >
+                                        {displayUsername(user.userModel, intl.locale, teammateNameDisplay)}
+                                        {user.id === myParticipant.id &&
+                                            ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
+                                        }
+                                    </Text>
+                                    {user.id === currentCall.hostId && <CallsBadge type={CallsBadgeType.Host}/>}
+                                </View>
+                            );
+                        })}
+                    </Pressable>
+                </ScrollView>
+            </View>
         );
     }
 
@@ -637,6 +684,7 @@ const CallScreen = ({
 
     return (
         <SafeAreaView style={style.wrapper}>
+            <StatusBar barStyle={'light-content'}/>
             <View style={style.container}>
                 {!isLandscape && header}
                 {!isLandscape && <View style={style.headerPortraitSpacer}/>}

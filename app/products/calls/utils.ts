@@ -144,7 +144,6 @@ export function getICEServersConfigs(config: CallsConfig): RTCIceServer[] {
 export function makeCallsTheme(theme: Theme): CallsTheme {
     const {baseColorRGB, badgeBgRGB} = makeCallsBaseAndBadgeRGB(theme.sidebarTextHoverBg);
 
-    // Setting new calls CSS variables.
     const newTheme = {...theme} as CallsTheme;
     newTheme.callsBg = rgbToCSS(baseColorRGB);
     newTheme.callsBgRgb = `${baseColorRGB.r},${baseColorRGB.g},${baseColorRGB.b}`;
