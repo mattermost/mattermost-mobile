@@ -81,7 +81,7 @@ const withTeamId = withObservables(['teamId', 'channelId'], ({teamId, channelId,
     };
 });
 
-function getMatchPattern(isSearch: boolean, database: Database) {
+function observeMatchPattern(isSearch: boolean, database: Database) {
     let matchPattern;
 
     if (isSearch) {
@@ -96,8 +96,9 @@ function getMatchPattern(isSearch: boolean, database: Database) {
 }
 
 const enhanced = withObservables(['value', 'isSearch', 'teamId', 'cursorPosition'], ({value, isSearch, teamId, cursorPosition, database}: OwnProps) => {
-    const matchPattern = getMatchPattern(isSearch, database);
-    const matchTerm = matchPattern.pipe(map((regexp) => getMatchTermForChannelMention(value.substring(0, cursorPosition), regexp, isSearch)));
+    const matchTerm = observeMatchPattern(isSearch, database).pipe(map((regexp) => {
+        return getMatchTermForChannelMention(value.substring(0, cursorPosition), regexp, isSearch);
+    }));
 
     const localChannels = matchTerm.pipe(switchMap((term) => {
         return term === null ? of$(emptyChannelList) : queryChannelsForAutocomplete(database, term, isSearch, teamId).observe();
