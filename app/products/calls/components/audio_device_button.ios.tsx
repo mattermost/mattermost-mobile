@@ -27,7 +27,6 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
 
     return (
         <Pressable
-            testID={'toggle-speakerphone'}
             style={pressableStyle}
             onPress={toggleSpeakerPhone}
         >
