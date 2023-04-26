@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {mosThreshold} from '@mattermost/calls/lib/rtc_monitor';
+
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
 import {
@@ -590,7 +592,7 @@ export const processMeanOpinionScore = (mos: number) => {
         return;
     }
 
-    if (mos < 4) {
+    if (mos < mosThreshold) {
         setCallQualityAlert(true);
     } else {
         setCallQualityAlert(false);

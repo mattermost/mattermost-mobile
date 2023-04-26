@@ -892,7 +892,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], currentCallNoAlertNoDismissed);
 
         // call quality goes bad
-        act(() => processMeanOpinionScore(3.9999));
+        act(() => processMeanOpinionScore(3.4999));
         assert.deepEqual((result.current[1] as CurrentCall).callQualityAlert, true);
         assert.equal((result.current[1] as CurrentCall).callQualityAlertDismissed, 0);
 
@@ -901,7 +901,7 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[1], currentCallNoAlertNoDismissed);
 
         // call quality goes bad
-        act(() => processMeanOpinionScore(3.9999));
+        act(() => processMeanOpinionScore(3.499));
         assert.deepEqual((result.current[1] as CurrentCall).callQualityAlert, true);
         assert.equal((result.current[1] as CurrentCall).callQualityAlertDismissed, 0);
 
@@ -913,13 +913,13 @@ describe('useCallsState', () => {
             (result.current[1] as CurrentCall).callQualityAlertDismissed <= Date.now(), true);
 
         // call quality goes bad, but we're not past the dismissed limit
-        act(() => processMeanOpinionScore(3.9999));
+        act(() => processMeanOpinionScore(3.4999));
         assert.deepEqual((result.current[1] as CurrentCall).callQualityAlert, false);
 
         // test that the dismiss expired
         await act(async () => {
             await new Promise((r) => setTimeout(r, 101));
-            processMeanOpinionScore(3.99);
+            processMeanOpinionScore(3.499);
         });
         assert.deepEqual((result.current[1] as CurrentCall).callQualityAlert, true);
     });
