@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, AlertButton} from 'react-native';
+import {Alert, type AlertButton} from 'react-native';
 
 import {General} from '@constants';
 import {CODE_REGEX} from '@constants/autocomplete';
 import {t} from '@i18n';
 
-import type {MessageDescriptor} from '@formatjs/intl/src/types';
-import type {IntlShape} from 'react-intl';
+import type {IntlShape, MessageDescriptor} from 'react-intl';
 
 type AlertCallback = (value?: string) => void;
 

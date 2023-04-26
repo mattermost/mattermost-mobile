@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, type StyleProp, StyleSheet, View, type ViewStyle} from 'react-native';
 import Animated, {useDerivedValue} from 'react-native-reanimated';
 
 import {Events} from '@constants';

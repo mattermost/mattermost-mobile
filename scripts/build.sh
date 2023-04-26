@@ -57,7 +57,6 @@ function setup() {
         npm install --ignore-scripts || exit 1
         npx patch-package || exit 1
         node node_modules/\@sentry/cli/scripts/install.js || exit 1
-        node node_modules/react-native-webrtc/tools/downloadWebRTC.js || exit 1
 
         if [[ "$1" == "ios"* ]]; then
           if [[ $(uname -p) == 'arm' ]]; then

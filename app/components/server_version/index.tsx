@@ -4,7 +4,7 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import {useEffect} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
+import {type IntlShape, useIntl} from 'react-intl';
 import {distinctUntilChanged, map} from 'rxjs/operators';
 
 import {setLastServerVersionCheck} from '@actions/local/systems';

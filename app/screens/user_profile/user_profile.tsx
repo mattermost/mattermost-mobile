@@ -16,7 +16,7 @@ import {bottomSheetSnapPoint} from '@utils/helpers';
 import {getUserCustomStatus, getUserTimezone, isCustomStatusExpired} from '@utils/user';
 
 import ManageUserOptions, {DIVIDER_MARGIN} from './manage_user_options';
-import UserProfileOptions, {OptionsType} from './options';
+import UserProfileOptions, {type OptionsType} from './options';
 import UserProfileTitle, {HEADER_TEXT_HEIGHT} from './title';
 import UserInfo from './user_info';
 

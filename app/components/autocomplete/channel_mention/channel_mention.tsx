@@ -3,7 +3,7 @@
 
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
+import {Platform, SectionList, type SectionListData, type SectionListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
 
 import {searchChannels} from '@actions/remote/channel';
 import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';

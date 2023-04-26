@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import CookieManager, {Cookie} from '@react-native-cookies/cookies';
-import {AppState, AppStateStatus, DeviceEventEmitter, Platform} from 'react-native';
+import CookieManager, {type Cookie} from '@react-native-cookies/cookies';
+import {AppState, type AppStateStatus, DeviceEventEmitter, Platform} from 'react-native';
 import FastImage from 'react-native-fast-image';
 
 import {storeOnboardingViewedValue} from '@actions/app/global';

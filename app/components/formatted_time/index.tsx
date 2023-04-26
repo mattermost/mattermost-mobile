@@ -5,7 +5,7 @@ import moment from 'moment';
 import mtz from 'moment-timezone';
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Text, TextProps} from 'react-native';
+import {Text, type TextProps} from 'react-native';
 
 import {getLocaleFromLanguage} from '@i18n';
 

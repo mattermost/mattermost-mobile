@@ -4,7 +4,7 @@
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, PanResponder} from 'react-native';
+import {Keyboard, type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, PanResponder} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler';
 
 import UserItem from '@components/user_item';

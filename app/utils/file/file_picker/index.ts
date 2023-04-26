@@ -4,8 +4,8 @@
 import {Alert, NativeModules, Platform, StatusBar} from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DeviceInfo from 'react-native-device-info';
-import DocumentPicker, {DocumentPickerResponse} from 'react-native-document-picker';
-import {Asset, CameraOptions, ImageLibraryOptions, ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import DocumentPicker, {type DocumentPickerResponse} from 'react-native-document-picker';
+import {type Asset, type CameraOptions, type ImageLibraryOptions, type ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
 import {dismissBottomSheet} from '@screens/navigation';

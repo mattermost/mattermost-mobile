@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
 import {
     getCallsConfig,
@@ -15,15 +16,18 @@ import {
     setGlobalCallsState,
 } from '@calls/state';
 import {
-    Call,
-    CallsConfigState,
-    ChannelsWithCalls,
-    CurrentCall,
+    type Call,
+    type CallsConfigState,
+    type ChannelsWithCalls,
+    type CurrentCall,
     DefaultCall,
     DefaultCurrentCall,
-    ReactionStreamEmoji,
+    type ReactionStreamEmoji,
 } from '@calls/types/calls';
 import {Calls} from '@constants';
+import DatabaseManager from '@database/manager';
+import {getChannelById} from '@queries/servers/channel';
+import {getThreadById} from '@queries/servers/thread';
 
 import type {CallRecordingState, UserReactionData} from '@mattermost/calls/lib/types';
 
@@ -212,7 +216,7 @@ export const myselfLeftCall = () => {
     setCurrentCall(null);
 };
 
-export const callStarted = (serverUrl: string, call: Call) => {
+export const callStarted = async (serverUrl: string, call: Call) => {
     const callsState = getCallsState(serverUrl);
     const nextCalls = {...callsState.calls};
     nextCalls[call.channelId] = call;
@@ -233,6 +237,19 @@ export const callStarted = (serverUrl: string, call: Call) => {
         ...call,
     };
     setCurrentCall(nextCurrentCall);
+
+    // We started the call, and it succeeded, so follow the call thread.
+    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+    if (!database) {
+        return;
+    }
+
+    // Make sure the post/thread has arrived from the server.
+    const thread = await getThreadById(database, call.threadId);
+    if (thread && !thread.isFollowing) {
+        const channel = await getChannelById(database, call.channelId);
+        updateThreadFollowing(serverUrl, channel?.teamId || '', call.threadId, true, false);
+    }
 };
 
 export const callEnded = (serverUrl: string, channelId: string) => {

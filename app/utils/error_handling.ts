@@ -9,7 +9,7 @@ import {
 } from 'react-native-exception-handler';
 
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
-import {dismissAllModals} from '@screens/navigation';
+import {dismissAllModals, dismissAllOverlays} from '@screens/navigation';
 import {isBetaApp} from '@utils/general';
 import {
     captureException,
@@ -58,6 +58,7 @@ class JavascriptAndNativeErrorHandler {
                     text: translations[t('mobile.error_handler.button')],
                     onPress: async () => {
                         await dismissAllModals();
+                        await dismissAllOverlays();
                     },
                 }],
                 {cancelable: false},

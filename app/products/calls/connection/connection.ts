@@ -3,7 +3,7 @@
 
 import {RTCMonitor, RTCPeer} from '@mattermost/calls/lib';
 import {deflate} from 'pako';
-import {DeviceEventEmitter, EmitterSubscription} from 'react-native';
+import {DeviceEventEmitter, type EmitterSubscription} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
 import {
     MediaStream,

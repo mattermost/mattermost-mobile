@@ -8,7 +8,7 @@ import {
     View,
     Text,
     TouchableOpacity,
-    LayoutChangeEvent,
+    type LayoutChangeEvent,
 } from 'react-native';
 import Share from 'react-native-share';
 

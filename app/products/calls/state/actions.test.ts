@@ -41,16 +41,17 @@ import {
     setUserVoiceOn,
 } from '@calls/state/actions';
 import {
-    Call,
-    CallsState,
-    CurrentCall,
+    type Call,
+    type CallsState,
+    type CurrentCall,
     DefaultCallsConfig,
     DefaultCallsState,
     DefaultCurrentCall,
     DefaultGlobalCallsState,
-    GlobalCallsState,
+    type GlobalCallsState,
 } from '@calls/types/calls';
 import {License} from '@constants';
+import DatabaseManager from '@database/manager';
 
 import type {CallRecordingState} from '@mattermost/calls/lib/types';
 
@@ -58,6 +59,16 @@ jest.mock('@calls/alerts');
 
 jest.mock('@constants/calls', () => ({
     CALL_QUALITY_RESET_MS: 100,
+}));
+
+jest.mock('@actions/remote/thread', () => ({
+    updateThreadFollowing: jest.fn(() => Promise.resolve({})),
+}));
+
+jest.mock('@queries/servers/thread', () => ({
+    getThreadById: jest.fn(() => Promise.resolve({
+        isFollowing: false,
+    })),
 }));
 
 const call1: Call = {
@@ -98,6 +109,8 @@ const call3: Call = {
 };
 
 describe('useCallsState', () => {
+    const {updateThreadFollowing} = require('@actions/remote/thread');
+
     beforeAll(() => {
         // create subjects
         const {result} = renderHook(() => {
@@ -111,6 +124,8 @@ describe('useCallsState', () => {
 
     beforeEach(() => {
         // reset to default state for each test
+        updateThreadFollowing.mockClear();
+
         act(() => {
             setCallsState('server1', DefaultCallsState);
             setChannelsWithCalls('server1', {});
@@ -376,8 +391,18 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], expectedCurrentCallState);
     });
 
-    it('callStarted', () => {
+    it('callStarted', async () => {
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: false,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+        };
+
         // setup
+        await DatabaseManager.init(['server1']);
+
         const {result} = renderHook(() => {
             return [useCallsState('server1'), useChannelsWithCalls('server1'), useCurrentCall()];
         });
@@ -386,10 +411,14 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], null);
 
         // test
-        act(() => callStarted('server1', call1));
+        await act(async () => {
+            setCurrentCall(initialCurrentCallState);
+            await callStarted('server1', call1);
+        });
         assert.deepEqual((result.current[0] as CallsState).calls, {'channel-1': call1});
         assert.deepEqual(result.current[1], {'channel-1': true});
-        assert.deepEqual(result.current[2], null);
+        assert.deepEqual(result.current[2], initialCurrentCallState);
+        expect(updateThreadFollowing).toBeCalled();
     });
 
     it('callEnded', () => {

@@ -7,6 +7,7 @@ import {map, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Config} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {PostTypes} from '@constants/post';
 import {processIsCRTAllowed, processIsCRTEnabled} from '@utils/thread';
 
 import {observeChannel} from './channel';
@@ -69,8 +70,8 @@ export const observeThreadById = (database: Database, threadId: string) => {
     );
 };
 
-export const observeTeamIdByThread = (database: Database, thread: ThreadModel) => {
-    return observePost(database, thread.id).pipe(
+export const observeTeamIdByThreadId = (database: Database, threadId: string) => {
+    return observePost(database, threadId).pipe(
         switchMap((post) => {
             if (!post) {
                 return of$(undefined);
@@ -80,6 +81,10 @@ export const observeTeamIdByThread = (database: Database, thread: ThreadModel) =
             );
         }),
     );
+};
+
+export const observeTeamIdByThread = (database: Database, thread: ThreadModel) => {
+    return observeTeamIdByThreadId(database, thread.id);
 };
 
 export const observeUnreadsAndMentionsInTeam = (database: Database, teamId?: string, includeDmGm?: boolean): Observable<{unreads: boolean; mentions: number}> => {
@@ -112,7 +117,7 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
     let processedThreads: Set<string> | undefined;
 
     posts.forEach((post: Post) => {
-        if (!post.root_id && post.type === '') {
+        if (!post.root_id && ['', PostTypes.CUSTOM_CALLS].includes(post.type)) {
             threads.push({
                 id: post.id,
                 participants: post.participants,

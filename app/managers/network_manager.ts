@@ -3,8 +3,8 @@
 
 import Emm from '@mattermost/react-native-emm';
 import {
-    APIClientErrorEvent,
-    APIClientErrorEventHandler,
+    type APIClientErrorEvent,
+    type APIClientErrorEventHandler,
     getOrCreateAPIClient,
     RetryTypes,
 } from '@mattermost/react-native-network-client';

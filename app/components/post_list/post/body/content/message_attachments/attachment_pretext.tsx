@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, StyleSheet, TextStyle, View} from 'react-native';
+import {type StyleProp, StyleSheet, type TextStyle, View} from 'react-native';
 
 import Markdown from '@components/markdown';
 

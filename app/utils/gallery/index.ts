@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {DeviceEventEmitter, Keyboard, NativeModules, Platform} from 'react-native';
-import {Navigation, Options, OptionsLayout} from 'react-native-navigation';
+import {Navigation, type Options, type OptionsLayout} from 'react-native-navigation';
 import {measure} from 'react-native-reanimated';
 
 import {Events, Screens} from '@constants';
