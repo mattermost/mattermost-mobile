@@ -9,10 +9,9 @@ import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions, Preferences, Screens} from '@constants';
 import {queryFilesForPost} from '@queries/servers/file';
-import {observePost, observePostAuthor, queryPostsBetween} from '@queries/servers/post';
+import {observePost, observePostAuthor, queryPostsBetween, observeIsPostPriorityEnabled} from '@queries/servers/post';
 import {queryReactionsForPost} from '@queries/servers/reaction';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
-import {observeIsPostPriorityEnabled} from '@queries/servers/system';
 import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';

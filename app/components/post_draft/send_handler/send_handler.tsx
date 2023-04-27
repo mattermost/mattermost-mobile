@@ -5,6 +5,7 @@ import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter} from 'react-native';
 
+import {updateDraftPriority} from '@actions/local/draft';
 import {getChannelTimezones} from '@actions/remote/channel';
 import {executeCommand, handleGotoLocation} from '@actions/remote/command';
 import {createPost} from '@actions/remote/post';
@@ -28,6 +29,7 @@ import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji
 type Props = {
     testID?: string;
     channelId: string;
+    channelType?: ChannelType;
     rootId: string;
     canShowPostPriority?: boolean;
     setIsFocused: (isFocused: boolean) => void;
@@ -52,15 +54,21 @@ type Props = {
     updatePostInputTop: (top: number) => void;
     addFiles: (file: FileInfo[]) => void;
     uploadFileError: React.ReactNode;
+    persistentNotificationInterval: number;
+    persistentNotificationMaxRecipients: number;
+    postPriority: PostPriority;
 }
 
-const INITIAL_PRIORITY = {
+export const INITIAL_PRIORITY = {
     priority: PostPriorityType.STANDARD,
+    requested_ack: false,
+    persistent_notifications: false,
 };
 
 export default function SendHandler({
     testID,
     channelId,
+    channelType,
     currentUserId,
     enableConfirmNotificationsToChannel,
     files,
@@ -81,13 +89,15 @@ export default function SendHandler({
     updateCursorPosition,
     updatePostInputTop,
     setIsFocused,
+    persistentNotificationInterval,
+    persistentNotificationMaxRecipients,
+    postPriority,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
     const [channelTimezoneCount, setChannelTimezoneCount] = useState(0);
     const [sendingMessage, setSendingMessage] = useState(false);
-    const [postPriority, setPostPriority] = useState<PostPriorityData>(INITIAL_PRIORITY);
 
     const canSend = useCallback(() => {
         if (sendingMessage) {
@@ -114,6 +124,10 @@ export default function SendHandler({
         setSendingMessage(false);
     }, [serverUrl, rootId, clearDraft]);
 
+    const handlePostPriority = useCallback((priority: PostPriority) => {
+        updateDraftPriority(serverUrl, channelId, rootId, priority);
+    }, [serverUrl, rootId]);
+
     const doSubmitMessage = useCallback(() => {
         const postFiles = files.filter((f) => !f.failed);
         const post = {
@@ -123,7 +137,11 @@ export default function SendHandler({
             message: value,
         } as Post;
 
-        if (Object.keys(postPriority).length) {
+        if (!rootId && (
+            postPriority.priority ||
+            postPriority.requested_ack ||
+            postPriority.persistent_notifications)
+        ) {
             post.metadata = {
                 priority: postPriority,
             };
@@ -133,7 +151,6 @@ export default function SendHandler({
 
         clearDraft();
         setSendingMessage(false);
-        setPostPriority(INITIAL_PRIORITY);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
     }, [files, currentUserId, channelId, rootId, value, clearDraft, postPriority]);
 
@@ -253,6 +270,7 @@ export default function SendHandler({
         <DraftInput
             testID={testID}
             channelId={channelId}
+            channelType={channelType}
             currentUserId={currentUserId}
             rootId={rootId}
             canShowPostPriority={canShowPostPriority}
@@ -268,7 +286,9 @@ export default function SendHandler({
             maxMessageLength={maxMessageLength}
             updatePostInputTop={updatePostInputTop}
             postPriority={postPriority}
-            updatePostPriority={setPostPriority}
+            updatePostPriority={handlePostPriority}
+            persistentNotificationInterval={persistentNotificationInterval}
+            persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
             setIsFocused={setIsFocused}
         />
     );

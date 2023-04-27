@@ -7,7 +7,7 @@
 import {DeviceEventEmitter} from 'react-native';
 
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
-import {removePost, storePostsForChannel} from '@actions/local/post';
+import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
 import {ActionType, Events, General, Post, ServerErrors} from '@constants';
@@ -23,6 +23,7 @@ import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {isServerError} from '@utils/errors';
@@ -500,41 +501,32 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
 }
 
 export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOnly = false): Promise<AuthorsRequest> => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
 
-    const currentUserId = await getCurrentUserId(operator.database);
-    const users = await queryAllUsers(operator.database).fetch();
-    const existingUserIds = new Set<string>();
-    const existingUserNames = new Set<string>();
-    let excludeUsername;
-    users.forEach((u) => {
-        existingUserIds.add(u.id);
-        existingUserNames.add(u.username);
-        if (u.id === currentUserId) {
-            excludeUsername = u.username;
+        const currentUserId = await getCurrentUserId(database);
+        const users = await queryAllUsers(database).fetch();
+        const existingUserIds = new Set<string>();
+        const existingUserNames = new Set<string>();
+        let excludeUsername;
+        users.forEach((u) => {
+            existingUserIds.add(u.id);
+            existingUserNames.add(u.username);
+            if (u.id === currentUserId) {
+                excludeUsername = u.username;
+            }
+        });
+
+        const usernamesToLoad = getNeededAtMentionedUsernames(existingUserNames, posts, excludeUsername);
+        const userIdsToLoad = new Set<string>();
+        for (const p of posts) {
+            const {user_id} = p;
+            if (user_id !== currentUserId) {
+                userIdsToLoad.add(user_id);
+            }
         }
-    });
 
-    const usernamesToLoad = getNeededAtMentionedUsernames(existingUserNames, posts, excludeUsername);
-    const userIdsToLoad = new Set<string>();
-    for (const p of posts) {
-        const {user_id} = p;
-        if (user_id !== currentUserId) {
-            userIdsToLoad.add(user_id);
-        }
-    }
-
-    try {
         const promises: Array<Promise<UserProfile[]>> = [];
         if (userIdsToLoad.size) {
             promises.push(client.getProfilesByIds(Array.from(userIdsToLoad)));
@@ -1128,5 +1120,40 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
     } catch (error) {
         forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
+    }
+}
+
+export async function acknowledgePost(serverUrl: string, postId: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+        EphemeralStore.setAcknowledgingPost(postId);
+
+        const userId = await getCurrentUserId(database);
+        const {acknowledged_at: acknowledgedAt} = await client.acknowledgePost(postId, userId);
+
+        return addPostAcknowledgement(serverUrl, postId, userId, acknowledgedAt, false);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    } finally {
+        EphemeralStore.unsetAcknowledgingPost(postId);
+    }
+}
+
+export async function unacknowledgePost(serverUrl: string, postId: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+        EphemeralStore.setUnacknowledgingPost(postId);
+        const userId = await getCurrentUserId(database);
+        await client.unacknowledgePost(postId, userId);
+
+        return removePostAcknowledgement(serverUrl, postId, userId, false);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    } finally {
+        EphemeralStore.unsetUnacknowledgingPost(postId);
     }
 }

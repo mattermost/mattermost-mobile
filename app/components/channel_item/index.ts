@@ -39,11 +39,23 @@ const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActi
     const currentUserId = observeCurrentUserId(database);
     const myChannel = observeMyChannel(database, channel.id);
 
-    const hasDraft = shouldHighlightState ?
-        queryDraft(database, channel.id).observeWithColumns(['message', 'files']).pipe(
-            switchMap((draft) => of$(draft.length > 0)),
-            distinctUntilChanged(),
-        ) : of$(false);
+    const hasDraft = shouldHighlightState ? queryDraft(database, channel.id).observeWithColumns(['message', 'files', 'metadata']).pipe(
+        switchMap((drafts) => {
+            if (!drafts.length) {
+                return of$(false);
+            }
+
+            const draft = drafts[0];
+            const standardPriority = draft?.metadata?.priority?.priority === '';
+
+            if (!draft.message && !draft.files.length && standardPriority) {
+                return of$(false);
+            }
+
+            return of$(true);
+        }),
+        distinctUntilChanged(),
+    ) : of$(false);
 
     const isActive = shouldHighlightActive ?
         observeCurrentChannelId(database).pipe(

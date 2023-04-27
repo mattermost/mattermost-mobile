@@ -153,17 +153,20 @@ exports[`components/channel_list_row should show no results 1`] = `
         <View
           style={
             [
-              {
-                "alignItems": "center",
-                "flexDirection": "row",
-                "height": 40,
-                "paddingTop": 4,
-                "paddingVertical": 8,
-              },
-              {
-                "opacity": 1,
-                "paddingHorizontal": 20,
-              },
+              [
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "height": 40,
+                  "paddingTop": 4,
+                  "paddingVertical": 8,
+                },
+                {
+                  "opacity": 1,
+                  "paddingHorizontal": 20,
+                },
+              ],
+              undefined,
             ]
           }
           testID="create_direct_message.user_list.user_item.1.1"
@@ -196,44 +199,61 @@ exports[`components/channel_list_row should show no results 1`] = `
               }
             />
           </View>
-          <Text
-            numberOfLines={1}
-            style={
-              {
-                "color": "#3f4350",
-                "flex": 0,
-                "flexShrink": 1,
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
-            }
-            testID="create_direct_message.user_list.user_item.1.1.display_name"
-          >
-            johndoe
-          </Text>
           <View
             style={
               {
                 "flex": 1,
               }
             }
-          />
-          <View
-            style={
-              {
-                "alignItems": "center",
-                "justifyContent": "center",
-                "marginLeft": 12,
-              }
-            }
           >
-            <Icon
-              color="rgba(63,67,80,0.32)"
-              name="circle-outline"
-              size={28}
-            />
+            <View
+              style={
+                {
+                  "flex": 1,
+                  "flexDirection": "row",
+                }
+              }
+            >
+              <Text
+                numberOfLines={1}
+                style={
+                  {
+                    "color": "#3f4350",
+                    "flex": 0,
+                    "flexShrink": 1,
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
+                  }
+                }
+                testID="create_direct_message.user_list.user_item.1.1.display_name"
+              >
+                johndoe
+              </Text>
+              <View
+                style={
+                  {
+                    "flex": 1,
+                  }
+                }
+              />
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "marginLeft": 12,
+                  }
+                }
+              >
+                <Icon
+                  color="rgba(63,67,80,0.32)"
+                  name="circle-outline"
+                  size={28}
+                />
+              </View>
+            </View>
           </View>
         </View>
       </View>
@@ -418,17 +438,20 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
         <View
           style={
             [
-              {
-                "alignItems": "center",
-                "flexDirection": "row",
-                "height": 40,
-                "paddingTop": 4,
-                "paddingVertical": 8,
-              },
-              {
-                "opacity": 1,
-                "paddingHorizontal": 20,
-              },
+              [
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "height": 40,
+                  "paddingTop": 4,
+                  "paddingVertical": 8,
+                },
+                {
+                  "opacity": 1,
+                  "paddingHorizontal": 20,
+                },
+              ],
+              undefined,
             ]
           }
           testID="create_direct_message.user_list.user_item.1.1"
@@ -461,44 +484,61 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
               }
             />
           </View>
-          <Text
-            numberOfLines={1}
-            style={
-              {
-                "color": "#3f4350",
-                "flex": 0,
-                "flexShrink": 1,
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
-            }
-            testID="create_direct_message.user_list.user_item.1.1.display_name"
-          >
-            johndoe
-          </Text>
           <View
             style={
               {
                 "flex": 1,
               }
             }
-          />
-          <View
-            style={
-              {
-                "alignItems": "center",
-                "justifyContent": "center",
-                "marginLeft": 12,
-              }
-            }
           >
-            <Icon
-              color="rgba(63,67,80,0.32)"
-              name="circle-outline"
-              size={28}
-            />
+            <View
+              style={
+                {
+                  "flex": 1,
+                  "flexDirection": "row",
+                }
+              }
+            >
+              <Text
+                numberOfLines={1}
+                style={
+                  {
+                    "color": "#3f4350",
+                    "flex": 0,
+                    "flexShrink": 1,
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
+                  }
+                }
+                testID="create_direct_message.user_list.user_item.1.1.display_name"
+              >
+                johndoe
+              </Text>
+              <View
+                style={
+                  {
+                    "flex": 1,
+                  }
+                }
+              />
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "marginLeft": 12,
+                  }
+                }
+              >
+                <Icon
+                  color="rgba(63,67,80,0.32)"
+                  name="circle-outline"
+                  size={28}
+                />
+              </View>
+            </View>
           </View>
         </View>
       </View>
@@ -763,17 +803,20 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
         <View
           style={
             [
-              {
-                "alignItems": "center",
-                "flexDirection": "row",
-                "height": 40,
-                "paddingTop": 4,
-                "paddingVertical": 8,
-              },
-              {
-                "opacity": 1,
-                "paddingHorizontal": 20,
-              },
+              [
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "height": 40,
+                  "paddingTop": 4,
+                  "paddingVertical": 8,
+                },
+                {
+                  "opacity": 1,
+                  "paddingHorizontal": 20,
+                },
+              ],
+              undefined,
             ]
           }
           testID="create_direct_message.user_list.user_item.1.1"
@@ -806,44 +849,61 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
               }
             />
           </View>
-          <Text
-            numberOfLines={1}
-            style={
-              {
-                "color": "#3f4350",
-                "flex": 0,
-                "flexShrink": 1,
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
-            }
-            testID="create_direct_message.user_list.user_item.1.1.display_name"
-          >
-            johndoe
-          </Text>
           <View
             style={
               {
                 "flex": 1,
               }
             }
-          />
-          <View
-            style={
-              {
-                "alignItems": "center",
-                "justifyContent": "center",
-                "marginLeft": 12,
-              }
-            }
           >
-            <Icon
-              color="rgba(63,67,80,0.32)"
-              name="circle-outline"
-              size={28}
-            />
+            <View
+              style={
+                {
+                  "flex": 1,
+                  "flexDirection": "row",
+                }
+              }
+            >
+              <Text
+                numberOfLines={1}
+                style={
+                  {
+                    "color": "#3f4350",
+                    "flex": 0,
+                    "flexShrink": 1,
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
+                  }
+                }
+                testID="create_direct_message.user_list.user_item.1.1.display_name"
+              >
+                johndoe
+              </Text>
+              <View
+                style={
+                  {
+                    "flex": 1,
+                  }
+                }
+              />
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "marginLeft": 12,
+                  }
+                }
+              >
+                <Icon
+                  color="rgba(63,67,80,0.32)"
+                  name="circle-outline"
+                  size={28}
+                />
+              </View>
+            </View>
           </View>
         </View>
       </View>
@@ -1060,17 +1120,20 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
         <View
           style={
             [
-              {
-                "alignItems": "center",
-                "flexDirection": "row",
-                "height": 40,
-                "paddingTop": 4,
-                "paddingVertical": 8,
-              },
-              {
-                "opacity": 1,
-                "paddingHorizontal": 20,
-              },
+              [
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "height": 40,
+                  "paddingTop": 4,
+                  "paddingVertical": 8,
+                },
+                {
+                  "opacity": 1,
+                  "paddingHorizontal": 20,
+                },
+              ],
+              undefined,
             ]
           }
           testID="create_direct_message.user_list.user_item.1.1"
@@ -1103,44 +1166,61 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               }
             />
           </View>
-          <Text
-            numberOfLines={1}
-            style={
-              {
-                "color": "#3f4350",
-                "flex": 0,
-                "flexShrink": 1,
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
-            }
-            testID="create_direct_message.user_list.user_item.1.1.display_name"
-          >
-            johndoe
-          </Text>
           <View
             style={
               {
                 "flex": 1,
               }
             }
-          />
-          <View
-            style={
-              {
-                "alignItems": "center",
-                "justifyContent": "center",
-                "marginLeft": 12,
-              }
-            }
           >
-            <Icon
-              color="rgba(63,67,80,0.32)"
-              name="circle-outline"
-              size={28}
-            />
+            <View
+              style={
+                {
+                  "flex": 1,
+                  "flexDirection": "row",
+                }
+              }
+            >
+              <Text
+                numberOfLines={1}
+                style={
+                  {
+                    "color": "#3f4350",
+                    "flex": 0,
+                    "flexShrink": 1,
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
+                  }
+                }
+                testID="create_direct_message.user_list.user_item.1.1.display_name"
+              >
+                johndoe
+              </Text>
+              <View
+                style={
+                  {
+                    "flex": 1,
+                  }
+                }
+              />
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "marginLeft": 12,
+                  }
+                }
+              >
+                <Icon
+                  color="rgba(63,67,80,0.32)"
+                  name="circle-outline"
+                  size={28}
+                />
+              </View>
+            </View>
           </View>
         </View>
       </View>
@@ -1230,17 +1310,20 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
         <View
           style={
             [
-              {
-                "alignItems": "center",
-                "flexDirection": "row",
-                "height": 40,
-                "paddingTop": 4,
-                "paddingVertical": 8,
-              },
-              {
-                "opacity": 1,
-                "paddingHorizontal": 20,
-              },
+              [
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "height": 40,
+                  "paddingTop": 4,
+                  "paddingVertical": 8,
+                },
+                {
+                  "opacity": 1,
+                  "paddingHorizontal": 20,
+                },
+              ],
+              undefined,
             ]
           }
           testID="create_direct_message.user_list.user_item.2.2"
@@ -1273,44 +1356,61 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
               }
             />
           </View>
-          <Text
-            numberOfLines={1}
-            style={
-              {
-                "color": "#3f4350",
-                "flex": 0,
-                "flexShrink": 1,
-                "fontFamily": "OpenSans",
-                "fontSize": 16,
-                "fontWeight": "400",
-                "lineHeight": 24,
-              }
-            }
-            testID="create_direct_message.user_list.user_item.2.2.display_name"
-          >
-            rocky
-          </Text>
           <View
             style={
               {
                 "flex": 1,
               }
             }
-          />
-          <View
-            style={
-              {
-                "alignItems": "center",
-                "justifyContent": "center",
-                "marginLeft": 12,
-              }
-            }
           >
-            <Icon
-              color="rgba(63,67,80,0.32)"
-              name="circle-outline"
-              size={28}
-            />
+            <View
+              style={
+                {
+                  "flex": 1,
+                  "flexDirection": "row",
+                }
+              }
+            >
+              <Text
+                numberOfLines={1}
+                style={
+                  {
+                    "color": "#3f4350",
+                    "flex": 0,
+                    "flexShrink": 1,
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
+                  }
+                }
+                testID="create_direct_message.user_list.user_item.2.2.display_name"
+              >
+                rocky
+              </Text>
+              <View
+                style={
+                  {
+                    "flex": 1,
+                  }
+                }
+              />
+              <View
+                style={
+                  {
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "marginLeft": 12,
+                  }
+                }
+              >
+                <Icon
+                  color="rgba(63,67,80,0.32)"
+                  name="circle-outline"
+                  size={28}
+                />
+              </View>
+            </View>
           </View>
         </View>
       </View>
