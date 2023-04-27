@@ -16,6 +16,7 @@ import {
     setGlobalCallsState,
 } from '@calls/state';
 import {
+    type AudioDeviceInfo,
     type Call,
     type CallsConfigState,
     type ChannelsWithCalls,
@@ -416,6 +417,13 @@ export const setSpeakerPhone = (speakerphoneOn: boolean) => {
     const call = getCurrentCall();
     if (call) {
         setCurrentCall({...call, speakerphoneOn});
+    }
+};
+
+export const setAudioDeviceInfo = (info: AudioDeviceInfo) => {
+    const call = getCurrentCall();
+    if (call) {
+        setCurrentCall({...call, audioDeviceInfo: info});
     }
 };
 

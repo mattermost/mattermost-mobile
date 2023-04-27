@@ -19,9 +19,10 @@ import {Navigation} from 'react-native-navigation';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
-import {leaveCall, muteMyself, setSpeakerphoneOn, unmuteMyself} from '@calls/actions';
+import {leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
 import {startCallRecording, stopCallRecording} from '@calls/actions/calls';
 import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
+import {AudioDeviceButton} from '@calls/components/audio_device_button';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
@@ -305,8 +306,14 @@ const CallScreen = ({
 
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
     const recordOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Record'});
-    const stopRecordingOptionTitle = intl.formatMessage({id: 'mobile.calls_stop_recording', defaultMessage: 'Stop Recording'});
-    const openChannelOptionTitle = intl.formatMessage({id: 'mobile.calls_open_channel', defaultMessage: 'Open Channel'});
+    const stopRecordingOptionTitle = intl.formatMessage({
+        id: 'mobile.calls_stop_recording',
+        defaultMessage: 'Stop Recording',
+    });
+    const openChannelOptionTitle = intl.formatMessage({
+        id: 'mobile.calls_open_channel',
+        defaultMessage: 'Open Channel',
+    });
 
     useEffect(() => {
         mergeNavigationOptions('Call', {
@@ -348,10 +355,6 @@ const CallScreen = ({
     const toggleReactions = useCallback(() => {
         setShowReactions((prev) => !prev);
     }, [setShowReactions]);
-
-    const toggleSpeakerPhone = useCallback(() => {
-        setSpeakerphoneOn(!currentCall?.speakerphoneOn);
-    }, [currentCall?.speakerphoneOn]);
 
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
@@ -658,27 +661,17 @@ const CallScreen = ({
                                 style={style.buttonText}
                             />
                         </Pressable>
-                        <Pressable
-                            testID={'toggle-speakerphone'}
-                            style={[style.button, isLandscape && style.buttonLandscape]}
-                            onPress={toggleSpeakerPhone}
-                        >
-                            <CompassIcon
-                                name={'volume-high'}
-                                size={24}
-                                style={[
-                                    style.buttonIcon,
-                                    isLandscape && style.buttonIconLandscape,
-                                    style.speakerphoneIcon,
-                                    currentCall.speakerphoneOn && style.buttonOn,
-                                ]}
-                            />
-                            <FormattedText
-                                id={'mobile.calls_speaker'}
-                                defaultMessage={'Speaker'}
-                                style={style.buttonText}
-                            />
-                        </Pressable>
+                        <AudioDeviceButton
+                            pressableStyle={[style.button, isLandscape && style.buttonLandscape]}
+                            iconStyle={[
+                                style.buttonIcon,
+                                isLandscape && style.buttonIconLandscape,
+                                style.speakerphoneIcon,
+                                currentCall.speakerphoneOn && style.buttonOn,
+                            ]}
+                            buttonTextStyle={style.buttonText}
+                            currentCall={currentCall}
+                        />
                         <Pressable
                             style={[style.button, isLandscape && style.buttonLandscape]}
                             onPress={toggleReactions}
