@@ -6,6 +6,7 @@ import InCallManager from 'react-native-incall-manager';
 import {Navigation} from 'react-native-navigation';
 
 import {forceLogoutIfNecessary} from '@actions/remote/session';
+import {updateThreadFollowing} from '@actions/remote/thread';
 import {fetchUsersByIds} from '@actions/remote/user';
 import {leaveAndJoinWithAlert, needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import {
@@ -31,6 +32,7 @@ import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getConfig, getLicense} from '@queries/servers/system';
+import {getThreadById} from '@queries/servers/thread';
 import {getCurrentUser, getUserById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToScreen} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
@@ -236,6 +238,25 @@ export const joinCall = async (
 
     try {
         await connection.waitForPeerConnection();
+
+        // Follow the thread.
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return {data: channelId};
+        }
+
+        // If this was a call started by ourselves, then we should have subscribed in the start_call ws handler
+        // (unless we received the start_call ws before the post/thread ws).
+        // If this was us joining an existing call, follow the thread here.
+        const call = getCallsState(serverUrl).calls[channelId];
+        if (call && call.threadId) {
+            const thread = await getThreadById(database, call.threadId);
+            if (thread && !thread.isFollowing) {
+                const channel = await getChannelById(database, channelId);
+                updateThreadFollowing(serverUrl, channel?.teamId || '', call.threadId, true, false);
+            }
+        }
+
         return {data: channelId};
     } catch (e) {
         connection.disconnect();

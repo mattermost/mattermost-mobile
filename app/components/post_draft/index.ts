@@ -9,7 +9,7 @@ import {switchMap} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
-import {queryDraft} from '@queries/servers/drafts';
+import {queryDraft, observeFirstDraft} from '@queries/servers/drafts';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeCurrentChannelId} from '@queries/servers/system';
 import {observeCurrentUser, observeUser} from '@queries/servers/user';
@@ -18,15 +18,12 @@ import {isSystemAdmin, getUserIdFromChannelName} from '@utils/user';
 import PostDraft from './post_draft';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type DraftModel from '@typings/database/models/servers/draft';
 
 type OwnProps = {
     channelId: string;
     channelIsArchived?: boolean;
     rootId?: string;
 }
-
-const observeFirst = (v: DraftModel[]) => v[0]?.observe() || of$(undefined);
 
 const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (ownProps: WithDatabaseArgs & OwnProps) => {
     const {database, rootId = ''} = ownProps;
@@ -36,8 +33,8 @@ const enhanced = withObservables(['channelId', 'rootId', 'channelIsArchived'], (
     }
 
     const draft = channelId.pipe(
-        switchMap((cId) => queryDraft(database, cId, rootId).observeWithColumns(['message', 'files']).pipe(
-            switchMap(observeFirst),
+        switchMap((cId) => queryDraft(database, cId, rootId).observeWithColumns(['message', 'files', 'metadata']).pipe(
+            switchMap(observeFirstDraft),
         )),
     );
 

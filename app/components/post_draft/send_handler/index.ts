@@ -10,11 +10,12 @@ import {General, Permissions} from '@constants';
 import {MAX_MESSAGE_LENGTH_FALLBACK} from '@constants/post_draft';
 import {observeChannel, observeChannelInfo, observeCurrentChannel} from '@queries/servers/channel';
 import {queryAllCustomEmojis} from '@queries/servers/custom_emoji';
+import {observeFirstDraft, queryDraft} from '@queries/servers/drafts';
 import {observePermissionForChannel} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeConfigIntValue, observeCurrentUserId} from '@queries/servers/system';
 import {observeUser} from '@queries/servers/user';
 
-import SendHandler from './send_handler';
+import SendHandler, {INITIAL_PRIORITY} from './send_handler';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -36,15 +37,28 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
 
     const currentUserId = observeCurrentUserId(database);
     const currentUser = currentUserId.pipe(
-        switchMap((id) => observeUser(database, id),
-        ));
+        switchMap((id) => observeUser(database, id)),
+    );
     const userIsOutOfOffice = currentUser.pipe(
         switchMap((u) => of$(u?.status === General.OUT_OF_OFFICE)),
+    );
+
+    const postPriority = queryDraft(database, channelId, rootId).observeWithColumns(['metadata']).pipe(
+        switchMap(observeFirstDraft),
+        switchMap((d) => {
+            if (!d?.metadata?.priority) {
+                return of$(INITIAL_PRIORITY);
+            }
+
+            return of$(d.metadata.priority);
+        }),
     );
 
     const enableConfirmNotificationsToChannel = observeConfigBooleanValue(database, 'EnableConfirmNotificationsToChannel');
     const isTimezoneEnabled = observeConfigBooleanValue(database, 'ExperimentalTimezone');
     const maxMessageLength = observeConfigIntValue(database, 'MaxPostSize', MAX_MESSAGE_LENGTH_FALLBACK);
+    const persistentNotificationInterval = observeConfigIntValue(database, 'PersistentNotificationInterval');
+    const persistentNotificationMaxRecipients = observeConfigIntValue(database, 'PersistentNotificationMaxRecipients');
 
     const useChannelMentions = combineLatest([channel, currentUser]).pipe(
         switchMap(([c, u]) => {
@@ -57,6 +71,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     );
 
     const channelInfo = channel.pipe(switchMap((c) => (c ? observeChannelInfo(database, c.id) : of$(undefined))));
+    const channelType = channel.pipe(switchMap((c) => of$(c?.type)));
     const membersCount = channelInfo.pipe(
         switchMap((i) => (i ? of$(i.memberCount) : of$(0))),
     );
@@ -64,6 +79,7 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
     const customEmojis = queryAllCustomEmojis(database).observe();
 
     return {
+        channelType,
         currentUserId,
         enableConfirmNotificationsToChannel,
         isTimezoneEnabled,
@@ -72,6 +88,9 @@ const enhanced = withObservables([], (ownProps: WithDatabaseArgs & OwnProps) => 
         userIsOutOfOffice,
         useChannelMentions,
         customEmojis,
+        persistentNotificationInterval,
+        persistentNotificationMaxRecipients,
+        postPriority,
     };
 });
 

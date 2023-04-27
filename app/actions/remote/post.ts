@@ -4,13 +4,11 @@
 
 /* eslint-disable max-lines */
 
-import {DeviceEventEmitter} from 'react-native';
-
 import {markChannelAsUnread, updateLastPostAt} from '@actions/local/channel';
-import {removePost, storePostsForChannel} from '@actions/local/post';
+import {addPostAcknowledgement, removePost, removePostAcknowledgement, storePostsForChannel} from '@actions/local/post';
 import {addRecentReaction} from '@actions/local/reactions';
 import {createThreadFromNewPost} from '@actions/local/thread';
-import {ActionType, Events, General, Post, ServerErrors} from '@constants';
+import {ActionType, General, Post, ServerErrors} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {filterPostsInOrderedArray} from '@helpers/api/post';
@@ -23,6 +21,7 @@ import {getPostById, getRecentPostsInChannel} from '@queries/servers/post';
 import {getCurrentUserId, getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {queryAllUsers} from '@queries/servers/user';
+import EphemeralStore from '@store/ephemeral_store';
 import {setFetchingThreadState} from '@store/fetching_thread_store';
 import {getValidEmojis, matchEmoticons} from '@utils/emoji/helpers';
 import {getFullErrorMessage, isServerError} from '@utils/errors';
@@ -290,6 +289,9 @@ export const fetchPostsForCurrentChannel = async (serverUrl: string) => {
 
 export async function fetchPostsForChannel(serverUrl: string, channelId: string, fetchOnly = false) {
     try {
+        if (!fetchOnly) {
+            EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
+        }
         const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         let postAction: Promise<PostsRequest>|undefined;
         let actionType: string|undefined;
@@ -308,7 +310,6 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
         if (data.error) {
             throw data.error;
         }
-
         let authors: UserProfile[] = [];
         if (data.posts?.length && data.order?.length) {
             const {authors: fetchedAuthors} = await fetchPostAuthors(serverUrl, data.posts, true);
@@ -327,6 +328,10 @@ export async function fetchPostsForChannel(serverUrl: string, channelId: string,
     } catch (error) {
         logDebug('error on fetchPostsForChannel', getFullErrorMessage(error));
         return {error};
+    } finally {
+        if (!fetchOnly) {
+            EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
+        }
     }
 }
 
@@ -343,15 +348,18 @@ export const fetchPostsForUnreadChannels = async (serverUrl: string, channels: C
 
 export async function fetchPosts(serverUrl: string, channelId: string, page = 0, perPage = General.POST_CHUNK_SIZE, fetchOnly = false): Promise<PostsRequest> {
     try {
+        if (!fetchOnly) {
+            EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
+        }
         const {operator, database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
         const isCRTEnabled = await getIsCRTEnabled(database);
         const data = await client.getPosts(channelId, page, perPage, isCRTEnabled, isCRTEnabled);
         const result = processPostsFetched(data);
-        if (!fetchOnly) {
+        if (!fetchOnly && result.posts.length) {
             const models = await operator.handlePosts({
                 ...result,
-                actionType: ActionType.POSTS.RECEIVED_SINCE,
+                actionType: ActionType.POSTS.RECEIVED_IN_CHANNEL,
                 prepareRecordsOnly: true,
             });
 
@@ -377,28 +385,23 @@ export async function fetchPosts(serverUrl: string, channelId: string, page = 0,
         logDebug('error on fetchPosts', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
+    } finally {
+        if (!fetchOnly) {
+            EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
+        }
     }
 }
 
 export async function fetchPostsBefore(serverUrl: string, channelId: string, postId: string, perPage = General.POST_CHUNK_SIZE, fetchOnly = false) {
-    let loading = false;
     try {
+        if (!fetchOnly) {
+            EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
+        }
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
-
-        const activeServerUrl = await DatabaseManager.getActiveServerUrl();
-        if (activeServerUrl === serverUrl) {
-            loading = true;
-            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, true);
-        }
         const isCRTEnabled = await getIsCRTEnabled(database);
         const data = await client.getPostsBefore(channelId, postId, 0, perPage, isCRTEnabled, isCRTEnabled);
         const result = processPostsFetched(data);
-
-        if (activeServerUrl === serverUrl) {
-            loading = false;
-            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
-        }
 
         if (result.posts.length && !fetchOnly) {
             try {
@@ -428,20 +431,23 @@ export async function fetchPostsBefore(serverUrl: string, channelId: string, pos
                 logError('FETCH POSTS BEFORE ERROR', error);
             }
         }
-
         return result;
     } catch (error) {
         logDebug('error on fetchPostsBefore', getFullErrorMessage(error));
-        forceLogoutIfNecessary(serverUrl, error);
-        if (loading) {
-            DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, false);
-        }
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
+    } finally {
+        if (!fetchOnly) {
+            EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
+        }
     }
 }
 
 export async function fetchPostsSince(serverUrl: string, channelId: string, since: number, fetchOnly = false): Promise<PostsRequest> {
     try {
+        if (!fetchOnly) {
+            EphemeralStore.addLoadingMessagesForChannel(serverUrl, channelId);
+        }
         const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
@@ -475,15 +481,19 @@ export async function fetchPostsSince(serverUrl: string, channelId: string, sinc
         return result;
     } catch (error) {
         logDebug('error on fetchPostsSince', getFullErrorMessage(error));
-        forceLogoutIfNecessary(serverUrl, error);
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
         return {error};
+    } finally {
+        if (!fetchOnly) {
+            EphemeralStore.stopLoadingMessagesForChannel(serverUrl, channelId);
+        }
     }
 }
 
 export const fetchPostAuthors = async (serverUrl: string, posts: Post[], fetchOnly = false): Promise<AuthorsRequest> => {
     try {
-        const client = NetworkManager.getClient(serverUrl);
         const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
 
         const currentUserId = await getCurrentUserId(database);
         const users = await queryAllUsers(database).fetch();
@@ -1012,5 +1022,40 @@ export async function fetchPinnedPosts(serverUrl: string, channelId: string) {
         logDebug('error on fetchPinnedPosts', getFullErrorMessage(error));
         forceLogoutIfNecessary(serverUrl, error);
         return {error};
+    }
+}
+
+export async function acknowledgePost(serverUrl: string, postId: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+        EphemeralStore.setAcknowledgingPost(postId);
+
+        const userId = await getCurrentUserId(database);
+        const {acknowledged_at: acknowledgedAt} = await client.acknowledgePost(postId, userId);
+
+        return addPostAcknowledgement(serverUrl, postId, userId, acknowledgedAt, false);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    } finally {
+        EphemeralStore.unsetAcknowledgingPost(postId);
+    }
+}
+
+export async function unacknowledgePost(serverUrl: string, postId: string) {
+    try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+        EphemeralStore.setUnacknowledgingPost(postId);
+        const userId = await getCurrentUserId(database);
+        await client.unacknowledgePost(postId, userId);
+
+        return removePostAcknowledgement(serverUrl, postId, userId, false);
+    } catch (error) {
+        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        return {error};
+    } finally {
+        EphemeralStore.unsetUnacknowledgingPost(postId);
     }
 }

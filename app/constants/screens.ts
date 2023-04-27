@@ -41,6 +41,7 @@ export const ONBOARDING = 'Onboarding';
 export const PERMALINK = 'Permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
+export const POST_PRIORITY_PICKER = 'PostPriorityPicker';
 export const REACTIONS = 'Reactions';
 export const REVIEW_APP = 'ReviewApp';
 export const SAVED_MESSAGES = 'SavedMessages';
@@ -111,6 +112,7 @@ export default {
     PERMALINK,
     PINNED_MESSAGES,
     POST_OPTIONS,
+    POST_PRIORITY_PICKER,
     REACTIONS,
     REVIEW_APP,
     SAVED_MESSAGES,
@@ -168,6 +170,7 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     BOTTOM_SHEET,
     EMOJI_PICKER,
     POST_OPTIONS,
+    POST_PRIORITY_PICKER,
     THREAD_OPTIONS,
     REACTIONS,
     USER_PROFILE,
