@@ -1029,5 +1029,7 @@
     "mobile.ios.plist.NSCameraUsageDescription": "Разрешение доступа к камерам вашего устройства означает, что вы можете делать фотографии или видео и загружать их на сайт {applicationName}.",
     "mobile.ios.plist.NSBluetoothPeripheralUsageDescription": "Включение доступа к Bluetooth означает, что мы можем подключаться к аудио периферийным устройствам для звонков, а также синхронизировать контент между устройствами и клиентами.",
     "mobile.ios.plist.NSBluetoothAlwaysUsageDescription": "Разрешение доступа к Bluetooth означает, что мы можем синхронизировать контент между вашими устройствами и клиентами.",
-    "mobile.ios.plist.NSAppleMusicUsageDescription": "Включение доступа к медиа файлам означает, что вы можете прикреплять файлы из медиатеки к своим сообщениям в {applicationName}."
+    "mobile.ios.plist.NSAppleMusicUsageDescription": "Включение доступа к медиа файлам означает, что вы можете прикреплять файлы из медиатеки к своим сообщениям в {applicationName}.",
+    "persistent_notifications.confirm.cancel": "Отмена",
+    "mobile.acknowledgements.header": "Подтверждения"
 }
