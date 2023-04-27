@@ -482,6 +482,7 @@
   "mobile.calls_start_call": "Start Call",
   "mobile.calls_start_call_exists": "A call is already ongoing in the channel.",
   "mobile.calls_stop_recording": "Stop Recording",
+  "mobile.calls_tablet": "Tablet",
   "mobile.calls_thread": "Thread",
   "mobile.calls_unmute": "Unmute",
   "mobile.calls_viewing_screen": "You are viewing {name}'s screen",
