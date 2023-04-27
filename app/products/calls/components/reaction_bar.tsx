@@ -49,13 +49,13 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         marginLeft: 12,
     },
     buttonPressed: {
-        backgroundColor: changeOpacity(theme.awayIndicator, 0.24),
+        backgroundColor: theme.buttonColor,
     },
     unPressed: {
         color: theme.buttonColor,
     },
     pressed: {
-        color: theme.awayIndicator,
+        color: theme.callsBg,
     },
     buttonText: {
         marginLeft: 8,
