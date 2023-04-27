@@ -1,8 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {DeviceEventEmitter} from 'react-native';
 import {BehaviorSubject} from 'rxjs';
 
+import {Events} from '@constants';
 import {toMilliseconds} from '@utils/datetime';
 
 const TIME_TO_CLEAR_WEBSOCKET_ACTIONS = toMilliseconds({seconds: 30});
@@ -14,6 +16,8 @@ class EphemeralStore {
 
     private pushProxyVerification: {[serverUrl: string]: string | undefined} = {};
     private canJoinOtherTeams: {[serverUrl: string]: BehaviorSubject<boolean>} = {};
+
+    private loadingMessagesForChannel: {[serverUrl: string]: Set<string>} = {};
 
     private websocketEditingPost: {[serverUrl: string]: {[id: string]: {post: Post; timeout: NodeJS.Timeout} | undefined} | undefined} = {};
     private websocketRemovingPost: {[serverUrl: string]: Set<string> | undefined} = {};
@@ -28,9 +32,29 @@ class EphemeralStore {
     private archivingChannels = new Set<string>();
     private convertingChannels = new Set<string>();
     private switchingToChannel = new Set<string>();
+    private acknowledgingPost = new Set<string>();
+    private unacknowledgingPost = new Set<string>();
     private currentThreadId = '';
     private notificationTapped = false;
     private enablingCRT = false;
+
+    addLoadingMessagesForChannel = (serverUrl: string, channelId: string) => {
+        if (!this.loadingMessagesForChannel[serverUrl]) {
+            this.loadingMessagesForChannel[serverUrl] = new Set();
+        }
+
+        DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, {serverUrl, channelId, value: true});
+        this.loadingMessagesForChannel[serverUrl].add(channelId);
+    };
+
+    stopLoadingMessagesForChannel = (serverUrl: string, channelId: string) => {
+        DeviceEventEmitter.emit(Events.LOADING_CHANNEL_POSTS, {serverUrl, channelId, value: false});
+        this.loadingMessagesForChannel[serverUrl]?.delete(channelId);
+    };
+
+    isLoadingMessagesForChannel = (serverUrl: string, channelId: string) => {
+        return Boolean(this.loadingMessagesForChannel[serverUrl]?.has(channelId));
+    };
 
     // Ephemeral control for out of order websocket events
     addEditingPost = (serverUrl: string, post: Post) => {
@@ -218,6 +242,30 @@ class EphemeralStore {
 
     wasNotificationTapped = () => {
         return this.notificationTapped;
+    };
+
+    setAcknowledgingPost = (postId: string) => {
+        this.acknowledgingPost.add(postId);
+    };
+
+    unsetAcknowledgingPost = (postId: string) => {
+        this.acknowledgingPost.delete(postId);
+    };
+
+    isAcknowledgingPost = (postId: string) => {
+        return this.acknowledgingPost.has(postId);
+    };
+
+    setUnacknowledgingPost = (postId: string) => {
+        this.unacknowledgingPost.add(postId);
+    };
+
+    unsetUnacknowledgingPost = (postId: string) => {
+        this.unacknowledgingPost.delete(postId);
+    };
+
+    isUnacknowledgingPost = (postId: string) => {
+        return this.unacknowledgingPost.has(postId);
     };
 }
 

@@ -1,15 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Q} from '@nozbe/watermelondb';
+import {Database, Q} from '@nozbe/watermelondb';
 
 import {ActionType} from '@constants';
+import {OperationType} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import {buildDraftKey} from '@database/operator/server_data_operator/comparators';
-import {transformDraftRecord} from '@database/operator/server_data_operator/transformers/post';
+import {transformDraftRecord, transformPostsInChannelRecord} from '@database/operator/server_data_operator/transformers/post';
 import {createPostsChain} from '@database/operator/utils/post';
 
+import {exportedForTest} from './post';
+
 import type ServerDataOperator from '..';
+import type PostsInChannelModel from '@typings/database/models/servers/posts_in_channel';
 
 Q.sortBy = jest.fn().mockImplementation((field) => {
     return Q.where(field, Q.gte(0));
@@ -304,5 +308,102 @@ describe('*** Operator: Post Handlers tests ***', () => {
         const linkedPosts = createPostsChain({order, posts, previousPostId: ''});
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledTimes(1);
         expect(spyOnHandlePostsInChannel).toHaveBeenCalledWith(linkedPosts.slice(0, 3), actionType, true);
+    });
+});
+
+describe('*** Operator: merge chunks ***', () => {
+    const {mergePostInChannelChunks} = exportedForTest;
+    let database: Database;
+    let operator: ServerDataOperator;
+    const databaseName = 'baseHandler.test.com';
+    const channelId = '1234';
+    beforeEach(async () => {
+        await DatabaseManager.init([databaseName]);
+        const serverDatabase = DatabaseManager.serverDatabases[databaseName]!;
+        database = serverDatabase.database;
+        operator = serverDatabase.operator;
+    });
+
+    afterEach(async () => {
+        await DatabaseManager.destroyServerDatabase(databaseName);
+    });
+
+    it('merge on empty chunks', async () => {
+        const newChunk = await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 0, latest: 100}}});
+        const chunks: PostsInChannelModel[] = [];
+        const result = await mergePostInChannelChunks(newChunk, chunks);
+        expect(result.length).toBe(0);
+        expect(newChunk.earliest).toBe(0);
+        expect(newChunk.latest).toBe(100);
+    });
+
+    it('remove contained chunks', async () => {
+        const newChunk = await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 0, latest: 100}}});
+        const chunks: PostsInChannelModel[] = [
+            await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 20, latest: 80}}}),
+        ];
+        const result = await mergePostInChannelChunks(newChunk, chunks);
+        expect(result.length).toBe(1);
+        expect(newChunk.earliest).toBe(0);
+        expect(newChunk.latest).toBe(100);
+        expect(result[0]).toBe(chunks[0]);
+        expect(chunks[0]._preparedState).toBe('destroyPermanently');
+    });
+
+    it('merge intersecting chunks', async () => {
+        const newChunk = await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 50, latest: 100}}});
+        const chunks: PostsInChannelModel[] = [
+            await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 25, latest: 70}}}),
+            await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 80, latest: 125}}}),
+        ];
+        const result = await mergePostInChannelChunks(newChunk, chunks);
+        expect(result.length).toBe(3);
+        expect(newChunk.earliest).toBe(25);
+        expect(newChunk.latest).toBe(125);
+        expect(newChunk._preparedState).toBe('update');
+        expect(result[0]).toBe(chunks[0]);
+        expect(chunks[0]._preparedState).toBe('destroyPermanently');
+        expect(result[1]).toBe(chunks[1]);
+        expect(chunks[1]._preparedState).toBe('destroyPermanently');
+        expect(result[2]).toBe(newChunk);
+        await operator.batchRecords(result, 'test');
+    });
+
+    it('merge with the chunk present', async () => {
+        const newChunk = await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 50, latest: 100}}});
+        const chunks: PostsInChannelModel[] = [
+            await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 25, latest: 70}}}),
+            newChunk,
+            await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 80, latest: 125}}}),
+        ];
+        const result = await mergePostInChannelChunks(newChunk, chunks);
+        expect(result.length).toBe(3);
+        expect(newChunk.earliest).toBe(25);
+        expect(newChunk.latest).toBe(125);
+        expect(newChunk._preparedState).toBe('update');
+        expect(result[0]).toBe(chunks[0]);
+        expect(chunks[0]._preparedState).toBe('destroyPermanently');
+        expect(result[1]).toBe(chunks[2]);
+        expect(chunks[2]._preparedState).toBe('destroyPermanently');
+        expect(result[2]).toBe(newChunk);
+        await operator.batchRecords(result, 'test');
+    });
+
+    it('do nothing with no intersecting chunks', async () => {
+        const newChunk = await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 50, latest: 100}}});
+        const chunks: PostsInChannelModel[] = [
+            await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 25, latest: 40}}}),
+            newChunk,
+            await transformPostsInChannelRecord({action: OperationType.CREATE, database, value: {record: undefined, raw: {channel_id: channelId, earliest: 110, latest: 125}}}),
+        ];
+        const result = await mergePostInChannelChunks(newChunk, chunks);
+        expect(result.length).toBe(0);
+        expect(newChunk.earliest).toBe(50);
+        expect(newChunk.latest).toBe(100);
+        expect(newChunk._preparedState).toBe('create');
+        for (const chunk of chunks) {
+            expect(chunk._preparedState).toBe('create');
+        }
+        await operator.batchRecords(result, 'test');
     });
 });

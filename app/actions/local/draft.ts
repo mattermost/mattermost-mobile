@@ -155,3 +155,37 @@ export const removeDraft = async (serverUrl: string, channelId: string, rootId =
         return {error};
     }
 };
+
+export async function updateDraftPriority(serverUrl: string, channelId: string, rootId: string, postPriority: PostPriority, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const draft = await getDraft(database, channelId, rootId);
+        if (!draft) {
+            const newDraft: Draft = {
+                channel_id: channelId,
+                root_id: rootId,
+                metadata: {
+                    priority: postPriority,
+                },
+            };
+
+            return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
+        }
+
+        draft.prepareUpdate((d) => {
+            d.metadata = {
+                ...d.metadata,
+                priority: postPriority,
+            };
+        });
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([draft], 'updateDraftPriority');
+        }
+
+        return {draft};
+    } catch (error) {
+        logError('Failed updateDraftPriority', error);
+        return {error};
+    }
+}

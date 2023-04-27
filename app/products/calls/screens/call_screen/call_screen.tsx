@@ -23,9 +23,10 @@ import {Navigation} from 'react-native-navigation';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import {RTCView} from 'react-native-webrtc';
 
-import {leaveCall, muteMyself, setSpeakerphoneOn, unmuteMyself} from '@calls/actions';
+import {leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
 import {startCallRecording, stopCallRecording} from '@calls/actions/calls';
 import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
+import {AudioDeviceButton} from '@calls/components/audio_device_button';
 import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
@@ -384,10 +385,6 @@ const CallScreen = ({
         setShowReactions((prev) => !prev);
     }, [setShowReactions]);
 
-    const toggleSpeakerPhone = useCallback(() => {
-        setSpeakerphoneOn(!currentCall?.speakerphoneOn);
-    }, [currentCall?.speakerphoneOn]);
-
     const toggleControlsInLandscape = useCallback(() => {
         setShowControlsInLandscape(!showControlsInLandscape);
     }, [showControlsInLandscape]);
@@ -743,27 +740,17 @@ const CallScreen = ({
                                     style={style.buttonText}
                                 />
                             </Pressable>
-                            <Pressable
-                                testID={'toggle-speakerphone'}
-                                style={[style.button, isLandscape && style.buttonLandscape]}
-                                onPress={toggleSpeakerPhone}
-                            >
-                                <CompassIcon
-                                    name={'volume-high'}
-                                    size={32}
-                                    style={[
-                                        style.buttonIcon,
-                                        isLandscape && style.buttonIconLandscape,
-                                        style.speakerphoneIcon,
-                                        currentCall.speakerphoneOn && style.buttonOn,
-                                    ]}
-                                />
-                                <FormattedText
-                                    id={'mobile.calls_speaker'}
-                                    defaultMessage={'Speaker'}
-                                    style={style.buttonText}
-                                />
-                            </Pressable>
+                            <AudioDeviceButton
+                                pressableStyle={[style.button, isLandscape && style.buttonLandscape]}
+                                iconStyle={[
+                                    style.buttonIcon,
+                                    isLandscape && style.buttonIconLandscape,
+                                    style.speakerphoneIcon,
+                                    currentCall.speakerphoneOn && style.buttonOn,
+                                ]}
+                                buttonTextStyle={style.buttonText}
+                                currentCall={currentCall}
+                            />
                             <Pressable
                                 style={[style.button, isLandscape && style.buttonLandscape]}
                                 onPress={toggleReactions}

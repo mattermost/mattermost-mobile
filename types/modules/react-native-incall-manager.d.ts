@@ -60,7 +60,7 @@ declare module 'react-native-incall-manager' {
 
         getAudioUri(audioType: string, fileType: string): any;
 
-        chooseAudioRoute(route: any): any;
+        chooseAudioRoute(route: any): Promise<any>;
 
         requestAudioFocus(): void;
 

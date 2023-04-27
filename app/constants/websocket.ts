@@ -5,6 +5,8 @@ import Calls from '@constants/calls';
 
 const WebsocketEvents = {
     POSTED: 'posted',
+    POST_ACKNOWLEDGEMENT_ADDED: 'post_acknowledgement_added',
+    POST_ACKNOWLEDGEMENT_REMOVED: 'post_acknowledgement_removed',
     POST_EDITED: 'post_edited',
     POST_DELETED: 'post_deleted',
     POST_UNREAD: 'post_unread',

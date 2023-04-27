@@ -35,7 +35,7 @@ const style = StyleSheet.create({
 });
 
 type Props = {
-    label: PostPriorityData['priority'];
+    label: PostPriority['priority'];
 };
 
 const PostPriorityLabel = ({label}: Props) => {

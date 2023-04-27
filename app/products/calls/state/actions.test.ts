@@ -7,7 +7,7 @@ import {act, renderHook} from '@testing-library/react-hooks';
 
 import {needsRecordingAlert} from '@calls/alerts';
 import {
-    newCurrentCall,
+    newCurrentCall, setAudioDeviceInfo,
     setCallsState,
     setChannelsWithCalls,
     setCurrentCall,
@@ -23,24 +23,25 @@ import {
     userReacted,
 } from '@calls/state';
 import {
-    setCalls,
-    userJoinedCall,
-    userLeftCall,
-    callStarted,
     callEnded,
-    setUserMuted,
-    setCallScreenOn,
-    setCallScreenOff,
-    setRaisedHand,
+    callStarted,
     myselfLeftCall,
+    setCalls,
+    setCallScreenOff,
+    setCallScreenOn,
     setChannelEnabled,
-    setScreenShareURL,
-    setSpeakerPhone,
     setConfig,
     setPluginEnabled,
+    setRaisedHand,
+    setScreenShareURL,
+    setSpeakerPhone,
+    setUserMuted,
     setUserVoiceOn,
+    userJoinedCall,
+    userLeftCall,
 } from '@calls/state/actions';
 import {
+    AudioDevice,
     type Call,
     type CallsState,
     type CurrentCall,
@@ -51,10 +52,21 @@ import {
     type GlobalCallsState,
 } from '@calls/types/calls';
 import {License} from '@constants';
+import DatabaseManager from '@database/manager';
 
 import type {CallRecordingState} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
+
+jest.mock('@actions/remote/thread', () => ({
+    updateThreadFollowing: jest.fn(() => Promise.resolve({})),
+}));
+
+jest.mock('@queries/servers/thread', () => ({
+    getThreadById: jest.fn(() => Promise.resolve({
+        isFollowing: false,
+    })),
+}));
 
 const call1: Call = {
     participants: {
@@ -94,6 +106,8 @@ const call3: Call = {
 };
 
 describe('useCallsState', () => {
+    const {updateThreadFollowing} = require('@actions/remote/thread');
+
     beforeAll(() => {
         // create subjects
         const {result} = renderHook(() => {
@@ -107,6 +121,8 @@ describe('useCallsState', () => {
 
     beforeEach(() => {
         // reset to default state for each test
+        updateThreadFollowing.mockClear();
+
         act(() => {
             setCallsState('server1', DefaultCallsState);
             setChannelsWithCalls('server1', {});
@@ -372,8 +388,18 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], expectedCurrentCallState);
     });
 
-    it('callStarted', () => {
+    it('callStarted', async () => {
+        const initialCurrentCallState: CurrentCall = {
+            ...DefaultCurrentCall,
+            connected: false,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            ...call1,
+        };
+
         // setup
+        await DatabaseManager.init(['server1']);
+
         const {result} = renderHook(() => {
             return [useCallsState('server1'), useChannelsWithCalls('server1'), useCurrentCall()];
         });
@@ -382,10 +408,14 @@ describe('useCallsState', () => {
         assert.deepEqual(result.current[2], null);
 
         // test
-        act(() => callStarted('server1', call1));
+        await act(async () => {
+            setCurrentCall(initialCurrentCallState);
+            await callStarted('server1', call1);
+        });
         assert.deepEqual((result.current[0] as CallsState).calls, {'channel-1': call1});
         assert.deepEqual(result.current[1], {'channel-1': true});
-        assert.deepEqual(result.current[2], null);
+        assert.deepEqual(result.current[2], initialCurrentCallState);
+        expect(updateThreadFollowing).toBeCalled();
     });
 
     it('callEnded', () => {
@@ -734,6 +764,59 @@ describe('useCallsState', () => {
         act(() => {
             myselfLeftCall();
             setSpeakerPhone(true);
+        });
+        assert.deepEqual(result.current[0], expectedCallsState);
+        assert.deepEqual(result.current[1], null);
+    });
+
+    it('setAudioDeviceInfo', () => {
+        const initialCallsState = {
+            ...DefaultCallsState,
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const newCall1 = {
+            ...call1,
+            participants: {
+                ...call1.participants,
+                myUserId: {id: 'myUserId', muted: true, raisedHand: 0},
+            },
+        };
+        const expectedCallsState = {
+            ...initialCallsState,
+            calls: {
+                ...initialCallsState.calls,
+                'channel-1': newCall1,
+            },
+        };
+
+        const defaultAudioDeviceInfo = {
+            availableAudioDeviceList: [],
+            selectedAudioDevice: AudioDevice.None,
+        };
+        const newAudioDeviceInfo = {
+            availableAudioDeviceList: [AudioDevice.Speakerphone, AudioDevice.Earpiece],
+            selectedAudioDevice: AudioDevice.Speakerphone,
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => setCallsState('server1', initialCallsState));
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+
+        // test
+        act(() => newCurrentCall('server1', 'channel-1', 'myUserId'));
+        act(() => userJoinedCall('server1', 'channel-1', 'myUserId'));
+        assert.deepEqual((result.current[1] as CurrentCall | null)?.audioDeviceInfo, defaultAudioDeviceInfo);
+        act(() => setAudioDeviceInfo(newAudioDeviceInfo));
+        assert.deepEqual((result.current[1] as CurrentCall | null)?.audioDeviceInfo, newAudioDeviceInfo);
+        assert.deepEqual((result.current[1] as CurrentCall | null)?.speakerphoneOn, false);
+        assert.deepEqual(result.current[0], expectedCallsState);
+        act(() => {
+            myselfLeftCall();
         });
         assert.deepEqual(result.current[0], expectedCallsState);
         assert.deepEqual(result.current[1], null);
