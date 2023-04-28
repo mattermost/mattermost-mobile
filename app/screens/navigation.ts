@@ -740,8 +740,8 @@ export function showOverlay(name: AvailableScreens, passProps = {}, options: Opt
         component: {
             name,
             passProps,
-            options: merge(defaultOptions, options)
-        }
+            options: merge(defaultOptions, options),
+        },
     });
 }
 
