@@ -1031,5 +1031,12 @@
     "mobile.ios.plist.NSBluetoothAlwaysUsageDescription": "Разрешение доступа к Bluetooth означает, что мы можем синхронизировать контент между вашими устройствами и клиентами.",
     "mobile.ios.plist.NSAppleMusicUsageDescription": "Включение доступа к медиа файлам означает, что вы можете прикреплять файлы из медиатеки к своим сообщениям в {applicationName}.",
     "persistent_notifications.confirm.cancel": "Отмена",
-    "mobile.acknowledgements.header": "Подтверждения"
+    "mobile.acknowledgements.header": "Подтверждения",
+    "persistent_notifications.error.max_recipients.title": "Слишком много получателей",
+    "persistent_notifications.error.max_recipients.description": "Вы можете отправлять постоянные уведомления максимум {max} получателям. В вашем сообщении упомянуты {count} получателей. Вам нужно изменить упомянутых получателей перед отправкой.",
+    "persistent_notifications.confirm.title": "Отправка постоянных уведомлений",
+    "persistent_notifications.confirm.send": "Отправить",
+    "mobile.calls_phone": "Телефон",
+    "mobile.calls_bluetooth": "Bluetooth",
+    "mobile.calls_audio_device": "Выберите аудиоустройство"
 }
