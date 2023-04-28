@@ -3,22 +3,21 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Keyboard, StyleSheet} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
-import PostPriorityPicker, {COMPONENT_HEIGHT} from '@components/post_priority/post_priority_picker';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
+import {Screens} from '@constants';
 import {ICON_SIZE} from '@constants/post_draft';
 import {useTheme} from '@context/theme';
-import {bottomSheet, dismissBottomSheet} from '@screens/navigation';
-import {bottomSheetSnapPoint} from '@utils/helpers';
+import {useIsTablet} from '@hooks/device';
+import {openAsBottomSheet} from '@screens/navigation';
 import {changeOpacity} from '@utils/theme';
 
 type Props = {
     testID?: string;
-    postPriority: PostPriorityData;
-    updatePostPriority: (postPriority: PostPriorityData) => void;
+    postPriority: PostPriority;
+    updatePostPriority: (postPriority: PostPriority) => void;
 }
 
 const style = StyleSheet.create({
@@ -29,40 +28,34 @@ const style = StyleSheet.create({
     },
 });
 
+const POST_PRIORITY_PICKER_BUTTON = 'close-post-priority-picker';
+
 export default function PostPriorityAction({
     testID,
     postPriority,
     updatePostPriority,
 }: Props) {
     const intl = useIntl();
+    const isTablet = useIsTablet();
     const theme = useTheme();
-    const {bottom} = useSafeAreaInsets();
-
-    const handlePostPriorityPicker = useCallback((postPriorityData: PostPriorityData) => {
-        updatePostPriority(postPriorityData);
-        dismissBottomSheet();
-    }, [updatePostPriority]);
-
-    const renderContent = useCallback(() => {
-        return (
-            <PostPriorityPicker
-                data={{
-                    priority: postPriority?.priority || '',
-                }}
-                onSubmit={handlePostPriorityPicker}
-            />
-        );
-    }, [handlePostPriorityPicker, postPriority]);
 
     const onPress = useCallback(() => {
-        bottomSheet({
-            title: intl.formatMessage({id: 'post_priority.picker.title', defaultMessage: 'Message priority'}),
-            renderContent,
-            snapPoints: [1, bottomSheetSnapPoint(1, COMPONENT_HEIGHT, bottom)],
+        Keyboard.dismiss();
+
+        const title = isTablet ? intl.formatMessage({id: 'post_priority.picker.title', defaultMessage: 'Message priority'}) : '';
+
+        openAsBottomSheet({
+            closeButtonId: POST_PRIORITY_PICKER_BUTTON,
+            screen: Screens.POST_PRIORITY_PICKER,
             theme,
-            closeButtonId: 'post-priority-close-id',
+            title,
+            props: {
+                postPriority,
+                updatePostPriority,
+                closeButtonId: POST_PRIORITY_PICKER_BUTTON,
+            },
         });
-    }, [intl, renderContent, theme, bottom]);
+    }, [intl, postPriority, updatePostPriority, theme]);
 
     const iconName = 'alert-circle-outline';
     const iconColor = changeOpacity(theme.centerChannelColor, 0.64);

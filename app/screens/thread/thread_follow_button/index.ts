@@ -14,14 +14,12 @@ import ThreadFollowButton from './thread_follow_button';
 import type {WithDatabaseArgs} from '@typings/database/database';
 
 type Props = WithDatabaseArgs & {
-    teamId?: string;
     threadId?: string;
 };
 
-const enhanced = withObservables(['threadId'], ({teamId, threadId, database}: Props) => {
-    // Fallback in case teamId or threadId are not defined per navigation not setting the props bug.
+const enhanced = withObservables(['threadId'], ({threadId, database}: Props) => {
     const thId = threadId || EphemeralStore.getCurrentThreadId();
-    const tId = teamId ? of$(teamId) : observeTeamIdByThreadId(database, thId).pipe(
+    const tId = observeTeamIdByThreadId(database, thId).pipe(
         switchMap((t) => of$(t || '')),
     );
 

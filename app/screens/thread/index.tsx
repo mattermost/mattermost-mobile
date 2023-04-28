@@ -8,6 +8,7 @@ import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {observeCurrentCall} from '@calls/state';
 import {observePost} from '@queries/servers/post';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
 
 import Thread from './thread';
 
@@ -20,8 +21,9 @@ const enhanced = withObservables(['rootId'], ({database, rootId}: WithDatabaseAr
     );
 
     return {
-        rootPost: observePost(database, rootId),
+        isCRTEnabled: observeIsCRTEnabled(database),
         isInACall,
+        rootPost: observePost(database, rootId),
     };
 });
 

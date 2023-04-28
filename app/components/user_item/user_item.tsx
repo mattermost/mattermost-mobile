@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useMemo} from 'react';
+import React, {useCallback, useMemo, type ReactNode} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
+import {StyleSheet, Text, TouchableOpacity, View, type StyleProp, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
@@ -18,8 +18,11 @@ import {displayUsername, getUserCustomStatus, isBot, isCustomStatusExpired, isGu
 import type UserModel from '@typings/database/models/servers/user';
 
 type AtMentionItemProps = {
+    FooterComponent?: ReactNode;
     user: UserProfile | UserModel;
+    containerStyle?: StyleProp<ViewStyle>;
     currentUserId: string;
+    size?: number;
     testID?: string;
     isCustomStatusEnabled: boolean;
     showBadges?: boolean;
@@ -35,6 +38,13 @@ type AtMentionItemProps = {
 
 const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
     return {
+        rowPicture: {
+            marginRight: 10,
+            marginLeft: 2,
+            width: 24,
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
         rowFullname: {
             ...typography('Body', 200),
             color: theme.centerChannelColor,
@@ -56,6 +66,13 @@ const nonThemedStyles = StyleSheet.create({
         flexDirection: 'row',
         alignItems: 'center',
     },
+    rowInfoBaseContainer: {
+        flex: 1,
+    },
+    rowInfoContainer: {
+        flex: 1,
+        flexDirection: 'row',
+    },
     icon: {
         marginLeft: 4,
     },
@@ -71,8 +88,11 @@ const nonThemedStyles = StyleSheet.create({
 });
 
 const UserItem = ({
+    FooterComponent,
     user,
+    containerStyle,
     currentUserId,
+    size = 24,
     testID,
     isCustomStatusEnabled,
     showBadges = false,
@@ -107,7 +127,7 @@ const UserItem = ({
 
     const userItemTestId = `${testID}.${user?.id}`;
 
-    const containerStyle = useMemo(() => {
+    const containerViewStyle = useMemo(() => {
         return [
             nonThemedStyles.row,
             {
@@ -133,68 +153,72 @@ const UserItem = ({
         >
             <View
                 ref={viewRef}
-                style={containerStyle}
+                style={[containerViewStyle, containerStyle]}
                 testID={userItemTestId}
             >
                 <ProfilePicture
                     author={user}
-                    size={24}
+                    size={size}
                     showStatus={false}
                     testID={`${userItemTestId}.profile_picture`}
                     containerStyle={nonThemedStyles.profile}
                 />
-
-                <Text
-                    style={style.rowFullname}
-                    numberOfLines={1}
-                    testID={`${userItemTestId}.display_name`}
-                >
-                    {nonBreakingString(displayName)}
-                    {Boolean(showTeammateDisplay) && (
+                <View style={nonThemedStyles.rowInfoBaseContainer}>
+                    <View style={nonThemedStyles.rowInfoContainer}>
                         <Text
-                            style={style.rowUsername}
-                            testID={`${userItemTestId}.username`}
+                            style={style.rowFullname}
+                            numberOfLines={1}
+                            testID={`${userItemTestId}.display_name`}
                         >
-                            {nonBreakingString(` @${user!.username}`)}
+                            {nonBreakingString(displayName)}
+                            {Boolean(showTeammateDisplay) && (
+                                <Text
+                                    style={style.rowUsername}
+                                    testID={`${userItemTestId}.username`}
+                                >
+                                    {nonBreakingString(` @${user!.username}`)}
+                                </Text>
+                            )}
+                            {Boolean(deleteAt) && (
+                                <Text
+                                    style={style.rowUsername}
+                                    testID={`${userItemTestId}.deactivated`}
+                                >
+                                    {nonBreakingString(` ${intl.formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}`)}
+                                </Text>
+                            )}
                         </Text>
-                    )}
-                    {Boolean(deleteAt) && (
-                        <Text
-                            style={style.rowUsername}
-                            testID={`${userItemTestId}.deactivated`}
-                        >
-                            {nonBreakingString(` ${intl.formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}`)}
-                        </Text>
-                    )}
-                </Text>
-                {showBadges && bot && (
-                    <BotTag
-                        testID={`${userItemTestId}.bot.tag`}
-                        style={nonThemedStyles.tag}
-                    />
-                )}
-                {showBadges && guest && (
-                    <GuestTag
-                        testID={`${userItemTestId}.guest.tag`}
-                        style={nonThemedStyles.tag}
-                    />
-                )}
-                {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji && !customStatusExpired) && (
-                    <CustomStatusEmoji
-                        customStatus={customStatus!}
-                        style={nonThemedStyles.icon}
-                    />
-                )}
-                {shared && (
-                    <CompassIcon
-                        name={'circle-multiple-outline'}
-                        size={16}
-                        color={theme.centerChannelColor}
-                        style={nonThemedStyles.icon}
-                    />
-                )}
-                <View style={nonThemedStyles.flex}/>
-                {Boolean(rightDecorator) && rightDecorator}
+                        {showBadges && bot && (
+                            <BotTag
+                                testID={`${userItemTestId}.bot.tag`}
+                                style={nonThemedStyles.tag}
+                            />
+                        )}
+                        {showBadges && guest && (
+                            <GuestTag
+                                testID={`${userItemTestId}.guest.tag`}
+                                style={nonThemedStyles.tag}
+                            />
+                        )}
+                        {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji && !customStatusExpired) && (
+                            <CustomStatusEmoji
+                                customStatus={customStatus!}
+                                style={nonThemedStyles.icon}
+                            />
+                        )}
+                        {shared && (
+                            <CompassIcon
+                                name={'circle-multiple-outline'}
+                                size={16}
+                                color={theme.centerChannelColor}
+                                style={nonThemedStyles.icon}
+                            />
+                        )}
+                        <View style={nonThemedStyles.flex}/>
+                        {Boolean(rightDecorator) && rightDecorator}
+                    </View>
+                    {FooterComponent}
+                </View>
             </View>
         </TouchableOpacity>
     );

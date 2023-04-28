@@ -5,7 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {Config, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -236,15 +236,6 @@ export const observeConfigBooleanValue = (database: Database, key: keyof ClientC
 export const observeConfigIntValue = (database: Database, key: keyof ClientConfig, defaultValue = 0) => {
     return observeConfigValue(database, key).pipe(
         switchMap((v) => of$((parseInt(v || '0', 10) || defaultValue))),
-    );
-};
-
-export const observeIsPostPriorityEnabled = (database: Database) => {
-    const featureFlag = observeConfigValue(database, 'FeatureFlagPostPriority');
-    const cfg = observeConfigValue(database, 'PostPriority');
-    return combineLatest([featureFlag, cfg]).pipe(
-        switchMap(([ff, c]) => of$(ff === Config.TRUE && c === Config.TRUE)),
-        distinctUntilChanged(),
     );
 };
 
