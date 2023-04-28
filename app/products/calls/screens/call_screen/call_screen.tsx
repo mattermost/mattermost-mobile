@@ -14,7 +14,6 @@ import {
     SafeAreaView,
     ScrollView,
     StatusBar,
-    StyleSheet,
     Text,
     useWindowDimensions,
     View,
@@ -61,7 +60,7 @@ import NavigationStore from '@store/navigation_store';
 import {freezeOtherScreens} from '@utils/gallery';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
-import {changeOpacity} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
@@ -82,7 +81,7 @@ export type Props = {
     fromThreadScreen?: boolean;
 }
 
-const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     wrapper: {
         flex: 1,
         backgroundColor: theme.callsBg,

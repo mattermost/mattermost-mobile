@@ -3,12 +3,13 @@
 
 import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleSheet, Text, View} from 'react-native';
+import {Text, View} from 'react-native';
 
 import {getHandsRaisedNames, makeCallsTheme} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
+import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {CallParticipant, CallsTheme} from '@calls/types/calls';
@@ -19,7 +20,7 @@ export type Props = {
     teammateNameDisplay: string;
 }
 
-const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
+const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     raisedHandBannerContainer: {
         display: 'flex',
         flexDirection: 'row',
