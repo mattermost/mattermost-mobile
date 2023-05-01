@@ -90,29 +90,6 @@ export type CallParticipant = {
 
 export type ChannelsWithCalls = Dictionary<boolean>;
 
-export type ServerChannelState = {
-    channel_id: string;
-    enabled?: boolean;
-    call?: ServerCallState;
-}
-
-export type ServerUserState = {
-    unmuted: boolean;
-    raised_hand: number;
-}
-
-export type ServerCallState = {
-    id: string;
-    start_at: number;
-    users: string[];
-    states: ServerUserState[];
-    thread_id: string;
-    screen_sharing_id: string;
-    owner_id: string;
-    host_id: string;
-    recording: CallRecordingState;
-}
-
 export type CallsConnection = {
     disconnect: () => void;
     mute: () => void;

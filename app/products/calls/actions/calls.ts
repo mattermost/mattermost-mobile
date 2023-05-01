@@ -47,12 +47,10 @@ import type {
     Call,
     CallParticipant,
     CallsConnection,
-    ServerCallState,
-    ServerChannelState,
 } from '@calls/types/calls';
 import type {Client} from '@client/rest';
 import type ClientError from '@client/rest/error';
-import type {CallRecordingState, EmojiData} from '@mattermost/calls/lib/types';
+import type {CallChannelState, CallRecordingState, CallState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
 let connection: CallsConnection | null = null;
@@ -96,7 +94,7 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
     } catch (error) {
         return {error};
     }
-    let resp: ServerChannelState[] = [];
+    let resp: CallChannelState[] = [];
     try {
         resp = await client.getCalls() || [];
     } catch (error) {
@@ -136,7 +134,7 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
         return {error};
     }
 
-    let resp: ServerChannelState;
+    let resp: CallChannelState;
     try {
         resp = await client.getCallForChannel(channelId);
     } catch (error) {
@@ -160,7 +158,7 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
     return {data: {call, enabled: resp.enabled}};
 };
 
-const createCallAndAddToIds = (channelId: string, call: ServerCallState, ids: Set<string>) => {
+const createCallAndAddToIds = (channelId: string, call: CallState, ids: Set<string>) => {
     return {
         participants: call.users.reduce((accum, cur, curIdx) => {
             // Add the id to the set of UserModels we want to ensure are loaded.

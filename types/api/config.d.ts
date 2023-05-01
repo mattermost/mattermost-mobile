@@ -34,6 +34,7 @@ interface ClientConfig {
     DataRetentionMessageRetentionDays: string;
     DefaultClientLocale: string;
     DefaultTheme: string;
+    DelayChannelAutocomplete: 'true' | 'false';
     DesktopLatestVersion: string;
     DesktopMinVersion: string;
     DiagnosticId: string;
