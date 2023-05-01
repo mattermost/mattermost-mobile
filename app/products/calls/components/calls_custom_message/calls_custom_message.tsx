@@ -39,14 +39,15 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         messageStyle: {
             flexDirection: 'row',
+            alignItems: 'center',
             color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 15,
-            lineHeight: 20,
             paddingTop: 5,
             paddingBottom: 5,
         },
         messageText: {
             flex: 1,
+            paddingLeft: 12,
+            paddingRight: 4,
         },
         joinCallIconContainer: {
             display: 'flex',
@@ -54,18 +55,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             justifyContent: 'center',
         },
         joinCallIcon: {
-            padding: 12,
+            padding: 8,
             backgroundColor: theme.onlineIndicator,
-            borderRadius: 8,
-            marginRight: 5,
+            borderRadius: 4,
             color: 'white',
             overflow: 'hidden',
         },
         phoneHangupIcon: {
             padding: 12,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.6),
-            borderRadius: 8,
-            marginRight: 5,
+            borderRadius: 4,
             color: 'white',
             overflow: 'hidden',
         },
@@ -84,13 +83,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         startedText: {
             color: theme.centerChannelColor,
-            fontWeight: 'bold',
+            ...typography('Body', 100, 'SemiBold'),
         },
         joinCallButton: {
             flexDirection: 'row',
             padding: 12,
             backgroundColor: theme.onlineIndicator,
-            borderRadius: 8,
+            borderRadius: 4,
             alignItems: 'center',
             alignContent: 'center',
         },
@@ -98,7 +97,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         timeText: {
-            color: theme.centerChannelColor,
+            ...typography('Body', 75),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
         },
         endCallInfo: {
             flexDirection: 'row',
@@ -152,7 +152,7 @@ export const CallsCustomMessage = ({
                 <View style={style.messageStyle}>
                     <CompassIcon
                         name='phone-hangup'
-                        size={16}
+                        size={24}
                         style={style.phoneHangupIcon}
                     />
                     <View style={style.messageText}>
@@ -196,7 +196,7 @@ export const CallsCustomMessage = ({
                 <View style={style.joinCallIconContainer}>
                     <CompassIcon
                         name='phone-in-talk'
-                        size={16}
+                        size={24}
                         style={style.joinCallIcon}
                     />
                 </View>
@@ -220,7 +220,7 @@ export const CallsCustomMessage = ({
                 >
                     <CompassIcon
                         name='phone-outline'
-                        size={16}
+                        size={14}
                         style={[style.joinCallButtonIcon, isLimitRestricted && style.joinCallButtonIconRestricted]}
                     />
                     {

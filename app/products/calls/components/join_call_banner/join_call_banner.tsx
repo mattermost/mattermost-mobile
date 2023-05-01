@@ -14,6 +14,7 @@ import Screens from '@constants/screens';
 import {JOIN_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {LimitRestrictedInfo} from '@calls/observers';
 import type UserModel from '@typings/database/models/servers/user';
@@ -45,17 +46,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     joinCallIcon: {
         color: theme.sidebarText,
         marginLeft: 10,
-        marginRight: 5,
+        marginRight: 7,
     },
     joinCall: {
         color: theme.sidebarText,
-        fontWeight: 'bold',
-        fontSize: 16,
+        ...typography('Body', 100, 'SemiBold'),
     },
     started: {
         flex: 1,
-        color: theme.sidebarText,
-        fontWeight: '400',
+        color: changeOpacity(theme.sidebarText, 0.84),
+        ...typography(),
         marginLeft: 10,
     },
     limitReached: {
@@ -67,7 +67,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         fontWeight: '400',
     },
     avatars: {
-        marginRight: 5,
+        marginRight: 45,
     },
     headerText: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
@@ -107,7 +107,7 @@ const JoinCallBanner = ({
             >
                 <CompassIcon
                     name='phone-in-talk'
-                    size={16}
+                    size={18}
                     style={style.joinCallIcon}
                 />
                 <FormattedText
