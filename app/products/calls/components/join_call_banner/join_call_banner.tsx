@@ -32,7 +32,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     innerContainer: {
         flexDirection: 'row',
-        backgroundColor: '#3DB887',
+        backgroundColor: '#339970',
         width: '100%',
         padding: 5,
         justifyContent: 'center',
@@ -134,6 +134,7 @@ const JoinCallBanner = ({
                         location={Screens.CHANNEL}
                         users={participants}
                         breakAt={1}
+                        noBorder={true}
                     />
                 </View>
             </Pressable>
