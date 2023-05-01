@@ -48,9 +48,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         messageText: {
             flex: 1,
         },
+        joinCallIconContainer: {
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+        },
         joinCallIcon: {
             padding: 12,
-            backgroundColor: '#339970',
+            backgroundColor: theme.onlineIndicator,
             borderRadius: 8,
             marginRight: 5,
             color: 'white',
@@ -84,7 +89,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         joinCallButton: {
             flexDirection: 'row',
             padding: 12,
-            backgroundColor: '#339970',
+            backgroundColor: theme.onlineIndicator,
             borderRadius: 8,
             alignItems: 'center',
             alignContent: 'center',
@@ -188,11 +193,13 @@ export const CallsCustomMessage = ({
         <>
             {title}
             <View style={style.messageStyle}>
-                <CompassIcon
-                    name='phone-in-talk'
-                    size={16}
-                    style={style.joinCallIcon}
-                />
+                <View style={style.joinCallIconContainer}>
+                    <CompassIcon
+                        name='phone-in-talk'
+                        size={16}
+                        style={style.joinCallIcon}
+                    />
+                </View>
                 <View style={style.messageText}>
                     <FormattedText
                         id={'mobile.calls_name_started_call'}
