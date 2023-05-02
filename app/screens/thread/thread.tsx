@@ -55,7 +55,6 @@ const Thread = ({componentId, isCRTEnabled, rootId, rootPost, isInACall}: Thread
             setButtons(componentId, {rightButtons: [{
                 id: `${componentId}-${rootId}`,
                 component: {
-                    id: rootId,
                     name: Screens.THREAD_FOLLOW_BUTTON,
                     passProps: {
                         threadId: rootId,
