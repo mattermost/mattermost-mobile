@@ -1039,7 +1039,7 @@
     "post_priority.picker.label.persistent_notifications": "Stuur blijvende meldingen",
     "post_priority.picker.cancel": "Annuleren",
     "post_priority.picker.apply": "Toepassen",
-    "post_priority.button.acknowledge": "Erken",
+    "post_priority.button.acknowledge": "Bevestigen",
     "persistent_notifications.error.special_mentions": "Kan @channel, @all, of @here niet gebruiken om ontvangers van blijvende meldingen te vermelden.",
     "persistent_notifications.error.okay": "Oké",
     "persistent_notifications.error.no_mentions.description": "Er zijn geen ontvangers vermeld in uw bericht. U moet vermeldingen toevoegen voordat u blijvende meldingen kan verzenden.",
@@ -1051,5 +1051,5 @@
     "mobile.calls_phone": "Telefoon",
     "mobile.calls_bluetooth": "Bluetooth",
     "mobile.calls_audio_device": "Selecteer geluidsapparaat",
-    "mobile.acknowledgements.header": "Dankbetuigingen"
+    "mobile.acknowledgements.header": "Bevestingen"
 }
