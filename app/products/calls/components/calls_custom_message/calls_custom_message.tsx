@@ -62,7 +62,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             overflow: 'hidden',
         },
         phoneHangupIcon: {
-            padding: 12,
+            padding: 8,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.6),
             borderRadius: 4,
             color: 'white',

@@ -29,12 +29,14 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     outerContainer: {
-        backgroundColor: theme.centerChannelBg,
+        backgroundColor: theme.sidebarBg,
     },
     innerContainer: {
         flexDirection: 'row',
-        backgroundColor: '#339970',
+        backgroundColor: '#339970', // intentionally not themed
         width: '100%',
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
         padding: 5,
         justifyContent: 'center',
         alignItems: 'center',
@@ -63,7 +65,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         display: 'flex',
         textAlign: 'right',
         marginRight: 10,
-        color: '#FFFFFFD6',
+        color: changeOpacity(theme.sidebarText, 0.84),
         fontWeight: '400',
     },
     avatars: {
