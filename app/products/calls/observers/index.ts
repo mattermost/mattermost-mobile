@@ -3,7 +3,7 @@
 
 import {distinctUntilChanged, switchMap, combineLatest, Observable, of as of$} from 'rxjs';
 
-import {observeCallsConfig, observeCallsState, observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
+import {observeCallsConfig, observeCallsState} from '@calls/state';
 import {License} from '@constants';
 import {observeConfigValue, observeLicense} from '@queries/servers/system';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -14,12 +14,6 @@ export type LimitRestrictedInfo = {
     limitRestricted: boolean;
     maxParticipants: number;
     isCloudStarter: boolean;
-}
-
-export type CallsChannelState = {
-    isCallInCurrentChannel: boolean;
-    isInACall: boolean;
-    isInCurrentChannelCall: boolean;
 }
 
 export const observeIsCallsEnabledInChannel = (database: Database, serverUrl: string, channelId: Observable<string>) => {
@@ -70,32 +64,4 @@ export const observeIsCallLimitRestricted = (database: Database, serverUrl: stri
         distinctUntilChanged((prev, curr) =>
             prev.limitRestricted === curr.limitRestricted && prev.maxParticipants === curr.maxParticipants && prev.isCloudStarter === curr.isCloudStarter),
     ) as Observable<LimitRestrictedInfo>;
-};
-
-export const observeCallsChannelState = (database: Database, serverUrl: string, channelId: Observable<string>) => {
-    const isCallInCurrentChannel = combineLatest([channelId, observeChannelsWithCalls(serverUrl)]).pipe(
-        switchMap(([id, calls]) => of$(Boolean(calls[id]))),
-        distinctUntilChanged(),
-    );
-    const currentCall = observeCurrentCall();
-    const ccChannelId = currentCall.pipe(
-        switchMap((call) => of$(call?.channelId)),
-        distinctUntilChanged(),
-    );
-    const isInACall = currentCall.pipe(
-        switchMap((call) => of$(Boolean(call?.connected))),
-        distinctUntilChanged(),
-    );
-    const isInCurrentChannelCall = combineLatest([channelId, ccChannelId]).pipe(
-        switchMap(([id, ccId]) => of$(id === ccId)),
-        distinctUntilChanged(),
-    );
-
-    return combineLatest([isCallInCurrentChannel, isInACall, isInCurrentChannelCall]).pipe(
-        switchMap(([one, two, three]) => of$({
-            isCallInCurrentChannel: one,
-            isInACall: two,
-            isInCurrentChannelCall: three,
-        })),
-    ) as Observable<CallsChannelState>;
 };

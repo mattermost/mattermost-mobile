@@ -20,7 +20,6 @@ import EphemeralStore from '@store/ephemeral_store';
 
 import ThreadPostList from './thread_post_list';
 
-import type {CallsChannelState} from '@calls/observers';
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
@@ -28,7 +27,9 @@ import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view'
 type ThreadProps = {
     componentId: AvailableScreens;
     isCRTEnabled: boolean;
-    callsChannelState: CallsChannelState;
+    isCallInCurrentChannel: boolean;
+    isInACall: boolean;
+    isInCurrentChannelCall: boolean;
     rootId: string;
     rootPost?: PostModel;
 };
@@ -45,7 +46,9 @@ const Thread = ({
     isCRTEnabled,
     rootId,
     rootPost,
-    callsChannelState,
+    isCallInCurrentChannel,
+    isInACall,
+    isInCurrentChannelCall,
 }: ThreadProps) => {
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
@@ -91,8 +94,8 @@ const Thread = ({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const showJoinCallBanner = callsChannelState.isCallInCurrentChannel && !callsChannelState.isInCurrentChannelCall;
-    const renderCallsComponents = showJoinCallBanner || callsChannelState.isInACall;
+    const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
+    const renderCallsComponents = showJoinCallBanner || isInACall;
 
     return (
         <FreezeScreen>
@@ -129,7 +132,7 @@ const Thread = ({
                     <FloatingCallContainer
                         channelId={rootPost!.channelId}
                         showJoinCallBanner={showJoinCallBanner}
-                        isInACall={callsChannelState.isInACall}
+                        isInACall={isInACall}
                         threadScreen={true}
                     />
                 }

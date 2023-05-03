@@ -3,8 +3,10 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import {combineLatest, distinctUntilChanged, of as of$, switchMap} from 'rxjs';
 
-import {observeCallsChannelState, observeIsCallsEnabledInChannel} from '@calls/observers';
+import {observeIsCallsEnabledInChannel} from '@calls/observers';
+import {observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
 import {withServerUrl} from '@context/server';
 import {observeCurrentChannelId} from '@queries/servers/system';
 
@@ -19,9 +21,29 @@ type EnhanceProps = WithDatabaseArgs & {
 const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
     const channelId = observeCurrentChannelId(database);
 
+    const isCallInCurrentChannel = combineLatest([channelId, observeChannelsWithCalls(serverUrl)]).pipe(
+        switchMap(([id, calls]) => of$(Boolean(calls[id]))),
+        distinctUntilChanged(),
+    );
+    const currentCall = observeCurrentCall();
+    const ccChannelId = currentCall.pipe(
+        switchMap((call) => of$(call?.channelId)),
+        distinctUntilChanged(),
+    );
+    const isInACall = currentCall.pipe(
+        switchMap((call) => of$(Boolean(call?.connected))),
+        distinctUntilChanged(),
+    );
+    const isInCurrentChannelCall = combineLatest([channelId, ccChannelId]).pipe(
+        switchMap(([id, ccId]) => of$(id === ccId)),
+        distinctUntilChanged(),
+    );
+
     return {
         channelId,
-        callsChannelState: observeCallsChannelState(database, serverUrl, channelId),
+        isCallInCurrentChannel,
+        isInACall,
+        isInCurrentChannelCall,
         isCallsEnabledInChannel: observeIsCallsEnabledInChannel(database, serverUrl, channelId),
     };
 });

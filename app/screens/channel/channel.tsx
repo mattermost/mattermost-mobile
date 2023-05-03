@@ -23,14 +23,15 @@ import EphemeralStore from '@store/ephemeral_store';
 import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
 
-import type {CallsChannelState} from '@calls/observers';
 import type {AvailableScreens} from '@typings/screens/navigation';
 import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
 
 type ChannelProps = {
     channelId: string;
     componentId?: AvailableScreens;
-    callsChannelState: CallsChannelState;
+    isCallInCurrentChannel: boolean;
+    isInACall: boolean;
+    isInCurrentChannelCall: boolean;
     isCallsEnabledInChannel: boolean;
     isTabletView?: boolean;
 };
@@ -47,7 +48,9 @@ const styles = StyleSheet.create({
 const Channel = ({
     channelId,
     componentId,
-    callsChannelState,
+    isCallInCurrentChannel,
+    isInACall,
+    isInCurrentChannelCall,
     isCallsEnabledInChannel,
     isTabletView,
 }: ChannelProps) => {
@@ -91,8 +94,8 @@ const Channel = ({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    const showJoinCallBanner = callsChannelState.isCallInCurrentChannel && !callsChannelState.isInCurrentChannelCall;
-    const renderCallsComponents = showJoinCallBanner || callsChannelState.isInACall;
+    const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
+    const renderCallsComponents = showJoinCallBanner || isInACall;
 
     return (
         <FreezeScreen>
@@ -116,7 +119,7 @@ const Channel = ({
                         <ChannelPostList
                             channelId={channelId}
                             nativeID={channelId}
-                            currentCallBarVisible={callsChannelState.isInACall}
+                            currentCallBarVisible={isInACall}
                             joinCallBannerVisible={showJoinCallBanner}
                         />
                     </View>
@@ -136,7 +139,7 @@ const Channel = ({
                     <FloatingCallContainer
                         channelId={channelId}
                         showJoinCallBanner={showJoinCallBanner}
-                        isInACall={callsChannelState.isInACall}
+                        isInACall={isInACall}
                     />
                 }
             </SafeAreaView>
