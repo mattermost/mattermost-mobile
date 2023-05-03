@@ -59,6 +59,10 @@ function ThreadFollow({isFollowing, teamId, threadId}: Props) {
         updateThreadFollowing(serverUrl, teamId, threadId, !isFollowing, false);
     });
 
+    if (!threadId) {
+        return null;
+    }
+
     const containerStyle: StyleProp<ViewStyle> = [styles.container];
     let followTextProps = {
         id: t('threads.follow'),

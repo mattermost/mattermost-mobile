@@ -4,6 +4,7 @@
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
+import uuid from 'uuid';
 
 import CurrentCallBar from '@calls/components/current_call_bar';
 import FloatingCallContainer from '@calls/components/floating_call_container';
@@ -53,7 +54,7 @@ const Thread = ({componentId, isCRTEnabled, rootId, rootPost, isInACall}: Thread
     useEffect(() => {
         if (isCRTEnabled && rootId) {
             setButtons(componentId, {rightButtons: [{
-                id: `${componentId}-${rootId}`,
+                id: `${componentId}-${rootId}-${uuid.v4()}`,
                 component: {
                     name: Screens.THREAD_FOLLOW_BUTTON,
                     passProps: {
