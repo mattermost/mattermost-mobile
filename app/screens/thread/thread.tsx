@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {uniqueId} from 'lodash';
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
-import uuid from 'uuid';
 
 import CurrentCallBar from '@calls/components/current_call_bar';
 import FloatingCallContainer from '@calls/components/floating_call_container';
@@ -53,10 +53,12 @@ const Thread = ({componentId, isCRTEnabled, rootId, rootPost, isInACall}: Thread
 
     useEffect(() => {
         if (isCRTEnabled && rootId) {
+            const id = `${componentId}-${rootId}-${uniqueId()}`;
+            const name = Screens.THREAD_FOLLOW_BUTTON;
             setButtons(componentId, {rightButtons: [{
-                id: `${componentId}-${rootId}-${uuid.v4()}`,
+                id,
                 component: {
-                    name: Screens.THREAD_FOLLOW_BUTTON,
+                    name,
                     passProps: {
                         threadId: rootId,
                     },
