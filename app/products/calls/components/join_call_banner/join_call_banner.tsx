@@ -49,16 +49,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.48),
     },
     joinCallIcon: {
-        color: theme.sidebarText,
+        color: theme.buttonColor,
         marginRight: 7,
     },
     joinCall: {
-        color: theme.sidebarText,
+        color: theme.buttonColor,
         ...typography('Body', 100, 'SemiBold'),
     },
     started: {
         flex: 1,
-        color: changeOpacity(theme.sidebarText, 0.84),
+        color: changeOpacity(theme.buttonColor, 0.84),
         ...typography(),
         marginLeft: 10,
     },

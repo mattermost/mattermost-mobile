@@ -58,24 +58,25 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             padding: 8,
             backgroundColor: theme.onlineIndicator,
             borderRadius: 4,
-            color: 'white',
+            color: theme.buttonColor,
             overflow: 'hidden',
         },
         phoneHangupIcon: {
             padding: 8,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.6),
             borderRadius: 4,
-            color: 'white',
+            color: theme.buttonColor,
             overflow: 'hidden',
         },
         joinCallButtonText: {
-            color: 'white',
+            color: theme.buttonColor,
+            ...typography('Body', 75, 'SemiBold'),
         },
         joinCallButtonTextRestricted: {
             color: changeOpacity(theme.centerChannelColor, 0.32),
         },
         joinCallButtonIcon: {
-            color: 'white',
+            color: theme.buttonColor,
             marginRight: 5,
         },
         joinCallButtonIconRestricted: {
