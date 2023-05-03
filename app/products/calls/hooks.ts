@@ -14,9 +14,9 @@ import {errorAlert} from '@calls/utils';
 import {useServerUrl} from '@context/server';
 import {useAppState} from '@hooks/device';
 import NetworkManager from '@managers/network_manager';
+import {getFullErrorMessage} from '@utils/errors';
 
 import type {Client} from '@client/rest';
-import type ClientError from '@client/rest/error';
 
 export const useTryCallsFunction = (fn: () => void) => {
     const intl = useIntl();
@@ -29,11 +29,19 @@ export const useTryCallsFunction = (fn: () => void) => {
         try {
             client = NetworkManager.getClient(serverUrl);
         } catch (error) {
-            setClientError((error as ClientError).message);
+            setClientError(getFullErrorMessage(error));
         }
     }
     const tryFn = useCallback(async () => {
-        if (client && await client.getEnabled()) {
+        let enabled;
+        try {
+            enabled = await client?.getEnabled();
+        } catch (error) {
+            errorAlert(getFullErrorMessage(error), intl);
+            return;
+        }
+
+        if (enabled) {
             setMsgPostfix('');
             fn();
             return;

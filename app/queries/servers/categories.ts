@@ -36,6 +36,7 @@ export const queryCategoriesByTeamIds = (database: Database, teamIds: string[]) 
 
 export async function prepareCategoriesAndCategoriesChannels(operator: ServerDataOperator, categories: CategoryWithChannels[], prune = false) {
     try {
+        const {database} = operator;
         const modelPromises: Array<Promise<Model[]>> = [
             prepareCategories(operator, categories),
             prepareCategoryChannels(operator, categories),
@@ -49,7 +50,7 @@ export async function prepareCategoriesAndCategoriesChannels(operator: ServerDat
 
             // If the passed categories have more than one team, we want to update across teams
             const teamIds = pluckUnique('team_id')(categories) as string[];
-            const localCategories = await queryCategoriesByTeamIds(operator.database, teamIds).fetch();
+            const localCategories = await queryCategoriesByTeamIds(database, teamIds).fetch();
             const customCategories = localCategories.filter((c) => c.type === 'custom');
             for await (const custom of customCategories) {
                 if (!remoteCategoryIds.has(custom.id)) {

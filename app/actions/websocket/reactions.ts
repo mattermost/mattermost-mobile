@@ -5,12 +5,9 @@ import DatabaseManager from '@database/manager';
 import {queryReaction} from '@queries/servers/reaction';
 
 export async function handleAddCustomEmoji(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
     try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const emoji: CustomEmoji = JSON.parse(msg.data.emoji);
         await operator.handleCustomEmojis({
             prepareRecordsOnly: false,
@@ -22,12 +19,9 @@ export async function handleAddCustomEmoji(serverUrl: string, msg: WebSocketMess
 }
 
 export async function handleReactionAddedToPostEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
     try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const reaction: Reaction = JSON.parse(msg.data.reaction);
         await operator.handleReactions({
             prepareRecordsOnly: false,
@@ -43,12 +37,9 @@ export async function handleReactionAddedToPostEvent(serverUrl: string, msg: Web
 }
 
 export async function handleReactionRemovedFromPostEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return;
-    }
-
     try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const msgReaction: Reaction = JSON.parse(msg.data.reaction);
         const reaction = await queryReaction(database, msgReaction.emoji_name, msgReaction.post_id, msgReaction.user_id).fetch();
 

@@ -291,6 +291,7 @@ export default class ClientBase {
                     defaultMessage: 'Received invalid response from the server.',
                 },
                 url,
+                details: error,
             });
         }
 
@@ -312,8 +313,8 @@ export default class ClientBase {
         }
 
         throw new ClientError(this.apiClient.baseUrl, {
-            message: response.data?.message || '',
-            server_error_id: response.data?.id,
+            message: response.data?.message as string || `Response with status code ${response.code}`,
+            server_error_id: response.data?.id as string,
             status_code: response.code,
             url,
         });

@@ -332,7 +332,8 @@ export const observeCurrentChannel = (database: Database) => {
 
 export async function deleteChannelMembership(operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) {
     try {
-        const channelMembership = await operator.database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
+        const {database} = operator;
+        const channelMembership = await database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
         const models: Model[] = [];
         for (const membership of channelMembership) {
             models.push(membership.prepareDestroyPermanently());

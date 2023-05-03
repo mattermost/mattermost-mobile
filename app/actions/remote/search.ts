@@ -7,7 +7,8 @@ import NetworkManager from '@managers/network_manager';
 import {prepareMissingChannelsForAllTeams} from '@queries/servers/channel';
 import {getIsCRTEnabled, prepareThreadsFromReceivedPosts} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
-import {logError} from '@utils/log';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 
 import {fetchPostAuthors, fetchMissingChannelsFromPosts} from './post';
 import {forceLogoutIfNecessary} from './session';
@@ -48,7 +49,7 @@ export async function fetchRecentMentions(serverUrl: string): Promise<PostSearch
 
 export const searchPosts = async (serverUrl: string, teamId: string, params: PostSearchParams): Promise<PostSearchRequest> => {
     try {
-        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const client = NetworkManager.getClient(serverUrl);
 
         let postsArray: Post[] = [];
@@ -60,7 +61,7 @@ export const searchPosts = async (serverUrl: string, teamId: string, params: Pos
         const promises: Array<Promise<Model[]>> = [];
         postsArray = order.map((id) => posts[id]);
         if (postsArray.length) {
-            const isCRTEnabled = await getIsCRTEnabled(operator.database);
+            const isCRTEnabled = await getIsCRTEnabled(database);
             if (isCRTEnabled) {
                 promises.push(prepareThreadsFromReceivedPosts(operator, postsArray, false));
             }
@@ -109,8 +110,8 @@ export const searchPosts = async (serverUrl: string, teamId: string, params: Pos
             posts: postsArray,
         };
     } catch (error) {
-        logError('Failed: searchPosts', error);
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on searchPosts', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
@@ -129,7 +130,8 @@ export const searchFiles = async (serverUrl: string, teamId: string, params: Fil
         const channels = [...new Set(allChannelIds)];
         return {files, channels};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on searchFiles', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };

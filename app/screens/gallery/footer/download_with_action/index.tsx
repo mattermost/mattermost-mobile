@@ -21,9 +21,11 @@ import Toast from '@components/toast';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
 import {alertFailedToOpenDocument} from '@utils/document';
+import {getFullErrorMessage} from '@utils/errors';
 import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission} from '@utils/file';
 import {pathWithPrefix} from '@utils/files';
 import {galleryItemToFileInfo} from '@utils/gallery';
+import {logDebug} from '@utils/log';
 import {typography} from '@utils/typography';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
@@ -286,6 +288,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
                 }
             }
         } catch (e) {
+            logDebug('error on startDownload', getFullErrorMessage(e));
             setShowToast(false);
         }
     };

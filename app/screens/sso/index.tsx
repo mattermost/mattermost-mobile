@@ -9,13 +9,13 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {ssoLogin} from '@actions/remote/session';
-import ClientError from '@client/rest/error';
 import {Screens, Sso} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
 import {dismissModal, popTopScreen, resetToHome} from '@screens/navigation';
+import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
 import {logWarning} from '@utils/log';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
@@ -85,15 +85,15 @@ const SSO = ({
             break;
     }
 
-    const onLoadEndError = (e: ClientErrorProps | Error | string) => {
+    const onLoadEndError = (e: unknown) => {
         logWarning('Failed to set store from local data', e);
         if (typeof e === 'string') {
             setLoginError(e);
             return;
         }
 
-        let errorMessage = e.message;
-        if (e instanceof ClientError && e.url) {
+        let errorMessage = getFullErrorMessage(e);
+        if (isErrorWithUrl(e) && e.url) {
             errorMessage += `\nURL: ${e.url}`;
         }
         setLoginError(errorMessage);
@@ -105,10 +105,10 @@ const SSO = ({
             onLoadEndError(result.error);
             return;
         }
-        goToHome(result.error as never);
+        goToHome(result.error);
     };
 
-    const goToHome = (error?: never) => {
+    const goToHome = (error?: unknown) => {
         const hasError = launchError || Boolean(error);
         resetToHome({extra, launchError: hasError, launchType, serverUrl});
     };

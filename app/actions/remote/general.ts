@@ -8,6 +8,7 @@ import {t} from '@i18n';
 import NetworkManager from '@managers/network_manager';
 import {getDeviceToken} from '@queries/app/global';
 import {getExpandedLinks, getPushVerificationStatus} from '@queries/servers/system';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
@@ -69,7 +70,7 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
             return {error: {intl: pingError}};
         }
     } catch (error) {
-        logDebug('Server ping threw an exception', error);
+        logDebug('Server ping threw an exception', getFullErrorMessage(error));
         NetworkManager.invalidateClient(serverUrl);
         return {error: {intl: pingError}};
     }
@@ -82,29 +83,19 @@ export const doPing = async (serverUrl: string, verifyPushProxy: boolean, timeou
             canReceiveNotifications = PUSH_PROXY_RESPONSE_VERIFIED;
         }
 
-        return {canReceiveNotifications, error: undefined};
+        return {canReceiveNotifications};
     }
 
-    return {error: undefined};
+    return {};
 };
 
 export const getRedirectLocation = async (serverUrl: string, link: string) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const expandedLink = await client.getRedirectLocation(link);
         if (expandedLink?.location) {
-            const storedLinks = await getExpandedLinks(operator.database);
+            const storedLinks = await getExpandedLinks(database);
             storedLinks[link] = expandedLink.location;
             const expanded: IdValue = {
                 id: SYSTEM_IDENTIFIERS.EXPANDED_LINKS,
@@ -118,7 +109,8 @@ export const getRedirectLocation = async (serverUrl: string, link: string) => {
 
         return {expandedLink};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on getRedirectLocation', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };

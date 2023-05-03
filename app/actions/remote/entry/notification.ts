@@ -15,24 +15,25 @@ import {getCurrentTeamId} from '@queries/servers/system';
 import {getMyTeamById} from '@queries/servers/team';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import EphemeralStore from '@store/ephemeral_store';
+import {isErrorWithStatusCode} from '@utils/errors';
 import {emitNotificationError} from '@utils/notification';
 import {setThemeDefaults, updateThemeIfNeeded} from '@utils/theme';
 
-import type ClientError from '@client/rest/error';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type PostModel from '@typings/database/models/servers/post';
 
 export async function pushNotificationEntry(serverUrl: string, notification: NotificationData) {
+    // We only reach this point if we have a channel Id in the notification payload
+    const channelId = notification.channel_id!;
+    const rootId = notification.root_id!;
+
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-
-    // We only reach this point if we have a channel Id in the notification payload
-    const channelId = notification.channel_id!;
-    const rootId = notification.root_id!;
     const {database} = operator;
+
     const currentTeamId = await getCurrentTeamId(database);
     const currentServerUrl = await DatabaseManager.getActiveServerUrl();
 
@@ -65,7 +66,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     if (!myTeam) {
         const resp = await fetchMyTeam(serverUrl, teamId);
         if (resp.error) {
-            if ((resp.error as ClientError).status_code === 403) {
+            if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
                 emitNotificationError('Team');
             } else {
                 emitNotificationError('Connection');
@@ -78,7 +79,7 @@ export async function pushNotificationEntry(serverUrl: string, notification: Not
     if (!myChannel) {
         const resp = await fetchMyChannel(serverUrl, teamId, channelId);
         if (resp.error) {
-            if ((resp.error as ClientError).status_code === 403) {
+            if (isErrorWithStatusCode(resp.error) && resp.error.status_code === 403) {
                 emitNotificationError('Channel');
             } else {
                 emitNotificationError('Connection');

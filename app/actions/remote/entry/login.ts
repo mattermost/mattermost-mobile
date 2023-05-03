@@ -10,7 +10,7 @@ type AfterLoginArgs = {
     serverUrl: string;
 }
 
-export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: any}> {
+export async function loginEntry({serverUrl}: AfterLoginArgs): Promise<{error?: unknown}> {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
     if (!operator) {
         return {error: `${serverUrl} database not found`};

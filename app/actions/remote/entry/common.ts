@@ -26,11 +26,11 @@ import {getConfig, getCurrentChannelId, getCurrentTeamId, getPushVerificationSta
 import {deleteMyTeams, getAvailableTeamIds, getTeamChannelHistory, queryMyTeams, queryMyTeamsByIds, queryTeamsById} from '@queries/servers/team';
 import NavigationStore from '@store/navigation_store';
 import {isDMorGM, sortChannelsByDisplayName} from '@utils/channel';
+import {getFullErrorMessage, isErrorWithStatusCode} from '@utils/errors';
 import {isTablet} from '@utils/helpers';
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
-import type ClientError from '@client/rest/error';
 import type {Database, Model} from '@nozbe/watermelondb';
 
 export type AppEntryData = {
@@ -45,7 +45,7 @@ export type AppEntryData = {
 }
 
 export type AppEntryError = {
-    error: Error | ClientError | string;
+    error: unknown;
 }
 
 export type EntryResponse = {
@@ -74,8 +74,8 @@ export const teamsToRemove = async (serverUrl: string, removeTeamIds?: string[])
     if (!operator) {
         return [];
     }
-
     const {database} = operator;
+
     if (removeTeamIds?.length) {
         // Immediately delete myTeams so that the UI renders only teams the user is a member of.
         const removeMyTeams = await queryMyTeamsByIds(database, removeTeamIds).fetch();
@@ -95,7 +95,6 @@ export const entryRest = async (serverUrl: string, teamId?: string, channelId?: 
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-
     const {database} = operator;
 
     const lastDisconnectedAt = since || await getWebSocketLastDisconnected(database);
@@ -106,8 +105,8 @@ export const entryRest = async (serverUrl: string, teamId?: string, channelId?: 
     }
 
     const {initialTeamId, teamData, chData, prefData, meData, removeTeamIds, removeChannelIds, isCRTEnabled} = fetchedData;
-    const chError = chData?.error as ClientError | undefined;
-    if (chError?.status_code === 403) {
+    const chError = chData?.error;
+    if (isErrorWithStatusCode(chError) && chError.status_code === 403) {
         // if the user does not have appropriate permissions, which means the user those not belong to the team,
         // we set it as there is no errors, so that the teams and others can be properly handled
         chData!.error = undefined;
@@ -209,8 +208,8 @@ export const fetchAppEntryData = async (serverUrl: string, sinceArg: number, ini
     }
 
     const inTeam = teamData.teams?.find((t) => t.id === initialTeamId);
-    const chError = chData?.error as ClientError | undefined;
-    if ((!inTeam && !teamData.error) || chError?.status_code === 403) {
+    const chError = chData?.error;
+    if ((!inTeam && !teamData.error) || (isErrorWithStatusCode(chError) && chError.status_code === 403)) {
         // User is no longer a member of the current team
         if (!removeTeamIds.includes(initialTeamId)) {
             removeTeamIds.push(initialTeamId);
@@ -254,8 +253,8 @@ export const fetchAlternateTeamData = async (
     for (const teamId of availableTeamIds) {
         // eslint-disable-next-line no-await-in-loop
         chData = await fetchMyChannelsForTeam(serverUrl, teamId, includeDeleted, since, fetchOnly, false, isCRTEnabled);
-        const chError = chData.error as ClientError | undefined;
-        if (chError?.status_code === 403) {
+        const chError = chData.error;
+        if (isErrorWithStatusCode(chError) && chError.status_code === 403) {
             removeTeamIds.push(teamId);
         } else {
             initialTeamId = teamId;
@@ -357,50 +356,38 @@ export async function restDeferredAppEntryActions(
 }
 
 export const registerDeviceToken = async (serverUrl: string) => {
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+
+        const deviceToken = await getDeviceToken();
+        if (deviceToken) {
+            client.attachDevice(deviceToken);
+        }
+        return {};
     } catch (error) {
+        logDebug('error on registerDeviceToken', getFullErrorMessage(error));
         return {error};
     }
-
-    const deviceToken = await getDeviceToken();
-    if (deviceToken) {
-        client.attachDevice(deviceToken);
-    }
-
-    return {error: undefined};
 };
 
 export async function verifyPushProxy(serverUrl: string) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
-    const {database} = operator;
-
-    const ppVerification = await getPushVerificationStatus(database);
-    if (
-        ppVerification !== PUSH_PROXY_STATUS_UNKNOWN &&
-        ppVerification !== ''
-    ) {
-        return;
-    }
-
     const deviceId = await getDeviceToken();
     if (!deviceId) {
         return;
     }
 
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (err) {
-        return;
-    }
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
+        const ppVerification = await getPushVerificationStatus(database);
+        if (
+            ppVerification !== PUSH_PROXY_STATUS_UNKNOWN &&
+            ppVerification !== ''
+        ) {
+            return;
+        }
+
+        const client = NetworkManager.getClient(serverUrl);
         const response = await client.ping(deviceId);
         const canReceiveNotifications = response?.data?.CanReceiveNotifications;
         switch (canReceiveNotifications) {
@@ -412,7 +399,9 @@ export async function verifyPushProxy(serverUrl: string) {
             default:
                 operator.handleSystem({systems: [{id: SYSTEM_IDENTIFIERS.PUSH_VERIFICATION_STATUS, value: PUSH_PROXY_STATUS_VERIFIED}], prepareRecordsOnly: false});
         }
-    } catch (err) {
+    } catch (error) {
+        logDebug('error on verifyPushProxy', getFullErrorMessage(error));
+
         // Do nothing
     }
 }

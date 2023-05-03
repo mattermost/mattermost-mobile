@@ -90,7 +90,7 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
 
     const updateChannelMemberSchemeRole = useCallback(async (schemeAdmin: boolean) => {
         const result = await updateChannelMemberSchemeRoles(serverUrl, channelId, userId, true, schemeAdmin);
-        if (result.error) {
+        if ('error' in result) {
             alertErrorWithFallback(intl, result.error, messages.role_change_error);
         }
         await dismissBottomSheet();
