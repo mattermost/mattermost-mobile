@@ -156,6 +156,7 @@ function SavedMessages({appsEnabled, posts, currentTimezone, customEmojiNames, i
                         location={Screens.SAVED_MESSAGES}
                         post={item.value}
                         testID='saved_messages.post_list'
+                        skipSavedPostsHighlight={true}
                     />
                 );
             default:
