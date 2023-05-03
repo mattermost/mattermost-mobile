@@ -858,12 +858,13 @@ export const editPost = async (serverUrl: string, postId: string, postMessage: s
 
         const post = await getPostById(database, postId);
         if (post) {
-            const {update_at, edit_at, message: updatedMessage} = await client.patchPost({message: postMessage, id: postId});
+            const {update_at, edit_at, message: updatedMessage, message_source} = await client.patchPost({message: postMessage, id: postId});
             await database.write(async () => {
                 await post.update((p) => {
                     p.updateAt = update_at;
                     p.editAt = edit_at;
                     p.message = updatedMessage;
+                    p.messageSource = message_source || '';
                 });
             });
         }

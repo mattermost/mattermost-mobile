@@ -68,6 +68,7 @@ type Post = {
     root_id: string;
     original_id: string;
     message: string;
+    message_source?: string;
     type: PostType;
     participants?: null | UserProfile[]|string[];
     props: Record<string, any>;

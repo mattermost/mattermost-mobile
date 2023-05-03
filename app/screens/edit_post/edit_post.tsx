@@ -56,8 +56,9 @@ type EditPostProps = {
     canDelete: boolean;
 }
 const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttached, canDelete}: EditPostProps) => {
-    const [postMessage, setPostMessage] = useState(post.message);
-    const [cursorPosition, setCursorPosition] = useState(post.message.length);
+    const editingMessage = post.messageSource || post.message;
+    const [postMessage, setPostMessage] = useState(editingMessage);
+    const [cursorPosition, setCursorPosition] = useState(editingMessage.length);
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [isUpdating, setIsUpdating] = useState(false);
@@ -133,8 +134,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             setErrorLine(line);
             setErrorExtra(extra);
         }
-        toggleSaveButton(post.message !== message);
-    }, [intl, maxPostSize, post.message, toggleSaveButton]);
+        toggleSaveButton(editingMessage !== message);
+    }, [intl, maxPostSize, editingMessage, toggleSaveButton]);
 
     const onAutocompleteChangeText = useCallback((message: string) => {
         setPostMessage(message);
@@ -175,7 +176,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 onPress: () => {
                     setIsUpdating(false);
                     toggleSaveButton();
-                    setPostMessage(post.message);
+                    setPostMessage(editingMessage);
                 },
             }, {
                 text: intl.formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
@@ -186,7 +187,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 },
             }],
         );
-    }, [serverUrl, post.message]);
+    }, [serverUrl, editingMessage]);
 
     const onSavePostMessage = useCallback(async () => {
         setIsUpdating(true);
