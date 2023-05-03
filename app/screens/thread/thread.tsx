@@ -15,7 +15,7 @@ import {THREAD_ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useDidUpdate from '@hooks/did_update';
 import {useKeyboardTrackingPaused} from '@hooks/keyboard_tracking';
-import {popTopScreen} from '@screens/navigation';
+import {popTopScreen, setButtons} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 
 import ThreadPostList from './thread_post_list';
@@ -26,8 +26,10 @@ import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view'
 
 type ThreadProps = {
     componentId: AvailableScreens;
-    rootPost?: PostModel;
+    isCRTEnabled: boolean;
     isInACall: boolean;
+    rootId: string;
+    rootPost?: PostModel;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -37,10 +39,9 @@ const styles = StyleSheet.create({
     flex: {flex: 1},
 });
 
-const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
+const Thread = ({componentId, isCRTEnabled, rootId, rootPost, isInACall}: ThreadProps) => {
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
-    const rootId = rootPost?.id || '';
 
     const close = () => {
         popTopScreen(componentId);
@@ -50,8 +51,26 @@ const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
     useAndroidHardwareBackHandler(componentId, close);
 
     useEffect(() => {
+        if (isCRTEnabled && rootId) {
+            setButtons(componentId, {rightButtons: [{
+                id: `${componentId}-${rootId}`,
+                component: {
+                    id: rootId,
+                    name: Screens.THREAD_FOLLOW_BUTTON,
+                    passProps: {
+                        threadId: rootId,
+                    },
+                },
+            }]});
+        } else {
+            setButtons(componentId, {rightButtons: []});
+        }
+    }, [componentId, rootId, isCRTEnabled]);
+
+    useEffect(() => {
         return () => {
             EphemeralStore.setCurrentThreadId('');
+            setButtons(componentId, {rightButtons: []});
         };
     }, []);
 
@@ -75,19 +94,19 @@ const Thread = ({componentId, rootPost, isInACall}: ThreadProps) => {
                 onLayout={onLayout}
             >
                 <RoundedHeaderContext/>
-                {Boolean(rootPost?.id) &&
+                {Boolean(rootPost) &&
                 <>
                     <View style={styles.flex}>
                         <ThreadPostList
-                            nativeID={rootPost!.id}
+                            nativeID={rootId}
                             rootPost={rootPost!}
                         />
                     </View>
                     <PostDraft
                         channelId={rootPost!.channelId}
-                        scrollViewNativeID={rootPost!.id}
+                        scrollViewNativeID={rootId}
                         accessoriesContainerID={THREAD_ACCESSORIES_CONTAINER_NATIVE_ID}
-                        rootId={rootPost!.id}
+                        rootId={rootId}
                         keyboardTracker={postDraftRef}
                         testID='thread.post_draft'
                         containerHeight={containerHeight}

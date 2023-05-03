@@ -5,6 +5,7 @@ import {Alert} from 'react-native';
 
 import {hasMicrophonePermission, joinCall, unmuteMyself} from '@calls/actions';
 import {leaveCallPopCallScreen} from '@calls/actions/calls';
+import {hasBluetoothPermission} from '@calls/actions/permissions';
 import {
     getCallsConfig,
     getCallsState,
@@ -192,6 +193,8 @@ const doJoinCall = async (
 
     recordingAlertLock = false;
     recordingWillBePostedLock = true; // only unlock if/when the user stops a recording.
+
+    await hasBluetoothPermission();
     const hasPermission = await hasMicrophonePermission();
     setMicPermissionsGranted(hasPermission);
 

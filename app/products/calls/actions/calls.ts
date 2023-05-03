@@ -43,13 +43,12 @@ import {displayUsername, getUserIdFromChannelName, isSystemAdmin} from '@utils/u
 import {newConnection} from '../connection/connection';
 
 import type {
+    AudioDevice,
     Call,
     CallParticipant,
     CallsConnection,
-    ServerCallState,
-    ServerChannelState,
 } from '@calls/types/calls';
-import type {EmojiData} from '@mattermost/calls/lib/types';
+import type {CallChannelState, CallState, EmojiData} from '@mattermost/calls/lib/types';
 import type {IntlShape} from 'react-intl';
 
 let connection: CallsConnection | null = null;
@@ -80,7 +79,7 @@ export const loadConfig = async (serverUrl: string, force = false) => {
 };
 
 export const loadCalls = async (serverUrl: string, userId: string) => {
-    let resp: ServerChannelState[] = [];
+    let resp: CallChannelState[] = [];
     try {
         const client = NetworkManager.getClient(serverUrl);
         resp = await client.getCalls() || [];
@@ -115,7 +114,7 @@ export const loadCalls = async (serverUrl: string, userId: string) => {
 };
 
 export const loadCallForChannel = async (serverUrl: string, channelId: string) => {
-    let resp: ServerChannelState;
+    let resp: CallChannelState;
     try {
         const client = NetworkManager.getClient(serverUrl);
         resp = await client.getCallForChannel(channelId);
@@ -141,7 +140,7 @@ export const loadCallForChannel = async (serverUrl: string, channelId: string) =
     return {data: {call, enabled: resp.enabled}};
 };
 
-const createCallAndAddToIds = (channelId: string, call: ServerCallState, ids: Set<string>) => {
+const createCallAndAddToIds = (channelId: string, call: CallState, ids: Set<string>) => {
     return {
         participants: call.users.reduce((accum, cur, curIdx) => {
             // Add the id to the set of UserModels we want to ensure are loaded.
@@ -321,6 +320,10 @@ export const sendReaction = (emoji: EmojiData) => {
 export const setSpeakerphoneOn = (speakerphoneOn: boolean) => {
     InCallManager.setForceSpeakerphoneOn(speakerphoneOn);
     setSpeakerPhone(speakerphoneOn);
+};
+
+export const setPreferredAudioRoute = async (audio: AudioDevice) => {
+    return InCallManager.chooseAudioRoute(audio);
 };
 
 export const canEndCall = async (serverUrl: string, channelId: string) => {

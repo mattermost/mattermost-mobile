@@ -45,12 +45,21 @@ export const DefaultCall: Call = {
     hostId: '',
 };
 
+export enum AudioDevice {
+    Earpiece = 'EARPIECE',
+    Speakerphone = 'SPEAKER_PHONE',
+    Bluetooth = 'BLUETOOTH',
+    WiredHeadset = 'WIRED_HEADSET',
+    None = 'NONE',
+}
+
 export type CurrentCall = Call & {
     connected: boolean;
     serverUrl: string;
     myUserId: string;
     screenShareURL: string;
     speakerphoneOn: boolean;
+    audioDeviceInfo: AudioDeviceInfo;
     voiceOn: Dictionary<boolean>;
     micPermissionsErrorDismissed: boolean;
     reactionStream: ReactionStreamEmoji[];
@@ -64,6 +73,7 @@ export const DefaultCurrentCall: CurrentCall = {
     myUserId: '',
     screenShareURL: '',
     speakerphoneOn: false,
+    audioDeviceInfo: {availableAudioDeviceList: [], selectedAudioDevice: AudioDevice.None},
     voiceOn: {},
     micPermissionsErrorDismissed: false,
     reactionStream: [],
@@ -79,29 +89,6 @@ export type CallParticipant = {
 }
 
 export type ChannelsWithCalls = Dictionary<boolean>;
-
-export type ServerChannelState = {
-    channel_id: string;
-    enabled?: boolean;
-    call?: ServerCallState;
-}
-
-export type ServerUserState = {
-    unmuted: boolean;
-    raised_hand: number;
-}
-
-export type ServerCallState = {
-    id: string;
-    start_at: number;
-    users: string[];
-    states: ServerUserState[];
-    thread_id: string;
-    screen_sharing_id: string;
-    owner_id: string;
-    host_id: string;
-    recording: CallRecordingState;
-}
 
 export type CallsConnection = {
     disconnect: () => void;
@@ -133,6 +120,7 @@ export const DefaultCallsConfig: CallsConfigState = {
     EnableRecordings: false,
     MaxRecordingDuration: 60,
     AllowScreenSharing: true,
+    EnableSimulcast: false,
 };
 
 export type ApiResp = {
@@ -146,4 +134,14 @@ export type ReactionStreamEmoji = {
     latestTimestamp: number;
     count: number;
     literal?: string;
+};
+
+export type AudioDeviceInfoRaw = {
+    availableAudioDeviceList: string;
+    selectedAudioDevice: AudioDevice;
+};
+
+export type AudioDeviceInfo = {
+    availableAudioDeviceList: AudioDevice[];
+    selectedAudioDevice: AudioDevice;
 };
