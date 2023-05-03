@@ -37,7 +37,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         width: '100%',
         borderTopLeftRadius: 12,
         borderTopRightRadius: 12,
-        padding: 5,
+        paddingTop: 5,
+        paddingBottom: 5,
+        paddingLeft: 12,
+        paddingRight: 12,
         justifyContent: 'center',
         alignItems: 'center',
         height: JOIN_CALL_BAR_HEIGHT,
@@ -47,7 +50,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     joinCallIcon: {
         color: theme.sidebarText,
-        marginLeft: 10,
         marginRight: 7,
     },
     joinCall: {
@@ -67,9 +69,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         marginRight: 10,
         color: changeOpacity(theme.sidebarText, 0.84),
         fontWeight: '400',
-    },
-    avatars: {
-        marginRight: 45,
     },
     headerText: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
@@ -130,15 +129,13 @@ const JoinCallBanner = ({
                         style={style.started}
                     />
                 )}
-                <View style={style.avatars}>
-                    <UserAvatarsStack
-                        channelId={channelId}
-                        location={Screens.CHANNEL}
-                        users={participants}
-                        breakAt={1}
-                        noBorder={true}
-                    />
-                </View>
+                <UserAvatarsStack
+                    channelId={channelId}
+                    location={Screens.CHANNEL}
+                    users={participants}
+                    breakAt={1}
+                    noBorder={true}
+                />
             </Pressable>
         </View>
     );

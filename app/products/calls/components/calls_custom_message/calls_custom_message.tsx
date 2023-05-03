@@ -219,7 +219,7 @@ export const CallsCustomMessage = ({
                     onPress={joinHandler}
                 >
                     <CompassIcon
-                        name='phone-outline'
+                        name='phone'
                         size={14}
                         style={[style.joinCallButtonIcon, isLimitRestricted && style.joinCallButtonIconRestricted]}
                     />
