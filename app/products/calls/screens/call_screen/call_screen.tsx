@@ -257,6 +257,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     },
     buttonText: {
         color: changeOpacity(theme.buttonColor, 0.72),
+        ...typography('Body', 75, 'SemiBold'),
     },
     buttonIcon: {
         color: theme.buttonColor,
@@ -800,16 +801,6 @@ const CallScreen = ({
                                         ]}
                                         errorContainerStyle={isLandscape && style.errorContainerLandscape}
                                     />
-                                    {/*<CompassIcon
-                                        name={myParticipant.muted ? 'microphone-off' : 'microphone'}
-                                        size={24}
-                                        style={[
-                                            style.buttonIcon,
-                                            isLandscape && style.buttonIconLandscape,
-                                            style.muteIconLandscape,
-                                            myParticipant?.muted && style.muteIconLandscapeMuted,
-                                        ]}
-                                    />*/}
                                     {myParticipant.muted ? UnmuteText : MuteText}
                                 </Pressable>
                             }

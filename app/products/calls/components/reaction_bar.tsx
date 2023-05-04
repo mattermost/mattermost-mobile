@@ -12,6 +12,7 @@ import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
 import {changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {CallsTheme} from '@calls/types/calls';
 
@@ -52,13 +53,14 @@ const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
         backgroundColor: theme.buttonColor,
     },
     unPressed: {
-        color: theme.buttonColor,
+        color: changeOpacity(theme.buttonColor, 0.56),
     },
     pressed: {
         color: theme.callsBg,
     },
     buttonText: {
         marginLeft: 8,
+        ...typography('Body', 200, 'SemiBold'),
     },
 }));
 
@@ -105,7 +107,7 @@ const ReactionBar = ({raisedHand}: Props) => {
                     onPress={toggleRaiseHand}
                 >
                     <CompassIcon
-                        name={raisedHand ? 'hand-right-outline-off' : 'hand-right-outline'}
+                        name={raisedHand ? 'hand-right-outline-off' : 'hand-right'}
                         size={24}
                         style={[raisedHand ? style.pressed : style.unPressed]}
                     />
