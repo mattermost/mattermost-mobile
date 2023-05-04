@@ -30,17 +30,17 @@ import CallAvatar from '@calls/components/call_avatar';
 import CallDuration from '@calls/components/call_duration';
 import CallsBadge, {CallsBadgeType} from '@calls/components/calls_badge';
 import EmojiList from '@calls/components/emoji_list';
-import PermissionErrorBar from '@calls/components/permission_error_bar';
+import MessageBar from '@calls/components/message_bar';
 import ReactionBar from '@calls/components/reaction_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
 import {RaisedHandBanner} from '@calls/screens/call_screen/raised_hand_banner';
-import {useCallsConfig} from '@calls/state';
+import {setCallQualityAlertDismissed, setMicPermissionsErrorDismissed, useCallsConfig} from '@calls/state';
 import {getHandsRaised, makeCallsTheme, sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Preferences, Screens, WebsocketEvents} from '@constants';
+import {Calls, Preferences, Screens, WebsocketEvents} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
@@ -694,7 +694,18 @@ const CallScreen = ({
                 {!isLandscape && currentCall.reactionStream.length > 0 &&
                     <EmojiList reactionStream={currentCall.reactionStream}/>
                 }
-                {micPermissionsError && <PermissionErrorBar/>}
+                {micPermissionsError &&
+                    <MessageBar
+                        type={Calls.MessageBarType.Microphone}
+                        onPress={setMicPermissionsErrorDismissed}
+                    />
+                }
+                {currentCall.callQualityAlert &&
+                    <MessageBar
+                        type={Calls.MessageBarType.CallQuality}
+                        onPress={setCallQualityAlertDismissed}
+                    />
+                }
                 <View style={[style.buttonsContainer]}>
                     <View
                         style={[

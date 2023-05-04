@@ -466,6 +466,7 @@
   "mobile.calls_participant_rec": "The host has started recording this meeting. By staying in the meeting you give consent to being recorded.",
   "mobile.calls_participant_rec_title": "Recording is in progress",
   "mobile.calls_phone": "Phone",
+  "mobile.calls_quality_warning": "Call quality may be degraded due to unstable network conditions.",
   "mobile.calls_raise_hand": "Raise hand",
   "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# more }}</bold>raised a hand",
   "mobile.calls_react": "React",

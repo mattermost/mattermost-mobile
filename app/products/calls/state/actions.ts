@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {mosThreshold} from '@mattermost/calls/lib/rtc_monitor';
+
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {needsRecordingAlert} from '@calls/alerts';
 import {
@@ -25,7 +27,7 @@ import {
     DefaultCurrentCall,
     type ReactionStreamEmoji,
 } from '@calls/types/calls';
-import {REACTION_LIMIT, REACTION_TIMEOUT} from '@constants/calls';
+import {Calls} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getThreadById} from '@queries/servers/thread';
@@ -489,7 +491,7 @@ export const userReacted = (serverUrl: string, channelId: string, reaction: User
         };
         newReactionStream.splice(0, 0, newReaction);
     }
-    if (newReactionStream.length > REACTION_LIMIT) {
+    if (newReactionStream.length > Calls.REACTION_LIMIT) {
         newReactionStream.pop();
     }
 
@@ -509,7 +511,7 @@ export const userReacted = (serverUrl: string, channelId: string, reaction: User
 
     setTimeout(() => {
         userReactionTimeout(serverUrl, channelId, reaction);
-    }, REACTION_TIMEOUT);
+    }, Calls.REACTION_TIMEOUT);
 };
 
 const userReactionTimeout = (serverUrl: string, channelId: string, reaction: UserReactionData) => {
@@ -588,6 +590,57 @@ export const setHost = (serverUrl: string, channelId: string, hostId: string) =>
     const nextCurrentCall = {
         ...currentCall,
         hostId,
+    };
+    setCurrentCall(nextCurrentCall);
+};
+
+export const processMeanOpinionScore = (mos: number) => {
+    const currentCall = getCurrentCall();
+    if (!currentCall) {
+        return;
+    }
+
+    if (mos < mosThreshold) {
+        setCallQualityAlert(true);
+    } else {
+        setCallQualityAlert(false);
+    }
+};
+
+export const setCallQualityAlert = (setAlert: boolean) => {
+    const currentCall = getCurrentCall();
+    if (!currentCall) {
+        return;
+    }
+
+    // Alert is already active, or alert was dismissed and the timeout hasn't passed
+    if ((setAlert && currentCall.callQualityAlert) ||
+        (setAlert && currentCall.callQualityAlertDismissed + Calls.CALL_QUALITY_RESET_MS > Date.now())) {
+        return;
+    }
+
+    // Alert is already inactive
+    if ((!setAlert && !currentCall.callQualityAlert)) {
+        return;
+    }
+
+    const nextCurrentCall: CurrentCall = {
+        ...currentCall,
+        callQualityAlert: setAlert,
+    };
+    setCurrentCall(nextCurrentCall);
+};
+
+export const setCallQualityAlertDismissed = () => {
+    const currentCall = getCurrentCall();
+    if (!currentCall) {
+        return;
+    }
+
+    const nextCurrentCall: CurrentCall = {
+        ...currentCall,
+        callQualityAlert: false,
+        callQualityAlertDismissed: Date.now(),
     };
     setCurrentCall(nextCurrentCall);
 };
