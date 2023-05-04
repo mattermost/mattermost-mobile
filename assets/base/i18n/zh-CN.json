@@ -831,7 +831,6 @@
     "mobile.calls_not_available_msg": "请联系您的系统管理员打开此功能。",
     "mobile.calls_noone_talking": "没有人发言",
     "mobile.calls_name_started_call": "{name}开启了通话",
-    "mobile.calls_name_is_talking": "{name}正在说话",
     "mobile.calls_mute": "静音",
     "gallery.unsupported": "这个文件类型不支持预览。尝试下载或者分享到另外一个应用打开。",
     "gallery.save_failed": "无法保存文件",

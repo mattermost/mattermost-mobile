@@ -689,7 +689,6 @@
     "mobile.calls_not_available_msg": "Por favor contacta a tu Administrador del Sistema para habilitar esta característica.",
     "mobile.calls_noone_talking": "Nadie está hablando",
     "mobile.calls_name_started_call": "{name} inició una llamada",
-    "mobile.calls_name_is_talking": "{name} está hablando",
     "mobile.calls_mute": "Silenciar",
     "mobile.calls_more": "Más",
     "mobile.calls_limit_reached": "Límite de participantes alcanzado",

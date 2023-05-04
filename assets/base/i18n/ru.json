@@ -540,7 +540,6 @@
     "mobile.calls_not_available_msg": "Обратитесь к системному администратору, чтобы включить эту функцию.",
     "mobile.calls_noone_talking": "Никто не говорит",
     "mobile.calls_name_started_call": "{name} начал звонок",
-    "mobile.calls_name_is_talking": "{name} говорит",
     "mobile.calls_mute": "Отключить звук",
     "mobile.calls_more": "Ещё",
     "mobile.calls_mic_error": "Для участия откройте \"Настройки\", чтобы предоставить Mattermost доступ к вашему микрофону.",

@@ -554,7 +554,6 @@
     "mobile.calls_not_available_msg": "この機能を有効にするにはシステム管理者に問い合わせてください。",
     "mobile.calls_noone_talking": "誰も話していません",
     "mobile.calls_name_started_call": "{name}が通話を開始しました",
-    "mobile.calls_name_is_talking": "{name} が話しています",
     "mobile.calls_mute": "ミュート",
     "mobile.calls_more": "もっと見る",
     "mobile.calls_lower_hand": "手を下げる",

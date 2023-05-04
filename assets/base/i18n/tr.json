@@ -567,7 +567,6 @@
     "mobile.calls_not_available_msg": "Lütfen bu özelliği etkinleştirmesi sistem yöneticinizle görüşün.",
     "mobile.calls_noone_talking": "Kimse konuşmuyor",
     "mobile.calls_name_started_call": "{name} bir çağrı başlattı",
-    "mobile.calls_name_is_talking": "{name} konuşuyor",
     "mobile.calls_mute": "Sesi kapat",
     "mobile.calls_more": "Diğer",
     "mobile.calls_mic_error": "Katılmak için, Ayarlar bölümüne giderek Mattermost için mikrofona erişme izni verin.",
