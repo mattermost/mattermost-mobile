@@ -1,25 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {View, Text, TouchableOpacity, Pressable, Platform} from 'react-native';
+import {View, Text, Pressable, Platform} from 'react-native';
 
-import {muteMyself, unmuteMyself} from '@calls/actions';
+import {leaveCall, muteMyself, unmuteMyself} from '@calls/actions';
 import {recordingAlert, recordingWillBePostedAlert, recordingErrorAlert} from '@calls/alerts';
 import CallAvatar from '@calls/components/call_avatar';
+import CallDuration from '@calls/components/call_duration';
 import PermissionErrorBar from '@calls/components/permission_error_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
+import {makeCallsTheme} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import {Screens} from '@constants';
 import {CURRENT_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {allOrientations, dismissAllModalsAndPopToScreen} from '@screens/navigation';
-import {makeStyleSheetFromTheme} from '@utils/theme';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
-import type {CurrentCall} from '@calls/types/calls';
+import type {CallsTheme, CurrentCall} from '@calls/types/calls';
 import type UserModel from '@typings/database/models/servers/user';
 import type {Options} from 'react-native-navigation';
 
@@ -32,56 +35,94 @@ type Props = {
     threadScreen?: boolean;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
+const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => {
     return {
         wrapper: {
-            padding: 10,
+            marginTop: 8,
+            marginRight: 6,
+            marginBottom: 8,
+            marginLeft: 6,
+            backgroundColor: theme.callsBg,
+            borderRadius: 8,
         },
         container: {
             flexDirection: 'row',
-            backgroundColor: '#3F4350',
-            width: '100%',
-            borderRadius: 5,
-            padding: 4,
-            height: CURRENT_CALL_BAR_HEIGHT - 10,
             alignItems: 'center',
+            backgroundColor: changeOpacity(theme.buttonColor, 0.08),
+            borderRadius: 8,
+            borderWidth: 2,
+            borderStyle: 'solid',
+            borderColor: changeOpacity(theme.buttonColor, 0.16),
+            width: '100%',
+            paddingTop: 8,
+            paddingRight: 12,
+            paddingBottom: 8,
+            paddingLeft: 12,
+            height: CURRENT_CALL_BAR_HEIGHT - 10,
         },
         pressable: {
             zIndex: 10,
         },
+        profilePic: {
+            marginTop: 4,
+            marginRight: Platform.select({android: -8}),
+            marginLeft: Platform.select({android: -8}),
+        },
         userInfo: {
             flex: 1,
-            paddingLeft: 10,
+            paddingLeft: 6,
         },
         speakingUser: {
-            color: theme.sidebarText,
-            fontWeight: '600',
-            fontSize: 16,
+            color: theme.buttonColor,
+            ...typography('Body', 200, 'SemiBold'),
         },
-        currentChannel: {
-            color: theme.sidebarText,
-            opacity: 0.64,
+        speakingPostfix: {
+            ...typography('Body', 200, 'Regular'),
+        },
+        channelAndTime: {
+            color: changeOpacity(theme.buttonColor, 0.56),
+            ...typography('Body', 75, 'Regular'),
+        },
+        separator: {
+            color: changeOpacity(theme.buttonColor, 0.32),
+            ...typography('Body', 75, 'Regular'),
+        },
+        buttonContainer: {
+            flexDirection: 'row',
+            alignItems: 'center',
+            justifyContent: 'space-evenly',
         },
         micIconContainer: {
-            width: 42,
-            height: 42,
+            width: 40,
+            height: 40,
             justifyContent: 'center',
             alignItems: 'center',
             backgroundColor: theme.onlineIndicator,
-            borderRadius: 4,
-            margin: 4,
-            padding: 9,
+            borderRadius: 20,
         },
         micIcon: {
-            color: theme.sidebarText,
+            color: changeOpacity(theme.buttonColor, 0.56),
         },
         muted: {
-            backgroundColor: 'transparent',
+            backgroundColor: changeOpacity(theme.buttonColor, 0.08),
         },
-        expandIcon: {
-            color: theme.sidebarText,
-            padding: 8,
-            marginRight: 8,
+        verticalLine: {
+            height: 42,
+            width: 1,
+            backgroundColor: changeOpacity(theme.buttonColor, 0.16),
+            marginLeft: 12,
+            marginRight: 12,
+        },
+        hangupIconContainer: {
+            width: 40,
+            height: 40,
+            justifyContent: 'center',
+            alignItems: 'center',
+            backgroundColor: theme.dndIndicator,
+            borderRadius: 20,
+        },
+        hangupIcon: {
+            color: theme.buttonColor,
         },
     };
 });
@@ -95,7 +136,8 @@ const CurrentCallBar = ({
     threadScreen,
 }: Props) => {
     const theme = useTheme();
-    const style = getStyleSheet(theme);
+    const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
+    const style = getStyleSheet(callsTheme);
     const intl = useIntl();
     const {formatMessage} = intl;
     usePermissionsChecker(micPermissionsGranted);
@@ -118,21 +160,35 @@ const CurrentCallBar = ({
         await dismissAllModalsAndPopToScreen(Screens.CALL, title, {fromThreadScreen: threadScreen}, options);
     }, [formatMessage, threadScreen]);
 
+    const leaveCallHandler = useCallback(() => {
+        leaveCall();
+    }, []);
+
     const myParticipant = currentCall?.participants[currentCall.myUserId];
 
     // Since we can only see one user talking, it doesn't really matter who we show here (e.g., we can't
     // tell who is speaking louder).
     const talkingUsers = Object.keys(currentCall?.voiceOn || {});
     const speaker = talkingUsers.length > 0 ? talkingUsers[0] : '';
-    let talkingMessage = formatMessage({
-        id: 'mobile.calls_noone_talking',
-        defaultMessage: 'No one is talking',
-    });
+    let talkingMessage = (
+        <Text style={style.speakingUser}>
+            {formatMessage({
+                id: 'mobile.calls_noone_talking',
+                defaultMessage: 'No one is talking',
+            })}
+        </Text>);
     if (speaker) {
-        talkingMessage = formatMessage({
-            id: 'mobile.calls_name_is_talking',
-            defaultMessage: '{name} is talking',
-        }, {name: displayUsername(userModelsDict[speaker], intl.locale, teammateNameDisplay)});
+        talkingMessage = (
+            <Text style={style.speakingUser}>
+                {displayUsername(userModelsDict[speaker], intl.locale, teammateNameDisplay)}
+                {' '}
+                <Text style={style.speakingPostfix}>{
+                    formatMessage({
+                        id: 'mobile.calls_name_is_talking_postfix',
+                        defaultMessage: 'is talking...',
+                    })}
+                </Text>
+            </Text>);
     }
 
     const muteUnmute = () => {
@@ -166,39 +222,56 @@ const CurrentCallBar = ({
     return (
         <>
             <View style={style.wrapper}>
-                <View style={style.container}>
-                    <CallAvatar
-                        userModel={userModelsDict[speaker || '']}
-                        volume={speaker ? 0.5 : 0}
-                        serverUrl={currentCall?.serverUrl || ''}
-                    />
-                    <View style={style.userInfo}>
-                        <Text style={style.speakingUser}>{talkingMessage}</Text>
-                        <Text style={style.currentChannel}>{`~${displayName}`}</Text>
+                <Pressable
+                    style={style.container}
+                    onPress={goToCallScreen}
+                >
+                    <View style={style.profilePic}>
+                        <CallAvatar
+                            userModel={userModelsDict[speaker || '']}
+                            volume={speaker ? 0.5 : 0}
+                            serverUrl={currentCall?.serverUrl || ''}
+                            size={32}
+                        />
                     </View>
-                    <Pressable
-                        onPressIn={goToCallScreen}
-                        style={style.pressable}
-                    >
-                        <CompassIcon
-                            name='arrow-expand'
-                            size={24}
-                            style={style.expandIcon}
-                        />
-                    </Pressable>
-                    <TouchableOpacity
-                        onPress={muteUnmute}
-                        style={[style.pressable, style.micIconContainer, myParticipant?.muted && style.muted]}
-                        disabled={!micPermissionsGranted}
-                    >
-                        <UnavailableIconWrapper
-                            name={myParticipant?.muted ? 'microphone-off' : 'microphone'}
-                            size={24}
-                            unavailable={!micPermissionsGranted}
-                            style={[style.micIcon]}
-                        />
-                    </TouchableOpacity>
-                </View>
+                    <View style={style.userInfo}>
+                        {talkingMessage}
+                        <Text style={style.channelAndTime}>
+                            {`~${displayName}`}
+                            <Text style={style.separator}>{'  •  '}</Text>
+                            <CallDuration
+                                style={style.channelAndTime}
+                                value={currentCall?.startTime || Date.now()}
+                                updateIntervalInSeconds={1}
+                            />
+                        </Text>
+                    </View>
+                    <View style={style.buttonContainer}>
+                        <Pressable
+                            onPress={muteUnmute}
+                            style={[style.pressable, style.micIconContainer, myParticipant?.muted && style.muted]}
+                            disabled={!micPermissionsGranted}
+                        >
+                            <UnavailableIconWrapper
+                                name={myParticipant?.muted ? 'microphone-off' : 'microphone'}
+                                size={24}
+                                unavailable={!micPermissionsGranted}
+                                style={style.micIcon}
+                            />
+                        </Pressable>
+                        <View style={style.verticalLine}/>
+                        <Pressable
+                            onPress={leaveCallHandler}
+                            style={[style.pressable, style.hangupIconContainer]}
+                        >
+                            <CompassIcon
+                                name='phone-hangup'
+                                size={24}
+                                style={style.hangupIcon}
+                            />
+                        </Pressable>
+                    </View>
+                </Pressable>
             </View>
             {micPermissionsError && <PermissionErrorBar/>}
         </>
