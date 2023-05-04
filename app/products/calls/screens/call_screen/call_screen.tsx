@@ -1,16 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
     DeviceEventEmitter,
     Keyboard,
+    type LayoutChangeEvent,
+    type LayoutRectangle,
     NativeModules,
     Platform,
     Pressable,
     SafeAreaView,
     ScrollView,
+    StatusBar,
     Text,
     useWindowDimensions,
     View,
@@ -31,8 +34,9 @@ import PermissionErrorBar from '@calls/components/permission_error_bar';
 import ReactionBar from '@calls/components/reaction_bar';
 import UnavailableIconWrapper from '@calls/components/unavailable_icon_wrapper';
 import {usePermissionsChecker} from '@calls/hooks';
+import {RaisedHandBanner} from '@calls/screens/call_screen/raised_hand_banner';
 import {useCallsConfig} from '@calls/state';
-import {sortParticipants} from '@calls/utils';
+import {getHandsRaised, makeCallsTheme, sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
@@ -57,10 +61,16 @@ import {freezeOtherScreens} from '@utils/gallery';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 import {displayUsername} from '@utils/user';
 
-import type {CallParticipant, CurrentCall} from '@calls/types/calls';
+import type {CallParticipant, CallsTheme, CurrentCall} from '@calls/types/calls';
 import type {AvailableScreens} from '@typings/screens/navigation';
+
+const avatarL = 96;
+const avatarM = 72;
+const usernameL = 110;
+const usernameM = 92;
 
 export type Props = {
     componentId: AvailableScreens;
@@ -71,9 +81,10 @@ export type Props = {
     fromThreadScreen?: boolean;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
+const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => ({
     wrapper: {
         flex: 1,
+        backgroundColor: theme.callsBg,
     },
     container: {
         ...Platform.select({
@@ -85,32 +96,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
             },
         }),
         flexDirection: 'column',
-        backgroundColor: 'black',
+        backgroundColor: theme.callsBg,
         width: '100%',
         height: '100%',
-        borderRadius: 5,
         alignItems: 'center',
     },
     header: {
         flexDirection: 'row',
         alignItems: 'center',
         width: '100%',
-        paddingTop: 10,
-        paddingLeft: 14,
-        paddingRight: 14,
-        ...Platform.select({
-            android: {
-                elevation: 4,
-            },
-            ios: {
-                zIndex: 4,
-            },
-        }),
+        height: 56,
+        paddingLeft: 24,
+        paddingRight: 16,
+    },
+    headerPortraitSpacer: {
+        height: 12,
     },
     headerLandscape: {
         position: 'absolute',
         top: 0,
-        backgroundColor: 'rgba(0,0,0,0.64)',
+        backgroundColor: 'rgba(0,0,0,0.5)', // not themed
         height: 52,
         paddingTop: 0,
     },
@@ -118,56 +123,83 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         top: -1000,
     },
     time: {
-        flex: 1,
-        color: theme.sidebarText,
+        color: theme.buttonColor,
+        ...typography('Heading', 200),
+        width: 60,
+    },
+    collapseIconContainer: {
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center',
+        width: 48,
+        height: 48,
+    },
+    collapseIcon: {
+        color: changeOpacity(theme.buttonColor, 0.56),
+    },
+    collapseIconLandscape: {
         margin: 10,
-        padding: 10,
+        padding: 0,
+        backgroundColor: 'transparent',
+        borderRadius: 0,
+    },
+    usersScrollContainer: {
+        flex: 1,
+        width: '100%',
+    },
+    usersScrollContainerScreenOn: {
+        marginTop: -20,
+    },
+    usersScrollViewCentered: {
+        flex: 1,
+        justifyContent: 'center',
     },
     users: {
-        flex: 1,
         flexDirection: 'row',
         flexWrap: 'wrap',
-        alignContent: 'flex-start',
-    },
-    usersScrollLandscapeScreenOn: {
-        position: 'absolute',
-        height: 0,
     },
     user: {
         flexGrow: 1,
         flexDirection: 'column',
         alignItems: 'center',
-        marginTop: 10,
-        marginBottom: 10,
-        marginLeft: 10,
-        marginRight: 10,
+        margin: 10,
     },
     userScreenOn: {
-        marginTop: 0,
+        marginTop: 5,
         marginBottom: 0,
     },
     username: {
-        color: theme.sidebarText,
+        marginTop: 10,
+        width: usernameL,
+        textAlign: 'center',
+        color: theme.buttonColor,
+        ...typography('Body', 100, 'SemiBold'),
+    },
+    usernameShort: {
+        marginTop: 0,
+        width: usernameM,
+    },
+    buttonsContainer: {
+        alignItems: 'center',
     },
     buttons: {
         flexDirection: 'column',
-        backgroundColor: 'rgba(255,255,255,0.16)',
-        width: '100%',
-        paddingBottom: 10,
-        ...Platform.select({
-            android: {
-                elevation: 4,
-            },
-            ios: {
-                zIndex: 4,
-            },
-        }),
+        alignItems: 'center',
+        paddingBottom: 12,
+        borderTopLeftRadius: 20,
+        borderTopRightRadius: 20,
+        gap: 4,
+        backgroundColor: changeOpacity(theme.buttonColor, 0.08),
     },
     buttonsLandscape: {
         height: 110,
         position: 'absolute',
-        backgroundColor: 'rgba(0,0,0,0.64)',
+        backgroundColor: 'rgba(0,0,0,0.5)', // not themed
+        width: '100%',
         bottom: 0,
+        paddingTop: 16,
+        borderTopLeftRadius: 0,
+        borderTopRightRadius: 0,
     },
     buttonsLandscapeWithReactions: {
         height: 174,
@@ -184,25 +216,26 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 0,
     },
     mute: {
-        flexDirection: 'column',
+        alignSelf: 'stretch',
         alignItems: 'center',
+        gap: 4,
         padding: 24,
-        backgroundColor: '#3DB887',
+        backgroundColor: theme.onlineIndicator,
         borderRadius: 20,
-        marginBottom: 10,
-        marginTop: 20,
         marginLeft: 16,
         marginRight: 16,
+        marginTop: 20,
+        marginBottom: 20,
     },
     muteMuted: {
-        backgroundColor: 'rgba(255,255,255,0.16)',
+        backgroundColor: changeOpacity(theme.buttonColor, 0.12),
     },
     speakerphoneIcon: {
         color: theme.sidebarText,
-        backgroundColor: 'rgba(255,255,255,0.12)',
+        backgroundColor: changeOpacity(theme.buttonColor, 0.12),
     },
     buttonOn: {
-        color: 'black',
+        color: theme.callsBg,
         backgroundColor: 'white',
     },
     otherButtons: {
@@ -212,58 +245,47 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     otherButtonsLandscape: {
         justifyContent: 'center',
     },
-    collapseIcon: {
-        color: theme.sidebarText,
-        margin: 10,
-        padding: 10,
-        backgroundColor: 'rgba(255,255,255,0.12)',
-        borderRadius: 4,
-        overflow: 'hidden',
-    },
-    collapseIconLandscape: {
-        margin: 10,
-        padding: 0,
-        backgroundColor: 'transparent',
-        borderRadius: 0,
-    },
     muteIcon: {
-        color: theme.sidebarText,
+        color: theme.buttonColor,
     },
     muteIconLandscape: {
-        backgroundColor: '#3DB887',
+        backgroundColor: theme.onlineIndicator,
+        padding: 11,
     },
     muteIconLandscapeMuted: {
-        backgroundColor: 'rgba(255,255,255,0.16)',
+        backgroundColor: changeOpacity(theme.buttonColor, 0.12),
     },
     buttonText: {
-        color: theme.sidebarText,
+        color: changeOpacity(theme.buttonColor, 0.72),
+        ...typography('Body', 75, 'SemiBold'),
     },
     buttonIcon: {
-        color: theme.sidebarText,
-        backgroundColor: 'rgba(255,255,255,0.12)',
+        color: theme.buttonColor,
+        backgroundColor: changeOpacity(theme.buttonColor, 0.08),
         borderRadius: 34,
-        padding: 22,
+        padding: 18,
         width: 68,
         height: 68,
-        margin: 10,
+        marginBottom: 8,
         overflow: 'hidden',
     },
     buttonIconLandscape: {
         borderRadius: 26,
-        paddingTop: 14,
-        paddingRight: 16,
-        paddingBottom: 16,
-        paddingLeft: 14,
+        padding: 10,
         width: 52,
         height: 52,
         marginLeft: 12,
         marginRight: 12,
     },
+    errorContainerLandscape: {
+        right: 20,
+        top: 10,
+    },
     hangUpIcon: {
         backgroundColor: Preferences.THEMES.denim.dndIndicator,
     },
     screenShareImage: {
-        flex: 7,
+        flex: 2,
         width: '100%',
         height: '100%',
         alignItems: 'center',
@@ -273,7 +295,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         margin: 3,
     },
     unavailableText: {
-        color: changeOpacity(theme.sidebarText, 0.32),
+        color: changeOpacity(theme.buttonColor, 0.32),
     },
     denimDND: {
         color: Preferences.THEMES.denim.dndIndicator,
@@ -298,11 +320,18 @@ const CallScreen = ({
     usePermissionsChecker(micPermissionsGranted);
     const [showControlsInLandscape, setShowControlsInLandscape] = useState(false);
     const [showReactions, setShowReactions] = useState(false);
+    const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
+    const style = getStyleSheet(callsTheme);
+    const [centerUsers, setCenterUsers] = useState(false);
+    const [layout, setLayout] = useState<LayoutRectangle | null>(null);
 
-    const style = getStyleSheet(theme);
-    const isLandscape = width > height;
     const myParticipant = currentCall?.participants[currentCall.myUserId];
     const micPermissionsError = !micPermissionsGranted && !currentCall?.micPermissionsErrorDismissed;
+    const screenShareOn = Boolean(currentCall?.screenOn);
+    const isLandscape = width > height;
+    const smallerAvatar = isLandscape || screenShareOn;
+    const avatarSize = smallerAvatar ? avatarM : avatarL;
+    const numParticipants = Object.keys(participantsDict).length;
 
     const callThreadOptionTitle = intl.formatMessage({id: 'mobile.calls_call_thread', defaultMessage: 'Call Thread'});
     const recordOptionTitle = intl.formatMessage({id: 'mobile.calls_record', defaultMessage: 'Record'});
@@ -318,7 +347,7 @@ const CallScreen = ({
     useEffect(() => {
         mergeNavigationOptions('Call', {
             layout: {
-                componentBackgroundColor: 'black',
+                componentBackgroundColor: callsTheme.callsBg,
                 orientation: allOrientations,
             },
             topBar: {
@@ -426,13 +455,15 @@ const CallScreen = ({
     // The user should see the loading only if:
     // - Recording has been initialized, recording has not been started, and recording has not ended
     const waitingForRecording = Boolean(currentCall?.recState?.init_at && !currentCall.recState.start_at && !currentCall.recState.end_at && isHost);
+    const showStartRecording = isHost && EnableRecordings && !(waitingForRecording || recording);
+    const showStopRecording = isHost && EnableRecordings && (waitingForRecording || recording);
 
     const showOtherActions = useCallback(async () => {
         const renderContent = () => {
             return (
                 <View>
                     {
-                        isHost && EnableRecordings && !(waitingForRecording || recording) &&
+                        showStartRecording &&
                         <SlideUpPanelItem
                             icon={'record-circle-outline'}
                             onPress={startRecording}
@@ -440,7 +471,7 @@ const CallScreen = ({
                         />
                     }
                     {
-                        isHost && EnableRecordings && (waitingForRecording || recording) &&
+                        showStopRecording &&
                         <SlideUpPanelItem
                             icon={'record-square-outline'}
                             onPress={stopRecording}
@@ -493,6 +524,31 @@ const CallScreen = ({
         return () => didDismissListener.remove();
     }, [isTablet]);
 
+    useEffect(() => {
+        if (!layout || !layout.height || !layout.width) {
+            return;
+        }
+
+        const avatarCellHeight = avatarSize + 20 + 20 + 20; // avatar + name + host pill + padding
+        const usernameSize = smallerAvatar ? usernameM : usernameL;
+        const avatarCellWidth = usernameSize + 20; // name width + padding
+
+        const perRow = Math.floor(layout.width / avatarCellWidth);
+        const totalHeight = Math.ceil(numParticipants / perRow) * avatarCellHeight;
+        const totalWidth = numParticipants * avatarCellWidth;
+
+        // If screenShareOn, we care about width, otherwise we care about height.
+        if ((screenShareOn && totalWidth > layout.width) || (!screenShareOn && totalHeight > layout.height)) {
+            setCenterUsers(false);
+        } else {
+            setCenterUsers(true);
+        }
+    }, [layout, numParticipants]);
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setLayout(e.nativeEvent.layout);
+    }, []);
+
     if (!currentCall || !myParticipant) {
         // Note: this happens because the screen is "rendered", even after the screen has been popped, and the
         // currentCall will have already been set to null when those extra renders run. We probably don't ever need
@@ -505,7 +561,7 @@ const CallScreen = ({
     }
 
     let screenShareView = null;
-    if (currentCall.screenShareURL && currentCall.screenOn) {
+    if (currentCall.screenShareURL && screenShareOn) {
         screenShareView = (
             <Pressable
                 testID='screen-share-container'
@@ -528,48 +584,55 @@ const CallScreen = ({
         );
     }
 
-    const participants = sortParticipants(teammateNameDisplay, participantsDict, currentCall.screenOn);
+    const raisedHands = getHandsRaised(participantsDict);
+    const participants = sortParticipants(intl.locale, teammateNameDisplay, participantsDict, currentCall.screenOn);
     let usersList = null;
-    if (!currentCall.screenOn || !isLandscape) {
+    if (!screenShareOn || !isLandscape) {
         usersList = (
-            <ScrollView
-                alwaysBounceVertical={false}
-                horizontal={currentCall.screenOn !== ''}
-                contentContainerStyle={[isLandscape && Boolean(currentCall.screenOn) && style.usersScrollLandscapeScreenOn]}
-            >
-                <Pressable
-                    testID='users-list'
-                    onPress={toggleControlsInLandscape}
-                    style={style.users}
+            <View style={[style.usersScrollContainer, screenShareOn && style.usersScrollContainerScreenOn]}>
+                <ScrollView
+                    alwaysBounceVertical={false}
+                    horizontal={screenShareOn}
+                    onLayout={onLayout}
+                    contentContainerStyle={centerUsers && style.usersScrollViewCentered}
                 >
-                    {participants.map((user) => {
-                        return (
-                            <View
-                                style={[style.user, Boolean(currentCall.screenOn) && style.userScreenOn]}
-                                key={user.id}
-                            >
-                                <CallAvatar
-                                    userModel={user.userModel}
-                                    volume={currentCall.voiceOn[user.id] ? 1 : 0}
-                                    muted={user.muted}
-                                    sharingScreen={user.id === currentCall.screenOn}
-                                    raisedHand={Boolean(user.raisedHand)}
-                                    reaction={user.reaction?.emoji}
-                                    size={currentCall.screenOn ? 'm' : 'l'}
-                                    serverUrl={currentCall.serverUrl}
-                                />
-                                <Text style={style.username}>
-                                    {displayUsername(user.userModel, intl.locale, teammateNameDisplay)}
-                                    {user.id === myParticipant.id &&
-                                        ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
-                                    }
-                                </Text>
-                                {user.id === currentCall.hostId && <CallsBadge type={CallsBadgeType.Host}/>}
-                            </View>
-                        );
-                    })}
-                </Pressable>
-            </ScrollView>
+                    <Pressable
+                        testID='users-list'
+                        onPress={toggleControlsInLandscape}
+                        style={style.users}
+                    >
+                        {participants.map((user) => {
+                            return (
+                                <View
+                                    style={[style.user, screenShareOn && style.userScreenOn]}
+                                    key={user.id}
+                                >
+                                    <CallAvatar
+                                        userModel={user.userModel}
+                                        volume={currentCall.voiceOn[user.id] ? 1 : 0}
+                                        muted={user.muted}
+                                        sharingScreen={user.id === currentCall.screenOn}
+                                        raisedHand={Boolean(user.raisedHand)}
+                                        reaction={user.reaction?.emoji}
+                                        size={avatarSize}
+                                        serverUrl={currentCall.serverUrl}
+                                    />
+                                    <Text
+                                        style={[style.username, smallerAvatar && style.usernameShort]}
+                                        numberOfLines={1}
+                                    >
+                                        {displayUsername(user.userModel, intl.locale, teammateNameDisplay)}
+                                        {user.id === myParticipant.id &&
+                                            ` ${intl.formatMessage({id: 'mobile.calls_you', defaultMessage: '(you)'})}`
+                                        }
+                                    </Text>
+                                    {user.id === currentCall.hostId && <CallsBadge type={CallsBadgeType.Host}/>}
+                                </View>
+                            );
+                        })}
+                    </Pressable>
+                </ScrollView>
+            </View>
         );
     }
 
@@ -586,141 +649,205 @@ const CallScreen = ({
             style={[style.buttonText, !micPermissionsGranted && style.unavailableText]}
         />);
 
+    const header = (
+        <View
+            style={[
+                style.header,
+                isLandscape && style.headerLandscape,
+                isLandscape && !showControlsInLandscape && style.headerLandscapeNoControls,
+            ]}
+        >
+            {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
+            {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
+            <CallDuration
+                style={style.time}
+                value={currentCall.startTime}
+                updateIntervalInSeconds={1}
+            />
+            <RaisedHandBanner
+                raisedHands={raisedHands}
+                currentUserId={currentCall.myUserId}
+                teammateNameDisplay={teammateNameDisplay}
+            />
+            <Pressable
+                onPress={() => popTopScreen()}
+                style={style.collapseIconContainer}
+            >
+                <CompassIcon
+                    name='arrow-collapse'
+                    size={28}
+                    style={[style.collapseIcon, isLandscape && style.collapseIconLandscape]}
+                />
+            </Pressable>
+        </View>
+    );
+
     return (
         <SafeAreaView style={style.wrapper}>
+            <StatusBar barStyle={'light-content'}/>
             <View style={style.container}>
-                <View
-                    style={[
-                        style.header,
-                        isLandscape && style.headerLandscape,
-                        isLandscape && !showControlsInLandscape && style.headerLandscapeNoControls,
-                    ]}
-                >
-                    {waitingForRecording && <CallsBadge type={CallsBadgeType.Waiting}/>}
-                    {recording && <CallsBadge type={CallsBadgeType.Rec}/>}
-                    <CallDuration
-                        style={style.time}
-                        value={currentCall.startTime}
-                        updateIntervalInSeconds={1}
-                    />
-                    <Pressable onPress={() => popTopScreen()}>
-                        <CompassIcon
-                            name='arrow-collapse'
-                            size={24}
-                            style={[style.collapseIcon, isLandscape && style.collapseIconLandscape]}
-                        />
-                    </Pressable>
-                </View>
+                {!isLandscape && header}
+                {!isLandscape && <View style={style.headerPortraitSpacer}/>}
                 {usersList}
                 {screenShareView}
-                {micPermissionsError && <PermissionErrorBar/>}
-                {!isLandscape &&
+                {isLandscape && header}
+                {!isLandscape && currentCall.reactionStream.length > 0 &&
                     <EmojiList reactionStream={currentCall.reactionStream}/>
                 }
-                <View
-                    style={[
-                        style.buttons,
-                        isLandscape && style.buttonsLandscape,
-                        isLandscape && showReactions && style.buttonsLandscapeWithReactions,
-                        isLandscape && !showControlsInLandscape && style.buttonsLandscapeNoControls,
-                    ]}
-                >
-                    {showReactions &&
-                        <ReactionBar raisedHand={myParticipant.raisedHand}/>
-                    }
-                    {!isLandscape &&
-                        <Pressable
-                            testID='mute-unmute'
-                            style={[style.mute, myParticipant.muted && style.muteMuted]}
-                            onPress={muteUnmuteHandler}
-                            disabled={!micPermissionsGranted}
-                        >
-                            <UnavailableIconWrapper
-                                name={myParticipant.muted ? 'microphone-off' : 'microphone'}
-                                size={24}
-                                unavailable={!micPermissionsGranted}
-                                style={style.muteIcon}
-                            />
-                            {myParticipant.muted ? UnmuteText : MuteText}
-                        </Pressable>
-                    }
-                    <View style={[style.otherButtons, isLandscape && style.otherButtonsLandscape]}>
-                        <Pressable
-                            testID='leave'
-                            style={[style.button, isLandscape && style.buttonLandscape]}
-                            onPress={leaveCallHandler}
-                        >
-                            <CompassIcon
-                                name='phone-hangup'
-                                size={24}
-                                style={[style.buttonIcon, isLandscape && style.buttonIconLandscape, style.hangUpIcon]}
-                            />
-                            <FormattedText
-                                id={'mobile.calls_leave'}
-                                defaultMessage={'Leave'}
-                                style={style.buttonText}
-                            />
-                        </Pressable>
-                        <AudioDeviceButton
-                            pressableStyle={[style.button, isLandscape && style.buttonLandscape]}
-                            iconStyle={[
-                                style.buttonIcon,
-                                isLandscape && style.buttonIconLandscape,
-                                style.speakerphoneIcon,
-                                currentCall.speakerphoneOn && style.buttonOn,
-                            ]}
-                            buttonTextStyle={style.buttonText}
-                            currentCall={currentCall}
-                        />
-                        <Pressable
-                            style={[style.button, isLandscape && style.buttonLandscape]}
-                            onPress={toggleReactions}
-                        >
-                            <CompassIcon
-                                name={'emoticon-happy-outline'}
-                                size={24}
-                                style={[style.buttonIcon, isLandscape && style.buttonIconLandscape, showReactions && style.buttonOn]}
-                            />
-                            <FormattedText
-                                id={'mobile.calls_react'}
-                                defaultMessage={'React'}
-                                style={style.buttonText}
-                            />
-                        </Pressable>
-                        <Pressable
-                            style={[style.button, isLandscape && style.buttonLandscape]}
-                            onPress={showOtherActions}
-                        >
-                            <CompassIcon
-                                name='dots-horizontal'
-                                size={24}
-                                style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
-                            />
-                            <FormattedText
-                                id={'mobile.calls_more'}
-                                defaultMessage={'More'}
-                                style={style.buttonText}
-                            />
-                        </Pressable>
-                        {isLandscape &&
+                {micPermissionsError && <PermissionErrorBar/>}
+                <View style={[style.buttonsContainer]}>
+                    <View
+                        style={[
+                            style.buttons,
+                            isLandscape && style.buttonsLandscape,
+                            isLandscape && showReactions && style.buttonsLandscapeWithReactions,
+                            isLandscape && !showControlsInLandscape && style.buttonsLandscapeNoControls,
+                        ]}
+                    >
+                        {showReactions &&
+                            <ReactionBar raisedHand={myParticipant.raisedHand}/>
+                        }
+                        {!isLandscape &&
                             <Pressable
                                 testID='mute-unmute'
-                                style={[style.button, style.buttonLandscape]}
+                                style={[style.mute, myParticipant.muted && style.muteMuted]}
                                 onPress={muteUnmuteHandler}
+                                disabled={!micPermissionsGranted}
                             >
-                                <CompassIcon
+                                <UnavailableIconWrapper
                                     name={myParticipant.muted ? 'microphone-off' : 'microphone'}
-                                    size={24}
-                                    style={[
-                                        style.buttonIcon,
-                                        isLandscape && style.buttonIconLandscape,
-                                        style.muteIconLandscape,
-                                        myParticipant?.muted && style.muteIconLandscapeMuted,
-                                    ]}
+                                    size={32}
+                                    unavailable={!micPermissionsGranted}
+                                    style={style.muteIcon}
                                 />
                                 {myParticipant.muted ? UnmuteText : MuteText}
                             </Pressable>
                         }
+                        <View style={[style.otherButtons, isLandscape && style.otherButtonsLandscape]}>
+                            <Pressable
+                                testID='leave'
+                                style={[style.button, isLandscape && style.buttonLandscape]}
+                                onPress={leaveCallHandler}
+                            >
+                                <CompassIcon
+                                    name='phone-hangup'
+                                    size={32}
+                                    style={[style.buttonIcon, isLandscape && style.buttonIconLandscape, style.hangUpIcon]}
+                                />
+                                <FormattedText
+                                    id={'mobile.calls_leave'}
+                                    defaultMessage={'Leave'}
+                                    style={style.buttonText}
+                                />
+                            </Pressable>
+                            <AudioDeviceButton
+                                pressableStyle={[style.button, isLandscape && style.buttonLandscape]}
+                                iconStyle={[
+                                    style.buttonIcon,
+                                    isLandscape && style.buttonIconLandscape,
+                                    style.speakerphoneIcon,
+                                    currentCall.speakerphoneOn && style.buttonOn,
+                                ]}
+                                buttonTextStyle={style.buttonText}
+                                currentCall={currentCall}
+                            />
+                            <Pressable
+                                style={[style.button, isLandscape && style.buttonLandscape]}
+                                onPress={toggleReactions}
+                            >
+                                <CompassIcon
+                                    name={'emoticon-happy-outline'}
+                                    size={32}
+                                    style={[style.buttonIcon, isLandscape && style.buttonIconLandscape, showReactions && style.buttonOn]}
+                                />
+                                <FormattedText
+                                    id={'mobile.calls_react'}
+                                    defaultMessage={'React'}
+                                    style={style.buttonText}
+                                />
+                            </Pressable>
+                            {!isLandscape && isHost &&
+                                <Pressable
+                                    style={[style.button, isLandscape && style.buttonLandscape]}
+                                    onPress={showOtherActions}
+                                >
+                                    <CompassIcon
+                                        name='dots-horizontal'
+                                        size={32}
+                                        style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
+                                    />
+                                    <FormattedText
+                                        id={'mobile.calls_more'}
+                                        defaultMessage={'More'}
+                                        style={style.buttonText}
+                                    />
+                                </Pressable>
+                            }
+                            {isLandscape &&
+                                <Pressable
+                                    testID='mute-unmute'
+                                    style={[style.button, style.buttonLandscape]}
+                                    onPress={muteUnmuteHandler}
+                                >
+                                    <UnavailableIconWrapper
+                                        name={myParticipant.muted ? 'microphone-off' : 'microphone'}
+                                        size={32}
+                                        unavailable={!micPermissionsGranted}
+                                        style={[
+                                            style.buttonIcon,
+                                            isLandscape && style.buttonIconLandscape,
+                                            style.muteIconLandscape,
+                                            myParticipant?.muted && style.muteIconLandscapeMuted,
+                                        ]}
+                                        errorContainerStyle={isLandscape && style.errorContainerLandscape}
+                                    />
+                                    {myParticipant.muted ? UnmuteText : MuteText}
+                                </Pressable>
+                            }
+                            {(isLandscape || !isHost) &&
+                                <Pressable
+                                    style={[style.button, isLandscape && style.buttonLandscape]}
+                                    onPress={switchToThread}
+                                >
+                                    <CompassIcon
+                                        name='message-text-outline'
+                                        size={32}
+                                        style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
+                                    />
+                                    <FormattedText
+                                        id={'mobile.calls_thread'}
+                                        defaultMessage={'Thread'}
+                                        style={style.buttonText}
+                                    />
+                                </Pressable>
+                            }
+                            {isLandscape && showStartRecording &&
+                                <Pressable
+                                    style={[style.button, isLandscape && style.buttonLandscape]}
+                                    onPress={startRecording}
+                                >
+                                    <CompassIcon
+                                        name='record-circle-outline'
+                                        size={32}
+                                        style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
+                                    />
+                                    <Text style={style.buttonText}>{recordOptionTitle}</Text>
+                                </Pressable>
+                            }
+                            {isLandscape && showStopRecording &&
+                                <Pressable
+                                    style={[style.button, isLandscape && style.buttonLandscape]}
+                                    onPress={stopRecording}
+                                >
+                                    <CompassIcon
+                                        name='record-square-outline'
+                                        size={32}
+                                        style={[style.buttonIcon, isLandscape && style.buttonIconLandscape]}
+                                    />
+                                    <Text style={style.buttonText}>{stopRecordingOptionTitle}</Text>
+                                </Pressable>
+                            }
+                        </View>
                     </View>
                 </View>
             </View>

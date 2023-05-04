@@ -5,8 +5,8 @@ import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
-import CurrentCallBar from '@calls/components/current_call_bar';
 import FloatingCallContainer from '@calls/components/floating_call_container';
+import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import RoundedHeaderContext from '@components/rounded_header_context';
@@ -27,7 +27,9 @@ import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view'
 type ThreadProps = {
     componentId: AvailableScreens;
     isCRTEnabled: boolean;
+    isCallInCurrentChannel: boolean;
     isInACall: boolean;
+    isInCurrentChannelCall: boolean;
     rootId: string;
     rootPost?: PostModel;
 };
@@ -39,7 +41,15 @@ const styles = StyleSheet.create({
     flex: {flex: 1},
 });
 
-const Thread = ({componentId, isCRTEnabled, rootId, rootPost, isInACall}: ThreadProps) => {
+const Thread = ({
+    componentId,
+    isCRTEnabled,
+    rootId,
+    rootPost,
+    isCallInCurrentChannel,
+    isInACall,
+    isInCurrentChannelCall,
+}: ThreadProps) => {
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
 
@@ -84,6 +94,9 @@ const Thread = ({componentId, isCRTEnabled, rootId, rootPost, isInACall}: Thread
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
+    const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
+    const renderCallsComponents = showJoinCallBanner || isInACall;
+
     return (
         <FreezeScreen>
             <SafeAreaView
@@ -94,6 +107,7 @@ const Thread = ({componentId, isCRTEnabled, rootId, rootPost, isInACall}: Thread
                 onLayout={onLayout}
             >
                 <RoundedHeaderContext/>
+                {showJoinCallBanner && <RoundedHeaderCalls threadScreen={true}/>}
                 {Boolean(rootPost) &&
                 <>
                     <View style={styles.flex}>
@@ -114,10 +128,13 @@ const Thread = ({componentId, isCRTEnabled, rootId, rootPost, isInACall}: Thread
                     />
                 </>
                 }
-                {isInACall &&
-                    <FloatingCallContainer threadScreen={true}>
-                        <CurrentCallBar threadScreen={true}/>
-                    </FloatingCallContainer>
+                {renderCallsComponents &&
+                    <FloatingCallContainer
+                        channelId={rootPost!.channelId}
+                        showJoinCallBanner={showJoinCallBanner}
+                        isInACall={isInACall}
+                        threadScreen={true}
+                    />
                 }
             </SafeAreaView>
         </FreezeScreen>

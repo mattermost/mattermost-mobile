@@ -136,6 +136,12 @@ export type ReactionStreamEmoji = {
     literal?: string;
 };
 
+export type CallsTheme = Theme & {
+    callsBg: string;
+    callsBgRgb: string;
+    callsBadgeBg: string;
+};
+
 export type AudioDeviceInfoRaw = {
     availableAudioDeviceList: string;
     selectedAudioDevice: AudioDevice;
