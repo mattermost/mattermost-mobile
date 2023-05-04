@@ -1,11 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {Pressable, Text, View} from 'react-native';
 import Permissions from 'react-native-permissions';
 
+import {makeCallsTheme} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import {Calls} from '@constants';
 import {CALL_ERROR_BAR_HEIGHT} from '@constants/view';
@@ -14,13 +15,14 @@ import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import type {MessageBarType} from '@app/constants/calls';
+import type {CallsTheme} from '@calls/types/calls';
 
 type Props = {
     type: MessageBarType;
     onPress: () => void;
 }
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => (
+const getStyleSheet = makeStyleSheetFromTheme((theme: CallsTheme) => (
     {
         pressable: {
             zIndex: 10,
@@ -47,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => (
             color: theme.buttonColor,
         },
         warningText: {
-            color: theme.centerChannelColor,
+            color: theme.callsBg,
         },
         iconContainer: {
             width: 42,
@@ -66,7 +68,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => (
             fontSize: 18,
         },
         warningIcon: {
-            color: theme.centerChannelColor,
+            color: theme.callsBg,
         },
         pressedErrorIcon: {
             color: theme.dndIndicator,
@@ -83,7 +85,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => (
 const MessageBar = ({type, onPress}: Props) => {
     const intl = useIntl();
     const theme = useTheme();
-    const style = getStyleSheet(theme);
+    const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
+    const style = getStyleSheet(callsTheme);
     const warning = type === Calls.MessageBarType.CallQuality;
 
     let message = '';
