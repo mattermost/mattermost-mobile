@@ -133,7 +133,7 @@ export async function createPost(serverUrl: string, post: Partial<Post>, files: 
 
     let created;
     try {
-        created = await client.createPost(newPost);
+        created = await client.createPost({...newPost, create_at: 0});
     } catch (error) {
         logDebug('Error sending a post', error);
         const errorPost = {
