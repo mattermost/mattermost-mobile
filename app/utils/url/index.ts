@@ -176,7 +176,7 @@ export function getYouTubeVideoId(link?: string) {
     return '';
 }
 
-export function tryOpenURL(url: string, onError = emptyFunction, onSuccess = emptyFunction) {
+export function tryOpenURL(url: string, onError: (error: unknown) => void = emptyFunction, onSuccess = emptyFunction) {
     Linking.openURL(url).
         then(onSuccess).
         catch(onError);

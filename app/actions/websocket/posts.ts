@@ -195,6 +195,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     if (!operator) {
         return;
     }
+    const {database} = operator;
 
     let post: Post;
     try {
@@ -204,7 +205,6 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     }
 
     const models: Model[] = [];
-    const {database} = operator;
 
     const oldPost = await getPostById(database, post.id);
     if (!oldPost) {
@@ -223,7 +223,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     }
 
     let actionType: string = ActionType.POSTS.RECEIVED_NEW;
-    const isCRTEnabled = await getIsCRTEnabled(operator.database);
+    const isCRTEnabled = await getIsCRTEnabled(database);
     if (isCRTEnabled && post.root_id) {
         actionType = ActionType.POSTS.RECEIVED_IN_THREAD;
     }
@@ -240,12 +240,8 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
 }
 
 export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
     try {
-        const {database} = operator;
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const post: Post = JSON.parse(msg.data.post);
 

@@ -14,13 +14,13 @@ import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentUserId, getExpiredSession} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
+import {getFullErrorMessage, isErrorWithStatusCode, isErrorWithUrl} from '@utils/errors';
 import {logWarning, logError, logDebug} from '@utils/log';
 import {scheduleExpiredNotification} from '@utils/notification';
 import {getCSRFFromCookie} from '@utils/security';
 
 import {loginEntry} from './entry';
 
-import type ClientError from '@client/rest/error';
 import type {LoginArgs} from '@typings/database/database';
 
 const HTTP_UNAUTHORIZED = 401;
@@ -44,7 +44,7 @@ export const addPushProxyVerificationStateFromLogin = async (serverUrl: string) 
         logDebug('error setting the push proxy verification state on login', error);
     }
 };
-export const forceLogoutIfNecessary = async (serverUrl: string, err: ClientErrorProps) => {
+export const forceLogoutIfNecessary = async (serverUrl: string, err: unknown) => {
     const database = DatabaseManager.serverDatabases[serverUrl]?.database;
     if (!database) {
         return {error: `${serverUrl} database not found`};
@@ -52,7 +52,7 @@ export const forceLogoutIfNecessary = async (serverUrl: string, err: ClientError
 
     const currentUserId = await getCurrentUserId(database);
 
-    if ('status_code' in err && err.status_code === HTTP_UNAUTHORIZED && err?.url?.indexOf('/login') === -1 && currentUserId) {
+    if (isErrorWithStatusCode(err) && err.status_code === HTTP_UNAUTHORIZED && isErrorWithUrl(err) && err.url?.indexOf('/login') === -1 && currentUserId) {
         await logout(serverUrl);
     }
 
@@ -69,9 +69,9 @@ export const fetchSessions = async (serverUrl: string, currentUserId: string) =>
 
     try {
         return await client.getSessions(currentUserId);
-    } catch (e) {
-        logError('fetchSessions', e);
-        await forceLogoutIfNecessary(serverUrl, e as ClientError);
+    } catch (error) {
+        logDebug('error on fetchSessions', getFullErrorMessage(error));
+        await forceLogoutIfNecessary(serverUrl, error);
     }
 
     return undefined;
@@ -86,14 +86,8 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
         return {error: 'App database not found.', failed: true};
     }
 
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error: error as Error, failed: true};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         deviceToken = await getDeviceToken();
         user = await client.login(
             loginId,
@@ -123,16 +117,17 @@ export const login = async (serverUrl: string, {ldapOnly = false, loginId, mfaTo
         const csrfToken = await getCSRFFromCookie(serverUrl);
         client.setCSRFToken(csrfToken);
     } catch (error) {
-        return {error: error as Error, failed: true};
+        logDebug('error on login', getFullErrorMessage(error));
+        return {error, failed: true};
     }
 
     try {
         await addPushProxyVerificationStateFromLogin(serverUrl);
         const {error} = await loginEntry({serverUrl});
         await DatabaseManager.setActiveServerDatabase(serverUrl);
-        return {error: error as ClientError, failed: false};
+        return {error, failed: false};
     } catch (error) {
-        return {error: error as ClientError, failed: false};
+        return {error, failed: false};
     }
 };
 
@@ -143,7 +138,7 @@ export const logout = async (serverUrl: string, skipServerLogout = false, remove
             await client.logout();
         } catch (error) {
             // We want to log the user even if logging out from the server failed
-            logWarning('An error occurred logging out from the server', serverUrl, error);
+            logWarning('An error occurred logging out from the server', serverUrl, getFullErrorMessage(error));
         }
     }
 
@@ -203,50 +198,34 @@ export const scheduleSessionNotification = async (serverUrl: string) => {
         }
     } catch (e) {
         logError('scheduleExpiredNotification', e);
-        await forceLogoutIfNecessary(serverUrl, e as ClientError);
+        await forceLogoutIfNecessary(serverUrl, e);
     }
 };
 
 export const sendPasswordResetEmail = async (serverUrl: string, email: string) => {
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+        const response = await client.sendPasswordResetEmail(email);
+        return {status: response.status};
     } catch (error) {
+        logDebug('error on sendPasswordResetEmail', getFullErrorMessage(error));
         return {error};
     }
-
-    let response;
-    try {
-        response = await client.sendPasswordResetEmail(email);
-    } catch (error) {
-        return {error};
-    }
-    return {
-        status: response.status,
-        error: undefined,
-    };
 };
 
 export const ssoLogin = async (serverUrl: string, serverDisplayName: string, serverIdentifier: string, bearerToken: string, csrfToken: string): Promise<LoginActionResponse> => {
-    let user;
-
     const database = DatabaseManager.appDatabase?.database;
     if (!database) {
         return {error: 'App database not found', failed: true};
     }
 
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error: error as Error, failed: true};
-    }
+        const client = NetworkManager.getClient(serverUrl);
 
-    client.setBearerToken(bearerToken);
-    client.setCSRFToken(csrfToken);
+        client.setBearerToken(bearerToken);
+        client.setCSRFToken(csrfToken);
 
-    // Setting up active database for this SSO login flow
-    try {
+        // Setting up active database for this SSO login flow
         const server = await DatabaseManager.createServerDatabase({
             config: {
                 dbName: serverUrl,
@@ -255,7 +234,7 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
                 displayName: serverDisplayName,
             },
         });
-        user = await client.getMe();
+        const user = await client.getMe();
         await server?.operator.handleUsers({users: [user], prepareRecordsOnly: false});
         await server?.operator.handleSystem({
             systems: [{
@@ -264,17 +243,18 @@ export const ssoLogin = async (serverUrl: string, serverDisplayName: string, ser
             }],
             prepareRecordsOnly: false,
         });
-    } catch (e) {
-        return {error: e as ClientError, failed: true};
+    } catch (error) {
+        logDebug('error on ssoLogin', getFullErrorMessage(error));
+        return {error, failed: true};
     }
 
     try {
         await addPushProxyVerificationStateFromLogin(serverUrl);
         const {error} = await loginEntry({serverUrl});
         await DatabaseManager.setActiveServerDatabase(serverUrl);
-        return {error: error as ClientError, failed: false};
+        return {error, failed: false};
     } catch (error) {
-        return {error: error as ClientError, failed: false};
+        return {error, failed: false};
     }
 };
 

@@ -27,7 +27,7 @@ class ServerIntegrationsManager {
 
         try {
             const res = await fetchCommands(this.serverUrl, teamId);
-            if (res.error) {
+            if ('error' in res) {
                 return [];
             }
             this.commands[teamId] = res.commands;

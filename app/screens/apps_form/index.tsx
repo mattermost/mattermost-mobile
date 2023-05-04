@@ -68,11 +68,11 @@ function AppsFormContainer({
         const creq = createCallRequest(currentForm.submit, context, {}, submission);
         const res = await doAppSubmit<FormResponseData>(serverUrl, creq, intl);
 
-        if (res.error) {
+        if ('error' in res) {
             return res;
         }
 
-        const callResp = res.data!;
+        const callResp = res.data;
         switch (callResp.type) {
             case AppCallResponseTypes.OK:
                 if (callResp.text) {

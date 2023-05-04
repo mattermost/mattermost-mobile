@@ -22,8 +22,6 @@ import {setScreensOrientation} from '@screens/navigation';
 import {handleDeepLink} from '@utils/deep_link';
 import {logError} from '@utils/log';
 
-import type {jsAndNativeErrorHandler} from '@typings/global/error_handling';
-
 type LinkingCallbackArg = {url: string};
 
 const {SplitView} = NativeModules;

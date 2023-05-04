@@ -5,7 +5,10 @@ import React from 'react';
 import {View, Platform, StyleSheet} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import CurrentCallBar from '@calls/components/current_call_bar';
+import JoinCallBanner from '@calls/components/join_call_banner';
 import {DEFAULT_HEADER_HEIGHT} from '@constants/view';
+import {useServerUrl} from '@context/server';
 
 const topBarHeight = DEFAULT_HEADER_HEIGHT;
 
@@ -25,11 +28,14 @@ const style = StyleSheet.create({
 });
 
 type Props = {
-    children: React.ReactNode;
+    channelId: string;
+    showJoinCallBanner: boolean;
+    isInACall: boolean;
     threadScreen?: boolean;
 }
 
-const FloatingCallContainer = ({threadScreen, ...props}: Props) => {
+const FloatingCallContainer = ({channelId, showJoinCallBanner, isInACall, threadScreen}: Props) => {
+    const serverUrl = useServerUrl();
     const insets = useSafeAreaInsets();
     const wrapperTop = {
         top: insets.top + (threadScreen ? 0 : topBarHeight),
@@ -37,7 +43,13 @@ const FloatingCallContainer = ({threadScreen, ...props}: Props) => {
 
     return (
         <View style={[style.wrapper, wrapperTop]}>
-            {props.children}
+            {showJoinCallBanner &&
+                <JoinCallBanner
+                    serverUrl={serverUrl}
+                    channelId={channelId}
+                />
+            }
+            {isInACall && <CurrentCallBar/>}
         </View>
     );
 };

@@ -114,6 +114,7 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
     const models: Model[] = [];
     const threads: ThreadWithLastFetchedAt[] = [];
     const toUpdate: {[rootId: string]: number | undefined} = {};
+    const {database} = operator;
     let processedThreads: Set<string> | undefined;
 
     posts.forEach((post: Post) => {
@@ -139,7 +140,7 @@ export const prepareThreadsFromReceivedPosts = async (operator: ServerDataOperat
 
     const toUpdateKeys = Object.keys(toUpdate);
     if (toUpdateKeys.length) {
-        const toUpdateThreads = await Promise.all(toUpdateKeys.map((key) => getThreadById(operator.database, key)));
+        const toUpdateThreads = await Promise.all(toUpdateKeys.map((key) => getThreadById(database, key)));
         for (const thread of toUpdateThreads) {
             if (thread && !processedThreads?.has(thread.id)) {
                 const model = thread.prepareUpdate((record) => {

@@ -22,7 +22,7 @@ import NetworkManager from '@managers/network_manager';
 import {getServerByDisplayName, getServerByIdentifier} from '@queries/app/servers';
 import Background from '@screens/background';
 import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
-import {getErrorMessage} from '@utils/client_error';
+import {getErrorMessage} from '@utils/errors';
 import {canReceiveNotifications} from '@utils/push_proxy';
 import {loginOptions} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -31,7 +31,6 @@ import {getServerUrlAfterRedirect, isValidUrl, sanitizeUrl} from '@utils/url';
 import ServerForm from './form';
 import ServerHeader from './header';
 
-import type ClientError from '@client/rest/error';
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
@@ -301,7 +300,7 @@ const Server = ({
                 const nurl = serverUrl.replace('https:', 'http:');
                 pingServer(nurl, false);
             } else {
-                setUrlError(getErrorMessage(result.error as ClientError, intl));
+                setUrlError(getErrorMessage(result.error, intl));
                 setButtonDisabled(true);
                 setConnecting(false);
             }
@@ -312,7 +311,7 @@ const Server = ({
         const data = await fetchConfigAndLicense(serverUrl, true);
         if (data.error) {
             setButtonDisabled(true);
-            setUrlError(getErrorMessage(data.error as ClientError, intl));
+            setUrlError(getErrorMessage(data.error, intl));
             setConnecting(false);
             return;
         }

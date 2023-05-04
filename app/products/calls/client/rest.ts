@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import type {ServerChannelState, ApiResp} from '@calls/types/calls';
-import type {CallRecordingState, CallsConfig} from '@mattermost/calls/lib/types';
+import type {ApiResp} from '@calls/types/calls';
+import type {CallChannelState, CallRecordingState, CallsConfig} from '@mattermost/calls/lib/types';
 import type {RTCIceServer} from 'react-native-webrtc';
 
 export interface ClientCallsMix {
     getEnabled: () => Promise<Boolean>;
-    getCalls: () => Promise<ServerChannelState[]>;
-    getCallForChannel: (channelId: string) => Promise<ServerChannelState>;
+    getCalls: () => Promise<CallChannelState[]>;
+    getCallForChannel: (channelId: string) => Promise<CallChannelState>;
     getCallsConfig: () => Promise<CallsConfig>;
-    enableChannelCalls: (channelId: string, enable: boolean) => Promise<ServerChannelState>;
+    enableChannelCalls: (channelId: string, enable: boolean) => Promise<CallChannelState>;
     endCall: (channelId: string) => Promise<ApiResp>;
     genTURNCredentials: () => Promise<RTCIceServer[]>;
     startCallRecording: (callId: string) => Promise<ApiResp | CallRecordingState>;

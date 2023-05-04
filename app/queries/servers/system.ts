@@ -327,7 +327,8 @@ export const observeWebsocketLastDisconnected = (database: Database) => {
 };
 
 export const resetWebSocketLastDisconnected = async (operator: ServerDataOperator, prepareRecordsOnly = false) => {
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(operator.database);
+    const {database} = operator;
+    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
 
     if (lastDisconnectedAt) {
         return operator.handleSystem({systems: [{
