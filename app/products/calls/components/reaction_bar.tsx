@@ -1,35 +1,44 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {Pressable, StyleSheet, useWindowDimensions, View} from 'react-native';
 
 import {raiseHand, unraiseHand} from '@calls/actions';
 import {sendReaction} from '@calls/actions/calls';
 import EmojiButton from '@calls/components/emoji_button';
+import {makeCallsTheme} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {useTheme} from '@context/theme';
+import {changeOpacity} from '@utils/theme';
+import {typography} from '@utils/typography';
 
-const styles = StyleSheet.create({
+import type {CallsTheme} from '@calls/types/calls';
+
+const getStyleSheet = ((theme: CallsTheme) => StyleSheet.create({
+    outerContainer: {
+        flexDirection: 'row',
+    },
     container: {
-        display: 'flex',
+        flex: 1,
         flexDirection: 'row',
         alignItems: 'flex-end',
         justifyContent: 'space-between',
-        width: '100%',
         height: 64,
         paddingLeft: 16,
         paddingRight: 16,
     },
-    containerInLandscape: {
-        paddingBottom: 6,
+    containerLandscape: {
+        height: 60,
+        paddingBottom: 12,
         justifyContent: 'center',
     },
     button: {
         display: 'flex',
         flexDirection: 'row',
         alignItems: 'center',
-        backgroundColor: 'rgba(255,255,255,0.08)',
+        backgroundColor: changeOpacity(theme.buttonColor, 0.08),
         borderRadius: 30,
         height: 48,
         maxWidth: 160,
@@ -41,18 +50,19 @@ const styles = StyleSheet.create({
         marginLeft: 12,
     },
     buttonPressed: {
-        backgroundColor: 'rgba(245, 171, 0, 0.24)',
+        backgroundColor: theme.buttonColor,
     },
     unPressed: {
-        color: 'white',
+        color: changeOpacity(theme.buttonColor, 0.56),
     },
     pressed: {
-        color: '#F5AB00',
+        color: theme.callsBg,
     },
     buttonText: {
         marginLeft: 8,
+        ...typography('Body', 200, 'SemiBold'),
     },
-});
+}));
 
 const predefinedReactions = [['+1', '1F44D'], ['clap', '1F44F'], ['joy', '1F602'], ['heart', '2764-FE0F']];
 
@@ -61,6 +71,9 @@ interface Props {
 }
 
 const ReactionBar = ({raisedHand}: Props) => {
+    const theme = useTheme();
+    const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
+    const style = getStyleSheet(callsTheme);
     const {width, height} = useWindowDimensions();
     const isLandscape = width > height;
 
@@ -68,13 +81,13 @@ const ReactionBar = ({raisedHand}: Props) => {
         <FormattedText
             id={'mobile.calls_lower_hand'}
             defaultMessage={'Lower hand'}
-            style={[styles.buttonText, raisedHand ? styles.pressed : styles.unPressed]}
+            style={[style.buttonText, raisedHand ? style.pressed : style.unPressed]}
         />);
     const RaiseHandText = (
         <FormattedText
             id={'mobile.calls_raise_hand'}
             defaultMessage={'Raise hand'}
-            style={[styles.buttonText, raisedHand ? styles.pressed : styles.unPressed]}
+            style={[style.buttonText, raisedHand ? style.pressed : style.unPressed]}
         />);
 
     const toggleRaiseHand = useCallback(() => {
@@ -87,28 +100,30 @@ const ReactionBar = ({raisedHand}: Props) => {
     }, [raisedHand]);
 
     return (
-        <View style={[styles.container, isLandscape && styles.containerInLandscape]}>
-            <Pressable
-                style={[styles.button, isLandscape && styles.buttonLandscape, Boolean(raisedHand) && styles.buttonPressed]}
-                onPress={toggleRaiseHand}
-            >
-                <CompassIcon
-                    name={raisedHand ? 'hand-right-outline-off' : 'hand-right-outline'}
-                    size={24}
-                    style={[raisedHand ? styles.pressed : styles.unPressed]}
-                />
-                {raisedHand ? LowerHandText : RaiseHandText}
-            </Pressable>
-            {
-                predefinedReactions.map(([name, unified]) => (
-                    <EmojiButton
-                        key={name}
-                        emojiName={name}
-                        style={[styles.button, isLandscape && styles.buttonLandscape]}
-                        onPress={() => sendReaction({name, unified})}
+        <View style={style.outerContainer}>
+            <View style={[style.container, isLandscape && style.containerLandscape]}>
+                <Pressable
+                    style={[style.button, isLandscape && style.buttonLandscape, Boolean(raisedHand) && style.buttonPressed]}
+                    onPress={toggleRaiseHand}
+                >
+                    <CompassIcon
+                        name={raisedHand ? 'hand-right-outline-off' : 'hand-right'}
+                        size={24}
+                        style={[raisedHand ? style.pressed : style.unPressed]}
                     />
-                ))
-            }
+                    {raisedHand ? LowerHandText : RaiseHandText}
+                </Pressable>
+                {
+                    predefinedReactions.map(([name, unified]) => (
+                        <EmojiButton
+                            key={name}
+                            emojiName={name}
+                            style={[style.button, isLandscape && style.buttonLandscape]}
+                            onPress={() => sendReaction({name, unified})}
+                        />
+                    ))
+                }
+            </View>
         </View>
     );
 };

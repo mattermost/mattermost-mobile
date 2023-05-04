@@ -1,11 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React from 'react';
+import React, {useMemo} from 'react';
 import {StyleSheet, View} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import EmojiPill from '@calls/components/emoji_pill';
+import {makeCallsTheme} from '@calls/utils';
+import {useTheme} from '@context/theme';
+import {changeOpacity} from '@utils/theme';
 
 import type {ReactionStreamEmoji} from '@calls/types/calls';
 
@@ -35,7 +38,6 @@ const styles = StyleSheet.create({
 const gradient = {
     start: {x: 0.75, y: 0},
     end: {x: 1, y: 0},
-    colors: ['#00000000', '#000000'],
 };
 
 interface Props {
@@ -43,6 +45,9 @@ interface Props {
 }
 
 const EmojiList = ({reactionStream}: Props) => {
+    const theme = useTheme();
+    const callsTheme = useMemo(() => makeCallsTheme(theme), [theme]);
+
     return (
         <View style={styles.container}>
             <View style={styles.emojiList}>
@@ -58,7 +63,7 @@ const EmojiList = ({reactionStream}: Props) => {
             <LinearGradient
                 start={gradient.start}
                 end={gradient.end}
-                colors={gradient.colors}
+                colors={[changeOpacity(callsTheme.callsBg, 0), callsTheme.callsBg]}
                 style={styles.gradient}
             />
         </View>

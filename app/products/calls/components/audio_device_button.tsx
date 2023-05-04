@@ -115,7 +115,7 @@ export const AudioDeviceButton = ({pressableStyle, iconStyle, buttonTextStyle, c
         >
             <CompassIcon
                 name={icon}
-                size={24}
+                size={32}
                 style={iconStyle}
             />
             <Text style={buttonTextStyle}>{label}</Text>

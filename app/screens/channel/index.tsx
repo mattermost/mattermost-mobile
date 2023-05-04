@@ -3,8 +3,7 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, of as of$} from 'rxjs';
-import {distinctUntilChanged, switchMap} from 'rxjs/operators';
+import {combineLatest, distinctUntilChanged, of as of$, switchMap} from 'rxjs';
 
 import {observeIsCallsEnabledInChannel} from '@calls/observers';
 import {observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
@@ -21,6 +20,7 @@ type EnhanceProps = WithDatabaseArgs & {
 
 const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
     const channelId = observeCurrentChannelId(database);
+
     const isCallInCurrentChannel = combineLatest([channelId, observeChannelsWithCalls(serverUrl)]).pipe(
         switchMap(([id, calls]) => of$(Boolean(calls[id]))),
         distinctUntilChanged(),
@@ -38,14 +38,13 @@ const enhanced = withObservables([], ({database, serverUrl}: EnhanceProps) => {
         switchMap(([id, ccId]) => of$(id === ccId)),
         distinctUntilChanged(),
     );
-    const isCallsEnabledInChannel = observeIsCallsEnabledInChannel(database, serverUrl, channelId);
 
     return {
         channelId,
         isCallInCurrentChannel,
         isInACall,
         isInCurrentChannelCall,
-        isCallsEnabledInChannel,
+        isCallsEnabledInChannel: observeIsCallsEnabledInChannel(database, serverUrl, channelId),
     };
 });
 

@@ -14,6 +14,7 @@ import Screens from '@constants/screens';
 import {JOIN_CALL_BAR_HEIGHT} from '@constants/view';
 import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 import type {LimitRestrictedInfo} from '@calls/observers';
 import type UserModel from '@typings/database/models/servers/user';
@@ -28,13 +29,18 @@ type Props = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     outerContainer: {
-        backgroundColor: theme.centerChannelBg,
+        backgroundColor: theme.sidebarBg,
     },
     innerContainer: {
         flexDirection: 'row',
-        backgroundColor: '#3DB887',
+        backgroundColor: '#339970', // intentionally not themed
         width: '100%',
-        padding: 5,
+        borderTopLeftRadius: 12,
+        borderTopRightRadius: 12,
+        paddingTop: 5,
+        paddingBottom: 5,
+        paddingLeft: 12,
+        paddingRight: 12,
         justifyContent: 'center',
         alignItems: 'center',
         height: JOIN_CALL_BAR_HEIGHT,
@@ -43,19 +49,17 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.48),
     },
     joinCallIcon: {
-        color: theme.sidebarText,
-        marginLeft: 10,
-        marginRight: 5,
+        color: theme.buttonColor,
+        marginRight: 7,
     },
     joinCall: {
-        color: theme.sidebarText,
-        fontWeight: 'bold',
-        fontSize: 16,
+        color: theme.buttonColor,
+        ...typography('Body', 100, 'SemiBold'),
     },
     started: {
         flex: 1,
-        color: theme.sidebarText,
-        fontWeight: '400',
+        color: changeOpacity(theme.buttonColor, 0.84),
+        ...typography(),
         marginLeft: 10,
     },
     limitReached: {
@@ -63,11 +67,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         display: 'flex',
         textAlign: 'right',
         marginRight: 10,
-        color: '#FFFFFFD6',
+        color: changeOpacity(theme.sidebarText, 0.84),
         fontWeight: '400',
-    },
-    avatars: {
-        marginRight: 5,
     },
     headerText: {
         color: changeOpacity(theme.centerChannelColor, 0.56),
@@ -107,7 +108,7 @@ const JoinCallBanner = ({
             >
                 <CompassIcon
                     name='phone-in-talk'
-                    size={16}
+                    size={18}
                     style={style.joinCallIcon}
                 />
                 <FormattedText
@@ -128,14 +129,13 @@ const JoinCallBanner = ({
                         style={style.started}
                     />
                 )}
-                <View style={style.avatars}>
-                    <UserAvatarsStack
-                        channelId={channelId}
-                        location={Screens.CHANNEL}
-                        users={participants}
-                        breakAt={1}
-                    />
-                </View>
+                <UserAvatarsStack
+                    channelId={channelId}
+                    location={Screens.CHANNEL}
+                    users={participants}
+                    breakAt={1}
+                    noBorder={true}
+                />
             </Pressable>
         </View>
     );

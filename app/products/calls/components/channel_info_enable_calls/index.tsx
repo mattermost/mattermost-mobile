@@ -32,7 +32,7 @@ const ChannelInfoEnableCalls = ({channelId, enabled}: Props) => {
         <OptionItem
             action={preventDoubleTap(tryOnPress)}
             label={(enabled ? disableText : enableText) + msgPostfix}
-            icon='phone-outline'
+            icon='phone'
             type='default'
             testID='channel_info.options.enable_disable_calls.option'
         />
