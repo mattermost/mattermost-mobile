@@ -111,7 +111,14 @@ export default function ManageChannelMembers({
     }, 100), [channelId, loading, serverUrl, term]);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
-        await fetchUsersByIds(serverUrl, [profile.id]);
+        if (profile.id === currentUserId && isManageMode) {
+            return;
+        }
+
+        if (profile.id !== currentUserId) {
+            await fetchUsersByIds(serverUrl, [profile.id]);
+        }
+
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const props = {
             channelId,
@@ -124,7 +131,7 @@ export default function ManageChannelMembers({
 
         Keyboard.dismiss();
         openAsBottomSheet({screen: USER_PROFILE, title, theme, closeButtonId: CLOSE_BUTTON_ID, props});
-    }, [canManageAndRemoveMembers, channelId, isManageMode]);
+    }, [canManageAndRemoveMembers, channelId, isManageMode, currentUserId]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();

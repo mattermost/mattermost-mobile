@@ -126,11 +126,8 @@ function UserListRow({
     }, [highlight, tutorialWatched, isTablet]);
 
     const handlePress = useCallback((u: UserModel | UserProfile) => {
-        if (isMyUser && manageMode) {
-            return;
-        }
         onPress?.(u);
-    }, [onPress, isMyUser, manageMode]);
+    }, [onPress]);
 
     const manageModeIcon = useMemo(() => {
         if (!showManageMode || isMyUser) {
