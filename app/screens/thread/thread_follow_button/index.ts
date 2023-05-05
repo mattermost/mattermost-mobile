@@ -19,14 +19,21 @@ type Props = WithDatabaseArgs & {
 
 const enhanced = withObservables(['threadId'], ({threadId, database}: Props) => {
     const thId = threadId || EphemeralStore.getCurrentThreadId();
-    const tId = observeTeamIdByThreadId(database, thId).pipe(
-        switchMap((t) => of$(t || '')),
-    );
+    let tId = of$('');
+    let isFollowing = of$(false);
+
+    if (thId) {
+        tId = observeTeamIdByThreadId(database, thId).pipe(
+            switchMap((t) => of$(t || '')),
+        );
+
+        isFollowing = observeThreadById(database, thId).pipe(
+            switchMap((thread) => of$(thread?.isFollowing)),
+        );
+    }
 
     return {
-        isFollowing: observeThreadById(database, thId).pipe(
-            switchMap((thread) => of$(thread?.isFollowing)),
-        ),
+        isFollowing,
         threadId: of$(thId),
         teamId: tId,
     };
