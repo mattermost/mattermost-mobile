@@ -1050,5 +1050,11 @@
     "mobile.calls_phone": "Telefon",
     "mobile.calls_bluetooth": "Bluetooth",
     "mobile.calls_audio_device": "Wybierz urządzenie audio",
-    "mobile.acknowledgements.header": "Podziękowania"
+    "mobile.acknowledgements.header": "Podziękowania",
+    "mobile.calls_you_2": "Ty",
+    "mobile.calls_thread": "Wątek",
+    "mobile.calls_tablet": "Tablet",
+    "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# więcej}}</bold>zgłosiło się",
+    "mobile.calls_quality_warning": "Jakość połączenia może ulec pogorszeniu z powodu niestabilnych warunków sieciowych.",
+    "mobile.calls_name_is_talking_postfix": "mówi..."
 }
