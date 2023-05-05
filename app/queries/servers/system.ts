@@ -408,6 +408,19 @@ export async function prepareCommonSystemValues(
     }
 }
 
+export async function setCurrentUserId(operator: ServerDataOperator, userId: string) {
+    try {
+        const models = await prepareCommonSystemValues(operator, {currentUserId: userId});
+        if (models) {
+            await operator.batchRecords(models, 'setCurrentChannelId');
+        }
+
+        return {currentUserId: userId};
+    } catch (error) {
+        return {error};
+    }
+}
+
 export async function setCurrentChannelId(operator: ServerDataOperator, channelId: string) {
     try {
         const models = await prepareCommonSystemValues(operator, {currentChannelId: channelId});

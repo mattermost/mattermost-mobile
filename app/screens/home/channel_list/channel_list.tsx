@@ -9,16 +9,20 @@ import {BackHandler, DeviceEventEmitter, StyleSheet, ToastAndroid, View} from 'r
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
 import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import {fetchMe} from '@actions/remote/user';
 import AnnouncementBanner from '@components/announcement_banner';
 import ConnectionBanner from '@components/connection_banner';
 import TeamSidebar from '@components/team_sidebar';
 import {Navigation as NavigationConstants, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import DatabaseManager from '@database/manager';
 import {useIsTablet} from '@hooks/device';
+import {setCurrentUserId} from '@queries/servers/system';
 import {resetToTeams, openToS} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {isMainActivity} from '@utils/helpers';
+import {logDebug} from '@utils/log';
 import {tryRunAppReview} from '@utils/reviews';
 import {addSentryContext} from '@utils/sentry';
 
@@ -26,6 +30,7 @@ import AdditionalTabletView from './additional_tablet_view';
 import CategoriesList from './categories_list';
 import Servers from './servers';
 
+import type UserModel from '@typings/database/models/servers/user';
 import type {LaunchType} from '@typings/launch';
 
 type ChannelProps = {
@@ -37,6 +42,8 @@ type ChannelProps = {
     showToS: boolean;
     launchType: LaunchType;
     coldStart?: boolean;
+    currentUserId?: string;
+    currentUser?: UserModel;
 };
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -146,6 +153,25 @@ const ChannelListScreen = (props: ChannelProps) => {
             openToS();
         }
     }, [props.showToS]);
+
+    useEffect(() => {
+        if (!props.currentUser || !props.currentUserId) {
+            logDebug('re-fetching self');
+            fetchMe(serverUrl).then(({user}) => {
+                if (user) {
+                    if (!props.currentUserId) {
+                        const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+                        logDebug('missing currentUserId');
+                        if (!operator) {
+                            logDebug('missing operator');
+                            return;
+                        }
+                        setCurrentUserId(operator, user.id);
+                    }
+                }
+            });
+        }
+    }, [props.currentUserId, props.currentUser]);
 
     // Init the rate app. Only run the effect on the first render if ToS is not open
     useEffect(() => {

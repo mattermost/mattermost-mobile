@@ -29,7 +29,7 @@ const mentionTexts = {
 
 type NotificationsProps = {
     componentId: AvailableScreens;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     emailInterval: string;
     enableAutoResponder: boolean;
     enableEmailBatching: boolean;
@@ -46,7 +46,7 @@ const Notifications = ({
     sendEmailNotifications,
 }: NotificationsProps) => {
     const intl = useIntl();
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
 
     const emailIntervalPref = useMemo(() =>
         getEmailInterval(
@@ -120,7 +120,7 @@ const Notifications = ({
                 <SettingItem
                     onPress={goToNotificationAutoResponder}
                     optionName='automatic_dm_replies'
-                    info={currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
+                    info={currentUser?.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
                     testID='notification_settings.automatic_replies.option'
                 />
             )}

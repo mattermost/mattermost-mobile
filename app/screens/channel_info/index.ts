@@ -36,6 +36,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
     const channelId = channel.pipe(switchMap((c) => of$(c?.id || '')));
     const teamId = channel.pipe(switchMap((c) => (c?.teamId ? of$(c.teamId) : observeCurrentTeamId(database))));
     const userId = observeCurrentUserId(database);
+    const currentUser = observeCurrentUser(database);
     const isTeamAdmin = combineLatest([teamId, userId]).pipe(
         switchMap(([tId, uId]) => observeUserIsTeamAdmin(database, uId, tId)),
     );
@@ -49,7 +50,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
         switchMap((config) => of$(config.AllowEnableCalls)),
         distinctUntilChanged(),
     );
-    const systemAdmin = observeCurrentUser(database).pipe(
+    const systemAdmin = currentUser.pipe(
         switchMap((u) => (u ? of$(u.roles) : of$(''))),
         switchMap((roles) => of$(isSystemAdmin(roles || ''))),
         distinctUntilChanged(),
@@ -99,7 +100,7 @@ const enhanced = withObservables([], ({serverUrl, database}: Props) => {
     );
     const isCallsEnabledInChannel = observeIsCallsEnabledInChannel(database, serverUrl, observeCurrentChannelId(database));
 
-    const canManageMembers = observeCurrentUser(database).pipe(
+    const canManageMembers = currentUser.pipe(
         combineLatestWith(channelId),
         switchMap(([u, cId]) => (u ? observeCanManageChannelMembers(database, cId, u) : of$(false))),
         distinctUntilChanged(),

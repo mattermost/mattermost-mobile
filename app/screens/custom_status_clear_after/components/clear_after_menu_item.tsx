@@ -20,7 +20,7 @@ import DateTimePicker from './date_time_selector';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    currentUser: UserModel;
+    currentUser?: UserModel;
     duration: CustomStatusDuration;
     expiryTime?: string;
     handleItemClick: (duration: CustomStatusDuration, expiresAt: string) => void;
@@ -136,7 +136,7 @@ const ClearAfterMenuItem = ({currentUser, duration, expiryTime = '', handleItemC
                 <DateTimePicker
                     handleChange={handleCustomExpiresAtChange}
                     theme={theme}
-                    timezone={getTimezone(currentUser.timezone)}
+                    timezone={getTimezone(currentUser?.timezone)}
                 />
             )}
         </View>
