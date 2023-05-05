@@ -121,7 +121,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             shadowRadius: 24,
         },
         toast: {
-            backgroundColor: theme.centerChannelColor,
+            backgroundColor: theme.errorTextColor,
         },
         usersScroll: {
             marginTop: SCROLL_MARGIN_TOP,
@@ -133,7 +133,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             flexWrap: 'wrap',
         },
         message: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
+            color: theme.centerChannelBg,
             fontSize: 12,
             marginRight: 5,
             marginTop: 10,
@@ -250,11 +250,11 @@ export default function SelectedUsers({
 
     const animatedToastStyle = useAnimatedStyle(() => {
         return {
-            bottom: TOAST_BOTTOM_MARGIN + totalPanelHeight.value,
+            bottom: TOAST_BOTTOM_MARGIN + totalPanelHeight.value + insets.bottom,
             opacity: withTiming(showToast ? 1 : 0, {duration: 250}),
             position: 'absolute',
         };
-    }, [showToast, keyboard]);
+    }, [showToast, insets.bottom]);
 
     const animatedViewStyle = useAnimatedStyle(() => ({
         height: withTiming(totalPanelHeight.value, {duration: 250}),
