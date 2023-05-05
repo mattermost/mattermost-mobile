@@ -1050,5 +1050,9 @@
     "persistent_notifications.error.special_mentions": "Нельзя использовать @channel, @all или @here для упоминания получателей постоянных уведомлений.",
     "persistent_notifications.error.okay": "Понятно",
     "persistent_notifications.error.no_mentions.title": "Получатели должны быть @упомянуты",
-    "persistent_notifications.error.no_mentions.description": "В вашем сообщении не упомянуты получатели. Вам нужно добавить упоминания, чтобы иметь возможность отправлять постоянные уведомления."
+    "persistent_notifications.error.no_mentions.description": "В вашем сообщении не упомянуты получатели. Вам нужно добавить упоминания, чтобы иметь возможность отправлять постоянные уведомления.",
+    "mobile.calls_you_2": "Вы",
+    "mobile.calls_thread": "Обсуждение",
+    "mobile.calls_quality_warning": "Качество звонков может ухудшиться из-за нестабильной работы сети.",
+    "mobile.calls_name_is_talking_postfix": "говорит..."
 }
