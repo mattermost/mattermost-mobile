@@ -256,9 +256,6 @@ export default function ManageChannelMembers({
                     value={term}
                 />
             </View>
-
-            {/* TODO: https://mattermost.atlassian.net/browse/MM-48830 */}
-            {/* fix flashing No Results page when results are present */}
             <UserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
@@ -272,6 +269,7 @@ export default function ManageChannelMembers({
                 term={term}
                 testID='manage_members.user_list'
                 tutorialWatched={tutorialWatched}
+                includeUserMargin={true}
             />
         </SafeAreaView>
     );
