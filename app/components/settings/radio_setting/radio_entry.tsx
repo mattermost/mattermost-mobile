@@ -32,8 +32,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             color: theme.linkColor,
         },
         text: {          
-            fontSize: 12,  
-            color: theme.centerChannelColor,        
+            fontSize: 12,
+            color: theme.centerChannelColor,
         },
     };
 });
