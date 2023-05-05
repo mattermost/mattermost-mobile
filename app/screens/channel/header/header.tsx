@@ -48,14 +48,17 @@ type ChannelProps = {
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     customStatusContainer: {
         flexDirection: 'row',
-        height: 13,
+        height: 15,
         left: Platform.select({ios: undefined, default: -2}),
         marginTop: Platform.select({ios: undefined, default: 1}),
     },
-    customStatusEmoji: {marginRight: 5},
+    customStatusEmoji: {
+        marginRight: 5,
+        marginTop: Platform.select({ios: undefined, default: -2}),
+    },
     customStatusText: {
         alignItems: 'center',
-        height: 13,
+        height: 15,
     },
     subtitle: {
         color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
