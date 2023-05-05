@@ -42,7 +42,10 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         isLicensed,
         showToS: observeShowToS(database),
         currentUserId: observeCurrentUserId(database),
-        currentUser: observeCurrentUser(database),
+        hasCurrentUser: observeCurrentUser(database).pipe(
+            switchMap((u) => of$(Boolean(u))),
+            distinctUntilChanged(),
+        ),
     };
 });
 
