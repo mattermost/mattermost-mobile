@@ -101,9 +101,9 @@ internal fun insertPost(db: Database, post: JSONObject) {
         db.execute(
                 """
                 INSERT INTO Post 
-                (id, channel_id, create_at, delete_at, update_at, edit_at, is_pinned, message, message_source metadata, original_id, pending_post_id, 
+                (id, channel_id, create_at, delete_at, update_at, edit_at, is_pinned, message, message_source, metadata, original_id, pending_post_id, 
                 previous_post_id, root_id, type, user_id, props, _changed, _status) 
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'created')
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, '', 'created')
                 """.trimIndent(),
                 arrayOf(
                         id, channelId, createAt, deleteAt, updateAt, editAt,
