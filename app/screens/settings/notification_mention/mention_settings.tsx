@@ -52,11 +52,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const getMentionProps = (currentUser: UserModel) => {
+const getMentionProps = (currentUser?: UserModel) => {
     const notifyProps = getNotificationProps(currentUser);
     const mKeys = (notifyProps.mention_keys || '').split(',');
 
-    const usernameMentionIndex = mKeys.indexOf(currentUser.username);
+    const usernameMentionIndex = currentUser ? mKeys.indexOf(currentUser.username) : -1;
     if (usernameMentionIndex > -1) {
         mKeys.splice(usernameMentionIndex, 1);
     }
@@ -73,7 +73,7 @@ const getMentionProps = (currentUser: UserModel) => {
 
 type MentionSectionProps = {
     componentId: AvailableScreens;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     isCRTEnabled: boolean;
 }
 const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectionProps) => {
@@ -104,6 +104,10 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
     }, [firstNameMentionOn, channelMentionOn, usernameMentionOn, mentionKeywords, notifyProps, replyNotificationType]);
 
     const saveMention = useCallback(() => {
+        if (!currentUser) {
+            return;
+        }
+
         const canSave = canSaveSettings();
 
         if (canSave) {
@@ -166,7 +170,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                         <SettingOption
                             action={onToggleFirstName}
                             description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
-                            label={currentUser.firstName}
+                            label={currentUser!.firstName}
                             selected={firstNameMentionOn}
                             testID='mention_notification_settings.case_sensitive_first_name.option'
                             type='toggle'
@@ -179,7 +183,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                     <SettingOption
                         action={onToggleUserName}
                         description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
-                        label={currentUser.username}
+                        label={currentUser!.username}
                         selected={usernameMentionOn}
                         testID='mention_notification_settings.non_case_sensitive_username.option'
                         type='toggle'

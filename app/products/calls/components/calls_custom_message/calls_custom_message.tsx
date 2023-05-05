@@ -23,7 +23,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     post: PostModel;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     author?: UserModel;
     isMilitaryTime: boolean;
     teammateNameDisplay?: string;
