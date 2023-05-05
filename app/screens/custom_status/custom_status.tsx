@@ -46,7 +46,7 @@ type NewStatusType = {
 
 type Props = {
     customStatusExpirySupported: boolean;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     recentCustomStatuses: UserCustomStatus[];
     componentId: AvailableScreens;
 }
@@ -80,8 +80,8 @@ const DEFAULT_DURATION: CustomStatusDuration = 'today';
 const BTN_UPDATE_STATUS = 'update-custom-status';
 const edges: Edge[] = ['bottom', 'left', 'right'];
 
-const calculateExpiryTime = (duration: CustomStatusDuration, currentUser: UserModel, expiresAt: moment.Moment): string => {
-    const userTimezone = getTimezone(currentUser.timezone);
+const calculateExpiryTime = (duration: CustomStatusDuration, currentUser: UserModel | undefined, expiresAt: moment.Moment): string => {
+    const userTimezone = getTimezone(currentUser?.timezone);
     const currentTime = getCurrentMomentForTimezone(userTimezone);
 
     switch (duration) {
@@ -162,7 +162,7 @@ const CustomStatus = ({
     }, [currentUser]);
 
     const initialStatus = useMemo(() => {
-        const userTimezone = getTimezone(currentUser.timezone);
+        const userTimezone = getTimezone(currentUser?.timezone);
 
         // May be a ref
         const isCustomStatusExpired = verifyExpiredStatus(currentUser);
@@ -239,6 +239,10 @@ const CustomStatus = ({
     }, [openClearAfterModal]);
 
     const handleSetStatus = useCallback(async () => {
+        if (!currentUser) {
+            return;
+        }
+
         if (isStatusSet) {
             let isStatusSame =
                 storedStatus?.emoji === newStatus.emoji &&

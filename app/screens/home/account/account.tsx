@@ -19,7 +19,7 @@ import AccountUserInfo from './components/user_info';
 import type UserModel from '@typings/database/models/servers/user';
 
 type AccountScreenProps = {
-    currentUser: UserModel;
+    currentUser?: UserModel;
     enableCustomUserStatuses: boolean;
     showFullName: boolean;
 };
@@ -92,6 +92,26 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
 
     const styles = getStyleSheet(theme);
 
+    const content = currentUser ? (
+        <ScrollView
+            alwaysBounceVertical={false}
+            style={tabletSidebarStyle}
+            contentContainerStyle={styles.totalHeight}
+        >
+            <AccountUserInfo
+                user={currentUser}
+                showFullName={showFullName}
+                theme={theme}
+            />
+            <AccountOptions
+                enableCustomUserStatuses={enableCustomUserStatuses}
+                isTablet={isTablet}
+                user={currentUser}
+                theme={theme}
+            />
+        </ScrollView>
+    ) : null;
+
     return (
         <SafeAreaView
             edges={edges}
@@ -106,23 +126,7 @@ const AccountScreen = ({currentUser, enableCustomUserStatuses, showFullName}: Ac
                 onLayout={onLayout}
                 style={[styles.flexRow, animated]}
             >
-                <ScrollView
-                    alwaysBounceVertical={false}
-                    style={tabletSidebarStyle}
-                    contentContainerStyle={styles.totalHeight}
-                >
-                    <AccountUserInfo
-                        user={currentUser}
-                        showFullName={showFullName}
-                        theme={theme}
-                    />
-                    <AccountOptions
-                        enableCustomUserStatuses={enableCustomUserStatuses}
-                        isTablet={isTablet}
-                        user={currentUser}
-                        theme={theme}
-                    />
-                </ScrollView>
+                {content}
                 {isTablet &&
                 <View style={[styles.tabletContainer, styles.tabletDivider]}>
                     <AccountTabletView/>

@@ -53,12 +53,12 @@ const EditProfile = ({
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
     const hasUpdateUserInfo = useRef<boolean>(false);
     const [userInfo, setUserInfo] = useState<UserInfo>({
-        email: currentUser.email,
-        firstName: currentUser.firstName,
-        lastName: currentUser.lastName,
-        nickname: currentUser.nickname,
-        position: currentUser.position,
-        username: currentUser.username,
+        email: currentUser?.email || '',
+        firstName: currentUser?.firstName || '',
+        lastName: currentUser?.lastName || '',
+        nickname: currentUser?.nickname || '',
+        position: currentUser?.position || '',
+        username: currentUser?.username || '',
     });
     const [canSave, setCanSave] = useState(false);
     const [error, setError] = useState<ErrorText | undefined>();
@@ -117,6 +117,9 @@ const EditProfile = ({
     }, [componentId, rightButton]);
 
     const submitUser = useCallback(preventDoubleTap(async () => {
+        if (!currentUser) {
+            return;
+        }
         enableSaveButton(false);
         setError(undefined);
         setUpdating(true);
@@ -187,6 +190,44 @@ const EditProfile = ({
         scrollViewRef.current?.scrollToPosition(0, 0, true);
     }, [enableSaveButton]);
 
+    const content = currentUser ? (
+        <KeyboardAwareScrollView
+            bounces={false}
+            enableAutomaticScroll={Platform.select({ios: true, default: false})}
+            enableOnAndroid={true}
+            enableResetScrollToCoords={true}
+            extraScrollHeight={Platform.select({ios: 45})}
+            keyboardOpeningTime={0}
+            keyboardDismissMode='none'
+            keyboardShouldPersistTaps='handled'
+            scrollToOverflowEnabled={true}
+            testID='edit_profile.scroll_view'
+            style={styles.flex}
+        >
+            {updating && <Updating/>}
+            {Boolean(error) && <ProfileError error={error}/>}
+            <View style={styles.top}>
+                <UserProfilePicture
+                    currentUser={currentUser}
+                    lockedPicture={lockedPicture}
+                    onUpdateProfilePicture={onUpdateProfilePicture}
+                />
+            </View>
+            <ProfileForm
+                canSave={canSave}
+                currentUser={currentUser}
+                isTablet={isTablet}
+                lockedFirstName={lockedFirstName}
+                lockedLastName={lockedLastName}
+                lockedNickname={lockedNickname}
+                lockedPosition={lockedPosition}
+                onUpdateField={onUpdateField}
+                userInfo={userInfo}
+                submitUser={submitUser}
+            />
+        </KeyboardAwareScrollView>
+    ) : null;
+
     return (
         <>
             {isTablet &&
@@ -203,41 +244,7 @@ const EditProfile = ({
                 style={styles.flex}
                 testID='edit_profile.screen'
             >
-                <KeyboardAwareScrollView
-                    bounces={false}
-                    enableAutomaticScroll={Platform.select({ios: true, default: false})}
-                    enableOnAndroid={true}
-                    enableResetScrollToCoords={true}
-                    extraScrollHeight={Platform.select({ios: 45})}
-                    keyboardOpeningTime={0}
-                    keyboardDismissMode='none'
-                    keyboardShouldPersistTaps='handled'
-                    scrollToOverflowEnabled={true}
-                    testID='edit_profile.scroll_view'
-                    style={styles.flex}
-                >
-                    {updating && <Updating/>}
-                    {Boolean(error) && <ProfileError error={error!}/>}
-                    <View style={styles.top}>
-                        <UserProfilePicture
-                            currentUser={currentUser}
-                            lockedPicture={lockedPicture}
-                            onUpdateProfilePicture={onUpdateProfilePicture}
-                        />
-                    </View>
-                    <ProfileForm
-                        canSave={canSave}
-                        currentUser={currentUser}
-                        isTablet={isTablet}
-                        lockedFirstName={lockedFirstName}
-                        lockedLastName={lockedLastName}
-                        lockedNickname={lockedNickname}
-                        lockedPosition={lockedPosition}
-                        onUpdateField={onUpdateField}
-                        userInfo={userInfo}
-                        submitUser={submitUser}
-                    />
-                </KeyboardAwareScrollView>
+                {content}
             </SafeAreaView>
         </>
     );

@@ -53,7 +53,7 @@ const TIMEZONE_FORMAT = [
 
 type DisplayProps = {
     componentId: AvailableScreens;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     hasMilitaryTimeFormat: boolean;
     isCRTEnabled: boolean;
     isCRTSwitchEnabled: boolean;
@@ -64,7 +64,7 @@ type DisplayProps = {
 const Display = ({componentId, currentUser, hasMilitaryTimeFormat, isCRTEnabled, isCRTSwitchEnabled, isThemeSwitchingEnabled, isTimezoneEnabled}: DisplayProps) => {
     const intl = useIntl();
     const theme = useTheme();
-    const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser.timezone]);
+    const timezone = useMemo(() => getUserTimezoneProps(currentUser), [currentUser?.timezone]);
 
     const goToThemeSettings = preventDoubleTap(() => {
         const screen = Screens.SETTINGS_DISPLAY_THEME;

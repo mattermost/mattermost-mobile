@@ -39,7 +39,7 @@ const enhance = withObservables([], ({database}: WithDatabaseArgs) => {
                 return queryPostsById(database, ids, Q.asc).observe();
             }),
         ),
-        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone || null))))),
+        currentTimezone: currentUser.pipe((switchMap((user) => of$(getTimezone(user?.timezone))))),
         customEmojiNames: queryAllCustomEmojis(database).observe().pipe(
             switchMap((customEmojis) => of$(mapCustomEmojiNames(customEmojis))),
         ),

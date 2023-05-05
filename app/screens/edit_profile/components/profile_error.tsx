@@ -11,7 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 type DisplayErrorProps = {
-    error: Partial<ClientErrorProps> | string;
+    error?: Partial<ClientErrorProps> | string;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -39,6 +39,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const ProfileError = ({error}: DisplayErrorProps) => {
     const theme = useTheme();
     const style = getStyleSheet(theme);
+
+    if (!error) {
+        return null;
+    }
 
     return (
         <View style={style.errorContainer}>
