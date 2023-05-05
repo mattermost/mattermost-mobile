@@ -240,7 +240,7 @@ const MarkdownImage = ({
                         <ProgressiveImage
                             forwardRef={ref}
                             id={fileInfo.id!}
-                            defaultSource={{uri: fileInfo.uri!}}
+                            imageUri={fileInfo.uri}
                             onError={handleOnError}
                             resizeMode='contain'
                             style={{width, height}}
@@ -260,7 +260,7 @@ const MarkdownImage = ({
             >
                 <ProgressiveImage
                     id={fileInfo.id!}
-                    defaultSource={{uri: fileInfo.uri!}}
+                    imageUri={fileInfo.uri}
                     onError={handleOnError}
                     resizeMode='contain'
                     style={{width, height}}

@@ -119,7 +119,7 @@ const MarkTableImage = ({disabled, imagesMetadata, location, postId, serverURL, 
                 <Animated.View style={[styles, {width, height}]}>
                     <ProgressiveImage
                         id={fileId}
-                        defaultSource={{uri: source}}
+                        imageUri={source}
                         forwardRef={ref}
                         onError={onLoadFailed}
                         resizeMode='contain'
