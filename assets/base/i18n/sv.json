@@ -1050,5 +1050,11 @@
     "mobile.calls_phone": "Telefon",
     "mobile.calls_bluetooth": "Bluetooth",
     "mobile.calls_audio_device": "Välj en ljudenhet",
-    "mobile.acknowledgements.header": "Tack"
+    "mobile.acknowledgements.header": "Tack",
+    "mobile.calls_you_2": "Du",
+    "mobile.calls_thread": "Tråd",
+    "mobile.calls_tablet": "Platta",
+    "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# andra }}</bold>räcker upp handen",
+    "mobile.calls_quality_warning": "Samtalskvaliteten kan försämras på grund av dåliga nätverksförhållanden.",
+    "mobile.calls_name_is_talking_postfix": "pratar..."
 }
