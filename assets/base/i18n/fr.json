@@ -414,7 +414,6 @@
     "mobile.calls_not_available_msg": "Veuillez contacter votre administrateur système pour activer la fonctionnalité.",
     "mobile.calls_noone_talking": "Personne ne parle",
     "mobile.calls_name_started_call": "{name} a démarré un appel",
-    "mobile.calls_name_is_talking": "{name} parle",
     "mobile.calls_mute": "En sourdine",
     "mobile.calls_more": "Plus",
     "mobile.calls_mic_error": "Pour participer, ouvrez les paramètres pour autoriser Mattermost à accéder à votre micro.",

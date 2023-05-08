@@ -620,7 +620,6 @@
     "mobile.calls_not_available_msg": "Contattare il proprio amministratore di sistema per abilitare la funzione.",
     "mobile.calls_noone_talking": "Nessuno parla",
     "mobile.calls_name_started_call": "{name} ha avviato una chiamata",
-    "mobile.calls_name_is_talking": "{name} sta parlando",
     "mobile.calls_mute": "Muto",
     "mobile.calls_more": "Di più",
     "mobile.calls_mic_error": "Per partecipare, aprire le Impostazioni per consentire a Mattermost di accedere al microfono.",
