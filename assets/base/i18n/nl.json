@@ -1050,5 +1050,11 @@
     "mobile.calls_phone": "Telefoon",
     "mobile.calls_bluetooth": "Bluetooth",
     "mobile.calls_audio_device": "Selecteer geluidsapparaat",
-    "mobile.acknowledgements.header": "Bevestingen"
+    "mobile.acknowledgements.header": "Bevestingen",
+    "mobile.calls_you_2": "Jij",
+    "mobile.calls_thread": "Draadje",
+    "mobile.calls_tablet": "Tablet",
+    "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {stak} other {+# meer staken }}</bold> een handje op",
+    "mobile.calls_quality_warning": "De gesprekskwaliteit kan slechter zijn door onstabiele netwerkomstandigheden.",
+    "mobile.calls_name_is_talking_postfix": "spreekt…"
 }
