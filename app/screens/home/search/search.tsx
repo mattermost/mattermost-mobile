@@ -369,9 +369,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
                                 setTeamId={handleResultsTeamChange}
                                 onTabSelect={setSelectedTab}
                                 onFilterChanged={handleFilterChange}
-                                numberMessages={posts.length}
                                 selectedTab={selectedTab}
-                                numberFiles={fileInfos.length}
                                 selectedFilter={filter}
                                 teams={teams}
                             />
@@ -404,6 +402,8 @@ const SearchScreen = ({teamId, teams}: Props) => {
                             fileInfos={fileInfos}
                             scrollPaddingTop={lockValue.value}
                             fileChannelIds={fileChannelIds}
+                            numberMessages={posts.length}
+                            numberFiles={fileInfos.length}
                         />
                     }
                 </Animated.View>

@@ -20,7 +20,7 @@ type Props = {
     currentTimezone: string;
     isTimezoneEnabled: boolean;
     posts: PostModel[];
-    paddingTop: StyleProp<ViewStyle>;
+    paddingTop?: StyleProp<ViewStyle>;
     searchValue: string;
 }
 

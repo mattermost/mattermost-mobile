@@ -32,7 +32,7 @@ type Props = {
     canDownloadFiles: boolean;
     fileChannels: ChannelModel[];
     fileInfos: FileInfo[];
-    paddingTop: StyleProp<ViewStyle>;
+    paddingTop?: StyleProp<ViewStyle>;
     publicLinkEnabled: boolean;
     searchValue: string;
     isChannelFiles?: boolean;
