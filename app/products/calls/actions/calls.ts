@@ -455,9 +455,11 @@ export const handleCallsSlashCommand = async (value: string, serverUrl: string, 
             await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
             return {handled: true};
         }
-        case 'join':
-            await leaveAndJoinWithAlert(intl, serverUrl, channelId);
+        case 'join': {
+            const title = tokens.length > 2 ? tokens.slice(2).join(' ') : undefined;
+            await leaveAndJoinWithAlert(intl, serverUrl, channelId, title, rootId);
             return {handled: true};
+        }
         case 'leave':
             if (getCurrentCall()?.channelId === channelId) {
                 await leaveCallPopCallScreen();
