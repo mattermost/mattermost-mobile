@@ -281,19 +281,17 @@ const About = ({componentId, config, license}: AboutProps) => {
                     </Text>
                 </View>
 
-                <View style={styles.copyInfoButtonContainer}>
-                    <Button
-                        theme={theme}
-                        backgroundStyle={buttonBackgroundStyle(theme, 'm', 'tertiary')}
-                        onPress={copyToClipboard}
-                        textStyle={buttonTextStyle(theme, 'm', 'tertiary', 'default')}
-                        text={'Copy info'}
-                        testID={'about.copy_info'}
-                        iconName='content-copy'
-                        iconSize={15}
-                        buttonType={'default'}
-                    />
-                </View>
+                <Button
+                    theme={theme}
+                    backgroundStyle={[buttonBackgroundStyle(theme, 'm', 'tertiary'), styles.copyInfoButtonContainer]}
+                    onPress={copyToClipboard}
+                    textStyle={buttonTextStyle(theme, 'm', 'tertiary', 'default')}
+                    text={'Copy info'}
+                    testID={'about.copy_info'}
+                    iconName='content-copy'
+                    iconSize={15}
+                    buttonType={'default'}
+                />
 
                 {license.IsLicensed === 'true' && (
                     <View style={styles.licenseContainer}>
