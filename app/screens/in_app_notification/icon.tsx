@@ -3,7 +3,7 @@
 
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
-import {StyleSheet, View} from 'react-native';
+import {Image, StyleSheet, View} from 'react-native';
 import FastImage, {type Source} from 'react-native-fast-image';
 
 import CompassIcon from '@components/compass_icon';
@@ -72,7 +72,7 @@ const NotificationIcon = ({author, enablePostIconOverride, fromWebhook, override
         );
     } else {
         icon = (
-            <FastImage
+            <Image
                 source={logo}
                 style={styles.icon}
             />

@@ -5,6 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {
+    Image,
     Platform,
     StyleSheet,
     Text,
@@ -108,11 +109,11 @@ const Emoji = (props: EmojiProps) => {
             return null;
         }
         return (
-            <FastImage
+            <Image
                 key={key}
                 source={image}
                 style={[commonStyle, imageStyle, {width, height}]}
-                resizeMode={FastImage.resizeMode.contain}
+                resizeMode={'contain'}
                 testID={testID}
             />
         );
