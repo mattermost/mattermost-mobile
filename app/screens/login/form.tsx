@@ -49,7 +49,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     forgotPasswordBtn: {
         borderColor: 'transparent',
-        width: '50%',
+        width: '60%',
     },
     forgotPasswordError: {
         marginTop: 30,

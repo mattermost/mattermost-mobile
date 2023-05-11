@@ -22,6 +22,7 @@ type AtMentionItemProps = {
     user: UserProfile | UserModel;
     containerStyle?: StyleProp<ViewStyle>;
     currentUserId: string;
+    includeMargin?: boolean;
     size?: number;
     testID?: string;
     isCustomStatusEnabled: boolean;
@@ -61,11 +62,12 @@ const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
 const nonThemedStyles = StyleSheet.create({
     row: {
         height: 40,
-        paddingVertical: 8,
+        paddingBottom: 8,
         paddingTop: 4,
         flexDirection: 'row',
         alignItems: 'center',
     },
+    margin: {marginVertical: 8},
     rowInfoBaseContainer: {
         flex: 1,
     },
@@ -104,6 +106,7 @@ const UserItem = ({
     disabled = false,
     viewRef,
     padding,
+    includeMargin,
 }: AtMentionItemProps) => {
     const theme = useTheme();
     const style = getThemedStyles(theme);
@@ -134,8 +137,9 @@ const UserItem = ({
                 opacity: disabled ? 0.32 : 1,
                 paddingHorizontal: padding || undefined,
             },
+            includeMargin && nonThemedStyles.margin,
         ];
-    }, [disabled, padding]);
+    }, [disabled, padding, includeMargin]);
 
     const onPress = useCallback(() => {
         onUserPress?.(user);
