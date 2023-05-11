@@ -1038,5 +1038,10 @@
     "channel_files.noFiles.title": "未找到文件",
     "channel_files.noFiles.paragraph": "此频道未包含任何应用的过滤器的文件",
     "channel_files.empty.title": "还没有文件",
-    "channel_files.empty.paragraph": "在此频道中发布的文件将显示在此处。"
+    "channel_files.empty.paragraph": "在此频道中发布的文件将显示在此处。",
+    "persistent_notifications.confirm.title": "发送长期通知",
+    "mobile.ios.plist.NSFaceIDUsageDescription": "开启你的Face ID访问权限意味着我们可以限制没有被授权的用户访问您设备上的{applicationName}。",
+    "mobile.diagnostic_id.empty": "此服务器的一个DiagnosticId丢失了。请联系您的系统管理员检查和重新启动相关服务。",
+    "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# 等 }}</bold>举起了手",
+    "mobile.acknowledgements.header": "感谢"
 }
