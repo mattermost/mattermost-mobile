@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useRef} from 'react';
-import {Platform, useWindowDimensions, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Platform, useWindowDimensions, View, type LayoutChangeEvent} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -12,6 +12,7 @@ import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import {useDefaultHeaderHeight} from '@hooks/header';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
@@ -82,8 +83,10 @@ const LoginOptions = ({
     const styles = getStyles(theme);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const dimensions = useWindowDimensions();
+    const defaultHeaderHeight = useDefaultHeaderHeight();
     const isTablet = useIsTablet();
     const translateX = useSharedValue(dimensions.width);
+    const [contentFillScreen, setContentFillScreen] = useState(false);
     const numberSSOs = useMemo(() => {
         return Object.values(ssoOptions).filter((v) => v.enabled).length;
     }, [ssoOptions]);
@@ -143,6 +146,11 @@ const LoginOptions = ({
         popTopScreen(componentId);
     };
 
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        const {height} = e.nativeEvent.layout;
+        setContentFillScreen(dimensions.height < height + defaultHeaderHeight);
+    }, [dimensions.height, defaultHeaderHeight]);
+
     useEffect(() => {
         const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
             if (closeButtonId && buttonId === closeButtonId) {
@@ -176,7 +184,7 @@ const LoginOptions = ({
     useAndroidHardwareBackHandler(componentId, pop);
 
     let additionalContainerStyle;
-    if (numberSSOs < 3 || !hasLoginForm || (isTablet && dimensions.height > dimensions.width)) {
+    if (!contentFillScreen && (numberSSOs < 3 || !hasLoginForm || (isTablet && dimensions.height > dimensions.width))) {
         additionalContainerStyle = styles.flex;
     }
 
@@ -221,7 +229,10 @@ const LoginOptions = ({
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
                 >
-                    <View style={styles.centered}>
+                    <View
+                        onLayout={onLayout}
+                        style={styles.centered}
+                    >
                         {title}
                         {description}
                         {hasLoginForm &&

@@ -81,10 +81,12 @@ const Thread = ({
 
     useEffect(() => {
         return () => {
-            EphemeralStore.setCurrentThreadId('');
+            if (rootId === EphemeralStore.getCurrentThreadId()) {
+                EphemeralStore.setCurrentThreadId('');
+            }
             setButtons(componentId, {rightButtons: []});
         };
-    }, []);
+    }, [rootId]);
 
     useDidUpdate(() => {
         if (!rootPost) {

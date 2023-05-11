@@ -26,6 +26,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type Props = {
     highlight?: boolean;
     id: string;
+    includeMargin?: boolean;
     isMyUser: boolean;
     isChannelAdmin: boolean;
     manageMode: boolean;
@@ -70,6 +71,7 @@ const DEFAULT_ICON_OPACITY = 0.32;
 
 function UserListRow({
     id,
+    includeMargin,
     isMyUser,
     highlight,
     isChannelAdmin,
@@ -124,11 +126,8 @@ function UserListRow({
     }, [highlight, tutorialWatched, isTablet]);
 
     const handlePress = useCallback((u: UserModel | UserProfile) => {
-        if (isMyUser && manageMode) {
-            return;
-        }
         onPress?.(u);
-    }, [onPress, isMyUser, manageMode]);
+    }, [onPress]);
 
     const manageModeIcon = useMemo(() => {
         if (!showManageMode || isMyUser) {
@@ -190,6 +189,7 @@ function UserListRow({
                 disabled={!(selectable || selected || !disabled)}
                 viewRef={viewRef}
                 padding={20}
+                includeMargin={includeMargin}
             />
             {showTutorial &&
             <TutorialHighlight

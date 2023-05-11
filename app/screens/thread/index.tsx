@@ -9,6 +9,7 @@ import {observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
 import {withServerUrl} from '@context/server';
 import {observePost} from '@queries/servers/post';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
+import EphemeralStore from '@store/ephemeral_store';
 
 import Thread from './thread';
 
@@ -20,7 +21,8 @@ type EnhanceProps = WithDatabaseArgs & {
 }
 
 const enhanced = withObservables(['rootId'], ({database, serverUrl, rootId}: EnhanceProps) => {
-    const rootPost = observePost(database, rootId);
+    const rId = rootId || EphemeralStore.getCurrentThreadId();
+    const rootPost = observePost(database, rId);
 
     const channelId = rootPost.pipe(
         switchMap((r) => of$(r?.channelId || '')),
@@ -49,6 +51,7 @@ const enhanced = withObservables(['rootId'], ({database, serverUrl, rootId}: Enh
         isCallInCurrentChannel,
         isInACall,
         isInCurrentChannelCall,
+        rootId: of$(rId),
         rootPost,
     };
 });

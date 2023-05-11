@@ -123,6 +123,7 @@ export default function ServerUserList({
             term={term}
             testID={testID}
             tutorialWatched={tutorialWatched}
+            includeUserMargin={true}
         />
     );
 }
