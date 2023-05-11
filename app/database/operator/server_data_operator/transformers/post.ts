@@ -41,6 +41,7 @@ export const transformPostRecord = ({action, database, value}: TransformerArgs):
         post.updateAt = raw.update_at;
         post.isPinned = Boolean(raw.is_pinned);
         post.message = raw.message;
+        post.messageSource = raw.message_source || '';
 
         // When we extract the posts from the threads, we don't get the metadata
         // So, it might not be present in the raw post, so we use the one from the record

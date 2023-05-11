@@ -16,6 +16,7 @@ export default tableSchema({
         {name: 'edit_at', type: 'number'},
         {name: 'is_pinned', type: 'boolean'},
         {name: 'message', type: 'string'},
+        {name: 'message_source', type: 'string'},
         {name: 'metadata', type: 'string', isOptional: true},
         {name: 'original_id', type: 'string'},
         {name: 'pending_post_id', type: 'string', isIndexed: true},
