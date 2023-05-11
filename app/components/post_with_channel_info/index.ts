@@ -17,6 +17,7 @@ type OwnProps = {
     post: PostModel;
     skipSavedPostsHighlight?: boolean;
 } & WithDatabaseArgs;
+
 const enhance = withObservables(['post', 'skipSavedPostsHighlight'], ({database, post, skipSavedPostsHighlight}: OwnProps) => {
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
