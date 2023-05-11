@@ -563,7 +563,6 @@
     "mobile.calls_not_available_msg": "Bitte wende dich an deinen Systemadministrator, um diese Funktion zu aktivieren.",
     "mobile.calls_noone_talking": "Keiner redet",
     "mobile.calls_name_started_call": "{name} hat einen Anruf gestartet",
-    "mobile.calls_name_is_talking": "{name} spricht",
     "mobile.calls_mute": "Stumm",
     "mobile.calls_more": "Mehr",
     "mobile.calls_lower_hand": "Hand senken",
@@ -1051,5 +1050,11 @@
     "mobile.calls_phone": "Telefon",
     "mobile.calls_bluetooth": "Bluetooth",
     "mobile.calls_audio_device": "Audiogerät auswählen",
-    "mobile.acknowledgements.header": "Bestätigungen"
+    "mobile.acknowledgements.header": "Bestätigungen",
+    "mobile.calls_you_2": "Du",
+    "mobile.calls_thread": "Unterhaltung",
+    "mobile.calls_tablet": "Tablett",
+    "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 { hob eine Hand} other {+# mehr hoben eine Hand}}</bold>",
+    "mobile.calls_quality_warning": "Die Gesprächsqualität kann sich aufgrund instabiler Netzbedingungen verschlechtern.",
+    "mobile.calls_name_is_talking_postfix": "spricht..."
 }

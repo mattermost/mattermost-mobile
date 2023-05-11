@@ -39,7 +39,7 @@ import type {SearchPattern} from '@typings/global/markdown';
 type PostProps = {
     appsEnabled: boolean;
     canDelete: boolean;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     customEmojiNames: string[];
     differentThreadSequence: boolean;
     hasFiles: boolean;

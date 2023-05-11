@@ -23,7 +23,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    currentUser: UserModel;
+    currentUser?: UserModel;
     isMilitaryTime: boolean;
     showPrefix?: boolean;
     showTimeCompulsory?: boolean;

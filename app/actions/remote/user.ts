@@ -14,7 +14,7 @@ import {debounce} from '@helpers/api/general';
 import NetworkManager from '@managers/network_manager';
 import {getMembersCountByChannelsId, queryChannelsByTypes} from '@queries/servers/channel';
 import {queryGroupsByNames} from '@queries/servers/group';
-import {getConfig, getCurrentUserId} from '@queries/servers/system';
+import {getConfig, getCurrentUserId, setCurrentUserId} from '@queries/servers/system';
 import {getCurrentUser, prepareUsers, queryAllUsers, queryUsersById, queryUsersByIdsOrUsernames, queryUsersByUsername} from '@queries/servers/user';
 import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
@@ -65,6 +65,22 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
         await forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
+};
+
+export const refetchCurrentUser = async (serverUrl: string, currentUserId: string | undefined) => {
+    logDebug('re-fetching self');
+    const {user} = await fetchMe(serverUrl);
+    if (!user || currentUserId) {
+        return;
+    }
+
+    logDebug('missing currentUserId');
+    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
+    if (!operator) {
+        logDebug('missing operator');
+        return;
+    }
+    setCurrentUserId(operator, user.id);
 };
 
 export async function fetchProfilesInChannel(serverUrl: string, channelId: string, excludeUserId?: string, options?: GetUsersOptions, fetchOnly = false): Promise<ProfilesInChannelRequest> {

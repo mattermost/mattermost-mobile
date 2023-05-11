@@ -21,7 +21,7 @@ import type UserModel from '@typings/database/models/servers/user';
 import type {AvailableScreens} from '@typings/screens/navigation';
 
 type DisplayTimezoneProps = {
-    currentUser: UserModel;
+    currentUser?: UserModel;
     componentId: AvailableScreens;
 }
 const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
@@ -78,7 +78,7 @@ const DisplayTimezone = ({currentUser, componentId}: DisplayTimezoneProps) => {
         }
 
         close();
-    }, [userTimezone, currentUser.timezone, serverUrl]);
+    }, [userTimezone, serverUrl]);
 
     useBackNavigation(saveTimezone);
 

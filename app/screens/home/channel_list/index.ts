@@ -7,10 +7,11 @@ import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import {queryAllMyChannelsForTeam} from '@queries/servers/channel';
-import {observeCurrentTeamId, observeLicense} from '@queries/servers/system';
+import {observeCurrentTeamId, observeCurrentUserId, observeLicense} from '@queries/servers/system';
 import {queryMyTeams} from '@queries/servers/team';
 import {observeShowToS} from '@queries/servers/terms_of_service';
 import {observeIsCRTEnabled} from '@queries/servers/thread';
+import {observeCurrentUser} from '@queries/servers/user';
 
 import ChannelsList from './channel_list';
 
@@ -40,6 +41,11 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         ),
         isLicensed,
         showToS: observeShowToS(database),
+        currentUserId: observeCurrentUserId(database),
+        hasCurrentUser: observeCurrentUser(database).pipe(
+            switchMap((u) => of$(Boolean(u))),
+            distinctUntilChanged(),
+        ),
     };
 });
 

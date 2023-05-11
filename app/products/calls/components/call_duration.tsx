@@ -50,7 +50,11 @@ const CallDuration = ({value, style, updateIntervalInSeconds}: CallDurationProps
     }, [updateIntervalInSeconds]);
 
     return (
-        <Text style={style}>
+        <Text
+            style={style}
+            numberOfLines={1}
+            ellipsizeMode={'clip'}
+        >
             {formattedTime}
         </Text>
     );

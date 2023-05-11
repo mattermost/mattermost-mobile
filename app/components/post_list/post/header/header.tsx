@@ -8,6 +8,7 @@ import FormattedTime from '@components/formatted_time';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {CHANNEL, THREAD} from '@constants/screens';
 import {useTheme} from '@context/theme';
+import {DEFAULT_LOCALE} from '@i18n';
 import {postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -24,7 +25,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type HeaderProps = {
     author?: UserModel;
     commentCount: number;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     enablePostUsernameOverride: boolean;
     isAutoResponse: boolean;
     isCRTEnabled?: boolean;
@@ -81,7 +82,7 @@ const Header = (props: HeaderProps) => {
     const isReplyPost = Boolean(post.rootId && !isEphemeral);
     const showReply = !isReplyPost && (location !== THREAD) && (shouldRenderReplyButton && (!rootPostAuthor && commentCount > 0));
     const displayName = postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride);
-    const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser.locale, teammateNameDisplay, true) : undefined;
+    const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser?.locale, teammateNameDisplay, true) : undefined;
     const customStatus = getUserCustomStatus(author);
     const showCustomStatusEmoji = Boolean(
         isCustomStatusEnabled && displayName && customStatus &&
@@ -139,7 +140,7 @@ const Header = (props: HeaderProps) => {
             </View>
             {Boolean(rootAuthorDisplayName) && location === CHANNEL &&
             <HeaderCommentedOn
-                locale={currentUser.locale}
+                locale={currentUser?.locale || DEFAULT_LOCALE}
                 name={rootAuthorDisplayName!}
                 theme={theme}
             />

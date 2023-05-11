@@ -7,7 +7,10 @@ import {act, renderHook} from '@testing-library/react-hooks';
 
 import {needsRecordingAlert} from '@calls/alerts';
 import {
-    newCurrentCall, setAudioDeviceInfo,
+    newCurrentCall,
+    processMeanOpinionScore,
+    setAudioDeviceInfo,
+    setCallQualityAlertDismissed,
     setCallsState,
     setChannelsWithCalls,
     setCurrentCall,
@@ -57,6 +60,10 @@ import DatabaseManager from '@database/manager';
 import type {CallRecordingState} from '@mattermost/calls/lib/types';
 
 jest.mock('@calls/alerts');
+
+jest.mock('@constants/calls', () => ({
+    CALL_QUALITY_RESET_MS: 100,
+}));
 
 jest.mock('@actions/remote/thread', () => ({
     updateThreadFollowing: jest.fn(() => Promise.resolve({})),
@@ -895,6 +902,83 @@ describe('useCallsState', () => {
         });
         assert.deepEqual(result.current[0], initialCallsState);
         assert.deepEqual(result.current[1], null);
+    });
+
+    it('CallQuality', async () => {
+        const initialCallsState: CallsState = {
+            ...DefaultCallsState,
+            myUserId: 'myUserId',
+            calls: {'channel-1': call1, 'channel-2': call2},
+        };
+        const newCall1: Call = {
+            ...call1,
+            participants: {
+                ...call1.participants,
+                myUserId: {id: 'myUserId', muted: true, raisedHand: 0},
+            },
+        };
+        const expectedCallsState: CallsState = {
+            ...initialCallsState,
+            calls: {
+                ...initialCallsState.calls,
+                'channel-1': newCall1,
+            },
+        };
+        const currentCallNoAlertNoDismissed: CurrentCall = {
+            ...DefaultCurrentCall,
+            serverUrl: 'server1',
+            myUserId: 'myUserId',
+            connected: true,
+            ...newCall1,
+        };
+
+        // setup
+        const {result} = renderHook(() => {
+            return [useCallsState('server1'), useCurrentCall()];
+        });
+        act(() => setCallsState('server1', initialCallsState));
+        assert.deepEqual(result.current[0], initialCallsState);
+        assert.deepEqual(result.current[1], null);
+
+        // join call
+        act(() => {
+            newCurrentCall('server1', 'channel-1', 'myUserId');
+            userJoinedCall('server1', 'channel-1', 'myUserId');
+        });
+        assert.deepEqual(result.current[0], expectedCallsState);
+        assert.deepEqual(result.current[1], currentCallNoAlertNoDismissed);
+
+        // call quality goes bad
+        act(() => processMeanOpinionScore(3.4999));
+        assert.deepEqual((result.current[1] as CurrentCall).callQualityAlert, true);
+        assert.equal((result.current[1] as CurrentCall).callQualityAlertDismissed, 0);
+
+        // call quality goes good
+        act(() => processMeanOpinionScore(4));
+        assert.deepEqual(result.current[1], currentCallNoAlertNoDismissed);
+
+        // call quality goes bad
+        act(() => processMeanOpinionScore(3.499));
+        assert.deepEqual((result.current[1] as CurrentCall).callQualityAlert, true);
+        assert.equal((result.current[1] as CurrentCall).callQualityAlertDismissed, 0);
+
+        // dismiss call quality alert
+        const timeNow = Date.now();
+        act(() => setCallQualityAlertDismissed());
+        assert.deepEqual((result.current[1] as CurrentCall).callQualityAlert, false);
+        assert.equal((result.current[1] as CurrentCall).callQualityAlertDismissed >= timeNow &&
+            (result.current[1] as CurrentCall).callQualityAlertDismissed <= Date.now(), true);
+
+        // call quality goes bad, but we're not past the dismissed limit
+        act(() => processMeanOpinionScore(3.4999));
+        assert.deepEqual((result.current[1] as CurrentCall).callQualityAlert, false);
+
+        // test that the dismiss expired
+        await act(async () => {
+            await new Promise((r) => setTimeout(r, 101));
+            processMeanOpinionScore(3.499);
+        });
+        assert.deepEqual((result.current[1] as CurrentCall).callQualityAlert, true);
     });
 
     it('voiceOn and Off', () => {

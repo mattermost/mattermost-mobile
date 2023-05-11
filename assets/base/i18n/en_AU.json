@@ -709,7 +709,6 @@
     "mobile.calls_not_available_msg": "Please contact your System Admin to enable the feature.",
     "mobile.calls_noone_talking": "No one is talking",
     "mobile.calls_name_started_call": "{name} started a call",
-    "mobile.calls_name_is_talking": "{name} is talking",
     "mobile.calls_mute": "Mute",
     "mobile.calls_more": "More",
     "mobile.calls_lower_hand": "Lower hand",

@@ -29,7 +29,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 interface Props {
     componentId: AvailableScreens;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     handleClearAfterClick: (duration: CustomStatusDuration, expiresAt: string) => void;
     initialDuration: CustomStatusDuration;
     intl: IntlShape;

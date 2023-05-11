@@ -25,7 +25,7 @@ import type PostsInThreadModel from '@typings/database/models/servers/posts_in_t
 import type UserModel from '@typings/database/models/servers/user';
 
 type PropsInput = WithDatabaseArgs & {
-    currentUser: UserModel;
+    currentUser?: UserModel;
     isCRTEnabled?: boolean;
     nextPost: PostModel | undefined;
     post: PostModel;
@@ -95,12 +95,12 @@ const withPost = withObservables(
     ({currentUser, database, isCRTEnabled, post, previousPost, nextPost, location}: PropsInput) => {
         let isLastReply = of$(true);
         let isPostAddChannelMember = of$(false);
-        const isOwner = currentUser.id === post.userId;
+        const isOwner = currentUser?.id === post.userId;
         const author = post.userId ? observePostAuthor(database, post) : of$(undefined);
         const canDelete = observePermissionForPost(database, post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false);
         const isEphemeral = of$(isPostEphemeral(post));
 
-        if (post.props?.add_channel_member && isPostEphemeral(post)) {
+        if (post.props?.add_channel_member && isPostEphemeral(post) && currentUser) {
             isPostAddChannelMember = observeCanManageChannelMembers(database, post.channelId, currentUser);
         }
 
@@ -108,7 +108,7 @@ const withPost = withObservables(
         if (!isCRTEnabled && location === Screens.CHANNEL) {
             highlightReplyBar = post.postsInThread.observe().pipe(
                 switchMap((postsInThreads: PostsInThreadModel[]) => {
-                    if (postsInThreads.length) {
+                    if (postsInThreads.length && currentUser) {
                         return observeShouldHighlightReplyBar(database, currentUser, post, postsInThreads[0]);
                     }
                     return of$(false);
