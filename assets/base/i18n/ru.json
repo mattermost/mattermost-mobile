@@ -1054,5 +1054,6 @@
     "mobile.calls_you_2": "Вы",
     "mobile.calls_thread": "Обсуждение",
     "mobile.calls_quality_warning": "Качество звонков может ухудшиться из-за нестабильной работы сети.",
-    "mobile.calls_name_is_talking_postfix": "говорит..."
+    "mobile.calls_name_is_talking_postfix": "говорит...",
+    "mobile.calls_raised_hand": "<bold>{name} {num, plural, =0 {} other {+# несколько участников}}</bold>подняло руку"
 }
