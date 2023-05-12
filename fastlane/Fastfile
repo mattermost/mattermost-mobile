@@ -920,7 +920,6 @@ def send_message_to_mattermost(options)
         message: options[:msg],
         default_payloads: options[:default_payloads],
         username: 'Fastlane',
-        icon_url: 'https://mattermost-plugin-media.s3.amazonaws.com/fastlane.png',
         payload: {},
         attachment_properties: {
             title: options[:title],
