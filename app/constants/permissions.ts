@@ -3,51 +3,49 @@
 
 import {defineMessages} from 'react-intl';
 
-import {t} from '@i18n';
-
 export const iosPermissions = defineMessages({
     NSAppleMusicUsageDescription: {
-        id: t('mobile.ios.plist.NSAppleMusicUsageDescription'),
+        id: 'mobile.ios.plist.NSAppleMusicUsageDescription',
         defaultMessage: 'Enabling access to your media library means you can attach files from your media library to your messages in {applicationName}.',
     },
     NSBluetoothAlwaysUsageDescription: {
-        id: t('mobile.ios.plist.NSBluetoothAlwaysUsageDescription'),
+        id: 'mobile.ios.plist.NSBluetoothAlwaysUsageDescription',
         defaultMessage: 'Enabling access to Bluetooth means we can synchronize content across your devices and clients.',
     },
     NSBluetoothPeripheralUsageDescription: {
-        id: t('mobile.ios.plist.NSBluetoothPeripheralUsageDescription'),
+        id: 'mobile.ios.plist.NSBluetoothPeripheralUsageDescription',
         defaultMessage: 'Enabling access to Bluetooth means we can connect to audio peripherals for calls, and synchronize content across your devices and clients.',
     },
     NSCameraUsageDescription: {
-        id: t('mobile.ios.plist.NSCameraUsageDescription'),
+        id: 'mobile.ios.plist.NSCameraUsageDescription',
         defaultMessage: 'Enabling access to your device cameras means you can take photos or videos and upload them to {applicationName}.',
     },
     NSFaceIDUsageDescription: {
-        id: t('mobile.ios.plist.NSFaceIDUsageDescription'),
+        id: 'mobile.ios.plist.NSFaceIDUsageDescription',
         defaultMessage: 'Enabling access to your Face ID means we can restrict unauthorized users from accessing {applicationName} on your device.',
     },
     NSLocationAlwaysUsageDescription: {
-        id: t('mobile.ios.plist.NSLocationAlwaysUsageDescription'),
+        id: 'mobile.ios.plist.NSLocationAlwaysUsageDescription',
         defaultMessage: 'Enabling access to your location data means we can add location metadata to pictures and videos you share in {applicationName}.',
     },
     NSLocationWhenInUseUsageDescription: {
-        id: t('mobile.ios.plist.NSLocationWhenInUseUsageDescription'),
+        id: 'mobile.ios.plist.NSLocationWhenInUseUsageDescription',
         defaultMessage: 'Enabling access to your location data means we can add location metadata to pictures and videos you share in {applicationName}.',
     },
     NSMicrophoneUsageDescription: {
-        id: t('mobile.ios.plist.NSMicrophoneUsageDescription'),
+        id: 'mobile.ios.plist.NSMicrophoneUsageDescription',
         defaultMessage: 'Enabling access to your device\'s microphones means you can capture audio for calls or videos to share in {applicationName}.',
     },
     NSPhotoLibraryAddUsageDescription: {
-        id: t('mobile.ios.plist.NSPhotoLibraryAddUsageDescription'),
+        id: 'mobile.ios.plist.NSPhotoLibraryAddUsageDescription',
         defaultMessage: 'Enabling write access to your photo library means you can save downloaded photos and videos from {applicationName} to your device.',
     },
     NSPhotoLibraryUsageDescription: {
-        id: t('mobile.ios.plist.NSPhotoLibraryUsageDescription'),
+        id: 'mobile.ios.plist.NSPhotoLibraryUsageDescription',
         defaultMessage: 'Enabling read access to your photo library means you can upload photos and videos from your device to {applicationName}.',
     },
     NSSpeechRecognitionUsageDescription: {
-        id: t('mobile.ios.plist.NSSpeechRecognitionUsageDescription'),
+        id: 'mobile.ios.plist.NSSpeechRecognitionUsageDescription',
         defaultMessage: 'Enabling your device to send user data to Apple means you can send voice messages to {applicationName}.',
     },
 });

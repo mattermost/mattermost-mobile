@@ -15,7 +15,6 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {t} from '@i18n';
 import {openAsBottomSheet, setButtons} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
 import {showRemoveChannelUserSnackbar} from '@utils/snack_bar';
@@ -46,11 +45,11 @@ const styles = StyleSheet.create({
 
 const messages = defineMessages({
     button_manage: {
-        id: t('mobile.manage_members.manage'),
+        id: 'mobile.manage_members.manage',
         defaultMessage: 'Manage',
     },
     button_done: {
-        id: t('mobile.manage_members.done'),
+        id: 'mobile.manage_members.done',
         defaultMessage: 'Done',
     },
 });
