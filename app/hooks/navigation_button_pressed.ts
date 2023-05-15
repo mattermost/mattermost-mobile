@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {DependencyList, EffectCallback, useEffect} from 'react';
+import {type DependencyList, type EffectCallback, useEffect} from 'react';
 import {Navigation} from 'react-native-navigation';
 
 type Callback = EffectCallback | (() => Promise<void>);

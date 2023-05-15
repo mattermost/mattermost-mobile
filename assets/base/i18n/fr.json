@@ -346,7 +346,6 @@
     "suggestion.mention.morechannels": "Autres canaux",
     "suggestion.mention.nonmembers": "Pas dans le canal",
     "suggestion.mention.special": "Mentions spéciales",
-    "suggestion.mention.you": " (vous)",
     "suggestion.search.direct": "Messages personnels",
     "suggestion.search.private": "Canaux privés",
     "suggestion.search.public": "Canaux publics",
@@ -378,7 +377,6 @@
     "mobile.custom_status.clear_after.title": "Supprimer le statut personnalisé après",
     "mobile.custom_list.no_results": "Aucun résultat",
     "mobile.create_post.read_only": "Ce canal est en lecture seule.",
-    "mobile.create_direct_message.you": "@{username} - vous",
     "mobile.create_direct_message.start": "Démarrer la conversation",
     "mobile.create_direct_message.max_limit_reached": "Les messages de groupe sont limités à {maxCount} membres",
     "mobile.create_channel.title": "Nouveau canal",
@@ -416,7 +414,6 @@
     "mobile.calls_not_available_msg": "Veuillez contacter votre administrateur système pour activer la fonctionnalité.",
     "mobile.calls_noone_talking": "Personne ne parle",
     "mobile.calls_name_started_call": "{name} a démarré un appel",
-    "mobile.calls_name_is_talking": "{name} parle",
     "mobile.calls_mute": "En sourdine",
     "mobile.calls_more": "Plus",
     "mobile.calls_mic_error": "Pour participer, ouvrez les paramètres pour autoriser Mattermost à accéder à votre micro.",
@@ -483,7 +480,6 @@
     "intro.direct_message": "Vous êtes au début de votre conversation avec {teammate}. Les messages et les fichiers partagés ici ne sont pas visibles par d'autres personnes.",
     "intro.created_by": "créé par {creator} le {date}.",
     "intro.channel_info": "Informations",
-    "intro.add_people": "Ajouter des personnes",
     "interactive_dialog.submit": "Envoyer",
     "integration_selector.multiselect.submit": "Terminé",
     "home.header.plus_menu": "Options",
@@ -992,5 +988,10 @@
     "invite.members.user_is_guest": "",
     "invite.members.already_member": "",
     "mobile.calls_start_call_exists": "",
-    "mobile.calls_not_connected": ""
+    "mobile.calls_not_connected": "",
+    "channel_notification_preferences.notification.thread_replies": "M'avertir des réponses aux fils de discussion que je suis sur cette chaîne",
+    "channel_notification_preferences.notification.mention": "Mentions, messages directs uniquement",
+    "channel_notification_preferences.notification.all": "Tous les nouveaux messages",
+    "channel_notification_preferences.muted_title": "Ce canal est en sourdine",
+    "channel_notification_preferences.muted_content": "Vous pouvez modifier les paramètres de notification, mais vous ne recevrez pas de notifications tant que le canal n'aura pas été désactivé."
 }

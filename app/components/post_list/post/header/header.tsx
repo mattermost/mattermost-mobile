@@ -4,11 +4,11 @@
 import React from 'react';
 import {View} from 'react-native';
 
-import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
 import FormattedTime from '@components/formatted_time';
 import PostPriorityLabel from '@components/post_priority/post_priority_label';
 import {CHANNEL, THREAD} from '@constants/screens';
 import {useTheme} from '@context/theme';
+import {DEFAULT_LOCALE} from '@i18n';
 import {postUserDisplayName} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -25,7 +25,7 @@ import type UserModel from '@typings/database/models/servers/user';
 type HeaderProps = {
     author?: UserModel;
     commentCount: number;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     enablePostUsernameOverride: boolean;
     isAutoResponse: boolean;
     isCRTEnabled?: boolean;
@@ -67,11 +67,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             alignSelf: 'center',
             marginLeft: 6,
         },
-        customStatusEmoji: {
-            color: theme.centerChannelColor,
-            marginRight: 4,
-            marginTop: 2,
-        },
     };
 });
 
@@ -87,13 +82,12 @@ const Header = (props: HeaderProps) => {
     const isReplyPost = Boolean(post.rootId && !isEphemeral);
     const showReply = !isReplyPost && (location !== THREAD) && (shouldRenderReplyButton && (!rootPostAuthor && commentCount > 0));
     const displayName = postUserDisplayName(post, author, teammateNameDisplay, enablePostUsernameOverride);
-    const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser.locale, teammateNameDisplay, true) : undefined;
+    const rootAuthorDisplayName = rootPostAuthor ? displayUsername(rootPostAuthor, currentUser?.locale, teammateNameDisplay, true) : undefined;
     const customStatus = getUserCustomStatus(author);
-    const customStatusExpired = isCustomStatusExpired(author);
     const showCustomStatusEmoji = Boolean(
         isCustomStatusEnabled && displayName && customStatus &&
         !(isSystemPost || author?.isBot || isAutoResponse || isWebHook),
-    );
+    ) && !isCustomStatusExpired(author) && Boolean(customStatus?.emoji);
 
     return (
         <>
@@ -110,14 +104,9 @@ const Header = (props: HeaderProps) => {
                         userIconOverride={post.props?.override_icon_url}
                         userId={post.userId}
                         usernameOverride={post.props?.override_username}
+                        showCustomStatusEmoji={showCustomStatusEmoji}
+                        customStatus={customStatus!}
                     />
-                    {showCustomStatusEmoji && !customStatusExpired && Boolean(customStatus?.emoji) && (
-                        <CustomStatusEmoji
-                            customStatus={customStatus!}
-                            style={style.customStatusEmoji}
-                            testID='post_header'
-                        />
-                    )}
                     {(!isSystemPost || isAutoResponse) &&
                     <HeaderTag
                         isAutoResponder={isAutoResponse}
@@ -151,7 +140,7 @@ const Header = (props: HeaderProps) => {
             </View>
             {Boolean(rootAuthorDisplayName) && location === CHANNEL &&
             <HeaderCommentedOn
-                locale={currentUser.locale}
+                locale={currentUser?.locale || DEFAULT_LOCALE}
                 name={rootAuthorDisplayName!}
                 theme={theme}
             />

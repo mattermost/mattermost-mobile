@@ -30,7 +30,6 @@ type Props = {
     componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
-    teammateNameDisplay: string;
     tutorialWatched: boolean;
 }
 
@@ -69,7 +68,6 @@ export default function ManageChannelMembers({
     componentId,
     currentTeamId,
     currentUserId,
-    teammateNameDisplay,
     tutorialWatched,
 }: Props) {
     const serverUrl = useServerUrl();
@@ -113,7 +111,14 @@ export default function ManageChannelMembers({
     }, 100), [channelId, loading, serverUrl, term]);
 
     const handleSelectProfile = useCallback(async (profile: UserProfile) => {
-        await fetchUsersByIds(serverUrl, [profile.id]);
+        if (profile.id === currentUserId && isManageMode) {
+            return;
+        }
+
+        if (profile.id !== currentUserId) {
+            await fetchUsersByIds(serverUrl, [profile.id]);
+        }
+
         const title = formatMessage({id: 'mobile.routes.user_profile', defaultMessage: 'Profile'});
         const props = {
             channelId,
@@ -126,7 +131,7 @@ export default function ManageChannelMembers({
 
         Keyboard.dismiss();
         openAsBottomSheet({screen: USER_PROFILE, title, theme, closeButtonId: CLOSE_BUTTON_ID, props});
-    }, [canManageAndRemoveMembers, channelId, isManageMode]);
+    }, [canManageAndRemoveMembers, channelId, isManageMode, currentUserId]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
         const lowerCasedTerm = searchTerm.toLowerCase();
@@ -218,6 +223,7 @@ export default function ManageChannelMembers({
 
     useEffect(() => {
         mounted.current = true;
+        getProfiles();
         return () => {
             mounted.current = false;
         };
@@ -257,12 +263,8 @@ export default function ManageChannelMembers({
                     value={term}
                 />
             </View>
-
-            {/* TODO: https://mattermost.atlassian.net/browse/MM-48830 */}
-            {/* fix flashing No Results page when results are present */}
             <UserList
                 currentUserId={currentUserId}
-                fetchMore={getProfiles}
                 handleSelectProfile={handleSelectProfile}
                 loading={loading}
                 manageMode={true} // default true to change row select icon to a dropdown
@@ -271,10 +273,10 @@ export default function ManageChannelMembers({
                 selectedIds={EMPTY_IDS}
                 showManageMode={canManageAndRemoveMembers && isManageMode}
                 showNoResults={!loading}
-                teammateNameDisplay={teammateNameDisplay}
                 term={term}
                 testID='manage_members.user_list'
                 tutorialWatched={tutorialWatched}
+                includeUserMargin={true}
             />
         </SafeAreaView>
     );

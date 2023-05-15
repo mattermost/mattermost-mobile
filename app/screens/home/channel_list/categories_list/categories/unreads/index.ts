@@ -54,7 +54,7 @@ const enhanced = withObservables(['currentTeamId', 'isTablet', 'onlyUnreads'], (
             const channels = myUnreadChannels.pipe(switchMap((myChannels) => observeChannelsByLastPostAt(database, myChannels)));
             const channelsMap = channels.pipe(switchMap((cs) => of$(makeChannelsMap(cs))));
 
-            return queryMyChannelUnreads(database, currentTeamId).observeWithColumns(['last_post_at', 'is_unread']).pipe(
+            return myUnreadChannels.pipe(
                 combineLatestWith(channelsMap, notifyProps),
                 map(filterAndSortMyChannels),
                 combineLatestWith(lastUnread),

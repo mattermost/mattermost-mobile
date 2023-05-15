@@ -7,7 +7,7 @@ import Animated, {Easing, useAnimatedStyle, useSharedValue, withTiming} from 're
 
 import {fetchDirectChannelsInfo} from '@actions/remote/channel';
 import ChannelItem from '@components/channel_item';
-import {DMS_CATEGORY} from '@constants/categories';
+import {ROW_HEIGHT as CHANNEL_ROW_HEIGHT} from '@components/channel_item/channel_item';
 import {useServerUrl} from '@context/server';
 import {isDMorGM} from '@utils/channel';
 
@@ -17,24 +17,20 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 type Props = {
     sortedChannels: ChannelModel[];
     category: CategoryModel;
-    limit: number;
-    onChannelSwitch: (channelId: string) => void;
+    onChannelSwitch: (channel: Channel | ChannelModel) => void;
     unreadIds: Set<string>;
     unreadsOnTop: boolean;
 };
 
 const extractKey = (item: ChannelModel) => item.id;
 
-const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit, onChannelSwitch}: Props) => {
+const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, onChannelSwitch}: Props) => {
     const serverUrl = useServerUrl();
     const ids = useMemo(() => {
         const filteredChannels = unreadsOnTop ? sortedChannels.filter((c) => !unreadIds.has(c.id)) : sortedChannels;
 
-        if (category.type === DMS_CATEGORY && limit > 0) {
-            return filteredChannels.slice(0, limit);
-        }
         return filteredChannels;
-    }, [category.type, limit, sortedChannels, unreadIds, unreadsOnTop]);
+    }, [category.type, sortedChannels, unreadIds, unreadsOnTop]);
 
     const unreadChannels = useMemo(() => {
         return unreadsOnTop ? [] : ids.filter((c) => unreadIds.has(c.id));
@@ -51,6 +47,9 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit,
                 onPress={onChannelSwitch}
                 key={item.id}
                 testID={`channel_list.category.${category.displayName.replace(/ /g, '_').toLocaleLowerCase()}.channel_item`}
+                shouldHighlightActive={true}
+                shouldHighlightState={true}
+                isOnHome={true}
             />
         );
     }, [onChannelSwitch]);
@@ -67,8 +66,8 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit,
         }
     }, [directChannels.length]);
 
-    const height = ids.length ? ids.length * 40 : 0;
-    const unreadHeight = unreadChannels.length ? unreadChannels.length * 40 : 0;
+    const height = ids.length ? ids.length * CHANNEL_ROW_HEIGHT : 0;
+    const unreadHeight = unreadChannels.length ? unreadChannels.length * CHANNEL_ROW_HEIGHT : 0;
 
     const animatedStyle = useAnimatedStyle(() => {
         const opacity = unreadHeight > 0 ? 1 : 0;
@@ -79,7 +78,7 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit,
         };
     }, [height, unreadHeight]);
 
-    const listHeight = useMemo(() => ({
+    const listStyle = useMemo(() => ({
         height: category.collapsed ? unreadHeight : height,
     }), [category.collapsed, height, unreadHeight]);
 
@@ -92,7 +91,7 @@ const CategoryBody = ({sortedChannels, unreadIds, unreadsOnTop, category, limit,
 
                 // @ts-expect-error strictMode not exposed on the types
                 strictMode={true}
-                style={listHeight}
+                style={listStyle}
             />
         </Animated.View>
     );

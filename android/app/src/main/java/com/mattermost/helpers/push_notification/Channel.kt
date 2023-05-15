@@ -11,6 +11,7 @@ import com.mattermost.helpers.database_extension.queryCurrentUserId
 import com.nozbe.watermelondb.Database
 import java.text.Collator
 import java.util.Locale
+import kotlin.math.max
 
 suspend fun PushNotificationDataRunnable.Companion.fetchMyChannel(db: Database, serverUrl: String, channelId: String, isCRTEnabled: Boolean): Triple<ReadableMap?, ReadableMap?, ReadableArray?> {
     val channel = fetch(serverUrl, "/api/v4/channels/$channelId")

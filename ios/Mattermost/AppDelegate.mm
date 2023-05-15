@@ -4,7 +4,7 @@
 
 #import <React/RCTBundleURLProvider.h>
 #import <React/RCTLinkingManager.h>
-
+#import <React/RCTAppSetupUtils.h>
 #import <RNKeychain/RNKeychainManager.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UserNotifications/UserNotifications.h>
@@ -51,6 +51,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   [[GekidouWrapper default] setPreference:@"true" forKey:@"ApplicationIsRunning"];
 
   [RNNotifications startMonitorNotifications];
+  RCTAppSetupPrepareApp(application, true);
 
   self.moduleName = @"Mattermost";
   // You can add your custom initial props in the dictionary below.

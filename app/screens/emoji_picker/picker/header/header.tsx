@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect} from 'react';
-import {LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
 import {useSharedValue} from 'react-native-reanimated';
 
-import SearchBar, {SearchProps} from '@components/search';
+import SearchBar, {type SearchProps} from '@components/search';
 import {useIsTablet} from '@hooks/device';
 import {setEmojiSkinTone} from '@hooks/emoji_category_bar';
 

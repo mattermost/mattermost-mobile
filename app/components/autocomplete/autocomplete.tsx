@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo, useState} from 'react';
-import {Platform, StyleProp, useWindowDimensions, ViewStyle} from 'react-native';
-import Animated, {SharedValue, useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
+import {Platform, type StyleProp, useWindowDimensions, type ViewStyle} from 'react-native';
+import Animated, {type SharedValue, useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
 
 import {MAX_LIST_HEIGHT, MAX_LIST_TABLET_DIFF} from '@constants/autocomplete';
 import {useTheme} from '@context/theme';
@@ -43,6 +43,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         listStyle: {
             backgroundColor: theme.centerChannelBg,
             borderRadius: 4,
+            paddingHorizontal: 16,
         },
     };
 });

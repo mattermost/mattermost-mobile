@@ -1,5 +1,5 @@
 diff --git a/node_modules/react-native-fast-image/RNFastImage.podspec b/node_modules/react-native-fast-image/RNFastImage.podspec
-index db0fada..47dbd5b 100644
+index db0fada..9a2457c 100644
 --- a/node_modules/react-native-fast-image/RNFastImage.podspec
 +++ b/node_modules/react-native-fast-image/RNFastImage.podspec
 @@ -16,6 +16,6 @@ Pod::Spec.new do |s|
@@ -62,7 +62,7 @@ index 0000000..a302394
 +    }
 +}
 diff --git a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java
-index e659a61..1bdf34e 100644
+index 811292a..79291fa 100644
 --- a/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java
 +++ b/node_modules/react-native-fast-image/android/src/main/java/com/dylanvann/fastimage/FastImageOkHttpProgressGlideModule.java
 @@ -43,6 +43,7 @@ public class FastImageOkHttpProgressGlideModule extends LibraryGlideModule {
@@ -74,9 +74,26 @@ index e659a61..1bdf34e 100644
                  .build();
          OkHttpUrlLoader.Factory factory = new OkHttpUrlLoader.Factory(client);
 diff --git a/node_modules/react-native-fast-image/dist/index.d.ts b/node_modules/react-native-fast-image/dist/index.d.ts
-index 8a91257..599775d 100644
+index 5abb7c9..db5a1d3 100644
 --- a/node_modules/react-native-fast-image/dist/index.d.ts
 +++ b/node_modules/react-native-fast-image/dist/index.d.ts
+@@ -43,13 +43,13 @@ export interface ImageStyle extends FlexStyle, TransformsStyle, ShadowStyleIOS {
+     backfaceVisibility?: 'visible' | 'hidden';
+     borderBottomLeftRadius?: number;
+     borderBottomRightRadius?: number;
+-    backgroundColor?: string;
+-    borderColor?: string;
++    backgroundColor?: ColorValue;
++    borderColor?: ColorValue;
+     borderWidth?: number;
+     borderRadius?: number;
+     borderTopLeftRadius?: number;
+     borderTopRightRadius?: number;
+-    overlayColor?: string;
++    overlayColor?: ColorValue;
+     opacity?: number;
+ }
+ export interface FastImageProps extends AccessibilityProps, ViewProps {
 @@ -89,6 +89,10 @@ export interface FastImageProps extends AccessibilityProps, ViewProps {
       * Render children within the image.
       */

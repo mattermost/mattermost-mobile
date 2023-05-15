@@ -118,6 +118,8 @@ declare class UserModel extends Model {
 
     /** termsOfServiceCreateAt : The last time the user accepted the terms of service */
     termsOfServiceCreateAt: number;
+
+    toApi: () => UserProfile;
 }
 
 export default UserModel;

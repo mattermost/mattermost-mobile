@@ -4,7 +4,7 @@
 import {useNavigation} from '@react-navigation/native';
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import NoResultsWithTerm from '@components/no_results_with_term';

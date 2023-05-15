@@ -23,7 +23,7 @@ import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
     post: PostModel;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     author?: UserModel;
     isMilitaryTime: boolean;
     teammateNameDisplay?: string;
@@ -39,39 +39,39 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         messageStyle: {
             flexDirection: 'row',
+            alignItems: 'center',
             color: changeOpacity(theme.centerChannelColor, 0.6),
-            fontSize: 15,
-            lineHeight: 20,
             paddingTop: 5,
             paddingBottom: 5,
         },
         messageText: {
             flex: 1,
+            paddingLeft: 12,
+            paddingRight: 4,
         },
         joinCallIcon: {
-            padding: 12,
-            backgroundColor: '#339970',
-            borderRadius: 8,
-            marginRight: 5,
-            color: 'white',
+            padding: 8,
+            backgroundColor: theme.onlineIndicator,
+            borderRadius: 4,
+            color: theme.buttonColor,
             overflow: 'hidden',
         },
         phoneHangupIcon: {
-            padding: 12,
+            padding: 8,
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.6),
-            borderRadius: 8,
-            marginRight: 5,
-            color: 'white',
+            borderRadius: 4,
+            color: theme.buttonColor,
             overflow: 'hidden',
         },
         joinCallButtonText: {
-            color: 'white',
+            color: theme.buttonColor,
+            ...typography('Body', 75, 'SemiBold'),
         },
         joinCallButtonTextRestricted: {
             color: changeOpacity(theme.centerChannelColor, 0.32),
         },
         joinCallButtonIcon: {
-            color: 'white',
+            color: theme.buttonColor,
             marginRight: 5,
         },
         joinCallButtonIconRestricted: {
@@ -79,13 +79,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         startedText: {
             color: theme.centerChannelColor,
-            fontWeight: 'bold',
+            ...typography('Body', 100, 'SemiBold'),
         },
         joinCallButton: {
             flexDirection: 'row',
             padding: 12,
-            backgroundColor: '#339970',
-            borderRadius: 8,
+            backgroundColor: theme.onlineIndicator,
+            borderRadius: 4,
             alignItems: 'center',
             alignContent: 'center',
         },
@@ -93,7 +93,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
         },
         timeText: {
-            color: theme.centerChannelColor,
+            ...typography('Body', 75),
+            color: changeOpacity(theme.centerChannelColor, 0.64),
         },
         endCallInfo: {
             flexDirection: 'row',
@@ -147,7 +148,7 @@ export const CallsCustomMessage = ({
                 <View style={style.messageStyle}>
                     <CompassIcon
                         name='phone-hangup'
-                        size={16}
+                        size={24}
                         style={style.phoneHangupIcon}
                     />
                     <View style={style.messageText}>
@@ -190,7 +191,7 @@ export const CallsCustomMessage = ({
             <View style={style.messageStyle}>
                 <CompassIcon
                     name='phone-in-talk'
-                    size={16}
+                    size={24}
                     style={style.joinCallIcon}
                 />
                 <View style={style.messageText}>
@@ -212,8 +213,8 @@ export const CallsCustomMessage = ({
                     onPress={joinHandler}
                 >
                     <CompassIcon
-                        name='phone-outline'
-                        size={16}
+                        name='phone'
+                        size={14}
                         style={[style.joinCallButtonIcon, isLimitRestricted && style.joinCallButtonIconRestricted]}
                     />
                     {

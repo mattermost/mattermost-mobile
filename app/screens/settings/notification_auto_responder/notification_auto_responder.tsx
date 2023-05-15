@@ -58,7 +58,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 type NotificationAutoResponderProps = {
     componentId: AvailableScreens;
-    currentUser: UserModel;
+    currentUser?: UserModel;
 }
 const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoResponderProps) => {
     const theme = useTheme();
@@ -66,7 +66,7 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
     const intl = useIntl();
     const notifyProps = useMemo(() => getNotificationProps(currentUser), [/* dependency array should remain empty */]);
 
-    const initialAutoResponderActive = useMemo(() => Boolean(currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true'), [/* dependency array should remain empty */]);
+    const initialAutoResponderActive = useMemo(() => Boolean(currentUser?.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true'), [/* dependency array should remain empty */]);
     const [autoResponderActive, setAutoResponderActive] = useState<boolean>(initialAutoResponderActive);
 
     const initialOOOMsg = useMemo(() => notifyProps.auto_responder_message || intl.formatMessage(OOO), [/* dependency array should remain empty */]);
@@ -87,10 +87,12 @@ const NotificationAutoResponder = ({currentUser, componentId}: NotificationAutoR
                     auto_responder_message: autoResponderMessage,
                 },
             });
-            fetchStatusInBatch(serverUrl, currentUser.id);
+            if (currentUser) {
+                fetchStatusInBatch(serverUrl, currentUser.id);
+            }
         }
         close();
-    }, [serverUrl, autoResponderActive, autoResponderMessage, notifyProps, currentUser.id]);
+    }, [serverUrl, autoResponderActive, autoResponderMessage, notifyProps, currentUser?.id]);
 
     useBackNavigation(saveAutoResponder);
 

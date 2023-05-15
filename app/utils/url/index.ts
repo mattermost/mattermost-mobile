@@ -150,7 +150,11 @@ export function getScheme(url: string) {
     return match && match[1];
 }
 
-export function getYouTubeVideoId(link: string) {
+export function getYouTubeVideoId(link?: string) {
+    if (!link) {
+        return '';
+    }
+
     // https://youtube.com/watch?v=<id>
     let match = (/youtube\.com\/watch\?\S*\bv=([a-zA-Z0-9_-]{6,11})/g).exec(link);
     if (match) {
@@ -172,7 +176,7 @@ export function getYouTubeVideoId(link: string) {
     return '';
 }
 
-export function tryOpenURL(url: string, onError = emptyFunction, onSuccess = emptyFunction) {
+export function tryOpenURL(url: string, onError: (error: unknown) => void = emptyFunction, onSuccess = emptyFunction) {
     Linking.openURL(url).
         then(onSuccess).
         catch(onError);

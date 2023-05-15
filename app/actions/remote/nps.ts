@@ -3,6 +3,8 @@
 
 import {General} from '@constants';
 import NetworkManager from '@managers/network_manager';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 
 export const isNPSEnabled = async (serverUrl: string) => {
     try {
@@ -15,6 +17,7 @@ export const isNPSEnabled = async (serverUrl: string) => {
         }
         return false;
     } catch (error) {
+        logDebug('error on isNPSEnabled', getFullErrorMessage(error));
         return false;
     }
 };
@@ -25,6 +28,7 @@ export const giveFeedbackAction = async (serverUrl: string) => {
         const post = await client.npsGiveFeedbackAction();
         return {post};
     } catch (error) {
+        logDebug('error on giveFeedbackAction', getFullErrorMessage(error));
         return {error};
     }
 };

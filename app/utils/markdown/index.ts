@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Platform, StyleProp, StyleSheet, TextStyle} from 'react-native';
+import {Platform, type StyleProp, StyleSheet, type TextStyle} from 'react-native';
 
 import {getViewPortWidth} from '@utils/images';
 import {changeOpacity, concatStyles, makeStyleSheetFromTheme} from '@utils/theme';

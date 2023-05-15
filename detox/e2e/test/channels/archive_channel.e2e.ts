@@ -58,6 +58,7 @@ describe('Channels - Archive Channel', () => {
         // # Open a public channel screen, open channel info screen, and tap on archive channel option and confirm
         const {channel: publicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, publicChannel.id);
+        await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, publicChannel.name);
         await ChannelInfoScreen.open();
@@ -88,6 +89,7 @@ describe('Channels - Archive Channel', () => {
         // # Open a public channel screen, open channel info screen, and tap on archive channel option and cancel
         const {channel: publicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, publicChannel.id);
+        await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, publicChannel.name);
         await ChannelInfoScreen.open();
@@ -105,6 +107,7 @@ describe('Channels - Archive Channel', () => {
         // # Open a private channel screen, open channel info screen, and tap on archive channel option and confirm
         const {channel: privateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privateChannel.id);
+        await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, privateChannel.name);
         await ChannelInfoScreen.open();

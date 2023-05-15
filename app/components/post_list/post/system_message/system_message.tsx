@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {IntlShape, useIntl} from 'react-intl';
-import {StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
+import {type IntlShape, useIntl} from 'react-intl';
+import {type StyleProp, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import Markdown from '@components/markdown';
 import {Post} from '@constants';

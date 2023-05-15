@@ -5,10 +5,10 @@ import React, {useCallback} from 'react';
 import {
     Platform,
     Pressable,
-    PressableAndroidRippleConfig,
-    PressableStateCallbackType,
-    StyleProp,
-    ViewStyle,
+    type PressableAndroidRippleConfig,
+    type PressableStateCallbackType,
+    type StyleProp,
+    type ViewStyle,
 } from 'react-native';
 
 import Emoji from '@components/emoji';

@@ -12,7 +12,7 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 type NotificationMentionProps = {
     componentId: AvailableScreens;
-    currentUser: UserModel;
+    currentUser?: UserModel;
     isCRTEnabled: boolean;
 }
 const NotificationMention = ({componentId, currentUser, isCRTEnabled}: NotificationMentionProps) => {

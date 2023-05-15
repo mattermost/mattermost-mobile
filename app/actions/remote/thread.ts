@@ -12,6 +12,9 @@ import {getPostById} from '@queries/servers/post';
 import {getConfigValue, getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById, getTeamThreadsSyncData} from '@queries/servers/thread';
 import {getCurrentUser} from '@queries/servers/user';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
+import {showThreadFollowingSnackbar} from '@utils/snack_bar';
 import {getThreadsListEdges} from '@utils/thread';
 
 import {forceLogoutIfNecessary} from './session';
@@ -75,34 +78,23 @@ export const fetchAndSwitchToThread = async (serverUrl: string, rootId: string, 
 };
 
 export const fetchThread = async (serverUrl: string, teamId: string, threadId: string, extended?: boolean) => {
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         const thread = await client.getThread('me', teamId, threadId, extended);
 
         await processReceivedThreads(serverUrl, [thread], teamId);
 
         return {data: thread};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchThread', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const updateTeamThreadsAsRead = async (serverUrl: string, teamId: string) => {
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         const data = await client.updateTeamThreadsAsRead('me', teamId);
 
         // Update locally
@@ -110,26 +102,17 @@ export const updateTeamThreadsAsRead = async (serverUrl: string, teamId: string)
 
         return {data};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on updateTeamThreadsAsRead', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const markThreadAsRead = async (serverUrl: string, teamId: string | undefined, threadId: string, updateLastViewed = true) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
         const timestamp = Date.now();
 
         // DM/GM doesn't have a teamId, so we pass the current team id
@@ -158,26 +141,17 @@ export const markThreadAsRead = async (serverUrl: string, teamId: string | undef
 
         return {data};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on markThreadAsRead', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const markThreadAsUnread = async (serverUrl: string, teamId: string, threadId: string, postId: string) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
         // DM/GM doesn't have a teamId, so we pass the current team id
         let threadTeamId = teamId;
         if (!threadTeamId) {
@@ -197,40 +171,37 @@ export const markThreadAsUnread = async (serverUrl: string, teamId: string, thre
 
         return {data};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on markThreadAsUnread', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
-export const updateThreadFollowing = async (serverUrl: string, teamId: string, threadId: string, state: boolean) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client;
+export const updateThreadFollowing = async (serverUrl: string, teamId: string, threadId: string, state: boolean, showSnackBar: boolean) => {
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    // DM/GM doesn't have a teamId, so we pass the current team id
-    let threadTeamId = teamId;
-    if (!threadTeamId) {
-        threadTeamId = await getCurrentTeamId(database);
-    }
+        // DM/GM doesn't have a teamId, so we pass the current team id
+        let threadTeamId = teamId;
+        if (!threadTeamId) {
+            threadTeamId = await getCurrentTeamId(database);
+        }
 
-    try {
         const data = await client.updateThreadFollow('me', threadTeamId, threadId, state);
 
         // Update locally
         await updateThread(serverUrl, threadId, {is_following: state});
 
+        if (showSnackBar) {
+            const onUndo = () => updateThreadFollowing(serverUrl, teamId, threadId, !state, false);
+            showThreadFollowingSnackbar(state, onUndo);
+        }
+
         return {data};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on updateThreadFollowing', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
@@ -243,10 +214,10 @@ export const fetchThreads = async (
     pages?: number,
 ) => {
     const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
+    const {database} = operator;
 
     let client: Client;
     try {
@@ -257,12 +228,12 @@ export const fetchThreads = async (
 
     const fetchDirection = direction ?? Direction.Up;
 
-    const currentUser = await getCurrentUser(operator.database);
+    const currentUser = await getCurrentUser(database);
     if (!currentUser) {
         return {error: 'currentUser not found'};
     }
 
-    const version = await getConfigValue(operator.database, 'Version');
+    const version = await getConfigValue(database, 'Version');
     const threadsData: Thread[] = [];
 
     let currentPage = 0;
@@ -296,6 +267,7 @@ export const fetchThreads = async (
     try {
         await fetchThreadsFunc(options);
     } catch (error) {
+        logDebug('error on fetchThreads', getFullErrorMessage(error));
         if (__DEV__) {
             throw error;
         }
@@ -306,13 +278,9 @@ export const fetchThreads = async (
 };
 
 export const syncTeamThreads = async (serverUrl: string, teamId: string, prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
-        const syncData = await getTeamThreadsSyncData(operator.database, teamId);
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const syncData = await getTeamThreadsSyncData(database, teamId);
         const syncDataUpdate = {
             id: teamId,
         } as TeamThreadsSync;
@@ -412,12 +380,9 @@ export const syncTeamThreads = async (serverUrl: string, teamId: string, prepare
 };
 
 export const loadEarlierThreads = async (serverUrl: string, teamId: string, lastThreadId: string, prepareRecordsOnly = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         /*
          * - We will fetch one page of old threads
          * - Update the sync data with the earliest thread last_reply_at timestamp
@@ -470,7 +435,7 @@ export const loadEarlierThreads = async (serverUrl: string, teamId: string, last
             }
         }
 
-        return {error: false, models, threads};
+        return {models, threads};
     } catch (error) {
         return {error};
     }

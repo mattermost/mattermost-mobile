@@ -117,140 +117,143 @@ exports[`components/channel_list_row should show no results 1`] = `
       style={null}
     >
       <View
-        onMoveShouldSetResponder={[Function]}
-        onMoveShouldSetResponderCapture={[Function]}
-        onResponderEnd={[Function]}
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onClick={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
-        onResponderReject={[Function]}
         onResponderRelease={[Function]}
-        onResponderStart={[Function]}
         onResponderTerminate={[Function]}
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
-        onStartShouldSetResponderCapture={[Function]}
+        style={
+          {
+            "opacity": 1,
+          }
+        }
       >
         <View
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
+          style={
+            [
+              [
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "height": 40,
+                  "paddingBottom": 8,
+                  "paddingTop": 4,
+                },
+                {
+                  "opacity": 1,
+                  "paddingHorizontal": 20,
+                },
+                undefined,
+              ],
+              undefined,
+            ]
           }
-          accessible={true}
-          focusable={true}
-          onClick={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
+          testID="create_direct_message.user_list.user_item.1.1"
         >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                },
+                {
+                  "height": 24,
+                  "width": 24,
+                },
+                {
+                  "marginRight": 12,
+                },
+              ]
+            }
+            testID="create_direct_message.user_list.user_item.1.1.profile_picture"
+          >
+            <Icon
+              name="account-outline"
+              size={24}
+              style={
+                {
+                  "color": "rgba(63,67,80,0.48)",
+                }
+              }
+            />
+          </View>
           <View
             style={
               {
                 "flex": 1,
-                "flexDirection": "row",
-                "height": 58,
-                "overflow": "hidden",
-                "paddingHorizontal": 20,
               }
             }
-            testID="create_direct_message.user_list.user_item.1"
           >
             <View
               style={
-                [
-                  {
-                    "alignItems": "center",
-                    "color": "#3f4350",
-                    "flexDirection": "row",
-                  },
-                  {
-                    "opacity": 1,
-                  },
-                ]
+                {
+                  "flex": 1,
+                  "flexDirection": "row",
+                }
               }
             >
-              <View
+              <Text
+                numberOfLines={1}
                 style={
                   {
-                    "borderRadius": 21.5,
-                    "height": 42,
-                    "width": 42,
+                    "color": "#3f4350",
+                    "flex": 0,
+                    "flexShrink": 1,
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
                   }
                 }
-                testID="create_direct_message.user_list.user_item.1.profile_picture"
+                testID="create_direct_message.user_list.user_item.1.1.display_name"
               >
-                <Icon
-                  name="account-outline"
-                  size={24}
-                  style={
-                    {
-                      "color": "rgba(63,67,80,0.48)",
-                    }
-                  }
-                />
-              </View>
-            </View>
-            <View
-              style={
-                [
+                johndoe
+              </Text>
+              <View
+                style={
                   {
                     "flex": 1,
-                    "flexDirection": "column",
-                    "justifyContent": "center",
-                    "paddingHorizontal": 10,
-                  },
-                  {
-                    "opacity": 1,
-                  },
-                ]
-              }
-            >
+                  }
+                }
+              />
               <View
                 style={
                   {
-                    "flexDirection": "row",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "marginLeft": 12,
                   }
                 }
               >
-                <Text
-                  ellipsizeMode="tail"
-                  numberOfLines={1}
-                  style={
-                    {
-                      "color": "#3f4350",
-                      "fontFamily": "OpenSans",
-                      "fontSize": 16,
-                      "fontWeight": "400",
-                      "height": 24,
-                      "lineHeight": 24,
-                      "maxWidth": "80%",
-                    }
-                  }
-                  testID="create_direct_message.user_list.user_item.1.display_name"
-                >
-                  johndoe
-                </Text>
+                <Icon
+                  color="rgba(63,67,80,0.32)"
+                  name="circle-outline"
+                  size={28}
+                />
               </View>
-            </View>
-            <View
-              style={
-                {
-                  "alignItems": "center",
-                  "justifyContent": "center",
-                }
-              }
-            >
-              <Icon
-                color="rgba(63,67,80,0.32)"
-                name="circle-outline"
-                size={28}
-              />
             </View>
           </View>
         </View>
@@ -400,140 +403,143 @@ exports[`components/channel_list_row should show results and tutorial 1`] = `
       style={null}
     >
       <View
-        onMoveShouldSetResponder={[Function]}
-        onMoveShouldSetResponderCapture={[Function]}
-        onResponderEnd={[Function]}
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onClick={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
-        onResponderReject={[Function]}
         onResponderRelease={[Function]}
-        onResponderStart={[Function]}
         onResponderTerminate={[Function]}
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
-        onStartShouldSetResponderCapture={[Function]}
+        style={
+          {
+            "opacity": 1,
+          }
+        }
       >
         <View
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
+          style={
+            [
+              [
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "height": 40,
+                  "paddingBottom": 8,
+                  "paddingTop": 4,
+                },
+                {
+                  "opacity": 1,
+                  "paddingHorizontal": 20,
+                },
+                undefined,
+              ],
+              undefined,
+            ]
           }
-          accessible={true}
-          focusable={true}
-          onClick={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
+          testID="create_direct_message.user_list.user_item.1.1"
         >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                },
+                {
+                  "height": 24,
+                  "width": 24,
+                },
+                {
+                  "marginRight": 12,
+                },
+              ]
+            }
+            testID="create_direct_message.user_list.user_item.1.1.profile_picture"
+          >
+            <Icon
+              name="account-outline"
+              size={24}
+              style={
+                {
+                  "color": "rgba(63,67,80,0.48)",
+                }
+              }
+            />
+          </View>
           <View
             style={
               {
                 "flex": 1,
-                "flexDirection": "row",
-                "height": 58,
-                "overflow": "hidden",
-                "paddingHorizontal": 20,
               }
             }
-            testID="create_direct_message.user_list.user_item.1"
           >
             <View
               style={
-                [
-                  {
-                    "alignItems": "center",
-                    "color": "#3f4350",
-                    "flexDirection": "row",
-                  },
-                  {
-                    "opacity": 1,
-                  },
-                ]
+                {
+                  "flex": 1,
+                  "flexDirection": "row",
+                }
               }
             >
-              <View
+              <Text
+                numberOfLines={1}
                 style={
                   {
-                    "borderRadius": 21.5,
-                    "height": 42,
-                    "width": 42,
+                    "color": "#3f4350",
+                    "flex": 0,
+                    "flexShrink": 1,
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
                   }
                 }
-                testID="create_direct_message.user_list.user_item.1.profile_picture"
+                testID="create_direct_message.user_list.user_item.1.1.display_name"
               >
-                <Icon
-                  name="account-outline"
-                  size={24}
-                  style={
-                    {
-                      "color": "rgba(63,67,80,0.48)",
-                    }
-                  }
-                />
-              </View>
-            </View>
-            <View
-              style={
-                [
+                johndoe
+              </Text>
+              <View
+                style={
                   {
                     "flex": 1,
-                    "flexDirection": "column",
-                    "justifyContent": "center",
-                    "paddingHorizontal": 10,
-                  },
-                  {
-                    "opacity": 1,
-                  },
-                ]
-              }
-            >
+                  }
+                }
+              />
               <View
                 style={
                   {
-                    "flexDirection": "row",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "marginLeft": 12,
                   }
                 }
               >
-                <Text
-                  ellipsizeMode="tail"
-                  numberOfLines={1}
-                  style={
-                    {
-                      "color": "#3f4350",
-                      "fontFamily": "OpenSans",
-                      "fontSize": 16,
-                      "fontWeight": "400",
-                      "height": 24,
-                      "lineHeight": 24,
-                      "maxWidth": "80%",
-                    }
-                  }
-                  testID="create_direct_message.user_list.user_item.1.display_name"
-                >
-                  johndoe
-                </Text>
+                <Icon
+                  color="rgba(63,67,80,0.32)"
+                  name="circle-outline"
+                  size={28}
+                />
               </View>
-            </View>
-            <View
-              style={
-                {
-                  "alignItems": "center",
-                  "justifyContent": "center",
-                }
-              }
-            >
-              <Icon
-                color="rgba(63,67,80,0.32)"
-                name="circle-outline"
-                size={28}
-              />
             </View>
           </View>
         </View>
@@ -763,140 +769,143 @@ exports[`components/channel_list_row should show results no tutorial 1`] = `
       style={null}
     >
       <View
-        onMoveShouldSetResponder={[Function]}
-        onMoveShouldSetResponderCapture={[Function]}
-        onResponderEnd={[Function]}
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onClick={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
-        onResponderReject={[Function]}
         onResponderRelease={[Function]}
-        onResponderStart={[Function]}
         onResponderTerminate={[Function]}
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
-        onStartShouldSetResponderCapture={[Function]}
+        style={
+          {
+            "opacity": 1,
+          }
+        }
       >
         <View
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
+          style={
+            [
+              [
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "height": 40,
+                  "paddingBottom": 8,
+                  "paddingTop": 4,
+                },
+                {
+                  "opacity": 1,
+                  "paddingHorizontal": 20,
+                },
+                undefined,
+              ],
+              undefined,
+            ]
           }
-          accessible={true}
-          focusable={true}
-          onClick={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
+          testID="create_direct_message.user_list.user_item.1.1"
         >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                },
+                {
+                  "height": 24,
+                  "width": 24,
+                },
+                {
+                  "marginRight": 12,
+                },
+              ]
+            }
+            testID="create_direct_message.user_list.user_item.1.1.profile_picture"
+          >
+            <Icon
+              name="account-outline"
+              size={24}
+              style={
+                {
+                  "color": "rgba(63,67,80,0.48)",
+                }
+              }
+            />
+          </View>
           <View
             style={
               {
                 "flex": 1,
-                "flexDirection": "row",
-                "height": 58,
-                "overflow": "hidden",
-                "paddingHorizontal": 20,
               }
             }
-            testID="create_direct_message.user_list.user_item.1"
           >
             <View
               style={
-                [
-                  {
-                    "alignItems": "center",
-                    "color": "#3f4350",
-                    "flexDirection": "row",
-                  },
-                  {
-                    "opacity": 1,
-                  },
-                ]
+                {
+                  "flex": 1,
+                  "flexDirection": "row",
+                }
               }
             >
-              <View
+              <Text
+                numberOfLines={1}
                 style={
                   {
-                    "borderRadius": 21.5,
-                    "height": 42,
-                    "width": 42,
+                    "color": "#3f4350",
+                    "flex": 0,
+                    "flexShrink": 1,
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
                   }
                 }
-                testID="create_direct_message.user_list.user_item.1.profile_picture"
+                testID="create_direct_message.user_list.user_item.1.1.display_name"
               >
-                <Icon
-                  name="account-outline"
-                  size={24}
-                  style={
-                    {
-                      "color": "rgba(63,67,80,0.48)",
-                    }
-                  }
-                />
-              </View>
-            </View>
-            <View
-              style={
-                [
+                johndoe
+              </Text>
+              <View
+                style={
                   {
                     "flex": 1,
-                    "flexDirection": "column",
-                    "justifyContent": "center",
-                    "paddingHorizontal": 10,
-                  },
-                  {
-                    "opacity": 1,
-                  },
-                ]
-              }
-            >
+                  }
+                }
+              />
               <View
                 style={
                   {
-                    "flexDirection": "row",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "marginLeft": 12,
                   }
                 }
               >
-                <Text
-                  ellipsizeMode="tail"
-                  numberOfLines={1}
-                  style={
-                    {
-                      "color": "#3f4350",
-                      "fontFamily": "OpenSans",
-                      "fontSize": 16,
-                      "fontWeight": "400",
-                      "height": 24,
-                      "lineHeight": 24,
-                      "maxWidth": "80%",
-                    }
-                  }
-                  testID="create_direct_message.user_list.user_item.1.display_name"
-                >
-                  johndoe
-                </Text>
+                <Icon
+                  color="rgba(63,67,80,0.32)"
+                  name="circle-outline"
+                  size={28}
+                />
               </View>
-            </View>
-            <View
-              style={
-                {
-                  "alignItems": "center",
-                  "justifyContent": "center",
-                }
-              }
-            >
-              <Icon
-                color="rgba(63,67,80,0.32)"
-                name="circle-outline"
-                size={28}
-              />
             </View>
           </View>
         </View>
@@ -1078,140 +1087,143 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
       style={null}
     >
       <View
-        onMoveShouldSetResponder={[Function]}
-        onMoveShouldSetResponderCapture={[Function]}
-        onResponderEnd={[Function]}
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onClick={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
-        onResponderReject={[Function]}
         onResponderRelease={[Function]}
-        onResponderStart={[Function]}
         onResponderTerminate={[Function]}
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
-        onStartShouldSetResponderCapture={[Function]}
+        style={
+          {
+            "opacity": 1,
+          }
+        }
       >
         <View
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
+          style={
+            [
+              [
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "height": 40,
+                  "paddingBottom": 8,
+                  "paddingTop": 4,
+                },
+                {
+                  "opacity": 1,
+                  "paddingHorizontal": 20,
+                },
+                undefined,
+              ],
+              undefined,
+            ]
           }
-          accessible={true}
-          focusable={true}
-          onClick={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
+          testID="create_direct_message.user_list.user_item.1.1"
         >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                },
+                {
+                  "height": 24,
+                  "width": 24,
+                },
+                {
+                  "marginRight": 12,
+                },
+              ]
+            }
+            testID="create_direct_message.user_list.user_item.1.1.profile_picture"
+          >
+            <Icon
+              name="account-outline"
+              size={24}
+              style={
+                {
+                  "color": "rgba(63,67,80,0.48)",
+                }
+              }
+            />
+          </View>
           <View
             style={
               {
                 "flex": 1,
-                "flexDirection": "row",
-                "height": 58,
-                "overflow": "hidden",
-                "paddingHorizontal": 20,
               }
             }
-            testID="create_direct_message.user_list.user_item.1"
           >
             <View
               style={
-                [
-                  {
-                    "alignItems": "center",
-                    "color": "#3f4350",
-                    "flexDirection": "row",
-                  },
-                  {
-                    "opacity": 1,
-                  },
-                ]
+                {
+                  "flex": 1,
+                  "flexDirection": "row",
+                }
               }
             >
-              <View
+              <Text
+                numberOfLines={1}
                 style={
                   {
-                    "borderRadius": 21.5,
-                    "height": 42,
-                    "width": 42,
+                    "color": "#3f4350",
+                    "flex": 0,
+                    "flexShrink": 1,
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
                   }
                 }
-                testID="create_direct_message.user_list.user_item.1.profile_picture"
+                testID="create_direct_message.user_list.user_item.1.1.display_name"
               >
-                <Icon
-                  name="account-outline"
-                  size={24}
-                  style={
-                    {
-                      "color": "rgba(63,67,80,0.48)",
-                    }
-                  }
-                />
-              </View>
-            </View>
-            <View
-              style={
-                [
+                johndoe
+              </Text>
+              <View
+                style={
                   {
                     "flex": 1,
-                    "flexDirection": "column",
-                    "justifyContent": "center",
-                    "paddingHorizontal": 10,
-                  },
-                  {
-                    "opacity": 1,
-                  },
-                ]
-              }
-            >
+                  }
+                }
+              />
               <View
                 style={
                   {
-                    "flexDirection": "row",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "marginLeft": 12,
                   }
                 }
               >
-                <Text
-                  ellipsizeMode="tail"
-                  numberOfLines={1}
-                  style={
-                    {
-                      "color": "#3f4350",
-                      "fontFamily": "OpenSans",
-                      "fontSize": 16,
-                      "fontWeight": "400",
-                      "height": 24,
-                      "lineHeight": 24,
-                      "maxWidth": "80%",
-                    }
-                  }
-                  testID="create_direct_message.user_list.user_item.1.display_name"
-                >
-                  johndoe
-                </Text>
+                <Icon
+                  color="rgba(63,67,80,0.32)"
+                  name="circle-outline"
+                  size={28}
+                />
               </View>
-            </View>
-            <View
-              style={
-                {
-                  "alignItems": "center",
-                  "justifyContent": "center",
-                }
-              }
-            >
-              <Icon
-                color="rgba(63,67,80,0.32)"
-                name="circle-outline"
-                size={28}
-              />
             </View>
           </View>
         </View>
@@ -1266,140 +1278,143 @@ exports[`components/channel_list_row should show results no tutorial 2 users 1`]
       style={null}
     >
       <View
-        onMoveShouldSetResponder={[Function]}
-        onMoveShouldSetResponderCapture={[Function]}
-        onResponderEnd={[Function]}
+        accessibilityState={
+          {
+            "busy": undefined,
+            "checked": undefined,
+            "disabled": false,
+            "expanded": undefined,
+            "selected": undefined,
+          }
+        }
+        accessibilityValue={
+          {
+            "max": undefined,
+            "min": undefined,
+            "now": undefined,
+            "text": undefined,
+          }
+        }
+        accessible={true}
+        collapsable={false}
+        focusable={true}
+        onClick={[Function]}
         onResponderGrant={[Function]}
         onResponderMove={[Function]}
-        onResponderReject={[Function]}
         onResponderRelease={[Function]}
-        onResponderStart={[Function]}
         onResponderTerminate={[Function]}
         onResponderTerminationRequest={[Function]}
         onStartShouldSetResponder={[Function]}
-        onStartShouldSetResponderCapture={[Function]}
+        style={
+          {
+            "opacity": 1,
+          }
+        }
       >
         <View
-          accessibilityValue={
-            {
-              "max": undefined,
-              "min": undefined,
-              "now": undefined,
-              "text": undefined,
-            }
+          style={
+            [
+              [
+                {
+                  "alignItems": "center",
+                  "flexDirection": "row",
+                  "height": 40,
+                  "paddingBottom": 8,
+                  "paddingTop": 4,
+                },
+                {
+                  "opacity": 1,
+                  "paddingHorizontal": 20,
+                },
+                undefined,
+              ],
+              undefined,
+            ]
           }
-          accessible={true}
-          focusable={true}
-          onClick={[Function]}
-          onResponderGrant={[Function]}
-          onResponderMove={[Function]}
-          onResponderRelease={[Function]}
-          onResponderTerminate={[Function]}
-          onResponderTerminationRequest={[Function]}
-          onStartShouldSetResponder={[Function]}
+          testID="create_direct_message.user_list.user_item.2.2"
         >
+          <View
+            style={
+              [
+                {
+                  "alignItems": "center",
+                  "justifyContent": "center",
+                },
+                {
+                  "height": 24,
+                  "width": 24,
+                },
+                {
+                  "marginRight": 12,
+                },
+              ]
+            }
+            testID="create_direct_message.user_list.user_item.2.2.profile_picture"
+          >
+            <Icon
+              name="account-outline"
+              size={24}
+              style={
+                {
+                  "color": "rgba(63,67,80,0.48)",
+                }
+              }
+            />
+          </View>
           <View
             style={
               {
                 "flex": 1,
-                "flexDirection": "row",
-                "height": 58,
-                "overflow": "hidden",
-                "paddingHorizontal": 20,
               }
             }
-            testID="create_direct_message.user_list.user_item.2"
           >
             <View
               style={
-                [
-                  {
-                    "alignItems": "center",
-                    "color": "#3f4350",
-                    "flexDirection": "row",
-                  },
-                  {
-                    "opacity": 1,
-                  },
-                ]
+                {
+                  "flex": 1,
+                  "flexDirection": "row",
+                }
               }
             >
-              <View
+              <Text
+                numberOfLines={1}
                 style={
                   {
-                    "borderRadius": 21.5,
-                    "height": 42,
-                    "width": 42,
+                    "color": "#3f4350",
+                    "flex": 0,
+                    "flexShrink": 1,
+                    "fontFamily": "OpenSans",
+                    "fontSize": 16,
+                    "fontWeight": "400",
+                    "lineHeight": 24,
                   }
                 }
-                testID="create_direct_message.user_list.user_item.2.profile_picture"
+                testID="create_direct_message.user_list.user_item.2.2.display_name"
               >
-                <Icon
-                  name="account-outline"
-                  size={24}
-                  style={
-                    {
-                      "color": "rgba(63,67,80,0.48)",
-                    }
-                  }
-                />
-              </View>
-            </View>
-            <View
-              style={
-                [
+                rocky
+              </Text>
+              <View
+                style={
                   {
                     "flex": 1,
-                    "flexDirection": "column",
-                    "justifyContent": "center",
-                    "paddingHorizontal": 10,
-                  },
-                  {
-                    "opacity": 1,
-                  },
-                ]
-              }
-            >
+                  }
+                }
+              />
               <View
                 style={
                   {
-                    "flexDirection": "row",
+                    "alignItems": "center",
+                    "justifyContent": "center",
+                    "marginLeft": 12,
                   }
                 }
               >
-                <Text
-                  ellipsizeMode="tail"
-                  numberOfLines={1}
-                  style={
-                    {
-                      "color": "#3f4350",
-                      "fontFamily": "OpenSans",
-                      "fontSize": 16,
-                      "fontWeight": "400",
-                      "height": 24,
-                      "lineHeight": 24,
-                      "maxWidth": "80%",
-                    }
-                  }
-                  testID="create_direct_message.user_list.user_item.2.display_name"
-                >
-                  rocky
-                </Text>
+                <Icon
+                  color="rgba(63,67,80,0.32)"
+                  name="circle-outline"
+                  size={28}
+                />
               </View>
-            </View>
-            <View
-              style={
-                {
-                  "alignItems": "center",
-                  "justifyContent": "center",
-                }
-              }
-            >
-              <Icon
-                color="rgba(63,67,80,0.32)"
-                name="circle-outline"
-                size={28}
-              />
             </View>
           </View>
         </View>

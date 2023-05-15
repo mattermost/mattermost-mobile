@@ -14,7 +14,7 @@ type OpengraphProps = {
     isReplyPost: boolean;
     layoutWidth?: number;
     location: string;
-    metadata: PostMetadata;
+    metadata: PostMetadata | undefined | null;
     postId: string;
     showLinkPreviews: boolean;
     theme: Theme;
@@ -49,8 +49,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const selectOpenGraphData = (url: string, metadata: PostMetadata) => {
-    if (!metadata.embeds) {
+const selectOpenGraphData = (url: string, metadata: PostMetadata | undefined | null) => {
+    if (!metadata?.embeds) {
         return undefined;
     }
 
@@ -61,7 +61,7 @@ const selectOpenGraphData = (url: string, metadata: PostMetadata) => {
 
 const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLinkPreviews, theme}: OpengraphProps) => {
     const intl = useIntl();
-    const link = metadata.embeds![0]!.url;
+    const link = metadata?.embeds![0]!.url || '';
     const openGraphData = selectOpenGraphData(link, metadata);
 
     if (!showLinkPreviews || !openGraphData) {
@@ -73,7 +73,7 @@ const Opengraph = ({isReplyPost, layoutWidth, location, metadata, postId, showLi
         openGraphData?.images &&
         openGraphData.images instanceof Array &&
         openGraphData.images.length &&
-        metadata.images);
+        metadata?.images);
 
     const goToLink = () => {
         const onError = () => {

@@ -2,14 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {Alert} from 'react-native';
-import {
-    setJSExceptionHandler,
-
-    // setNativeExceptionHandler
-} from 'react-native-exception-handler';
+import {setJSExceptionHandler} from 'react-native-exception-handler';
 
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
-import {dismissAllModals} from '@screens/navigation';
+import {dismissAllModals, dismissAllOverlays} from '@screens/navigation';
 import {isBetaApp} from '@utils/general';
 import {
     captureException,
@@ -18,8 +14,6 @@ import {
 } from '@utils/sentry';
 
 import {logWarning} from './log';
-
-import type {ClientError} from '@utils/client_error';
 
 class JavascriptAndNativeErrorHandler {
     initializeErrorHandling = () => {
@@ -34,7 +28,7 @@ class JavascriptAndNativeErrorHandler {
         captureException(e);
     };
 
-    errorHandler = (e: Error | ClientError, isFatal: boolean) => {
+    errorHandler = (e: unknown, isFatal: boolean) => {
         if (__DEV__ && !e && !isFatal) {
             // react-native-exception-handler redirects console.error to call this, and React calls
             // console.error without an exception when prop type validation fails, so this ends up
@@ -58,6 +52,7 @@ class JavascriptAndNativeErrorHandler {
                     text: translations[t('mobile.error_handler.button')],
                     onPress: async () => {
                         await dismissAllModals();
+                        await dismissAllOverlays();
                     },
                 }],
                 {cancelable: false},

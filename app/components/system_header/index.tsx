@@ -25,7 +25,7 @@ type Props = {
     isMilitaryTime: boolean;
     isTimezoneEnabled: boolean;
     theme: Theme;
-    user: UserModel;
+    user?: UserModel;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {

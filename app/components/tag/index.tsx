@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, TextStyle, View, ViewStyle} from 'react-native';
+import {type StyleProp, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import FormattedText from '@components/formatted_text';
 import {useTheme} from '@context/theme';
@@ -25,9 +25,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             alignSelf: 'center',
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
             borderRadius: 4,
-            marginRight: 2,
-            marginBottom: 1,
-            marginLeft: 2,
             paddingVertical: 2,
             paddingHorizontal: 4,
         },

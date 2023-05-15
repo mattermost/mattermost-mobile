@@ -8,10 +8,12 @@ import {switchToGlobalThreads} from '@actions/local/thread';
 import Badge from '@components/badge';
 import {
     getStyleSheet as getChannelItemStyleSheet,
+    ROW_HEIGHT,
     textStyle as channelItemTextStyle,
 } from '@components/channel_item/channel_item';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import {HOME_PADDING} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
@@ -19,13 +21,10 @@ import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    baseContainer: {
-        marginLeft: -18,
-        marginRight: -20,
-    },
     icon: {
         color: changeOpacity(theme.sidebarText, 0.5),
         fontSize: 24,
+        marginRight: 12,
     },
     iconActive: {
         color: theme.sidebarText,
@@ -41,16 +40,27 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 type Props = {
     currentChannelId: string;
     groupUnreadsSeparately: boolean;
-    isInfo?: boolean;
+    onCenterBg?: boolean;
     onlyUnreads: boolean;
     onPress?: () => void;
+    shouldHighlighActive?: boolean;
     unreadsAndMentions: {
         unreads: boolean;
         mentions: number;
     };
+    isOnHome?: boolean;
 };
 
-const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUnreads, onPress, unreadsAndMentions}: Props) => {
+const ThreadsButton = ({
+    currentChannelId,
+    groupUnreadsSeparately,
+    onCenterBg,
+    onlyUnreads,
+    onPress,
+    unreadsAndMentions,
+    shouldHighlighActive = false,
+    isOnHome = false,
+}: Props) => {
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
 
@@ -67,18 +77,23 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUn
     }), [onPress, serverUrl]);
 
     const {unreads, mentions} = unreadsAndMentions;
-    const isActive = isTablet && !currentChannelId;
+    const isActive = isTablet && shouldHighlighActive && !currentChannelId;
 
     const [containerStyle, iconStyle, textStyle, badgeStyle] = useMemo(() => {
         const container = [
             styles.container,
+            isOnHome && HOME_PADDING,
             isActive && styles.activeItem,
+            isActive && isOnHome && {
+                paddingLeft: HOME_PADDING.paddingLeft - styles.activeItem.borderLeftWidth,
+            },
+            {minHeight: ROW_HEIGHT},
         ];
 
         const icon = [
             customStyles.icon,
             (isActive || unreads) && customStyles.iconActive,
-            isInfo && customStyles.iconInfo,
+            onCenterBg && customStyles.iconInfo,
         ];
 
         const text = [
@@ -87,16 +102,16 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUn
             styles.text,
             unreads && styles.highlight,
             isActive && styles.textActive,
-            isInfo && styles.textInfo,
+            onCenterBg && styles.textOnCenterBg,
         ];
 
         const badge = [
             styles.badge,
-            isInfo && styles.infoBadge,
+            onCenterBg && styles.badgeOnCenterBg,
         ];
 
         return [container, icon, text, badge];
-    }, [customStyles, isActive, isInfo, styles, unreads]);
+    }, [customStyles, isActive, onCenterBg, styles, unreads, isOnHome]);
 
     if (groupUnreadsSeparately && (onlyUnreads && !isActive && !unreads && !mentions)) {
         return null;
@@ -107,23 +122,21 @@ const ThreadsButton = ({currentChannelId, groupUnreadsSeparately, isInfo, onlyUn
             onPress={handlePress}
             testID='channel_list.threads.button'
         >
-            <View style={customStyles.baseContainer}>
-                <View style={containerStyle}>
-                    <CompassIcon
-                        name='message-text-outline'
-                        style={iconStyle}
-                    />
-                    <FormattedText
-                        id='threads'
-                        defaultMessage='Threads'
-                        style={textStyle}
-                    />
-                    <Badge
-                        value={mentions}
-                        style={badgeStyle}
-                        visible={mentions > 0}
-                    />
-                </View>
+            <View style={containerStyle}>
+                <CompassIcon
+                    name='message-text-outline'
+                    style={iconStyle}
+                />
+                <FormattedText
+                    id='threads'
+                    defaultMessage='Threads'
+                    style={textStyle}
+                />
+                <Badge
+                    value={mentions}
+                    style={badgeStyle}
+                    visible={mentions > 0}
+                />
             </View>
         </TouchableOpacity>
     );

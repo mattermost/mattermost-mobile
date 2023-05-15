@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import {children, field, json} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {safeParseJSON} from '@utils/helpers';
@@ -194,4 +194,21 @@ export default class UserModel extends Model implements UserModelInterface {
             m.key !== '@here'
         ));
     }
+
+    toApi = (): UserProfile => ({
+        id: this.id,
+        auth_service: this.authService,
+        create_at: Date.now(),
+        delete_at: this.deleteAt,
+        email: this.email,
+        first_name: this.firstName,
+        last_name: this.lastName,
+        locale: this.locale,
+        nickname: this.nickname,
+        notify_props: this.notifyProps as UserNotifyProps,
+        position: this.position,
+        roles: this.roles,
+        update_at: this.updateAt,
+        username: this.username,
+    });
 }

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useState} from 'react';
-import {StyleProp, StyleSheet, useWindowDimensions, View, ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, useWindowDimensions, View, type ViewStyle} from 'react-native';
 import LinearGradient from 'react-native-linear-gradient';
 
 import {buildFilePreviewUrl, buildFileThumbnailUrl} from '@actions/remote/file';
@@ -63,15 +63,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: 5,
     },
     smallImageOverlay: {
-        ...StyleSheet.absoluteFillObject,
         justifyContent: 'center',
         alignItems: 'center',
         borderRadius: 4,
+        position: 'absolute',
     },
     singleSmallImageWrapper: {
         height: SMALL_IMAGE_MAX_HEIGHT,
         width: SMALL_IMAGE_MAX_WIDTH,
-        overflow: 'hidden',
     },
 }));
 
@@ -118,7 +117,8 @@ const ImageFile = ({
         return props;
     };
 
-    if (file.height <= SMALL_IMAGE_MAX_HEIGHT || file.width <= SMALL_IMAGE_MAX_WIDTH) {
+    const imageDimensions = getImageDimensions();
+    if (imageDimensions && (imageDimensions.height <= SMALL_IMAGE_MAX_HEIGHT || imageDimensions.width <= SMALL_IMAGE_MAX_WIDTH)) {
         let wrapperStyle: StyleProp<ViewStyle> = style.fileImageWrapper;
         if (isSingleImage) {
             wrapperStyle = style.singleSmallImageWrapper;
@@ -169,7 +169,6 @@ const ImageFile = ({
         );
     }
 
-    const imageDimensions = getImageDimensions();
     image = (
         <ProgressiveImage
             id={file.id!}
@@ -215,6 +214,7 @@ const ImageFile = ({
             </View>
         );
     }
+
     return (
         <View
             style={style.fileImageWrapper}

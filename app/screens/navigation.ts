@@ -5,7 +5,7 @@
 
 import merge from 'deepmerge';
 import {Appearance, DeviceEventEmitter, NativeModules, StatusBar, Platform, Alert} from 'react-native';
-import {ComponentWillAppearEvent, ImageResource, LayoutOrientation, Navigation, Options, OptionsModalPresentationStyle, OptionsTopBarButton, ScreenPoppedEvent} from 'react-native-navigation';
+import {type ComponentWillAppearEvent, type ImageResource, type LayoutOrientation, Navigation, type Options, OptionsModalPresentationStyle, type OptionsTopBarButton, type ScreenPoppedEvent} from 'react-native-navigation';
 import tinyColor from 'tinycolor2';
 
 import CompassIcon from '@components/compass_icon';
@@ -441,7 +441,7 @@ export function resetToTeams() {
     });
 }
 
-export function goToScreen(name: AvailableScreens, title: string, passProps = {}, options = {}) {
+export function goToScreen(name: AvailableScreens, title: string, passProps = {}, options: Options = {}) {
     if (!isScreenRegistered(name)) {
         return '';
     }
@@ -518,6 +518,7 @@ export async function popToRoot() {
 
 export async function dismissAllModalsAndPopToRoot() {
     await dismissAllModals();
+    await dismissAllOverlays();
     await popToRoot();
 }
 
@@ -531,6 +532,7 @@ export async function dismissAllModalsAndPopToRoot() {
  */
 export async function dismissAllModalsAndPopToScreen(screenId: AvailableScreens, title: string, passProps = {}, options = {}) {
     await dismissAllModals();
+    await dismissAllOverlays();
     if (NavigationStore.getScreensInStack().includes(screenId)) {
         let mergeOptions = options;
         if (title) {
@@ -736,7 +738,6 @@ export function showOverlay(name: AvailableScreens, passProps = {}, options: Opt
 
     Navigation.showOverlay({
         component: {
-            id: name,
             name,
             passProps,
             options: merge(defaultOptions, options),
@@ -750,6 +751,14 @@ export async function dismissOverlay(componentId: AvailableScreens) {
     } catch (error) {
         // RNN returns a promise rejection if there is no modal with
         // this componentId to dismiss. We'll do nothing in this case.
+    }
+}
+
+export async function dismissAllOverlays() {
+    try {
+        await Navigation.dismissAllOverlays();
+    } catch {
+        // do nothing
     }
 }
 

@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Text, TouchableHighlight, View} from 'react-native';
 
+import {switchToChannelById} from '@actions/remote/channel';
 import {fetchAndSwitchToThread} from '@actions/remote/thread';
 import FormattedText from '@components/formatted_text';
 import FriendlyDate from '@components/friendly_date';
 import RemoveMarkdown from '@components/remove_markdown';
+import TouchableWithFeedback from '@components/touchable_with_feedback';
 import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
@@ -129,9 +131,25 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
     const textStyles = getMarkdownTextStyles(theme);
     const serverUrl = useServerUrl();
 
+    const [isChannelNamePressed, setIsChannelNamePressed] = useState<Boolean>(false);
+
+    const channelNameStyle = useMemo(() => (
+        [styles.channelName, isChannelNamePressed ? {color: theme.buttonBg} : null]
+    ), [isChannelNamePressed, styles, theme]);
+
+    const togglePressed = useCallback(() => {
+        setIsChannelNamePressed((prevState) => !prevState);
+    }, []);
+
     const showThread = useCallback(preventDoubleTap(() => {
         fetchAndSwitchToThread(serverUrl, thread.id);
     }), [serverUrl, thread.id]);
+
+    const onChannelNamePressed = useCallback(() => {
+        if (channel?.id) {
+            switchToChannelById(serverUrl, channel?.id);
+        }
+    }, [serverUrl, channel?.id]);
 
     const showThreadOptions = useCallback(() => {
         const passProps = {thread};
@@ -229,13 +247,21 @@ const Thread = ({author, channel, location, post, teammateNameDisplay, testID, t
                             {name}
                             {threadStarterName !== channel?.displayName && (
                                 <View style={styles.channelNameContainer}>
-                                    <Text
-                                        style={styles.channelName}
-                                        numberOfLines={1}
-                                        testID={`${threadItemTestId}.thread_starter.channel_display_name`}
+                                    <TouchableWithFeedback
+                                        onPress={onChannelNamePressed}
+                                        type={'native'}
+                                        underlayColor={changeOpacity(theme.buttonBg, 0.08)}
+                                        onPressIn={togglePressed}
+                                        onPressOut={togglePressed}
                                     >
-                                        {channel?.displayName}
-                                    </Text>
+                                        <Text
+                                            style={channelNameStyle}
+                                            numberOfLines={1}
+                                            testID={`${threadItemTestId}.thread_starter.channel_display_name`}
+                                        >
+                                            {channel?.displayName}
+                                        </Text>
+                                    </TouchableWithFeedback>
                                 </View>
                             )}
                         </View>

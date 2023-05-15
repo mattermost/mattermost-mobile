@@ -346,7 +346,6 @@
     "suggestion.mention.morechannels": "Other Channels",
     "suggestion.mention.nonmembers": "Not in Channel",
     "suggestion.mention.special": "Special Mentions",
-    "suggestion.mention.you": " (you)",
     "suggestion.search.direct": "Direct Messages",
     "suggestion.search.private": "Private Channels",
     "suggestion.search.public": "Public Channels",
@@ -602,7 +601,6 @@
     "mobile.direct_message.error": "A DM with {displayName} couldn't be opened.",
     "mobile.custom_status.clear_after.title": "Clear Custom Status after",
     "mobile.create_post.read_only": "This channel is read-only.",
-    "mobile.create_direct_message.you": "@{username} - you",
     "mobile.create_direct_message.start": "Start Conversation",
     "mobile.create_channel.title": "New channel",
     "mobile.components.select_server_view.msg_welcome": "Welcome",
@@ -711,7 +709,6 @@
     "mobile.calls_not_available_msg": "Please contact your System Admin to enable the feature.",
     "mobile.calls_noone_talking": "No one is talking",
     "mobile.calls_name_started_call": "{name} started a call",
-    "mobile.calls_name_is_talking": "{name} is talking",
     "mobile.calls_mute": "Mute",
     "mobile.calls_more": "More",
     "mobile.calls_lower_hand": "Lower hand",
@@ -763,7 +760,6 @@
     "intro.direct_message": "This is the start of your conversation with {teammate}. Messages and files shared here are not shown to anyone else.",
     "intro.created_by": "created by {creator} on {date}.",
     "intro.channel_info": "Info",
-    "intro.add_people": "Add People",
     "interactive_dialog.submit": "Submit",
     "home.header.plus_menu": "Options",
     "global_threads.options.title": "Thread Actions",
@@ -1006,5 +1002,10 @@
     "channel_notification_preferences.notification.all": "All new messages",
     "channel_notification_preferences.muted_title": "This channel is muted",
     "channel_notification_preferences.muted_content": "You can change the notification settings, but you will not receive notifications until the channel is unmuted.",
-    "channel_notification_preferences.default": "(default)"
+    "channel_notification_preferences.default": "(default)",
+    "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {member} other {members}} added",
+    "mobile.channel_add_members.error": "An error occurred and the selected users could not be added to the channel.",
+    "intro.add_members": "Add members",
+    "channel_info.add_members": "Add members",
+    "channel_add_members.add_members.button": "Add Members"
 }

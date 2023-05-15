@@ -28,7 +28,7 @@ executors:
       NODE_ENV: production
       BABEL_ENV: production
     macos:
-      xcode: "14.0.0"
+      xcode: "14.2.0"
     working_directory: ~/mattermost-mobile
     shell: /bin/bash --login -o pipefail
     resource_class: <<parameters.resource_class>>
@@ -114,7 +114,6 @@ commands:
           command: |
             NODE_ENV=development npm ci --ignore-scripts
             node node_modules/\@sentry/cli/scripts/install.js
-            node node_modules/react-native-webrtc/tools/downloadWebRTC.js
       - save_cache:
           name: Save npm cache
           key: v2-npm-{{ checksum "package.json" }}-{{ arch }}
@@ -603,6 +602,7 @@ workflows:
             branches:
               only:
                 - /^build-\d+$/
+                - /^build-release-\d+$/
                 - /^build-ios-sim-\d+$/
 
       - github-release:

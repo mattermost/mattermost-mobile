@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleProp, Text, TextStyle, useWindowDimensions, View, ViewStyle} from 'react-native';
-import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
+import {type StyleProp, Text, type TextStyle, useWindowDimensions, View, type ViewStyle} from 'react-native';
+import Animated, {type AnimatedStyleProp} from 'react-native-reanimated';
 
 import CompassIcon from '@components/compass_icon';
 import {useTheme} from '@context/theme';
@@ -39,8 +39,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         flex: 1,
         flexDirection: 'row',
         height: TOAST_HEIGHT,
-        paddingLeft: 20,
-        paddingRight: 10,
+        paddingHorizontal: 16,
         shadowColor: changeOpacity('#000', 0.12),
         shadowOffset: {width: 0, height: 4},
         shadowRadius: 6,

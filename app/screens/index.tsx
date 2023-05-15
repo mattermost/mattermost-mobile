@@ -2,9 +2,9 @@
 // See LICENSE.txt for license information.
 
 import {Provider as EMMProvider} from '@mattermost/react-native-emm';
-import React, {ComponentType} from 'react';
+import React, {type ComponentType} from 'react';
 import {IntlProvider} from 'react-intl';
-import {Platform, StyleProp, ViewStyle} from 'react-native';
+import {Platform, type StyleProp, type ViewStyle} from 'react-native';
 import {GestureHandlerRootView} from 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
 import {SafeAreaProvider} from 'react-native-safe-area-context';
@@ -82,6 +82,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
         case Screens.CHANNEL_NOTIFICATION_PREFERENCES:
             screen = withServerDatabase(require('@screens/channel_notification_preferences').default);
             break;
+        case Screens.CHANNEL_FILES:
+            screen = withServerDatabase(require('@screens/channel_files').default);
+            break;
         case Screens.CHANNEL_INFO:
             screen = withServerDatabase(require('@screens/channel_info').default);
             break;
@@ -99,6 +102,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.CREATE_DIRECT_MESSAGE:
             screen = withServerDatabase(require('@screens/create_direct_message').default);
+            break;
+        case Screens.CHANNEL_ADD_MEMBERS:
+            screen = withServerDatabase(require('@screens/channel_add_members').default);
             break;
         case Screens.EDIT_POST:
             screen = withServerDatabase(require('@screens/edit_post').default);
@@ -169,6 +175,9 @@ Navigation.setLazyComponentRegistrator((screenName) => {
             break;
         case Screens.POST_OPTIONS:
             screen = withServerDatabase(require('@screens/post_options').default);
+            break;
+        case Screens.POST_PRIORITY_PICKER:
+            screen = withServerDatabase(require('@screens/post_priority_picker').default);
             break;
         case Screens.REACTIONS:
             screen = withServerDatabase(require('@screens/reactions').default);

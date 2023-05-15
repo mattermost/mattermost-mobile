@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {LayoutChangeEvent, Platform, StyleProp, Switch, SwitchProps, Text, TextStyle, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {type LayoutChangeEvent, Platform, type StyleProp, Switch, type SwitchProps, Text, type TextStyle, TouchableOpacity, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -11,7 +11,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import OptionIcon from './option_icon';
-import RadioItem, {RadioItemProps} from './radio_item';
+import RadioItem, {type RadioItemProps} from './radio_item';
 
 const TouchableOptionTypes = {
     ARROW: 'arrow',
@@ -27,7 +27,7 @@ const OptionType = {
     ...TouchableOptionTypes,
 } as const;
 
-type OptionType = typeof OptionType[keyof typeof OptionType];
+export type OptionType = typeof OptionType[keyof typeof OptionType];
 
 export const ITEM_HEIGHT = 48;
 
@@ -108,6 +108,7 @@ export type OptionItemProps = {
     info?: string;
     inline?: boolean;
     label: string;
+    labelContainerStyle?: StyleProp<ViewStyle>;
     onRemove?: () => void;
     optionDescriptionTextStyle?: StyleProp<TextStyle>;
     optionLabelTextStyle?: StyleProp<TextStyle>;
@@ -131,6 +132,7 @@ const OptionItem = ({
     info,
     inline = false,
     label,
+    labelContainerStyle,
     onRemove,
     optionDescriptionTextStyle,
     optionLabelTextStyle,
@@ -241,7 +243,7 @@ const OptionItem = ({
             onLayout={onLayout}
         >
             <View style={styles.row}>
-                <View style={styles.labelContainer}>
+                <View style={[styles.labelContainer, labelContainerStyle]}>
                     {Boolean(icon) && (
                         <View style={styles.iconContainer}>
                             <OptionIcon

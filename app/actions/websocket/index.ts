@@ -62,7 +62,7 @@ import {handleChannelConvertedEvent, handleChannelCreatedEvent,
     handleUserRemovedFromChannelEvent} from './channel';
 import {handleGroupMemberAddEvent, handleGroupMemberDeleteEvent, handleGroupReceivedEvent, handleGroupTeamAssociatedEvent, handleGroupTeamDissociateEvent} from './group';
 import {handleOpenDialogEvent} from './integrations';
-import {handleNewPostEvent, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
+import {handleNewPostEvent, handlePostAcknowledgementAdded, handlePostAcknowledgementRemoved, handlePostDeleted, handlePostEdited, handlePostUnread} from './posts';
 import {handlePreferenceChangedEvent, handlePreferencesChangedEvent, handlePreferencesDeletedEvent} from './preferences';
 import {handleAddCustomEmoji, handleReactionRemovedFromPostEvent, handleReactionAddedToPostEvent} from './reactions';
 import {handleUserRoleUpdatedEvent, handleTeamMemberRoleUpdatedEvent, handleRoleUpdatedEvent} from './roles';
@@ -175,6 +175,13 @@ export async function handleEvent(serverUrl: string, msg: WebSocketMessage) {
 
         case WebsocketEvents.POST_UNREAD:
             handlePostUnread(serverUrl, msg);
+            break;
+
+        case WebsocketEvents.POST_ACKNOWLEDGEMENT_ADDED:
+            handlePostAcknowledgementAdded(serverUrl, msg);
+            break;
+        case WebsocketEvents.POST_ACKNOWLEDGEMENT_REMOVED:
+            handlePostAcknowledgementRemoved(serverUrl, msg);
             break;
 
         case WebsocketEvents.LEAVE_TEAM:

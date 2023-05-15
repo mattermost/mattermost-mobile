@@ -6,7 +6,7 @@
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {ActivityIndicatorProps, Keyboard, Platform, StyleProp, TextInput, TextInputProps, TextStyle, TouchableOpacityProps, ViewStyle} from 'react-native';
+import {type ActivityIndicatorProps, Keyboard, Platform, type StyleProp, TextInput, type TextInputProps, type TextStyle, type TouchableOpacityProps, type ViewStyle} from 'react-native';
 import {SearchBar} from 'react-native-elements';
 
 import CompassIcon from '@components/compass_icon';

@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import {FlatList} from '@stream-io/flat-list-mvcp';
-import React, {ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {DeviceEventEmitter, ListRenderItemInfo, NativeScrollEvent, NativeSyntheticEvent, Platform, StyleProp, StyleSheet, ViewStyle} from 'react-native';
+import React, {type ReactElement, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {DeviceEventEmitter, type ListRenderItemInfo, type NativeScrollEvent, type NativeSyntheticEvent, Platform, type StyleProp, StyleSheet, type ViewStyle} from 'react-native';
 import Animated from 'react-native-reanimated';
 
 import {fetchPosts, fetchPostThread} from '@actions/remote/post';
@@ -36,6 +36,7 @@ type Props = {
     highlightedId?: PostModel['id'];
     highlightPinnedOrSaved?: boolean;
     isCRTEnabled?: boolean;
+    isPostAcknowledgementEnabled?: boolean;
     isTimezoneEnabled: boolean;
     lastViewedAt: number;
     location: string;
@@ -97,6 +98,7 @@ const PostList = ({
     highlightedId,
     highlightPinnedOrSaved = true,
     isCRTEnabled,
+    isPostAcknowledgementEnabled,
     isTimezoneEnabled,
     lastViewedAt,
     location,
@@ -276,6 +278,7 @@ const PostList = ({
                     appsEnabled,
                     customEmojiNames,
                     isCRTEnabled,
+                    isPostAcknowledgementEnabled,
                     highlight: highlightedId === post.id,
                     highlightPinnedOrSaved,
                     isSaved: post.isSaved,
@@ -294,7 +297,7 @@ const PostList = ({
                 return (<Post {...postProps}/>);
             }
         }
-    }, [appsEnabled, currentTimezone, customEmojiNames, highlightPinnedOrSaved, isCRTEnabled, isTimezoneEnabled, shouldRenderReplyButton, theme]);
+    }, [appsEnabled, currentTimezone, customEmojiNames, highlightPinnedOrSaved, isCRTEnabled, isPostAcknowledgementEnabled, isTimezoneEnabled, shouldRenderReplyButton, theme]);
 
     const scrollToIndex = useCallback((index: number, animated = true, applyOffset = true) => {
         listRef.current?.scrollToIndex({

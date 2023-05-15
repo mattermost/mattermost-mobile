@@ -3,7 +3,7 @@
 
 import React from 'react';
 import {useIntl} from 'react-intl';
-import {Image, ImageSourcePropType, Text, View} from 'react-native';
+import {Image, type ImageSourcePropType, Text, View} from 'react-native';
 import Button from 'react-native-button';
 
 import CompassIcon from '@components/compass_icon';

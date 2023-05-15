@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleProp, View, ViewStyle} from 'react-native';
+import {Platform, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import UserStatus from '@components/user_status';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -16,12 +16,17 @@ type Props = {
     theme: Theme;
 }
 
+const STATUS_BUFFER = Platform.select({
+    ios: 3,
+    default: 2,
+});
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         statusWrapper: {
             position: 'absolute',
-            bottom: 0,
-            right: 0,
+            bottom: -STATUS_BUFFER,
+            right: -STATUS_BUFFER,
             overflow: 'hidden',
             alignItems: 'center',
             justifyContent: 'center',

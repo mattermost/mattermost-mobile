@@ -7,8 +7,8 @@ import {useIntl} from 'react-intl';
 import {
     FlatList,
     Platform,
-    StyleProp,
-    ViewStyle,
+    type StyleProp,
+    type ViewStyle,
 } from 'react-native';
 
 import {fetchSuggestions} from '@actions/remote/command';
@@ -98,7 +98,7 @@ const SlashSuggestion = ({
             if (!mounted.current) {
                 return;
             }
-            if (res.error) {
+            if ('error' in res) {
                 updateSuggestions(emptySuggestionList);
             } else if (res.suggestions.length === 0) {
                 updateSuggestions(emptySuggestionList);

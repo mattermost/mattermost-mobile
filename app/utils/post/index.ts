@@ -1,13 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {Alert, type AlertButton} from 'react-native';
+
+import {getUsersCountFromMentions} from '@actions/local/post';
 import {Post} from '@constants';
+import {SPECIAL_MENTIONS_REGEX} from '@constants/autocomplete';
 import {POST_TIME_TO_FAIL} from '@constants/post';
 import {DEFAULT_LOCALE} from '@i18n';
+import {toMilliseconds} from '@utils/datetime';
 import {displayUsername} from '@utils/user';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type UserModel from '@typings/database/models/servers/user';
+import type {IntlShape} from 'react-intl';
 
 export function areConsecutivePosts(post: PostModel, previousPost: PostModel) {
     let consecutive = false;
@@ -85,3 +91,92 @@ export const getLastFetchedAtFromPosts = (posts?: Post[]) => {
         return Math.max(maxTimestamp, timestamp);
     }, 0) || 0;
 };
+
+export const moreThan5minAgo = (time: number) => {
+    return Date.now() - time > toMilliseconds({minutes: 5});
+};
+
+export function hasSpecialMentions(message: string): boolean {
+    const result = SPECIAL_MENTIONS_REGEX.test(message);
+
+    // https://stackoverflow.com/questions/1520800/why-does-a-regexp-with-global-flag-give-wrong-results
+    SPECIAL_MENTIONS_REGEX.lastIndex = 0;
+    return result;
+}
+
+export async function persistentNotificationsConfirmation(serverUrl: string, value: string, mentionsList: string[], intl: IntlShape, sendMessage: () => void, persistentNotificationMaxRecipients: number, persistentNotificationInterval: number) {
+    let title = '';
+    let description = '';
+    let buttons: AlertButton[] = [{
+        text: intl.formatMessage({
+            id: 'persistent_notifications.error.okay',
+            defaultMessage: 'Okay',
+        }),
+        style: 'cancel',
+    }];
+
+    if (hasSpecialMentions(value)) {
+        description = intl.formatMessage({
+            id: 'persistent_notifications.error.special_mentions',
+            defaultMessage: 'Cannot use @channel, @all or @here to mention recipients of persistent notifications.',
+        });
+    } else {
+        // removes the @ from the mention
+        const formattedMentionsList = mentionsList.map((mention) => mention.slice(1));
+        const usersCount = await getUsersCountFromMentions(serverUrl, formattedMentionsList);
+        if (usersCount > persistentNotificationMaxRecipients) {
+            title = intl.formatMessage({
+                id: 'persistent_notifications.error.max_recipients.title',
+                defaultMessage: 'Too many recipients',
+            });
+            description = intl.formatMessage({
+                id: 'persistent_notifications.error.max_recipients.description',
+                defaultMessage: 'You can send persistent notifications to a maximum of {max} recipients. There are {count} recipients mentioned in your message. You’ll need to change who you’ve mentioned before you can send.',
+            }, {
+                max: persistentNotificationMaxRecipients,
+                count: mentionsList.length,
+            });
+        } else if (usersCount === 0) {
+            title = intl.formatMessage({
+                id: 'persistent_notifications.error.no_mentions.title',
+                defaultMessage: 'Recipients must be @mentioned',
+            });
+            description = intl.formatMessage({
+                id: 'persistent_notifications.error.no_mentions.description',
+                defaultMessage: 'There are no recipients mentioned in your message. You’ll need add mentions to be able to send persistent notifications.',
+            });
+        } else {
+            title = intl.formatMessage({
+                id: 'persistent_notifications.confirm.title',
+                defaultMessage: 'Send persistent notifications',
+            });
+            description = intl.formatMessage({
+                id: 'persistent_notifications.confirm.description',
+                defaultMessage: '@mentioned recipients will be notified every {interval, plural, one {minute} other {{interval} minutes}} until they’ve acknowledged or replied to the message.',
+            }, {
+                interval: persistentNotificationInterval,
+            });
+
+            buttons = [{
+                text: intl.formatMessage({
+                    id: 'persistent_notifications.confirm.cancel',
+                    defaultMessage: 'Cancel',
+                }),
+                style: 'cancel',
+            },
+            {
+                text: intl.formatMessage({
+                    id: 'persistent_notifications.confirm.send',
+                    defaultMessage: 'Send',
+                }),
+                onPress: sendMessage,
+            }];
+        }
+    }
+
+    Alert.alert(
+        title,
+        description,
+        buttons,
+    );
+}

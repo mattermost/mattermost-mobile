@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {isAndroid, timeouts, wait} from '@support/utils';
+import {isAndroid, isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class ServerScreen {
@@ -47,7 +47,12 @@ class ServerScreen {
         await this.serverUrlInput.replaceText(serverUrl);
         await this.serverUrlInput.tapReturnKey();
         await this.serverDisplayNameInput.replaceText(serverDisplayName);
-        await this.tapConnectButton();
+        if (isAndroid()) {
+            await this.serverDisplayNameInput.tapReturnKey();
+        }
+        if (isIos()) {
+            await this.tapConnectButton();
+        }
     };
 
     close = async () => {
@@ -56,10 +61,6 @@ class ServerScreen {
     };
 
     tapConnectButton = async () => {
-        if (isAndroid()) {
-            await device.pressBack();
-            await wait(timeouts.ONE_SEC);
-        }
         await this.connectButton.tap();
         await wait(timeouts.ONE_SEC);
     };

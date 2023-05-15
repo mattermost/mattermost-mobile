@@ -103,6 +103,7 @@ type SearchUserOptions = {
 	team_id?: string;
 	not_in_team?: string;
 	in_channel_id?: string;
+	not_in_channel_id?: string;
 	in_group_id?: string;
 	group_constrained?: boolean;
 	allow_inactive?: boolean;

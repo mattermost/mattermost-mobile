@@ -62,8 +62,13 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
     const serverUrl = useServerUrl();
 
     const handleRemoveUser = useCallback(async () => {
-        removeMemberFromChannel(serverUrl, channelId, userId);
-        fetchChannelStats(serverUrl, channelId, false);
+        removeMemberFromChannel(serverUrl, channelId, userId).then(
+            (res) => {
+                if (!res.error) {
+                    fetchChannelStats(serverUrl, channelId, false);
+                }
+            },
+        );
         await dismissBottomSheet();
         DeviceEventEmitter.emit(Events.REMOVE_USER_FROM_CHANNEL, userId);
     }, [channelId, serverUrl, userId]);
@@ -85,7 +90,7 @@ const ManageMembersLabel = ({canRemoveUser, channelId, manageOption, testID, use
 
     const updateChannelMemberSchemeRole = useCallback(async (schemeAdmin: boolean) => {
         const result = await updateChannelMemberSchemeRoles(serverUrl, channelId, userId, true, schemeAdmin);
-        if (result.error) {
+        if ('error' in result) {
             alertErrorWithFallback(intl, result.error, messages.role_change_error);
         }
         await dismissBottomSheet();

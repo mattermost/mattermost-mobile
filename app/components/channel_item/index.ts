@@ -21,66 +21,80 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 
 type EnhanceProps = WithDatabaseArgs & {
-    channel: ChannelModel;
+    channel: ChannelModel | Channel;
     showTeamName?: boolean;
     serverUrl?: string;
+    shouldHighlightActive?: boolean;
+    shouldHighlightState?: boolean;
 }
 
-const enhance = withObservables(['channel', 'showTeamName'], ({
+const enhance = withObservables(['channel', 'showTeamName', 'shouldHighlightActive', 'shouldHighlightState'], ({
     channel,
     database,
-    showTeamName,
     serverUrl,
+    showTeamName = false,
+    shouldHighlightActive = false,
+    shouldHighlightState = false,
 }: EnhanceProps) => {
     const currentUserId = observeCurrentUserId(database);
     const myChannel = observeMyChannel(database, channel.id);
 
-    const hasDraft = queryDraft(database, channel.id).observeWithColumns(['message', 'files']).pipe(
-        switchMap((draft) => of$(draft.length > 0)),
-        distinctUntilChanged(),
-    );
-
-    const isActive = observeCurrentChannelId(database).pipe(
-        switchMap((id) => of$(id ? id === channel.id : false)),
-        distinctUntilChanged(),
-    );
-
-    const isMuted = myChannel.pipe(
-        switchMap((mc) => {
-            if (!mc) {
+    const hasDraft = shouldHighlightState ? queryDraft(database, channel.id).observeWithColumns(['message', 'files', 'metadata']).pipe(
+        switchMap((drafts) => {
+            if (!drafts.length) {
                 return of$(false);
             }
-            return observeIsMutedSetting(database, mc.id);
-        }),
-    );
 
-    let teamDisplayName = of$('');
-    if (channel.teamId && showTeamName) {
-        teamDisplayName = observeTeam(database, channel.teamId).pipe(
+            const draft = drafts[0];
+            const standardPriority = draft?.metadata?.priority?.priority === '';
+
+            if (!draft.message && !draft.files.length && standardPriority) {
+                return of$(false);
+            }
+
+            return of$(true);
+        }),
+        distinctUntilChanged(),
+    ) : of$(false);
+
+    const isActive = shouldHighlightActive ?
+        observeCurrentChannelId(database).pipe(
+            switchMap((id) => of$(id ? id === channel.id : false)),
+            distinctUntilChanged(),
+        ) : of$(false);
+
+    const isMuted = shouldHighlightState ?
+        myChannel.pipe(
+            switchMap((mc) => {
+                if (!mc) {
+                    return of$(false);
+                }
+                return observeIsMutedSetting(database, mc.id);
+            }),
+        ) : of$(false);
+
+    const teamId = 'teamId' in channel ? channel.teamId : channel.team_id;
+    const teamDisplayName = (teamId && showTeamName) ?
+        observeTeam(database, teamId).pipe(
             switchMap((team) => of$(team?.displayName || '')),
             distinctUntilChanged(),
-        );
-    }
+        ) : of$('');
 
-    let membersCount = of$(0);
-    if (channel.type === General.GM_CHANNEL) {
-        membersCount = queryChannelMembers(database, channel.id).observeCount(false);
-    }
+    const membersCount = channel.type === General.GM_CHANNEL ?
+        queryChannelMembers(database, channel.id).observeCount(false) :
+        of$(0);
 
-    const isUnread = myChannel.pipe(
-        switchMap((mc) => of$(mc?.isUnread)),
-        distinctUntilChanged(),
-    );
+    const isUnread = shouldHighlightState ?
+        myChannel.pipe(
+            switchMap((mc) => of$(mc?.isUnread)),
+            distinctUntilChanged(),
+        ) : of$(false);
 
-    const mentionsCount = myChannel.pipe(
-        switchMap((mc) => of$(mc?.mentionsCount)),
-        distinctUntilChanged(),
-    );
-
-    const hasMember = myChannel.pipe(
-        switchMap((mc) => of$(Boolean(mc))),
-        distinctUntilChanged(),
-    );
+    const mentionsCount = shouldHighlightState ?
+        myChannel.pipe(
+            switchMap((mc) => of$(mc?.mentionsCount)),
+            distinctUntilChanged(),
+        ) : of$(0);
 
     const hasCall = observeChannelsWithCalls(serverUrl || '').pipe(
         switchMap((calls) => of$(Boolean(calls[channel.id]))),
@@ -88,7 +102,7 @@ const enhance = withObservables(['channel', 'showTeamName'], ({
     );
 
     return {
-        channel: channel.observe(),
+        channel: 'observe' in channel ? channel.observe() : of$(channel),
         currentUserId,
         hasDraft,
         isActive,
@@ -97,7 +111,6 @@ const enhance = withObservables(['channel', 'showTeamName'], ({
         isUnread,
         mentionsCount,
         teamDisplayName,
-        hasMember,
         hasCall,
     };
 });

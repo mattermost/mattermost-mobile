@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
+import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
@@ -21,7 +21,7 @@ import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import EditPostInput, {EditPostInputRef} from './edit_post_input';
+import EditPostInput, {type EditPostInputRef} from './edit_post_input';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type {AvailableScreens} from '@typings/screens/navigation';
@@ -56,8 +56,9 @@ type EditPostProps = {
     canDelete: boolean;
 }
 const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttached, canDelete}: EditPostProps) => {
-    const [postMessage, setPostMessage] = useState(post.message);
-    const [cursorPosition, setCursorPosition] = useState(post.message.length);
+    const editingMessage = post.messageSource || post.message;
+    const [postMessage, setPostMessage] = useState(editingMessage);
+    const [cursorPosition, setCursorPosition] = useState(editingMessage.length);
     const [errorLine, setErrorLine] = useState<string | undefined>();
     const [errorExtra, setErrorExtra] = useState<string | undefined>();
     const [isUpdating, setIsUpdating] = useState(false);
@@ -133,8 +134,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
             setErrorLine(line);
             setErrorExtra(extra);
         }
-        toggleSaveButton(post.message !== message);
-    }, [intl, maxPostSize, post.message, toggleSaveButton]);
+        toggleSaveButton(editingMessage !== message);
+    }, [intl, maxPostSize, editingMessage, toggleSaveButton]);
 
     const onAutocompleteChangeText = useCallback((message: string) => {
         setPostMessage(message);
@@ -175,7 +176,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 onPress: () => {
                     setIsUpdating(false);
                     toggleSaveButton();
-                    setPostMessage(post.message);
+                    setPostMessage(editingMessage);
                 },
             }, {
                 text: intl.formatMessage({id: 'post_info.del', defaultMessage: 'Delete'}),
@@ -186,7 +187,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                 },
             }],
         );
-    }, [serverUrl, post.message]);
+    }, [serverUrl, editingMessage]);
 
     const onSavePostMessage = useCallback(async () => {
         setIsUpdating(true);

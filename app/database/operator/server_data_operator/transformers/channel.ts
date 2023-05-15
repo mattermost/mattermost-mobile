@@ -101,6 +101,7 @@ export const transformChannelInfoRecord = ({action, database, value}: Transforme
         channelInfo.header = raw.header ?? channelInfo.header ?? '';
         channelInfo.memberCount = raw.member_count ?? channelInfo.memberCount ?? 0;
         channelInfo.pinnedPostCount = raw.pinned_post_count ?? channelInfo.pinnedPostCount ?? 0;
+        channelInfo.filesCount = raw.files_count ?? channelInfo.filesCount ?? 0;
         channelInfo.purpose = raw.purpose ?? channelInfo.purpose ?? '';
     };
 

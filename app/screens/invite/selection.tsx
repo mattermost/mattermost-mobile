@@ -7,12 +7,12 @@ import {
     Keyboard,
     Platform,
     View,
-    LayoutChangeEvent,
+    type LayoutChangeEvent,
     useWindowDimensions,
     FlatList,
-    ListRenderItemInfo,
-    NativeScrollEvent,
-    NativeSyntheticEvent,
+    type ListRenderItemInfo,
+    type NativeScrollEvent,
+    type NativeSyntheticEvent,
 } from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import Animated, {useAnimatedStyle, useDerivedValue} from 'react-native-reanimated';
@@ -35,6 +35,7 @@ import SelectionTeamBar from './selection_team_bar';
 import TextItem, {TextItemType} from './text_item';
 
 import type {SearchResult} from './invite_types';
+import type UserModel from '@typings/database/models/servers/user';
 
 const AUTOCOMPLETE_ADJUST = 5;
 const KEYBOARD_HEIGHT_ADJUST = 3;
@@ -74,6 +75,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         },
         searchListPadding: {
             paddingVertical: 8,
+            flex: 1,
         },
         searchListShadow: {
             shadowColor: '#000',
@@ -89,6 +91,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         searchListFlatList: {
             backgroundColor: theme.centerChannelBg,
             borderRadius: 4,
+            paddingHorizontal: 16,
         },
         selectedItems: {
             alignItems: 'flex-start',
@@ -286,12 +289,12 @@ export default function Selection({
 
         style.push(styles.searchListFlatList);
 
-        if (searchResults.length) {
+        if (searchResults.length || (term && !loading)) {
             style.push(styles.searchListBorder, styles.searchListPadding);
         }
 
         return style;
-    }, [searchResults, styles]);
+    }, [searchResults, styles, Boolean(term && !loading)]);
 
     const scrollToBottom = useCallback(() => {
         if (scrollToBottomTimeout.current) {
@@ -345,20 +348,27 @@ export default function Selection({
         }
 
         return (
-            <View style={[styles.searchListBorder, styles.searchListPadding]}>
-                <TextItem
-                    text={term}
-                    type={TextItemType.SEARCH_NO_RESULTS}
-                    testID='invite.search_list_no_results'
-                />
-            </View>
+            <TextItem
+                text={term}
+                type={TextItemType.SEARCH_NO_RESULTS}
+                testID='invite.search_list_no_results'
+            />
         );
     }, [term, loading]);
+
+    const onSelect = useCallback((user: UserProfile | UserModel) => {
+        if ('create_at' in user) {
+            onSelectItem(user);
+            return;
+        }
+
+        onSelectItem(user.toApi());
+    }, [onSelectItem]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<SearchResult>) => {
         const key = keyExtractor(item);
 
-        return (
+        return typeof item === 'string' ? (
             <TouchableWithFeedback
                 key={key}
                 index={key}
@@ -367,21 +377,20 @@ export default function Selection({
                 type='native'
                 testID={`invite.search_list_item.${key}`}
             >
-                {typeof item === 'string' ? (
-                    <TextItem
-                        text={item}
-                        type={TextItemType.SEARCH_INVITE}
-                        testID='invite.search_list_text_item'
-                    />
-                ) : (
-                    <UserItem
-                        user={item}
-                        testID='invite.search_list_user_item'
-                    />
-                )}
+                <TextItem
+                    text={item}
+                    type={TextItemType.SEARCH_INVITE}
+                    testID='invite.search_list_text_item'
+                />
             </TouchableWithFeedback>
+        ) : (
+            <UserItem
+                user={item}
+                testID='invite.search_list_user_item'
+                onUserPress={onSelect}
+            />
         );
-    }, [searchResults, onSelectItem]);
+    }, [searchResults, onSelectItem, onSelect]);
 
     const renderSelectedItems = useMemo(() => {
         const selectedItems = [];

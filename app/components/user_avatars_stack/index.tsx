@@ -3,7 +3,7 @@
 
 import React, {useCallback} from 'react';
 import {useIntl} from 'react-intl';
-import {StyleProp, Text, TouchableOpacity, View, ViewStyle} from 'react-native';
+import {type StyleProp, Text, TouchableOpacity, View, type ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
@@ -31,6 +31,7 @@ type Props = {
     users: UserModel[];
     breakAt?: number;
     style?: StyleProp<ViewStyle>;
+    noBorder?: boolean;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
@@ -50,6 +51,9 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             borderColor: theme.centerChannelBg,
             backgroundColor: theme.centerChannelBg,
             borderRadius: size / 2,
+        },
+        noBorder: {
+            borderWidth: 0,
         },
         notFirstAvatars: {
             justifyContent: 'center',
@@ -99,7 +103,14 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-const UserAvatarsStack = ({breakAt = 3, channelId, location, style: baseContainerStyle, users}: Props) => {
+const UserAvatarsStack = ({
+    breakAt = 3,
+    channelId,
+    location,
+    style: baseContainerStyle,
+    users,
+    noBorder = false,
+}: Props) => {
     const theme = useTheme();
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -154,14 +165,14 @@ const UserAvatarsStack = ({breakAt = 3, channelId, location, style: baseContaine
                 {displayUsers.map((user, index) => (
                     <UserAvatar
                         key={user.id}
-                        style={index === 0 ? style.firstAvatar : style.notFirstAvatars}
+                        style={index === 0 ? [style.firstAvatar, noBorder && style.noBorder] : [style.notFirstAvatars, noBorder && style.noBorder]}
                         user={user}
                     />
                 ))}
                 {Boolean(overflowUsersCount) && (
-                    <View style={style.overflowContainer}>
-                        <View style={style.overflowItem}>
-                            <Text style={style.overflowText} >
+                    <View style={[style.overflowContainer, noBorder && style.noBorder]}>
+                        <View style={[style.overflowItem, noBorder && style.noBorder]}>
+                            <Text style={style.overflowText}>
                                 {'+' + overflowUsersCount.toString()}
                             </Text>
                         </View>

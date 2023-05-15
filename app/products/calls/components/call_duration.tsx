@@ -3,7 +3,7 @@
 
 import moment from 'moment-timezone';
 import React, {useEffect, useState} from 'react';
-import {Text, StyleProp, TextStyle} from 'react-native';
+import {Text, type StyleProp, type TextStyle} from 'react-native';
 
 import {toMilliseconds} from '@utils/datetime';
 
@@ -50,7 +50,11 @@ const CallDuration = ({value, style, updateIntervalInSeconds}: CallDurationProps
     }, [updateIntervalInSeconds]);
 
     return (
-        <Text style={style}>
+        <Text
+            style={style}
+            numberOfLines={1}
+            ellipsizeMode={'clip'}
+        >
             {formattedTime}
         </Text>
     );

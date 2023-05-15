@@ -8,10 +8,8 @@ import EphemeralStore from '@store/ephemeral_store';
 
 export async function handleThreadUpdatedEvent(serverUrl: string, msg: WebSocketMessage): Promise<void> {
     try {
-        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-        if (!database) {
-            return;
-        }
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const thread: Thread = JSON.parse(msg.data.thread);
         let teamId = msg.broadcast.team_id;
 

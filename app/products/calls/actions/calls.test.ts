@@ -25,13 +25,14 @@ import {
     userJoinedCall,
 } from '@calls/state';
 import {
-    Call,
-    CallsState,
-    ChannelsWithCalls,
-    CurrentCall,
+    type Call,
+    type CallsState,
+    type ChannelsWithCalls,
+    type CurrentCall,
     DefaultCallsConfig,
     DefaultCallsState,
 } from '@calls/types/calls';
+import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 
 const mockClient = {
@@ -77,6 +78,16 @@ jest.mock('@calls/connection/connection', () => ({
     })),
 }));
 
+jest.mock('@actions/remote/thread', () => ({
+    updateThreadFollowing: jest.fn(() => Promise.resolve({})),
+}));
+
+jest.mock('@queries/servers/thread', () => ({
+    getThreadById: jest.fn(() => Promise.resolve({
+        isFollowing: false,
+    })),
+}));
+
 jest.mock('@calls/alerts');
 
 const addFakeCall = (serverUrl: string, channelId: string) => {
@@ -104,6 +115,8 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
 
 describe('Actions.Calls', () => {
     const {newConnection} = require('@calls/connection/connection');
+    const {updateThreadFollowing} = require('@actions/remote/thread');
+
     InCallManager.setSpeakerphoneOn = jest.fn();
     InCallManager.setForceSpeakerphoneOn = jest.fn();
     // eslint-disable-next-line
@@ -111,7 +124,9 @@ describe('Actions.Calls', () => {
     NetworkManager.getClient = () => mockClient;
     jest.spyOn(Permissions, 'hasMicrophonePermission').mockReturnValue(Promise.resolve(true));
 
-    beforeAll(() => {
+    beforeAll(async () => {
+        await DatabaseManager.init(['server1']);
+
         // create subjects
         const {result} = renderHook(() => {
             return [useCallsState('server1'), useChannelsWithCalls('server1'), useCurrentCall(), useCallsConfig('server1')];
@@ -125,6 +140,7 @@ describe('Actions.Calls', () => {
 
     beforeEach(() => {
         newConnection.mockClear();
+        updateThreadFollowing.mockClear();
         mockClient.getCalls.mockClear();
         mockClient.getCallsConfig.mockClear();
         mockClient.getPluginsManifests.mockClear();
@@ -152,13 +168,13 @@ describe('Actions.Calls', () => {
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
-            userJoinedCall('server1', 'channel-id', 'myUserId');
         });
 
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
         expect(newConnection).toBeCalled();
         expect(newConnection.mock.calls[0][1]).toBe('channel-id');
+        expect(updateThreadFollowing).toBeCalled();
 
         await act(async () => {
             CallsActions.leaveCall();

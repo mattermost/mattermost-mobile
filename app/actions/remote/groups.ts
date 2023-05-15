@@ -5,6 +5,8 @@ import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 import {getChannelById} from '@queries/servers/channel';
 import {getTeamById} from '@queries/servers/team';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
@@ -20,7 +22,8 @@ export const fetchGroup = async (serverUrl: string, id: string, fetchOnly = fals
         // Save locally
         return operator.handleGroups({groups: [group], prepareRecordsOnly: fetchOnly});
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchGroup', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
@@ -37,7 +40,8 @@ export const fetchGroupsForAutocomplete = async (serverUrl: string, query: strin
 
         return operator.handleGroups({groups: response, prepareRecordsOnly: fetchOnly});
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchGroupsForAutocomplete', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
@@ -62,7 +66,8 @@ export const fetchGroupsByNames = async (serverUrl: string, names: string[], fet
 
         return operator.handleGroups({groups, prepareRecordsOnly: fetchOnly});
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchGroupsByNames', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
@@ -88,7 +93,8 @@ export const fetchGroupsForChannel = async (serverUrl: string, channelId: string
 
         return {groups, groupChannels};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchGroupsForChannel', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
@@ -115,6 +121,7 @@ export const fetchGroupsForTeam = async (serverUrl: string, teamId: string, fetc
 
         return {groups, groupTeams};
     } catch (error) {
+        logDebug('error on fetchGroupsForTeam', getFullErrorMessage(error));
         return {error};
     }
 };
@@ -141,36 +148,25 @@ export const fetchGroupsForMember = async (serverUrl: string, userId: string, fe
 
         return {groups, groupMemberships};
     } catch (error) {
+        logDebug('error on fetchGroupsForMember', getFullErrorMessage(error));
         return {error};
     }
 };
 
 export const fetchFilteredTeamGroups = async (serverUrl: string, searchTerm: string, teamId: string) => {
-    try {
-        const groups = await fetchGroupsForTeam(serverUrl, teamId);
-
-        if (groups && Array.isArray(groups)) {
-            return groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
-        }
-
-        throw groups.error;
-    } catch (error) {
-        return {error};
+    const res = await fetchGroupsForTeam(serverUrl, teamId);
+    if ('error' in res) {
+        return {error: res.error};
     }
+    return res.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
 };
 
 export const fetchFilteredChannelGroups = async (serverUrl: string, searchTerm: string, channelId: string) => {
-    try {
-        const groups = await fetchGroupsForChannel(serverUrl, channelId);
-
-        if (groups && Array.isArray(groups)) {
-            return groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
-        }
-
-        throw groups.error;
-    } catch (error) {
-        return {error};
+    const res = await fetchGroupsForChannel(serverUrl, channelId);
+    if ('error' in res) {
+        return {error: res.error};
     }
+    return res.groups.filter((g) => g.name.toLowerCase().includes(searchTerm.toLowerCase()));
 };
 
 export const fetchGroupsForTeamIfConstrained = async (serverUrl: string, teamId: string, fetchOnly = false) => {

@@ -11,7 +11,7 @@ import {useGalleryItem} from '@hooks/gallery';
 import {isDocument, isImage, isVideo} from '@utils/file';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
-import DocumentFile, {DocumentFileRef} from './document_file';
+import DocumentFile, {type DocumentFileRef} from './document_file';
 import FileIcon from './file_icon';
 import FileInfo from './file_info';
 import FileOptionsIcon from './file_options_icon';
@@ -99,95 +99,109 @@ const File = ({
         onOptionsPress?.(file);
     }, [file, onOptionsPress]);
 
-    const optionsButton = (
-        <FileOptionsIcon
-            onPress={handleOnOptionsPress}
-            selected={optionSelected}
-        />
-    );
-
-    const fileInfo = (
-        <FileInfo
-            file={file}
-            showDate={showDate}
-            channelName={channelName}
-            onPress={handlePreviewPress}
-        />
-    );
-
-    const renderImageFileOverlay = (
-        <ImageFileOverlay
-            value={nonVisibleImagesCount}
-        />
-    );
-
-    const renderImageFile = (
-        <TouchableWithoutFeedback onPress={onGestureEvent}>
-            <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
-                <ImageFile
-                    file={file}
-                    forwardRef={ref}
-                    inViewPort={inViewPort}
-                    isSingleImage={isSingleImage}
-                    resizeMode={'cover'}
-                    wrapperWidth={wrapperWidth}
-                />
-                {Boolean(nonVisibleImagesCount) && renderImageFileOverlay}
-            </Animated.View>
-        </TouchableWithoutFeedback>
-    );
-
-    const renderVideoFile = (
-        <TouchableWithoutFeedback onPress={onGestureEvent}>
-            <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
-                <VideoFile
-                    file={file}
-                    forwardRef={ref}
-                    inViewPort={inViewPort}
-                    isSingleImage={isSingleImage}
-                    resizeMode={'cover'}
-                    wrapperWidth={wrapperWidth}
-                    updateFileForGallery={updateFileForGallery}
-                    index={index}
-                />
-                {Boolean(nonVisibleImagesCount) && renderImageFileOverlay}
-            </Animated.View>
-        </TouchableWithoutFeedback>
-    );
-
-    const renderDocumentFile = (
-        <View style={style.iconWrapper}>
-            <DocumentFile
-                ref={document}
-                canDownloadFiles={canDownloadFiles}
-                file={file}
-            />
-        </View>
-    );
-
     const renderCardWithImage = (fileIcon: JSX.Element) => {
+        const fileInfo = (
+            <FileInfo
+                file={file}
+                showDate={showDate}
+                channelName={channelName}
+                onPress={handlePreviewPress}
+            />
+        );
+
         return (
             <View style={[style.fileWrapper]}>
                 <View style={style.iconWrapper}>
                     {fileIcon}
                 </View>
                 {fileInfo}
-                {onOptionsPress && optionsButton}
+                {onOptionsPress &&
+                <FileOptionsIcon
+                    onPress={handleOnOptionsPress}
+                    selected={optionSelected}
+                />
+                }
             </View>
         );
     };
 
     let fileComponent;
     if (isVideo(file) && publicLinkEnabled) {
+        const renderVideoFile = (
+            <TouchableWithoutFeedback onPress={onGestureEvent}>
+                <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
+                    <VideoFile
+                        file={file}
+                        forwardRef={ref}
+                        inViewPort={inViewPort}
+                        isSingleImage={isSingleImage}
+                        resizeMode={'cover'}
+                        wrapperWidth={wrapperWidth}
+                        updateFileForGallery={updateFileForGallery}
+                        index={index}
+                    />
+                    {Boolean(nonVisibleImagesCount) &&
+                    <ImageFileOverlay
+                        value={nonVisibleImagesCount}
+                    />
+                    }
+                </Animated.View>
+            </TouchableWithoutFeedback>
+        );
+
         fileComponent = asCard ? renderCardWithImage(renderVideoFile) : renderVideoFile;
     } else if (isImage(file)) {
+        const renderImageFile = (
+            <TouchableWithoutFeedback onPress={onGestureEvent}>
+                <Animated.View style={[styles, asCard ? style.imageVideo : null]}>
+                    <ImageFile
+                        file={file}
+                        forwardRef={ref}
+                        inViewPort={inViewPort}
+                        isSingleImage={isSingleImage}
+                        resizeMode={'cover'}
+                        wrapperWidth={wrapperWidth}
+                    />
+                    {Boolean(nonVisibleImagesCount) &&
+                    <ImageFileOverlay
+                        value={nonVisibleImagesCount}
+                    />
+                    }
+                </Animated.View>
+            </TouchableWithoutFeedback>
+        );
+
         fileComponent = asCard ? renderCardWithImage(renderImageFile) : renderImageFile;
     } else if (isDocument(file)) {
+        const renderDocumentFile = (
+            <View style={style.iconWrapper}>
+                <DocumentFile
+                    ref={document}
+                    canDownloadFiles={canDownloadFiles}
+                    file={file}
+                />
+            </View>
+        );
+
+        const fileInfo = (
+            <FileInfo
+                file={file}
+                showDate={showDate}
+                channelName={channelName}
+                onPress={handlePreviewPress}
+            />
+        );
+
         fileComponent = (
             <View style={[style.fileWrapper]}>
                 {renderDocumentFile}
                 {fileInfo}
-                {onOptionsPress && optionsButton}
+                {onOptionsPress &&
+                <FileOptionsIcon
+                    onPress={handleOnOptionsPress}
+                    selected={optionSelected}
+                />
+                }
             </View>
         );
     } else {

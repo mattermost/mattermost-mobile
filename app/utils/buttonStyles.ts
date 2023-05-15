@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {StyleProp, StyleSheet, TextStyle, ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, type TextStyle, type ViewStyle} from 'react-native';
 
 import {blendColors, changeOpacity} from '@utils/theme';
 

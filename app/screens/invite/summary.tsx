@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {MessageDescriptor, useIntl} from 'react-intl';
-import {View, Text, ScrollView, StyleProp, ViewStyle} from 'react-native';
+import {useIntl, type MessageDescriptor} from 'react-intl';
+import {View, Text, ScrollView, type StyleProp, type ViewStyle} from 'react-native';
 
 import Button from '@components/button';
 import AlertSvg from '@components/illustrations/alert';

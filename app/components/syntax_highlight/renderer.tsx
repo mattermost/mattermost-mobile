@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useRef} from 'react';
-import {FlatList, ListRenderItemInfo, ScrollView, StyleSheet, Text} from 'react-native';
+import {FlatList, type ListRenderItemInfo, ScrollView, StyleSheet, Text} from 'react-native';
 import {createStyleObject} from 'react-syntax-highlighter/create-element';
 
 import {generateId} from '@utils/general';

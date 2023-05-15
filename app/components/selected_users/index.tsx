@@ -2,16 +2,15 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {LayoutChangeEvent, Platform, ScrollView, useWindowDimensions, View} from 'react-native';
+import {type LayoutChangeEvent, Platform, ScrollView, useWindowDimensions, View} from 'react-native';
 import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
+import Button from '@components/button';
 import {USER_CHIP_BOTTOM_MARGIN, USER_CHIP_HEIGHT} from '@components/selected_chip';
 import Toast from '@components/toast';
-import {General} from '@constants';
 import {useTheme} from '@context/theme';
 import {useIsTablet, useKeyboardHeightWithDuration} from '@hooks/device';
-import Button from '@screens/bottom_sheet/button';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import SelectedUser from './selected_user';
@@ -56,12 +55,12 @@ type Props = {
     /**
      * callback to set the value of showToast
      */
-    setShowToast: (show: boolean) => void;
+    setShowToast?: (show: boolean) => void;
 
     /**
      * show the toast
      */
-    showToast: boolean;
+    showToast?: boolean;
 
     /**
     * How to display the names of users.
@@ -81,15 +80,23 @@ type Props = {
     /**
      * toast Message
      */
-    toastMessage: string;
+    toastMessage?: string;
+
+    /**
+     * Max number of users in the list
+     */
+    maxUsers?: number;
 }
 
 const BUTTON_HEIGHT = 48;
 const CHIP_HEIGHT_WITH_MARGIN = USER_CHIP_HEIGHT + USER_CHIP_BOTTOM_MARGIN;
 const EXPOSED_CHIP_HEIGHT = 0.33 * USER_CHIP_HEIGHT;
 const MAX_CHIP_ROWS = 2;
-const SCROLL_PADDING_TOP = 20;
-const PANEL_MAX_HEIGHT = SCROLL_PADDING_TOP + (CHIP_HEIGHT_WITH_MARGIN * MAX_CHIP_ROWS) + EXPOSED_CHIP_HEIGHT;
+const SCROLL_MARGIN_TOP = 20;
+const SCROLL_MARGIN_BOTTOM = 12;
+const USERS_CHIPS_MAX_HEIGHT = (CHIP_HEIGHT_WITH_MARGIN * MAX_CHIP_ROWS) + EXPOSED_CHIP_HEIGHT;
+const SCROLL_MAX_HEIGHT = USERS_CHIPS_MAX_HEIGHT + SCROLL_MARGIN_TOP + SCROLL_MARGIN_BOTTOM;
+const PANEL_MAX_HEIGHT = SCROLL_MAX_HEIGHT + BUTTON_HEIGHT;
 const TABLET_MARGIN_BOTTOM = 20;
 const TOAST_BOTTOM_MARGIN = 24;
 
@@ -102,7 +109,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             borderTopLeftRadius: 12,
             borderTopRightRadius: 12,
             borderWidth: 1,
-            maxHeight: PANEL_MAX_HEIGHT + BUTTON_HEIGHT,
+            maxHeight: PANEL_MAX_HEIGHT,
             overflow: 'hidden',
             paddingHorizontal: 20,
             shadowColor: theme.centerChannelColor,
@@ -114,17 +121,19 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             shadowRadius: 24,
         },
         toast: {
-            backgroundColor: theme.centerChannelColor,
+            backgroundColor: theme.errorTextColor,
+        },
+        usersScroll: {
+            marginTop: SCROLL_MARGIN_TOP,
+            marginBottom: SCROLL_MARGIN_BOTTOM,
         },
         users: {
-            paddingTop: SCROLL_PADDING_TOP,
-            paddingBottom: 12,
             flexDirection: 'row',
             flexGrow: 1,
             flexWrap: 'wrap',
         },
         message: {
-            color: changeOpacity(theme.centerChannelColor, 0.6),
+            color: theme.centerChannelBg,
             fontSize: 12,
             marginRight: 5,
             marginTop: 10,
@@ -134,10 +143,20 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 });
 
 export default function SelectedUsers({
-    buttonIcon, buttonText, containerHeight = 0,
-    modalPosition = 0, onPress, onRemove,
-    selectedIds, setShowToast, showToast = false,
-    teammateNameDisplay, testID, toastIcon, toastMessage,
+    buttonIcon,
+    buttonText,
+    containerHeight = 0,
+    modalPosition = 0,
+    onPress,
+    onRemove,
+    selectedIds,
+    setShowToast,
+    showToast = false,
+    teammateNameDisplay,
+    testID,
+    toastIcon,
+    toastMessage,
+    maxUsers,
 }: Props) {
     const theme = useTheme();
     const style = getStyleFromTheme(theme);
@@ -146,11 +165,10 @@ export default function SelectedUsers({
     const insets = useSafeAreaInsets();
     const dimensions = useWindowDimensions();
 
-    const panelHeight = useSharedValue(0);
+    const usersChipsHeight = useSharedValue(0);
     const [isVisible, setIsVisible] = useState(false);
     const numberSelectedIds = Object.keys(selectedIds).length;
     const bottomSpace = (dimensions.height - containerHeight - modalPosition);
-    const bottomPaddingBottom = isTablet ? CHIP_HEIGHT_WITH_MARGIN : 0;
 
     const users = useMemo(() => {
         const u = [];
@@ -173,13 +191,15 @@ export default function SelectedUsers({
     }, [selectedIds, teammateNameDisplay, onRemove]);
 
     const totalPanelHeight = useDerivedValue(() => (
-        isVisible ? panelHeight.value + BUTTON_HEIGHT + bottomPaddingBottom : 0
-    ), [isVisible, isTablet, bottomPaddingBottom]);
+        isVisible ?
+            usersChipsHeight.value + SCROLL_MARGIN_BOTTOM + SCROLL_MARGIN_TOP + BUTTON_HEIGHT :
+            0
+    ), [isVisible]);
 
     const marginBottom = useMemo(() => {
         let margin = keyboard.height && Platform.OS === 'ios' ? keyboard.height - insets.bottom : 0;
         if (isTablet) {
-            margin = keyboard.height ? (keyboard.height - bottomSpace - insets.bottom) : 0;
+            margin = keyboard.height ? Math.max((keyboard.height - bottomSpace - insets.bottom), 0) : 0;
         }
         return margin;
     }, [keyboard, isTablet, insets.bottom, bottomSpace]);
@@ -209,7 +229,10 @@ export default function SelectedUsers({
     }, [onPress]);
 
     const onLayout = useCallback((e: LayoutChangeEvent) => {
-        panelHeight.value = Math.min(PANEL_MAX_HEIGHT + bottomPaddingBottom, e.nativeEvent.layout.height);
+        usersChipsHeight.value = Math.min(
+            USERS_CHIPS_MAX_HEIGHT,
+            e.nativeEvent.layout.height,
+        );
     }, []);
 
     const androidMaxHeight = Platform.select({
@@ -227,17 +250,17 @@ export default function SelectedUsers({
 
     const animatedToastStyle = useAnimatedStyle(() => {
         return {
-            bottom: TOAST_BOTTOM_MARGIN + totalPanelHeight.value,
+            bottom: TOAST_BOTTOM_MARGIN + totalPanelHeight.value + insets.bottom,
             opacity: withTiming(showToast ? 1 : 0, {duration: 250}),
             position: 'absolute',
         };
-    }, [showToast, keyboard]);
+    }, [showToast, insets.bottom]);
 
     const animatedViewStyle = useAnimatedStyle(() => ({
-        height: withTiming(totalPanelHeight.value + insets.bottom, {duration: 250}),
+        height: withTiming(totalPanelHeight.value, {duration: 250}),
         borderWidth: isVisible ? 1 : 0,
-        maxHeight: isVisible ? PANEL_MAX_HEIGHT + BUTTON_HEIGHT + bottomPaddingBottom + insets.bottom : 0,
-    }), [isVisible, insets, bottomPaddingBottom]);
+        maxHeight: isVisible ? PANEL_MAX_HEIGHT + BUTTON_HEIGHT : 0,
+    }), [isVisible]);
 
     const animatedButtonStyle = useAnimatedStyle(() => ({
         opacity: withTiming(isVisible ? 1 : 0, {duration: isVisible ? 500 : 100}),
@@ -252,13 +275,14 @@ export default function SelectedUsers({
         let timer: NodeJS.Timeout;
         if (showToast) {
             timer = setTimeout(() => {
-                setShowToast(false);
+                setShowToast?.(false);
             }, 4000);
         }
 
         return () => clearTimeout(timer);
     }, [showToast]);
 
+    const isDisabled = Boolean(maxUsers && (numberSelectedIds > maxUsers));
     return (
         <Animated.View style={animatedContainerStyle}>
             {showToast &&
@@ -270,7 +294,7 @@ export default function SelectedUsers({
             />
             }
             <Animated.View style={[style.container, animatedViewStyle]}>
-                <ScrollView>
+                <ScrollView style={style.usersScroll}>
                     <View
                         style={style.users}
                         onLayout={onLayout}
@@ -281,9 +305,13 @@ export default function SelectedUsers({
                 <Animated.View style={animatedButtonStyle}>
                     <Button
                         onPress={handlePress}
-                        icon={buttonIcon}
+                        iconName={buttonIcon}
                         text={buttonText}
-                        disabled={numberSelectedIds > General.MAX_USERS_IN_GM}
+                        iconSize={20}
+                        theme={theme}
+                        buttonType={isDisabled ? 'disabled' : 'default'}
+                        emphasis={'primary'}
+                        size={'lg'}
                         testID={`${testID}.start.button`}
                     />
                 </Animated.View>

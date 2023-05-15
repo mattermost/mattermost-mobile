@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, Text, View, ViewStyle} from 'react-native';
+import {type StyleProp, Text, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import General from '@constants/general';
@@ -16,7 +16,7 @@ type ChannelIconProps = {
     hasDraft?: boolean;
     isActive?: boolean;
     isArchived?: boolean;
-    isInfo?: boolean;
+    isOnCenterBg?: boolean;
     isUnread?: boolean;
     isMuted?: boolean;
     membersCount?: number;
@@ -43,10 +43,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         iconUnread: {
             color: theme.sidebarUnreadText,
         },
-        iconInfo: {
+        iconOnCenterBg: {
             color: changeOpacity(theme.centerChannelColor, 0.72),
         },
-        iconInfoUnread: {
+        iconUnreadOnCenterBg: {
             color: theme.centerChannelColor,
         },
         groupBox: {
@@ -61,7 +61,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         groupBoxUnread: {
             backgroundColor: changeOpacity(theme.sidebarUnreadText, 0.3),
         },
-        groupBoxInfo: {
+        groupBoxOnCenterBg: {
             backgroundColor: changeOpacity(theme.centerChannelColor, 0.3),
         },
         group: {
@@ -74,10 +74,10 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         groupUnread: {
             color: theme.sidebarUnreadText,
         },
-        groupInfo: {
+        groupOnCenterBg: {
             color: changeOpacity(theme.centerChannelColor, 0.72),
         },
-        groupInfoUnread: {
+        groupUnreadOnCenterBg: {
             color: theme.centerChannelColor,
         },
         muted: {
@@ -88,7 +88,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const ChannelIcon = ({
     hasDraft = false, isActive = false, isArchived = false,
-    isInfo = false, isUnread = false, isMuted = false,
+    isOnCenterBg = false, isUnread = false, isMuted = false,
     membersCount = 0, name,
     shared, size = 12, style, testID, type,
 }: ChannelIconProps) => {
@@ -115,22 +115,38 @@ const ChannelIcon = ({
         activeGroup = styles.groupActive;
     }
 
-    if (isInfo) {
-        activeIcon = isUnread && !isMuted ? styles.iconInfoUnread : styles.iconInfo;
-        activeGroupBox = styles.groupBoxInfo;
-        activeGroup = isUnread ? styles.groupInfoUnread : styles.groupInfo;
+    if (isOnCenterBg) {
+        activeIcon = isUnread && !isMuted ? styles.iconUnreadOnCenterBg : styles.iconOnCenterBg;
+        activeGroupBox = styles.groupBoxOnCenterBg;
+        activeGroup = isUnread ? styles.groupUnreadOnCenterBg : styles.groupOnCenterBg;
     }
 
     if (isMuted) {
         mutedStyle = styles.muted;
     }
 
-    let icon;
+    const commonStyles = [
+        style,
+        mutedStyle,
+    ];
+
+    const commonIconStyles = [
+        styles.icon,
+        unreadIcon,
+        activeIcon,
+        commonStyles,
+        {fontSize: size},
+    ];
+
+    let icon = null;
     if (isArchived) {
         icon = (
             <CompassIcon
                 name='archive-outline'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 1}]}
+                style={[
+                    commonIconStyles,
+                    {left: 1},
+                ]}
                 testID={`${testID}.archive`}
             />
         );
@@ -138,7 +154,10 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name='pencil-outline'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 2}]}
+                style={[
+                    commonIconStyles,
+                    {left: 2},
+                ]}
                 testID={`${testID}.draft`}
             />
         );
@@ -148,7 +167,10 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name={iconName}
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
+                style={[
+                    commonIconStyles,
+                    {left: 0.5},
+                ]}
                 testID={sharedTestID}
             />
         );
@@ -156,7 +178,10 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name='globe'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 1}]}
+                style={[
+                    commonIconStyles,
+                    {left: 1},
+                ]}
                 testID={`${testID}.public`}
             />
         );
@@ -164,7 +189,10 @@ const ChannelIcon = ({
         icon = (
             <CompassIcon
                 name='lock-outline'
-                style={[styles.icon, unreadIcon, activeIcon, {fontSize: size, left: 0.5}]}
+                style={[
+                    commonIconStyles,
+                    {left: 0.5},
+                ]}
                 testID={`${testID}.private`}
             />
         );
@@ -172,7 +200,7 @@ const ChannelIcon = ({
         const fontSize = size - 12;
         icon = (
             <View
-                style={[styles.groupBox, unreadGroupBox, activeGroupBox, {width: size, height: size}]}
+                style={[styles.groupBox, unreadGroupBox, activeGroupBox, commonStyles, {width: size, height: size}]}
             >
                 <Text
                     style={[styles.group, unreadGroup, activeGroup, {fontSize}]}
@@ -186,16 +214,14 @@ const ChannelIcon = ({
         icon = (
             <DmAvatar
                 channelName={name}
-                isInfo={isInfo}
+                isOnCenterBg={isOnCenterBg}
+                style={commonStyles}
+                size={size}
             />
         );
     }
 
-    return (
-        <View style={[styles.container, {width: size, height: size}, style, mutedStyle]}>
-            {icon}
-        </View>
-    );
+    return icon;
 };
 
 export default React.memo(ChannelIcon);

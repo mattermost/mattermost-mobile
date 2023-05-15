@@ -14,6 +14,7 @@ import {getCurrentTeam, prepareMyTeams, queryMyTeamsByIds} from '@queries/server
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -73,7 +74,7 @@ export async function handleTeamRestored(serverUrl: string, msg: WebSocketMessag
         if (markedAsLoading) {
             setTeamLoading(serverUrl, false);
         }
-        logDebug('cannot handle restore team websocket event', error);
+        logDebug('cannot handle restore team websocket event', getFullErrorMessage(error));
     }
 }
 
@@ -106,14 +107,11 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
 }
 
 export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMessage) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
-        return;
-    }
-
     try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const team: Team = JSON.parse(msg.data.team);
-        database.operator.handleTeam({
+        operator.handleTeam({
             teams: [team],
             prepareRecordsOnly: false,
         });

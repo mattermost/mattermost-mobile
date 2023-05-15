@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useState, useRef, useMemo} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, View, LayoutChangeEvent, Platform} from 'react-native';
+import {Keyboard, View, type LayoutChangeEvent, Platform} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {searchProfiles} from '@actions/remote/user';

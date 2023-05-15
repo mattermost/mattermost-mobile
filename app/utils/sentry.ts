@@ -5,12 +5,13 @@ import {Platform} from 'react-native';
 import {Navigation} from 'react-native-navigation';
 
 import Config from '@assets/config.json';
+import ClientError from '@client/rest/error';
 import DatabaseManager from '@database/manager';
 import {getConfig} from '@queries/servers/system';
 import {getCurrentUser} from '@queries/servers/user';
+import {getFullErrorMessage} from '@utils/errors';
 import {isBetaApp} from '@utils/general';
 
-import {ClientError} from './client_error';
 import {logError, logWarning} from './log';
 
 import type {Database} from '@nozbe/watermelondb';
@@ -43,22 +44,28 @@ export function initializeSentry() {
         attachStacktrace: isBetaApp, // For Beta, stack traces are automatically attached to all messages logged
     };
 
+    const eventFilter = Array.isArray(Config.SentryOptions?.severityLevelFilter) ? Config.SentryOptions.severityLevelFilter : [];
+    const sentryOptions = {...Config.SentryOptions};
+    Reflect.deleteProperty(sentryOptions, 'severityLevelFilter');
+
     Sentry.init({
         dsn,
         sendDefaultPii: false,
         ...mmConfig,
-        ...Config.SentryOptions,
+        ...sentryOptions,
+        enableCaptureFailedRequests: false,
         integrations: [
             new Sentry.ReactNativeTracing({
 
                 // Pass instrumentation to be used as `routingInstrumentation`
                 routingInstrumentation: new Sentry.ReactNativeNavigationInstrumentation(
                     Navigation,
+                    {enableTabsInstrumentation: false},
                 ),
             }),
         ],
         beforeSend: (event: Event) => {
-            if (isBetaApp || event?.level === 'fatal') {
+            if (isBetaApp || (event?.level && eventFilter.includes(event.level))) {
                 return event;
             }
 
@@ -77,7 +84,7 @@ function getDsn() {
     return '';
 }
 
-export function captureException(error: Error | string) {
+export function captureException(error: unknown) {
     if (!Config.SentryEnabled) {
         return;
     }
@@ -89,7 +96,7 @@ export function captureException(error: Error | string) {
     Sentry.captureException(error);
 }
 
-export function captureJSException(error: Error | ClientError, isFatal: boolean) {
+export function captureJSException(error: unknown, isFatal: boolean) {
     if (!Config.SentryEnabled) {
         return;
     }
@@ -114,13 +121,8 @@ function captureClientErrorAsBreadcrumb(error: ClientError, isFatal: boolean) {
             isFatal: String(isFatal),
         },
         level: 'warning',
+        message: getFullErrorMessage(error),
     };
-
-    if (error.intl?.defaultMessage) {
-        breadcrumb.message = error.intl.defaultMessage;
-    } else {
-        breadcrumb.message = error.message;
-    }
 
     if (breadcrumb.data) {
         if (error.server_error_id) {

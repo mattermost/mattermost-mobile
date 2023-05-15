@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {Alert, Text, TouchableOpacity, View} from 'react-native';
 import Animated from 'react-native-reanimated';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {fetchChannelById, joinChannel, switchToChannelById} from '@actions/remote/channel';
 import {fetchPostById, fetchPostsAround, fetchPostThread} from '@actions/remote/post';

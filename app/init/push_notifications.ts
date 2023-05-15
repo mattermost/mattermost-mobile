@@ -7,10 +7,10 @@ import {
     NotificationAction,
     NotificationBackgroundFetchResult,
     NotificationCategory,
-    NotificationCompletion,
+    type NotificationCompletion,
     Notifications,
-    NotificationTextInput,
-    Registered,
+    type NotificationTextInput,
+    type Registered,
 } from 'react-native-notifications';
 import {requestNotifications} from 'react-native-permissions';
 
@@ -25,7 +25,7 @@ import NativeNotifications from '@notifications';
 import {getServerDisplayName} from '@queries/app/servers';
 import {getCurrentChannelId} from '@queries/servers/system';
 import {getIsCRTEnabled, getThreadById} from '@queries/servers/thread';
-import {dismissOverlay, showOverlay} from '@screens/navigation';
+import {showOverlay} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isBetaApp} from '@utils/general';
@@ -37,22 +37,22 @@ class PushNotifications {
     configured = false;
 
     init(register: boolean) {
-        if (register) {
-            this.registerIfNeeded();
-        }
-
         Notifications.events().registerNotificationOpened(this.onNotificationOpened);
         Notifications.events().registerRemoteNotificationsRegistered(this.onRemoteNotificationsRegistered);
         Notifications.events().registerNotificationReceivedBackground(this.onNotificationReceivedBackground);
         Notifications.events().registerNotificationReceivedForeground(this.onNotificationReceivedForeground);
+
+        if (register) {
+            this.registerIfNeeded();
+        }
     }
 
     async registerIfNeeded() {
         const isRegistered = await Notifications.isRegisteredForRemoteNotifications();
         if (!isRegistered) {
             await requestNotifications(['alert', 'sound', 'badge']);
-            Notifications.registerRemoteNotifications();
         }
+        Notifications.registerRemoteNotifications();
     }
 
     createReplyCategory = () => {
@@ -139,6 +139,7 @@ class PushNotifications {
             const condition3 = isInThreadScreen && !isSameThreadNotification;
 
             if (condition1 || condition2 || condition3) {
+                // Dismiss the screen if it's already visible or else it blocks the navigation
                 DeviceEventEmitter.emit(Navigation.NAVIGATION_SHOW_OVERLAY);
 
                 const screen = Screens.IN_APP_NOTIFICATION;
@@ -147,9 +148,6 @@ class PushNotifications {
                     serverName,
                     serverUrl,
                 };
-
-                // Dismiss the screen if it's already visible or else it blocks the navigation
-                await dismissOverlay(screen);
 
                 showOverlay(screen, passProps);
             }

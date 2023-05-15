@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {StyleProp, StyleSheet, Text, TextStyle, View, ViewStyle} from 'react-native';
+import {type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 import RNButton from 'react-native-button';
 
 import CompassIcon from '@components/compass_icon';
@@ -52,13 +52,22 @@ const Button = ({
         textStyle,
     ], [theme, textStyle, size, emphasis, buttonType]);
 
+    const containerStyle = useMemo(
+        () =>
+            (iconSize ? [
+                styles.container,
+                {minHeight: iconSize},
+            ] : styles.container),
+        [iconSize],
+    );
+
     return (
         <RNButton
             containerStyle={bgStyle}
             onPress={onPress}
             testID={testID}
         >
-            <View style={styles.container}>
+            <View style={containerStyle}>
                 {Boolean(iconName) &&
                 <CompassIcon
                     name={iconName!}

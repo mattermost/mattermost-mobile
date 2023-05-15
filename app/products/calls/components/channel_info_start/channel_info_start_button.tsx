@@ -54,7 +54,7 @@ const ChannelInfoStartButton = ({
         <OptionBox
             onPress={preventDoubleTap(tryJoin)}
             text={startText + msgPostfix}
-            iconName='phone-outline'
+            iconName='phone'
             activeText={joinText + msgPostfix}
             activeIconName='phone-in-talk'
             isActive={isACallInCurrentChannel}

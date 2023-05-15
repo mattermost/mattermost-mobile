@@ -5,7 +5,10 @@ import React, {useEffect, useMemo, useState} from 'react';
 import {ActivityIndicator, DeviceEventEmitter, Platform, StyleSheet, View} from 'react-native';
 
 import {Events, General} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useDidUpdate from '@hooks/did_update';
+import EphemeralStore from '@store/ephemeral_store';
 
 import DirectChannel from './direct_channel';
 import PublicOrPrivateChannel from './public_or_private_channel';
@@ -16,7 +19,6 @@ import type RoleModel from '@typings/database/models/servers/role';
 
 type Props = {
     channel?: ChannelModel;
-    hasPosts: boolean;
     roles: RoleModel[];
 }
 
@@ -35,9 +37,11 @@ const styles = StyleSheet.create({
     },
 });
 
-const Intro = ({channel, hasPosts, roles}: Props) => {
-    const [fetching, setFetching] = useState(!hasPosts);
+const Intro = ({channel, roles}: Props) => {
     const theme = useTheme();
+    const serverUrl = useServerUrl();
+    const [fetching, setFetching] = useState(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channel?.id || ''));
+
     const element = useMemo(() => {
         if (!channel) {
             return null;
@@ -75,28 +79,18 @@ const Intro = ({channel, hasPosts, roles}: Props) => {
     }, [channel, roles, theme]);
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, (value: boolean) => {
-            setFetching(value);
+        const listener = DeviceEventEmitter.addListener(Events.LOADING_CHANNEL_POSTS, ({serverUrl: eventServerUrl, channelId: eventChannelId, value}) => {
+            if (eventServerUrl === serverUrl && eventChannelId === channel?.id) {
+                setFetching(value);
+            }
         });
 
         return () => listener.remove();
-    }, []);
+    }, [serverUrl, channel?.id]);
 
-    // We add a timeout to remove the loading indicator
-    // Even if the channel does not have any posts
-    useEffect(() => {
-        const time = setTimeout(() => {
-            if (!hasPosts && fetching) {
-                setFetching(false);
-            }
-        }, 1000);
-
-        return () => {
-            if (time) {
-                clearTimeout(time);
-            }
-        };
-    }, [hasPosts, fetching]);
+    useDidUpdate(() => {
+        setFetching(EphemeralStore.isLoadingMessagesForChannel(serverUrl, channel?.id || ''));
+    }, [serverUrl, channel?.id]);
 
     if (fetching) {
         return (

@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useEffect, useMemo} from 'react';
-import {Platform, StyleProp, View, ViewStyle} from 'react-native';
+import {type StyleProp, View, type ViewStyle} from 'react-native';
 
 import {fetchStatusInBatch} from '@actions/remote/user';
 import {useServerUrl} from '@context/server';
@@ -15,11 +15,6 @@ import Status from './status';
 import type UserModel from '@typings/database/models/servers/user';
 import type {Source} from 'react-native-fast-image';
 
-const STATUS_BUFFER = Platform.select({
-    ios: 3,
-    android: 2,
-});
-
 type ProfilePictureProps = {
     author?: UserModel | UserProfile;
     forwardRef?: React.RefObject<any>;
@@ -27,6 +22,7 @@ type ProfilePictureProps = {
     showStatus?: boolean;
     size: number;
     statusSize?: number;
+    containerStyle?: StyleProp<ViewStyle>;
     statusStyle?: StyleProp<ViewStyle>;
     testID?: string;
     source?: Source | string;
@@ -38,7 +34,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
         container: {
             justifyContent: 'center',
             alignItems: 'center',
-            borderRadius: 80,
         },
         icon: {
             color: changeOpacity(theme.centerChannelColor, 0.48),
@@ -67,6 +62,7 @@ const ProfilePicture = ({
     showStatus = true,
     size = 64,
     statusSize = 14,
+    containerStyle,
     statusStyle,
     testID,
     source,
@@ -77,7 +73,6 @@ const ProfilePicture = ({
     serverUrl = url || serverUrl;
 
     const style = getStyleSheet(theme);
-    const buffer = showStatus ? STATUS_BUFFER || 0 : 0;
     const isBot = author && (('isBot' in author) ? author.isBot : author.is_bot);
 
     useEffect(() => {
@@ -86,26 +81,14 @@ const ProfilePicture = ({
         }
     }, []);
 
-    const containerStyle = useMemo(() => {
-        if (author) {
-            return {
-                width: size + (buffer - 1),
-                height: size + (buffer - 1),
-                borderRadius: (size + buffer) / 2,
-            };
-        }
-
-        return {
-            ...style.container,
-            width: size + buffer,
-            height: size + buffer,
-            borderRadius: (size + buffer) / 2,
-        };
-    }, [author, size]);
+    const viewStyle = useMemo(
+        () => [style.container, {width: size, height: size}, containerStyle],
+        [style, size, containerStyle],
+    );
 
     return (
         <View
-            style={containerStyle}
+            style={viewStyle}
             testID={testID}
         >
             <Image

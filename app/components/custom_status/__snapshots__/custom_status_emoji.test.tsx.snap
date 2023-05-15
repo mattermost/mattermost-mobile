@@ -1,41 +1,35 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`components/custom_status/custom_status_emoji should match snapshot 1`] = `
-<View
-  testID="test.custom_status.custom_status_emoji.calendar"
+<Text
+  style={
+    [
+      undefined,
+      undefined,
+      {
+        "color": "#000",
+        "fontSize": 16,
+      },
+    ]
+  }
 >
-  <Text
-    style={
-      [
-        undefined,
-        {
-          "color": "#000",
-          "fontSize": 16,
-        },
-      ]
-    }
-  >
-    📆
-  </Text>
-</View>
+  📆
+</Text>
 `;
 
 exports[`components/custom_status/custom_status_emoji should match snapshot with props 1`] = `
-<View
-  testID="test.custom_status.custom_status_emoji.calendar"
+<Text
+  style={
+    [
+      undefined,
+      undefined,
+      {
+        "color": "#000",
+        "fontSize": 34,
+      },
+    ]
+  }
 >
-  <Text
-    style={
-      [
-        undefined,
-        {
-          "color": "#000",
-          "fontSize": 34,
-        },
-      ]
-    }
-  >
-    📆
-  </Text>
-</View>
+  📆
+</Text>
 `;

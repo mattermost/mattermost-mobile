@@ -26,6 +26,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     description: {
         color: theme.centerChannelColor,
+        flex: 1,
         ...typography('Body', 200),
     },
     title: {
@@ -74,7 +75,6 @@ const UserProfileCustomStatus = ({customStatus}: Props) => {
                 <CustomStatusEmoji
                     customStatus={customStatus}
                     emojiSize={24}
-                    testID={'user_profile.custom_status_emoji'}
                     style={styles.emoji}
                 />
                 }

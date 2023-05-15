@@ -1,64 +1,44 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useMemo} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
-import {StyleProp, Text, View, ViewStyle} from 'react-native';
+import React, {useCallback, useMemo, type ReactNode} from 'react';
+import {useIntl} from 'react-intl';
+import {StyleSheet, Text, TouchableOpacity, View, type StyleProp, type ViewStyle} from 'react-native';
 
-import ChannelIcon from '@components/channel_icon';
+import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
-import FormattedText from '@components/formatted_text';
 import ProfilePicture from '@components/profile_picture';
 import {BotTag, GuestTag} from '@components/tag';
-import {General} from '@constants';
 import {useTheme} from '@context/theme';
+import {nonBreakingString} from '@utils/strings';
 import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {getUserCustomStatus, isBot, isCustomStatusExpired, isGuest, isShared} from '@utils/user';
+import {displayUsername, getUserCustomStatus, isBot, isCustomStatusExpired, isGuest, isShared} from '@utils/user';
 
 import type UserModel from '@typings/database/models/servers/user';
 
 type AtMentionItemProps = {
-    user?: UserProfile | UserModel;
+    FooterComponent?: ReactNode;
+    user: UserProfile | UserModel;
     containerStyle?: StyleProp<ViewStyle>;
     currentUserId: string;
-    showFullName: boolean;
+    includeMargin?: boolean;
+    size?: number;
     testID?: string;
     isCustomStatusEnabled: boolean;
-    pictureContainerStyle?: StyleProp<ViewStyle>;
+    showBadges?: boolean;
+    locale?: string;
+    teammateNameDisplay: string;
+    rightDecorator?: React.ReactNode;
+    onUserPress?: (user: UserProfile | UserModel) => void;
+    onUserLongPress?: (user: UserProfile | UserModel) => void;
+    disabled?: boolean;
+    viewRef?: React.LegacyRef<View>;
+    padding?: number;
 }
 
-const getName = (user: UserProfile | UserModel | undefined, showFullName: boolean, isCurrentUser: boolean, intl: IntlShape) => {
-    let name = '';
-    if (!user) {
-        return intl.formatMessage({id: 'channel_loader.someone', defaultMessage: 'Someone'});
-    }
-
-    const hasNickname = user.nickname.length > 0;
-
-    if (showFullName) {
-        const first = 'first_name' in user ? user.first_name : user.firstName;
-        const last = 'last_name' in user ? user.last_name : user.lastName;
-        name += `${first} ${last} `;
-    }
-
-    if (hasNickname && !isCurrentUser) {
-        name += name.length > 0 ? `(${user.nickname})` : user.nickname;
-    }
-
-    return name.trim();
-};
-
-const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
+const getThemedStyles = makeStyleSheetFromTheme((theme: Theme) => {
     return {
-        row: {
-            height: 40,
-            paddingVertical: 8,
-            paddingTop: 4,
-            paddingHorizontal: 16,
-            flexDirection: 'row',
-            alignItems: 'center',
-        },
         rowPicture: {
             marginRight: 10,
             marginLeft: 2,
@@ -66,39 +46,70 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             alignItems: 'center',
             justifyContent: 'center',
         },
-        rowInfo: {
-            flexDirection: 'row',
-            overflow: 'hidden',
-        },
         rowFullname: {
             ...typography('Body', 200),
             color: theme.centerChannelColor,
-            paddingLeft: 4,
+            flex: 0,
             flexShrink: 1,
         },
         rowUsername: {
-            ...typography('Body', 200),
+            ...typography('Body', 100),
             color: changeOpacity(theme.centerChannelColor, 0.64),
-            fontSize: 15,
-            fontFamily: 'OpenSans',
-        },
-        icon: {
-            marginLeft: 4,
         },
     };
 });
 
+const nonThemedStyles = StyleSheet.create({
+    row: {
+        height: 40,
+        paddingBottom: 8,
+        paddingTop: 4,
+        flexDirection: 'row',
+        alignItems: 'center',
+    },
+    margin: {marginVertical: 8},
+    rowInfoBaseContainer: {
+        flex: 1,
+    },
+    rowInfoContainer: {
+        flex: 1,
+        flexDirection: 'row',
+    },
+    icon: {
+        marginLeft: 4,
+    },
+    profile: {
+        marginRight: 12,
+    },
+    tag: {
+        marginLeft: 6,
+    },
+    flex: {
+        flex: 1,
+    },
+});
+
 const UserItem = ({
-    containerStyle,
+    FooterComponent,
     user,
+    containerStyle,
     currentUserId,
-    showFullName,
+    size = 24,
     testID,
     isCustomStatusEnabled,
-    pictureContainerStyle,
+    showBadges = false,
+    locale,
+    teammateNameDisplay,
+    rightDecorator,
+    onUserPress,
+    onUserLongPress,
+    disabled = false,
+    viewRef,
+    padding,
+    includeMargin,
 }: AtMentionItemProps) => {
     const theme = useTheme();
-    const style = getStyleFromTheme(theme);
+    const style = getThemedStyles(theme);
     const intl = useIntl();
 
     const bot = user ? isBot(user) : false;
@@ -106,91 +117,114 @@ const UserItem = ({
     const shared = user ? isShared(user) : false;
 
     const isCurrentUser = currentUserId === user?.id;
-    const name = getName(user, showFullName, isCurrentUser, intl);
     const customStatus = getUserCustomStatus(user);
     const customStatusExpired = isCustomStatusExpired(user);
 
-    const userItemTestId = `${testID}.${user?.id}`;
+    const deleteAt = 'deleteAt' in user ? user.deleteAt : user.delete_at;
 
-    let rowUsernameFlexShrink = 1;
-    if (user) {
-        for (const rowInfoElem of [bot, guest, Boolean(name.length), isCurrentUser]) {
-            if (rowInfoElem) {
-                rowUsernameFlexShrink++;
-            }
-        }
+    let displayName = displayUsername(user, locale, teammateNameDisplay);
+    const showTeammateDisplay = displayName !== user?.username;
+    if (isCurrentUser) {
+        displayName = intl.formatMessage({id: 'channel_header.directchannel.you', defaultMessage: '{displayName} (you)'}, {displayName});
     }
 
-    const usernameTextStyle = useMemo(() => {
-        return [style.rowUsername, {flexShrink: rowUsernameFlexShrink}];
-    }, [user, rowUsernameFlexShrink]);
+    const userItemTestId = `${testID}.${user?.id}`;
+
+    const containerViewStyle = useMemo(() => {
+        return [
+            nonThemedStyles.row,
+            {
+                opacity: disabled ? 0.32 : 1,
+                paddingHorizontal: padding || undefined,
+            },
+            includeMargin && nonThemedStyles.margin,
+        ];
+    }, [disabled, padding, includeMargin]);
+
+    const onPress = useCallback(() => {
+        onUserPress?.(user);
+    }, [user, onUserPress]);
+
+    const onLongPress = useCallback(() => {
+        onUserLongPress?.(user);
+    }, [user, onUserLongPress]);
 
     return (
-        <View
-            style={[style.row, containerStyle]}
-            testID={userItemTestId}
+        <TouchableOpacity
+            onPress={onPress}
+            onLongPress={onLongPress}
+            disabled={!(onUserPress || onUserLongPress)}
         >
-            <View style={[style.rowPicture, pictureContainerStyle]}>
+            <View
+                ref={viewRef}
+                style={[containerViewStyle, containerStyle]}
+                testID={userItemTestId}
+            >
                 <ProfilePicture
                     author={user}
-                    size={24}
+                    size={size}
                     showStatus={false}
                     testID={`${userItemTestId}.profile_picture`}
+                    containerStyle={nonThemedStyles.profile}
                 />
+                <View style={nonThemedStyles.rowInfoBaseContainer}>
+                    <View style={nonThemedStyles.rowInfoContainer}>
+                        <Text
+                            style={style.rowFullname}
+                            numberOfLines={1}
+                            testID={`${userItemTestId}.display_name`}
+                        >
+                            {nonBreakingString(displayName)}
+                            {Boolean(showTeammateDisplay) && (
+                                <Text
+                                    style={style.rowUsername}
+                                    testID={`${userItemTestId}.username`}
+                                >
+                                    {nonBreakingString(` @${user!.username}`)}
+                                </Text>
+                            )}
+                            {Boolean(deleteAt) && (
+                                <Text
+                                    style={style.rowUsername}
+                                    testID={`${userItemTestId}.deactivated`}
+                                >
+                                    {nonBreakingString(` ${intl.formatMessage({id: 'mobile.user_list.deactivated', defaultMessage: 'Deactivated'})}`)}
+                                </Text>
+                            )}
+                        </Text>
+                        {showBadges && bot && (
+                            <BotTag
+                                testID={`${userItemTestId}.bot.tag`}
+                                style={nonThemedStyles.tag}
+                            />
+                        )}
+                        {showBadges && guest && (
+                            <GuestTag
+                                testID={`${userItemTestId}.guest.tag`}
+                                style={nonThemedStyles.tag}
+                            />
+                        )}
+                        {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji && !customStatusExpired) && (
+                            <CustomStatusEmoji
+                                customStatus={customStatus!}
+                                style={nonThemedStyles.icon}
+                            />
+                        )}
+                        {shared && (
+                            <CompassIcon
+                                name={'circle-multiple-outline'}
+                                size={16}
+                                color={theme.centerChannelColor}
+                                style={nonThemedStyles.icon}
+                            />
+                        )}
+                        <View style={nonThemedStyles.flex}/>
+                        {Boolean(rightDecorator) && rightDecorator}
+                    </View>
+                    {FooterComponent}
+                </View>
             </View>
-            <View
-                style={[style.rowInfo, {maxWidth: shared ? '75%' : '85%'}]}
-            >
-                {bot && <BotTag testID={`${userItemTestId}.bot.tag`}/>}
-                {guest && <GuestTag testID={`${userItemTestId}.guest.tag`}/>}
-                {Boolean(name.length) &&
-                    <Text
-                        style={style.rowFullname}
-                        numberOfLines={1}
-                        testID={`${userItemTestId}.display_name`}
-                    >
-                        {name}
-                    </Text>
-                }
-                {isCurrentUser &&
-                    <FormattedText
-                        id='suggestion.mention.you'
-                        defaultMessage=' (you)'
-                        style={style.rowUsername}
-                        testID={`${userItemTestId}.current_user_indicator`}
-                    />
-                }
-                {Boolean(user) && (
-                    <Text
-                        style={usernameTextStyle}
-                        numberOfLines={1}
-                        testID={`${userItemTestId}.username`}
-                    >
-                        {` @${user!.username}`}
-                    </Text>
-                )}
-            </View>
-            {Boolean(isCustomStatusEnabled && !bot && customStatus?.emoji && !customStatusExpired) && (
-                <CustomStatusEmoji
-                    customStatus={customStatus!}
-                    style={style.icon}
-                    testID={userItemTestId}
-                />
-            )}
-            {shared && (
-                <ChannelIcon
-                    name={name}
-                    isActive={false}
-                    isArchived={false}
-                    isInfo={true}
-                    isUnread={false}
-                    size={18}
-                    shared={true}
-                    type={General.DM_CHANNEL}
-                    style={style.icon}
-                />
-            )}
-        </View>
+        </TouchableOpacity>
     );
 };
 

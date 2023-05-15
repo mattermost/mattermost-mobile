@@ -47,7 +47,7 @@ export default function FileQuickAction({
         const picker = new PickerUtil(intl,
             onUploadFiles);
 
-        picker.attachFileFromFiles();
+        picker.attachFileFromFiles(undefined, true);
     }, [onUploadFiles]);
 
     const actionTestID = disabled ? `${testID}.disabled` : testID;
