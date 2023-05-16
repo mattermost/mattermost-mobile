@@ -7,6 +7,8 @@ import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
+import {getItemHeightWithDescription} from '@components/option_item';
+import {ITEM_HEIGHT} from '@components/slide_up_panel_item';
 import {Screens} from '@constants';
 import {PostPriorityColors, PostPriorityType} from '@constants/post';
 import {useTheme} from '@context/theme';
@@ -20,7 +22,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import PickerOption from './components/picker_option';
-import Footer from './footer';
+import Footer, {FOOTER_HEIGHT} from './footer';
 import {labels} from './utils';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
@@ -34,6 +36,11 @@ type Props = {
     updatePostPriority: (data: PostPriority) => void;
     closeButtonId: string;
 };
+
+const TITLE_HEIGHT = 30; // typography 600 line height
+const OPTIONS_PADDING = 12;
+const OPTIONS_SEPARATOR_HEIGHT = 1;
+const TOGGLE_OPTION_MARGIN_TOP = 16;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -59,16 +66,16 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 
     optionsContainer: {
-        paddingTop: 12,
+        paddingTop: OPTIONS_PADDING,
     },
 
     optionsSeparator: {
         backgroundColor: changeOpacity(theme.centerChannelColor, 0.08),
-        height: 1,
+        height: OPTIONS_SEPARATOR_HEIGHT,
     },
 
     toggleOptionContainer: {
-        marginTop: 16,
+        marginTop: TOGGLE_OPTION_MARGIN_TOP,
     },
 }));
 
@@ -98,17 +105,18 @@ const PostPriorityPicker = ({
     const displayPersistentNotifications = isPersistenNotificationsEnabled && data.priority === PostPriorityType.URGENT;
 
     const snapPoints = useMemo(() => {
-        let COMPONENT_HEIGHT = 280;
+        const paddingBottom = 10;
+        const bottomSheetAdjust = 5;
+        let COMPONENT_HEIGHT = TITLE_HEIGHT + OPTIONS_PADDING + FOOTER_HEIGHT + bottomSheetSnapPoint(3, ITEM_HEIGHT, bottom) + paddingBottom + bottomSheetAdjust;
 
         if (isPostAcknowledgementEnabled) {
-            COMPONENT_HEIGHT += 75;
-
+            COMPONENT_HEIGHT += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2);
             if (displayPersistentNotifications) {
-                COMPONENT_HEIGHT += 75;
+                COMPONENT_HEIGHT += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2);
             }
         }
 
-        return [1, bottomSheetSnapPoint(1, COMPONENT_HEIGHT, bottom)];
+        return [1, COMPONENT_HEIGHT];
     }, [displayPersistentNotifications, isPostAcknowledgementEnabled, bottom]);
 
     const handleUpdatePriority = useCallback((priority: PostPriority['priority']) => {
@@ -185,6 +193,7 @@ const PostPriorityPicker = ({
                                 icon='check-circle-outline'
                                 type='toggle'
                                 selected={data.requested_ack}
+                                descriptionNumberOfLines={2}
                             />
                         </View>
                         {displayPersistentNotifications && (
@@ -196,6 +205,7 @@ const PostPriorityPicker = ({
                                     icon='bell-ring-outline'
                                     type='toggle'
                                     selected={data.persistent_notifications}
+                                    descriptionNumberOfLines={2}
                                 />
                             </View>
                         )}
