@@ -415,12 +415,18 @@ platform :ios do
   end
 
   lane :update_identifiers do
-    # Set the name for the app
+    # Set the name for the app and share extension
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     update_info_plist(
         xcodeproj: './ios/Mattermost.xcodeproj',
         plist_path: 'Mattermost/Info.plist',
         display_name: app_name
+    )
+
+    update_info_plist(
+      xcodeproj: './ios/Mattermost.xcodeproj',
+      plist_path: 'MattermostShare/Info.plist',
+      display_name: app_name
     )
 
     # Set the notification service extension bundle identifier
@@ -563,20 +569,27 @@ platform :ios do
       json = JSON.parse(localization_file)
 
       plist_strings = ''
+      localized_strings = ''
       json.each do |key, value|
-        if key.match?('mobile.ios.plist')
-          unless value.nil? || value.empty?
+        unless value.nil? || value.empty?
+          if key.match?('mobile.ios.plist')
             plist_strings.concat("#{key.split('.').last} = \"#{value}\";\n")
+          else
+            value.gsub!('\\', '\\\\\\\\') # How to replace backslash with double backslash https://stackoverflow.com/a/6209532
+            value.gsub!('"', '\"')
+            localized_strings.concat("\"#{key}\" = \"#{value}\";\n")
           end
         end
       end
 
       plist_strings.gsub!('{applicationName}', "#{app_name}")
+      localized_strings.gsub!('{applicationName}', "#{app_name}")
 
       language = item.split('.').first
       project_localization_path = "../ios/Mattermost/i18n/#{language}.lproj"
       FileUtils.mkdir_p project_localization_path
       File.write("#{project_localization_path}/InfoPlist.strings", plist_strings)
+      File.write("#{project_localization_path}/Localizable.strings", localized_strings)
     end
   end
 
