@@ -14,8 +14,8 @@ import {useTheme} from '@context/theme';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import type {MessageBarType} from '@app/constants/calls';
 import type {CallsTheme} from '@calls/types/calls';
+import type {MessageBarType} from '@constants/calls';
 
 type Props = {
     type: MessageBarType;
