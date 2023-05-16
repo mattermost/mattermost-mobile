@@ -19,7 +19,7 @@ export type Props = BottomSheetFooterProps & {
 const TEXT_HEIGHT = 24; // typography 200 line height
 const BUTTON_PADDING = 15;
 const FOOTER_PADDING = 20;
-export const FOOTER_PADDING_BOTTOM_TABLET_ADJUST = 12;
+const FOOTER_PADDING_BOTTOM_TABLET_ADJUST = 12;
 export const FOOTER_HEIGHT = (FOOTER_PADDING * 2) + (BUTTON_PADDING * 2) + TEXT_HEIGHT;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({

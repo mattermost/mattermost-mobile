@@ -3,7 +3,7 @@
 
 import React, {useCallback, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Platform, View} from 'react-native';
+import {View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
@@ -22,7 +22,7 @@ import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import PickerOption from './components/picker_option';
-import Footer, {FOOTER_HEIGHT, FOOTER_PADDING_BOTTOM_TABLET_ADJUST} from './footer';
+import Footer, {FOOTER_HEIGHT} from './footer';
 import {labels} from './utils';
 
 import type {BottomSheetFooterProps} from '@gorhom/bottom-sheet';
@@ -108,9 +108,6 @@ const PostPriorityPicker = ({
         const paddingBottom = 10;
         const bottomSheetAdjust = 5;
         let COMPONENT_HEIGHT = TITLE_HEIGHT + OPTIONS_PADDING + FOOTER_HEIGHT + bottomSheetSnapPoint(3, ITEM_HEIGHT, bottom) + paddingBottom + bottomSheetAdjust;
-        if (isTablet && Platform.OS === 'ios') {
-            COMPONENT_HEIGHT += FOOTER_PADDING_BOTTOM_TABLET_ADJUST;
-        }
 
         if (isPostAcknowledgementEnabled) {
             COMPONENT_HEIGHT += OPTIONS_SEPARATOR_HEIGHT + TOGGLE_OPTION_MARGIN_TOP + getItemHeightWithDescription(2);
