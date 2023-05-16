@@ -16,12 +16,18 @@ export type Props = BottomSheetFooterProps & {
     onSubmit: () => void;
 }
 
+const TEXT_HEIGHT = 24; // typography 200 line height
+const BUTTON_PADDING = 15;
+const FOOTER_PADDING = 20;
+const FOOTER_PADDING_BOTTOM_TABLET_ADJUST = 12;
+export const FOOTER_HEIGHT = (FOOTER_PADDING * 2) + (BUTTON_PADDING * 2) + TEXT_HEIGHT;
+
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
         backgroundColor: theme.centerChannelBg,
         borderTopColor: changeOpacity(theme.centerChannelColor, 0.16),
         borderTopWidth: 1,
-        paddingTop: 20,
+        paddingTop: FOOTER_PADDING,
         flexDirection: 'row',
         paddingHorizontal: 20,
     },
@@ -30,7 +36,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         backgroundColor: changeOpacity(theme.buttonBg, 0.08),
         borderRadius: 4,
         flex: 1,
-        paddingVertical: 15,
+        paddingVertical: BUTTON_PADDING,
     },
     cancelButtonText: {
         color: theme.buttonBg,
@@ -42,7 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         borderRadius: 4,
         flex: 1,
         marginLeft: 8,
-        paddingVertical: 15,
+        paddingVertical: BUTTON_PADDING,
     },
     applyButtonText: {
         color: theme.buttonColor,
@@ -59,7 +65,7 @@ const PostPriorityPickerFooter = ({onCancel, onSubmit, ...props}: Props) => {
         <BottomSheetFooter {...props}>
             <View
                 style={[style.container, {
-                    paddingBottom: Platform.select({ios: (isTablet ? 20 : 32), android: 20}),
+                    paddingBottom: FOOTER_PADDING + Platform.select({ios: (isTablet ? FOOTER_PADDING_BOTTOM_TABLET_ADJUST : 0), default: 0}),
                 }]}
             >
                 <TouchableOpacity

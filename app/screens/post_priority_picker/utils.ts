@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {t} from '@app/i18n';
+import {t} from '@i18n';
 
 export const labels = {
     standard: {
