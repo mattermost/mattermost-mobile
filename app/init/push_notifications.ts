@@ -90,7 +90,7 @@ class PushNotifications {
                 if (isCRTEnabled && payload.root_id) {
                     const thread = await getThreadById(database, payload.root_id);
                     if (thread?.isFollowing) {
-                        markThreadAsRead(serverUrl, payload.team_id, payload.post_id);
+                        markThreadAsRead(serverUrl, payload.team_id, payload.root_id);
                     }
                 } else {
                     markChannelAsViewed(serverUrl, payload.channel_id);
