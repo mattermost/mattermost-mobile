@@ -312,7 +312,7 @@ export function filterProfilesMatchingTerm(users: UserProfile[], term: string): 
 
         return profileSuggestions.
             filter((suggestion) => suggestion !== '').
-            some((suggestion) => suggestion.startsWith(trimmedTerm));
+            some((suggestion) => suggestion.includes(trimmedTerm));
     });
 }
 
