@@ -4,7 +4,7 @@
 import {debounce, type DebouncedFunc} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {Alert, FlatList, type ListRenderItemInfo, StyleSheet, View, Platform} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import {switchToGlobalThreads} from '@actions/local/thread';
@@ -83,7 +83,7 @@ const FilteredList = ({
     const serverUrl = useServerUrl();
     const theme = useTheme();
     const {locale, formatMessage} = useIntl();
-    const flatListStyle = useMemo(() => ({flexGrow: 1, paddingBottom: keyboardHeight}), [keyboardHeight]);
+    const flatListStyle = useMemo(() => ({flexGrow: 1, paddingBottom: Platform.select({ios: keyboardHeight, default: undefined})}), [Platform.OS === 'ios' && keyboardHeight]);
     const [remoteChannels, setRemoteChannels] = useState<RemoteChannels>({archived: [], startWith: [], matches: []});
 
     const totalLocalResults = channelsMatchStart.length + channelsMatch.length + usersMatchStart.length;

@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {SectionList, type SectionListRenderItemInfo, StyleSheet} from 'react-native';
+import {SectionList, type SectionListRenderItemInfo, StyleSheet, Platform} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
@@ -50,7 +50,7 @@ const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, te
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [sections, setSections] = useState(buildSections(recentChannels));
-    const sectionListStyle = useMemo(() => ({paddingBottom: keyboardHeight}), [keyboardHeight]);
+    const sectionListStyle = useMemo(() => Platform.select({ios: {paddingBottom: keyboardHeight}, default: undefined}), [Platform.OS === 'ios' && keyboardHeight]);
 
     const onPress = useCallback(async (c: Channel | ChannelModel) => {
         await close();
