@@ -156,7 +156,7 @@ function HomeScreen(props: HomeProps) {
                         name={Screens.HOME}
                         options={{tabBarTestID: 'tab_bar.home.tab', unmountOnBlur: false, freezeOnBlur: true}}
                         listeners={() => ({
-                            tabDoublePress: () => {
+                            tabLongPress: () => {
                                 const {teams, currentTeam} = props;
                                 const currentIndex = teams.map((e) => e.id).indexOf(currentTeam);
                                 let nextIndex = currentIndex + 1;
