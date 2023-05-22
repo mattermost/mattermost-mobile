@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {SectionList, type SectionListRenderItemInfo, StyleSheet, Platform} from 'react-native';
+import {SectionList, type SectionListRenderItemInfo, StyleSheet} from 'react-native';
 import Animated, {FadeInDown, FadeOutUp} from 'react-native-reanimated';
 
 import {switchToChannelById} from '@actions/remote/channel';
@@ -17,7 +17,7 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
     close: () => Promise<void>;
-    keyboardHeight: number;
+    keyboardOverlap: number;
     recentChannels: ChannelModel[];
     showTeamName: boolean;
     testID?: string;
@@ -46,11 +46,11 @@ const buildSections = (recentChannels: ChannelModel[]) => {
     return sections;
 };
 
-const UnfilteredList = ({close, keyboardHeight, recentChannels, showTeamName, testID}: Props) => {
+const UnfilteredList = ({close, keyboardOverlap, recentChannels, showTeamName, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const [sections, setSections] = useState(buildSections(recentChannels));
-    const sectionListStyle = useMemo(() => Platform.select({ios: {paddingBottom: keyboardHeight}, default: undefined}), [Platform.OS === 'ios' && keyboardHeight]);
+    const sectionListStyle = useMemo(() => ({paddingBottom: keyboardOverlap}), [keyboardOverlap]);
 
     const onPress = useCallback(async (c: Channel | ChannelModel) => {
         await close();
