@@ -17,7 +17,7 @@ import Mentions from './mentions';
 import SavedMessages from './saved_messages';
 import Search from './search';
 
-import type {BottomTabBarProps, BottomTabNavigationEventMap} from '@react-navigation/bottom-tabs';
+import type {BottomTabBarProps} from '@react-navigation/bottom-tabs';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {

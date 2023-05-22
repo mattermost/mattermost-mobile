@@ -14,7 +14,7 @@ import {map} from 'rxjs/operators';
 
 import {handleTeamChange} from '@actions/remote/team';
 import {observeCurrentTeamId} from '@app/queries/servers/system';
-import {queryJoinedTeams, queryMyTeams} from '@app/queries/servers/team';
+import {queryJoinedTeams} from '@app/queries/servers/team';
 import ServerVersion from '@components/server_version';
 import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -33,7 +33,6 @@ import Search from './search';
 import TabBar from './tab_bar';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 if (Platform.OS === 'ios') {
@@ -45,7 +44,7 @@ enableFreeze(true);
 
 type HomeProps = LaunchProps & {
     componentId: string;
-	teams: MyTeamModel[];
+	teams: Array<{id: string; displayName: string}>;
 	currentTeam: string;
 };
 
@@ -156,8 +155,8 @@ function HomeScreen(props: HomeProps) {
                     <Tab.Screen
                         name={Screens.HOME}
                         options={{tabBarTestID: 'tab_bar.home.tab', unmountOnBlur: false, freezeOnBlur: true}}
-                        listeners={({navigation, route}) => ({
-                            tabDoublePress: (e) => {
+                        listeners={() => ({
+                            tabDoublePress: () => {
                                 const {teams, currentTeam} = props;
                                 const currentIndex = teams.map((e) => e.id).indexOf(currentTeam);
                                 let nextIndex = currentIndex + 1;
