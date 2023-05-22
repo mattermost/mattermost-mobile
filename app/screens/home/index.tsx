@@ -1,6 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
+import withObservables from '@nozbe/with-observables';
 import {createBottomTabNavigator, type BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
 import React, {useEffect} from 'react';
@@ -8,9 +10,14 @@ import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Platform} from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import {enableFreeze, enableScreens} from 'react-native-screens';
+import {map} from 'rxjs/operators';
 
+import {handleTeamChange} from '@actions/remote/team';
+import {observeCurrentTeamId} from '@app/queries/servers/system';
+import {queryJoinedTeams, queryMyTeams} from '@app/queries/servers/team';
 import ServerVersion from '@components/server_version';
 import {Events, Screens} from '@constants';
+import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {findChannels, popToRoot} from '@screens/navigation';
 import NavigationStore from '@store/navigation_store';
@@ -25,6 +32,8 @@ import SavedMessages from './saved_messages';
 import Search from './search';
 import TabBar from './tab_bar';
 
+import type {WithDatabaseArgs} from '@typings/database/database';
+import type MyTeamModel from '@typings/database/models/servers/my_team';
 import type {DeepLinkWithData, LaunchProps} from '@typings/launch';
 
 if (Platform.OS === 'ios') {
@@ -36,13 +45,29 @@ enableFreeze(true);
 
 type HomeProps = LaunchProps & {
     componentId: string;
+	teams: MyTeamModel[];
+	currentTeam: string;
 };
 
 const Tab = createBottomTabNavigator();
 
-export default function HomeScreen(props: HomeProps) {
+const withTeams = withObservables([], ({database}: WithDatabaseArgs) => {
+    const teams = queryJoinedTeams(database).observe().pipe(
+        // eslint-disable-next-line max-nested-callbacks
+        map((ts) => ts.map((t) => ({id: t.id, displayName: t.displayName}))),
+    );
+    const currentTeam = observeCurrentTeamId(database);
+
+    return {
+        currentTeam,
+        teams,
+    };
+});
+
+function HomeScreen(props: HomeProps) {
     const theme = useTheme();
     const intl = useIntl();
+    const serverUrl = useServerUrl();
 
     useEffect(() => {
         const listener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel' | 'Post' | 'Connection') => {
@@ -131,6 +156,17 @@ export default function HomeScreen(props: HomeProps) {
                     <Tab.Screen
                         name={Screens.HOME}
                         options={{tabBarTestID: 'tab_bar.home.tab', unmountOnBlur: false, freezeOnBlur: true}}
+                        listeners={({navigation, route}) => ({
+                            tabDoublePress: (e) => {
+                                const {teams, currentTeam} = props;
+                                const currentIndex = teams.map((e) => e.id).indexOf(currentTeam);
+                                let nextIndex = currentIndex + 1;
+                                if (nextIndex >= teams.length) {
+                                    nextIndex = 0;
+                                }
+                                handleTeamChange(serverUrl, teams[nextIndex].id);
+                            },
+                        })}
                     >
                         {() => <ChannelList {...props}/>}
                     </Tab.Screen>
@@ -160,3 +196,5 @@ export default function HomeScreen(props: HomeProps) {
         </>
     );
 }
+
+export default withDatabase(withTeams(HomeScreen));

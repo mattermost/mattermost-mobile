@@ -17,7 +17,7 @@ import Mentions from './mentions';
 import SavedMessages from './saved_messages';
 import Search from './search';
 
-import type {BottomTabBarProps} from '@react-navigation/bottom-tabs';
+import type {BottomTabBarProps, BottomTabNavigationEventMap} from '@react-navigation/bottom-tabs';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -164,16 +164,29 @@ function TabBar({state, descriptors, navigation, theme}: BottomTabBarProps & {th
                     const lastTab = state.history[state.history.length - 1];
                     const lastIndex = state.routes.findIndex((r) => r.key === lastTab.key);
                     const direction = lastIndex < index ? 'right' : 'left';
-                    const event = navigation.emit({
-                        type: 'tabPress',
-                        target: route.key,
-                        canPreventDefault: true,
-                    });
-                    DeviceEventEmitter.emit('tabPress');
-                    if (!isFocused && !event.defaultPrevented) {
-                        // The `merge: true` option makes sure that the params inside the tab screen are preserved
-                        navigation.navigate({params: {direction}, name: route.name, merge: false});
-                        NavigationStore.setVisibleTap(route.name);
+
+                    if (isFocused) {
+                        //double tab
+                        DeviceEventEmitter.emit('tabDoublePress');
+                        navigation.emit({
+                            type: 'tabDoublePress',
+                            target: route.key,
+                            canPreventDefault: true,
+                        });
+                    } else {
+                        const event = navigation.emit({
+                            type: 'tabPress',
+                            target: route.key,
+                            canPreventDefault: true,
+                        });
+
+                        //single tab
+                        DeviceEventEmitter.emit('tabPress');
+                        if (!event.defaultPrevented) {
+                            // The `merge: true` option makes sure that the params inside the tab screen are preserved
+                            navigation.navigate({params: {direction}, name: route.name, merge: false});
+                            NavigationStore.setVisibleTap(route.name);
+                        }
                     }
                 };
 
