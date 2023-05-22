@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
+import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View, StyleSheet} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {deletePost, editPost} from '@actions/remote/post';
@@ -19,7 +19,6 @@ import {useInputPropagation} from '@hooks/input';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import PostError from '@screens/edit_post/post_error';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
-import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import EditPostInput, {type EditPostInputRef} from './edit_post_input';
 
@@ -28,21 +27,18 @@ import type {AvailableScreens} from '@typings/screens/navigation';
 
 const AUTOCOMPLETE_SEPARATION = 8;
 
-const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
-    return {
-        body: {
-            flex: 1,
-            backgroundColor: changeOpacity(theme.centerChannelColor, 0.03),
-        },
-        container: {
-            flex: 1,
-        },
-        loader: {
-            flex: 1,
-            alignItems: 'center',
-            justifyContent: 'center',
-        },
-    };
+const styles = StyleSheet.create({
+    body: {
+        flex: 1,
+    },
+    container: {
+        flex: 1,
+    },
+    loader: {
+        flex: 1,
+        alignItems: 'center',
+        justifyContent: 'center',
+    },
 });
 
 const RIGHT_BUTTON = buildNavigationButton('edit-post', 'edit_post.save.button');
@@ -72,7 +68,6 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
-    const styles = getStyleSheet(theme);
     const keyboardHeight = useKeyboardHeight();
     const insets = useSafeAreaInsets();
     const dimensions = useWindowDimensions();
@@ -212,11 +207,14 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     useAndroidHardwareBackHandler(componentId, onClose);
 
     const bottomSpace = (dimensions.height - containerHeight - modalPosition);
-    const autocompletePosition = Platform.select({
+    const keyboardOverlap = Platform.select({
         ios: isTablet ? Math.max(0, keyboardHeight - bottomSpace) : keyboardHeight || insets.bottom,
         default: 0,
-    }) + AUTOCOMPLETE_SEPARATION;
+    });
+    const autocompletePosition = keyboardOverlap + AUTOCOMPLETE_SEPARATION;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
+
+    const inputHeight = containerHeight - keyboardOverlap;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);
 
@@ -246,6 +244,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
                         />
                     }
                     <EditPostInput
+                        inputHeight={inputHeight}
                         hasError={Boolean(errorLine)}
                         message={postMessage}
                         onChangeText={onInputChangeText}
