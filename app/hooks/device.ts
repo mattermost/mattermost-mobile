@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {type RefObject, useEffect, useRef, useState} from 'react';
-import {AppState, Keyboard, NativeEventEmitter, NativeModules, Platform, View} from 'react-native';
+import {AppState, Keyboard, NativeEventEmitter, NativeModules, Platform, useWindowDimensions, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {Device} from '@constants';
@@ -110,7 +110,7 @@ export function useKeyboardHeight(keyboardTracker?: React.RefObject<KeyboardTrac
     return height;
 }
 
-export function useModalPosition(viewRef: RefObject<View>, deps: React.DependencyList = []) {
+export function useViewPosition(viewRef: RefObject<View>, deps: React.DependencyList = []) {
     const [modalPosition, setModalPosition] = useState(0);
     const isTablet = useIsTablet();
     const height = useKeyboardHeight();
@@ -126,4 +126,22 @@ export function useModalPosition(viewRef: RefObject<View>, deps: React.Dependenc
     }, [...deps, isTablet, height]);
 
     return modalPosition;
+}
+
+export function useKeyboardOverlap(viewRef: RefObject<View>, containerHeight: number) {
+    const keyboardHeight = useKeyboardHeight();
+    const isTablet = useIsTablet();
+    const viewPosition = useViewPosition(viewRef, [containerHeight]);
+    const dimensions = useWindowDimensions();
+    const insets = useSafeAreaInsets();
+
+    const bottomSpace = (dimensions.height - containerHeight - viewPosition);
+    const tabletOverlap = Math.max(0, keyboardHeight - bottomSpace);
+    const phoneOverlap = keyboardHeight || insets.bottom;
+    const overlap = Platform.select({
+        ios: isTablet ? tabletOverlap : phoneOverlap,
+        default: 0,
+    });
+
+    return overlap;
 }
