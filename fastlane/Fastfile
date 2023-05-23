@@ -535,7 +535,7 @@ platform :ios do
 
     # Sync the provisioning profiles using match
     if ENV['SYNC_PROVISIONING_PROFILES'] == 'true'
-      if !ENV['MATCH_PASSWORD'].nil? && !ENV['MATCH_PASSWORD'].empty?
+      if !ENV['FASTLANE_PASSWORD'].nil? && !ENV['FASTLANE_PASSWORD'].empty?
         match(type: ENV['MATCH_TYPE'] || 'adhoc')
       end
       if !ENV['IOS_API_KEY_ID'].nil? && !ENV['IOS_API_KEY_ID'].empty?
