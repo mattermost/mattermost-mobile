@@ -1055,5 +1055,6 @@
     "post_priority.picker.label.persistent_notifications": "永続的な通知を送信する",
     "post_priority.picker.label.persistent_notifications.description": "受信者が確認処理または返信するまで、5分ごとに通知されます。",
     "post_priority.picker.label.request_ack": "確認を要求する",
-    "post_priority.picker.label.request_ack.description": "受信者が確認処理または返信するまで、5分ごとに通知されます。"
+    "post_priority.picker.label.request_ack.description": "受信者が確認処理または返信するまで、5分ごとに通知されます。",
+    "mobile.calls_phone": "Phone"
 }
