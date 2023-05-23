@@ -79,14 +79,7 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const isTablet = useIsTablet();
 
     useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [{
-                color: theme.sidebarHeaderTextColor,
-                text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
-                ...RIGHT_BUTTON,
-                enabled: false,
-            }],
-        });
+        toggleSaveButton(false);
     }, []);
 
     useEffect(() => {
