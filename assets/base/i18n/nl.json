@@ -990,7 +990,7 @@
     "mobile.calls_host_rec_error_title": "Er ging iets mis met de opname",
     "mobile.calls_host_rec_error": "Probeer opnieuw op te nemen. Je kan ook contact opnemen met jouuw systeembeheerder voor hulp bij het oplossen van problemen.",
     "notification.no_post": "Het bericht werd niet gevonden.",
-    "notification.no_connection": "De server is onbereikbaar en we konden het meldingskanaal / team niet ophalen.",
+    "notification.no_connection": "De server is onbereikbaar en het was niet mogelijk om de specifieke berichtinformatie voor de melding op te halen.",
     "invite.summary.back": "Terug",
     "channel_notification_preferences.unmute_content": "Kanaal niet langer dempen",
     "channel_notification_preferences.thread_replies": "Reacties op draadjes",
