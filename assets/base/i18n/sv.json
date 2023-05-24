@@ -1002,7 +1002,7 @@
     "channel_notification_preferences.muted_title": "Kanalen är mjutad",
     "channel_notification_preferences.muted_content": "Du kan ändra notifieringsinställningarna, men eftersom kanalen är mjutad kommer du inte få notifieringar.",
     "channel_notification_preferences.default": "(standard)",
-    "notification.no_connection": "Servern är otillgänglig och det gick inte att hämta information om notifieringen.",
+    "notification.no_connection": "Servern är otillgänglig och det gick inte att hämta meddelandeinformationen för notifieringen.",
     "snack.bar.channel.members.added": "{numMembers, number} {numMembers, plural, one {medlem tillagd} other {medlemmar tillagda}}",
     "mobile.diagnostic_id.empty": "Det saknas ett DiagnosticId-värde på servern. Kontakta din systemadministratör för att kontrollera värdet och starta om servern.",
     "mobile.channel_add_members.error": "Det har uppstått ett fel och det gick inte att lägga till medlemmarna till kanalen.",
