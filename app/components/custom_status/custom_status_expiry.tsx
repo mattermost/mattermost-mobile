@@ -3,18 +3,17 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import moment, {Moment} from 'moment-timezone';
+import moment, {type Moment} from 'moment-timezone';
 import React from 'react';
-import {Text, TextStyle} from 'react-native';
+import {Text, type TextStyle} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
 import FormattedDate from '@components/formatted_date';
 import FormattedText from '@components/formatted_text';
 import FormattedTime from '@components/formatted_time';
-import {Preferences} from '@constants';
-import {getPreferenceAsBool} from '@helpers/api/preference';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {observeCurrentUser} from '@queries/servers/user';
 import {getCurrentMomentForTimezone} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -24,7 +23,7 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
 
 type Props = {
-    currentUser: UserModel;
+    currentUser?: UserModel;
     isMilitaryTime: boolean;
     showPrefix?: boolean;
     showTimeCompulsory?: boolean;
@@ -134,10 +133,10 @@ const CustomStatusExpiry = ({currentUser, isMilitaryTime, showPrefix, showTimeCo
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
     currentUser: observeCurrentUser(database),
-    isMilitaryTime: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
+    isMilitaryTime: queryDisplayNamePreferences(database).
         observeWithColumns(['value']).pipe(
             switchMap(
-                (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
+                (preferences) => of$(getDisplayNamePreferenceAsBool(preferences, 'use_military_time')),
             ),
         ),
 }));

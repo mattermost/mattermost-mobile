@@ -2,12 +2,12 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import PasteableTextInput, {PastedFile, PasteInputRef} from '@mattermost/react-native-paste-input';
+import PasteableTextInput, {type PastedFile, type PasteInputRef} from '@mattermost/react-native-paste-input';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
+import {type IntlShape, useIntl} from 'react-intl';
 import {
-    Alert, AppState, AppStateStatus, DeviceEventEmitter, EmitterSubscription, Keyboard,
-    KeyboardTypeOptions, NativeSyntheticEvent, Platform, TextInputSelectionChangeEventData,
+    Alert, AppState, type AppStateStatus, DeviceEventEmitter, type EmitterSubscription, Keyboard,
+    type NativeSyntheticEvent, Platform, type TextInputSelectionChangeEventData,
 } from 'react-native';
 import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 
@@ -17,11 +17,13 @@ import {Events, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {useIsTablet} from '@hooks/device';
+import {useInputPropagation} from '@hooks/input';
 import {t} from '@i18n';
 import NavigationStore from '@store/navigation_store';
 import {extractFileInfo} from '@utils/file';
-import {switchKeyboardForCodeBlocks} from '@utils/markdown';
 import {changeOpacity, makeStyleSheetFromTheme, getKeyboardAppearanceFromTheme} from '@utils/theme';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     testID?: string;
@@ -119,13 +121,13 @@ export default function PostInput({
     const style = getStyleSheet(theme);
     const serverUrl = useServerUrl();
     const managedConfig = useManagedConfig<ManagedConfig>();
+    const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
     const lastTypingEventSent = useRef(0);
 
     const lastNativeValue = useRef('');
     const previousAppState = useRef(AppState.currentState);
 
-    const [keyboardType, setKeyboardType] = useState<KeyboardTypeOptions>('default');
     const [longMessageAlertShown, setLongMessageAlertShown] = useState(false);
 
     const disableCopyAndPaste = managedConfig.copyAndPasteProtection === 'true';
@@ -134,12 +136,8 @@ export default function PostInput({
         return {...style.input, maxHeight};
     }, [maxHeight, style.input]);
 
-    const blur = () => {
-        inputRef.current?.blur();
-    };
-
     const handleAndroidKeyboard = () => {
-        blur();
+        onBlur();
     };
 
     const onBlur = useCallback(() => {
@@ -180,24 +178,17 @@ export default function PostInput({
     const handlePostDraftSelectionChanged = useCallback((event: NativeSyntheticEvent<TextInputSelectionChangeEventData> | null, fromHandleTextChange = false) => {
         const cp = fromHandleTextChange ? cursorPosition : event!.nativeEvent.selection.end;
 
-        if (Platform.OS === 'ios') {
-            const newKeyboardType = switchKeyboardForCodeBlocks(value, cp);
-            setKeyboardType(newKeyboardType);
-        }
-
         updateCursorPosition(cp);
     }, [updateCursorPosition, cursorPosition]);
 
     const handleTextChange = useCallback((newValue: string) => {
+        if (!shouldProcessEvent(newValue)) {
+            return;
+        }
         updateValue(newValue);
         lastNativeValue.current = newValue;
 
         checkMessageLength(newValue);
-
-        // Workaround to avoid iOS emdash autocorrect in Code Blocks
-        if (Platform.OS === 'ios') {
-            handlePostDraftSelectionChanged(null, true);
-        }
 
         if (
             newValue &&
@@ -211,7 +202,6 @@ export default function PostInput({
     }, [
         updateValue,
         checkMessageLength,
-        handlePostDraftSelectionChanged,
         timeBetweenUserTypingUpdatesMilliseconds,
         channelId,
         rootId,
@@ -228,7 +218,7 @@ export default function PostInput({
 
     const handleHardwareEnterPress = useCallback((keyEvent: {pressedKey: string}) => {
         const topScreen = NavigationStore.getVisibleScreen();
-        let sourceScreen = Screens.CHANNEL;
+        let sourceScreen: AvailableScreens = Screens.CHANNEL;
         if (rootId) {
             sourceScreen = Screens.THREAD;
         } else if (isTablet) {
@@ -239,10 +229,16 @@ export default function PostInput({
                 case 'enter':
                     sendMessage();
                     break;
-                case 'shift-enter':
-                    updateValue((v) => v.substring(0, cursorPosition) + '\n' + v.substring(cursorPosition));
+                case 'shift-enter': {
+                    let newValue: string;
+                    updateValue((v) => {
+                        newValue = v.substring(0, cursorPosition) + '\n' + v.substring(cursorPosition);
+                        return newValue;
+                    });
                     updateCursorPosition((pos) => pos + 1);
+                    propagateValue(newValue!);
                     break;
+                }
             }
         }
     }, [sendMessage, updateValue, cursorPosition, isTablet]);
@@ -281,18 +277,19 @@ export default function PostInput({
                 const draft = value ? `${value} ${text} ` : `${text} `;
                 updateValue(draft);
                 updateCursorPosition(draft.length);
+                propagateValue(draft);
                 inputRef.current?.focus();
             }
         });
-        return () => listener.remove();
-    }, [updateValue, value, channelId, rootId]);
+        return () => {
+            listener.remove();
+            updateDraftMessage(serverUrl, channelId, rootId, lastNativeValue.current); // safe draft on unmount
+        };
+    }, [updateValue, channelId, rootId]);
 
     useEffect(() => {
         if (value !== lastNativeValue.current) {
-            // May change when we implement Fabric
-            inputRef.current?.setNativeProps({
-                text: value,
-            });
+            propagateValue(value);
             lastNativeValue.current = value;
         }
     }, [value]);
@@ -307,24 +304,25 @@ export default function PostInput({
     return (
         <PasteableTextInput
             allowFontScaling={true}
-            testID={testID}
-            ref={inputRef}
             disableCopyPaste={disableCopyAndPaste}
-            style={pasteInputStyle}
+            disableFullscreenUI={true}
+            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+            multiline={true}
+            onBlur={onBlur}
             onChangeText={handleTextChange}
+            onFocus={onFocus}
+            onPaste={onPaste}
             onSelectionChange={handlePostDraftSelectionChanged}
             placeholder={intl.formatMessage(getPlaceHolder(rootId), {channelDisplayName})}
             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-            multiline={true}
-            onBlur={onBlur}
-            onFocus={onFocus}
-            blurOnSubmit={false}
+            ref={inputRef}
+            smartPunctuation='disable'
+            submitBehavior='newline'
+            style={pasteInputStyle}
+            testID={testID}
             underlineColorAndroid='transparent'
-            keyboardType={keyboardType}
-            onPaste={onPaste}
-            disableFullscreenUI={true}
             textContentType='none'
-            keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
+            value={value}
         />
     );
 }

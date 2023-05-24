@@ -1,16 +1,15 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Dispatch, RefObject, SetStateAction} from 'react';
-import Animated from 'react-native-reanimated';
-
-import {SearchRef} from '@components/search';
-import {TeamModel} from '@database/models/server';
+import React, {type Dispatch, type RefObject, type SetStateAction} from 'react';
 
 import Modifiers from './modifiers';
 import RecentSearches from './recent_searches';
 
+import type {SearchRef} from '@components/search';
+import type TeamModel from '@typings/database/models/servers/team';
 import type TeamSearchHistoryModel from '@typings/database/models/servers/team_search_history';
+import type Animated from 'react-native-reanimated';
 
 type Props = {
     recentSearches: TeamSearchHistoryModel[];

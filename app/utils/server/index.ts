@@ -1,19 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
-import {Alert, AlertButton} from 'react-native';
+import {Alert, type AlertButton} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import {Screens, Sso, SupportedServer, Launch} from '@constants';
 import {dismissBottomSheet, showModal} from '@screens/navigation';
-import {getErrorMessage} from '@utils/client_error';
+import {getErrorMessage} from '@utils/errors';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {changeOpacity} from '@utils/theme';
 import {tryOpenURL} from '@utils/url';
 
 import type ServersModel from '@typings/database/models/app/servers';
 import type {DeepLinkWithData} from '@typings/launch';
+import type {IntlShape} from 'react-intl';
 
 export function isSupportedServer(currentVersion: string) {
     return isMinimumServerVersion(currentVersion, SupportedServer.MAJOR_VERSION, SupportedServer.MIN_VERSION, SupportedServer.PATCH_VERSION);
@@ -60,11 +60,11 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
     const isLicensed = license.IsLicensed === 'true';
     const samlEnabled = config.EnableSaml === 'true' && isLicensed && license.SAML === 'true';
     const gitlabEnabled = config.EnableSignUpWithGitLab === 'true';
-    const isMinServerVersionForFreeOAuth = isMinimumServerVersion(config.Version, 7, 6);
+    const isMinServerVersionForCloudOAuthChanges = isMinimumServerVersion(config.Version, 7, 6);
     let googleEnabled = false;
     let o365Enabled = false;
     let openIdEnabled = false;
-    if (isMinServerVersionForFreeOAuth) {
+    if (isMinServerVersionForCloudOAuthChanges) {
         googleEnabled = config.EnableSignUpWithGoogle === 'true';
         o365Enabled = config.EnableSignUpWithOffice365 === 'true';
         openIdEnabled = config.EnableSignUpWithOpenId === 'true';
@@ -75,12 +75,12 @@ export function loginOptions(config: ClientConfig, license: ClientLicense) {
     }
     const ldapEnabled = isLicensed && config.EnableLdap === 'true' && license.LDAP === 'true';
     const hasLoginForm = config.EnableSignInWithEmail === 'true' || config.EnableSignInWithUsername === 'true' || ldapEnabled;
-    const ssoOptions: Record<string, boolean> = {
-        [Sso.SAML]: samlEnabled,
-        [Sso.GITLAB]: gitlabEnabled,
-        [Sso.GOOGLE]: googleEnabled,
-        [Sso.OFFICE365]: o365Enabled,
-        [Sso.OPENID]: openIdEnabled,
+    const ssoOptions: SsoWithOptions = {
+        [Sso.SAML]: {enabled: samlEnabled, text: config.SamlLoginButtonText},
+        [Sso.GITLAB]: {enabled: gitlabEnabled},
+        [Sso.GOOGLE]: {enabled: googleEnabled},
+        [Sso.OFFICE365]: {enabled: o365Enabled},
+        [Sso.OPENID]: {enabled: openIdEnabled, text: config.OpenIdButtonText},
     };
     const enabledSSOs = Object.keys(ssoOptions).filter((key) => ssoOptions[key]);
     const numberSSOs = enabledSSOs.length;
@@ -175,7 +175,7 @@ export async function alertServerRemove(displayName: string, onPress: () => void
     );
 }
 
-export function alertServerError(intl: IntlShape, error: ClientErrorProps) {
+export function alertServerError(intl: IntlShape, error: unknown) {
     const message = getErrorMessage(error, intl);
     Alert.alert(
         intl.formatMessage({

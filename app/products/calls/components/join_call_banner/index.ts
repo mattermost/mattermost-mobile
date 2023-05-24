@@ -3,16 +3,15 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
+import moment from 'moment-timezone';
 import {of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
 import JoinCallBanner from '@calls/components/join_call_banner/join_call_banner';
 import {observeIsCallLimitRestricted} from '@calls/observers';
-import {observeCallsState, observeCurrentCall} from '@calls/state';
+import {observeCallsState} from '@calls/state';
 import {idsAreEqual} from '@calls/utils';
-import {observeChannel} from '@queries/servers/channel';
 import {queryUsersById} from '@queries/servers/user';
-import {isDMorGM} from '@utils/channel';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
@@ -26,47 +25,24 @@ const enhanced = withObservables(['serverUrl', 'channelId'], ({
     channelId,
     database,
 }: OwnProps & WithDatabaseArgs) => {
-    const channel = observeChannel(database, channelId);
-    const displayName = channel.pipe(
-        switchMap((c) => of$(c?.displayName)),
-        distinctUntilChanged(),
-    );
-    const channelIsDMorGM = channel.pipe(
-        switchMap((chan) => of$(chan ? isDMorGM(chan) : false)),
-        distinctUntilChanged(),
-    );
-    const callsState = observeCallsState(serverUrl);
-    const participants = callsState.pipe(
+    const callsState = observeCallsState(serverUrl).pipe(
         switchMap((state) => of$(state.calls[channelId])),
+    );
+    const participants = callsState.pipe(
         distinctUntilChanged((prev, curr) => prev?.participants === curr?.participants), // Did the participants object ref change?
         switchMap((call) => (call ? of$(Object.keys(call.participants)) : of$([]))),
         distinctUntilChanged((prev, curr) => idsAreEqual(prev, curr)), // Continue only if we have a different set of participant ids
         switchMap((ids) => (ids.length > 0 ? queryUsersById(database, ids).observeWithColumns(['last_picture_update']) : of$([]))),
     );
-    const currentCallChannelId = observeCurrentCall().pipe(
-        switchMap((call) => of$(call?.channelId || undefined)),
-        distinctUntilChanged(),
-    );
-    const inACall = currentCallChannelId.pipe(
-        switchMap((id) => of$(Boolean(id))),
-        distinctUntilChanged(),
-    );
-    const currentCallChannelName = currentCallChannelId.pipe(
-        switchMap((id) => observeChannel(database, id || '')),
-        switchMap((c) => of$(c ? c.displayName : '')),
-        distinctUntilChanged(),
-    );
     const channelCallStartTime = callsState.pipe(
-        switchMap((cs) => of$(cs.calls[channelId]?.startTime || 0)),
+
+        // if for some reason we don't have a startTime, use 'a few seconds ago' instead of '53 years ago'
+        switchMap((state) => of$(state && state.startTime ? state.startTime : moment.now())),
         distinctUntilChanged(),
     );
 
     return {
-        displayName,
-        channelIsDMorGM,
         participants,
-        inACall,
-        currentCallChannelName,
         channelCallStartTime,
         limitRestrictedInfo: observeIsCallLimitRestricted(database, serverUrl, channelId),
     };

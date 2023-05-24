@@ -2,19 +2,21 @@
 // See LICENSE.txt for license information.
 
 import {Q} from '@nozbe/watermelondb';
-import Model from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
 import {
     transformThreadRecord,
     transformThreadParticipantRecord,
+    transformThreadInTeamRecord,
 } from '@database/operator/server_data_operator/transformers/thread';
-import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {getRawRecordPairs, getUniqueRawsBy} from '@database/operator/utils/general';
 import {sanitizeThreadParticipants} from '@database/operator/utils/thread';
 import {logWarning} from '@utils/log';
 
+import type ServerDataOperatorBase from '.';
 import type Database from '@nozbe/watermelondb/Database';
-import type {HandleThreadsArgs, HandleThreadParticipantsArgs} from '@typings/database/database';
+import type Model from '@nozbe/watermelondb/Model';
+import type {HandleThreadsArgs, HandleThreadParticipantsArgs, HandleThreadInTeamArgs} from '@typings/database/database';
 import type ThreadModel from '@typings/database/models/servers/thread';
 import type ThreadInTeamModel from '@typings/database/models/servers/thread_in_team';
 import type ThreadParticipantModel from '@typings/database/models/servers/thread_participant';
@@ -22,14 +24,16 @@ import type ThreadParticipantModel from '@typings/database/models/servers/thread
 const {
     THREAD,
     THREAD_PARTICIPANT,
+    THREADS_IN_TEAM,
 } = MM_TABLES.SERVER;
 
 export interface ThreadHandlerMix {
     handleThreads: ({threads, teamId, prepareRecordsOnly}: HandleThreadsArgs) => Promise<Model[]>;
     handleThreadParticipants: ({threadsParticipants, prepareRecordsOnly}: HandleThreadParticipantsArgs) => Promise<ThreadParticipantModel[]>;
+    handleThreadInTeam: ({threadsMap, prepareRecordsOnly}: HandleThreadInTeamArgs) => Promise<ThreadInTeamModel[]>;
 }
 
-const ThreadHandler = (superclass: any) => class extends superclass {
+const ThreadHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
      * handleThreads: Handler responsible for the Create/Update operations occurring on the Thread table from the 'Server' schema
      * @param {HandleThreadsArgs} handleThreads
@@ -49,11 +53,11 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         const uniqueThreads = getUniqueRawsBy({
             raws: threads,
             key: 'id',
-        }) as Thread[];
+        }) as ThreadWithLastFetchedAt[];
 
         // Seperate threads to be deleted & created/updated
         const deletedThreadIds: string[] = [];
-        const createOrUpdateThreads: Thread[] = [];
+        const createOrUpdateThreads: ThreadWithLastFetchedAt[] = [];
         uniqueThreads.forEach((thread) => {
             if (thread.delete_at > 0) {
                 deletedThreadIds.push(thread.id);
@@ -106,7 +110,7 @@ const ThreadHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly: true,
             createOrUpdateRawValues: createOrUpdateThreads,
             tableName: THREAD,
-        }) as ThreadModel[];
+        }, 'handleThreads(NEVER)');
 
         // Add the models to be batched here
         const batch: Model[] = [...preparedThreads];
@@ -120,11 +124,13 @@ const ThreadHandler = (superclass: any) => class extends superclass {
                 threadsMap: {[teamId]: threads},
                 prepareRecordsOnly: true,
             }) as ThreadInTeamModel[];
-            batch.push(...threadsInTeam);
+            if (threadsInTeam.length) {
+                batch.push(...threadsInTeam);
+            }
         }
 
         if (batch.length && !prepareRecordsOnly) {
-            await this.batchRecords(batch);
+            await this.batchRecords(batch, 'handleThreads');
         }
 
         return batch;
@@ -175,10 +181,57 @@ const ThreadHandler = (superclass: any) => class extends superclass {
         }
 
         if (batchRecords?.length) {
-            await this.batchRecords(batchRecords);
+            await this.batchRecords(batchRecords, 'handleThreadParticipants');
         }
 
         return batchRecords;
+    };
+
+    handleThreadInTeam = async ({threadsMap, prepareRecordsOnly = false}: HandleThreadInTeamArgs): Promise<ThreadInTeamModel[]> => {
+        if (!threadsMap || !Object.keys(threadsMap).length) {
+            logWarning(
+                'An empty or undefined "threadsMap" object has been passed to the handleReceivedPostForChannel method',
+            );
+            return [];
+        }
+
+        const create: ThreadInTeam[] = [];
+        const teamIds = Object.keys(threadsMap);
+        for await (const teamId of teamIds) {
+            const threadIds = threadsMap[teamId].map((thread) => thread.id);
+            const chunks = await (this.database as Database).get<ThreadInTeamModel>(THREADS_IN_TEAM).query(
+                Q.where('team_id', teamId),
+                Q.where('thread_id', Q.oneOf(threadIds)),
+            ).fetch();
+            const chunksMap = chunks.reduce((result: Record<string, ThreadInTeamModel>, chunk) => {
+                result[chunk.threadId] = chunk;
+                return result;
+            }, {});
+
+            for (const thread of threadsMap[teamId]) {
+                const chunk = chunksMap[thread.id];
+
+                // Create if the chunk is not found
+                if (!chunk) {
+                    create.push({
+                        thread_id: thread.id,
+                        team_id: teamId,
+                    });
+                }
+            }
+        }
+
+        const threadsInTeam = (await this.prepareRecords({
+            createRaws: getRawRecordPairs(create),
+            transformer: transformThreadInTeamRecord,
+            tableName: THREADS_IN_TEAM,
+        })) as ThreadInTeamModel[];
+
+        if (threadsInTeam?.length && !prepareRecordsOnly) {
+            await this.batchRecords(threadsInTeam, 'handleThreadInTeam');
+        }
+
+        return threadsInTeam;
     };
 };
 

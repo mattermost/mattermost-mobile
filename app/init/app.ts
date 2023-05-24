@@ -52,6 +52,6 @@ export async function start() {
 
     registerNavigationListeners();
     registerScreens();
-    await initialLaunch();
-    WebsocketManager.init(serverCredentials);
+    await WebsocketManager.init(serverCredentials);
+    initialLaunch();
 }

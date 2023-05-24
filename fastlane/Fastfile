@@ -101,7 +101,7 @@ lane :set_app_version do
     )
 
     if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
-      msg = ENV['INCREMENT_VERSION_NUMBER_MESSAGE'] || 'Bump app version number to '
+      msg = ENV['INCREMENT_VERSION_NUMBER_MESSAGE'] || 'Bump app version number to'
       commit_message = "#{msg} #{version_number.to_s}"
       build_folder_path = Dir[File.expand_path('..')].first
       repo_path = (sh "git -C #{build_folder_path} rev-parse --show-toplevel").strip
@@ -132,7 +132,7 @@ lane :set_app_build_number do
 
 
     if ENV['COMMIT_CHANGES_TO_GIT'] == 'true'
-      msg = ENV['INCREMENT_BUILD_NUMBER_MESSAGE'] || 'Bump app build number to '
+      msg = ENV['INCREMENT_BUILD_NUMBER_MESSAGE'] || 'Bump app build number to'
       commit_message = "#{msg} #{build_number.to_s}"
       build_folder_path = Dir[File.expand_path('..')].first
       repo_path = (sh "git -C #{build_folder_path} rev-parse --show-toplevel").strip
@@ -144,6 +144,12 @@ lane :set_app_build_number do
       end
     end
   end
+end
+
+desc 'Increments version and build number for both Android and iOS'
+lane :set_app_version_build do
+  set_app_version
+  set_app_build_number
 end
 
 desc 'Configure the app before building'
@@ -181,17 +187,45 @@ lane :configure do
   configured = true
 end
 
+desc 'Set Sentry upload properties'
+lane :link_sentry do |options|
+  if ENV['SENTRY_ENABLED'] == 'true'
+    os_type = options[:os_type].downcase
+    if os_type == 'ios'
+      project_dir = 'ios/'
+      sentry_project = ENV['SENTRY_PROJECT_IOS']
+    elsif os_type == 'android'
+      project_dir = 'android/'
+      sentry_project = ENV['SENTRY_PROJECT_ANDROID']
+    end
+    url = ENV['SENTRY_URL'] || 'https://sentry.io'
+    File.open("../#{project_dir}sentry.properties", 'w+') do |f|
+      UI.message('Creating sentry.properties from environment')
+      f.write(
+        "defaults.url=#{url}\n"\
+        "defaults.org=#{ENV['SENTRY_ORG']}\n"\
+        "defaults.project=#{sentry_project}\n"\
+        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}\n"
+      )
+    end
+  else
+    UI.message('Not creating sentry.properties because Sentry is disabled')
+  end
+end
+
 desc 'Upload file to s3'
 lane :upload_file_to_s3 do |options|
   os_type = options[:os_type].downcase
-  extension = os_type == "android" ? "*.apk" : "*.ipa"
+  extensions = os_type == "android" ? ["*.apk", "*.aab"] : ["*.ipa"]
   build_folder_path = Dir[File.expand_path('..')].first
   files = []
 
   unless options[:file].nil? || options[:file].empty?
     files.push("#{build_folder_path}/#{options[:file]}")
   else
-    files = Dir.glob("#{build_folder_path}/#{extension}").select { |f| File.file? f}
+    extensions.each do |extension|
+      files.push(*Dir.glob("#{build_folder_path}/#{extension}").select { |f| File.file? f})
+    end
   end
 
   unless ENV['AWS_BUCKET_NAME'].nil? || ENV['AWS_BUCKET_NAME'].empty? || ENV['AWS_REGION'].nil? || ENV['AWS_REGION'].empty? || files.length == 0
@@ -275,7 +309,7 @@ lane :upload_file_to_s3 do |options|
                                       :title => '',
                                       :thumb_url => 'https://support.apple.com/library/content/dam/edam/applecare/images/en_US/iOS/move-to-ios-icon.png',
                                       :msg => msg,
-                                      :default_payloads => [],
+                                      :default_payloads => [:git_branch, :last_git_commit_hash],
                                       :success => true,
                                   })
     end
@@ -339,6 +373,7 @@ platform :ios do
     end
     update_identifiers
     replace_assets
+    link_sentry({:os_type => "ios"})
     build_ios
     upload_file_to_s3({:os_type => "ios"})
   end
@@ -520,6 +555,29 @@ platform :ios do
       sh 'cp -R ../dist/assets/release/splash_screen/ios/SplashBackground.imageset ../ios/Mattermost/Images.xcassets/'
       sh 'cp -R ../dist/assets/release/splash_screen/ios/SplashIcon.imageset ../ios/Mattermost/Images.xcassets/'
     end
+
+    app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
+    localization_base_path = '../dist/assets/i18n/'
+    Dir.glob('*.json', base: localization_base_path) do |item|
+      localization_file = File.read(localization_base_path + item)
+      json = JSON.parse(localization_file)
+
+      plist_strings = ''
+      json.each do |key, value|
+        if key.match?('mobile.ios.plist')
+          unless value.nil? || value.empty?
+            plist_strings.concat("#{key.split('.').last} = \"#{value}\";\n")
+          end
+        end
+      end
+
+      plist_strings.gsub!('{applicationName}', "#{app_name}")
+
+      language = item.split('.').first
+      project_localization_path = "../ios/Mattermost/i18n/#{language}.lproj"
+      FileUtils.mkdir_p project_localization_path
+      File.write("#{project_localization_path}/InfoPlist.strings", plist_strings)
+    end
   end
 
   lane :deploy do |options|
@@ -578,7 +636,7 @@ platform :ios do
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
     method = ENV['IOS_BUILD_EXPORT_METHOD'].nil? || ENV['IOS_BUILD_EXPORT_METHOD'].empty? ? 'ad-hoc' : ENV['IOS_BUILD_EXPORT_METHOD']
    
-    # Need to add xcargs to only notification and 
+    # Need to add xcargs to only notification and share extensions
     xcargs = ENV['SENTRY_ENABLED'] == 'true' ? "SENTRY_DSN_IOS='#{ENV['SENTRY_DSN_IOS']}' SENTRY_ENABLED='#{ENV['SENTRY_ENABLED']}'" : ''
 
     setup_code_signing
@@ -596,7 +654,7 @@ platform :ios do
             signingStyle: 'manual',
             iCloudContainerEnvironment: 'Production'
         },
-        xcargs:xcargs
+        xcargs: xcargs
     )
   end
 
@@ -628,9 +686,9 @@ platform :android do
     end
     update_identifiers
     replace_assets
-    link_sentry_android
+    link_sentry({:os_type => "android"})
     build_android
-    move_apk_to_root
+    move_android_to_root
     upload_file_to_s3({:os_type => "android"})
   end
 
@@ -667,6 +725,7 @@ platform :android do
     package_id = ENV['MAIN_APP_IDENTIFIER'] || 'com.mattermost.rnbeta'
     android_change_package_identifier(newIdentifier: package_id, manifest: './android/app/src/main/AndroidManifest.xml')
     android_update_application_id(app_folder_name: 'android/app', application_id: package_id)
+    android_update_namespace(app_folder_name: 'android/app', namespace: package_id)
 
     app_scheme = ENV['APP_SCHEME'] || 'mattermost'
     find_replace_string(
@@ -693,17 +752,19 @@ platform :android do
 
       sh "mv .#{beta_dir}* .#{release_dir}"
 
-      find_replace_string(
-          path_to_file: './android/app/BUCK',
-          old_string: 'package com.mattermost.rnbeta;',
-          new_string: "package #{package_id};"
-      )
-
       Dir.glob(".#{release_dir}*.java") do |item|
         find_replace_string(
             path_to_file: item[1..-1],
             old_string: 'package com.mattermost.rnbeta;',
             new_string: "package #{package_id};"
+        )
+      end
+
+      Dir.glob(".#{release_dir}*.kt") do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'package com.mattermost.rnbeta',
+            new_string: "package #{package_id}"
         )
       end
 
@@ -722,14 +783,14 @@ platform :android do
             new_string: "import #{package_id}.*;"
         )
       end
-    end
 
-    Dir.glob('../android/app/src/main/java/com/mattermost/newarchitecture/*.java') do |item|
-      find_replace_string(
-          path_to_file: item[1..-1],
-          old_string: 'import com.mattermost.rnbeta.BuildConfig;',
-          new_string: "import #{package_id}.BuildConfig;"
-      )
+      Dir.glob('../android/app/src/main/java/com/mattermost/helpers/*.kt') do |item|
+        find_replace_string(
+            path_to_file: item[1..-1],
+            old_string: 'import com.mattermost.rnbeta.*',
+            new_string: "import #{package_id}.*"
+        )
+      end
     end
   end
 
@@ -741,10 +802,10 @@ platform :android do
   end
 
   lane :deploy do |options|
-    apk_path = options[:file]
+    file_path = options[:file]
 
-    unless apk_path.nil?
-      submit_to_google_play(apk_path)
+    unless file_path.nil?
+      submit_to_google_play(file_path)
     end
   end
 
@@ -770,65 +831,72 @@ platform :android do
 
   def build_android
     config_mode = ENV['BUILD_FOR_RELEASE'] == 'true' ? 'Release' : 'Debug'
+    build_task = ENV['ANDROID_BUILD_TASK'].nil? || ENV['ANDROID_BUILD_TASK'].empty? ? 'assemble' : ENV['ANDROID_BUILD_TASK']
+    build_task = build_task.split(",")
 
-    gradle(
-        task: 'app:assemble',
-        build_type: config_mode,
-        project_dir: 'android/',
-        properties: {
-          'separateApk' => ENV["SEPARATE_APKS"] || false,
-          'universalApk' => ENV["SEPARATE_APKS"] || false,
-        }
-    )
+    if build_task.include?("assemble")
+      gradle(
+          task: 'app:assemble',
+          build_type: config_mode,
+          project_dir: 'android/',
+          properties: {
+            'separateApk' => ENV["SEPARATE_APKS"] || false,
+            'universalApk' => ENV["SEPARATE_APKS"] || false,
+          }
+      )
+    end
+
+    if build_task.include?("bundle")
+      gradle(
+          task: 'app:bundle',
+          build_type: config_mode,
+          project_dir: 'android/',
+      )
+    end
   end
 
-  def move_apk_to_root
+  def move_android_to_root
     app_name =  ENV['APP_NAME'] || 'Mattermost Beta'
     app_name_sub = app_name.gsub(" ", "_")
-    apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
-    json_path = lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
+    build_task = ENV['ANDROID_BUILD_TASK'].nil? || ENV['ANDROID_BUILD_TASK'].empty? ? 'assemble' : ENV['ANDROID_BUILD_TASK']
+    build_task = build_task.split(",")
 
-    if json_path.nil? || json_path.empty?
-      dir_name = File.dirname(apks.first)
-      json_path = Dir.glob(File.join(dir_name, '*.json')).first
-    end
+    if build_task.include?("assemble")
+      apks = lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS]
+      json_path = lane_context[SharedValues::GRADLE_OUTPUT_JSON_OUTPUT_PATH]
+  
+      if json_path.nil? || json_path.empty?
+        dir_name = File.dirname(apks.first)
+        json_path = Dir.glob(File.join(dir_name, '*.json')).first
+      end
 
-    UI.message("JSON PATH APK #{json_path}")
-    outputJson = load_config_json(json_path)
-    paths = []
-    apks.each do |apk|
-      filename = File.basename(apk)
-      output = outputJson["elements"].find { |o| o["outputFile"] == filename }
-      unless output.nil?
-        filterName = output["filters"].empty? ? '' : output["filters"].first["value"]
-        name = "#{app_name_sub}"
-        unless filterName.nil? || filterName.empty?
-          name += "-#{filterName}"
+      UI.message("JSON PATH APK #{json_path}")
+      outputJson = load_config_json(json_path)
+      paths = []
+      apks.each do |apk|
+        filename = File.basename(apk)
+        output = outputJson["elements"].find { |o| o["outputFile"] == filename }
+        unless output.nil?
+          filterName = output["filters"].empty? ? '' : output["filters"].first["value"]
+          name = "#{app_name_sub}"
+          unless filterName.nil? || filterName.empty?
+            name += "-#{filterName}"
+          end
+          new_apk_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{name}.apk"
+          paths.push(new_apk_path)
+          sh "mv #{apk} #{new_apk_path}"
+          UI.message("APK PATH \"#{new_apk_path}\", #{filterName}")
         end
-        new_apk_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{name}.apk"
-        paths.push(new_apk_path)
-        sh "mv #{apk} #{new_apk_path}"
-        UI.message("APK PATH \"#{new_apk_path}\", #{filterName}")
       end
+
+      lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS] = paths
     end
 
-    lane_context[SharedValues::GRADLE_ALL_APK_OUTPUT_PATHS] = paths
-  end
-
-  def link_sentry_android
-    if ENV['SENTRY_ENABLED'] == 'true'
-      url = 'https://sentry.io'
-      File.open('../android/sentry.properties', 'w+') do |f|
-        UI.message('Creating sentry.properties from environment')
-        f.write(
-            "defaults.url=#{url}\n"\
-        "defaults.org=#{ENV['SENTRY_ORG']}\n"\
-        "defaults.project=#{ENV['SENTRY_PROJECT_ANDROID']}\n"\
-        "auth.token=#{ENV['SENTRY_AUTH_TOKEN']}\n"
-        )
-      end
-    else
-      UI.message('Not creating sentry.properties because Sentry is disabled')
+    if build_task.include?("bundle")
+      aab = lane_context[SharedValues::GRADLE_AAB_OUTPUT_PATH]
+      new_aab_path = "#{Pathname.new(File.expand_path(File.dirname(__FILE__))).parent.to_s}/#{app_name_sub}.aab"
+      sh "mv #{aab} #{new_aab_path}"
+      UI.message("AAB PATH \"#{new_aab_path}\"")
     end
   end
 end
@@ -852,7 +920,6 @@ def send_message_to_mattermost(options)
         message: options[:msg],
         default_payloads: options[:default_payloads],
         username: 'Fastlane',
-        icon_url: 'https://mattermost-plugin-media.s3.amazonaws.com/fastlane.png',
         payload: {},
         attachment_properties: {
             title: options[:title],
@@ -951,21 +1018,36 @@ def submit_to_testflight(ipa_path)
                              })
 end
 
-def submit_to_google_play(apk_path)
-  apks = Dir.glob(apk_path).select { |f| File.file? f}
-  filenames = apks.map {|f| File.basename(f)}
-
-  if(apks.length > 0)
+def submit_to_google_play(file_path)
+  filenames = []
+  if(file_path.include?("aab"))
+    aab_filename = Dir.glob(file_path).select { |f| File.file? f}.first
     unless ENV['SUPPLY_JSON_KEY'].nil? || ENV['SUPPLY_JSON_KEY'].empty?
       supply(
           package_name: ENV['MAIN_APP_IDENTIFIER'] || ENV['SUPPLY_PACKAGE_NAME'],
           track: ENV['SUPPLY_TRACK'] || 'alpha',
-          apk_paths: apks
+          aab: aab_filename,
+          skip_upload_apk: true
       )
     end
+    filenames.push(aab_filename)
   else
-    UI.user_error! "There are no apks in #{apk_path}"
-    return
+    apks = Dir.glob(file_path).select { |f| File.file? f}
+    filenames = apks.map {|f| File.basename(f)}
+
+    if(apks.length > 0)
+      unless ENV['SUPPLY_JSON_KEY'].nil? || ENV['SUPPLY_JSON_KEY'].empty?
+        supply(
+            package_name: ENV['MAIN_APP_IDENTIFIER'] || ENV['SUPPLY_PACKAGE_NAME'],
+            track: ENV['SUPPLY_TRACK'] || 'alpha',
+            apk_paths: apks,
+            skip_upload_aab: true
+        )
+      end
+    else
+      UI.user_error! "There are no apks in #{apk_path}"
+      return
+    end
   end
 
   version_number = android_get_version_name(gradle_file: './android/app/build.gradle')

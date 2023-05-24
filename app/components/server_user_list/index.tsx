@@ -3,7 +3,6 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 
-import {fetchProfiles, searchProfiles} from '@actions/remote/user';
 import UserList from '@components/user_list';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
@@ -11,26 +10,31 @@ import {debounce} from '@helpers/api/general';
 import {filterProfilesMatchingTerm} from '@utils/user';
 
 type Props = {
-    currentTeamId: string;
     currentUserId: string;
-    teammateNameDisplay: string;
     tutorialWatched: boolean;
     handleSelectProfile: (user: UserProfile) => void;
     term: string;
     selectedIds: {[id: string]: UserProfile};
+    fetchFunction: (page: number) => Promise<UserProfile[]>;
+    searchFunction: (term: string) => Promise<UserProfile[]>;
+    createFilter: (exactMatches: UserProfile[], term: string) => ((p: UserProfile) => boolean);
+    testID: string;
 }
 
 export default function ServerUserList({
-    currentTeamId,
     currentUserId,
-    teammateNameDisplay,
     tutorialWatched,
     handleSelectProfile,
     term,
     selectedIds,
+    fetchFunction,
+    searchFunction,
+    createFilter,
+    testID,
 }: Props) {
     const serverUrl = useServerUrl();
 
+    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const next = useRef(true);
     const page = useRef(-1);
     const mounted = useRef(false);
@@ -38,13 +42,12 @@ export default function ServerUserList({
     const [profiles, setProfiles] = useState<UserProfile[]>([]);
     const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
     const [loading, setLoading] = useState(false);
-    const selectedCount = Object.keys(selectedIds).length;
 
     const isSearch = Boolean(term);
 
-    const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
+    const loadedProfiles = (users: UserProfile[]) => {
         if (mounted.current) {
-            if (users && !users.length) {
+            if (!users.length) {
                 next.current = false;
             }
 
@@ -63,30 +66,29 @@ export default function ServerUserList({
     const getProfiles = useCallback(debounce(() => {
         if (next.current && !loading && !term && mounted.current) {
             setLoading(true);
-            fetchProfiles(serverUrl, page.current + 1, General.PROFILE_CHUNK_SIZE).then(loadedProfiles);
+            fetchFunction(page.current + 1).then(loadedProfiles);
         }
-    }, 100), [loading, isSearch, serverUrl, currentTeamId]);
-
-    const onHandleSelectProfile = useCallback((user: UserProfile) => {
-        handleSelectProfile(user);
-    }, [handleSelectProfile]);
+    }, 100), [loading, isSearch, serverUrl]);
 
     const searchUsers = useCallback(async (searchTerm: string) => {
-        const lowerCasedTerm = searchTerm.toLowerCase();
         setLoading(true);
-        const results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
-
-        let data: UserProfile[] = [];
-        if (results.data) {
-            data = results.data;
-        }
-
+        const data = await searchFunction(searchTerm);
         setSearchResults(data);
         setLoading(false);
-    }, [serverUrl, currentTeamId]);
+    }, [serverUrl, searchFunction]);
 
     useEffect(() => {
-        searchUsers(term);
+        if (term) {
+            if (searchTimeoutId.current) {
+                clearTimeout(searchTimeoutId.current);
+            }
+
+            searchTimeoutId.current = setTimeout(() => {
+                searchUsers(term);
+            }, General.SEARCH_TIMEOUT_MILLISECONDS);
+        } else {
+            setSearchResults([]);
+        }
     }, [term]);
 
     useEffect(() => {
@@ -98,40 +100,30 @@ export default function ServerUserList({
     }, []);
 
     const data = useMemo(() => {
-        if (term) {
+        if (isSearch) {
             const exactMatches: UserProfile[] = [];
-            const filterByTerm = (p: UserProfile) => {
-                if (selectedCount > 0 && p.id === currentUserId) {
-                    return false;
-                }
+            const filterByTerm = createFilter(exactMatches, term);
 
-                if (p.username === term || p.username.startsWith(term)) {
-                    exactMatches.push(p);
-                    return false;
-                }
-
-                return true;
-            };
-
-            const results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
+            const profilesToFilter = searchResults.length ? searchResults : profiles;
+            const results = filterProfilesMatchingTerm(profilesToFilter, term).filter(filterByTerm);
             return [...exactMatches, ...results];
         }
         return profiles;
-    }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
+    }, [term, isSearch, isSearch && searchResults, profiles]);
 
     return (
         <UserList
             currentUserId={currentUserId}
-            handleSelectProfile={onHandleSelectProfile}
+            handleSelectProfile={handleSelectProfile}
             loading={loading}
             profiles={data}
             selectedIds={selectedIds}
             showNoResults={!loading && page.current !== -1}
-            teammateNameDisplay={teammateNameDisplay}
             fetchMore={getProfiles}
             term={term}
-            testID='create_direct_message.user_list'
+            testID={testID}
             tutorialWatched={tutorialWatched}
+            includeUserMargin={true}
         />
     );
 }

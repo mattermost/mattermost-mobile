@@ -3,15 +3,16 @@
 
 import React from 'react';
 
-import SettingContainer from '../setting_container';
+import SettingContainer from '@components/settings/container';
 
 import MentionSettings from './mention_settings';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type NotificationMentionProps = {
-    componentId: string;
-    currentUser: UserModel;
+    componentId: AvailableScreens;
+    currentUser?: UserModel;
     isCRTEnabled: boolean;
 }
 const NotificationMention = ({componentId, currentUser, isCRTEnabled}: NotificationMentionProps) => {

@@ -11,25 +11,28 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {login} from '@actions/remote/session';
-import ClientError from '@client/rest/error';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
-import {Screens} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
 import Background from '@screens/background';
-import {resetToTeams} from '@screens/navigation';
+import {popTopScreen} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
+import {getErrorMessage} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
 import Shield from './mfa.svg';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type MFAProps = {
+    componentId: AvailableScreens;
     config: Partial<ClientConfig>;
-    goToHome: (time: number, error?: never) => void;
+    goToHome: (error?: unknown) => void;
     license: Partial<ClientLicense>;
     loginId: string;
     password: string;
@@ -93,7 +96,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 
 const AnimatedSafeArea = Animated.createAnimatedComponent(SafeAreaView);
 
-const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
+const MFA = ({componentId, config, goToHome, license, loginId, password, serverDisplayName, serverUrl, theme}: MFAProps) => {
     const dimensions = useWindowDimensions();
     const translateX = useSharedValue(dimensions.width);
     const isTablet = useIsTablet();
@@ -140,24 +143,10 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
         const result: LoginActionResponse = await login(serverUrl, {loginId, password, mfaToken: token, config, license, serverDisplayName});
         setIsLoading(false);
         if (result?.error && result.failed) {
-            if (typeof result.error == 'string') {
-                setError(result?.error);
-                return;
-            }
-
-            if (result.error instanceof ClientError && result.error.intl) {
-                setError(intl.formatMessage({id: result.error.intl.id, defaultMessage: result.error.intl.defaultMessage}, result.error.intl.values));
-                return;
-            }
-
-            setError(result.error.message);
+            setError(getErrorMessage(error, intl));
             return;
         }
-        if (!result.hasTeams && !result.error) {
-            resetToTeams();
-            return;
-        }
-        goToHome(result.time || 0, result.error as never);
+        goToHome(result.error);
     }), [token]);
 
     const transform = useAnimatedStyle(() => {
@@ -176,10 +165,18 @@ const MFA = ({config, goToHome, license, loginId, password, serverDisplayName, s
                 translateX.value = -dimensions.width;
             },
         };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.MFA);
+        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
     }, [dimensions]);
+
+    useEffect(() => {
+        translateX.value = 0;
+    }, []);
+
+    useAndroidHardwareBackHandler(componentId, () => {
+        popTopScreen(componentId);
+    });
 
     return (
         <View style={styles.flex}>

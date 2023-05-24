@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback} from 'react';
-import {StyleProp, View, ViewStyle} from 'react-native';
+import {type StyleProp, View, type ViewStyle} from 'react-native';
 
 import Emoji from '@components/emoji';
 import TouchableWithFeedback from '@components/touchable_with_feedback';
@@ -25,19 +25,13 @@ const hitSlop = {top: 10, bottom: 10, left: 10, right: 10};
 const TouchableEmoji = ({category, name, onEmojiPress, size = 30, style}: Props) => {
     const onPress = useCallback(preventDoubleTap(() => onEmojiPress(name)), []);
 
-    let emoji;
     if (category && CATEGORIES_WITH_SKINS.includes(category)) {
-        emoji = (
+        return (
             <SkinnedEmoji
                 name={name}
+                onEmojiPress={onEmojiPress}
                 size={size}
-            />
-        );
-    } else {
-        emoji = (
-            <Emoji
-                emojiName={name}
-                size={size}
+                style={style}
             />
         );
     }
@@ -52,7 +46,10 @@ const TouchableEmoji = ({category, name, onEmojiPress, size = 30, style}: Props)
                 style={style}
                 type={'opacity'}
             >
-                {emoji}
+                <Emoji
+                    emojiName={name}
+                    size={size}
+                />
             </TouchableWithFeedback>
         </View>
     );

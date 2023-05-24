@@ -1,23 +1,19 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import {Client} from '@client/rest';
 import {MEMBERS_PER_PAGE} from '@constants/graphql';
 import NetworkManager from '@managers/network_manager';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 
 import QueryNames from './constants';
 
 const doGQLQuery = async (serverUrl: string, query: string, variables: {[name: string]: any}, operationName: string) => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         const response = await client.doFetch('/api/v5/graphql', {method: 'post', body: {query, variables, operationName}}) as GQLResponse;
         return response;
     } catch (error) {
+        logDebug('error on doGQLQuery', getFullErrorMessage(error));
         return {error};
     }
 };

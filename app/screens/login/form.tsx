@@ -2,24 +2,21 @@
 // See LICENSE.txt for license information.
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
-import React, {MutableRefObject, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, Platform, TextInput, TouchableOpacity, useWindowDimensions, View} from 'react-native';
+import {Keyboard, TextInput, TouchableOpacity, View} from 'react-native';
 import Button from 'react-native-button';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 import {login} from '@actions/remote/session';
-import CompassIcon from '@app/components/compass_icon';
-import ClientError from '@client/rest/error';
+import CompassIcon from '@components/compass_icon';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {FORGOT_PASSWORD, MFA} from '@constants/screens';
-import {useIsTablet} from '@hooks/device';
 import {t} from '@i18n';
-import {goToScreen, loginAnimationOptions, resetToHome, resetToTeams} from '@screens/navigation';
+import {goToScreen, loginAnimationOptions, resetToHome} from '@screens/navigation';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
-import {isServerError} from '@utils/errors';
+import {getFullErrorMessage, isErrorWithMessage, isServerError} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -27,9 +24,7 @@ import type {LaunchProps} from '@typings/launch';
 
 interface LoginProps extends LaunchProps {
     config: Partial<ClientConfig>;
-    keyboardAwareRef: MutableRefObject<KeyboardAwareScrollView | null>;
     license: Partial<ClientLicense>;
-    numberSSOs: number;
     serverDisplayName: string;
     theme: Theme;
 }
@@ -53,6 +48,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     forgotPasswordBtn: {
         borderColor: 'transparent',
+        width: '60%',
     },
     forgotPasswordError: {
         marginTop: 30,
@@ -76,10 +72,8 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
+const LoginForm = ({config, extra, serverDisplayName, launchError, launchType, license, serverUrl, theme}: LoginProps) => {
     const styles = getStyleSheet(theme);
-    const isTablet = useIsTablet();
-    const dimensions = useWindowDimensions();
     const loginRef = useRef<TextInput>(null);
     const passwordRef = useRef<TextInput>(null);
     const intl = useIntl();
@@ -94,33 +88,6 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     const usernameEnabled = config.EnableSignInWithUsername === 'true';
     const ldapEnabled = license.IsLicensed === 'true' && config.EnableLdap === 'true' && license.LDAP === 'true';
 
-    const focus = () => {
-        if (Platform.OS === 'ios') {
-            let ssoOffset = 0;
-            switch (numberSSOs) {
-                case 0:
-                    ssoOffset = 0;
-                    break;
-                case 1:
-                case 2:
-                    ssoOffset = 48;
-                    break;
-                default:
-                    ssoOffset = 3 * 48;
-                    break;
-            }
-            let offsetY = 150 - ssoOffset;
-            if (isTablet) {
-                const {width, height} = dimensions;
-                const isLandscape = width > height;
-                offsetY = (isLandscape ? 230 : 150) - ssoOffset;
-            }
-            requestAnimationFrame(() => {
-                keyboardAwareRef.current?.scrollToPosition(0, offsetY);
-            });
-        }
-    };
-
     const preSignIn = preventDoubleTap(async () => {
         setIsLoading(true);
 
@@ -131,17 +98,13 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     const signIn = async () => {
         const result: LoginActionResponse = await login(serverUrl!, {serverDisplayName, loginId: loginId.toLowerCase(), password, config, license});
         if (checkLoginResponse(result)) {
-            if (!result.hasTeams && !result.error) {
-                resetToTeams();
-                return;
-            }
-            goToHome(result.time || 0, result.error as never);
+            goToHome(result.error);
         }
     };
 
-    const goToHome = (time: number, loginError?: never) => {
+    const goToHome = (loginError?: unknown) => {
         const hasError = launchError || Boolean(loginError);
-        resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
+        resetToHome({extra, launchError: hasError, launchType, serverUrl});
     };
 
     const checkLoginResponse = (data: LoginActionResponse) => {
@@ -172,18 +135,10 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
         goToScreen(MFA, '', {goToHome, loginId, password, config, serverDisplayName, license, serverUrl, theme}, loginAnimationOptions());
     };
 
-    const getLoginErrorMessage = (loginError: string | ClientErrorProps | Error) => {
-        if (typeof loginError === 'string') {
-            return loginError;
-        }
-
-        if (loginError instanceof ClientError) {
+    const getLoginErrorMessage = (loginError: unknown) => {
+        if (isServerError(loginError)) {
             const errorId = loginError.server_error_id;
-            if (!errorId && loginError.message) {
-                return loginError.message;
-            }
-
-            if (errorId === 'api.user.login.invalid_credentials_email_username' || !errorId) {
+            if (errorId === 'api.user.login.invalid_credentials_email_username' || (!isErrorWithMessage(loginError) && typeof loginError !== 'string')) {
                 return intl.formatMessage({
                     id: 'login.invalid_credentials',
                     defaultMessage: 'The email and password combination is incorrect',
@@ -191,7 +146,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
             }
         }
 
-        return loginError.message;
+        return getFullErrorMessage(loginError);
     };
 
     const createLoginPlaceholder = () => {
@@ -230,19 +185,6 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
     const focusPassword = useCallback(() => {
         passwordRef?.current?.focus();
     }, []);
-
-    const onBlur = useCallback(() => {
-        if (Platform.OS === 'ios') {
-            const reset = !passwordRef.current?.isFocused() && !loginRef.current?.isFocused();
-            if (reset) {
-                keyboardAwareRef.current?.scrollToPosition(0, 0);
-            }
-        }
-    }, []);
-
-    const onFocus = useCallback(() => {
-        focus();
-    }, [dimensions]);
 
     const onLogin = useCallback(() => {
         Keyboard.dismiss();
@@ -360,9 +302,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 error={error ? ' ' : ''}
                 keyboardType='email-address'
                 label={createLoginPlaceholder()}
-                onBlur={onBlur}
                 onChangeText={onLoginChange}
-                onFocus={onFocus}
                 onSubmitEditing={focusPassword}
                 ref={loginRef}
                 returnKeyType='next'
@@ -382,9 +322,7 @@ const LoginForm = ({config, extra, keyboardAwareRef, numberSSOs, serverDisplayNa
                 error={error}
                 keyboardType='default'
                 label={intl.formatMessage({id: 'login.password', defaultMessage: 'Password'})}
-                onBlur={onBlur}
                 onChangeText={onPasswordChange}
-                onFocus={onFocus}
                 onSubmitEditing={onLogin}
                 ref={passwordRef}
                 returnKeyType='join'

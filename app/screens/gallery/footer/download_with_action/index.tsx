@@ -14,15 +14,18 @@ import {useSafeAreaInsets} from 'react-native-safe-area-context';
 import Share from 'react-native-share';
 
 import {updateLocalFilePath} from '@actions/local/file';
-import {downloadFile} from '@actions/remote/file';
+import {downloadFile, downloadProfileImage} from '@actions/remote/file';
 import CompassIcon from '@components/compass_icon';
 import ProgressBar from '@components/progress_bar';
 import Toast from '@components/toast';
 import {GALLERY_FOOTER_HEIGHT} from '@constants/gallery';
 import {useServerUrl} from '@context/server';
 import {alertFailedToOpenDocument} from '@utils/document';
+import {getFullErrorMessage} from '@utils/errors';
 import {fileExists, getLocalFilePathFromFile, hasWriteStoragePermission} from '@utils/file';
+import {pathWithPrefix} from '@utils/files';
 import {galleryItemToFileInfo} from '@utils/gallery';
+import {logDebug} from '@utils/log';
 import {typography} from '@utils/typography';
 
 import type {ClientResponse, ProgressPromise} from '@mattermost/react-native-network-client';
@@ -105,6 +108,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
 
         switch (item.type) {
             case 'image':
+            case 'avatar':
                 message = intl.formatMessage({id: 'gallery.image_saved', defaultMessage: 'Image saved'});
                 break;
             case 'video':
@@ -177,7 +181,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
             updateLocalFilePath(serverUrl, item.id, path);
 
             Share.open({
-                url: path,
+                url: pathWithPrefix('file://', path),
                 saveToFiles: true,
             }).catch(() => {
                 // do nothing
@@ -191,12 +195,15 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
         if (mounted.current) {
             try {
                 const applicationName = DeviceInfo.getApplicationName();
+                const cameraType = item.type === 'avatar' ? 'image' : item.type;
                 await CameraRoll.save(path, {
-                    type: item.type === 'image' ? 'photo' : 'video',
+                    type: cameraType === 'image' ? 'photo' : 'video',
                     album: applicationName,
                 });
                 setSaved(true);
-                updateLocalFilePath(serverUrl, item.id, path);
+                if (item.type !== 'avatar') {
+                    updateLocalFilePath(serverUrl, item.id, path);
+                }
             } catch {
                 setError(intl.formatMessage({id: 'gallery.save_failed', defaultMessage: 'Unable to save the file'}));
             }
@@ -231,7 +238,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
                 Share.open({
                     message: '',
                     title: '',
-                    url: path,
+                    url: pathWithPrefix('file://', path),
                     showAppsToView: true,
                 }).catch(() => {
                     // do nothing
@@ -269,7 +276,11 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
                         data: {path},
                     });
                 } else {
-                    downloadPromise.current = downloadFile(serverUrl, item.id!, path);
+                    if (item.type === 'avatar') {
+                        downloadPromise.current = downloadProfileImage(serverUrl, item.id!, item.lastPictureUpdate, path);
+                    } else {
+                        downloadPromise.current = downloadFile(serverUrl, item.id!, path);
+                    }
                     downloadPromise.current?.then(actionToExecute).catch(() => {
                         setError(intl.formatMessage({id: 'download.error', defaultMessage: 'Unable to download the file. Try again later'}));
                     });
@@ -277,6 +288,7 @@ const DownloadWithAction = ({action, item, onDownloadSuccess, setAction, gallery
                 }
             }
         } catch (e) {
+            logDebug('error on startDownload', getFullErrorMessage(e));
             setShowToast(false);
         }
     };

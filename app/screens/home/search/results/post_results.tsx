@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo} from 'react';
-import {FlatList, ListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
+import {FlatList, type ListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
 
 import NoResultsWithTerm from '@components/no_results_with_term';
 import DateSeparator from '@components/post_list/date_separator';
@@ -34,7 +34,7 @@ const PostResults = ({
     searchValue,
 }: Props) => {
     const orderedPosts = useMemo(() => selectOrderedPosts(posts, 0, false, '', '', false, isTimezoneEnabled, currentTimezone, false).reverse(), [posts]);
-    const containerStyle = useMemo(() => ({top: posts.length ? 4 : 8}), [posts]);
+    const containerStyle = useMemo(() => ({top: posts.length ? 4 : 8, flexGrow: 1}), [posts]);
 
     const renderItem = useCallback(({item}: ListRenderItemInfo<PostListItem | PostListOtherItem>) => {
         switch (item.type) {
@@ -76,6 +76,8 @@ const PostResults = ({
             data={orderedPosts}
             indicatorStyle='black'
             initialNumToRender={5}
+
+            //@ts-expect-error key not defined in types
             listKey={'posts'}
             maxToRenderPerBatch={5}
             nestedScrollEnabled={true}

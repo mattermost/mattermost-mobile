@@ -1,12 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Dispatch, RefObject, SetStateAction, useCallback} from 'react';
+import React, {type Dispatch, type RefObject, type SetStateAction, useCallback} from 'react';
 import {Platform, StyleSheet} from 'react-native';
 
 import OptionItem from '@components/option_item';
-import {SearchRef} from '@components/search';
 import {preventDoubleTap} from '@utils/tap';
+
+import type {SearchRef} from '@components/search';
 
 const styles = StyleSheet.create({
     container: {

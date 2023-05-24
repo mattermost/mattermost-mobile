@@ -1,3 +1,63 @@
+diff --git a/node_modules/react-native-create-thumbnail/android/src/main/java/com/createthumbnail/CreateThumbnailModule.java b/node_modules/react-native-create-thumbnail/android/src/main/java/com/createthumbnail/CreateThumbnailModule.java
+index 9bd67d8..bf4175a 100644
+--- a/node_modules/react-native-create-thumbnail/android/src/main/java/com/createthumbnail/CreateThumbnailModule.java
++++ b/node_modules/react-native-create-thumbnail/android/src/main/java/com/createthumbnail/CreateThumbnailModule.java
+@@ -169,31 +169,35 @@ public class CreateThumbnailModule extends ReactContextBaseJavaModule {
+     }
+ 
+     private static Bitmap getBitmapAtTime(Context context, String filePath, int time, Map headers) {
+-        MediaMetadataRetriever retriever = new MediaMetadataRetriever();
+-        if (URLUtil.isFileUrl(filePath)) {
+-            String decodedPath;
+-            try {
+-                decodedPath = URLDecoder.decode(filePath, "UTF-8");
+-            } catch (UnsupportedEncodingException e) {
+-                decodedPath = filePath;
+-            }
++        try {
++            MediaMetadataRetriever retriever = new MediaMetadataRetriever();
++            if (URLUtil.isFileUrl(filePath)) {
++                String decodedPath;
++                try {
++                    decodedPath = URLDecoder.decode(filePath, "UTF-8");
++                } catch (UnsupportedEncodingException e) {
++                    decodedPath = filePath;
++                }
+ 
+-            retriever.setDataSource(decodedPath.replace("file://", ""));
+-        } else if (filePath.contains("content://")) {
+-            retriever.setDataSource(context, Uri.parse(filePath));
+-        } else {
+-            if (VERSION.SDK_INT < 14) {
+-                throw new IllegalStateException("Remote videos aren't supported on sdk_version < 14");
++                retriever.setDataSource(decodedPath.replace("file://", ""));
++            } else if (filePath.contains("content://")) {
++                retriever.setDataSource(context, Uri.parse(filePath));
++            } else {
++                if (VERSION.SDK_INT < 14) {
++                    throw new IllegalStateException("Remote videos aren't supported on sdk_version < 14");
++                }
++                retriever.setDataSource(filePath, headers);
+             }
+-            retriever.setDataSource(filePath, headers);
+-        }
+ 
+-        Bitmap image = retriever.getFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
+-        retriever.release();
+-        if (image == null) {
++            Bitmap image = retriever.getFrameAtTime(time * 1000, MediaMetadataRetriever.OPTION_CLOSEST_SYNC);
++            retriever.release();
++            if (image == null) {
++                throw new IllegalStateException("File doesn't exist or not supported");
++            }
++            return image;
++        } catch (Exception e) {
+             throw new IllegalStateException("File doesn't exist or not supported");
+         }
+-        return image;
+     }
+ 
+     private static long getDirSize(File dir) {
 diff --git a/node_modules/react-native-create-thumbnail/ios/CreateThumbnail.h b/node_modules/react-native-create-thumbnail/ios/CreateThumbnail.h
 index 28b1d9b..cb63c52 100644
 --- a/node_modules/react-native-create-thumbnail/ios/CreateThumbnail.h
@@ -10,7 +70,7 @@ index 28b1d9b..cb63c52 100644
 ++(void)create:(NSDictionary *)config findEventsWithResolver:(RCTPromiseResolveBlock)resolve rejecter:(RCTPromiseRejectBlock)reject;
  @end
 diff --git a/node_modules/react-native-create-thumbnail/ios/CreateThumbnail.m b/node_modules/react-native-create-thumbnail/ios/CreateThumbnail.m
-index 92cc49f..23cc83c 100644
+index 92cc49f..a2bab15 100644
 --- a/node_modules/react-native-create-thumbnail/ios/CreateThumbnail.m
 +++ b/node_modules/react-native-create-thumbnail/ios/CreateThumbnail.m
 @@ -6,6 +6,10 @@ RCT_EXPORT_MODULE()

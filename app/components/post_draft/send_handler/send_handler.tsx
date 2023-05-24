@@ -3,15 +3,15 @@
 
 import React, {useCallback, useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, DeviceEventEmitter} from 'react-native';
+import {DeviceEventEmitter} from 'react-native';
 
+import {updateDraftPriority} from '@actions/local/draft';
 import {getChannelTimezones} from '@actions/remote/channel';
 import {executeCommand, handleGotoLocation} from '@actions/remote/command';
 import {createPost} from '@actions/remote/post';
 import {handleReactionToLatestPost} from '@actions/remote/reactions';
 import {setStatus} from '@actions/remote/user';
-import {canEndCall, endCall, getEndCallMessage} from '@calls/actions/calls';
-import ClientError from '@client/rest/error';
+import {handleCallsSlashCommand} from '@calls/actions/calls';
 import {Events, Screens} from '@constants';
 import {PostPriorityType} from '@constants/post';
 import {NOTIFY_ALL_MEMBERS} from '@constants/post_draft';
@@ -19,6 +19,7 @@ import {useServerUrl} from '@context/server';
 import DraftUploadManager from '@managers/draft_upload_manager';
 import * as DraftUtils from '@utils/draft';
 import {isReactionMatch} from '@utils/emoji/helpers';
+import {getFullErrorMessage} from '@utils/errors';
 import {preventDoubleTap} from '@utils/tap';
 import {confirmOutOfOfficeDisabled} from '@utils/user';
 
@@ -29,6 +30,7 @@ import type CustomEmojiModel from '@typings/database/models/servers/custom_emoji
 type Props = {
     testID?: string;
     channelId: string;
+    channelType?: ChannelType;
     rootId: string;
     canShowPostPriority?: boolean;
     setIsFocused: (isFocused: boolean) => void;
@@ -53,15 +55,21 @@ type Props = {
     updatePostInputTop: (top: number) => void;
     addFiles: (file: FileInfo[]) => void;
     uploadFileError: React.ReactNode;
+    persistentNotificationInterval: number;
+    persistentNotificationMaxRecipients: number;
+    postPriority: PostPriority;
 }
 
-const INITIAL_PRIORITY = {
+export const INITIAL_PRIORITY = {
     priority: PostPriorityType.STANDARD,
+    requested_ack: false,
+    persistent_notifications: false,
 };
 
 export default function SendHandler({
     testID,
     channelId,
+    channelType,
     currentUserId,
     enableConfirmNotificationsToChannel,
     files,
@@ -82,13 +90,15 @@ export default function SendHandler({
     updateCursorPosition,
     updatePostInputTop,
     setIsFocused,
+    persistentNotificationInterval,
+    persistentNotificationMaxRecipients,
+    postPriority,
 }: Props) {
     const intl = useIntl();
     const serverUrl = useServerUrl();
 
     const [channelTimezoneCount, setChannelTimezoneCount] = useState(0);
     const [sendingMessage, setSendingMessage] = useState(false);
-    const [postPriority, setPostPriority] = useState<PostPriorityData>(INITIAL_PRIORITY);
 
     const canSend = useCallback(() => {
         if (sendingMessage) {
@@ -115,6 +125,10 @@ export default function SendHandler({
         setSendingMessage(false);
     }, [serverUrl, rootId, clearDraft]);
 
+    const handlePostPriority = useCallback((priority: PostPriority) => {
+        updateDraftPriority(serverUrl, channelId, rootId, priority);
+    }, [serverUrl, rootId]);
+
     const doSubmitMessage = useCallback(() => {
         const postFiles = files.filter((f) => !f.failed);
         const post = {
@@ -124,7 +138,11 @@ export default function SendHandler({
             message: value,
         } as Post;
 
-        if (Object.keys(postPriority).length) {
+        if (!rootId && (
+            postPriority.priority ||
+            postPriority.requested_ack ||
+            postPriority.persistent_notifications)
+        ) {
             post.metadata = {
                 priority: postPriority,
             };
@@ -134,7 +152,6 @@ export default function SendHandler({
 
         clearDraft();
         setSendingMessage(false);
-        setPostPriority(INITIAL_PRIORITY);
         DeviceEventEmitter.emit(Events.POST_LIST_SCROLL_TO_BOTTOM, rootId ? Screens.THREAD : Screens.CHANNEL);
     }, [files, currentUserId, channelId, rootId, value, clearDraft, postPriority]);
 
@@ -147,54 +164,19 @@ export default function SendHandler({
         DraftUtils.alertChannelWideMention(intl, notifyAllMessage, doSubmitMessage, cancel);
     }, [intl, isTimezoneEnabled, channelTimezoneCount, doSubmitMessage]);
 
-    const handleEndCall = useCallback(async () => {
-        const hasPermissions = await canEndCall(serverUrl, channelId);
-
-        if (!hasPermissions) {
-            Alert.alert(
-                intl.formatMessage({
-                    id: 'mobile.calls_end_permission_title',
-                    defaultMessage: 'Error',
-                }),
-                intl.formatMessage({
-                    id: 'mobile.calls_end_permission_msg',
-                    defaultMessage: 'You don\'t have permission to end the call. Please ask the call owner to end the call.',
-                }));
-            return;
-        }
-
-        const message = await getEndCallMessage(serverUrl, channelId, currentUserId, intl);
-        const title = intl.formatMessage({id: 'mobile.calls_end_call_title', defaultMessage: 'End call'});
-
-        Alert.alert(
-            title,
-            message,
-            [
-                {
-                    text: intl.formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'}),
-                },
-                {
-                    text: title,
-                    onPress: async () => {
-                        try {
-                            await endCall(serverUrl, channelId);
-                        } catch (e) {
-                            const err = (e as ClientError).message || 'unable to complete command, see server logs';
-                            Alert.alert('Error', `Error: ${err}`);
-                        }
-                    },
-                    style: 'cancel',
-                },
-            ],
-        );
-    }, [serverUrl, channelId, currentUserId, intl]);
-
     const sendCommand = useCallback(async () => {
-        if (value.trim() === '/call end') {
-            await handleEndCall();
-            setSendingMessage(false);
-            clearDraft();
-            return;
+        if (value.trim().startsWith('/call')) {
+            const {handled, error} = await handleCallsSlashCommand(value.trim(), serverUrl, channelId, currentUserId, intl);
+            if (handled) {
+                setSendingMessage(false);
+                clearDraft();
+                return;
+            }
+            if (error) {
+                setSendingMessage(false);
+                DraftUtils.alertSlashCommandFailed(intl, error);
+                return;
+            }
         }
 
         const status = DraftUtils.getStatusFromSlashCommand(value);
@@ -216,7 +198,7 @@ export default function SendHandler({
         setSendingMessage(false);
 
         if (error) {
-            const errorMessage = typeof (error) === 'string' ? error : error.message;
+            const errorMessage = getFullErrorMessage(error);
             DraftUtils.alertSlashCommandFailed(intl, errorMessage);
             return;
         }
@@ -226,7 +208,7 @@ export default function SendHandler({
         if (data?.goto_location && !value.startsWith('/leave')) {
             handleGotoLocation(serverUrl, intl, data.goto_location);
         }
-    }, [userIsOutOfOffice, currentUserId, intl, value, serverUrl, channelId, rootId, handleEndCall]);
+    }, [userIsOutOfOffice, currentUserId, intl, value, serverUrl, channelId, rootId]);
 
     const sendMessage = useCallback(() => {
         const notificationsToChannel = enableConfirmNotificationsToChannel && useChannelMentions;
@@ -289,6 +271,7 @@ export default function SendHandler({
         <DraftInput
             testID={testID}
             channelId={channelId}
+            channelType={channelType}
             currentUserId={currentUserId}
             rootId={rootId}
             canShowPostPriority={canShowPostPriority}
@@ -304,7 +287,9 @@ export default function SendHandler({
             maxMessageLength={maxMessageLength}
             updatePostInputTop={updatePostInputTop}
             postPriority={postPriority}
-            updatePostPriority={setPostPriority}
+            updatePostPriority={handlePostPriority}
+            persistentNotificationInterval={persistentNotificationInterval}
+            persistentNotificationMaxRecipients={persistentNotificationMaxRecipients}
             setIsFocused={setIsFocused}
         />
     );

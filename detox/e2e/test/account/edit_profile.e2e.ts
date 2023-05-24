@@ -19,7 +19,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, isIos} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Account - Edit Profile', () => {
@@ -54,13 +54,22 @@ describe('Account - Edit Profile', () => {
         await expect(EditProfileScreen.closeButton).toBeVisible();
         await expect(EditProfileScreen.saveButton).toBeVisible();
         await expect(EditProfileScreen.getEditProfilePicture(testUser.id)).toBeVisible();
-        await expect(EditProfileScreen.firstNameInput).toHaveValue(testUser.first_name);
-        await expect(EditProfileScreen.lastNameInput).toHaveValue(testUser.last_name);
-        await expect(EditProfileScreen.usernameInput).toHaveValue(testUser.username);
-        await expect(EditProfileScreen.emailInputDisabled).toHaveValue(testUser.email);
+        if (isIos()) {
+            await expect(EditProfileScreen.firstNameInput).toHaveValue(testUser.first_name);
+            await expect(EditProfileScreen.lastNameInput).toHaveValue(testUser.last_name);
+            await expect(EditProfileScreen.usernameInput).toHaveValue(testUser.username);
+            await expect(EditProfileScreen.emailInputDisabled).toHaveValue(testUser.email);
+            await expect(EditProfileScreen.nicknameInput).toHaveValue(testUser.nickname);
+            await expect(EditProfileScreen.positionInput).toHaveValue(testUser.position);
+        } else {
+            await expect(EditProfileScreen.firstNameInput).toHaveText(testUser.first_name);
+            await expect(EditProfileScreen.lastNameInput).toHaveText(testUser.last_name);
+            await expect(EditProfileScreen.usernameInput).toHaveText(testUser.username);
+            await expect(EditProfileScreen.emailInputDisabled).toHaveText(testUser.email);
+            await expect(EditProfileScreen.nicknameInput).toHaveText(testUser.nickname);
+            await expect(EditProfileScreen.positionInput).toHaveText(testUser.position);
+        }
         await expect(EditProfileScreen.emailInputDescription).toHaveText('Email must be updated using a web client or desktop application.');
-        await expect(EditProfileScreen.nicknameInput).toHaveValue(testUser.nickname);
-        await expect(EditProfileScreen.positionInput).toHaveValue(testUser.position);
 
         // # Go back to account screen
         await EditProfileScreen.close();
@@ -73,13 +82,14 @@ describe('Account - Edit Profile', () => {
         await EditProfileScreen.firstNameInput.replaceText(`${testUser.first_name}${suffix}`);
         await EditProfileScreen.lastNameInput.replaceText(`${testUser.last_name}${suffix}`);
         await EditProfileScreen.scrollView.tap({x: 1, y: 1});
-        await EditProfileScreen.scrollView.scroll(100, 'down');
+        await waitFor(EditProfileScreen.usernameInput).toBeVisible().whileElement(by.id(EditProfileScreen.testID.scrollView)).scroll(50, 'down');
         await EditProfileScreen.usernameInput.clearText();
         await EditProfileScreen.usernameInput.typeText(`${testUser.username}${suffix}`);
         await EditProfileScreen.scrollView.tap({x: 1, y: 1});
-        await EditProfileScreen.scrollView.scroll(100, 'down');
+        await waitFor(EditProfileScreen.nicknameInput).toBeVisible().whileElement(by.id(EditProfileScreen.testID.scrollView)).scroll(50, 'down');
         await EditProfileScreen.nicknameInput.replaceText(`${testUser.nickname}${suffix}`);
         await EditProfileScreen.scrollView.tap({x: 1, y: 1});
+        await waitFor(EditProfileScreen.positionInput).toBeVisible().whileElement(by.id(EditProfileScreen.testID.scrollView)).scroll(50, 'down');
         await EditProfileScreen.positionInput.replaceText(`${testUser.position}${suffix}`);
         await EditProfileScreen.saveButton.tap();
 
@@ -93,12 +103,21 @@ describe('Account - Edit Profile', () => {
         await EditProfileScreen.open();
 
         // * Verify edited profile fields contain the updated values
-        await expect(EditProfileScreen.firstNameInput).toHaveValue(`${testUser.first_name}${suffix}`);
-        await expect(EditProfileScreen.lastNameInput).toHaveValue(`${testUser.last_name}${suffix}`);
-        await expect(EditProfileScreen.usernameInput).toHaveValue(`${testUser.username}${suffix}`);
-        await expect(EditProfileScreen.emailInputDisabled).toHaveValue(testUser.email);
-        await expect(EditProfileScreen.nicknameInput).toHaveValue(`${testUser.nickname}${suffix}`);
-        await expect(EditProfileScreen.positionInput).toHaveValue(`${testUser.position}${suffix}`);
+        if (isIos()) {
+            await expect(EditProfileScreen.firstNameInput).toHaveValue(`${testUser.first_name}${suffix}`);
+            await expect(EditProfileScreen.lastNameInput).toHaveValue(`${testUser.last_name}${suffix}`);
+            await expect(EditProfileScreen.usernameInput).toHaveValue(`${testUser.username}${suffix}`);
+            await expect(EditProfileScreen.emailInputDisabled).toHaveValue(testUser.email);
+            await expect(EditProfileScreen.nicknameInput).toHaveValue(`${testUser.nickname}${suffix}`);
+            await expect(EditProfileScreen.positionInput).toHaveValue(`${testUser.position}${suffix}`);
+        } else {
+            await expect(EditProfileScreen.firstNameInput).toHaveText(`${testUser.first_name}${suffix}`);
+            await expect(EditProfileScreen.lastNameInput).toHaveText(`${testUser.last_name}${suffix}`);
+            await expect(EditProfileScreen.usernameInput).toHaveText(`${testUser.username}${suffix}`);
+            await expect(EditProfileScreen.emailInputDisabled).toHaveText(testUser.email);
+            await expect(EditProfileScreen.nicknameInput).toHaveText(`${testUser.nickname}${suffix}`);
+            await expect(EditProfileScreen.positionInput).toHaveText(`${testUser.position}${suffix}`);
+        }
 
         // # Go back to account screen
         await EditProfileScreen.close();

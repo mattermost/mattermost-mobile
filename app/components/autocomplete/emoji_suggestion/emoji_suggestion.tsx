@@ -4,7 +4,7 @@
 import Fuse from 'fuse.js';
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo} from 'react';
-import {FlatList, Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
+import {FlatList, Platform, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {searchCustomEmojis} from '@actions/remote/custom_emoji';
@@ -54,7 +54,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             alignItems: 'center',
             overflow: 'hidden',
             paddingBottom: 8,
-            paddingHorizontal: 16,
             height: 40,
         },
     };

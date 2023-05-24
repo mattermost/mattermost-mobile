@@ -3,14 +3,14 @@
 
 import React from 'react';
 import {StyleSheet, View} from 'react-native';
-import {PanGestureHandler, TapGestureHandler} from 'react-native-gesture-handler';
-import {SharedValue, useDerivedValue} from 'react-native-reanimated';
+import {type SharedValue, useDerivedValue} from 'react-native-reanimated';
 
 import {typedMemo} from '@utils/gallery';
 
 import Gutter from './gutter';
 
 import type {GalleryItemType} from '@typings/screens/gallery';
+import type {PanGestureHandler, TapGestureHandler} from 'react-native-gesture-handler';
 
 export type PageRefs = [
     React.Ref<TapGestureHandler>,

@@ -9,11 +9,13 @@ import DeviceInfo from 'react-native-device-info';
 import Config from '@assets/config.json';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
+import SettingContainer from '@components/settings/container';
+import SettingSeparator from '@components/settings/separator';
 import AboutLinks from '@constants/about_links';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {t} from '@i18n';
-import SettingContainer from '@screens/settings/setting_container';
-import SettingSeparator from '@screens/settings/settings_separator';
+import {popTopScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -23,6 +25,8 @@ import LearnMore from './learn_more';
 import Subtitle from './subtitle';
 import Title from './title';
 import TosPrivacyContainer from './tos_privacy';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const MATTERMOST_BUNDLE_IDS = ['com.mattermost.rnbeta', 'com.mattermost.rn'];
 
@@ -92,10 +96,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 });
 
 type AboutProps = {
+    componentId: AvailableScreens;
     config: ClientConfig;
     license: ClientLicense;
 }
-const About = ({config, license}: AboutProps) => {
+const About = ({componentId, config, license}: AboutProps) => {
     const intl = useIntl();
     const theme = useTheme();
     const styles = getStyleSheet(theme);
@@ -161,6 +166,10 @@ const About = ({config, license}: AboutProps) => {
             id, defaultMessage, values,
         };
     }, [config]);
+
+    useAndroidHardwareBackHandler(componentId, () => {
+        popTopScreen(componentId);
+    });
 
     return (
         <SettingContainer testID='about'>

@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Dispatch, SetStateAction} from 'react';
+import React, {type Dispatch, type SetStateAction} from 'react';
 import {useIntl} from 'react-intl';
 
+import SettingBlock from '@components/settings/block';
+import SettingOption from '@components/settings/option';
+import SettingSeparator from '@components/settings/separator';
 import {t} from '@i18n';
-
-import SettingBlock from '../setting_block';
-import SettingOption from '../setting_option';
-import SettingSeparator from '../settings_separator';
 
 const replyHeaderText = {
     id: t('notification_settings.mention.reply'),

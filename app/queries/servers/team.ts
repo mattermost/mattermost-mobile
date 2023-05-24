@@ -46,14 +46,16 @@ export const addChannelToTeamHistory = async (operator: ServerDataOperator, team
     let tch: TeamChannelHistory|undefined;
 
     try {
+        const {database} = operator;
+
         // Exlude GLOBAL_THREADS from channel check
         if (channelId !== Screens.GLOBAL_THREADS) {
-            const myChannel = (await operator.database.get<MyChannelModel>(MY_CHANNEL).find(channelId));
+            const myChannel = (await database.get<MyChannelModel>(MY_CHANNEL).find(channelId));
             if (!myChannel) {
                 return [];
             }
         }
-        const teamChannelHistory = await getTeamChannelHistory(operator.database, teamId);
+        const teamChannelHistory = await getTeamChannelHistory(database, teamId);
         const channelIdSet = new Set(teamChannelHistory);
         if (channelIdSet.has(channelId)) {
             channelIdSet.delete(channelId);
@@ -111,7 +113,8 @@ export const removeChannelFromTeamHistory = async (operator: ServerDataOperator,
     let tch: TeamChannelHistory;
 
     try {
-        const teamChannelHistory = await getTeamChannelHistory(operator.database, teamId);
+        const {database} = operator;
+        const teamChannelHistory = await getTeamChannelHistory(database, teamId);
         const channelIdSet = new Set(teamChannelHistory);
         if (channelIdSet.has(channelId)) {
             channelIdSet.delete(channelId);
@@ -132,7 +135,8 @@ export const removeChannelFromTeamHistory = async (operator: ServerDataOperator,
 };
 
 export const addTeamToTeamHistory = async (operator: ServerDataOperator, teamId: string, prepareRecordsOnly = false) => {
-    const teamHistory = (await getTeamHistory(operator.database));
+    const {database} = operator;
+    const teamHistory = (await getTeamHistory(database));
     const teamHistorySet = new Set(teamHistory);
     if (teamHistorySet.has(teamId)) {
         teamHistorySet.delete(teamId);
@@ -144,7 +148,8 @@ export const addTeamToTeamHistory = async (operator: ServerDataOperator, teamId:
 };
 
 export const removeTeamFromTeamHistory = async (operator: ServerDataOperator, teamId: string, prepareRecordsOnly = false) => {
-    const teamHistory = (await getTeamHistory(operator.database));
+    const {database} = operator;
+    const teamHistory = (await getTeamHistory(database));
     const teamHistorySet = new Set(teamHistory);
     if (!teamHistorySet.has(teamId)) {
         return undefined;
@@ -168,7 +173,7 @@ export const getLastTeam = async (database: Database, ignoreIdForDefault?: strin
 export const getDefaultTeamId = async (database: Database, ignoreId?: string) => {
     const user = await getCurrentUser(database);
     const config = await getConfig(database);
-    const teamOrderPreferences = await queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER, '').fetch();
+    const teamOrderPreferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.TEAMS_ORDER, '').fetch();
     let teamOrderPreference = '';
     if (teamOrderPreferences.length) {
         teamOrderPreference = teamOrderPreferences[0].value;
@@ -214,7 +219,7 @@ export async function deleteMyTeams(operator: ServerDataOperator, myTeams: MyTea
         }
 
         if (preparedModels.length) {
-            await operator.batchRecords(preparedModels);
+            await operator.batchRecords(preparedModels, 'deleteMyTeams');
         }
         return {};
     } catch (error) {
@@ -296,6 +301,13 @@ export const observeMyTeam = (database: Database, teamId: string) => {
     );
 };
 
+export const observeMyTeamRoles = (database: Database, teamId: string) => {
+    return observeMyTeam(database, teamId).pipe(
+        switchMap((v) => of$(v?.roles)),
+        distinctUntilChanged(),
+    );
+};
+
 export const getTeamById = async (database: Database, teamId: string) => {
     try {
         const team = (await database.get<TeamModel>(TEAM).find(teamId));
@@ -368,9 +380,9 @@ export const getAvailableTeamIds = async (database: Database, excludeTeamId: str
     if (teams) {
         let teamOrderPreference;
         if (preferences) {
-            teamOrderPreference = getPreferenceValue(preferences, Preferences.TEAMS_ORDER, '', '') as string;
+            teamOrderPreference = getPreferenceValue<string>(preferences, Preferences.CATEGORIES.TEAMS_ORDER, '', '');
         } else {
-            const dbPreferences = await queryPreferencesByCategoryAndName(database, Preferences.TEAMS_ORDER, '').fetch();
+            const dbPreferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORIES.TEAMS_ORDER, '').fetch();
             teamOrderPreference = dbPreferences[0].value;
         }
 

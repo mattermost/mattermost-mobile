@@ -52,13 +52,14 @@ export const MIGRATION_EVENTS = keyMirror({
 });
 
 export const SYSTEM_IDENTIFIERS = {
-    CONFIG: 'config',
     CURRENT_CHANNEL_ID: 'currentChannelId',
     LAST_UNREAD_CHANNEL_ID: 'lastUnreadChannelId',
     CURRENT_TEAM_ID: 'currentTeamId',
     CURRENT_USER_ID: 'currentUserId',
     DATA_RETENTION_POLICIES: 'dataRetentionPolicies',
     EXPANDED_LINKS: 'expandedLinks',
+    GRANULAR_DATA_RETENTION_POLICIES: 'granularDataRetentionPolicies',
+    LAST_DATA_RETENTION_RUN: 'lastDataRetentionRun',
     GLOBAL_THREADS_TAB: 'globalThreadsTab',
     LAST_DISMISSED_BANNER: 'lastDismissedBanner',
     LAST_SERVER_VERSION_CHECK: 'LastServerVersionCheck',

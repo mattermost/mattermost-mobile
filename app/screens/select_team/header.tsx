@@ -14,7 +14,7 @@ import {alertServerLogout} from '@utils/server';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Servers, {ServersRef} from '../home/channel_list/servers';
+import Servers, {type ServersRef} from '../home/channel_list/servers';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     header: {

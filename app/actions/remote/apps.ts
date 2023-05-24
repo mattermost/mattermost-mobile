@@ -1,16 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
-
 import {sendEphemeralPost} from '@actions/local/post';
-import ClientError from '@client/rest/error';
 import {AppCallResponseTypes} from '@constants/apps';
 import NetworkManager from '@managers/network_manager';
 import {cleanForm, createCallRequest, makeCallErrorResponse} from '@utils/apps';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 
 import type {Client} from '@client/rest';
 import type PostModel from '@typings/database/models/servers/post';
+import type {IntlShape} from 'react-intl';
 
 export async function handleBindingClick<Res=unknown>(serverUrl: string, binding: AppBinding, context: AppContext, intl: IntlShape): Promise<{data?: AppCallResponse<Res>; error?: AppCallResponse<Res>}> {
     // Fetch form
@@ -59,15 +59,9 @@ export async function handleBindingClick<Res=unknown>(serverUrl: string, binding
     return doAppSubmit<Res>(serverUrl, callRequest, intl);
 }
 
-export async function doAppSubmit<Res=unknown>(serverUrl: string, inCall: AppCallRequest, intl: IntlShape) {
-    let client: Client;
+export async function doAppSubmit<Res=unknown>(serverUrl: string, inCall: AppCallRequest, intl: IntlShape): Promise<{data: AppCallResponse<Res>} | {error: AppCallResponse<Res>}> {
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error: makeCallErrorResponse((error as ClientError).message)};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         const call: AppCallRequest = {
             ...inCall,
             context: {
@@ -117,23 +111,18 @@ export async function doAppSubmit<Res=unknown>(serverUrl: string, inCall: AppCal
             }
         }
     } catch (error) {
-        const errMsg = (error as ClientError).message || intl.formatMessage({
+        const errMsg = getFullErrorMessage(error) || intl.formatMessage({
             id: 'apps.error.responses.unexpected_error',
             defaultMessage: 'Received an unexpected error.',
         });
+        logDebug('error on doAppSubmit', getFullErrorMessage(error));
         return {error: makeCallErrorResponse(errMsg)};
     }
 }
 
 export async function doAppFetchForm<Res=unknown>(serverUrl: string, call: AppCallRequest, intl: IntlShape) {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error: makeCallErrorResponse((error as ClientError).message)};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         const res = await client.executeAppCall<Res>(call, false);
         const responseType = res.type || AppCallResponseTypes.OK;
 
@@ -158,11 +147,12 @@ export async function doAppFetchForm<Res=unknown>(serverUrl: string, call: AppCa
                 return {error: makeCallErrorResponse(errMsg)};
             }
         }
-    } catch (error: any) {
-        const errMsg = error.message || intl.formatMessage({
+    } catch (error) {
+        const errMsg = getFullErrorMessage(error) || intl.formatMessage({
             id: 'apps.error.responses.unexpected_error',
             defaultMessage: 'Received an unexpected error.',
         });
+        logDebug('error on doAppFetchForm', getFullErrorMessage(error));
         return {error: makeCallErrorResponse(errMsg)};
     }
 }
@@ -171,11 +161,6 @@ export async function doAppLookup<Res=unknown>(serverUrl: string, call: AppCallR
     let client: Client;
     try {
         client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error: makeCallErrorResponse((error as ClientError).message)};
-    }
-
-    try {
         const res = await client.executeAppCall<Res>(call, false);
         const responseType = res.type || AppCallResponseTypes.OK;
 
@@ -194,10 +179,11 @@ export async function doAppLookup<Res=unknown>(serverUrl: string, call: AppCallR
             }
         }
     } catch (error: any) {
-        const errMsg = error.message || intl.formatMessage({
+        const errMsg = getFullErrorMessage(error) || intl.formatMessage({
             id: 'apps.error.responses.unexpected_error',
             defaultMessage: 'Received an unexpected error.',
         });
+        logDebug('error on doAppLookup', getFullErrorMessage(error));
         return {error: makeCallErrorResponse(errMsg)};
     }
 }

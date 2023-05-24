@@ -9,15 +9,18 @@ import {buildDraftKey} from '@database/operator/server_data_operator/comparators
 import {
     transformDraftRecord,
     transformFileRecord,
+    transformPostInThreadRecord,
     transformPostRecord,
+    transformPostsInChannelRecord,
 } from '@database/operator/server_data_operator/transformers/post';
-import {getUniqueRawsBy} from '@database/operator/utils/general';
-import {createPostsChain} from '@database/operator/utils/post';
+import {getRawRecordPairs, getUniqueRawsBy, getValidRecordsForUpdate} from '@database/operator/utils/general';
+import {createPostsChain, getPostListEdges} from '@database/operator/utils/post';
 import {logWarning} from '@utils/log';
 
+import type ServerDataOperatorBase from '.';
 import type Database from '@nozbe/watermelondb/Database';
 import type Model from '@nozbe/watermelondb/Model';
-import type {HandleDraftArgs, HandleFilesArgs, HandlePostsArgs, ProcessRecordResults} from '@typings/database/database';
+import type {HandleDraftArgs, HandleFilesArgs, HandlePostsArgs, RecordPair} from '@typings/database/database';
 import type DraftModel from '@typings/database/models/servers/draft';
 import type FileModel from '@typings/database/models/servers/file';
 import type PostModel from '@typings/database/models/servers/post';
@@ -29,6 +32,8 @@ const {
     DRAFT,
     FILE,
     POST,
+    POSTS_IN_CHANNEL,
+    POSTS_IN_THREAD,
 } = MM_TABLES.SERVER;
 
 type PostActionType = keyof typeof ActionType.POSTS;
@@ -39,9 +44,67 @@ export interface PostHandlerMix {
     handlePosts: ({actionType, order, posts, previousPostId, prepareRecordsOnly}: HandlePostsArgs) => Promise<Model[]>;
     handlePostsInChannel: (posts: Post[]) => Promise<void>;
     handlePostsInThread: (rootPosts: PostsInThread[]) => Promise<void>;
+
+    handleReceivedPostsInChannel: (posts: Post[], prepareRecordsOnly?: boolean) => Promise<PostsInChannelModel[]>;
+    handleReceivedPostsInChannelSince: (posts: Post[], prepareRecordsOnly?: boolean) => Promise<PostsInChannelModel[]>;
+    handleReceivedPostsInChannelBefore: (posts: Post[], prepareRecordsOnly?: boolean) => Promise<PostsInChannelModel[]>;
+    handleReceivedPostsInChannelAfter: (posts: Post[], prepareRecordsOnly?: boolean) => Promise<PostsInChannelModel[]>;
+    handleReceivedPostForChannel: (post: Post, prepareRecordsOnly?: boolean) => Promise<PostsInChannelModel[]>;
+
+    handleReceivedPostsInThread: (postsMap: Record<string, Post[]>, prepareRecordsOnly?: boolean) => Promise<PostsInThreadModel[]>;
 }
 
-const PostHandler = (superclass: any) => class extends superclass {
+const mergePostInChannelChunks = async (newChunk: PostsInChannelModel, existingChunks: PostsInChannelModel[]) => {
+    let newChunkUpdated = false;
+    const result: PostsInChannelModel[] = [];
+    for (const chunk of existingChunks) {
+        // Exit early if there is no possibility of any other intersection
+        if (chunk.latest < newChunk.earliest) {
+            break;
+        }
+
+        // omit the current chunk
+        if (chunk.id === newChunk.id) {
+            continue;
+        }
+
+        // delete contained chunks
+        if (newChunk.earliest <= chunk.earliest && newChunk.latest >= chunk.latest) {
+            result.push(chunk.prepareDestroyPermanently());
+            continue;
+        }
+
+        // fuse with any other chunk it intersect with
+        if (
+            (newChunk.earliest <= chunk.earliest && newChunk.latest >= chunk.earliest) ||
+            (newChunk.latest >= chunk.latest && newChunk.earliest >= chunk.earliest)
+        ) {
+            newChunkUpdated = true;
+
+            // We may be updating this record several times, but our patches in the WatermelonDB library
+            // should handle that gracefully.
+            newChunk.prepareUpdate((r) => {
+                r.earliest = Math.min(r.earliest, chunk.earliest);
+                r.latest = Math.max(r.latest, chunk.latest);
+            });
+            result.push(chunk.prepareDestroyPermanently());
+        }
+    }
+
+    if (newChunkUpdated) {
+        // We may be adding this record twice in the caller if prepareRecordsOnly is true, but our patches in
+        // the WatermelonDB library should handle that gracefully.
+        result.push(newChunk);
+    }
+
+    return result;
+};
+
+export const exportedForTest = {
+    mergePostInChannelChunks,
+};
+
+const PostHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
      * handleDraft: Handler responsible for the Create/Update operations occurring the Draft table from the 'Server' schema
      * @param {HandleDraftArgs} draftsArgs
@@ -66,7 +129,7 @@ const PostHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: DRAFT,
-        });
+        }, 'handleDraft');
     };
 
     /**
@@ -171,7 +234,7 @@ const PostHandler = (superclass: any) => class extends superclass {
             deleteRawValues: pendingPostsToDelete,
             tableName,
             fieldName: 'id',
-        })) as ProcessRecordResults;
+        }));
 
         const preparedPosts = (await this.prepareRecords({
             createRaws: processedPosts.createRaws,
@@ -220,7 +283,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         }
 
         if (batch.length && !prepareRecordsOnly) {
-            await this.batchRecords(batch);
+            await this.batchRecords(batch, 'handlePosts');
         }
 
         return batch;
@@ -245,7 +308,8 @@ const PostHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues: files,
             tableName: FILE,
             fieldName: 'id',
-        })) as ProcessRecordResults;
+            deleteRawValues: [],
+        }));
 
         const postFiles = await this.prepareRecords({
             createRaws: processedFiles.createRaws,
@@ -259,7 +323,7 @@ const PostHandler = (superclass: any) => class extends superclass {
         }
 
         if (postFiles?.length) {
-            await this.batchRecords(postFiles);
+            await this.batchRecords(postFiles, 'handleFiles');
         }
 
         return postFiles;
@@ -322,10 +386,294 @@ const PostHandler = (superclass: any) => class extends superclass {
             case ActionType.POSTS.RECEIVED_BEFORE:
                 return this.handleReceivedPostsInChannelBefore(posts, prepareRecordsOnly) as Promise<PostsInChannelModel[]>;
             case ActionType.POSTS.RECEIVED_NEW:
-                return this.handleReceivedPostForChannel(posts, prepareRecordsOnly) as Promise<PostsInChannelModel[]>;
+                return this.handleReceivedNewPostForChannel(posts, prepareRecordsOnly) as Promise<PostsInChannelModel[]>;
         }
 
         return [];
+    };
+
+    // ========================
+    // POST IN CHANNEL
+    // ========================
+
+    _createPostsInChannelRecord = async (channelId: string, earliest: number, latest: number, prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
+        const models = await this.prepareRecords({
+            tableName: POSTS_IN_CHANNEL,
+            createRaws: [{record: undefined, raw: {channel_id: channelId, earliest, latest}}],
+            transformer: transformPostsInChannelRecord,
+        });
+
+        if (!prepareRecordsOnly) {
+            await this.batchRecords(models, '_createPostsInChannelRecord');
+        }
+
+        return models;
+    };
+
+    _mergePostInChannelChunks = async (newChunk: PostsInChannelModel, existingChunks: PostsInChannelModel[], prepareRecordsOnly = false) => {
+        const result = await mergePostInChannelChunks(newChunk, existingChunks);
+        if (result.length && !prepareRecordsOnly) {
+            await this.batchRecords(result, '_mergePostInChannelChunks');
+        }
+
+        return result;
+    };
+
+    handleReceivedPostsInChannel = async (posts?: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
+        if (!posts?.length) {
+            logWarning(
+                'An empty or undefined "posts" array has been passed to the handleReceivedPostsInChannel method',
+            );
+            return [];
+        }
+
+        const {firstPost, lastPost} = getPostListEdges(posts);
+        const channelId = firstPost.channel_id;
+        const earliest = firstPost.create_at;
+        const latest = lastPost.create_at;
+
+        // Find the records in the PostsInChannel table that have a matching channel_id
+        const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
+            Q.where('channel_id', channelId),
+            Q.sortBy('latest', Q.desc),
+        ).fetch()) as PostsInChannelModel[];
+
+        // chunk length 0; then it's a new chunk to be added to the PostsInChannel table
+        if (!chunks.length) {
+            return this._createPostsInChannelRecord(channelId, earliest, latest, prepareRecordsOnly);
+        }
+
+        let targetChunk: PostsInChannelModel|undefined;
+
+        for (const chunk of chunks) {
+            // find if we should plug the chain along an existing chunk
+            if (
+                (earliest >= chunk.earliest && earliest <= chunk.latest) ||
+                (latest <= chunk.latest && latest >= chunk.earliest)
+            ) {
+                targetChunk = chunk;
+                break;
+            }
+        }
+
+        if (!targetChunk) {
+            // Create a new chunk and merge them if needed
+            const models = [];
+            models.push(...await this._createPostsInChannelRecord(channelId, earliest, latest, prepareRecordsOnly));
+            models.push(...await this._mergePostInChannelChunks(models[0], chunks, prepareRecordsOnly));
+            return models;
+        }
+
+        // Check if the new chunk is contained by the existing chunk
+        if (
+            targetChunk.earliest <= earliest &&
+            targetChunk.latest >= latest
+        ) {
+            return [];
+        }
+
+        const models = [];
+
+        // If the chunk was found, Update the chunk and return
+        models.push(targetChunk.prepareUpdate((record) => {
+            record.earliest = Math.min(record.earliest, earliest);
+            record.latest = Math.max(record.latest, latest);
+        }));
+        models.push(...await this._mergePostInChannelChunks(targetChunk, chunks, prepareRecordsOnly));
+
+        if (!prepareRecordsOnly) {
+            this.batchRecords(models, 'handleReceivedPostsInChannel');
+        }
+
+        return models;
+    };
+
+    handleReceivedPostsInChannelSince = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
+        if (!posts?.length) {
+            logWarning(
+                'An empty or undefined "posts" array has been passed to the handleReceivedPostsInChannelSince method',
+            );
+            return [];
+        }
+
+        const {firstPost, lastPost} = getPostListEdges(posts);
+        const channelId = firstPost.channel_id;
+        const latest = lastPost.create_at;
+
+        const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
+            Q.where('channel_id', channelId),
+            Q.sortBy('latest', Q.desc),
+        ).fetch()) as PostsInChannelModel[];
+
+        if (!chunks.length) {
+            // Create a new chunk in case somehow the chunks got deleted for this channel
+            const earliest = firstPost.create_at;
+            return this._createPostsInChannelRecord(channelId, earliest, latest, prepareRecordsOnly);
+        }
+
+        const targetChunk = chunks[0];
+
+        if (targetChunk.latest >= latest) {
+            return [];
+        }
+
+        // We've got new posts that belong to this chunk
+        const models = [targetChunk.prepareUpdate((record) => {
+            record.latest = Math.max(record.latest, latest);
+        })];
+
+        if (!prepareRecordsOnly) {
+            this.batchRecords(models, 'handleReceivedPostsInChannelSince');
+        }
+
+        return models;
+    };
+
+    handleReceivedPostsInChannelBefore = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
+        if (!posts?.length) {
+            logWarning(
+                'An empty or undefined "posts" array has been passed to the handleReceivedPostsInChannelBefore method',
+            );
+            return [];
+        }
+
+        const {firstPost, lastPost} = getPostListEdges(posts);
+        const channelId = firstPost.channel_id;
+        const earliest = firstPost.create_at;
+
+        // Find the records in the PostsInChannel table that have a matching channel_id
+        const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
+            Q.where('channel_id', channelId),
+            Q.sortBy('latest', Q.desc),
+        ).fetch()) as PostsInChannelModel[];
+
+        if (!chunks.length) {
+            // Create a new chunk in case somehow the chunks got deleted for this channel
+            const latest = lastPost.create_at;
+            return this._createPostsInChannelRecord(channelId, earliest, latest, prepareRecordsOnly);
+        }
+
+        const targetChunk = chunks[0];
+        if (targetChunk.earliest <= earliest) {
+            return [];
+        }
+
+        const models = [];
+
+        // If the chunk was found, Update the chunk and return
+        models.push(targetChunk.prepareUpdate((record) => {
+            record.earliest = Math.min(record.earliest, earliest);
+        }));
+
+        models.push(...(await this._mergePostInChannelChunks(targetChunk, chunks, prepareRecordsOnly)));
+
+        if (!prepareRecordsOnly) {
+            this.batchRecords(models, 'handleReceivedPostsInChannelBefore');
+        }
+
+        return models;
+    };
+
+    handleReceivedPostsInChannelAfter = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
+        throw new Error(`handleReceivedPostsInChannelAfter Not implemented yet. posts count${posts.length} prepareRecordsOnly=${prepareRecordsOnly}`);
+    };
+
+    handleReceivedNewPostForChannel = async (posts: Post[], prepareRecordsOnly = false): Promise<PostsInChannelModel[]> => {
+        if (!posts?.length) {
+            logWarning(
+                'An empty or undefined "posts" array has been passed to the handleReceivedPostForChannel method',
+            );
+            return [];
+        }
+
+        const {firstPost, lastPost} = getPostListEdges(posts);
+        const channelId = firstPost.channel_id;
+        const earliest = firstPost.create_at;
+        const latest = lastPost.create_at;
+
+        // Find the records in the PostsInChannel table that have a matching channel_id
+        const chunks = (await this.database.get(POSTS_IN_CHANNEL).query(
+            Q.where('channel_id', channelId),
+            Q.sortBy('latest', Q.desc),
+        ).fetch()) as PostsInChannelModel[];
+
+        // chunk length 0; then it's a new chunk to be added to the PostsInChannel table
+        if (chunks.length === 0) {
+            return this._createPostsInChannelRecord(channelId, earliest, latest, prepareRecordsOnly);
+        }
+
+        const targetChunk = chunks[0];
+        if (targetChunk.latest >= latest) {
+            return [];
+        }
+
+        // If the chunk was found, Update the chunk and return
+        targetChunk.prepareUpdate((record) => {
+            record.latest = Math.max(record.latest, latest);
+        });
+
+        if (!prepareRecordsOnly) {
+            this.batchRecords([targetChunk], 'handleReceivedNewPostForChannel');
+        }
+        return [targetChunk];
+    };
+
+    // ========================
+    // POST IN THREAD
+    // ========================
+
+    handleReceivedPostsInThread = async (postsMap: Record<string, Post[]>, prepareRecordsOnly = false): Promise<PostsInThreadModel[]> => {
+        if (!postsMap || !Object.keys(postsMap).length) {
+            logWarning(
+                'An empty or undefined "postsMap" object has been passed to the handleReceivedPostsInThread method',
+            );
+            return [];
+        }
+
+        const update: RecordPair[] = [];
+        const create: PostsInThread[] = [];
+        const ids = Object.keys(postsMap);
+        for await (const rootId of ids) {
+            const {firstPost, lastPost} = getPostListEdges(postsMap[rootId]);
+            const chunks = (await this.database.get(POSTS_IN_THREAD).query(
+                Q.where('root_id', rootId),
+                Q.sortBy('latest', Q.desc),
+            ).fetch()) as PostsInThreadModel[];
+
+            if (chunks.length) {
+                const chunk = chunks[0];
+                const newValue = {
+                    root_id: rootId,
+                    earliest: Math.min(chunk.earliest, firstPost.create_at),
+                    latest: Math.max(chunk.latest, lastPost.create_at),
+                };
+                update.push(getValidRecordsForUpdate({
+                    tableName: POSTS_IN_THREAD,
+                    newValue,
+                    existingRecord: chunk,
+                }));
+            } else {
+                // create chunk
+                create.push({
+                    root_id: rootId,
+                    earliest: firstPost.create_at,
+                    latest: lastPost.create_at,
+                });
+            }
+        }
+
+        const postInThreadRecords = (await this.prepareRecords({
+            createRaws: getRawRecordPairs(create),
+            updateRaws: update,
+            transformer: transformPostInThreadRecord,
+            tableName: POSTS_IN_THREAD,
+        })) as PostsInThreadModel[];
+
+        if (postInThreadRecords?.length && !prepareRecordsOnly) {
+            await this.batchRecords(postInThreadRecords, 'handleReceivedPostsInThread');
+        }
+
+        return postInThreadRecords;
     };
 };
 

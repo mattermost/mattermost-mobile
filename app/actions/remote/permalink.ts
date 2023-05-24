@@ -9,12 +9,9 @@ import {displayPermalink} from '@utils/permalink';
 import type TeamModel from '@typings/database/models/servers/team';
 
 export const showPermalink = async (serverUrl: string, teamName: string, postId: string, openAsPermalink = true) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
     try {
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         let name = teamName;
         let team: TeamModel | undefined;
         if (!name || name === DeepLink.Redirect) {
@@ -26,7 +23,7 @@ export const showPermalink = async (serverUrl: string, teamName: string, postId:
 
         await displayPermalink(name, postId, openAsPermalink);
 
-        return {error: undefined};
+        return {};
     } catch (error) {
         return {error};
     }

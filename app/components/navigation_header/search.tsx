@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import React, {forwardRef, useCallback, useEffect, useMemo} from 'react';
-import {DeviceEventEmitter, Keyboard, NativeSyntheticEvent, Platform, TextInputFocusEventData, ViewStyle} from 'react-native';
-import Animated, {AnimatedStyleProp} from 'react-native-reanimated';
+import {DeviceEventEmitter, Keyboard, type NativeSyntheticEvent, Platform, type TextInputFocusEventData, type ViewStyle} from 'react-native';
+import Animated, {type AnimatedStyleProp} from 'react-native-reanimated';
 
-import Search, {SearchProps, SearchRef} from '@components/search';
+import Search, {type SearchProps, type SearchRef} from '@components/search';
 import {Events} from '@constants';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';

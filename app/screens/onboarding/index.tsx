@@ -9,8 +9,9 @@ import {
     ScrollView,
     StyleSheet,
     Platform,
-    NativeSyntheticEvent,
-    NativeScrollEvent,
+    type NativeSyntheticEvent,
+    type NativeScrollEvent,
+    BackHandler,
 } from 'react-native';
 import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -109,6 +110,23 @@ const Onboarding = ({
         return {
             transform: [{translateX: withTiming(translateX.value, {duration})}],
         };
+    }, []);
+
+    useEffect(() => {
+        const listener = BackHandler.addEventListener('hardwareBackPress', () => {
+            if (!currentIndex.value) {
+                return false;
+            }
+
+            moveToSlide(currentIndex.value - 1);
+            return true;
+        });
+
+        return () => listener.remove();
+    }, []);
+
+    useEffect(() => {
+        translateX.value = 0;
     }, []);
 
     return (

@@ -2,13 +2,14 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, ViewStyle} from 'react-native';
 import Svg, {
     Ellipse,
     Path,
     Mask,
     G,
 } from 'react-native-svg';
+
+import type {StyleProp, ViewStyle} from 'react-native';
 
 type Props = {
     theme: Theme;

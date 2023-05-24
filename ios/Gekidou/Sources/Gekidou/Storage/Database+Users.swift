@@ -9,90 +9,19 @@
 import Foundation
 import SQLite
 
-public struct User: Codable, Hashable {
-    let id: String
-    let auth_service: String
-    let update_at: Int64
-    let delete_at: Int64
-    let email: String
-    let first_name: String
-    let is_bot: Bool
-    let is_guest: Bool
-    let last_name: String
-    let last_picture_update: Int64
-    let locale: String
-    let nickname: String
-    let position: String
-    let roles: String
-    let status: String
-    let username: String
-    let notify_props: String
-    let props: String
-    let timezone: String
-    
-    public enum UserKeys: String, CodingKey {
-        case id = "id"
-        case auth_service = "auth_service"
-        case update_at = "update_at"
-        case delete_at = "delete_at"
-        case email = "email"
-        case first_name = "first_name"
-        case is_bot = "is_bot"
-        case last_name = "last_name"
-        case last_picture_update = "last_picture_update"
-        case locale = "locale"
-        case nickname = "nickname"
-        case position = "position"
-        case roles = "roles"
-        case username = "username"
-        case notify_props = "notify_props"
-        case props = "props"
-        case timezone = "timezone"
-    }
-    
-    public init(from decoder: Decoder) throws {
-        let container = try decoder.container(keyedBy: UserKeys.self)
-        id = try container.decode(String.self, forKey: .id)
-        auth_service = try container.decode(String.self, forKey: .auth_service)
-        update_at = try container.decode(Int64.self, forKey: .update_at)
-        delete_at = try container.decode(Int64.self, forKey: .delete_at)
-        email = try container.decode(String.self, forKey: .email)
-        first_name = try container.decode(String.self, forKey: .first_name)
-        is_bot = container.contains(.is_bot) ? try container.decode(Bool.self, forKey: .is_bot) : false
-        roles = try container.decode(String.self, forKey: .roles)
-        is_guest = roles.contains("system_guest")
-        last_name = try container.decode(String.self, forKey: .last_name)
-        last_picture_update = try container.decodeIfPresent(Int64.self, forKey: .last_picture_update) ?? 0
-        locale = try container.decode(String.self, forKey: .locale)
-        nickname = try container.decode(String.self, forKey: .nickname)
-        position = try container.decode(String.self, forKey: .position)
-        status = "offline"
-        username = try container.decode(String.self, forKey: .username)
-
-        let notifyPropsData = try container.decodeIfPresent([String: String].self, forKey: .notify_props)
-        if (notifyPropsData != nil) {
-            notify_props = Database.default.json(from: notifyPropsData) ?? "{}"
-        } else {
-            notify_props = "{}"
-        }
-
-        let propsData = try container.decodeIfPresent([String: String].self, forKey: .props)
-        if (propsData != nil) {
-            props = Database.default.json(from: propsData) ?? "{}"
-        } else {
-            props = "{}"
+extension Database {
+    public func getUserFromRow(_ row: Row) -> User? {
+        do {
+            let decoder = row.decoder()
+            let _ = try decoder.container(keyedBy: User.UserKeys.self)
+            return try User(from: decoder)
+        } catch {
+            print(error.localizedDescription)
         }
         
-        let timezoneData = try container.decodeIfPresent([String: String].self, forKey: .timezone)
-        if (timezoneData != nil) {
-            timezone = Database.default.json(from: timezoneData) ?? "{}"
-        } else {
-            timezone = "{}"
-        }
+        return nil
     }
-}
 
-extension Database {
     public func queryCurrentUserId(_ serverUrl: String) throws -> String {
         let db = try getDatabaseForServer(serverUrl)
         
@@ -119,52 +48,84 @@ extension Database {
         
         throw DatabaseError.NoResults(query.expression.description)
     }
+    
+    public func getCurrentUserLocale(_ serverUrl: String) -> String {
+        if let user = try? queryCurrentUser(serverUrl) {
+            if let locale = try? user.get(Expression<String>("locale")) {
+                return locale
+            }
+        }
+        
+        return "en"
+    }
+    
+    public func getUserLastPictureAt(for userId: String,  forServerUrl serverUrl: String) -> Double? {
+        var updateAt: Double?
+        do {
+            let db = try getDatabaseForServer(serverUrl)
+            
+            let stmtString = "SELECT * FROM User WHERE id='\(userId)'"
+            
+            let results: [User] = try db.prepareRowIterator(stmtString).map {try $0.decode()}
+            updateAt = results.first?.lastPictureUpdate
 
-    public func queryUsers(byIds: Set<String>, withServerUrl: String) throws -> Set<String> {
-        let db = try getDatabaseForServer(withServerUrl)
+        } catch {
+            return nil
+        }
 
+        return updateAt
+    }
+
+    public func queryUsers(byIds userIds: Set<String>, forServerUrl serverUrl: String) -> Set<String> {
         var result: Set<String> = Set()
-        let idCol = Expression<String>("id")
-        for user in try db.prepare(
-            userTable.select(idCol).filter(byIds.contains(idCol))
-        ) {
-            result.insert(user[idCol])
+        if let db = try? getDatabaseForServer(serverUrl) {
+            
+            let idCol = Expression<String>("id")
+            if let users = try? db.prepare(
+                userTable.select(idCol).filter(userIds.contains(idCol))
+            ) {
+                for user in users {
+                    result.insert(user[idCol])
+                }
+            }
         }
         
         return result
     }
     
-    public func queryUsers(byUsernames: Set<String>, withServerUrl: String) throws -> Set<String> {
-        let db = try getDatabaseForServer(withServerUrl)
-        
+    public func queryUsers(byUsernames usernames: Set<String>, forServerUrl serverUrl: String) -> Set<String> {
         var result: Set<String> = Set()
-        let usernameCol = Expression<String>("username")
-        for user in try db.prepare(
-            userTable.select(usernameCol).filter(byUsernames.contains(usernameCol))
-        ) {
-            result.insert(user[usernameCol])
+        if let db = try? getDatabaseForServer(serverUrl) {
+            let usernameCol = Expression<String>("username")
+            if let users = try? db.prepare(
+                userTable.select(usernameCol).filter(usernames.contains(usernameCol))
+            ) {
+                for user in users {
+                    result.insert(user[usernameCol])
+                }
+            }
         }
         
         return result
     }
     
-    public func insertUsers(_ db: Connection, _ users: Set<User>) throws {
-        let setters = createUserSettedrs(from: users)
+    public func insertUsers(_ db: Connection, _ users: [User]) throws {
+        let setters = createUserSetters(from: users)
         let insertQuery = userTable.insertMany(or: .replace, setters)
         try db.run(insertQuery)
     }
     
-    private func createUserSettedrs(from users: Set<User>) -> [[Setter]] {
+    private func createUserSetters(from users: [User]) -> [[Setter]] {
         let id = Expression<String>("id")
         let authService = Expression<String>("auth_service")
-        let updateAt = Expression<Int64>("update_at")
-        let deleteAt = Expression<Int64>("delete_at")
+        let updateAt = Expression<Double>("update_at")
+        let deleteAt = Expression<Double>("delete_at")
         let email = Expression<String>("email")
         let firstName = Expression<String>("first_name")
         let isBot = Expression<Bool>("is_bot")
         let isGuest = Expression<Bool>("is_guest")
         let lastName = Expression<String>("last_name")
-        let lastPictureUpdate = Expression<Int64>("last_picture_update")
+        let lastPictureUpdate = Expression<Double>("last_picture_update")
         let locale = Expression<String>("locale")
         let nickname = Expression<String>("nickname")
         let position = Expression<String>("position")
@@ -179,22 +140,22 @@ extension Database {
         for user in users {
             var setter = [Setter]()
             setter.append(id <- user.id)
-            setter.append(authService <- user.auth_service)
-            setter.append(updateAt <- user.update_at)
-            setter.append(deleteAt <- user.delete_at)
+            setter.append(authService <- user.authService)
+            setter.append(updateAt <- user.updateAt)
+            setter.append(deleteAt <- user.deleteAt)
             setter.append(email <- user.email)
-            setter.append(firstName <- user.first_name)
-            setter.append(isBot <- user.is_bot)
-            setter.append(isGuest <- user.is_guest)
-            setter.append(lastName <- user.last_name)
-            setter.append(lastPictureUpdate <- user.last_picture_update)
+            setter.append(firstName <- user.firstName)
+            setter.append(isBot <- user.isBot)
+            setter.append(isGuest <- user.isGuest)
+            setter.append(lastName <- user.lastName)
+            setter.append(lastPictureUpdate <- user.lastPictureUpdate)
             setter.append(locale <- user.locale)
             setter.append(nickname <- user.nickname)
             setter.append(position <- user.position)
             setter.append(roles <- user.roles)
             setter.append(status <- user.status)
             setter.append(username <- user.username)
-            setter.append(notifyProps <- user.notify_props)
+            setter.append(notifyProps <- user.notifyProps)
             setter.append(props <- user.props)
             setter.append(timezone <- user.timezone)
             setters.append(setter)

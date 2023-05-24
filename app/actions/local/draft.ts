@@ -26,7 +26,7 @@ export async function updateDraftFile(serverUrl: string, channelId: string, root
         });
 
         if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft]);
+            await operator.batchRecords([draft], 'updateDraftFile');
         }
 
         return {draft};
@@ -58,7 +58,7 @@ export async function removeDraftFile(serverUrl: string, channelId: string, root
         }
 
         if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft]);
+            await operator.batchRecords([draft], 'removeDraftFile');
         }
 
         return {draft};
@@ -99,7 +99,7 @@ export async function updateDraftMessage(serverUrl: string, channelId: string, r
         }
 
         if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft]);
+            await operator.batchRecords([draft], 'updateDraftMessage');
         }
 
         return {draft};
@@ -129,7 +129,7 @@ export async function addFilesToDraft(serverUrl: string, channelId: string, root
         });
 
         if (!prepareRecordsOnly) {
-            await operator.batchRecords([draft]);
+            await operator.batchRecords([draft], 'addFilesToDraft');
         }
 
         return {draft};
@@ -155,3 +155,37 @@ export const removeDraft = async (serverUrl: string, channelId: string, rootId =
         return {error};
     }
 };
+
+export async function updateDraftPriority(serverUrl: string, channelId: string, rootId: string, postPriority: PostPriority, prepareRecordsOnly = false) {
+    try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+        const draft = await getDraft(database, channelId, rootId);
+        if (!draft) {
+            const newDraft: Draft = {
+                channel_id: channelId,
+                root_id: rootId,
+                metadata: {
+                    priority: postPriority,
+                },
+            };
+
+            return operator.handleDraft({drafts: [newDraft], prepareRecordsOnly});
+        }
+
+        draft.prepareUpdate((d) => {
+            d.metadata = {
+                ...d.metadata,
+                priority: postPriority,
+            };
+        });
+
+        if (!prepareRecordsOnly) {
+            await operator.batchRecords([draft], 'updateDraftPriority');
+        }
+
+        return {draft};
+    } catch (error) {
+        logError('Failed updateDraftPriority', error);
+        return {error};
+    }
+}

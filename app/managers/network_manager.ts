@@ -3,8 +3,8 @@
 
 import Emm from '@mattermost/react-native-emm';
 import {
-    APIClientErrorEvent,
-    APIClientErrorEventHandler,
+    type APIClientErrorEvent,
+    type APIClientErrorEventHandler,
     getOrCreateAPIClient,
     RetryTypes,
 } from '@mattermost/react-native-network-client';
@@ -88,6 +88,7 @@ class NetworkManager {
                     defaultMessage: 'Can’t find this server. Check spelling and URL format.',
                 },
                 url: serverUrl,
+                details: error,
             });
         }
 

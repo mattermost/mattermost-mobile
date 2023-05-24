@@ -9,6 +9,7 @@ import InCallManager from 'react-native-incall-manager';
 import * as CallsActions from '@calls/actions';
 import {getConnectionForTesting} from '@calls/actions/calls';
 import * as Permissions from '@calls/actions/permissions';
+import {needsRecordingWillBePostedAlert, needsRecordingErrorAlert} from '@calls/alerts';
 import * as State from '@calls/state';
 import {
     myselfLeftCall,
@@ -24,13 +25,14 @@ import {
     userJoinedCall,
 } from '@calls/state';
 import {
-    Call,
-    CallsState,
-    ChannelsWithCalls,
-    CurrentCall,
+    type Call,
+    type CallsState,
+    type ChannelsWithCalls,
+    type CurrentCall,
     DefaultCallsConfig,
     DefaultCallsState,
 } from '@calls/types/calls';
+import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
 
 const mockClient = {
@@ -63,6 +65,8 @@ const mockClient = {
         ]
     )),
     enableChannelCalls: jest.fn(),
+    startCallRecording: jest.fn(),
+    stopCallRecording: jest.fn(),
 };
 
 jest.mock('@calls/connection/connection', () => ({
@@ -73,6 +77,18 @@ jest.mock('@calls/connection/connection', () => ({
         waitForPeerConnection: jest.fn(() => Promise.resolve()),
     })),
 }));
+
+jest.mock('@actions/remote/thread', () => ({
+    updateThreadFollowing: jest.fn(() => Promise.resolve({})),
+}));
+
+jest.mock('@queries/servers/thread', () => ({
+    getThreadById: jest.fn(() => Promise.resolve({
+        isFollowing: false,
+    })),
+}));
+
+jest.mock('@calls/alerts');
 
 const addFakeCall = (serverUrl: string, channelId: string) => {
     const call = {
@@ -92,20 +108,25 @@ const addFakeCall = (serverUrl: string, channelId: string) => {
         hostId: 'xohi8cki9787fgiryne716u84o',
     } as Call;
     act(() => {
-        State.setCallsState(serverUrl, {serverUrl, myUserId: 'myUserId', calls: {}, enabled: {}});
+        State.setCallsState(serverUrl, {myUserId: 'myUserId', calls: {}, enabled: {}});
         State.callStarted(serverUrl, call);
     });
 };
 
 describe('Actions.Calls', () => {
     const {newConnection} = require('@calls/connection/connection');
+    const {updateThreadFollowing} = require('@actions/remote/thread');
+
     InCallManager.setSpeakerphoneOn = jest.fn();
+    InCallManager.setForceSpeakerphoneOn = jest.fn();
     // eslint-disable-next-line
     // @ts-ignore
     NetworkManager.getClient = () => mockClient;
     jest.spyOn(Permissions, 'hasMicrophonePermission').mockReturnValue(Promise.resolve(true));
 
-    beforeAll(() => {
+    beforeAll(async () => {
+        await DatabaseManager.init(['server1']);
+
         // create subjects
         const {result} = renderHook(() => {
             return [useCallsState('server1'), useChannelsWithCalls('server1'), useCurrentCall(), useCallsConfig('server1')];
@@ -119,6 +140,7 @@ describe('Actions.Calls', () => {
 
     beforeEach(() => {
         newConnection.mockClear();
+        updateThreadFollowing.mockClear();
         mockClient.getCalls.mockClear();
         mockClient.getCallsConfig.mockClear();
         mockClient.getPluginsManifests.mockClear();
@@ -146,13 +168,13 @@ describe('Actions.Calls', () => {
 
             // manually call newCurrentConnection because newConnection is mocked
             newCurrentCall('server1', 'channel-id', 'myUserId');
-            userJoinedCall('server1', 'channel-id', 'myUserId');
         });
 
         assert.equal(response!.data, 'channel-id');
         assert.equal((result.current[1] as CurrentCall).channelId, 'channel-id');
         expect(newConnection).toBeCalled();
         expect(newConnection.mock.calls[0][1]).toBe('channel-id');
+        expect(updateThreadFollowing).toBeCalled();
 
         await act(async () => {
             CallsActions.leaveCall();
@@ -271,7 +293,6 @@ describe('Actions.Calls', () => {
 
     it('loadCalls fails from server', async () => {
         const expectedCallsState: CallsState = {
-            serverUrl: 'server1',
             myUserId: 'userId1',
             calls: {},
             enabled: {},
@@ -337,5 +358,24 @@ describe('Actions.Calls', () => {
         });
         expect(mockClient.enableChannelCalls).toBeCalledWith('channel-1', false);
         assert.equal(result.current.enabled['channel-1'], false);
+    });
+
+    it('startCallRecording', async () => {
+        await act(async () => {
+            await CallsActions.startCallRecording('server1', 'channel-id');
+        });
+
+        expect(mockClient.startCallRecording).toBeCalledWith('channel-id');
+        expect(needsRecordingErrorAlert).toBeCalled();
+    });
+
+    it('stopCallRecording', async () => {
+        await act(async () => {
+            await CallsActions.stopCallRecording('server1', 'channel-id');
+        });
+
+        expect(mockClient.stopCallRecording).toBeCalledWith('channel-id');
+        expect(needsRecordingErrorAlert).toBeCalled();
+        expect(needsRecordingWillBePostedAlert).toBeCalled();
     });
 });

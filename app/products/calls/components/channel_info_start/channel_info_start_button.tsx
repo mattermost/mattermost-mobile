@@ -14,26 +14,18 @@ import type {LimitRestrictedInfo} from '@calls/observers';
 
 export interface Props {
     serverUrl: string;
-    displayName: string;
     channelId: string;
-    channelIsDMorGM: boolean;
     isACallInCurrentChannel: boolean;
-    confirmToJoin: boolean;
     alreadyInCall: boolean;
-    currentCallChannelName: string;
     dismissChannelInfo: () => void;
     limitRestrictedInfo: LimitRestrictedInfo;
 }
 
 const ChannelInfoStartButton = ({
     serverUrl,
-    displayName,
     channelId,
-    channelIsDMorGM,
     isACallInCurrentChannel,
-    confirmToJoin,
     alreadyInCall,
-    currentCallChannelName,
     dismissChannelInfo,
     limitRestrictedInfo,
 }: Props) => {
@@ -46,11 +38,11 @@ const ChannelInfoStartButton = ({
         } else if (isLimitRestricted) {
             showLimitRestrictedAlert(limitRestrictedInfo, intl);
         } else {
-            leaveAndJoinWithAlert(intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, !isACallInCurrentChannel, channelIsDMorGM);
+            leaveAndJoinWithAlert(intl, serverUrl, channelId);
         }
 
         dismissChannelInfo();
-    }, [isLimitRestricted, alreadyInCall, dismissChannelInfo, intl, serverUrl, channelId, currentCallChannelName, displayName, confirmToJoin, isACallInCurrentChannel]);
+    }, [isLimitRestricted, alreadyInCall, dismissChannelInfo, intl, serverUrl, channelId, isACallInCurrentChannel]);
 
     const [tryJoin, msgPostfix] = useTryCallsFunction(toggleJoinLeave);
 
@@ -62,7 +54,7 @@ const ChannelInfoStartButton = ({
         <OptionBox
             onPress={preventDoubleTap(tryJoin)}
             text={startText + msgPostfix}
-            iconName='phone-outline'
+            iconName='phone'
             activeText={joinText + msgPostfix}
             activeIconName='phone-in-talk'
             isActive={isACallInCurrentChannel}

@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {FlatList} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {getAllSupportedTimezones} from '@actions/remote/user';
 import Search from '@components/search';
@@ -17,6 +17,8 @@ import {typography} from '@utils/typography';
 import {getTimezoneRegion} from '@utils/user';
 
 import TimezoneRow from './timezone_row';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     return {
@@ -54,7 +56,7 @@ const getItemLayout = (_data: string[], index: number) => ({
 });
 
 type SelectTimezonesProps = {
-    componentId: string;
+    componentId: AvailableScreens;
     onBack: (tz: string) => void;
     currentTimezone: string;
 }

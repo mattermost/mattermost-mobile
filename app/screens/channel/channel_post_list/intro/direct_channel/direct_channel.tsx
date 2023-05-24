@@ -74,7 +74,7 @@ const DirectChannel = ({channel, currentUserId, isBot, members, theme}: Props) =
     useEffect(() => {
         const channelMembers = members?.filter((m) => m.userId !== currentUserId);
         if (!channelMembers?.length) {
-            fetchProfilesInChannel(serverUrl, channel.id, currentUserId, false);
+            fetchProfilesInChannel(serverUrl, channel.id, currentUserId, undefined, false);
         }
     }, []);
 
@@ -153,7 +153,7 @@ const DirectChannel = ({channel, currentUserId, isBot, members, theme}: Props) =
                 channelId={channel.id}
                 header={true}
                 favorite={true}
-                people={false}
+                canAddMembers={false}
             />
         </View>
     );

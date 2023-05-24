@@ -3,12 +3,17 @@
 
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React from 'react';
-import {StyleSheet, TextStyle} from 'react-native';
-import {SafeAreaView, Edge} from 'react-native-safe-area-context';
+import {StyleSheet, type TextStyle} from 'react-native';
+import {SafeAreaView, type Edge} from 'react-native-safe-area-context';
 
 import SyntaxHiglight from '@components/syntax_highlight';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {popTopScreen} from '@screens/navigation';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
+    componentId: AvailableScreens;
     code: string;
     language: string;
     textStyle: TextStyle;
@@ -20,8 +25,9 @@ const styles = StyleSheet.create({
     flex: {flex: 1},
 });
 
-const Code = ({code, language, textStyle}: Props) => {
+const Code = ({code, componentId, language, textStyle}: Props) => {
     const managedConfig = useManagedConfig<ManagedConfig>();
+    useAndroidHardwareBackHandler(componentId, popTopScreen);
 
     return (
         <SafeAreaView

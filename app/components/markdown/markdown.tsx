@@ -4,8 +4,8 @@
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import {Parser, Node} from 'commonmark';
 import Renderer from 'commonmark-react-renderer';
-import React, {ReactElement, useMemo, useRef} from 'react';
-import {Dimensions, GestureResponderEvent, Platform, StyleProp, Text, TextStyle, View, ViewStyle} from 'react-native';
+import React, {type ReactElement, useMemo, useRef} from 'react';
+import {Dimensions, type GestureResponderEvent, Platform, type StyleProp, StyleSheet, Text, type TextStyle, View, type ViewStyle} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import Emoji from '@components/emoji';
@@ -15,7 +15,7 @@ import {blendColors, changeOpacity, concatStyles, makeStyleSheetFromTheme} from 
 import {getScheme} from '@utils/url';
 
 import AtMention from './at_mention';
-import ChannelMention, {ChannelMentions} from './channel_mention';
+import ChannelMention, {type ChannelMentions} from './channel_mention';
 import Hashtag from './hashtag';
 import MarkdownBlockQuote from './markdown_block_quote';
 import MarkdownCodeBlock from './markdown_code_block';
@@ -26,9 +26,9 @@ import MarkdownLink from './markdown_link';
 import MarkdownList from './markdown_list';
 import MarkdownListItem from './markdown_list_item';
 import MarkdownTable from './markdown_table';
-import MarkdownTableCell, {MarkdownTableCellProps} from './markdown_table_cell';
+import MarkdownTableCell, {type MarkdownTableCellProps} from './markdown_table_cell';
 import MarkdownTableImage from './markdown_table_image';
-import MarkdownTableRow, {MarkdownTableRowProps} from './markdown_table_row';
+import MarkdownTableRow, {type MarkdownTableRowProps} from './markdown_table_row';
 import {addListItemIndices, combineTextNodes, highlightMentions, highlightSearchPatterns, parseTaskLists, pullOutImages} from './transform';
 
 import type {
@@ -55,7 +55,7 @@ type MarkdownProps = {
     disableTables?: boolean;
     enableLatex: boolean;
     enableInlineLatex: boolean;
-    imagesMetadata?: Record<string, PostImage>;
+    imagesMetadata?: Record<string, PostImage | undefined>;
     isEdited?: boolean;
     isReplyPost?: boolean;
     isSearchResult?: boolean;
@@ -143,13 +143,15 @@ const Markdown = ({
         if (disableAtMentions) {
             return renderText({context, literal: `@${mentionName}`});
         }
+        const computedStyles = StyleSheet.flatten(computeTextStyle(textStyles, baseTextStyle, context));
+        const {fontFamily, fontSize, fontWeight} = computedStyles;
 
         return (
             <AtMention
                 channelId={channelId}
                 disableAtChannelMentionHighlight={disableAtChannelMentionHighlight}
-                mentionStyle={textStyles.mention}
-                textStyle={[computeTextStyle(textStyles, baseTextStyle, context), style.atMentionOpacity]}
+                mentionStyle={[textStyles.mention, {fontSize, fontWeight, fontFamily}]}
+                textStyle={[computedStyles, style.atMentionOpacity]}
                 isSearchResult={isSearchResult}
                 location={location}
                 mentionName={mentionName}

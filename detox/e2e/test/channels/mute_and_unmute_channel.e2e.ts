@@ -57,6 +57,7 @@ describe('Channels - Mute and Unmute Channel', () => {
         // * Verify muted toast message appears
         await wait(timeouts.ONE_SEC);
         await expect(ChannelScreen.toastMessage).toHaveText('This channel was muted');
+        await waitFor(ChannelScreen.toastMessage).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Tap on channel quick actions button and tap on muted quick action to unmute the channel
         await ChannelScreen.channelQuickActionsButton.tap();
@@ -66,6 +67,7 @@ describe('Channels - Mute and Unmute Channel', () => {
         // * Verify unmuted toast message appears
         await wait(timeouts.ONE_SEC);
         await expect(ChannelScreen.toastMessage).toHaveText('This channel was unmuted');
+        await waitFor(ChannelScreen.toastMessage).not.toExist().withTimeout(timeouts.TEN_SEC);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -79,9 +81,10 @@ describe('Channels - Mute and Unmute Channel', () => {
 
         // * Verify channel is muted
         await expect(ChannelInfoScreen.unmuteAction).toBeVisible();
+        await wait(timeouts.FOUR_SEC);
 
         // # Tap on muted action to unmute the channel
-        await ChannelInfoScreen.unmuteAction.tap();
+        await ChannelInfoScreen.unmuteAction.longPress();
 
         // * Verify channel is unmuted
         await expect(ChannelInfoScreen.muteAction).toBeVisible();

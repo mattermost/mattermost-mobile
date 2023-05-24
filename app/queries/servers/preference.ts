@@ -15,6 +15,7 @@ import type {ServerDatabase} from '@typings/database/database';
 import type PreferenceModel from '@typings/database/models/servers/preference';
 
 const {SERVER: {PREFERENCE}} = MM_TABLES;
+const {ADVANCED_SETTINGS, DISPLAY_SETTINGS, EMOJI, SAVED_POST, SIDEBAR_SETTINGS, THEME} = Preferences.CATEGORIES;
 
 export async function prepareMyPreferences(operator: ServerDataOperator, preferences: PreferenceType[], sync = false): Promise<PreferenceModel[]> {
     return operator.handlePreferences({
@@ -37,7 +38,7 @@ export const queryPreferencesByCategoryAndName = (database: Database, category: 
 
 export const getThemeForCurrentTeam = async (database: Database): Promise<Theme | undefined> => {
     const currentTeamId = await getCurrentTeamId(database);
-    const teamTheme = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_THEME, currentTeamId).fetch();
+    const teamTheme = await queryPreferencesByCategoryAndName(database, THEME, currentTeamId).fetch();
     if (teamTheme.length) {
         try {
             return JSON.parse(teamTheme[0].value);
@@ -59,7 +60,7 @@ export async function deletePreferences(database: ServerDatabase, preferences: P
             }
         }
         if (preparedModels.length) {
-            await database.operator.batchRecords(preparedModels);
+            await database.operator.batchRecords(preparedModels, 'deletePreferences');
         }
         return true;
     } catch (error) {
@@ -68,12 +69,12 @@ export async function deletePreferences(database: ServerDatabase, preferences: P
 }
 
 export const differsFromLocalNameFormat = async (database: Database, preferences: PreferenceType[]) => {
-    const displayPref = getPreferenceValue(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT) as string;
+    const displayPref = getPreferenceValue<string>(preferences, DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT);
     if (displayPref === '') {
         return false;
     }
 
-    const currentPref = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT, displayPref).fetch();
+    const currentPref = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT, displayPref).fetch();
     if (currentPref.length > 0) {
         return false;
     }
@@ -93,3 +94,27 @@ export async function getHasCRTChanged(database: Database, preferences: Preferen
 
     return oldCRT !== newCRT;
 }
+
+export const queryDisplayNamePreferences = (database: Database, name?: string, value?: string) => {
+    return queryPreferencesByCategoryAndName(database, DISPLAY_SETTINGS, name, value);
+};
+
+export const querySavedPostsPreferences = (database: Database, postId?: string, value?: string) => {
+    return queryPreferencesByCategoryAndName(database, SAVED_POST, postId, value);
+};
+
+export const queryThemePreferences = (database: Database, teamId?: string) => {
+    return queryPreferencesByCategoryAndName(database, THEME, teamId);
+};
+
+export const querySidebarPreferences = (database: Database, name?: string) => {
+    return queryPreferencesByCategoryAndName(database, SIDEBAR_SETTINGS, name);
+};
+
+export const queryEmojiPreferences = (database: Database, name: string) => {
+    return queryPreferencesByCategoryAndName(database, EMOJI, name);
+};
+
+export const queryAdvanceSettingsPreferences = (database: Database, name?: string, value?: string) => {
+    return queryPreferencesByCategoryAndName(database, ADVANCED_SETTINGS, name, value);
+};

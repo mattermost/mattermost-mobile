@@ -14,8 +14,6 @@ interface Session {
 }
 
 interface LoginActionResponse {
-    error?: ClientErrorProps | Error | string;
-    hasTeams?: boolean;
+    error?: unknown;
     failed: boolean;
-    time?: number;
 }

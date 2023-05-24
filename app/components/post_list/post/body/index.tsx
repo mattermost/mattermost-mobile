@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useState} from 'react';
-import {LayoutChangeEvent, StyleProp, View, ViewStyle} from 'react-native';
+import {type LayoutChangeEvent, type StyleProp, View, type ViewStyle} from 'react-native';
 
 import Files from '@components/files';
 import FormattedText from '@components/formatted_text';
@@ -12,6 +12,7 @@ import {THREAD} from '@constants/screens';
 import {isEdited as postEdited, isPostFailed} from '@utils/post';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
+import Acknowledgements from './acknowledgements';
 import AddMembers from './add_members';
 import Content from './content';
 import Failed from './failed';
@@ -33,6 +34,7 @@ type BodyProps = {
     isJumboEmoji: boolean;
     isLastReply?: boolean;
     isPendingOrFailed: boolean;
+    isPostAcknowledgementEnabled?: boolean;
     isPostAddChannelMember: boolean;
     location: string;
     post: PostModel;
@@ -43,6 +45,13 @@ type BodyProps = {
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
+        ackAndReactionsContainer: {
+            flex: 1,
+            flexDirection: 'row',
+            flexWrap: 'wrap',
+            alignContent: 'flex-start',
+            marginTop: 12,
+        },
         messageBody: {
             paddingVertical: 2,
             flex: 1,
@@ -76,7 +85,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
 
 const Body = ({
     appsEnabled, hasFiles, hasReactions, highlight, highlightReplyBar,
-    isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAddChannelMember,
+    isCRTEnabled, isEphemeral, isFirstReply, isJumboEmoji, isLastReply, isPendingOrFailed, isPostAcknowledgementEnabled, isPostAddChannelMember,
     location, post, searchPatterns, showAddReaction, theme,
 }: BodyProps) => {
     const style = getStyleSheet(theme);
@@ -158,6 +167,8 @@ const Body = ({
         );
     }
 
+    const acknowledgementsVisible = isPostAcknowledgementEnabled && post.metadata?.priority?.requested_ack;
+    const reactionsVisible = hasReactions && showAddReaction;
     if (!hasBeenDeleted) {
         body = (
             <View style={style.messageBody}>
@@ -180,13 +191,25 @@ const Body = ({
                     isReplyPost={isReplyPost}
                 />
                 }
-                {hasReactions && showAddReaction &&
-                <Reactions
-                    location={location}
-                    post={post}
-                    theme={theme}
-                />
-                }
+                {(acknowledgementsVisible || reactionsVisible) && (
+                    <View style={style.ackAndReactionsContainer}>
+                        {acknowledgementsVisible && (
+                            <Acknowledgements
+                                hasReactions={hasReactions}
+                                location={location}
+                                post={post}
+                                theme={theme}
+                            />
+                        )}
+                        {reactionsVisible && (
+                            <Reactions
+                                location={location}
+                                post={post}
+                                theme={theme}
+                            />
+                        )}
+                    </View>
+                )}
             </View>
         );
     }

@@ -14,6 +14,9 @@ struct InitialView: View {
   @Binding var attachments: [AttachmentModel]
   @Binding var linkPreviewUrl: String
   @Binding var message: String
+  @State var error: String?
+  
+  let onError = NotificationCenter.default.publisher(for: Notification.Name("errorPosting"))
   
   var noServers: Bool {
     shareViewModel.allServers.count == 0 || shareViewModel.server == nil
@@ -42,7 +45,10 @@ struct InitialView: View {
   
   var body: some View {
     return VStack {
-      if noServers {
+      if error != nil {
+        ErrorSharingView(error: error!)
+          .transition(.opacity)
+      } else if noServers {
         NoServersView()
       } else if noChannels {
         NoMembershipView()
@@ -65,5 +71,11 @@ struct InitialView: View {
       )
     )
     .padding(20)
+    .animation(.linear(duration: 0.3))
+    .onReceive(onError) {obj in
+      if let userInfo = obj.userInfo, let info = userInfo["info"] as? String {
+        error = info
+      }
+    }
   }
 }

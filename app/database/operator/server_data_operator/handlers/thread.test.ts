@@ -4,7 +4,7 @@
 import DatabaseManager from '@database/manager';
 import {transformThreadRecord, transformThreadParticipantRecord, transformThreadInTeamRecord, transformTeamThreadsSyncRecord} from '@database/operator/server_data_operator/transformers/thread';
 
-import ServerDataOperator from '..';
+import type ServerDataOperator from '..';
 
 jest.mock('@database/operator/utils/thread', () => {
     return {
@@ -59,7 +59,7 @@ describe('*** Operator: Thread Handlers tests ***', () => {
             createOrUpdateRawValues: threads,
             tableName: 'Thread',
             prepareRecordsOnly: true,
-        });
+        }, 'handleThreads(NEVER)');
 
         // Should handle participants
         expect(spyOnHandleThreadParticipants).toHaveBeenCalledWith({
@@ -164,11 +164,11 @@ describe('*** Operator: Thread Handlers tests ***', () => {
 
         expect(spyOnPrepareRecords).toHaveBeenCalledWith({
             createRaws: [{
-                raw: {team_id: 'team_id_1', thread_id: 'thread-1'},
-            }, {
                 raw: {team_id: 'team_id_1', thread_id: 'thread-2'},
+                record: undefined,
             }, {
                 raw: {team_id: 'team_id_2', thread_id: 'thread-2'},
+                record: undefined,
             }],
             transformer: transformThreadInTeamRecord,
             tableName: 'ThreadsInTeam',

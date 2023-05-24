@@ -1,24 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Alert, DeviceEventEmitter, Linking} from 'react-native';
+import {Alert, DeviceEventEmitter, Linking, NativeEventEmitter, NativeModules} from 'react-native';
 import RNLocalize from 'react-native-localize';
 import semver from 'semver';
 
+import {switchToChannelById} from '@actions/remote/channel';
 import {autoUpdateTimezone} from '@actions/remote/user';
 import LocalConfig from '@assets/config.json';
-import {Events, Sso} from '@constants';
+import {Device, Events, Sso} from '@constants';
 import {MIN_REQUIRED_VERSION} from '@constants/supported_server';
+import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations, t} from '@i18n';
 import {getServerCredentials} from '@init/credentials';
 import * as analytics from '@managers/analytics';
-import {getAllServers} from '@queries/app/servers';
+import {getAllServers, getActiveServerUrl} from '@queries/app/servers';
+import {queryTeamDefaultChannel} from '@queries/servers/channel';
+import {getCommonSystemValues} from '@queries/servers/system';
+import {getTeamChannelHistory} from '@queries/servers/team';
+import {setScreensOrientation} from '@screens/navigation';
 import {handleDeepLink} from '@utils/deep_link';
 import {logError} from '@utils/log';
 
-import type {jsAndNativeErrorHandler} from '@typings/global/error_handling';
-
 type LinkingCallbackArg = {url: string};
+
+const {SplitView} = NativeModules;
+const splitViewEmitter = new NativeEventEmitter(SplitView);
 
 class GlobalEventHandler {
     JavascriptAndNativeErrorHandler: jsAndNativeErrorHandler | undefined;
@@ -39,6 +46,7 @@ class GlobalEventHandler {
             }
         });
 
+        splitViewEmitter.addListener('SplitViewChanged', this.onSplitViewChanged);
         Linking.addEventListener('url', this.onDeepLink);
     }
 
@@ -90,6 +98,38 @@ class GlobalEventHandler {
                     {cancelable: false},
                 );
             }
+        }
+    };
+
+    onSplitViewChanged = async (result: SplitViewResult) => {
+        if (result.isTablet != null && Device.IS_TABLET !== result.isTablet) {
+            Device.IS_TABLET = result.isTablet;
+            const serverUrl = await getActiveServerUrl();
+            if (serverUrl && result.isTablet) {
+                try {
+                    const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                    const {currentChannelId, currentTeamId} = await getCommonSystemValues(database);
+                    if (currentTeamId && !currentChannelId) {
+                        let channelId = '';
+                        const teamChannelHistory = await getTeamChannelHistory(database, currentTeamId);
+                        if (teamChannelHistory.length) {
+                            channelId = teamChannelHistory[0];
+                        } else {
+                            const defaultChannel = await queryTeamDefaultChannel(database, currentTeamId).fetch();
+                            if (defaultChannel.length) {
+                                channelId = defaultChannel[0].id;
+                            }
+                        }
+
+                        if (channelId) {
+                            switchToChannelById(serverUrl, channelId);
+                        }
+                    }
+                } catch {
+                    // do nothing, the UI will not show a channel but that is fixed when the user picks one.
+                }
+            }
+            setScreensOrientation(result.isTablet);
         }
     };
 

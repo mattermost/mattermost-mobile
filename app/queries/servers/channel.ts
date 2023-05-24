@@ -1,13 +1,17 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+/* eslint-disable max-lines */
+
 import {Database, Model, Q, Query, Relation} from '@nozbe/watermelondb';
 import {of as of$, Observable} from 'rxjs';
 import {map as map$, switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {General, Permissions} from '@constants';
 import {MM_TABLES} from '@constants/database';
+import {sanitizeLikeString} from '@helpers/database';
 import {hasPermission} from '@utils/role';
+import {getUserIdFromChannelName} from '@utils/user';
 
 import {prepareDeletePost} from './post';
 import {queryRoles} from './role';
@@ -15,6 +19,7 @@ import {observeCurrentChannelId, getCurrentChannelId, observeCurrentUserId} from
 import {observeTeammateNameDisplay} from './user';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Clause} from '@nozbe/watermelondb/QueryDescription';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
 import type ChannelMembershipModel from '@typings/database/models/servers/channel_membership';
@@ -36,6 +41,7 @@ export function prepareMissingChannelsForAllTeams(operator: ServerDataOperator, 
             guest_count: 0,
             member_count: 0,
             pinned_post_count: 0,
+            files_count: 0,
         });
     }
 
@@ -90,12 +96,14 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
         let member_count = 0;
         let guest_count = 0;
         let pinned_post_count = 0;
+        let files_count = 0;
         if (storedChannel) {
             storedInfo = allChannelsInfoForTeam[c.id];
             if (storedInfo) {
                 member_count = storedInfo.memberCount;
                 guest_count = storedInfo.guestCount;
                 pinned_post_count = storedInfo.pinnedPostCount;
+                files_count = storedInfo.filesCount;
             }
         }
 
@@ -106,6 +114,7 @@ export const prepareMyChannelsForTeam = async (operator: ServerDataOperator, tea
             guest_count,
             member_count,
             pinned_post_count,
+            files_count,
         });
     }
 
@@ -187,7 +196,7 @@ export const queryAllMyChannel = (database: Database) => {
 };
 
 export const queryAllMyChannelsForTeam = (database: Database, teamId: string) => {
-    return database.get<ChannelModel>(MY_CHANNEL).query(
+    return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(CHANNEL, Q.where('team_id', Q.oneOf([teamId, '']))),
     );
 };
@@ -207,6 +216,13 @@ export const observeMyChannel = (database: Database, channelId: string) => {
     );
 };
 
+export const observeMyChannelRoles = (database: Database, channelId: string) => {
+    return observeMyChannel(database, channelId).pipe(
+        switchMap((v) => of$(v?.roles)),
+        distinctUntilChanged(),
+    );
+};
+
 export const getChannelById = async (database: Database, channelId: string) => {
     try {
         const channel = await database.get<ChannelModel>(CHANNEL).find(channelId);
@@ -223,7 +239,12 @@ export const observeChannel = (database: Database, channelId: string) => {
 };
 
 export const getChannelByName = async (database: Database, teamId: string, channelName: string) => {
-    const channels = await database.get<ChannelModel>(CHANNEL).query(Q.on(TEAM, 'id', teamId), Q.where('name', channelName)).fetch();
+    const clauses: Clause[] = [];
+    if (teamId) {
+        clauses.push(Q.on(TEAM, 'id', teamId));
+    }
+    clauses.push(Q.where('name', channelName));
+    const channels = await database.get<ChannelModel>(CHANNEL).query(...clauses).fetch();
 
     // Check done to force types
     if (channels.length) {
@@ -311,13 +332,14 @@ export const observeCurrentChannel = (database: Database) => {
 
 export async function deleteChannelMembership(operator: ServerDataOperator, userId: string, channelId: string, prepareRecordsOnly = false) {
     try {
-        const channelMembership = await operator.database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
+        const {database} = operator;
+        const channelMembership = await database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(Q.where('user_id', Q.eq(userId)), Q.where('channel_id', Q.eq(channelId))).fetch();
         const models: Model[] = [];
         for (const membership of channelMembership) {
             models.push(membership.prepareDestroyPermanently());
         }
         if (models.length && !prepareRecordsOnly) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'deleteChannelMembership');
         }
         return {models};
     } catch (error) {
@@ -374,7 +396,7 @@ export const queryTeamDefaultChannel = (database: Database, teamId: string) => {
 };
 
 export const queryMyChannelsByTeam = (database: Database, teamId: string, includeDeleted = false) => {
-    const conditions: Q.Condition[] = [Q.where('team_id', Q.eq(teamId))];
+    const conditions: Q.Where[] = [Q.where('team_id', Q.eq(teamId))];
     if (!includeDeleted) {
         conditions.push(Q.where('delete_at', Q.eq(0)));
     }
@@ -421,10 +443,6 @@ export const observeNotifyPropsByChannels = (database: Database, channels: Chann
     );
 };
 
-export const queryChannelsByNames = (database: Database, names: string[]) => {
-    return database.get<ChannelModel>(CHANNEL).query(Q.where('name', Q.oneOf(names)));
-};
-
 export const queryMyChannelUnreads = (database: Database, currentTeamId: string) => {
     return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(
@@ -437,23 +455,48 @@ export const queryMyChannelUnreads = (database: Database, currentTeamId: string)
                 Q.where('delete_at', Q.eq(0)),
             ),
         ),
-        Q.where('is_unread', Q.eq(true)),
+        Q.or(
+            Q.where('is_unread', Q.eq(true)),
+            Q.where('mentions_count', Q.gte(0)),
+        ),
         Q.sortBy('last_post_at', Q.desc),
     );
 };
 
-export const queryEmptyDirectAndGroupChannels = (database: Database) => {
-    return database.get<MyChannelModel>(MY_CHANNEL).query(
-        Q.on(
-            CHANNEL,
-            Q.where('team_id', Q.eq('')),
-        ),
-        Q.where('last_post_at', Q.eq(0)),
+export const observeArchivedDirectChannels = (database: Database, currentUserId: string) => {
+    const deactivated = database.get<UserModel>(USER).query(
+        Q.where('delete_at', Q.gt(0)),
+    ).observe();
+
+    return deactivated.pipe(
+        switchMap((users) => {
+            const usersMap = new Map(users.map((u) => [u.id, u]));
+            return database.get<ChannelModel>(CHANNEL).query(
+                Q.on(
+                    CHANNEL_MEMBERSHIP,
+                    Q.and(
+                        Q.where('user_id', Q.notEq(currentUserId)),
+                        Q.where('user_id', Q.oneOf(Array.from(usersMap.keys()))),
+                    ),
+                ),
+                Q.where('type', 'D'),
+            ).observe().pipe(
+                switchMap((channels) => {
+                    // eslint-disable-next-line max-nested-callbacks
+                    return of$(new Map(channels.map((c) => {
+                        const teammateId = getUserIdFromChannelName(currentUserId, c.name);
+                        const user = usersMap.get(teammateId);
+
+                        return [c.id, user];
+                    })));
+                }),
+            );
+        }),
     );
 };
 
 export function observeMyChannelMentionCount(database: Database, teamId?: string, columns = ['mentions_count', 'is_unread']): Observable<number> {
-    const conditions: Q.Condition[] = [
+    const conditions: Q.Where[] = [
         Q.where('delete_at', Q.eq(0)),
     ];
 
@@ -492,7 +535,7 @@ export function queryMyRecentChannels(database: Database, take: number) {
 
 export const observeDirectChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
     const onlyDMs = term.startsWith('@') ? "AND c.type='D'" : '';
-    const value = Q.sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
+    const value = sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
     let username = `u.username LIKE '${value}%'`;
     let displayname = `c.display_name LIKE '${value}%'`;
     if (!matchStart) {
@@ -518,7 +561,7 @@ export const observeDirectChannelsByTerm = (database: Database, term: string, ta
 export const observeNotDirectChannelsByTerm = (database: Database, term: string, take = 20, matchStart = false) => {
     const teammateNameSetting = observeTeammateNameDisplay(database);
 
-    const value = Q.sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
+    const value = sanitizeLikeString(term.startsWith('@') ? term.substring(1) : term);
     let username = `u.username LIKE '${value}%'`;
     let nickname = `u.nickname LIKE '${value}%'`;
     let displayname = `(u.first_name || ' ' || u.last_name) LIKE '${value}%'`;
@@ -559,7 +602,7 @@ export const observeJoinedChannelsByTerm = (database: Database, term: string, ta
         return of$([]);
     }
 
-    const value = Q.sanitizeLikeString(term);
+    const value = sanitizeLikeString(term);
     let displayname = `c.display_name LIKE '${value}%'`;
     if (!matchStart) {
         displayname = `c.display_name LIKE '%${value}%' AND c.display_name NOT LIKE '${value}%'`;
@@ -577,7 +620,7 @@ export const observeArchiveChannelsByTerm = (database: Database, term: string, t
         return of$([]);
     }
 
-    const value = Q.sanitizeLikeString(term);
+    const value = sanitizeLikeString(term);
     const displayname = `%${value}%`;
     return database.get<MyChannelModel>(MY_CHANNEL).query(
         Q.on(CHANNEL, Q.and(
@@ -596,19 +639,23 @@ export const observeChannelSettings = (database: Database, channelId: string) =>
     );
 };
 
-export const observeChannelsByLastPostAt = (database: Database, myChannels: MyChannelModel[], excludeIds?: string[]) => {
+export const observeIsMutedSetting = (database: Database, channelId: string) => {
+    return observeChannelSettings(database, channelId).pipe(switchMap((s) => of$(s?.notifyProps?.mark_unread === General.MENTION)));
+};
+
+export const observeChannelsByLastPostAt = (database: Database, myChannels: MyChannelModel[]) => {
     const ids = myChannels.map((c) => c.id);
     const idsStr = `'${ids.join("','")}'`;
-    const exclude = excludeIds?.length ? `AND c.id NOT IN ('${excludeIds.join("','")}')` : '';
+
     return database.get<ChannelModel>(CHANNEL).query(
         Q.unsafeSqlQuery(`SELECT DISTINCT c.* FROM ${CHANNEL} c INNER JOIN
-        ${MY_CHANNEL} mc ON mc.id=c.id AND c.id IN (${idsStr}) ${exclude}
+        ${MY_CHANNEL} mc ON mc.id=c.id AND c.id IN (${idsStr})
         ORDER BY CASE mc.last_post_at WHEN 0 THEN c.create_at ELSE mc.last_post_at END DESC`),
     ).observe();
 };
 
 export const queryChannelsForAutocomplete = (database: Database, matchTerm: string, isSearch: boolean, teamId: string) => {
-    const likeTerm = `%${Q.sanitizeLikeString(matchTerm)}%`;
+    const likeTerm = `%${sanitizeLikeString(matchTerm)}%`;
     const clauses: Q.Clause[] = [];
     if (isSearch) {
         clauses.push(
@@ -616,7 +663,7 @@ export const queryChannelsForAutocomplete = (database: Database, matchTerm: stri
             Q.experimentalNestedJoin(CHANNEL_MEMBERSHIP, USER),
         );
     }
-    const orConditions: Q.Condition[] = [
+    const orConditions: Q.Where[] = [
         Q.where('display_name', Q.like(matchTerm)),
         Q.where('name', Q.like(likeTerm)),
     ];
@@ -644,7 +691,7 @@ export const queryChannelsForAutocomplete = (database: Database, matchTerm: stri
         teamsToSearch.push('');
     }
 
-    const andConditions: Q.Condition[] = [
+    const andConditions: Q.Where[] = [
         Q.where('team_id', Q.oneOf(teamsToSearch)),
     ];
     if (!isSearch) {
@@ -663,4 +710,14 @@ export const queryChannelsForAutocomplete = (database: Database, matchTerm: stri
     );
 
     return database.get<ChannelModel>(CHANNEL).query(...clauses);
+};
+
+export const queryChannelMembers = (database: Database, channelId: string) => {
+    return database.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(
+        Q.where('channel_id', channelId),
+    );
+};
+
+export const observeChannelMembers = (database: Database, channelId: string) => {
+    return queryChannelMembers(database, channelId).observe();
 };

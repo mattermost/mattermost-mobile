@@ -6,7 +6,6 @@ import {useIntl} from 'react-intl';
 import {Keyboard, Platform, Text, View} from 'react-native';
 import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {bottomSheetSnapPoint} from '@app/utils/helpers';
 import {CHANNEL_ACTIONS_OPTIONS_HEIGHT} from '@components/channel_actions/channel_actions';
 import CompassIcon from '@components/compass_icon';
 import CustomStatusEmoji from '@components/custom_status/custom_status_emoji';
@@ -19,6 +18,7 @@ import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {bottomSheet, popTopScreen, showModal} from '@screens/navigation';
 import {isTypeDMorGM} from '@utils/channel';
+import {bottomSheetSnapPoint} from '@utils/helpers';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -27,6 +27,7 @@ import OtherMentionsBadge from './other_mentions_badge';
 import QuickActions, {MARGIN, SEPARATOR_HEIGHT} from './quick_actions';
 
 import type {HeaderRightButton} from '@components/navigation_header/header';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type ChannelProps = {
     channelId: string;
@@ -34,26 +35,30 @@ type ChannelProps = {
     customStatus?: UserCustomStatus;
     isCustomStatusEnabled: boolean;
     isCustomStatusExpired: boolean;
-    componentId?: string;
+    componentId?: AvailableScreens;
     displayName: string;
     isOwnDirectMessage: boolean;
     memberCount?: number;
     searchTerm: string;
     teamId: string;
     callsEnabledInChannel: boolean;
+    isTabletView?: boolean;
 };
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     customStatusContainer: {
         flexDirection: 'row',
-        height: 13,
+        height: 15,
         left: Platform.select({ios: undefined, default: -2}),
         marginTop: Platform.select({ios: undefined, default: 1}),
     },
-    customStatusEmoji: {marginRight: 5},
+    customStatusEmoji: {
+        marginRight: 5,
+        marginTop: Platform.select({ios: undefined, default: -2}),
+    },
     customStatusText: {
         alignItems: 'center',
-        height: 13,
+        height: 15,
     },
     subtitle: {
         color: changeOpacity(theme.sidebarHeaderTextColor, 0.72),
@@ -68,7 +73,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 const ChannelHeader = ({
     channelId, channelType, componentId, customStatus, displayName,
     isCustomStatusEnabled, isCustomStatusExpired, isOwnDirectMessage, memberCount,
-    searchTerm, teamId, callsEnabledInChannel,
+    searchTerm, teamId, callsEnabledInChannel, isTabletView,
 }: ChannelProps) => {
     const intl = useIntl();
     const isTablet = useIsTablet();
@@ -97,7 +102,7 @@ const ChannelHeader = ({
     const onBackPress = useCallback(() => {
         Keyboard.dismiss();
         popTopScreen(componentId);
-    }, []);
+    }, [componentId]);
 
     const onTitlePress = useCallback(preventDoubleTap(() => {
         let title;
@@ -204,7 +209,6 @@ const ChannelHeader = ({
                         customStatus={customStatus}
                         emojiSize={13}
                         style={styles.customStatusEmoji}
-                        testID='channel_header'
                     />
                     }
                     <View style={styles.customStatusText}>
@@ -232,7 +236,7 @@ const ChannelHeader = ({
                 onBackPress={onBackPress}
                 onTitlePress={onTitlePress}
                 rightButtons={rightButtons}
-                showBackButton={!isTablet}
+                showBackButton={!isTablet || !isTabletView}
                 subtitle={subtitle}
                 subtitleCompanion={subtitleCompanion}
                 title={title}

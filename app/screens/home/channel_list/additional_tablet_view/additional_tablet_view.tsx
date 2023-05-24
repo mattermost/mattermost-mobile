@@ -57,7 +57,7 @@ const AdditionalTabletView = ({onTeam, currentChannelId, isCRTEnabled}: Props) =
         return null;
     }
 
-    return React.createElement(selected.Component, {componentId: selected.id, isTablet: true});
+    return React.createElement(selected.Component, {componentId: selected.id, isTabletView: true});
 };
 
 export default AdditionalTabletView;

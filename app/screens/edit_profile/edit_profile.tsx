@@ -5,7 +5,7 @@ import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {DeviceEventEmitter, Keyboard, Platform, StyleSheet, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {updateLocalUser} from '@actions/local/user';
 import {setDefaultProfileImage, updateMe, uploadUserProfileImage} from '@actions/remote/user';
@@ -53,15 +53,15 @@ const EditProfile = ({
     const scrollViewRef = useRef<KeyboardAwareScrollView>();
     const hasUpdateUserInfo = useRef<boolean>(false);
     const [userInfo, setUserInfo] = useState<UserInfo>({
-        email: currentUser.email,
-        firstName: currentUser.firstName,
-        lastName: currentUser.lastName,
-        nickname: currentUser.nickname,
-        position: currentUser.position,
-        username: currentUser.username,
+        email: currentUser?.email || '',
+        firstName: currentUser?.firstName || '',
+        lastName: currentUser?.lastName || '',
+        nickname: currentUser?.nickname || '',
+        position: currentUser?.position || '',
+        username: currentUser?.username || '',
     });
     const [canSave, setCanSave] = useState(false);
-    const [error, setError] = useState<ErrorText | undefined>();
+    const [error, setError] = useState<unknown>();
     const [updating, setUpdating] = useState(false);
 
     const buttonText = intl.formatMessage({id: 'mobile.account.settings.save', defaultMessage: 'Save'});
@@ -102,6 +102,7 @@ const EditProfile = ({
             popTopScreen(componentId);
         }
     }, []);
+
     const enableSaveButton = useCallback((value: boolean) => {
         if (!isTablet) {
             const buttons = {
@@ -114,18 +115,22 @@ const EditProfile = ({
         }
         setCanSave(value);
     }, [componentId, rightButton]);
+
     const submitUser = useCallback(preventDoubleTap(async () => {
+        if (!currentUser) {
+            return;
+        }
         enableSaveButton(false);
         setError(undefined);
         setUpdating(true);
         try {
             const newUserInfo: Partial<UserProfile> = {
-                email: userInfo.email,
-                first_name: userInfo.firstName,
-                last_name: userInfo.lastName,
-                nickname: userInfo.nickname,
-                position: userInfo.position,
-                username: userInfo.username,
+                email: userInfo.email.trim(),
+                first_name: userInfo.firstName.trim(),
+                last_name: userInfo.lastName.trim(),
+                nickname: userInfo.nickname.trim(),
+                position: userInfo.position.trim(),
+                username: userInfo.username.trim(),
             };
             const localPath = changedProfilePicture.current?.localPath;
             const profileImageRemoved = changedProfilePicture.current?.isRemoved;
@@ -133,7 +138,7 @@ const EditProfile = ({
                 const now = Date.now();
                 const {error: uploadError} = await uploadUserProfileImage(serverUrl, localPath);
                 if (uploadError) {
-                    resetScreen(uploadError as Error);
+                    resetScreen(uploadError);
                     return;
                 }
                 updateLocalUser(serverUrl, {last_picture_update: now});
@@ -144,7 +149,7 @@ const EditProfile = ({
             if (hasUpdateUserInfo.current) {
                 const {error: reqError} = await updateMe(serverUrl, newUserInfo);
                 if (reqError) {
-                    resetScreen(reqError as Error);
+                    resetScreen(reqError);
                     return;
                 }
             }
@@ -152,7 +157,7 @@ const EditProfile = ({
             close();
             return;
         } catch (e) {
-            resetScreen(e as Error);
+            resetScreen(e);
         }
     }), [userInfo, enableSaveButton]);
 
@@ -177,13 +182,51 @@ const EditProfile = ({
         enableSaveButton(didChange);
     }, [userInfo, currentUser, enableSaveButton]);
 
-    const resetScreen = useCallback((resetError: Error) => {
-        setError(resetError?.message);
+    const resetScreen = useCallback((resetError: unknown) => {
+        setError(resetError);
         Keyboard.dismiss();
         setUpdating(false);
         enableSaveButton(true);
         scrollViewRef.current?.scrollToPosition(0, 0, true);
     }, [enableSaveButton]);
+
+    const content = currentUser ? (
+        <KeyboardAwareScrollView
+            bounces={false}
+            enableAutomaticScroll={Platform.select({ios: true, default: false})}
+            enableOnAndroid={true}
+            enableResetScrollToCoords={true}
+            extraScrollHeight={Platform.select({ios: 45})}
+            keyboardOpeningTime={0}
+            keyboardDismissMode='none'
+            keyboardShouldPersistTaps='handled'
+            scrollToOverflowEnabled={true}
+            testID='edit_profile.scroll_view'
+            style={styles.flex}
+        >
+            {updating && <Updating/>}
+            {Boolean(error) && <ProfileError error={error}/>}
+            <View style={styles.top}>
+                <UserProfilePicture
+                    currentUser={currentUser}
+                    lockedPicture={lockedPicture}
+                    onUpdateProfilePicture={onUpdateProfilePicture}
+                />
+            </View>
+            <ProfileForm
+                canSave={canSave}
+                currentUser={currentUser}
+                isTablet={isTablet}
+                lockedFirstName={lockedFirstName}
+                lockedLastName={lockedLastName}
+                lockedNickname={lockedNickname}
+                lockedPosition={lockedPosition}
+                onUpdateField={onUpdateField}
+                userInfo={userInfo}
+                submitUser={submitUser}
+            />
+        </KeyboardAwareScrollView>
+    ) : null;
 
     return (
         <>
@@ -201,41 +244,7 @@ const EditProfile = ({
                 style={styles.flex}
                 testID='edit_profile.screen'
             >
-                <KeyboardAwareScrollView
-                    bounces={false}
-                    enableAutomaticScroll={Platform.select({ios: true, default: false})}
-                    enableOnAndroid={true}
-                    enableResetScrollToCoords={true}
-                    extraScrollHeight={Platform.select({ios: 45})}
-                    keyboardOpeningTime={0}
-                    keyboardDismissMode='none'
-                    keyboardShouldPersistTaps='handled'
-                    scrollToOverflowEnabled={true}
-                    testID='edit_profile.scroll_view'
-                    style={styles.flex}
-                >
-                    {updating && <Updating/>}
-                    {Boolean(error) && <ProfileError error={error!}/>}
-                    <View style={styles.top}>
-                        <UserProfilePicture
-                            currentUser={currentUser}
-                            lockedPicture={lockedPicture}
-                            onUpdateProfilePicture={onUpdateProfilePicture}
-                        />
-                    </View>
-                    <ProfileForm
-                        canSave={canSave}
-                        currentUser={currentUser}
-                        isTablet={isTablet}
-                        lockedFirstName={lockedFirstName}
-                        lockedLastName={lockedLastName}
-                        lockedNickname={lockedNickname}
-                        lockedPosition={lockedPosition}
-                        onUpdateField={onUpdateField}
-                        userInfo={userInfo}
-                        submitUser={submitUser}
-                    />
-                </KeyboardAwareScrollView>
+                {content}
             </SafeAreaView>
         </>
     );

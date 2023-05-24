@@ -2,15 +2,11 @@
 // See LICENSE.txt for license information.
 
 import React, {forwardRef, useCallback, useEffect, useImperativeHandle, useState} from 'react';
-import {ImageStyle, StyleSheet, View, ViewStyle} from 'react-native';
-import FastImage, {Source} from 'react-native-fast-image';
-import {
-    GestureHandlerGestureEventNativeEvent,
-    PanGestureHandlerEventPayload, PanGestureHandlerGestureEvent,
-} from 'react-native-gesture-handler';
+import {type ImageStyle, StyleSheet, View, type ViewStyle} from 'react-native';
+import FastImage, {type Source} from 'react-native-fast-image';
 import Animated, {
     cancelAnimation, Easing, interpolate, runOnJS, runOnUI,
-    useAnimatedReaction, useAnimatedStyle, useSharedValue, withSpring, withTiming, WithTimingConfig,
+    useAnimatedReaction, useAnimatedStyle, useSharedValue, withSpring, withTiming, type WithTimingConfig,
 } from 'react-native-reanimated';
 
 import {useCreateAnimatedGestureHandler} from '@hooks/gallery';
@@ -19,6 +15,10 @@ import {calculateDimensions} from '@utils/images';
 
 import type {BackdropProps} from './backdrop';
 import type {GalleryItemType, GalleryManagerSharedValues} from '@typings/screens/gallery';
+import type {
+    GestureHandlerGestureEventNativeEvent,
+    PanGestureHandlerEventPayload, PanGestureHandlerGestureEvent,
+} from 'react-native-gesture-handler';
 
 interface Size {
     height: number;

@@ -9,21 +9,24 @@ import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-nati
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {ssoLogin} from '@actions/remote/session';
-import ClientError from '@client/rest/error';
 import {Screens, Sso} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
-import {dismissModal, resetToHome, resetToTeams} from '@screens/navigation';
+import {dismissModal, popTopScreen, resetToHome} from '@screens/navigation';
+import {getFullErrorMessage, isErrorWithUrl} from '@utils/errors';
 import {logWarning} from '@utils/log';
 
 import SSOWithRedirectURL from './sso_with_redirect_url';
 import SSOWithWebView from './sso_with_webview';
 
 import type {LaunchProps} from '@typings/launch';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 interface SSOProps extends LaunchProps {
     closeButtonId?: string;
-    componentId: string;
+    componentId: AvailableScreens;
     config: Partial<ClientConfig>;
     license: Partial<ClientLicense>;
     ssoType: string;
@@ -82,15 +85,15 @@ const SSO = ({
             break;
     }
 
-    const onLoadEndError = (e: ClientErrorProps | Error | string) => {
+    const onLoadEndError = (e: unknown) => {
         logWarning('Failed to set store from local data', e);
         if (typeof e === 'string') {
             setLoginError(e);
             return;
         }
 
-        let errorMessage = e.message;
-        if (e instanceof ClientError && e.url) {
+        let errorMessage = getFullErrorMessage(e);
+        if (isErrorWithUrl(e) && e.url) {
             errorMessage += `\nURL: ${e.url}`;
         }
         setLoginError(errorMessage);
@@ -102,16 +105,19 @@ const SSO = ({
             onLoadEndError(result.error);
             return;
         }
-        if (!result.hasTeams && !result.error) {
-            resetToTeams();
-            return;
-        }
-        goToHome(result.time || 0, result.error as never);
+        goToHome(result.error);
     };
 
-    const goToHome = (time: number, error?: never) => {
+    const goToHome = (error?: unknown) => {
         const hasError = launchError || Boolean(error);
-        resetToHome({extra, launchError: hasError, launchType, serverUrl, time});
+        resetToHome({extra, launchError: hasError, launchType, serverUrl});
+    };
+
+    const dismiss = () => {
+        if (serverUrl) {
+            NetworkManager.invalidateClient(serverUrl);
+        }
+        dismissModal({componentId});
     };
 
     const transform = useAnimatedStyle(() => {
@@ -136,17 +142,18 @@ const SSO = ({
     }, [dimensions]);
 
     useEffect(() => {
-        const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
-            if (closeButtonId && buttonId === closeButtonId) {
-                if (serverUrl) {
-                    NetworkManager.invalidateClient(serverUrl);
-                }
-                dismissModal({componentId});
-            }
-        });
-
-        return () => navigationEvents.remove();
+        translateX.value = 0;
     }, []);
+
+    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
+    useAndroidHardwareBackHandler(componentId, () => {
+        if (closeButtonId) {
+            dismiss();
+            return;
+        }
+
+        popTopScreen(componentId);
+    });
 
     const props = {
         doSSOLogin,

@@ -14,6 +14,7 @@ export default tableSchema({
         {name: 'header', type: 'string'},
         {name: 'member_count', type: 'number'},
         {name: 'pinned_post_count', type: 'number'},
+        {name: 'files_count', type: 'number'},
         {name: 'purpose', type: 'string'},
     ],
 });

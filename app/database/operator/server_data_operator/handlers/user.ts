@@ -8,8 +8,10 @@ import {
     transformUserRecord,
 } from '@database/operator/server_data_operator/transformers/user';
 import {getUniqueRawsBy} from '@database/operator/utils/general';
+import {filterPreferences} from '@helpers/api/preference';
 import {logWarning} from '@utils/log';
 
+import type ServerDataOperatorBase from '.';
 import type {
     HandlePreferencesArgs,
     HandleUsersArgs,
@@ -24,7 +26,7 @@ export interface UserHandlerMix {
     handleUsers: ({users, prepareRecordsOnly}: HandleUsersArgs) => Promise<UserModel[]>;
 }
 
-const UserHandler = (superclass: any) => class extends superclass {
+const UserHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
      * handlePreferences: Handler responsible for the Create/Update operations occurring on the PREFERENCE table from the 'Server' schema
      * @param {HandlePreferencesArgs} preferencesArgs
@@ -33,22 +35,25 @@ const UserHandler = (superclass: any) => class extends superclass {
      * @returns {Promise<PreferenceModel[]>}
      */
     handlePreferences = async ({preferences, prepareRecordsOnly = true, sync = false}: HandlePreferencesArgs): Promise<PreferenceModel[]> => {
-        if (!preferences?.length) {
+        const records: PreferenceModel[] = [];
+        const filtered = filterPreferences(preferences);
+        if (!filtered?.length) {
             logWarning(
                 'An empty or undefined "preferences" array has been passed to the handlePreferences method',
             );
-            return [];
+            return records;
         }
 
         // WE NEED TO SYNC THE PREFS FROM WHAT WE GOT AND WHAT WE HAVE
         const deleteValues: PreferenceModel[] = [];
         const stored = await this.database.get(PREFERENCE).query().fetch() as PreferenceModel[];
-        const preferenesMap = new Map(stored.map((p) => {
+        const storedPreferencesMap = new Map(stored.map((p) => {
             return [`${p.category}-${p.name}`, p];
         }));
         if (sync) {
+            const rawPreferencesMap = new Map(filtered.map((p) => [`${p.category}-${p.name}`, p]));
             for (const pref of stored) {
-                const exists = preferenesMap.get(`${pref.category}-${pref.name}`);
+                const exists = rawPreferencesMap.get(`${pref.category}-${pref.name}`);
                 if (!exists) {
                     pref.prepareDestroyPermanently();
                     deleteValues.push(pref);
@@ -56,9 +61,9 @@ const UserHandler = (superclass: any) => class extends superclass {
             }
         }
 
-        const createOrUpdateRawValues = preferences.reduce((res: PreferenceType[], p) => {
+        const createOrUpdateRawValues = filtered.reduce((res: PreferenceType[], p) => {
             const id = `${p.category}-${p.name}`;
-            const exist = preferenesMap.get(id);
+            const exist = storedPreferencesMap.get(id);
             if (!exist) {
                 res.push(p);
                 return res;
@@ -71,25 +76,28 @@ const UserHandler = (superclass: any) => class extends superclass {
             return res;
         }, []);
 
-        if (!createOrUpdateRawValues.length) {
-            return [];
+        if (!createOrUpdateRawValues.length && !deleteValues.length) {
+            return records;
         }
 
-        const records: PreferenceModel[] = await this.handleRecords({
-            fieldName: 'user_id',
-            buildKeyRecordBy: buildPreferenceKey,
-            transformer: transformPreferenceRecord,
-            prepareRecordsOnly: true,
-            createOrUpdateRawValues,
-            tableName: PREFERENCE,
-        });
+        if (createOrUpdateRawValues.length) {
+            const createOrUpdate: PreferenceModel[] = await this.handleRecords({
+                fieldName: 'user_id',
+                buildKeyRecordBy: buildPreferenceKey,
+                transformer: transformPreferenceRecord,
+                prepareRecordsOnly: true,
+                createOrUpdateRawValues,
+                tableName: PREFERENCE,
+            }, 'handlePreferences(NEVER)');
+            records.push(...createOrUpdate);
+        }
 
         if (deleteValues.length) {
             records.push(...deleteValues);
         }
 
         if (records.length && !prepareRecordsOnly) {
-            await this.batchRecords(records);
+            await this.batchRecords(records, 'handlePreferences');
         }
 
         return records;
@@ -118,7 +126,7 @@ const UserHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: USER,
             prepareRecordsOnly,
-        });
+        }, 'handleUsers');
     };
 };
 

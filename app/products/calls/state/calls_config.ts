@@ -4,9 +4,9 @@
 import {useEffect, useState} from 'react';
 import {BehaviorSubject} from 'rxjs';
 
-import {CallsConfig, DefaultCallsConfig} from '@calls/types/calls';
+import {type CallsConfigState, DefaultCallsConfig} from '@calls/types/calls';
 
-const callsConfigSubjects: Dictionary<BehaviorSubject<CallsConfig>> = {};
+const callsConfigSubjects: Dictionary<BehaviorSubject<CallsConfigState>> = {};
 
 const getCallsConfigSubject = (serverUrl: string) => {
     if (!callsConfigSubjects[serverUrl]) {
@@ -20,7 +20,7 @@ export const getCallsConfig = (serverUrl: string) => {
     return getCallsConfigSubject(serverUrl).value;
 };
 
-export const setCallsConfig = (serverUrl: string, callsConfig: CallsConfig) => {
+export const setCallsConfig = (serverUrl: string, callsConfig: CallsConfigState) => {
     getCallsConfigSubject(serverUrl).next(callsConfig);
 };
 

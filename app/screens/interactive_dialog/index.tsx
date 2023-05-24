@@ -4,7 +4,7 @@
 import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, ScrollView} from 'react-native';
-import {ImageResource, Navigation} from 'react-native-navigation';
+import {type ImageResource, Navigation} from 'react-native-navigation';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {submitInteractiveDialog} from '@actions/remote/integrations';
@@ -12,12 +12,15 @@ import CompassIcon from '@components/compass_icon';
 import ErrorText from '@components/error_text';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {buildNavigationButton, dismissModal, setButtons} from '@screens/navigation';
 import {checkDialogElementForError, checkIfErrorsMatchElements} from '@utils/integrations';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import DialogElement from './dialog_element';
 import DialogIntroductionText from './dialog_introduction_text';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     return {
@@ -40,7 +43,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
 
 type Props = {
     config: InteractiveDialogConfig;
-    componentId: string;
+    componentId: AvailableScreens;
 }
 
 const close = () => {
@@ -216,6 +219,8 @@ function InteractiveDialog({
             unsubscribe.remove();
         };
     }, [serverUrl, url, callbackId, state, handleSubmit, submitting]);
+
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <SafeAreaView

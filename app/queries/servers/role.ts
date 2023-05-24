@@ -9,8 +9,8 @@ import {Database as DatabaseConstants, General, Permissions} from '@constants';
 import {isDMorGM} from '@utils/channel';
 import {hasPermission} from '@utils/role';
 
-import {observeChannel, observeMyChannel} from './channel';
-import {observeMyTeam} from './team';
+import {observeChannel, observeMyChannelRoles} from './channel';
+import {observeMyTeam, observeMyTeamRoles} from './team';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -41,16 +41,16 @@ export function observePermissionForChannel(database: Database, channel: Channel
     if (!user || !channel) {
         return of$(defaultValue);
     }
-    const myChannel = observeMyChannel(database, channel.id);
-    const myTeam = channel.teamId ? observeMyTeam(database, channel.teamId) : of$(undefined);
+    const myChannelRoles = observeMyChannelRoles(database, channel.id);
+    const myTeamRoles = channel.teamId ? observeMyTeamRoles(database, channel.teamId) : of$(undefined);
 
-    return combineLatest([myChannel, myTeam]).pipe(switchMap(([mc, mt]) => {
+    return combineLatest([myChannelRoles, myTeamRoles]).pipe(switchMap(([mc, mt]) => {
         const rolesArray = [...user.roles.split(' ')];
         if (mc) {
-            rolesArray.push(...mc.roles.split(' '));
+            rolesArray.push(...mc.split(' '));
         }
         if (mt) {
-            rolesArray.push(...mt.roles.split(' '));
+            rolesArray.push(...mt.split(' '));
         }
         return queryRolesByNames(database, rolesArray).observeWithColumns(['permissions']).pipe(
             switchMap((r) => of$(hasPermission(r, permission))),
@@ -88,8 +88,8 @@ export function observePermissionForPost(database: Database, post: PostModel, us
     );
 }
 
-export function observeCanManageChannelMembers(database: Database, post: PostModel, user: UserModel) {
-    return observeChannel(database, post.channelId).pipe(
+export function observeCanManageChannelMembers(database: Database, channelId: string, user: UserModel) {
+    return observeChannel(database, channelId).pipe(
         switchMap((c) => {
             if (!c || c.deleteAt !== 0 || isDMorGM(c) || c.name === General.DEFAULT_CHANNEL) {
                 return of$(false);

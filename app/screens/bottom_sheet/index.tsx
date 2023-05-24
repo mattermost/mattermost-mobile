@@ -1,21 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import BottomSheetM, {BottomSheetBackdrop, BottomSheetBackdropProps, BottomSheetFooterProps} from '@gorhom/bottom-sheet';
-import React, {ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
-import {DeviceEventEmitter, Handle, InteractionManager, Keyboard, StyleProp, View, ViewStyle} from 'react-native';
+import BottomSheetM, {BottomSheetBackdrop, type BottomSheetBackdropProps, type BottomSheetFooterProps} from '@gorhom/bottom-sheet';
+import React, {type ReactNode, useCallback, useEffect, useMemo, useRef} from 'react';
+import {DeviceEventEmitter, type Handle, InteractionManager, Keyboard, type StyleProp, View, type ViewStyle} from 'react-native';
 
-import useNavButtonPressed from '@app/hooks/navigation_button_pressed';
 import {Events} from '@constants';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal} from '@screens/navigation';
 import {hapticFeedback} from '@utils/general';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import Indicator from './indicator';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
 import type {WithSpringConfig} from 'react-native-reanimated';
 
 export {default as BottomSheetButton, BUTTON_HEIGHT} from './button';
@@ -23,7 +24,7 @@ export {default as BottomSheetContent, TITLE_HEIGHT} from './content';
 
 type Props = {
     closeButtonId?: string;
-    componentId: string;
+    componentId: AvailableScreens;
     contentStyle?: StyleProp<ViewStyle>;
     initialSnapIndex?: number;
     footerComponent?: React.FC<BottomSheetFooterProps>;
@@ -38,6 +39,7 @@ const PADDING_TOP_TABLET = 8;
 export const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         bottomSheet: {
+            backgroundColor: theme.centerChannelBg,
             borderTopStartRadius: 24,
             borderTopEndRadius: 24,
             shadowOffset: {
@@ -93,6 +95,11 @@ const BottomSheet = ({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const interaction = useRef<Handle>();
+    const timeoutRef = useRef<NodeJS.Timeout>();
+
+    useEffect(() => {
+        interaction.current = InteractionManager.createInteractionHandle();
+    }, []);
 
     const bottomSheetBackgroundStyle = useMemo(() => [
         styles.bottomSheetBackground,
@@ -116,7 +123,9 @@ const BottomSheet = ({
     }, [close]);
 
     const handleAnimationStart = useCallback(() => {
-        interaction.current = InteractionManager.createInteractionHandle();
+        if (!interaction.current) {
+            interaction.current = InteractionManager.createInteractionHandle();
+        }
     }, []);
 
     const handleClose = useCallback(() => {
@@ -128,7 +137,7 @@ const BottomSheet = ({
     }, []);
 
     const handleChange = useCallback((index: number) => {
-        setTimeout(() => {
+        timeoutRef.current = setTimeout(() => {
             if (interaction.current) {
                 InteractionManager.clearInteractionHandle(interaction.current);
                 interaction.current = undefined;
@@ -146,6 +155,16 @@ const BottomSheet = ({
     useEffect(() => {
         hapticFeedback();
         Keyboard.dismiss();
+
+        return () => {
+            if (timeoutRef.current) {
+                clearTimeout(timeoutRef.current);
+            }
+
+            if (interaction.current) {
+                InteractionManager.clearInteractionHandle(interaction.current);
+            }
+        };
     }, []);
 
     const renderBackdrop = useCallback((props: BottomSheetBackdropProps) => {
@@ -193,6 +212,7 @@ const BottomSheet = ({
             footerComponent={footerComponent}
             keyboardBehavior='extend'
             keyboardBlurBehavior='restore'
+            onClose={close}
         >
             {renderContainerContent()}
         </BottomSheetM>

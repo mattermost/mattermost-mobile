@@ -2,11 +2,11 @@
 // See LICENSE.txt for license information.
 
 import TurboLogger from '@mattermost/react-native-turbo-log';
-import {LogBox, Platform} from 'react-native';
+import {LogBox, Platform, UIManager} from 'react-native';
+import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
 import {RUNNING_E2E} from 'react-native-dotenv';
 import 'react-native-gesture-handler';
 import {Navigation} from 'react-native-navigation';
-import ViewReactNativeStyleAttributes from 'react-native/Libraries/Components/View/ReactNativeStyleAttributes';
 
 import {initialize, start} from './app/init/app';
 import setFontFamily from './app/utils/font_family';
@@ -26,9 +26,6 @@ TurboLogger.configure({
 
 if (__DEV__) {
     LogBox.ignoreLogs([
-        '`-[RCTRootView cancelTouches]`',
-        'scaleY',
-        "[react-native-gesture-handler] Seems like you're using an old API with gesture components, check out new Gestures system!",
         'new NativeEventEmitter',
     ]);
 
@@ -56,9 +53,12 @@ if (Platform.OS === 'android') {
     const ShareExtension = require('share_extension/index.tsx').default;
     const AppRegistry = require('react-native/Libraries/ReactNative/AppRegistry');
     AppRegistry.registerComponent('MattermostShare', () => ShareExtension);
+    if (UIManager.setLayoutAnimationEnabledExperimental) {
+        UIManager.setLayoutAnimationEnabledExperimental(true);
+    }
 }
 
 Navigation.events().registerAppLaunchedListener(async () => {
     await initialize();
-    await start();
+    start();
 });

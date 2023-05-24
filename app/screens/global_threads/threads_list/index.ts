@@ -3,7 +3,6 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {AppStateStatus} from 'react-native';
 import {switchMap} from 'rxjs/operators';
 
 import {observeCurrentTeamId} from '@queries/servers/system';
@@ -17,20 +16,19 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 type Props = {
     tab: GlobalThreadsTab;
     teamId: string;
-    forceQueryAfterAppState: AppStateStatus;
 } & WithDatabaseArgs;
 
 const withTeamId = withObservables([], ({database}: WithDatabaseArgs) => ({
     teamId: observeCurrentTeamId(database),
 }));
 
-const enhanced = withObservables(['tab', 'teamId', 'forceQueryAfterAppState'], ({database, tab, teamId}: Props) => {
+const enhanced = withObservables(['tab', 'teamId'], ({database, tab, teamId}: Props) => {
     const getOnlyUnreads = tab !== 'all';
 
     const teamThreadsSyncObserver = queryTeamThreadsSync(database, teamId).observeWithColumns(['earliest']);
 
     return {
-        unreadsCount: queryThreadsInTeam(database, teamId, true).observeCount(false),
+        unreadsCount: queryThreadsInTeam(database, teamId, true, true, true).observeCount(false),
         teammateNameDisplay: observeTeammateNameDisplay(database),
         threads: teamThreadsSyncObserver.pipe(
             switchMap((teamThreadsSync) => {

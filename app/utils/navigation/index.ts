@@ -1,14 +1,16 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
 import {Alert} from 'react-native';
-import {Navigation, Options} from 'react-native-navigation';
+import {Navigation, type Options} from 'react-native-navigation';
 
 import {Screens, ServerErrors} from '@constants';
-import {isServerError} from '@utils/errors';
+import {isErrorWithMessage, isServerError} from '@utils/errors';
 
-export const appearanceControlledScreens = new Set([
+import type {AvailableScreens} from '@typings/screens/navigation';
+import type {IntlShape} from 'react-intl';
+
+export const appearanceControlledScreens = new Set<AvailableScreens>([
     Screens.ONBOARDING,
     Screens.SERVER,
     Screens.LOGIN,
@@ -83,7 +85,7 @@ export function alertTeamAddError(error: unknown, intl: IntlShape) {
                 id: 'join_team.error.group_error',
                 defaultMessage: 'You need to be a member of a linked group to join this team.',
             });
-        } else if (error.message) {
+        } else if (isErrorWithMessage(error) && error.message) {
             errMsg = error.message;
         }
     }

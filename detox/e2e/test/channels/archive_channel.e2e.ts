@@ -25,6 +25,7 @@ import {
     ServerScreen,
     ChannelInfoScreen,
 } from '@support/ui/screen';
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Archive Channel', () => {
@@ -57,6 +58,7 @@ describe('Channels - Archive Channel', () => {
         // # Open a public channel screen, open channel info screen, and tap on archive channel option and confirm
         const {channel: publicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, publicChannel.id);
+        await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, publicChannel.name);
         await ChannelInfoScreen.open();
@@ -71,10 +73,12 @@ describe('Channels - Archive Channel', () => {
         await ChannelScreen.postDraftArchivedCloseChannelButton.tap();
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
         await BrowseChannelsScreen.searchInput.replaceText(publicChannel.name);
 
         // * Verify search returns the archived public channel item
+        await wait(timeouts.ONE_SEC);
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(publicChannel.name)).toHaveText(publicChannel.display_name);
 
         // # Go back to channel list screen
@@ -85,6 +89,7 @@ describe('Channels - Archive Channel', () => {
         // # Open a public channel screen, open channel info screen, and tap on archive channel option and cancel
         const {channel: publicChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'O', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, publicChannel.id);
+        await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, publicChannel.name);
         await ChannelInfoScreen.open();
@@ -102,6 +107,7 @@ describe('Channels - Archive Channel', () => {
         // # Open a private channel screen, open channel info screen, and tap on archive channel option and confirm
         const {channel: privateChannel} = await Channel.apiCreateChannel(siteOneUrl, {type: 'P', teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, privateChannel.id);
+        await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, privateChannel.name);
         await ChannelInfoScreen.open();
@@ -116,10 +122,12 @@ describe('Channels - Archive Channel', () => {
         await ChannelScreen.postDraftArchivedCloseChannelButton.tap();
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.channelDropdownTextPublic.tap();
+        await wait(timeouts.ONE_SEC);
         await ChannelDropdownMenuScreen.archivedChannelsItem.tap();
         await BrowseChannelsScreen.searchInput.replaceText(privateChannel.name);
 
         // * Verify search returns the archived private channel item
+        await wait(timeouts.ONE_SEC);
         await expect(BrowseChannelsScreen.getChannelItemDisplayName(privateChannel.name)).toHaveText(privateChannel.display_name);
 
         // # Go back to channel list screen

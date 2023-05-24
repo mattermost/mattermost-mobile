@@ -3,26 +3,57 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {of as of$} from 'rxjs';
-import {distinctUntilChanged, switchMap} from 'rxjs/operators';
+import {distinctUntilChanged, switchMap, combineLatest, of as of$} from 'rxjs';
 
-import {observeCurrentCall} from '@calls/state';
+import {observeChannelsWithCalls, observeCurrentCall} from '@calls/state';
+import {withServerUrl} from '@context/server';
 import {observePost} from '@queries/servers/post';
+import {observeIsCRTEnabled} from '@queries/servers/thread';
+import EphemeralStore from '@store/ephemeral_store';
 
 import Thread from './thread';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 
-const enhanced = withObservables(['rootId'], ({database, rootId}: WithDatabaseArgs & {rootId: string}) => {
-    const isInACall = observeCurrentCall().pipe(
+type EnhanceProps = WithDatabaseArgs & {
+    serverUrl: string;
+    rootId: string;
+}
+
+const enhanced = withObservables(['rootId'], ({database, serverUrl, rootId}: EnhanceProps) => {
+    const rId = rootId || EphemeralStore.getCurrentThreadId();
+    const rootPost = observePost(database, rId);
+
+    const channelId = rootPost.pipe(
+        switchMap((r) => of$(r?.channelId || '')),
+        distinctUntilChanged(),
+    );
+    const isCallInCurrentChannel = combineLatest([channelId, observeChannelsWithCalls(serverUrl)]).pipe(
+        switchMap(([id, calls]) => of$(Boolean(calls[id]))),
+        distinctUntilChanged(),
+    );
+    const currentCall = observeCurrentCall();
+    const ccChannelId = currentCall.pipe(
+        switchMap((call) => of$(call?.channelId)),
+        distinctUntilChanged(),
+    );
+    const isInACall = currentCall.pipe(
         switchMap((call) => of$(Boolean(call?.connected))),
+        distinctUntilChanged(),
+    );
+    const isInCurrentChannelCall = combineLatest([channelId, ccChannelId]).pipe(
+        switchMap(([id, ccId]) => of$(id === ccId)),
         distinctUntilChanged(),
     );
 
     return {
-        rootPost: observePost(database, rootId),
+        isCRTEnabled: observeIsCRTEnabled(database),
+        isCallInCurrentChannel,
         isInACall,
+        isInCurrentChannelCall,
+        rootId: of$(rId),
+        rootPost,
     };
 });
 
-export default withDatabase(enhanced(Thread));
+export default withDatabase(withServerUrl(enhanced(Thread)));

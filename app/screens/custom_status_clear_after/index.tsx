@@ -4,15 +4,14 @@
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
-import {injectIntl, IntlShape} from 'react-intl';
-import {BackHandler, NativeEventSubscription, SafeAreaView, View} from 'react-native';
+import {injectIntl, type IntlShape} from 'react-intl';
+import {BackHandler, type NativeEventSubscription, SafeAreaView, View} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {
     Navigation,
-    NavigationButtonPressedEvent,
+    type NavigationButtonPressedEvent,
     NavigationComponent,
-    NavigationComponentProps,
-    Options,
+    type Options,
 } from 'react-native-navigation';
 
 import {CustomStatusDurationEnum} from '@constants/custom_status';
@@ -26,9 +25,11 @@ import ClearAfterMenuItem from './components/clear_after_menu_item';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
-interface Props extends NavigationComponentProps {
-    currentUser: UserModel;
+interface Props {
+    componentId: AvailableScreens;
+    currentUser?: UserModel;
     handleClearAfterClick: (duration: CustomStatusDuration, expiresAt: string) => void;
     initialDuration: CustomStatusDuration;
     intl: IntlShape;

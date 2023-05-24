@@ -5,15 +5,15 @@ import React, {useCallback} from 'react';
 
 import {updateThreadFollowing} from '@actions/remote/thread';
 import {BaseOption} from '@components/common_post_options';
-import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {t} from '@i18n';
 import {dismissBottomSheet} from '@screens/navigation';
 
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type FollowThreadOptionProps = {
-    bottomSheetId: typeof Screens[keyof typeof Screens];
+    bottomSheetId: AvailableScreens;
     thread: ThreadModel;
     teamId?: string;
 };
@@ -50,7 +50,7 @@ const FollowThreadOption = ({bottomSheetId, thread, teamId}: FollowThreadOptionP
             return;
         }
         await dismissBottomSheet(bottomSheetId);
-        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing);
+        updateThreadFollowing(serverUrl, teamId, thread.id, !thread.isFollowing, true);
     }, [bottomSheetId, teamId, thread]);
 
     const followThreadOptionTestId = thread.isFollowing ? 'post_options.following_thread.option' : 'post_options.follow_thread.option';

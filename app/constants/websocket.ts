@@ -5,6 +5,8 @@ import Calls from '@constants/calls';
 
 const WebsocketEvents = {
     POSTED: 'posted',
+    POST_ACKNOWLEDGEMENT_ADDED: 'post_acknowledgement_added',
+    POST_ACKNOWLEDGEMENT_REMOVED: 'post_acknowledgement_removed',
     POST_EDITED: 'post_edited',
     POST_DELETED: 'post_deleted',
     POST_UNREAD: 'post_unread',
@@ -44,6 +46,8 @@ const WebsocketEvents = {
     EMOJI_ADDED: 'emoji_added',
     LICENSE_CHANGED: 'license_changed',
     CONFIG_CHANGED: 'config_changed',
+    PLUGIN_ENABLED: 'plugin_enabled',
+    PLUGIN_DISABLED: 'plugin_disabled',
     PLUGIN_STATUSES_CHANGED: 'plugin_statuses_changed',
     OPEN_DIALOG: 'open_dialog',
     INCREASE_POST_VISIBILITY_BY_ONE: 'increase_post_visibility_by_one',

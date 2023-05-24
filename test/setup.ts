@@ -9,8 +9,15 @@ import mockSafeAreaContext from 'react-native-safe-area-context/jest/mock';
 
 import type {ReadDirItem, StatResult} from 'react-native-fs';
 
-require('react-native-reanimated/lib/reanimated2/jestUtils').setUpTests();
 require('isomorphic-fetch');
+
+const WebViewMock = () => {
+    return null;
+};
+
+jest.mock('react-native-webview', () => ({
+    WebView: WebViewMock,
+}));
 
 /* eslint-disable no-console */
 jest.mock('@database/manager');
@@ -18,7 +25,6 @@ jest.doMock('react-native', () => {
     const {
         Platform,
         StyleSheet,
-        PermissionsAndroid,
         requireNativeComponent,
         Alert: RNAlert,
         InteractionManager: RNInteractionManager,
@@ -75,7 +81,6 @@ jest.doMock('react-native', () => {
         RNDocumentPicker: {
             pick: jest.fn(),
         },
-        RNPermissions: {},
         RNFastStorage: {
             setupLibrary: jest.fn(),
             setStringAsync: jest.fn(),
@@ -91,6 +96,11 @@ jest.doMock('react-native', () => {
                     databasePath: '',
                 },
             }),
+        },
+        SplitView: {
+            addListener: jest.fn(),
+            removeListeners: jest.fn(),
+            isRunningInSplitView: jest.fn().mockResolvedValue(() => ({isSplitView: false, isTablet: false})),
         },
         Notifications: {
             getDeliveredNotifications: jest.fn().mockResolvedValue([]),
@@ -137,6 +147,9 @@ jest.doMock('react-native', () => {
     const Linking = {
         ...RNLinking,
         openURL: jest.fn(),
+        addEventListener: jest.fn(() => {
+            return {remove: jest.fn()};
+        }),
     };
 
     return Object.setPrototypeOf({
@@ -152,7 +165,6 @@ jest.doMock('react-native', () => {
             },
         },
         StyleSheet,
-        PermissionsAndroid,
         requireNativeComponent,
         Alert,
         InteractionManager,
@@ -278,7 +290,7 @@ jest.mock('react-native-navigation', () => {
                     return {remove: jest.fn()};
                 }),
                 registerNavigationButtonPressedListener: jest.fn(() => {
-                    return {buttonId: 'buttonId'};
+                    return {remove: jest.fn()};
                 }),
             }),
             setRoot: jest.fn(),
@@ -364,6 +376,9 @@ jest.mock('@mattermost/react-native-emm', () => ({
 }));
 
 jest.mock('react-native-safe-area-context', () => mockSafeAreaContext);
+
+jest.mock('react-native-reanimated', () => require('react-native-reanimated/mock'));
+jest.mock('react-native-permissions', () => require('react-native-permissions/mock'));
 
 declare const global: {requestAnimationFrame: (callback: any) => void};
 global.requestAnimationFrame = (callback) => {

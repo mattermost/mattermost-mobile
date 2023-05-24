@@ -3,7 +3,7 @@
 
 import React, {useCallback, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Keyboard, TouchableOpacity, View} from 'react-native';
+import {Keyboard, TouchableOpacity} from 'react-native';
 
 import {addReaction, removeReaction} from '@actions/remote/reactions';
 import CompassIcon from '@components/compass_icon';
@@ -50,13 +50,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
             paddingHorizontal: 6,
             width: 36,
         },
-        reactionsContainer: {
-            flex: 1,
-            flexDirection: 'row',
-            flexWrap: 'wrap',
-            alignContent: 'flex-start',
-            marginTop: 12,
-        },
     };
 });
 
@@ -86,11 +79,11 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
             if (reaction) {
                 const emojiAlias = getEmojiFirstAlias(reaction.emojiName);
                 if (acc.has(emojiAlias)) {
-                    const rs = acc.get(emojiAlias);
+                    const rs = acc.get(emojiAlias)!;
                     // eslint-disable-next-line max-nested-callbacks
-                    const present = rs!.findIndex((r) => r.userId === reaction.userId) > -1;
+                    const present = rs.findIndex((r) => r.userId === reaction.userId) > -1;
                     if (!present) {
-                        rs!.push(reaction);
+                        rs.push(reaction);
                     }
                 } else {
                     acc.set(emojiAlias, [reaction]);
@@ -105,7 +98,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
         }, new Map<string, ReactionModel[]>());
 
         return {reactionsByName, highlightedReactions};
-    }, [sortedReactions]);
+    }, [sortedReactions, reactions]);
 
     const handleAddReactionToPost = (emoji: string) => {
         addReaction(serverUrl, postId, emoji);
@@ -171,14 +164,14 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
     }
 
     return (
-        <View style={styles.reactionsContainer}>
+        <>
             {
                 Array.from(sortedReactions).map((r) => {
                     const reaction = reactionsByName.get(r);
                     return (
                         <Reaction
                             key={r}
-                            count={reaction!.length}
+                            count={reaction?.length || 1}
                             emojiName={r}
                             highlight={highlightedReactions.includes(r)}
                             onPress={handleReactionPress}
@@ -189,7 +182,7 @@ const Reactions = ({currentUserId, canAddReaction, canRemoveReaction, disabled, 
                 })
             }
             {addMoreReactions}
-        </View>
+        </>
     );
 };
 

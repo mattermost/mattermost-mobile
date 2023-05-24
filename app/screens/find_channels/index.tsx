@@ -1,13 +1,14 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {Keyboard, View} from 'react-native';
-import {Navigation} from 'react-native-navigation';
+import React, {useCallback, useMemo, useRef, useState} from 'react';
+import {Keyboard, type LayoutChangeEvent, View} from 'react-native';
 
 import SearchBar from '@components/search';
 import {useTheme} from '@context/theme';
-import {useKeyboardHeight} from '@hooks/device';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useKeyboardOverlap} from '@hooks/device';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal} from '@screens/navigation';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -16,9 +17,11 @@ import FilteredList from './filtered_list';
 import QuickOptions from './quick_options';
 import UnfilteredList from './unfiltered_list';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     closeButtonId: string;
-    componentId: string;
+    componentId: AvailableScreens;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -45,7 +48,10 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
     const [loading, setLoading] = useState(false);
     const styles = getStyleSheet(theme);
     const color = useMemo(() => changeOpacity(theme.centerChannelColor, 0.72), [theme]);
-    const keyboardHeight = useKeyboardHeight();
+    const listView = useRef<View>(null);
+
+    const [containerHeight, setContainerHeight] = useState(0);
+    const overlap = useKeyboardOverlap(listView, containerHeight);
 
     const cancelButtonProps = useMemo(() => ({
         color,
@@ -53,6 +59,10 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
             ...typography('Body', 100),
         },
     }), [color]);
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        setContainerHeight(e.nativeEvent.layout.height);
+    }, []);
 
     const close = useCallback(() => {
         Keyboard.dismiss();
@@ -70,15 +80,8 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
         }
     }, []);
 
-    useEffect(() => {
-        const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
-            if (closeButtonId && buttonId === closeButtonId) {
-                close();
-            }
-        });
-
-        return () => navigationEvents.remove();
-    }, []);
+    useNavButtonPressed(closeButtonId, componentId, close, []);
+    useAndroidHardwareBackHandler(componentId, close);
 
     return (
         <View
@@ -103,18 +106,22 @@ const FindChannels = ({closeButtonId, componentId}: Props) => {
                 testID='find_channels.search_bar'
             />
             {term === '' && <QuickOptions close={close}/>}
-            <View style={styles.listContainer}>
+            <View
+                style={styles.listContainer}
+                onLayout={onLayout}
+                ref={listView}
+            >
                 {term === '' &&
                 <UnfilteredList
                     close={close}
-                    keyboardHeight={keyboardHeight}
+                    keyboardOverlap={overlap}
                     testID='find_channels.unfiltered_list'
                 />
                 }
                 {Boolean(term) &&
                 <FilteredList
                     close={close}
-                    keyboardHeight={keyboardHeight}
+                    keyboardOverlap={overlap}
                     loading={loading}
                     onLoading={setLoading}
                     term={term}

@@ -2,10 +2,10 @@
 // See LICENSE.txt for license information.
 
 import {field, json} from '@nozbe/watermelondb/decorators';
-import Model, {Associations} from '@nozbe/watermelondb/Model';
+import Model, {type Associations} from '@nozbe/watermelondb/Model';
 
 import {MM_TABLES} from '@constants/database';
-import {safeParseJSON} from '@utils/helpers';
+import {identity, safeParseJSON} from '@utils/helpers';
 
 import type DraftModelInterface from '@typings/database/models/servers/draft';
 
@@ -39,4 +39,6 @@ export default class DraftModel extends Model implements DraftModelInterface {
 
     /** files : The files field will hold an array of file objects that have not yet been uploaded and persisted within the FILE table */
     @json('files', safeParseJSON) files!: FileInfo[];
+
+    @json('metadata', identity) metadata?: PostMetadata;
 }

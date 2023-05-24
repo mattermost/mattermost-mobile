@@ -1,32 +1,34 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Database} from '@nozbe/watermelondb';
-
 import {storeConfigAndLicense} from '@actions/local/systems';
-import {MyChannelsRequest} from '@actions/remote/channel';
 import {fetchGroupsForMember} from '@actions/remote/groups';
 import {fetchPostsForUnreadChannels} from '@actions/remote/post';
-import {MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
+import {fetchDataRetentionPolicy} from '@actions/remote/systems';
+import {type MyTeamsRequest, updateCanJoinTeams} from '@actions/remote/team';
 import {syncTeamThreads} from '@actions/remote/thread';
-import {autoUpdateTimezone, updateAllUsersSince} from '@actions/remote/user';
+import {autoUpdateTimezone, fetchProfilesInGroupChannels, updateAllUsersSince} from '@actions/remote/user';
 import {gqlEntry, gqlEntryChannels, gqlOtherChannels} from '@client/graphQL/entry';
-import {Preferences} from '@constants';
+import {General, Preferences} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getPreferenceValue} from '@helpers/api/preference';
 import {selectDefaultTeam} from '@helpers/api/team';
 import {queryAllChannels, queryAllChannelsForTeam} from '@queries/servers/channel';
 import {prepareModels, truncateCrtRelatedTables} from '@queries/servers/entry';
 import {getHasCRTChanged} from '@queries/servers/preference';
-import {getConfig} from '@queries/servers/system';
+import {getConfig, getIsDataRetentionEnabled} from '@queries/servers/system';
+import {getFullErrorMessage} from '@utils/errors';
 import {filterAndTransformRoles, getMemberChannelsFromGQLQuery, getMemberTeamsFromGQLQuery, gqlToClientChannelMembership, gqlToClientPreference, gqlToClientSidebarCategory, gqlToClientTeamMembership, gqlToClientUser} from '@utils/graphql';
 import {logDebug} from '@utils/log';
 import {processIsCRTEnabled} from '@utils/thread';
 
-import {teamsToRemove, FETCH_UNREADS_TIMEOUT, entryRest, EntryResponse, entryInitialChannelId, restDeferredAppEntryActions, getRemoveTeamIds} from './common';
+import {teamsToRemove, FETCH_UNREADS_TIMEOUT, entryRest, type EntryResponse, entryInitialChannelId, restDeferredAppEntryActions, getRemoveTeamIds} from './common';
 
-import type ClientError from '@client/rest/error';
+import type {MyChannelsRequest} from '@actions/remote/channel';
+import type {Database} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
+
+const FETCH_MISSING_GM_TIMEOUT = 2500;
 
 export async function deferredAppEntryGraphQLActions(
     serverUrl: string,
@@ -82,7 +84,7 @@ export async function deferredAppEntryGraphQLActions(
             modelPromises.push(operator.handleRole({roles, prepareRecordsOnly: true}));
         }
         const models = (await Promise.all(modelPromises)).flat();
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'deferredAppEntryActions');
 
         setTimeout(() => {
             if (result.chData?.channels?.length && result.chData.memberships?.length) {
@@ -97,6 +99,19 @@ export async function deferredAppEntryGraphQLActions(
 
     updateCanJoinTeams(serverUrl);
     updateAllUsersSince(serverUrl, since);
+
+    // defer sidebar GM profiles
+    setTimeout(async () => {
+        const gmIds = chData?.channels?.reduce<Set<string>>((acc, v) => {
+            if (v?.type === General.GM_CHANNEL) {
+                acc.add(v.id);
+            }
+            return acc;
+        }, new Set<string>());
+        if (gmIds?.size) {
+            fetchProfilesInGroupChannels(serverUrl, Array.from(gmIds));
+        }
+    }, FETCH_MISSING_GM_TIMEOUT);
 
     return {error: undefined};
 }
@@ -126,7 +141,7 @@ const getChannelData = async (serverUrl: string, initialTeamId: string, userId: 
         const request = exclude ? gqlOtherChannels : gqlEntryChannels;
         response = await request(serverUrl, initialTeamId);
     } catch (error) {
-        return {error: (error as ClientError).message};
+        return {error: getFullErrorMessage(error)};
     }
 
     if ('error' in response) {
@@ -160,7 +175,7 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
     try {
         response = await gqlEntry(serverUrl);
     } catch (error) {
-        return {error: (error as ClientError).message};
+        return {error: getFullErrorMessage(error)};
     }
 
     if ('error' in response) {
@@ -217,7 +232,7 @@ export const entryGQL = async (serverUrl: string, currentTeamId?: string, curren
     if (!teamData.teams.length) {
         initialTeamId = '';
     } else if (!initialTeamId || !teamData.teams.find((t) => t.id === currentTeamId && t.delete_at === 0)) {
-        const teamOrderPreference = getPreferenceValue(prefData.preferences || [], Preferences.TEAMS_ORDER, '', '') as string;
+        const teamOrderPreference = getPreferenceValue<string>(prefData.preferences || [], Preferences.CATEGORIES.TEAMS_ORDER, '', '');
         initialTeamId = selectDefaultTeam(teamData.teams, meData.user.locale, teamOrderPreference, config.ExperimentalPrimaryTeam)?.id || '';
     }
     const gqlRoles = [
@@ -263,6 +278,12 @@ export const entry = async (serverUrl: string, teamId?: string, channelId?: stri
         }
     } else {
         result = entryRest(serverUrl, teamId, channelId, since);
+    }
+
+    // Fetch data retention policies
+    const isDataRetentionEnabled = await getIsDataRetentionEnabled(database);
+    if (isDataRetentionEnabled) {
+        fetchDataRetentionPolicy(serverUrl);
     }
 
     return result;

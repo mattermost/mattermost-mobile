@@ -3,7 +3,7 @@
 
 import {BottomSheetFlatList} from '@gorhom/bottom-sheet';
 import React, {useCallback, useMemo} from 'react';
-import {ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {type ListRenderItemInfo, StyleSheet, View} from 'react-native';
 import {FlatList} from 'react-native-gesture-handler'; // Keep the FlatList from gesture handler so it works well with bottom sheet
 
 import Loading from '@components/loading';

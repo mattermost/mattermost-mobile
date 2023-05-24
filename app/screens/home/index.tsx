@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {createBottomTabNavigator, BottomTabBarProps} from '@react-navigation/bottom-tabs';
+import {createBottomTabNavigator, type BottomTabBarProps} from '@react-navigation/bottom-tabs';
 import {NavigationContainer} from '@react-navigation/native';
 import React, {useEffect} from 'react';
 import {useIntl} from 'react-intl';
@@ -36,7 +36,6 @@ enableFreeze(true);
 
 type HomeProps = LaunchProps & {
     componentId: string;
-    time?: number;
 };
 
 const Tab = createBottomTabNavigator();
@@ -46,7 +45,7 @@ export default function HomeScreen(props: HomeProps) {
     const intl = useIntl();
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel') => {
+        const listener = DeviceEventEmitter.addListener(Events.NOTIFICATION_ERROR, (value: 'Team' | 'Channel' | 'Post' | 'Connection') => {
             notificationError(intl, value);
         });
 

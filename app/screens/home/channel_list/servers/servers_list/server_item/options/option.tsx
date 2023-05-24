@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useMemo} from 'react';
-import {Animated, StyleProp, Text, View, ViewStyle} from 'react-native';
+import {Animated, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 
 import CompassIcon from '@components/compass_icon';

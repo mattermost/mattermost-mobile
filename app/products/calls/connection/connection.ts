@@ -1,29 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-// eslint-disable-next-line @typescript-eslint/ban-ts-comment
-// @ts-ignore
-import {deflate} from 'pako/lib/deflate.js';
-import {DeviceEventEmitter, EmitterSubscription} from 'react-native';
+import {RTCMonitor, RTCPeer} from '@mattermost/calls/lib';
+import {deflate} from 'pako';
+import {DeviceEventEmitter, type EmitterSubscription, Platform} from 'react-native';
 import InCallManager from 'react-native-incall-manager';
-import {
-    MediaStream,
-    MediaStreamTrack,
-    mediaDevices,
-} from 'react-native-webrtc';
+import {mediaDevices, MediaStream, MediaStreamTrack, RTCPeerConnection} from 'react-native-webrtc';
 
+import {setPreferredAudioRoute, setSpeakerphoneOn} from '@calls/actions/calls';
+import {processMeanOpinionScore, setAudioDeviceInfo} from '@calls/state';
+import {AudioDevice, type AudioDeviceInfo, type AudioDeviceInfoRaw, type CallsConnection} from '@calls/types/calls';
 import {getICEServersConfigs} from '@calls/utils';
 import {WebsocketEvents} from '@constants';
 import {getServerCredentials} from '@init/credentials';
 import NetworkManager from '@managers/network_manager';
-import {logError, logDebug, logWarning} from '@utils/log';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug, logError, logInfo, logWarning} from '@utils/log';
 
-import Peer from './simple-peer';
 import {WebSocketClient, wsReconnectionTimeoutErr} from './websocket_client';
 
-import type {CallReactionEmoji, CallsConnection} from '@calls/types/calls';
+import type {EmojiData} from '@mattermost/calls/lib/types';
 
 const peerConnectTimeout = 5000;
+const rtcMonitorInterval = 4000;
 
 export async function newConnection(
     serverUrl: string,
@@ -31,14 +30,23 @@ export async function newConnection(
     closeCb: () => void,
     setScreenShareURL: (url: string) => void,
     hasMicPermission: boolean,
+    title?: string,
 ) {
-    let peer: Peer | null = null;
+    let peer: RTCPeer | null = null;
     let stream: MediaStream;
     let voiceTrackAdded = false;
     let voiceTrack: MediaStreamTrack | null = null;
     let isClosed = false;
     let onCallEnd: EmitterSubscription | null = null;
+    let audioDeviceChanged: EmitterSubscription | null = null;
     const streams: MediaStream[] = [];
+    let rtcMonitor: RTCMonitor | null = null;
+    const logger = {
+        logDebug,
+        logErr: logError,
+        logWarn: logWarning,
+        logInfo,
+    };
 
     const initializeVoiceTrack = async () => {
         if (voiceTrack) {
@@ -79,6 +87,7 @@ export async function newConnection(
 
         ws.send('leave');
         ws.close();
+        rtcMonitor?.stop();
 
         if (onCallEnd) {
             onCallEnd.remove();
@@ -92,11 +101,10 @@ export async function newConnection(
             });
         });
 
-        peer?.destroy(undefined, undefined, () => {
-            // Wait until the peer connection is closed, which avoids the following racy error that can cause problems with accessing the audio system in the future:
-            // AVAudioSession_iOS.mm:1243  Deactivating an audio session that has running I/O. All I/O should be stopped or paused prior to deactivating the audio session.
-            InCallManager.stop();
-        });
+        peer?.destroy();
+        peer = null;
+        InCallManager.stop();
+        audioDeviceChanged?.remove();
 
         if (closeCb) {
             closeCb();
@@ -110,41 +118,47 @@ export async function newConnection(
     });
 
     const mute = () => {
-        if (!peer || peer.destroyed) {
+        if (!peer || !voiceTrack) {
             return;
         }
 
         try {
-            if (voiceTrackAdded && voiceTrack) {
-                peer.replaceTrack(voiceTrack, null, stream);
+            if (voiceTrackAdded) {
+                peer.replaceTrack(voiceTrack.id, null);
             }
         } catch (e) {
-            logError('From simple-peer:', e);
+            logError('From RTCPeer:', e);
             return;
         }
 
-        if (voiceTrack) {
-            voiceTrack.enabled = false;
-        }
+        voiceTrack.enabled = false;
         if (ws) {
             ws.send('mute');
         }
     };
 
     const unmute = () => {
-        if (!peer || !voiceTrack || peer.destroyed) {
+        if (!peer || !voiceTrack) {
             return;
         }
 
+        // NOTE: we purposely clear the monitor's stats cache upon unmuting
+        // in order to skip some calculations since upon muting we actually
+        // stop sending packets which would result in stats to be skewed as
+        // soon as we resume sending.
+        // This is not perfect but it avoids having to constantly send
+        // silence frames when muted.
+        rtcMonitor?.clearCache();
+
         try {
             if (voiceTrackAdded) {
-                peer.replaceTrack(voiceTrack, voiceTrack, stream);
+                peer.replaceTrack(voiceTrack.id, voiceTrack);
             } else {
                 peer.addStream(stream);
                 voiceTrackAdded = true;
             }
         } catch (e) {
-            logError('From simple-peer:', e);
+            logError('From RTCPeer:', e);
             return;
         }
 
@@ -166,7 +180,7 @@ export async function newConnection(
         }
     };
 
-    const sendReaction = (emoji: CallReactionEmoji) => {
+    const sendReaction = (emoji: EmojiData) => {
         if (ws) {
             ws.send('react', {
                 data: JSON.stringify(emoji),
@@ -190,7 +204,7 @@ export async function newConnection(
         try {
             config = await client.getCallsConfig();
         } catch (err) {
-            logError('FETCHING CALLS CONFIG:', err);
+            logError('FETCHING CALLS CONFIG:', getFullErrorMessage(err));
             return;
         }
 
@@ -199,35 +213,94 @@ export async function newConnection(
             try {
                 iceConfigs.push(...await client.genTURNCredentials());
             } catch (err) {
-                logWarning('failed to fetch TURN credentials:', err);
+                logWarning('failed to fetch TURN credentials:', getFullErrorMessage(err));
             }
         }
 
-        InCallManager.start({media: 'audio'});
+        InCallManager.start();
         InCallManager.stopProximitySensor();
 
-        peer = new Peer(null, iceConfigs);
-        peer.on('signal', (data: any) => {
-            if (data.type === 'offer' || data.type === 'answer') {
-                ws.send('sdp', {
-                    data: deflate(JSON.stringify(data)),
-                }, true);
-            } else if (data.type === 'candidate') {
-                ws.send('ice', {
-                    data: JSON.stringify(data.candidate),
-                });
+        let btInitialized = false;
+        let speakerInitialized = false;
+
+        audioDeviceChanged = DeviceEventEmitter.addListener('onAudioDeviceChanged', (data: AudioDeviceInfoRaw) => {
+            const info: AudioDeviceInfo = {
+                availableAudioDeviceList: JSON.parse(data.availableAudioDeviceList),
+                selectedAudioDevice: data.selectedAudioDevice,
+            };
+            setAudioDeviceInfo(info);
+
+            // Auto switch to bluetooth the first time we connect to bluetooth, but not after.
+            if (!btInitialized) {
+                if (info.availableAudioDeviceList.includes(AudioDevice.Bluetooth)) {
+                    setPreferredAudioRoute(AudioDevice.Bluetooth);
+                    btInitialized = true;
+                } else if (!speakerInitialized) {
+                    // If we don't have bluetooth available, default to speakerphone on.
+                    setPreferredAudioRoute(AudioDevice.Speakerphone);
+                    speakerInitialized = true;
+                }
             }
         });
 
-        peer.on('stream', (remoteStream: MediaStream) => {
-            streams.push(remoteStream);
-            if (remoteStream.getVideoTracks().length > 0) {
-                setScreenShareURL(remoteStream.toURL());
-            }
+        // We default to speakerphone (Android is handled above in the onAudioDeviceChanged handler above).
+        if (Platform.OS === 'ios') {
+            setSpeakerphoneOn(true);
+        }
+
+        peer = new RTCPeer({
+            iceServers: iceConfigs || [],
+            logger,
+            webrtc: {
+                MediaStream,
+                RTCPeerConnection,
+            },
+        });
+
+        rtcMonitor = new RTCMonitor({
+            peer,
+            logger,
+            monitorInterval: rtcMonitorInterval,
+        });
+        rtcMonitor.on('mos', processMeanOpinionScore);
+
+        peer.on('offer', (sdp) => {
+            logDebug(`local offer, sending: ${JSON.stringify(sdp)}`);
+            ws.send('sdp', {
+                data: deflate(JSON.stringify(sdp)),
+            }, true);
+        });
+
+        peer.on('answer', (sdp) => {
+            logDebug(`local answer, sending: ${JSON.stringify(sdp)}`);
+            ws.send('sdp', {
+                data: deflate(JSON.stringify(sdp)),
+            }, true);
+        });
+
+        peer.on('candidate', (candidate) => {
+            ws.send('ice', {
+                data: JSON.stringify(candidate),
+            });
         });
 
         peer.on('error', (err: any) => {
             logError('calls: peer error:', err);
+            if (!isClosed) {
+                disconnect();
+            }
+        });
+
+        peer.on('stream', (remoteStream: MediaStream) => {
+            logDebug('new remote stream received', remoteStream.id);
+            for (const track of remoteStream.getTracks()) {
+                logDebug('remote track', track.id);
+            }
+
+            streams.push(remoteStream);
+            if (remoteStream.getVideoTracks().length > 0) {
+                setScreenShareURL(remoteStream.toURL());
+            }
         });
 
         peer.on('close', () => {
@@ -249,6 +322,7 @@ export async function newConnection(
         } else {
             ws.send('join', {
                 channelID,
+                title,
             });
         }
     });
@@ -267,7 +341,8 @@ export async function newConnection(
                 return;
             }
             setTimeout(() => {
-                if (peer?.isConnected) {
+                if (peer?.connected) {
+                    rtcMonitor?.start();
                     callback();
                 } else {
                     waitForReadyImpl(callback, fail, timeout - 200);
@@ -275,11 +350,9 @@ export async function newConnection(
             }, 200);
         };
 
-        const promise = new Promise<void>((resolve, reject) => {
+        return new Promise<void>((resolve, reject) => {
             waitForReadyImpl(resolve, reject, peerConnectTimeout);
         });
-
-        return promise;
     };
 
     const connection: CallsConnection = {

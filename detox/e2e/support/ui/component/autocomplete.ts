@@ -1,6 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 import ProfilePicture from './profile_picture';
@@ -111,6 +112,7 @@ class Autocomplete {
     };
 
     toBeVisible = async (isVisible = true) => {
+        await wait(timeouts.ONE_SEC);
         if (isVisible) {
             await expect(this.autocomplete.atIndex(0)).toBeVisible();
             return this.autocomplete;

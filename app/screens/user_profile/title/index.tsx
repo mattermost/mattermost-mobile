@@ -25,6 +25,8 @@ import type {GalleryItemType} from '@typings/screens/gallery';
 type Props = {
     enablePostIconOverride: boolean;
     enablePostUsernameOverride: boolean;
+    headerText?: string;
+    imageSize?: number;
     isChannelAdmin: boolean;
     isSystemAdmin: boolean;
     isTeamAdmin: boolean;
@@ -33,6 +35,8 @@ type Props = {
     userIconOverride?: string;
     usernameOverride?: string;
 }
+
+export const HEADER_TEXT_HEIGHT = 30;
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     container: {
@@ -52,14 +56,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
         color: changeOpacity(theme.centerChannelColor, 0.64),
         ...typography('Body', 200),
     },
+    heading: {
+        height: HEADER_TEXT_HEIGHT,
+        color: theme.centerChannelColor,
+        marginBottom: 20,
+        ...typography('Heading', 600, 'SemiBold'),
+    },
     tablet: {
         marginTop: 20,
     },
 }));
 
 const UserProfileTitle = ({
-    enablePostIconOverride, enablePostUsernameOverride,
-    isChannelAdmin, isSystemAdmin, isTeamAdmin,
+    enablePostIconOverride, enablePostUsernameOverride, headerText,
+    imageSize, isChannelAdmin, isSystemAdmin, isTeamAdmin,
     teammateDisplayName, user, userIconOverride, usernameOverride,
 }: Props) => {
     const galleryIdentifier = `${user.id}-avatarPreview`;
@@ -98,8 +108,9 @@ const UserProfileTitle = ({
                 uri: imageUrl,
                 width: 400,
                 height: 400,
+                lastPictureUpdate: user.lastPictureUpdate,
                 name: displayName,
-                mime_type: 'images/png',
+                mime_type: 'image/png',
                 authorId: user.id,
                 type: 'avatar',
             };
@@ -117,45 +128,56 @@ const UserProfileTitle = ({
     const prefix = hideUsername ? '@' : '';
 
     return (
-        <View style={[styles.container, isTablet && styles.tablet]}>
-            <GalleryInit galleryIdentifier={galleryIdentifier}>
-                <Animated.View style={galleryStyles}>
-                    <TouchableOpacity onPress={onGestureEvent}>
-                        <UserProfileAvatar
-                            forwardRef={ref}
-                            enablePostIconOverride={enablePostIconOverride}
-                            user={user}
-                            userIconOverride={userIconOverride}
-                        />
-                    </TouchableOpacity>
-                </Animated.View>
-            </GalleryInit>
-            <View style={styles.details}>
-                <UserProfileTag
-                    isBot={user.isBot || Boolean(userIconOverride || usernameOverride)}
-                    isChannelAdmin={isChannelAdmin}
-                    isGuest={user.isGuest}
-                    isSystemAdmin={isSystemAdmin}
-                    isTeamAdmin={isTeamAdmin}
-                />
+        <>
+            {headerText &&
                 <Text
-                    numberOfLines={1}
-                    style={styles.displayName}
-                    testID='user_profile.display_name'
+                    style={styles.heading}
+                    testID='user_profile.heading'
                 >
-                    {`${prefix}${displayName}`}
+                    {headerText}
                 </Text>
-                {!hideUsername &&
-                <Text
-                    numberOfLines={1}
-                    style={styles.username}
-                    testID='user_profile.username'
-                >
-                    {`@${user.username}`}
-                </Text>
-                }
+            }
+            <View style={[styles.container, isTablet && styles.tablet]}>
+                <GalleryInit galleryIdentifier={galleryIdentifier}>
+                    <Animated.View style={galleryStyles}>
+                        <TouchableOpacity onPress={onGestureEvent}>
+                            <UserProfileAvatar
+                                forwardRef={ref}
+                                enablePostIconOverride={enablePostIconOverride}
+                                imageSize={imageSize || undefined}
+                                user={user}
+                                userIconOverride={userIconOverride}
+                            />
+                        </TouchableOpacity>
+                    </Animated.View>
+                </GalleryInit>
+                <View style={styles.details}>
+                    <UserProfileTag
+                        isBot={user.isBot || Boolean(userIconOverride || usernameOverride)}
+                        isChannelAdmin={isChannelAdmin}
+                        isGuest={user.isGuest}
+                        isSystemAdmin={isSystemAdmin}
+                        isTeamAdmin={isTeamAdmin}
+                    />
+                    <Text
+                        numberOfLines={1}
+                        style={styles.displayName}
+                        testID='user_profile.display_name'
+                    >
+                        {`${prefix}${displayName}`}
+                    </Text>
+                    {!hideUsername &&
+                    <Text
+                        numberOfLines={1}
+                        style={styles.username}
+                        testID='user_profile.username'
+                    >
+                        {`@${user.username}`}
+                    </Text>
+                    }
+                </View>
             </View>
-        </View>
+        </>
     );
 };
 

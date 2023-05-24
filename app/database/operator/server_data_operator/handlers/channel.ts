@@ -19,6 +19,7 @@ import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {getIsCRTEnabled} from '@queries/servers/thread';
 import {logWarning} from '@utils/log';
 
+import type ServerDataOperatorBase from '.';
 import type {HandleChannelArgs, HandleChannelInfoArgs, HandleChannelMembershipArgs, HandleMyChannelArgs, HandleMyChannelSettingsArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type ChannelInfoModel from '@typings/database/models/servers/channel_info';
@@ -42,7 +43,7 @@ export interface ChannelHandlerMix {
   handleMyChannel: ({channels, myChannels, isCRTEnabled, prepareRecordsOnly}: HandleMyChannelArgs) => Promise<MyChannelModel[]>;
 }
 
-const ChannelHandler = (superclass: any) => class extends superclass {
+const ChannelHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
      * handleChannel: Handler responsible for the Create/Update operations occurring on the CHANNEL table from the 'Server' schema
      * @param {HandleChannelArgs} channelsArgs
@@ -89,7 +90,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: CHANNEL,
-        });
+        }, 'handleChannel');
     };
 
     /**
@@ -146,7 +147,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: MY_CHANNEL_SETTINGS,
-        });
+        }, 'handleMyChannelSettings');
     };
 
     /**
@@ -187,6 +188,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
                 ci.member_count !== e.memberCount ||
                 ci.header !== e.header ||
                 ci.pinned_post_count !== e.pinnedPostCount ||
+                ci.files_count !== e.filesCount ||
                 ci.purpose !== e.purpose
             ) {
                 res.push(ci);
@@ -205,7 +207,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: CHANNEL_INFO,
-        });
+        }, 'handleChannelInfo');
     };
 
     /**
@@ -245,10 +247,11 @@ const ChannelHandler = (superclass: any) => class extends superclass {
                 const totalMsg = isCRT ? channel.total_msg_count_root! : channel.total_msg_count;
                 const myMsgCount = isCRT ? my.msg_count_root! : my.msg_count;
                 const msgCount = Math.max(0, totalMsg - myMsgCount);
+                const lastPostAt = isCRT ? (channel.last_root_post_at || channel.last_post_at) : channel.last_post_at;
                 my.msg_count = msgCount;
                 my.mention_count = isCRT ? my.mention_count_root! : my.mention_count;
                 my.is_unread = msgCount > 0;
-                my.last_post_at = (isCRT ? (channel.last_root_post_at || channel.last_post_at) : channel.last_post_at) || 0;
+                my.last_post_at = lastPostAt;
             }
         }
 
@@ -270,7 +273,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             }
 
             const chan = channelMap[my.channel_id];
-            const lastPostAt = (isCRT ? chan.last_root_post_at : chan.last_post_at) || 0;
+            const lastPostAt = isCRT ? (chan.last_root_post_at || chan.last_post_at) : chan.last_post_at;
             if ((chan && e.lastPostAt < lastPostAt) ||
                 e.isUnread !== my.is_unread || e.lastViewedAt < my.last_viewed_at ||
                 e.roles !== my.roles
@@ -292,7 +295,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: MY_CHANNEL,
-        });
+        }, 'handleMyChannel');
     };
 
     /**
@@ -317,12 +320,12 @@ const ChannelHandler = (superclass: any) => class extends superclass {
         }));
 
         const uniqueRaws = getUniqueRawsBy({raws: memberships, key: 'id'}) as ChannelMember[];
-        const ids = uniqueRaws.map((cm: ChannelMember) => cm.channel_id);
+        const ids = uniqueRaws.map((cm: ChannelMember) => `${cm.channel_id}-${cm.user_id}`);
         const db: Database = this.database;
         const existing = await db.get<ChannelMembershipModel>(CHANNEL_MEMBERSHIP).query(
             Q.where('id', Q.oneOf(ids)),
         ).fetch();
-        const membershipMap = new Map<string, ChannelMembershipModel>(existing.map((member) => [member.id, member]));
+        const membershipMap = new Map<string, ChannelMembershipModel>(existing.map((member) => [member.channelId, member]));
         const createOrUpdateRawValues = uniqueRaws.reduce((res: ChannelMember[], cm) => {
             const e = membershipMap.get(cm.channel_id);
             if (!e) {
@@ -348,7 +351,7 @@ const ChannelHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: CHANNEL_MEMBERSHIP,
-        });
+        }, 'handleChannelMembership');
     };
 };
 

@@ -3,7 +3,7 @@
 
 import {ProfilePicture} from '@support/ui/component';
 import {ChannelListScreen} from '@support/ui/screen';
-import {timeouts, wait} from '@support/utils';
+import {isIos, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 class CreateDirectMessageScreen {
@@ -58,7 +58,9 @@ class CreateDirectMessageScreen {
     };
 
     toBeVisible = async () => {
-        await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        if (isIos()) {
+            await waitFor(this.createDirectMessageScreen).toExist().withTimeout(timeouts.TEN_SEC);
+        }
 
         return this.createDirectMessageScreen;
     };
@@ -78,9 +80,15 @@ class CreateDirectMessageScreen {
     };
 
     closeTutorial = async () => {
-        await expect(this.tutorialHighlight).toExist();
-        await this.tutorialSwipeLeft.tap();
-        await expect(this.tutorialHighlight).not.toExist();
+        if (isIos()) {
+            await waitFor(this.tutorialHighlight).toExist().withTimeout(timeouts.TEN_SEC);
+            await this.tutorialSwipeLeft.tap();
+            await expect(this.tutorialHighlight).not.toExist();
+        } else {
+            await wait(timeouts.ONE_SEC);
+            await device.pressBack();
+            await wait(timeouts.ONE_SEC);
+        }
     };
 }
 

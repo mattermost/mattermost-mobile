@@ -78,29 +78,34 @@ class ShareViewModel: ObservableObject {
   }
   
   func getProfileImage(serverUrl: String, userId: String, imageBinding: Binding<UIImage?>) {
-    if let image = fileManager.getProfileImage(userId: userId) {
-      imageBinding.wrappedValue = image
+    var lastUpdateAt: Double = 0
+    if let updateAt = Gekidou.Database.default.getUserLastPictureAt(for: userId, forServerUrl: serverUrl) {
+      lastUpdateAt = updateAt
+    }
+    
+    if let data = Gekidou.ImageCache.default.image(for: userId, updatedAt: lastUpdateAt, forServer: serverUrl) {
+      imageBinding.wrappedValue = UIImage(data: data)
     } else {
-      downloadProfileImage(serverUrl: serverUrl, userId: userId, imageBinding: imageBinding)
+      downloadProfileImage(serverUrl: serverUrl, userId: userId, lastUpdateAt: lastUpdateAt, imageBinding: imageBinding)
     }
   }
   
-  func downloadProfileImage(serverUrl: String, userId: String, imageBinding: Binding<UIImage?>) {
+  func downloadProfileImage(serverUrl: String, userId: String, lastUpdateAt: Double, imageBinding: Binding<UIImage?>) {
     guard let _ = URL(string: serverUrl) else {
-      fatalError("Missing or Malformed URL")
+      debugPrint("Missing or Malformed URL")
+      return
     }
     
-    Gekidou.Network.default.fetchUserProfilePicture(userId: userId, withServerUrl: serverUrl, completionHandler: {data, response, error in
+    Gekidou.Network.default.fetchUserProfilePicture(userId: userId, lastUpdateAt: lastUpdateAt, forServerUrl: serverUrl, completionHandler: {data, response, error in
       guard (response as? HTTPURLResponse)?.statusCode == 200 else {
-        fatalError("Error while fetching image \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
+        debugPrint("Error while fetching image \(String(describing: (response as? HTTPURLResponse)?.statusCode))")
+        return
       }
       
       if let data = data {
         let image = UIImage(data: data)
         imageBinding.wrappedValue = image
-        if let img = image {
-          self.fileManager.saveProfileImage(image: img, userId: userId)
-        }
+        Gekidou.ImageCache.default.insertImage(data, for: userId, updatedAt: lastUpdateAt, forServer: serverUrl)
       }
     })
   }

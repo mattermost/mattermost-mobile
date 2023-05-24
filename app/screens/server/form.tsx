@@ -1,13 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {MutableRefObject, useCallback, useEffect, useRef} from 'react';
+import React, {type MutableRefObject, useCallback, useEffect, useRef} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, Platform, useWindowDimensions, View} from 'react-native';
 import Button from 'react-native-button';
-import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
-import FloatingTextInput, {FloatingTextInputRef} from '@components/floating_text_input_label';
+import FloatingTextInput, {type FloatingTextInputRef} from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import Loading from '@components/loading';
 import {useIsTablet} from '@hooks/device';
@@ -15,6 +14,8 @@ import {t} from '@i18n';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
+
+import type {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 
 type Props = {
     autoFocus?: boolean;
@@ -45,9 +46,6 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
     fullWidth: {
         width: '100%',
-    },
-    error: {
-        marginBottom: 18,
     },
     chooseText: {
         alignSelf: 'flex-start',
@@ -165,7 +163,7 @@ const ServerForm = ({
 
     return (
         <View style={styles.formContainer}>
-            <View style={[styles.fullWidth, urlError?.length ? styles.error : undefined]}>
+            <View style={styles.fullWidth}>
                 <FloatingTextInput
                     autoCorrect={false}
                     autoCapitalize={'none'}
@@ -192,7 +190,7 @@ const ServerForm = ({
                     value={url}
                 />
             </View>
-            <View style={[styles.fullWidth, displayNameError?.length ? styles.error : undefined]}>
+            <View style={styles.fullWidth}>
                 <FloatingTextInput
                     autoCorrect={false}
                     autoCapitalize={'none'}

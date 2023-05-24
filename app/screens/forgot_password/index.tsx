@@ -14,6 +14,7 @@ import {sendPasswordResetEmail} from '@actions/remote/session';
 import FloatingTextInput from '@components/floating_text_input_label';
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
 import Background from '@screens/background';
 import {buttonBackgroundStyle, buttonTextStyle} from '@utils/buttonStyles';
@@ -23,7 +24,10 @@ import {typography} from '@utils/typography';
 
 import Inbox from './inbox.svg';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
+    componentId: AvailableScreens;
     serverUrl: string;
     theme: Theme;
 }
@@ -86,7 +90,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
     },
 }));
 
-const ForgotPassword = ({serverUrl, theme}: Props) => {
+const ForgotPassword = ({componentId, serverUrl, theme}: Props) => {
     const dimensions = useWindowDimensions();
     const translateX = useSharedValue(dimensions.width);
     const isTablet = useIsTablet();
@@ -132,9 +136,8 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
             return;
         }
 
-        const {data} = await sendPasswordResetEmail(serverUrl, email);
-
-        if (data) {
+        const {status} = await sendPasswordResetEmail(serverUrl, email);
+        if (status === 'OK') {
             setIsPasswordLinkSent(true);
             return;
         }
@@ -263,10 +266,16 @@ const ForgotPassword = ({serverUrl, theme}: Props) => {
                 translateX.value = -dimensions.width;
             },
         };
-        const unsubscribe = Navigation.events().registerComponentListener(listener, Screens.FORGOT_PASSWORD);
+        const unsubscribe = Navigation.events().registerComponentListener(listener, componentId);
 
         return () => unsubscribe.remove();
     }, [dimensions]);
+
+    useEffect(() => {
+        translateX.value = 0;
+    }, []);
+
+    useAndroidHardwareBackHandler(componentId, onReturn);
 
     return (
         <View style={styles.flex}>

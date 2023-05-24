@@ -8,9 +8,10 @@ import {of as of$, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
 import {Permissions, Preferences, Screens} from '@constants';
-import {observePostAuthor, queryPostsBetween} from '@queries/servers/post';
+import {queryFilesForPost} from '@queries/servers/file';
+import {observePost, observePostAuthor, queryPostsBetween, observeIsPostPriorityEnabled} from '@queries/servers/post';
+import {queryReactionsForPost} from '@queries/servers/reaction';
 import {observeCanManageChannelMembers, observePermissionForPost} from '@queries/servers/role';
-import {observeIsPostPriorityEnabled} from '@queries/servers/system';
 import {observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {areConsecutivePosts, isPostEphemeral} from '@utils/post';
@@ -24,7 +25,7 @@ import type PostsInThreadModel from '@typings/database/models/servers/posts_in_t
 import type UserModel from '@typings/database/models/servers/user';
 
 type PropsInput = WithDatabaseArgs & {
-    currentUser: UserModel;
+    currentUser?: UserModel;
     isCRTEnabled?: boolean;
     nextPost: PostModel | undefined;
     post: PostModel;
@@ -34,7 +35,7 @@ type PropsInput = WithDatabaseArgs & {
 
 function observeShouldHighlightReplyBar(database: Database, currentUser: UserModel, post: PostModel, postsInThread: PostsInThreadModel) {
     const myPostsCount = queryPostsBetween(database, postsInThread.earliest, postsInThread.latest, null, currentUser.id, '', post.rootId || post.id).observeCount();
-    const root = post.root.observe().pipe(switchMap((rl) => (rl.length ? rl[0].observe() : of$(undefined))));
+    const root = observePost(database, post.rootId);
 
     return combineLatest([myPostsCount, root]).pipe(
         switchMap(([mpc, r]) => {
@@ -62,14 +63,14 @@ function observeShouldHighlightReplyBar(database: Database, currentUser: UserMod
     );
 }
 
-function observeHasReplies(post: PostModel) {
+function observeHasReplies(database: Database, post: PostModel) {
     if (!post.rootId) {
         return post.postsInThread.observe().pipe(switchMap((c) => of$(c.length > 0)));
     }
 
-    return post.root.observe().pipe(switchMap((rl) => {
-        if (rl.length) {
-            return rl[0].postsInThread.observe().pipe(switchMap((c) => of$(c.length > 0)));
+    return observePost(database, post.rootId).pipe(switchMap((r) => {
+        if (r) {
+            return r.postsInThread.observe().pipe(switchMap((c) => of$(c.length > 0)));
         }
         return of$(false);
     }));
@@ -94,20 +95,20 @@ const withPost = withObservables(
     ({currentUser, database, isCRTEnabled, post, previousPost, nextPost, location}: PropsInput) => {
         let isLastReply = of$(true);
         let isPostAddChannelMember = of$(false);
-        const isOwner = currentUser.id === post.userId;
+        const isOwner = currentUser?.id === post.userId;
         const author = post.userId ? observePostAuthor(database, post) : of$(undefined);
         const canDelete = observePermissionForPost(database, post, currentUser, isOwner ? Permissions.DELETE_POST : Permissions.DELETE_OTHERS_POSTS, false);
         const isEphemeral = of$(isPostEphemeral(post));
 
-        if (post.props?.add_channel_member && isPostEphemeral(post)) {
-            isPostAddChannelMember = observeCanManageChannelMembers(database, post, currentUser);
+        if (post.props?.add_channel_member && isPostEphemeral(post) && currentUser) {
+            isPostAddChannelMember = observeCanManageChannelMembers(database, post.channelId, currentUser);
         }
 
         let highlightReplyBar = of$(false);
         if (!isCRTEnabled && location === Screens.CHANNEL) {
             highlightReplyBar = post.postsInThread.observe().pipe(
                 switchMap((postsInThreads: PostsInThreadModel[]) => {
-                    if (postsInThreads.length) {
+                    if (postsInThreads.length && currentUser) {
                         return observeShouldHighlightReplyBar(database, currentUser, post, postsInThreads[0]);
                     }
                     return of$(false);
@@ -122,19 +123,19 @@ const withPost = withObservables(
             isLastReply = of$(!(nextPost?.rootId === post.rootId));
         }
 
-        const hasReplies = observeHasReplies(post);//Need to review and understand
+        const hasReplies = observeHasReplies(database, post);//Need to review and understand
 
         const isConsecutivePost = author.pipe(
             switchMap((user) => of$(Boolean(post && previousPost && !user?.isBot && areConsecutivePosts(post, previousPost)))),
             distinctUntilChanged(),
         );
 
-        const hasFiles = post.files.observeCount().pipe(
+        const hasFiles = queryFilesForPost(database, post.id).observeCount().pipe(
             switchMap((c) => of$(c > 0)),
             distinctUntilChanged(),
         );
 
-        const hasReactions = post.reactions.observeCount().pipe(
+        const hasReactions = queryReactionsForPost(database, post.id).observeCount().pipe(
             switchMap((c) => of$(c > 0)),
             distinctUntilChanged(),
         );

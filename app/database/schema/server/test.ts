@@ -45,7 +45,7 @@ const {
 describe('*** Test schema for SERVER database ***', () => {
     it('=> The SERVER SCHEMA should strictly match', () => {
         expect(serverSchema).toEqual({
-            version: 1,
+            version: 3,
             unsafeSql: undefined,
             tables: {
                 [CATEGORY]: {
@@ -92,6 +92,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         header: {name: 'header', type: 'string'},
                         member_count: {name: 'member_count', type: 'number'},
                         pinned_post_count: {name: 'pinned_post_count', type: 'number'},
+                        files_count: {name: 'files_count', type: 'number'},
                         purpose: {name: 'purpose', type: 'string'},
                     },
                     columnArray: [
@@ -99,6 +100,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'header', type: 'string'},
                         {name: 'member_count', type: 'number'},
                         {name: 'pinned_post_count', type: 'number'},
+                        {name: 'files_count', type: 'number'},
                         {name: 'purpose', type: 'string'},
                     ],
                 },
@@ -224,12 +226,14 @@ describe('*** Test schema for SERVER database ***', () => {
                         files: {name: 'files', type: 'string'},
                         message: {name: 'message', type: 'string'},
                         root_id: {name: 'root_id', type: 'string', isIndexed: true},
+                        metadata: {name: 'metadata', type: 'string', isOptional: true},
                     },
                     columnArray: [
                         {name: 'channel_id', type: 'string', isIndexed: true},
                         {name: 'files', type: 'string'},
                         {name: 'message', type: 'string'},
                         {name: 'root_id', type: 'string', isIndexed: true},
+                        {name: 'metadata', type: 'string', isOptional: true},
                     ],
                 },
                 [FILE]: {
@@ -362,6 +366,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         edit_at: {name: 'edit_at', type: 'number'},
                         is_pinned: {name: 'is_pinned', type: 'boolean'},
                         message: {name: 'message', type: 'string'},
+                        message_source: {name: 'message_source', type: 'string'},
                         metadata: {name: 'metadata', type: 'string', isOptional: true},
                         original_id: {name: 'original_id', type: 'string'},
                         pending_post_id: {name: 'pending_post_id', type: 'string', isIndexed: true},
@@ -379,6 +384,7 @@ describe('*** Test schema for SERVER database ***', () => {
                         {name: 'edit_at', type: 'number'},
                         {name: 'is_pinned', type: 'boolean'},
                         {name: 'message', type: 'string'},
+                        {name: 'message_source', type: 'string'},
                         {name: 'metadata', type: 'string', isOptional: true},
                         {name: 'original_id', type: 'string'},
                         {name: 'pending_post_id', type: 'string', isIndexed: true},

@@ -3,8 +3,8 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import DateTimePicker, {DateTimePickerEvent} from '@react-native-community/datetimepicker';
-import moment, {Moment} from 'moment-timezone';
+import DateTimePicker, {type DateTimePickerEvent} from '@react-native-community/datetimepicker';
+import moment, {type Moment} from 'moment-timezone';
 import React, {useState} from 'react';
 import {View, Button, Platform} from 'react-native';
 import {of as of$} from 'rxjs';
@@ -12,8 +12,8 @@ import {switchMap} from 'rxjs/operators';
 
 import {Preferences} from '@constants';
 import {CUSTOM_STATUS_TIME_PICKER_INTERVALS_IN_MINUTES} from '@constants/custom_status';
-import {getPreferenceAsBool} from '@helpers/api/preference';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {getDisplayNamePreferenceAsBool} from '@helpers/api/preference';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
 import {getCurrentMomentForTimezone, getRoundedTime, getUtcOffsetForTimeZone} from '@utils/helpers';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
@@ -113,10 +113,10 @@ const DateTimeSelector = ({timezone, handleChange, isMilitaryTime, theme}: Props
 };
 
 const enhanced = withObservables([], ({database}: WithDatabaseArgs) => ({
-    isMilitaryTime: queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
+    isMilitaryTime: queryDisplayNamePreferences(database).
         observeWithColumns(['value']).pipe(
             switchMap(
-                (preferences) => of$(getPreferenceAsBool(preferences, Preferences.CATEGORY_DISPLAY_SETTINGS, 'use_military_time', false)),
+                (preferences) => of$(getDisplayNamePreferenceAsBool(preferences, Preferences.USE_MILITARY_TIME, false)),
             ),
         ),
 }));

@@ -6,45 +6,31 @@ import DatabaseManager from '@database/manager';
 import IntegrationsMananger from '@managers/integrations_manager';
 import NetworkManager from '@managers/network_manager';
 import {getCurrentChannelId, getCurrentTeamId} from '@queries/servers/system';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
 
-import type {Client} from '@client/rest';
-
 export const submitInteractiveDialog = async (serverUrl: string, submission: DialogSubmission) => {
-    const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-    if (!database) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    submission.channel_id = await getCurrentChannelId(database);
-    submission.team_id = await getCurrentTeamId(database);
-
-    try {
+        submission.channel_id = await getCurrentChannelId(database);
+        submission.team_id = await getCurrentTeamId(database);
         const data = await client.submitInteractiveDialog(submission);
         return {data};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on submitInteractiveDialog', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const postActionWithCookie = async (serverUrl: string, postId: string, actionId: string, actionCookie: string, selectedOption = '') => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
 
-    try {
         const data = await client.doPostActionWithCookie(postId, actionId, actionCookie, selectedOption);
         if (data?.trigger_id) {
             IntegrationsMananger.getManager(serverUrl)?.setTriggerId(data.trigger_id);
@@ -52,7 +38,8 @@ export const postActionWithCookie = async (serverUrl: string, postId: string, ac
 
         return {data};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on postActionWithCookie', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };

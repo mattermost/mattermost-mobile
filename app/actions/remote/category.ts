@@ -9,11 +9,11 @@ import NetworkManager from '@managers/network_manager';
 import {getChannelCategory, queryCategoriesByTeamIds} from '@queries/servers/categories';
 import {getChannelById} from '@queries/servers/channel';
 import {getCurrentTeamId} from '@queries/servers/system';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 import {showFavoriteChannelSnackbar} from '@utils/snack_bar';
 
 import {forceLogoutIfNecessary} from './session';
-
-import type {Client} from '@client/rest';
 
 export type CategoriesRequest = {
      categories?: CategoryWithChannels[];
@@ -21,14 +21,8 @@ export type CategoriesRequest = {
  }
 
 export const fetchCategories = async (serverUrl: string, teamId: string, prune = false, fetchOnly = false): Promise<CategoriesRequest> => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         const {categories} = await client.getCategories('me', teamId);
 
         if (!fetchOnly) {
@@ -37,26 +31,17 @@ export const fetchCategories = async (serverUrl: string, teamId: string, prune =
 
         return {categories};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchCategories', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };
 
 export const toggleFavoriteChannel = async (serverUrl: string, channelId: string, showSnackBar = false) => {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return {error: `${serverUrl} database not found`};
-    }
-
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error};
-    }
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-    try {
-        const {database} = operator;
         const channel = await getChannelById(database, channelId);
         if (!channel) {
             return {error: 'channel not found'};
@@ -109,7 +94,8 @@ export const toggleFavoriteChannel = async (serverUrl: string, channelId: string
 
         return {data: true};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on toggleFavoriteChannel', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };

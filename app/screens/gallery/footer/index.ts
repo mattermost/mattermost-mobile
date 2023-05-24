@@ -9,7 +9,7 @@ import {switchMap} from 'rxjs/operators';
 import {General} from '@constants';
 import {observeChannel} from '@queries/servers/channel';
 import {observePost} from '@queries/servers/post';
-import {observeConfigBooleanValue, observeCurrentChannelId, observeCurrentUserId, observeLicense} from '@queries/servers/system';
+import {observeCanDownloadFiles, observeConfigBooleanValue, observeCurrentChannelId, observeCurrentUserId} from '@queries/servers/system';
 import {observeTeammateNameDisplay, observeUser} from '@queries/servers/user';
 
 import Footer from './footer';
@@ -27,7 +27,6 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
     const currentChannelId = observeCurrentChannelId(database);
     const currentUserId = observeCurrentUserId(database);
 
-    const license = observeLicense(database);
     const teammateNameDisplay = observeTeammateNameDisplay(database);
 
     const author = post.pipe(
@@ -43,23 +42,19 @@ const enhanced = withObservables(['item'], ({database, item}: FooterProps) => {
 
     const channel = combineLatest([currentChannelId, post]).pipe(
         switchMap(([cId, p]) => {
-            return p?.channel.observe() || observeChannel(database, cId);
+            const id = p?.channelId || cId;
+            return observeChannel(database, id);
         }),
     );
     const enablePostUsernameOverride = observeConfigBooleanValue(database, 'EnablePostUsernameOverride');
     const enablePostIconOverride = observeConfigBooleanValue(database, 'EnablePostIconOverride');
     const enablePublicLink = observeConfigBooleanValue(database, 'EnablePublicLink');
-    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload');
-    const complianceDisabled = license.pipe(switchMap((l) => of$(l?.IsLicensed === 'false' || l?.Compliance === 'false')));
-    const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
-        switchMap(([download, compliance]) => of$(compliance || download)),
-    );
     const channelName = channel.pipe(switchMap((c: ChannelModel) => of$(c.displayName)));
     const isDirectChannel = channel.pipe(switchMap((c: ChannelModel) => of$(c.type === General.DM_CHANNEL)));
 
     return {
         author,
-        canDownloadFiles,
+        canDownloadFiles: observeCanDownloadFiles(database),
         channelName,
         currentUserId,
         enablePostIconOverride,

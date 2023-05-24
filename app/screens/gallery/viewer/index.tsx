@@ -4,11 +4,11 @@
 import React, {useCallback, useRef} from 'react';
 import {runOnJS} from 'react-native-reanimated';
 
-import ImageRenderer, {Handlers, ImageRendererProps} from '../image_renderer';
-import {InteractionType} from '../image_renderer/transformer';
+import ImageRenderer, {type Handlers, type ImageRendererProps} from '../image_renderer';
 import Pager from '../pager';
-import {RenderPageProps} from '../pager/page';
 
+import type {InteractionType} from '../image_renderer/transformer';
+import type {RenderPageProps} from '../pager/page';
 import type {GalleryItemType} from '@typings/screens/gallery';
 
 export interface GalleryViewerProps extends Handlers {

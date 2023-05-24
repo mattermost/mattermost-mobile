@@ -3,17 +3,20 @@
 
 import {debounce} from 'lodash';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {Platform, SectionList, SectionListData, SectionListRenderItemInfo, StyleProp, ViewStyle} from 'react-native';
+import {Platform, SectionList, type SectionListData, type SectionListRenderItemInfo, type StyleProp, type ViewStyle} from 'react-native';
 
 import {searchChannels} from '@actions/remote/channel';
 import AutocompleteSectionHeader from '@components/autocomplete/autocomplete_section_header';
-import ChannelMentionItem from '@components/autocomplete/channel_mention_item';
+import ChannelItem from '@components/channel_item';
 import {General} from '@constants';
 import {CHANNEL_MENTION_REGEX, CHANNEL_MENTION_SEARCH_REGEX} from '@constants/autocomplete';
 import {useServerUrl} from '@context/server';
+import DatabaseManager from '@database/manager';
 import useDidUpdate from '@hooks/did_update';
 import {t} from '@i18n';
+import {getUserById} from '@queries/servers/user';
 import {hasTrailingSpaces} from '@utils/helpers';
+import {getUserIdFromChannelName} from '@utils/user';
 
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
@@ -138,6 +141,7 @@ type Props = {
     matchTerm: string;
     localChannels: ChannelModel[];
     teamId: string;
+    currentUserId: string;
 }
 
 const emptySections: Array<SectionListData<Channel>> = [];
@@ -155,6 +159,7 @@ const ChannelMention = ({
     matchTerm,
     localChannels,
     teamId,
+    currentUserId,
 }: Props) => {
     const serverUrl = useServerUrl();
 
@@ -193,7 +198,22 @@ const ChannelMention = ({
         setLoading(false);
     };
 
-    const completeMention = useCallback((mention: string) => {
+    const completeMention = useCallback(async (c: ChannelModel | Channel) => {
+        let mention = c.name;
+        const teammateId = getUserIdFromChannelName(currentUserId, c.name);
+
+        if (c.type === General.DM_CHANNEL && teammateId) {
+            try {
+                const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+                const user = await getUserById(database, teammateId);
+                if (user) {
+                    mention = `@${user.username}`;
+                }
+            } catch (err) {
+                // Do nothing
+            }
+        }
+
         const mentionPart = value.substring(0, localCursorPosition);
 
         let completedDraft: string;
@@ -231,14 +251,16 @@ const ChannelMention = ({
         setSections(emptySections);
         setRemoteChannels(emptyChannels);
         latestSearchAt.current = Date.now();
-    }, [value, localCursorPosition, isSearch]);
+    }, [value, localCursorPosition, isSearch, currentUserId]);
 
     const renderItem = useCallback(({item}: SectionListRenderItemInfo<Channel | ChannelModel>) => {
         return (
-            <ChannelMentionItem
+            <ChannelItem
                 channel={item}
                 onPress={completeMention}
                 testID='autocomplete.channel_mention_item'
+                isOnCenterBg={true}
+                showChannelName={true}
             />
         );
     }, [completeMention]);

@@ -1,14 +1,13 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {storeConfigAndLicense} from '@actions/local/systems';
+import {storeConfigAndLicense, storeDataRetentionPolicies} from '@actions/local/systems';
 import {forceLogoutIfNecessary} from '@actions/remote/session';
-import {SYSTEM_IDENTIFIERS} from '@constants/database';
 import DatabaseManager from '@database/manager';
 import NetworkManager from '@managers/network_manager';
-import {logError} from '@utils/log';
-
-import type ClientError from '@client/rest/error';
+import {getCurrentUserId} from '@queries/servers/system';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 
 export type ConfigAndLicenseRequest = {
     config?: ClientConfig;
@@ -16,47 +15,79 @@ export type ConfigAndLicenseRequest = {
     error?: unknown;
 }
 
-export const fetchDataRetentionPolicy = async (serverUrl: string) => {
-    let client;
-    try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
+export type DataRetentionPoliciesRequest = {
+    globalPolicy?: GlobalDataRetentionPolicy;
+    teamPolicies?: TeamDataRetentionPolicy[];
+    channelPolicies?: ChannelDataRetentionPolicy[];
+    error?: unknown;
+}
+
+export const fetchDataRetentionPolicy = async (serverUrl: string, fetchOnly = false): Promise<DataRetentionPoliciesRequest> => {
+    const {data: globalPolicy, error: globalPolicyError} = await fetchGlobalDataRetentionPolicy(serverUrl);
+    const {data: teamPolicies, error: teamPoliciesError} = await fetchAllGranularDataRetentionPolicies(serverUrl);
+    const {data: channelPolicies, error: channelPoliciesError} = await fetchAllGranularDataRetentionPolicies(serverUrl, true);
+
+    const error = globalPolicyError || teamPoliciesError || channelPoliciesError;
+    if (error) {
         return {error};
     }
 
-    let data = {};
-    try {
-        data = await client.getDataRetentionPolicy();
-    } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientError);
-        return {error};
-    }
+    const data = {
+        globalPolicy,
+        teamPolicies: teamPolicies as TeamDataRetentionPolicy[],
+        channelPolicies: channelPolicies as ChannelDataRetentionPolicy[],
+    };
 
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (operator) {
-        const systems: IdValue[] = [{
-            id: SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES,
-            value: JSON.stringify(data),
-        }];
-
-        operator.handleSystem({systems, prepareRecordsOnly: false}).
-            catch((error) => {
-                logError('An error occurred while saving data retention policies', error);
-            });
+    if (!fetchOnly) {
+        await storeDataRetentionPolicies(serverUrl, data);
     }
 
     return data;
 };
 
-export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false): Promise<ConfigAndLicenseRequest> => {
-    let client;
+export const fetchGlobalDataRetentionPolicy = async (serverUrl: string): Promise<{data?: GlobalDataRetentionPolicy; error?: unknown}> => {
     try {
-        client = NetworkManager.getClient(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+        const data = await client.getGlobalDataRetentionPolicy();
+        return {data};
     } catch (error) {
+        logDebug('error on fetchGlobalDataRetentionPolicy', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
+};
 
+export const fetchAllGranularDataRetentionPolicies = async (
+    serverUrl: string,
+    isChannel = false,
+    page = 0,
+    policies: Array<TeamDataRetentionPolicy | ChannelDataRetentionPolicy> = [],
+): Promise<{data?: Array<TeamDataRetentionPolicy | ChannelDataRetentionPolicy>; error?: unknown}> => {
     try {
+        const client = NetworkManager.getClient(serverUrl);
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
+        const currentUserId = await getCurrentUserId(database);
+        let data;
+        if (isChannel) {
+            data = await client.getChannelDataRetentionPolicies(currentUserId, page);
+        } else {
+            data = await client.getTeamDataRetentionPolicies(currentUserId, page);
+        }
+        policies.push(...data.policies);
+        if (policies.length < data.total_count) {
+            await fetchAllGranularDataRetentionPolicies(serverUrl, isChannel, page + 1, policies);
+        }
+        return {data: policies};
+    } catch (error) {
+        logDebug('error on fetchAllGranularDataRetentionPolicies', getFullErrorMessage(error));
+        return {error};
+    }
+};
+
+export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false): Promise<ConfigAndLicenseRequest> => {
+    try {
+        const client = NetworkManager.getClient(serverUrl);
         const [config, license]: [ClientConfig, ClientLicense] = await Promise.all([
             client.getClientConfigOld(),
             client.getClientLicenseOld(),
@@ -68,7 +99,8 @@ export const fetchConfigAndLicense = async (serverUrl: string, fetchOnly = false
 
         return {config, license};
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientError);
+        logDebug('error on fetchConfigAndLicense', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };

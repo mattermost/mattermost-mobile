@@ -2,37 +2,38 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
-import {BackHandler, LayoutChangeEvent, NativeEventSubscription, StyleSheet, View} from 'react-native';
-import {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {type LayoutChangeEvent, StyleSheet, View} from 'react-native';
+import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import CurrentCallBar from '@calls/components/current_call_bar';
 import FloatingCallContainer from '@calls/components/floating_call_container';
-import JoinCallBanner from '@calls/components/join_call_banner';
+import {RoundedHeaderCalls} from '@calls/components/join_call_banner/rounded_header_calls';
 import FreezeScreen from '@components/freeze_screen';
 import PostDraft from '@components/post_draft';
 import {Screens} from '@constants';
 import {ACCESSORIES_CONTAINER_NATIVE_ID} from '@constants/post_draft';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useChannelSwitch} from '@hooks/channel_switch';
-import {useAppState, useIsTablet} from '@hooks/device';
+import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useKeyboardTrackingPaused} from '@hooks/keyboard_tracking';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {popTopScreen} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
-import NavigationStore from '@store/navigation_store';
 
 import ChannelPostList from './channel_post_list';
 import ChannelHeader from './header';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+import type {KeyboardTrackingViewRef} from 'react-native-keyboard-tracking-view';
+
 type ChannelProps = {
-    serverUrl: string;
     channelId: string;
-    componentId?: string;
+    componentId?: AvailableScreens;
     isCallInCurrentChannel: boolean;
     isInACall: boolean;
     isInCurrentChannelCall: boolean;
     isCallsEnabledInChannel: boolean;
+    isTabletView?: boolean;
 };
 
 const edges: Edge[] = ['left', 'right'];
@@ -45,15 +46,14 @@ const styles = StyleSheet.create({
 });
 
 const Channel = ({
-    serverUrl,
     channelId,
     componentId,
     isCallInCurrentChannel,
     isInACall,
     isInCurrentChannelCall,
     isCallsEnabledInChannel,
+    isTabletView,
 }: ChannelProps) => {
-    const appState = useAppState();
     const isTablet = useIsTablet();
     const insets = useSafeAreaInsets();
     const [shouldRenderPosts, setShouldRenderPosts] = useState(false);
@@ -63,24 +63,12 @@ const Channel = ({
     const postDraftRef = useRef<KeyboardTrackingViewRef>(null);
     const [containerHeight, setContainerHeight] = useState(0);
     const shouldRender = !switchingTeam && !switchingChannels && shouldRenderPosts && Boolean(channelId);
+    const handleBack = () => {
+        popTopScreen(componentId);
+    };
 
     useKeyboardTrackingPaused(postDraftRef, channelId, trackKeyboardForScreens);
-
-    useEffect(() => {
-        let back: NativeEventSubscription|undefined;
-        if (!isTablet && componentId) {
-            back = BackHandler.addEventListener('hardwareBackPress', () => {
-                if (NavigationStore.getVisibleScreen() === componentId) {
-                    popTopScreen(componentId);
-                    return true;
-                }
-
-                return false;
-            });
-        }
-
-        return () => back?.remove();
-    }, [componentId, isTablet]);
+    useAndroidHardwareBackHandler(componentId, handleBack);
 
     const marginTop = defaultHeight + (isTablet ? 0 : -insets.top);
     useEffect(() => {
@@ -106,21 +94,8 @@ const Channel = ({
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
 
-    let callsComponents: JSX.Element | null = null;
     const showJoinCallBanner = isCallInCurrentChannel && !isInCurrentChannelCall;
-    if (showJoinCallBanner || isInACall) {
-        callsComponents = (
-            <FloatingCallContainer>
-                {showJoinCallBanner &&
-                    <JoinCallBanner
-                        serverUrl={serverUrl}
-                        channelId={channelId}
-                    />
-                }
-                {isInACall && <CurrentCallBar/>}
-            </FloatingCallContainer>
-        );
-    }
+    const renderCallsComponents = showJoinCallBanner || isInACall;
 
     return (
         <FreezeScreen>
@@ -135,13 +110,14 @@ const Channel = ({
                     channelId={channelId}
                     componentId={componentId}
                     callsEnabledInChannel={isCallsEnabledInChannel}
+                    isTabletView={isTabletView}
                 />
+                {showJoinCallBanner && <RoundedHeaderCalls/>}
                 {shouldRender &&
                 <>
                     <View style={[styles.flex, {marginTop}]}>
                         <ChannelPostList
                             channelId={channelId}
-                            forceQueryAfterAppState={appState}
                             nativeID={channelId}
                             currentCallBarVisible={isInACall}
                             joinCallBannerVisible={showJoinCallBanner}
@@ -159,7 +135,13 @@ const Channel = ({
                     />
                 </>
                 }
-                {callsComponents}
+                {renderCallsComponents &&
+                    <FloatingCallContainer
+                        channelId={channelId}
+                        showJoinCallBanner={showJoinCallBanner}
+                        isInACall={isInACall}
+                    />
+                }
             </SafeAreaView>
         </FreezeScreen>
     );

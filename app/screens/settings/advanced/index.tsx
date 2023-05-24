@@ -5,18 +5,18 @@ import React, {useEffect, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Alert, TouchableOpacity} from 'react-native';
 
+import SettingContainer from '@components/settings/container';
+import SettingOption from '@components/settings/option';
+import SettingSeparator from '@components/settings/separator';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {popTopScreen} from '@screens/navigation';
-import SettingSeparator from '@screens/settings/settings_separator';
 import {deleteFileCache, getAllFilesInCachesDirectory, getFormattedFileSize} from '@utils/file';
 import {preventDoubleTap} from '@utils/tap';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 
-import SettingContainer from '../setting_container';
-import SettingOption from '../setting_option';
-
+import type {AvailableScreens} from '@typings/screens/navigation';
 import type {ReadDirItem} from 'react-native-fs';
 
 const getStyleSheet = makeStyleSheetFromTheme((theme) => {
@@ -31,7 +31,7 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
 const EMPTY_FILES: ReadDirItem[] = [];
 
 type AdvancedSettingsProps = {
-    componentId: string;
+    componentId: AvailableScreens;
 };
 const AdvancedSettings = ({componentId}: AdvancedSettingsProps) => {
     const theme = useTheme();

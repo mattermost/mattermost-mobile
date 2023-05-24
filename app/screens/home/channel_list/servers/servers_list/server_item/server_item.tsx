@@ -3,13 +3,12 @@
 
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Animated, DeviceEventEmitter, Platform, StyleProp, Text, View, ViewStyle} from 'react-native';
+import {Animated, DeviceEventEmitter, InteractionManager, Platform, type StyleProp, Text, View, type ViewStyle} from 'react-native';
 import {RectButton} from 'react-native-gesture-handler';
 import Swipeable from 'react-native-gesture-handler/Swipeable';
 import {Navigation} from 'react-native-navigation';
 
 import {storeMultiServerTutorial} from '@actions/app/global';
-import {appEntry} from '@actions/remote/entry';
 import {doPing} from '@actions/remote/general';
 import {logout} from '@actions/remote/session';
 import {fetchConfigAndLicense} from '@actions/remote/systems';
@@ -22,8 +21,9 @@ import {Events, Screens} from '@constants';
 import {PUSH_PROXY_STATUS_NOT_AVAILABLE, PUSH_PROXY_STATUS_VERIFIED} from '@constants/push_proxy';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
-import {subscribeServerUnreadAndMentions, UnreadObserverArgs} from '@database/subscription/unreads';
+import {subscribeServerUnreadAndMentions, type UnreadObserverArgs} from '@database/subscription/unreads';
 import {useIsTablet} from '@hooks/device';
+import WebsocketManager from '@managers/websocket_manager';
 import {getServerByIdentifier} from '@queries/app/servers';
 import {dismissBottomSheet} from '@screens/navigation';
 import {canReceiveNotifications} from '@utils/push_proxy';
@@ -200,18 +200,22 @@ const ServerItem = ({
     const startTutorial = () => {
         viewRef.current?.measureInWindow((x, y, w, h) => {
             const bounds: TutorialItemBounds = {
-                startX: x - 20,
+                startX: x,
                 startY: y,
-                endX: x + w + 20,
+                endX: x + w,
                 endY: y + h,
             };
 
             if (viewRef.current) {
-                setShowTutorial(true);
                 setItemBounds(bounds);
             }
         });
     };
+
+    const onLayout = useCallback(() => {
+        swipeable.current?.close();
+        startTutorial();
+    }, []);
 
     const containerStyle = useMemo(() => {
         const style: StyleProp<ViewStyle> = [styles.container];
@@ -236,14 +240,14 @@ const ServerItem = ({
         setSwitching(true);
         const result = await doPing(server.url, true);
         if (result.error) {
-            alertServerError(intl, result.error as ClientErrorProps);
+            alertServerError(intl, result.error);
             setSwitching(false);
             return;
         }
 
         const data = await fetchConfigAndLicense(server.url, true);
         if (data.error) {
-            alertServerError(intl, data.error as ClientErrorProps);
+            alertServerError(intl, data.error);
             setSwitching(false);
             return;
         }
@@ -292,7 +296,7 @@ const ServerItem = ({
             await dismissBottomSheet();
             Navigation.updateProps(Screens.HOME, {extra: undefined});
             DatabaseManager.setActiveServerDatabase(server.url);
-            await appEntry(server.url, Date.now());
+            WebsocketManager.initializeClient(server.url);
             return;
         }
 
@@ -344,12 +348,16 @@ const ServerItem = ({
     }, [server.lastActiveAt, isActive]);
 
     useEffect(() => {
-        let time: NodeJS.Timeout;
         if (highlight && !tutorialWatched) {
-            time = setTimeout(startTutorial, 650);
+            if (isTablet) {
+                setShowTutorial(true);
+                return;
+            }
+            InteractionManager.runAfterInteractions(() => {
+                setShowTutorial(true);
+            });
         }
-        return () => clearTimeout(time);
-    }, [highlight, tutorialWatched]);
+    }, [highlight, tutorialWatched, isTablet]);
 
     const serverItem = `server_list.server_item.${server.displayName.replace(/ /g, '_').toLocaleLowerCase()}`;
     const serverItemTestId = isActive ? `${serverItem}.active` : `${serverItem}.inactive`;
@@ -466,6 +474,8 @@ const ServerItem = ({
                 itemBounds={itemBounds}
                 onDismiss={handleDismissTutorial}
                 onShow={handleShowTutorial}
+                onLayout={onLayout}
+                itemBorderRadius={8}
             >
                 <TutorialSwipeLeft
                     message={intl.formatMessage({id: 'server.tutorial.swipe', defaultMessage: 'Swipe left on a server to see more actions'})}

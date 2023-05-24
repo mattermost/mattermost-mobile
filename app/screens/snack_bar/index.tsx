@@ -3,11 +3,11 @@
 
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, ViewStyle} from 'react-native';
+import {DeviceEventEmitter, Text, TouchableOpacity, useWindowDimensions, type ViewStyle} from 'react-native';
 import {Gesture, GestureDetector, GestureHandlerRootView} from 'react-native-gesture-handler';
-import {ComponentEvent, Navigation} from 'react-native-navigation';
+import {type ComponentEvent, Navigation} from 'react-native-navigation';
 import Animated, {
-    AnimatedStyleProp,
+    type AnimatedStyleProp,
     Extrapolation,
     FadeIn,
     interpolate,
@@ -27,9 +27,19 @@ import {dismissOverlay} from '@screens/navigation';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+import type {ShowSnackBarArgs} from '@utils/snack_bar';
+
+type SnackBarProps = {
+    componentId: AvailableScreens;
+    sourceScreen: AvailableScreens;
+} & ShowSnackBarArgs;
+
 const SNACK_BAR_WIDTH = 96;
 const SNACK_BAR_HEIGHT = 56;
 const SNACK_BAR_BOTTOM_RATIO = 0.04;
+
+const caseScreens: AvailableScreens[] = [Screens.PERMALINK, Screens.MANAGE_CHANNEL_MEMBERS, Screens.MENTIONS, Screens.SAVED_MESSAGES];
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     return {
@@ -70,14 +80,13 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-type SnackBarProps = {
-    componentId: string;
-    onAction?: () => void;
-    barType: keyof typeof SNACK_BAR_TYPE;
-    sourceScreen: typeof Screens[keyof typeof Screens];
-}
-
-const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps) => {
+const SnackBar = ({
+    barType,
+    messageValues,
+    componentId,
+    onAction,
+    sourceScreen,
+}: SnackBarProps) => {
     const [showSnackBar, setShowSnackBar] = useState<boolean | undefined>();
     const intl = useIntl();
     const theme = useTheme();
@@ -115,7 +124,7 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
                     width: (SNACK_BAR_WIDTH / 100) * diffWidth,
                 };
                 break;
-            case [Screens.PERMALINK, Screens.MENTIONS, Screens.SAVED_MESSAGES].includes(sourceScreen):
+            case caseScreens.includes(sourceScreen):
                 tabletStyle = {
                     marginBottom: 0,
                     marginLeft: 0,
@@ -241,7 +250,10 @@ const SnackBar = ({barType, componentId, onAction, sourceScreen}: SnackBarProps)
                     <Toast
                         animatedStyle={snackBarStyle}
                         iconName={config.iconName}
-                        message={intl.formatMessage({id: config.id, defaultMessage: config.defaultMessage})}
+                        message={intl.formatMessage(
+                            {id: config.id, defaultMessage: config.defaultMessage},
+                            messageValues,
+                        )}
                         style={[styles.toast, barType === SNACK_BAR_TYPE.LINK_COPIED && {backgroundColor: theme.onlineIndicator}]}
                         textStyle={styles.text}
                     >

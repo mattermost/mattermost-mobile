@@ -8,9 +8,10 @@ export const BOTTOM_SHEET = 'BottomSheet';
 export const BROWSE_CHANNELS = 'BrowseChannels';
 export const CALL = 'Call';
 export const CHANNEL = 'Channel';
-export const CHANNEL_ADD_PEOPLE = 'ChannelAddPeople';
+export const CHANNEL_ADD_MEMBERS = 'ChannelAddMembers';
+export const CHANNEL_FILES = 'ChannelFiles';
 export const CHANNEL_INFO = 'ChannelInfo';
-export const CHANNEL_MENTION = 'ChannelMention';
+export const CHANNEL_NOTIFICATION_PREFERENCES = 'ChannelNotificationPreferences';
 export const CODE = 'Code';
 export const CREATE_DIRECT_MESSAGE = 'CreateDirectMessage';
 export const CREATE_OR_EDIT_CHANNEL = 'CreateOrEditChannel';
@@ -28,16 +29,19 @@ export const GLOBAL_THREADS = 'GlobalThreads';
 export const HOME = 'Home';
 export const INTEGRATION_SELECTOR = 'IntegrationSelector';
 export const INTERACTIVE_DIALOG = 'InteractiveDialog';
+export const INVITE = 'Invite';
 export const IN_APP_NOTIFICATION = 'InAppNotification';
 export const JOIN_TEAM = 'JoinTeam';
 export const LATEX = 'Latex';
 export const LOGIN = 'Login';
+export const MANAGE_CHANNEL_MEMBERS = 'ManageChannelMembers';
 export const MENTIONS = 'Mentions';
 export const MFA = 'MFA';
 export const ONBOARDING = 'Onboarding';
 export const PERMALINK = 'Permalink';
 export const PINNED_MESSAGES = 'PinnedMessages';
 export const POST_OPTIONS = 'PostOptions';
+export const POST_PRIORITY_PICKER = 'PostPriorityPicker';
 export const REACTIONS = 'Reactions';
 export const REVIEW_APP = 'ReviewApp';
 export const SAVED_MESSAGES = 'SavedMessages';
@@ -48,6 +52,7 @@ export const SETTINGS = 'Settings';
 export const SETTINGS_ADVANCED = 'SettingsAdvanced';
 export const SETTINGS_DISPLAY = 'SettingsDisplay';
 export const SETTINGS_DISPLAY_CLOCK = 'SettingsDisplayClock';
+export const SETTINGS_DISPLAY_CRT = 'SettingsDisplayCRT';
 export const SETTINGS_DISPLAY_THEME = 'SettingsDisplayTheme';
 export const SETTINGS_DISPLAY_TIMEZONE = 'SettingsDisplayTimezone';
 export const SETTINGS_DISPLAY_TIMEZONE_SELECT = 'SettingsDisplayTimezoneSelect';
@@ -74,9 +79,10 @@ export default {
     BROWSE_CHANNELS,
     CALL,
     CHANNEL,
-    CHANNEL_ADD_PEOPLE,
+    CHANNEL_ADD_MEMBERS,
+    CHANNEL_FILES,
     CHANNEL_INFO,
-    CHANNEL_MENTION,
+    CHANNEL_NOTIFICATION_PREFERENCES,
     CODE,
     CREATE_DIRECT_MESSAGE,
     CREATE_OR_EDIT_CHANNEL,
@@ -94,16 +100,19 @@ export default {
     HOME,
     INTEGRATION_SELECTOR,
     INTERACTIVE_DIALOG,
+    INVITE,
     IN_APP_NOTIFICATION,
     JOIN_TEAM,
     LATEX,
     LOGIN,
+    MANAGE_CHANNEL_MEMBERS,
     MENTIONS,
     MFA,
     ONBOARDING,
     PERMALINK,
     PINNED_MESSAGES,
     POST_OPTIONS,
+    POST_PRIORITY_PICKER,
     REACTIONS,
     REVIEW_APP,
     SAVED_MESSAGES,
@@ -114,6 +123,7 @@ export default {
     SETTINGS_ADVANCED,
     SETTINGS_DISPLAY,
     SETTINGS_DISPLAY_CLOCK,
+    SETTINGS_DISPLAY_CRT,
     SETTINGS_DISPLAY_THEME,
     SETTINGS_DISPLAY_TIMEZONE,
     SETTINGS_DISPLAY_TIMEZONE_SELECT,
@@ -131,11 +141,12 @@ export default {
     THREAD_FOLLOW_BUTTON,
     THREAD_OPTIONS,
     USER_PROFILE,
-};
+} as const;
 
 export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     BROWSE_CHANNELS,
     CHANNEL_INFO,
+    CHANNEL_ADD_MEMBERS,
     CREATE_DIRECT_MESSAGE,
     CREATE_TEAM,
     CUSTOM_STATUS,
@@ -144,6 +155,8 @@ export const MODAL_SCREENS_WITHOUT_BACK = new Set<string>([
     EDIT_SERVER,
     FIND_CHANNELS,
     GALLERY,
+    MANAGE_CHANNEL_MEMBERS,
+    INVITE,
     PERMALINK,
 ]);
 
@@ -157,13 +170,12 @@ export const SCREENS_AS_BOTTOM_SHEET = new Set<string>([
     BOTTOM_SHEET,
     EMOJI_PICKER,
     POST_OPTIONS,
+    POST_PRIORITY_PICKER,
     THREAD_OPTIONS,
     REACTIONS,
     USER_PROFILE,
 ]);
 
 export const NOT_READY = [
-    CHANNEL_ADD_PEOPLE,
-    CHANNEL_MENTION,
     CREATE_TEAM,
 ];

@@ -12,7 +12,7 @@ import SlideUpPanelItem from '@components/slide_up_panel_item';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useIsTablet} from '@hooks/device';
-import {dismissAllModals, dismissBottomSheet, popToRoot} from '@screens/navigation';
+import {dismissAllModalsAndPopToRoot, dismissBottomSheet} from '@screens/navigation';
 
 type Props = {
     isOptionItem?: boolean;
@@ -23,7 +23,7 @@ type Props = {
     testID?: string;
 }
 
-const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, type, testID}: Props) => {
+const LeaveChannelLabel = ({canLeave, channelId, displayName, isOptionItem, type, testID}: Props) => {
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
@@ -31,8 +31,7 @@ const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, type,
     const close = async () => {
         await dismissBottomSheet();
         if (!isTablet) {
-            await dismissAllModals();
-            popToRoot();
+            await dismissAllModalsAndPopToRoot();
         }
     };
 
@@ -183,4 +182,4 @@ const LeaveChanelLabel = ({canLeave, channelId, displayName, isOptionItem, type,
     );
 };
 
-export default LeaveChanelLabel;
+export default LeaveChannelLabel;

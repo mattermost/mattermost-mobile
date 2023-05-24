@@ -9,18 +9,18 @@ import {selectDefaultTeam} from '@helpers/api/team';
 import NetworkManager from '@managers/network_manager';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
-import {prepareMyPreferences, queryPreferencesByCategoryAndName} from '@queries/servers/preference';
+import {prepareMyPreferences, queryDisplayNamePreferences} from '@queries/servers/preference';
 import {prepareCommonSystemValues, getConfig, getLicense} from '@queries/servers/system';
 import {prepareMyTeams} from '@queries/servers/team';
 import {getCurrentUser} from '@queries/servers/user';
 import {isDMorGM, selectDefaultChannelForTeam} from '@utils/channel';
 
-import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, MyChannelsRequest} from './channel';
+import {fetchMissingDirectChannelsInfo, fetchMyChannelsForTeam, type MyChannelsRequest} from './channel';
 import {fetchPostsForChannel} from './post';
-import {fetchMyPreferences, MyPreferencesRequest} from './preference';
+import {fetchMyPreferences, type MyPreferencesRequest} from './preference';
 import {fetchRolesIfNeeded} from './role';
-import {ConfigAndLicenseRequest, fetchConfigAndLicense} from './systems';
-import {fetchMyTeams, MyTeamsRequest} from './team';
+import {type ConfigAndLicenseRequest, fetchConfigAndLicense} from './systems';
+import {fetchMyTeams, type MyTeamsRequest} from './team';
 
 import type {Model} from '@nozbe/watermelondb';
 import type TeamModel from '@typings/database/models/servers/team';
@@ -30,7 +30,6 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-
     const {database} = operator;
 
     try {
@@ -60,7 +59,7 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
 
         // select initial team
         if (!clData.error && !prefData.error && !teamData.error) {
-            const teamOrderPreference = getPreferenceValue(prefData.preferences!, Preferences.TEAMS_ORDER, '', '') as string;
+            const teamOrderPreference = getPreferenceValue<string>(prefData.preferences!, Preferences.CATEGORIES.TEAMS_ORDER, '', '');
             const teamRoles: string[] = [];
             const teamMembers = new Set<string>();
 
@@ -117,7 +116,7 @@ export async function retryInitialTeamAndChannel(serverUrl: string) {
             ),
         ])).flat();
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'retryInitialTeamAndChannel');
 
         const directChannels = chData!.channels!.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);
@@ -139,7 +138,6 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
     if (!operator) {
         return {error: `${serverUrl} database not found`};
     }
-
     const {database} = operator;
 
     try {
@@ -157,7 +155,7 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
             return {error: true};
         }
 
-        const prefs = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
+        const prefs = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
         const preferences: PreferenceType[] = prefs.map((p) => ({
             category: p.category,
             name: p.name,
@@ -196,7 +194,7 @@ export async function retryInitialChannel(serverUrl: string, teamId: string) {
             prepareCommonSystemValues(operator, {currentChannelId: initialChannel?.id}),
         ])).flat();
 
-        await operator.batchRecords(models);
+        await operator.batchRecords(models, 'retryInitialChannel');
 
         const directChannels = chData!.channels!.filter(isDMorGM);
         const channelsToFetchProfiles = new Set<Channel>(directChannels);

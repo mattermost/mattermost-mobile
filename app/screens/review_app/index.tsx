@@ -13,14 +13,17 @@ import CompassIcon from '@components/compass_icon';
 import ReviewAppIllustration from '@components/illustrations/review_app';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
 import {dismissOverlay, showShareFeedbackOverlay} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     hasAskedBefore: boolean;
-    componentId: string;
+    componentId: AvailableScreens;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
@@ -151,6 +154,7 @@ const ReviewApp = ({
     }, [close, componentId]);
 
     useBackNavigation(onPressClose);
+    useAndroidHardwareBackHandler(componentId, onPressClose);
 
     const doAfterAnimation = useCallback(() => {
         executeAfterDone.current();

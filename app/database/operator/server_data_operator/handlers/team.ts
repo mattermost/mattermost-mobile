@@ -18,6 +18,7 @@ import {
 import {getUniqueRawsBy} from '@database/operator/utils/general';
 import {logWarning} from '@utils/log';
 
+import type ServerDataOperatorBase from '.';
 import type {
     HandleMyTeamArgs, HandleTeamArgs,
     HandleTeamChannelHistoryArgs, HandleTeamMembershipArgs, HandleTeamSearchHistoryArgs,
@@ -44,7 +45,7 @@ export interface TeamHandlerMix {
   handleMyTeam: ({myTeams, prepareRecordsOnly}: HandleMyTeamArgs) => Promise<MyTeamModel[]>;
 }
 
-const TeamHandler = (superclass: any) => class extends superclass {
+const TeamHandler = <TBase extends Constructor<ServerDataOperatorBase>>(superclass: TBase) => class extends superclass {
     /**
      * handleTeamMemberships: Handler responsible for the Create/Update operations occurring on the TEAM_MEMBERSHIP table from the 'Server' schema
      * @param {HandleTeamMembershipArgs} teamMembershipsArgs
@@ -97,7 +98,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
             createOrUpdateRawValues,
             tableName: TEAM_MEMBERSHIP,
             prepareRecordsOnly,
-        });
+        }, 'handleTeamMemberships');
     };
 
     /**
@@ -146,7 +147,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: TEAM,
-        });
+        }, 'handleTeam');
     };
 
     /**
@@ -172,7 +173,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: TEAM_CHANNEL_HISTORY,
-        });
+        }, 'handleTeamChannelHistory');
     };
 
     /**
@@ -199,7 +200,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: TEAM_SEARCH_HISTORY,
-        });
+        }, 'handleTeamSearchHistory');
     };
 
     /**
@@ -248,7 +249,7 @@ const TeamHandler = (superclass: any) => class extends superclass {
             prepareRecordsOnly,
             createOrUpdateRawValues,
             tableName: MY_TEAM,
-        });
+        }, 'handleMyTeam');
     };
 };
 

@@ -1,31 +1,33 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
+import {makeCallsBaseAndBadgeRGB, rgbToCSS} from '@mattermost/calls/lib/utils';
 import {Alert} from 'react-native';
 
-import {Post} from '@constants';
-import Calls from '@constants/calls';
+import {Calls, Post} from '@constants';
 import {isMinimumServerVersion} from '@utils/helpers';
 import {displayUsername} from '@utils/user';
 
-import type {CallParticipant, ServerCallsConfig} from '@calls/types/calls';
+import type {CallParticipant, CallsTheme} from '@calls/types/calls';
+import type {CallsConfig} from '@mattermost/calls/lib/types';
 import type PostModel from '@typings/database/models/servers/post';
 import type {IntlShape} from 'react-intl';
+import type {RTCIceServer} from 'react-native-webrtc';
 
-export function sortParticipants(teammateNameDisplay: string, participants?: Dictionary<CallParticipant>, presenterID?: string): CallParticipant[] {
+export function sortParticipants(locale: string, teammateNameDisplay: string, participants?: Dictionary<CallParticipant>, presenterID?: string): CallParticipant[] {
     if (!participants) {
         return [];
     }
 
     const users = Object.values(participants);
 
-    return users.sort(sortByName(teammateNameDisplay)).sort(sortByState(presenterID));
+    return users.sort(sortByName(locale, teammateNameDisplay)).sort(sortByState(presenterID));
 }
 
-const sortByName = (teammateNameDisplay: string) => {
+const sortByName = (locale: string, teammateNameDisplay: string) => {
     return (a: CallParticipant, b: CallParticipant) => {
-        const nameA = displayUsername(a.userModel, teammateNameDisplay);
-        const nameB = displayUsername(b.userModel, teammateNameDisplay);
+        const nameA = displayUsername(a.userModel, locale, teammateNameDisplay);
+        const nameB = displayUsername(b.userModel, locale, teammateNameDisplay);
         return nameA.localeCompare(nameB);
     };
 };
@@ -38,12 +40,6 @@ const sortByState = (presenterID?: string) => {
             return 1;
         }
 
-        if (!a.muted && b.muted) {
-            return -1;
-        } else if (!b.muted && a.muted) {
-            return 1;
-        }
-
         if (a.raisedHand && !b.raisedHand) {
             return -1;
         } else if (b.raisedHand && !a.raisedHand) {
@@ -52,9 +48,28 @@ const sortByState = (presenterID?: string) => {
             return a.raisedHand - b.raisedHand;
         }
 
+        if (!a.muted && b.muted) {
+            return -1;
+        } else if (!b.muted && a.muted) {
+            return 1;
+        }
+
         return 0;
     };
 };
+
+export function getHandsRaised(participants: Dictionary<CallParticipant>) {
+    return Object.values(participants).filter((p) => p.raisedHand);
+}
+
+export function getHandsRaisedNames(participants: CallParticipant[], currentUserId: string, locale: string, teammateNameDisplay: string, intl: IntlShape) {
+    return participants.sort((a, b) => a.raisedHand - b.raisedHand).map((p) => {
+        if (p.id === currentUserId) {
+            return intl.formatMessage({id: 'mobile.calls_you_2', defaultMessage: 'You'});
+        }
+        return displayUsername(p.userModel, locale, teammateNameDisplay);
+    });
+}
 
 export function isSupportedServerCalls(serverVersion?: string) {
     if (serverVersion) {
@@ -70,7 +85,7 @@ export function isSupportedServerCalls(serverVersion?: string) {
 }
 
 export function isCallsCustomMessage(post: PostModel | Post): boolean {
-    return Boolean(post.type && post.type?.startsWith(Post.POST_TYPES.CUSTOM_CALLS));
+    return Boolean(post.type && post.type === Post.POST_TYPES.CUSTOM_CALLS);
 }
 
 export function idsAreEqual(a: string[], b: string[]) {
@@ -106,7 +121,7 @@ export function errorAlert(error: string, intl: IntlShape) {
     );
 }
 
-export function getICEServersConfigs(config: ServerCallsConfig) {
+export function getICEServersConfigs(config: CallsConfig): RTCIceServer[] {
     // if ICEServersConfigs is set, we can trust this to be complete and
     // coming from an updated API.
     if (config.ICEServersConfigs && config.ICEServersConfigs.length > 0) {
@@ -123,4 +138,15 @@ export function getICEServersConfigs(config: ServerCallsConfig) {
     }
 
     return [];
+}
+
+export function makeCallsTheme(theme: Theme): CallsTheme {
+    const {baseColorRGB, badgeBgRGB} = makeCallsBaseAndBadgeRGB(theme.sidebarBg);
+
+    const newTheme = {...theme} as CallsTheme;
+    newTheme.callsBg = rgbToCSS(baseColorRGB);
+    newTheme.callsBgRgb = `${baseColorRGB.r},${baseColorRGB.g},${baseColorRGB.b}`;
+    newTheme.callsBadgeBg = rgbToCSS(badgeBgRGB);
+
+    return newTheme;
 }

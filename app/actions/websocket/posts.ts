@@ -1,31 +1,31 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {storeMyChannelsForTeam, markChannelAsUnread, markChannelAsViewed, updateLastPostAt} from '@actions/local/channel';
-import {markPostAsDeleted} from '@actions/local/post';
+import {addPostAcknowledgement, markPostAsDeleted, removePostAcknowledgement} from '@actions/local/post';
 import {createThreadFromNewPost, updateThread} from '@actions/local/thread';
-import {fetchChannelStats, fetchMyChannel, markChannelAsRead} from '@actions/remote/channel';
+import {fetchChannelStats, fetchMyChannel} from '@actions/remote/channel';
 import {fetchPostAuthors, fetchPostById} from '@actions/remote/post';
 import {fetchThread} from '@actions/remote/thread';
+import {fetchMissingProfilesByIds} from '@actions/remote/user';
 import {ActionType, Events, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
 import {getChannelById, getMyChannel} from '@queries/servers/channel';
 import {getPostById} from '@queries/servers/post';
 import {getCurrentChannelId, getCurrentTeamId, getCurrentUserId} from '@queries/servers/system';
 import {getIsCRTEnabled} from '@queries/servers/thread';
+import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {isTablet} from '@utils/helpers';
 import {isFromWebhook, isSystemMessage, shouldIgnorePost} from '@utils/post';
 
+import type {Model} from '@nozbe/watermelondb';
 import type MyChannelModel from '@typings/database/models/servers/my_channel';
 
 function preparedMyChannelHack(myChannel: MyChannelModel) {
-    // @ts-expect-error hack accessing _preparedState
     if (!myChannel._preparedState) {
-        // @ts-expect-error hack setting _preparedState
         myChannel._preparedState = null;
     }
 }
@@ -46,7 +46,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
     }
     const currentUserId = await getCurrentUserId(database);
 
-    const existing = await getPostById(database, post.pending_post_id);
+    const existing = await getPostById(database, post.pending_post_id) || await getPostById(database, post.id);
 
     if (existing) {
         return;
@@ -118,7 +118,6 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     if (!shouldIgnorePost(post)) {
         let markAsViewed = false;
-        let markAsRead = false;
 
         if (!myChannel.manuallyUnread) {
             if (
@@ -127,21 +126,17 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
                 !isFromWebhook(post)
             ) {
                 markAsViewed = true;
-                markAsRead = false;
             } else if ((post.channel_id === currentChannelId)) {
                 const isChannelScreenMounted = NavigationStore.getScreensInStack().includes(Screens.CHANNEL);
 
                 const isTabletDevice = await isTablet();
                 if (isChannelScreenMounted || isTabletDevice) {
                     markAsViewed = false;
-                    markAsRead = true;
                 }
             }
         }
 
-        if (markAsRead) {
-            markChannelAsRead(serverUrl, post.channel_id);
-        } else if (markAsViewed) {
+        if (markAsViewed) {
             preparedMyChannelHack(myChannel);
             const {member: viewedAt} = await markChannelAsViewed(serverUrl, post.channel_id, false, true);
             if (viewedAt) {
@@ -169,6 +164,20 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
         actionType = ActionType.POSTS.RECEIVED_IN_THREAD;
     }
 
+    const outOfOrderWebsocketEvent = EphemeralStore.getLastPostWebsocketEvent(serverUrl, post.id);
+    if (outOfOrderWebsocketEvent?.deleted) {
+        for (const model of models) {
+            if (model._preparedState === 'update') {
+                model.cancelPrepareUpdate();
+            }
+        }
+        return;
+    }
+
+    if (outOfOrderWebsocketEvent?.post) {
+        post = outOfOrderWebsocketEvent.post;
+    }
+
     const postModels = await operator.handlePosts({
         actionType,
         order: [post.id],
@@ -178,7 +187,7 @@ export async function handleNewPostEvent(serverUrl: string, msg: WebSocketMessag
 
     models.push(...postModels);
 
-    operator.batchRecords(models);
+    operator.batchRecords(models, 'handleNewPostEvent');
 }
 
 export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage) {
@@ -186,6 +195,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     if (!operator) {
         return;
     }
+    const {database} = operator;
 
     let post: Post;
     try {
@@ -195,10 +205,14 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     }
 
     const models: Model[] = [];
-    const {database} = operator;
 
     const oldPost = await getPostById(database, post.id);
-    if (oldPost && oldPost.isPinned !== post.is_pinned) {
+    if (!oldPost) {
+        EphemeralStore.addEditingPost(serverUrl, post);
+        return;
+    }
+
+    if (oldPost.isPinned !== post.is_pinned) {
         fetchChannelStats(serverUrl, post.channel_id);
     }
 
@@ -209,7 +223,7 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     }
 
     let actionType: string = ActionType.POSTS.RECEIVED_NEW;
-    const isCRTEnabled = await getIsCRTEnabled(operator.database);
+    const isCRTEnabled = await getIsCRTEnabled(database);
     if (isCRTEnabled && post.root_id) {
         actionType = ActionType.POSTS.RECEIVED_IN_THREAD;
     }
@@ -222,18 +236,20 @@ export async function handlePostEdited(serverUrl: string, msg: WebSocketMessage)
     });
     models.push(...postModels);
 
-    operator.batchRecords(models);
+    operator.batchRecords(models, 'handlePostEdited');
 }
 
 export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
     try {
-        const {database} = operator;
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const post: Post = JSON.parse(msg.data.post);
+
+        const oldPost = await getPostById(database, post.id);
+        if (!oldPost) {
+            EphemeralStore.addRemovingPost(serverUrl, post.id);
+            return;
+        }
 
         const models: Model[] = [];
 
@@ -265,7 +281,7 @@ export async function handlePostDeleted(serverUrl: string, msg: WebSocketMessage
         }
 
         if (models.length) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'handlePostDeleted');
         }
     } catch {
         // Do nothing
@@ -305,5 +321,43 @@ export async function handlePostUnread(serverUrl: string, msg: WebSocketMessage)
         const delta = postNumber ? postNumber - messages : messages;
 
         markChannelAsUnread(serverUrl, channelId, delta, mentions, lastViewedAt);
+    }
+}
+
+export async function handlePostAcknowledgementAdded(serverUrl: string, msg: WebSocketMessage) {
+    try {
+        const acknowledgement = JSON.parse(msg.data.acknowledgement);
+        const {user_id, post_id, acknowledged_at} = acknowledgement;
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return;
+        }
+        const currentUserId = getCurrentUserId(database);
+        if (EphemeralStore.isAcknowledgingPost(post_id) && currentUserId === user_id) {
+            return;
+        }
+
+        addPostAcknowledgement(serverUrl, post_id, user_id, acknowledged_at);
+        fetchMissingProfilesByIds(serverUrl, [user_id]);
+    } catch (error) {
+        // Do nothing
+    }
+}
+
+export async function handlePostAcknowledgementRemoved(serverUrl: string, msg: WebSocketMessage) {
+    try {
+        const acknowledgement = JSON.parse(msg.data.acknowledgement);
+        const {user_id, post_id} = acknowledgement;
+        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
+        if (!database) {
+            return;
+        }
+        const currentUserId = getCurrentUserId(database);
+        if (EphemeralStore.isUnacknowledgingPost(post_id) && currentUserId === user_id) {
+            return;
+        }
+        await removePostAcknowledgement(serverUrl, post_id, user_id);
+    } catch (error) {
+        // Do nothing
     }
 }

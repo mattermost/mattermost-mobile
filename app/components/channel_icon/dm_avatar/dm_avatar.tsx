@@ -2,7 +2,6 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {View} from 'react-native';
 
 import CompassIcon from '@components/compass_icon';
 import ProfilePicture from '@components/profile_picture';
@@ -10,54 +9,55 @@ import {useTheme} from '@context/theme';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {StyleProp, ViewStyle} from 'react-native';
 
 type Props = {
     author?: UserModel;
-    isInfo?: boolean;
+    isOnCenterBg?: boolean;
+    style: StyleProp<ViewStyle>;
+    size: number;
 }
 
 const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
-    container: {marginLeft: 4},
     status: {
         backgroundColor: theme.sidebarBg,
         borderWidth: 0,
     },
-    statusInfo: {
+    statusOnCenterBg: {
         backgroundColor: theme.centerChannelBg,
     },
     icon: {
         color: changeOpacity(theme.sidebarText, 0.4),
         left: 1,
     },
-    iconInfo: {
+    iconOnCenterBg: {
         color: changeOpacity(theme.centerChannelColor, 0.72),
     },
 }));
 
-const DmAvatar = ({author, isInfo}: Props) => {
+const DmAvatar = ({author, isOnCenterBg, style, size}: Props) => {
     const theme = useTheme();
-    const style = getStyleSheet(theme);
+    const styles = getStyleSheet(theme);
 
     if (author?.deleteAt) {
         return (
             <CompassIcon
                 name='archive-outline'
-                style={[style.icon, isInfo && style.iconInfo]}
+                style={[styles.icon, style, isOnCenterBg && styles.iconOnCenterBg]}
                 size={24}
             />
         );
     }
 
     return (
-        <View style={style.container}>
-            <ProfilePicture
-                author={author}
-                size={24}
-                showStatus={true}
-                statusSize={12}
-                statusStyle={[style.status, isInfo && style.statusInfo]}
-            />
-        </View>
+        <ProfilePicture
+            author={author}
+            size={size}
+            showStatus={true}
+            statusSize={12}
+            statusStyle={[styles.status, isOnCenterBg && styles.statusOnCenterBg]}
+            containerStyle={style}
+        />
     );
 };
 

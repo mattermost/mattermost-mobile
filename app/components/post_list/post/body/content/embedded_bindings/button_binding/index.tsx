@@ -12,6 +12,7 @@ import {handleBindingClick, postEphemeralCallResponseForPost} from '@actions/rem
 import {handleGotoLocation} from '@actions/remote/command';
 import {AppBindingLocations, AppCallResponseTypes} from '@constants/apps';
 import {useServerUrl} from '@context/server';
+import {observeChannel} from '@queries/servers/channel';
 import {observeCurrentTeamId} from '@queries/servers/system';
 import {showAppForm} from '@screens/navigation';
 import {createCallContext} from '@utils/apps';
@@ -22,7 +23,6 @@ import {makeStyleSheetFromTheme, changeOpacity} from '@utils/theme';
 import ButtonBindingText from './button_binding_text';
 
 import type {WithDatabaseArgs} from '@typings/database/database';
-import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = {
@@ -132,12 +132,10 @@ const ButtonBinding = ({currentTeamId, binding, post, teamID, theme}: Props) => 
             />
         </Button>
     );
-
-    return null;
 };
 
 const withTeamId = withObservables(['post'], ({post, database}: {post: PostModel} & WithDatabaseArgs) => ({
-    teamID: post.channel.observe().pipe(map((channel: ChannelModel) => channel.teamId)),
+    teamID: observeChannel(database, post.channelId).pipe(map((channel) => channel?.teamId)),
     currentTeamId: observeCurrentTeamId(database),
 }));
 

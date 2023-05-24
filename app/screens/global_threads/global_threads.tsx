@@ -4,21 +4,24 @@
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {setGlobalThreadsTab} from '@actions/local/systems';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
 import {useServerUrl} from '@context/server';
-import {useAppState, useIsTablet} from '@hooks/device';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useIsTablet} from '@hooks/device';
 import {useDefaultHeaderHeight} from '@hooks/header';
 import {useTeamSwitch} from '@hooks/team_switch';
 import {popTopScreen} from '@screens/navigation';
 
 import ThreadsList from './threads_list';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
-    componentId?: string;
+    componentId?: AvailableScreens;
     globalThreadsTab: GlobalThreadsTab;
 };
 
@@ -31,7 +34,6 @@ const styles = StyleSheet.create({
 });
 
 const GlobalThreads = ({componentId, globalThreadsTab}: Props) => {
-    const appState = useAppState();
     const serverUrl = useServerUrl();
     const intl = useIntl();
     const switchingTeam = useTeamSwitch();
@@ -64,6 +66,8 @@ const GlobalThreads = ({componentId, globalThreadsTab}: Props) => {
         popTopScreen(componentId);
     }, [componentId]);
 
+    useAndroidHardwareBackHandler(componentId, onBackPress);
+
     return (
         <SafeAreaView
             edges={edges}
@@ -88,7 +92,6 @@ const GlobalThreads = ({componentId, globalThreadsTab}: Props) => {
             {!switchingTeam &&
             <View style={containerStyle}>
                 <ThreadsList
-                    forceQueryAfterAppState={appState}
                     setTab={setTab}
                     tab={tab}
                     testID={'global_threads.threads_list'}

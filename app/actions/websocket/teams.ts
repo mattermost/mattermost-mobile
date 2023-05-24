@@ -1,15 +1,12 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {removeUserFromTeam} from '@actions/local/team';
 import {fetchMyChannelsForTeam} from '@actions/remote/channel';
 import {fetchRoles} from '@actions/remote/role';
 import {fetchMyTeam, handleKickFromTeam, updateCanJoinTeams} from '@actions/remote/team';
 import {updateUsersNoLongerVisible} from '@actions/remote/user';
 import DatabaseManager from '@database/manager';
-import ServerDataOperator from '@database/operator/server_data_operator';
 import NetworkManager from '@managers/network_manager';
 import {prepareCategoriesAndCategoriesChannels} from '@queries/servers/categories';
 import {prepareMyChannelsForTeam} from '@queries/servers/channel';
@@ -17,7 +14,11 @@ import {getCurrentTeam, prepareMyTeams, queryMyTeamsByIds} from '@queries/server
 import {getCurrentUser} from '@queries/servers/user';
 import EphemeralStore from '@store/ephemeral_store';
 import {setTeamLoading} from '@store/team_load_store';
+import {getFullErrorMessage} from '@utils/errors';
 import {logDebug} from '@utils/log';
+
+import type ServerDataOperator from '@database/operator/server_data_operator';
+import type {Model} from '@nozbe/watermelondb';
 
 export async function handleTeamArchived(serverUrl: string, msg: WebSocketMessage) {
     try {
@@ -73,7 +74,7 @@ export async function handleTeamRestored(serverUrl: string, msg: WebSocketMessag
         if (markedAsLoading) {
             setTeamLoading(serverUrl, false);
         }
-        logDebug('cannot handle restore team websocket event', error);
+        logDebug('cannot handle restore team websocket event', getFullErrorMessage(error));
     }
 }
 
@@ -106,14 +107,11 @@ export async function handleLeaveTeamEvent(serverUrl: string, msg: WebSocketMess
 }
 
 export async function handleUpdateTeamEvent(serverUrl: string, msg: WebSocketMessage) {
-    const database = DatabaseManager.serverDatabases[serverUrl];
-    if (!database) {
-        return;
-    }
-
     try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const team: Team = JSON.parse(msg.data.team);
-        database.operator.handleTeam({
+        operator.handleTeam({
             teams: [team],
             prepareRecordsOnly: false,
         });
@@ -162,5 +160,5 @@ const fetchAndStoreJoinedTeamInfo = async (serverUrl: string, operator: ServerDa
     }
 
     const models = await Promise.all(modelPromises);
-    await operator.batchRecords(models.flat());
+    await operator.batchRecords(models.flat(), 'fetchAndStoreJoinedTeamInfo');
 };

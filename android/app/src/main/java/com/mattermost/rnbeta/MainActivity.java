@@ -1,42 +1,45 @@
 package com.mattermost.rnbeta;
 
 import android.os.Bundle;
+
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import android.view.KeyEvent;
 import android.content.res.Configuration;
 
-import com.facebook.react.bridge.Arguments;
-import com.facebook.react.bridge.ReactApplicationContext;
-import com.facebook.react.bridge.ReactMethod;
-import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.ReactActivityDelegate;
-import com.facebook.react.ReactRootView;
 import com.reactnativenavigation.NavigationActivity;
 import com.github.emilioicai.hwkeyboardevent.HWKeyboardEventModule;
+import com.facebook.react.defaults.DefaultNewArchitectureEntryPoint;
+import com.facebook.react.defaults.DefaultReactActivityDelegate;
+
+import java.util.Objects;
 
 public class MainActivity extends NavigationActivity {
     private boolean HWKeyboardConnected = false;
+    private final FoldableObserver foldableObserver = new FoldableObserver(this);
 
-    public static class MainActivityDelegate extends ReactActivityDelegate {
-        public MainActivityDelegate(NavigationActivity activity, String mainComponentName) {
-            super(activity, mainComponentName);
-        }
+    @Override
+    protected String getMainComponentName() {
+        return "Mattermost";
+    }
 
-        @Override
-        protected ReactRootView createRootView() {
-            ReactRootView reactRootView = new ReactRootView(getContext());
-            // If you opted-in for the New Architecture, we enable the Fabric Renderer.
-            reactRootView.setIsFabric(BuildConfig.IS_NEW_ARCHITECTURE_ENABLED);
-            return reactRootView;
-        }
-
-        @Override
-        protected boolean isConcurrentRootEnabled() {
-            // If you opted-in for the New Architecture, we enable Concurrent Root (i.e. React 18).
-            // More on this on https://reactjs.org/blog/2022/03/29/react-v18.html
-            return BuildConfig.IS_NEW_ARCHITECTURE_ENABLED;
-        }
+    /**
+     * Returns the instance of the {@link ReactActivityDelegate}. Here we use a util class {@link
+     * DefaultReactActivityDelegate} which allows you to easily enable Fabric and Concurrent React
+     * (aka React 18) with two boolean flags.
+     */
+    @Override
+    protected ReactActivityDelegate createReactActivityDelegate() {
+        return new DefaultReactActivityDelegate(
+                this,
+                Objects.requireNonNull(getMainComponentName()),
+                // If you opted-in for the New Architecture, we enable the Fabric Renderer.
+                DefaultNewArchitectureEntryPoint.getFabricEnabled(), // fabricEnabled
+                // If you opted-in for the New Architecture, we enable Concurrent React (i.e. React 18).
+                DefaultNewArchitectureEntryPoint.getConcurrentReactEnabled() // concurrentRootEnabled
+        );
     }
 
     @Override
@@ -44,10 +47,23 @@ public class MainActivity extends NavigationActivity {
         super.onCreate(null);
         setContentView(R.layout.launch_screen);
         setHWKeyboardConnected();
+        foldableObserver.onCreate();
     }
 
     @Override
-    public void onConfigurationChanged(Configuration newConfig) {
+    protected void onStart() {
+        super.onStart();
+        foldableObserver.onStart();
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        foldableObserver.onStop();
+    }
+
+    @Override
+    public void onConfigurationChanged(@NonNull Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
 
         if (newConfig.hardKeyboardHidden == Configuration.HARDKEYBOARDHIDDEN_NO) {
@@ -85,7 +101,7 @@ public class MainActivity extends NavigationActivity {
             }
         }
         return super.dispatchKeyEvent(event);
-    };
+    }
 
     private void setHWKeyboardConnected() {
         HWKeyboardConnected = getResources().getConfiguration().keyboard == Configuration.KEYBOARD_QWERTY;

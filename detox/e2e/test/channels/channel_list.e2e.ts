@@ -82,7 +82,6 @@ describe('Channels - Channel List', () => {
         // * Verify on first channel
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
-        await expect(ChannelScreen.introDisplayName).toHaveText(testChannel.display_name);
 
         // # Go back to channel list screen and tap on a second channel
         await ChannelScreen.back();
@@ -92,7 +91,15 @@ describe('Channels - Channel List', () => {
         // * Verify on second channel
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText('Off-Topic');
-        await expect(ChannelScreen.introDisplayName).toHaveText('Off-Topic');
+
+        // # Go back to channel list screen and tap on a third channel
+        await ChannelScreen.back();
+        await ChannelListScreen.toBeVisible();
+        await ChannelListScreen.getChannelItemDisplayName(channelsCategory, townSquareChannelName).tap();
+
+        // * Verify on third channel
+        await ChannelScreen.toBeVisible();
+        await expect(ChannelScreen.headerTitle).toHaveText('Town Square');
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -110,6 +117,7 @@ describe('Channels - Channel List', () => {
         await ChannelListScreen.getCategoryExpanded(channelsCategory).tap();
 
         // * Verify category is collapsed and channels are not listed
+        await wait(timeouts.ONE_SEC);
         await expect(ChannelListScreen.getCategoryCollapsed(channelsCategory)).toBeVisible();
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).not.toBeVisible();
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).not.toBeVisible();
@@ -119,6 +127,7 @@ describe('Channels - Channel List', () => {
         await ChannelListScreen.getCategoryCollapsed(channelsCategory).tap();
 
         // * Verify category is expanded and all channels are listed
+        await wait(timeouts.ONE_SEC);
         await expect(ChannelListScreen.getCategoryExpanded(channelsCategory)).toBeVisible();
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, testChannel.name)).toBeVisible();
         await expect(ChannelListScreen.getChannelItemDisplayName(channelsCategory, offTopicChannelName)).toBeVisible();

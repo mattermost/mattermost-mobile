@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useReducer, useRef, useState} from 'react';
+import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {defineMessages, useIntl} from 'react-intl';
-import {Keyboard, LayoutChangeEvent, Platform, View} from 'react-native';
+import {Keyboard, type LayoutChangeEvent, Platform, View} from 'react-native';
 import {SafeAreaView} from 'react-native-safe-area-context';
 
 import {makeDirectChannel, makeGroupChannel} from '@actions/remote/channel';
@@ -12,35 +12,36 @@ import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import Search from '@components/search';
 import SelectedUsers from '@components/selected_users';
-import UserList from '@components/user_list';
+import ServerUserList from '@components/server_user_list';
 import {General} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {debounce} from '@helpers/api/general';
-import {useModalPosition} from '@hooks/device';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
+import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
-import {t} from '@i18n';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {alertErrorWithFallback} from '@utils/draft';
 import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
-import {displayUsername, filterProfilesMatchingTerm} from '@utils/user';
+import {displayUsername} from '@utils/user';
+
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const messages = defineMessages({
     dm: {
-        id: t('mobile.open_dm.error'),
+        id: 'mobile.open_dm.error',
         defaultMessage: "We couldn't open a direct message with {displayName}. Please check your connection and try again.",
     },
     gm: {
-        id: t('mobile.open_gm.error'),
+        id: 'mobile.open_gm.error',
         defaultMessage: "We couldn't open a group message with those users. Please check your connection and try again.",
     },
     buttonText: {
-        id: t('mobile.create_direct_message.start'),
+        id: 'mobile.create_direct_message.start',
         defaultMessage: 'Start Conversation',
     },
     toastMessage: {
-        id: t('mobile.create_direct_message.max_limit_reached'),
+        id: 'mobile.create_direct_message.max_limit_reached',
         defaultMessage: 'Group messages are limited to {maxCount} members',
     },
 });
@@ -48,7 +49,7 @@ const messages = defineMessages({
 const CLOSE_BUTTON = 'close-dms';
 
 type Props = {
-    componentId: string;
+    componentId: AvailableScreens;
     currentTeamId: string;
     currentUserId: string;
     restrictDirectMessage: boolean;
@@ -93,13 +94,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     };
 });
 
-function reduceProfiles(state: UserProfile[], action: {type: 'add'; values?: UserProfile[]}) {
-    if (action.type === 'add' && action.values?.length) {
-        return [...state, ...action.values];
-    }
-    return state;
-}
-
 function removeProfileFromList(list: {[id: string]: UserProfile}, id: string) {
     const newSelectedIds = Object.assign({}, list);
 
@@ -121,81 +115,26 @@ export default function CreateDirectMessage({
     const intl = useIntl();
     const {formatMessage} = intl;
 
-    const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
-    const next = useRef(true);
-    const page = useRef(-1);
-    const mounted = useRef(false);
     const mainView = useRef<View>(null);
-    const modalPosition = useModalPosition(mainView);
+    const [containerHeight, setContainerHeight] = useState(0);
+    const keyboardOverlap = useKeyboardOverlap(mainView, containerHeight);
 
-    const [profiles, dispatchProfiles] = useReducer(reduceProfiles, []);
-    const [searchResults, setSearchResults] = useState<UserProfile[]>([]);
-    const [loading, setLoading] = useState(false);
     const [term, setTerm] = useState('');
     const [startingConversation, setStartingConversation] = useState(false);
     const [selectedIds, setSelectedIds] = useState<{[id: string]: UserProfile}>({});
     const [showToast, setShowToast] = useState(false);
-    const [containerHeight, setContainerHeight] = useState(0);
     const selectedCount = Object.keys(selectedIds).length;
-
-    const isSearch = Boolean(term);
-
-    const loadedProfiles = ({users}: {users?: UserProfile[]}) => {
-        if (mounted.current) {
-            if (users && !users.length) {
-                next.current = false;
-            }
-
-            page.current += 1;
-            setLoading(false);
-            dispatchProfiles({type: 'add', values: users});
-        }
-    };
-
-    const data = useMemo(() => {
-        if (term) {
-            const exactMatches: UserProfile[] = [];
-            const filterByTerm = (p: UserProfile) => {
-                if (selectedCount > 0 && p.id === currentUserId) {
-                    return false;
-                }
-
-                if (p.username === term || p.username.startsWith(term)) {
-                    exactMatches.push(p);
-                    return false;
-                }
-
-                return true;
-            };
-
-            const results = filterProfilesMatchingTerm(searchResults, term).filter(filterByTerm);
-            return [...exactMatches, ...results];
-        }
-        return profiles;
-    }, [term, isSearch && selectedCount, isSearch && searchResults, profiles]);
 
     const clearSearch = useCallback(() => {
         setTerm('');
-        setSearchResults([]);
     }, []);
-
-    const getProfiles = useCallback(debounce(() => {
-        if (next.current && !loading && !term && mounted.current) {
-            setLoading(true);
-            if (restrictDirectMessage) {
-                fetchProfilesInTeam(serverUrl, currentTeamId, page.current + 1, General.PROFILE_CHUNK_SIZE).then(loadedProfiles);
-            } else {
-                fetchProfiles(serverUrl, page.current + 1, General.PROFILE_CHUNK_SIZE).then(loadedProfiles);
-            }
-        }
-    }, 100), [loading, isSearch, restrictDirectMessage, serverUrl, currentTeamId]);
 
     const handleRemoveProfile = useCallback((id: string) => {
         setSelectedIds((current) => removeProfileFromList(current, id));
     }, []);
 
-    const createDirectChannel = useCallback(async (id: string): Promise<boolean> => {
-        const user = selectedIds[id];
+    const createDirectChannel = useCallback(async (id: string, selectedUser?: UserProfile): Promise<boolean> => {
+        const user = selectedUser || selectedIds[id];
         const displayName = displayUsername(user, intl.locale, teammateNameDisplay);
         const result = await makeDirectChannel(serverUrl, id, displayName);
 
@@ -216,7 +155,7 @@ export default function CreateDirectMessage({
         return !result.error;
     }, [serverUrl]);
 
-    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}) => {
+    const startConversation = useCallback(async (selectedId?: {[id: string]: boolean}, selectedUser?: UserProfile) => {
         if (startingConversation) {
             return;
         }
@@ -230,7 +169,7 @@ export default function CreateDirectMessage({
         } else if (idsToUse.length > 1) {
             success = await createGroupChannel(idsToUse);
         } else {
-            success = await createDirectChannel(idsToUse[0]);
+            success = await createDirectChannel(idsToUse[0], selectedUser);
         }
 
         if (success) {
@@ -246,7 +185,7 @@ export default function CreateDirectMessage({
                 [currentUserId]: true,
             };
 
-            startConversation(selectedId);
+            startConversation(selectedId, user);
         } else {
             clearSearch();
             setSelectedIds((current) => {
@@ -271,48 +210,9 @@ export default function CreateDirectMessage({
         }
     }, [currentUserId, clearSearch]);
 
-    const searchUsers = useCallback(async (searchTerm: string) => {
-        const lowerCasedTerm = searchTerm.toLowerCase();
-        setLoading(true);
-        let results;
-
-        if (restrictDirectMessage) {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
-        } else {
-            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
-        }
-
-        let searchData: UserProfile[] = [];
-        if (results.data) {
-            searchData = results.data;
-        }
-
-        setSearchResults(searchData);
-        setLoading(false);
-    }, [restrictDirectMessage, serverUrl, currentTeamId]);
-
-    const search = useCallback(() => {
-        searchUsers(term);
-    }, [searchUsers, term]);
-
     const onLayout = useCallback((e: LayoutChangeEvent) => {
         setContainerHeight(e.nativeEvent.layout.height);
     }, []);
-
-    const onSearch = useCallback((text: string) => {
-        if (text) {
-            setTerm(text);
-            if (searchTimeoutId.current) {
-                clearTimeout(searchTimeoutId.current);
-            }
-
-            searchTimeoutId.current = setTimeout(() => {
-                searchUsers(text);
-            }, General.SEARCH_TIMEOUT_MILLISECONDS);
-        } else {
-            clearSearch();
-        }
-    }, [searchUsers, clearSearch]);
 
     const updateNavigationButtons = useCallback(async () => {
         const closeIcon = await CompassIcon.getImageSource('close', 24, theme.sidebarHeaderTextColor);
@@ -325,16 +225,62 @@ export default function CreateDirectMessage({
         });
     }, [intl.locale, theme]);
 
+    const onChangeText = useCallback((searchTerm: string) => {
+        setTerm(searchTerm);
+    }, []);
+
+    const userFetchFunction = useCallback(async (page: number) => {
+        let results;
+        if (restrictDirectMessage) {
+            results = await fetchProfilesInTeam(serverUrl, currentTeamId, page, General.PROFILE_CHUNK_SIZE);
+        } else {
+            results = await fetchProfiles(serverUrl, page, General.PROFILE_CHUNK_SIZE);
+        }
+
+        if (results.users?.length) {
+            return results.users;
+        }
+
+        return [];
+    }, [serverUrl, currentTeamId, restrictDirectMessage]);
+
+    const userSearchFunction = useCallback(async (searchTerm: string) => {
+        const lowerCasedTerm = searchTerm.toLowerCase();
+        let results;
+        if (restrictDirectMessage) {
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {team_id: currentTeamId, allow_inactive: true});
+        } else {
+            results = await searchProfiles(serverUrl, lowerCasedTerm, {allow_inactive: true});
+        }
+
+        if (results.data) {
+            return results.data;
+        }
+
+        return [];
+    }, [serverUrl, currentTeamId, restrictDirectMessage]);
+
+    const createUserFilter = useCallback((exactMatches: UserProfile[], searchTerm: string) => {
+        return (p: UserProfile) => {
+            if (selectedCount > 0 && p.id === currentUserId) {
+                return false;
+            }
+
+            if (p.username === searchTerm || p.username.startsWith(searchTerm)) {
+                exactMatches.push(p);
+                return false;
+            }
+
+            return true;
+        };
+    }, [selectedCount > 0, currentUserId]);
+
     useNavButtonPressed(CLOSE_BUTTON, componentId, close, [close]);
+    useAndroidHardwareBackHandler(componentId, close);
 
     useEffect(() => {
-        mounted.current = true;
         updateNavigationButtons();
-        getProfiles();
-        return () => {
-            mounted.current = false;
-        };
-    }, []);
+    }, [updateNavigationButtons]);
 
     useEffect(() => {
         setShowToast(selectedCount >= General.MAX_USERS_IN_GM);
@@ -362,30 +308,26 @@ export default function CreateDirectMessage({
                     placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                     cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                     placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                    onChangeText={onSearch}
-                    onSubmitEditing={search}
+                    onChangeText={onChangeText}
                     onCancel={clearSearch}
                     autoCapitalize='none'
                     keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                     value={term}
                 />
             </View>
-            <UserList
+            <ServerUserList
                 currentUserId={currentUserId}
                 handleSelectProfile={handleSelectProfile}
-                loading={loading}
-                profiles={data}
                 selectedIds={selectedIds}
-                showNoResults={!loading && page.current !== -1}
-                teammateNameDisplay={teammateNameDisplay}
-                fetchMore={getProfiles}
                 term={term}
                 testID='create_direct_message.user_list'
                 tutorialWatched={tutorialWatched}
+                fetchFunction={userFetchFunction}
+                searchFunction={userSearchFunction}
+                createFilter={createUserFilter}
             />
             <SelectedUsers
-                containerHeight={containerHeight}
-                modalPosition={modalPosition}
+                keyboardOverlap={keyboardOverlap}
                 showToast={showToast}
                 setShowToast={setShowToast}
                 toastIcon={'check'}
@@ -397,6 +339,7 @@ export default function CreateDirectMessage({
                 buttonIcon={'forum-outline'}
                 buttonText={formatMessage(messages.buttonText)}
                 testID='create_direct_message'
+                maxUsers={General.MAX_USERS_IN_GM}
             />
         </SafeAreaView>
     );

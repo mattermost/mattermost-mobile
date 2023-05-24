@@ -6,6 +6,7 @@ type ChannelStats = {
     guest_count: number;
     member_count: number;
     pinnedpost_count: number;
+    files_count: number;
 };
 
 type NotificationLevel = 'default' | 'all' | 'mention' | 'none';
@@ -16,6 +17,7 @@ type ChannelNotifyProps = {
     mark_unread: 'all' | 'mention';
     push: NotificationLevel;
     ignore_channel_mentions: 'default' | 'off' | 'on';
+    push_threads: 'all' | 'mention';
 };
 type Channel = {
     id: string;

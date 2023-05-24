@@ -3,16 +3,18 @@
 
 import assert from 'assert';
 
-import {CallsConfig} from '@calls/types/calls';
+import {type CallsConfigState, DefaultCallsConfig} from '@calls/types/calls';
 import {License} from '@constants';
 
 import {getICEServersConfigs} from './utils';
 
 describe('getICEServersConfigs', () => {
     it('backwards compatible case, no ICEServersConfigs present', () => {
-        const config: CallsConfig = {
+        const config: CallsConfigState = {
+            ...DefaultCallsConfig,
             pluginEnabled: true,
             ICEServers: ['stun:stun.example.com:3478'],
+            ICEServersConfigs: [],
             AllowEnableCalls: true,
             DefaultEnabled: true,
             NeedsTURNCredentials: false,
@@ -31,7 +33,8 @@ describe('getICEServersConfigs', () => {
     });
 
     it('ICEServersConfigs set', () => {
-        const config: CallsConfig = {
+        const config: CallsConfigState = {
+            ...DefaultCallsConfig,
             pluginEnabled: true,
             ICEServersConfigs: [
                 {
@@ -62,7 +65,8 @@ describe('getICEServersConfigs', () => {
     });
 
     it('Both ICEServers and ICEServersConfigs set', () => {
-        const config: CallsConfig = {
+        const config: CallsConfigState = {
+            ...DefaultCallsConfig,
             pluginEnabled: true,
             ICEServers: ['stun:stuna.example.com:3478'],
             ICEServersConfigs: [

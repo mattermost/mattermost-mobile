@@ -1,7 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
 import {DeviceEventEmitter} from 'react-native';
 
 import {General, Navigation as NavigationConstants, Preferences, Screens} from '@constants';
@@ -14,8 +13,8 @@ import {
     prepareDeleteChannel, prepareMyChannelsForTeam, queryAllMyChannel,
     getMyChannel, getChannelById, queryUsersOnChannel, queryUserChannelsByTypes,
 } from '@queries/servers/channel';
-import {queryPreferencesByCategoryAndName} from '@queries/servers/preference';
-import {prepareCommonSystemValues, PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig, getLicense} from '@queries/servers/system';
+import {queryDisplayNamePreferences} from '@queries/servers/preference';
+import {prepareCommonSystemValues, type PrepareCommonSystemValuesArgs, getCommonSystemValues, getCurrentTeamId, setCurrentChannelId, getCurrentUserId, getConfig, getLicense} from '@queries/servers/system';
 import {addChannelToTeamHistory, addTeamToTeamHistory, getTeamById, removeChannelFromTeamHistory} from '@queries/servers/team';
 import {getCurrentUser, queryUsersById} from '@queries/servers/user';
 import {dismissAllModalsAndPopToRoot, dismissAllModalsAndPopToScreen} from '@screens/navigation';
@@ -24,6 +23,7 @@ import {isTablet} from '@utils/helpers';
 import {logError, logInfo} from '@utils/log';
 import {displayGroupMessageName, displayUsername, getUserIdFromChannelName} from '@utils/user';
 
+import type {Model} from '@nozbe/watermelondb';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type UserModel from '@typings/database/models/servers/user';
 
@@ -82,7 +82,7 @@ export async function switchToChannel(serverUrl: string, channelId: string, team
                 }
 
                 if (models.length && !prepareRecordsOnly) {
-                    await operator.batchRecords(models);
+                    await operator.batchRecords(models, 'switchToChannel');
                 }
 
                 if (isTabletDevice) {
@@ -124,7 +124,7 @@ export async function removeCurrentUserFromChannel(serverUrl: string, channelId:
             await removeChannelFromTeamHistory(operator, teamId, channel.id, false);
 
             if (models.length && !prepareRecordsOnly) {
-                await operator.batchRecords(models);
+                await operator.batchRecords(models, 'removeCurrentUserFromChannel');
             }
         }
         return {models};
@@ -145,7 +145,7 @@ export async function setChannelDeleteAt(serverUrl: string, channelId: string, d
         const model = channel.prepareUpdate((c) => {
             c.deleteAt = deleteAt;
         });
-        await operator.batchRecords([model]);
+        await operator.batchRecords([model], 'setChannelDeleteAt');
     } catch (error) {
         logError('FAILED TO BATCH CHANGES FOR CHANNEL DELETE AT', error);
     }
@@ -179,7 +179,7 @@ export async function markChannelAsViewed(serverUrl: string, channelId: string, 
         });
         PushNotifications.removeChannelNotifications(serverUrl, channelId);
         if (!prepareRecordsOnly) {
-            await operator.batchRecords([member]);
+            await operator.batchRecords([member], 'markChannelAsViewed');
         }
 
         return {member};
@@ -206,7 +206,7 @@ export async function markChannelAsUnread(serverUrl: string, channelId: string, 
             m.isUnread = true;
         });
         if (!prepareRecordsOnly) {
-            await operator.batchRecords([member]);
+            await operator.batchRecords([member], 'markChannelAsUnread');
         }
 
         return {member};
@@ -226,7 +226,7 @@ export async function resetMessageCount(serverUrl: string, channelId: string) {
         member.prepareUpdate((m) => {
             m.messageCount = 0;
         });
-        await operator.batchRecords([member]);
+        await operator.batchRecords([member], 'resetMessageCount');
 
         return member;
     } catch (error) {
@@ -254,7 +254,7 @@ export async function storeMyChannelsForTeam(serverUrl: string, teamId: string, 
         }
 
         if (flattenedModels.length) {
-            await operator.batchRecords(flattenedModels);
+            await operator.batchRecords(flattenedModels, 'storeMyChannelsForTeam');
         }
 
         return {models: flattenedModels};
@@ -273,7 +273,7 @@ export async function updateMyChannelFromWebsocket(serverUrl: string, channelMem
                 m.roles = channelMember.roles;
             });
             if (!prepareRecordsOnly) {
-                operator.batchRecords([member]);
+                operator.batchRecords([member], 'updateMyChannelFromWebsocket');
             }
         }
         return {model: member};
@@ -293,7 +293,7 @@ export async function updateChannelInfoFromChannel(serverUrl: string, channel: C
         }],
         prepareRecordsOnly: true});
         if (!prepareRecordsOnly) {
-            operator.batchRecords(newInfo);
+            operator.batchRecords(newInfo, 'updateChannelInfoFromChannel');
         }
         return {model: newInfo};
     } catch (error) {
@@ -317,7 +317,7 @@ export async function updateLastPostAt(serverUrl: string, channelId: string, las
             });
 
             if (!prepareRecordsOnly) {
-                await operator.batchRecords([myChannel]);
+                await operator.batchRecords([myChannel], 'updateLastPostAt');
             }
 
             return {member: myChannel};
@@ -345,7 +345,7 @@ export async function updateMyChannelLastFetchedAt(serverUrl: string, channelId:
             });
 
             if (!prepareRecordsOnly) {
-                await operator.batchRecords([myChannel]);
+                await operator.batchRecords([myChannel], 'updateMyChannelLastFetchedAt');
             }
 
             return {member: myChannel};
@@ -369,7 +369,7 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
 
         const license = await getLicense(database);
         const config = await getConfig(database);
-        const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS, Preferences.NAME_NAME_FORMAT).fetch();
+        const preferences = await queryDisplayNamePreferences(database, Preferences.NAME_NAME_FORMAT).fetch();
         const displaySettings = getTeammateNameDisplaySetting(preferences, config.LockTeammateNameDisplay, config.TeammateNameDisplay, license);
         const models: Model[] = [];
         for await (const channel of channels) {
@@ -403,7 +403,7 @@ export async function updateChannelsDisplayName(serverUrl: string, channels: Cha
         }
 
         if (models.length && !prepareRecordsOnly) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'updateChannelsDisplayName');
         }
 
         return {models};

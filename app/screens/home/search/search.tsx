@@ -4,9 +4,10 @@
 import {useIsFocused, useNavigation} from '@react-navigation/native';
 import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {FlatList, LayoutChangeEvent, Platform, StyleSheet, ViewProps} from 'react-native';
+import {FlatList, type LayoutChangeEvent, Platform, StyleSheet, type ViewStyle} from 'react-native';
+import HWKeyboardEvent from 'react-native-hw-keyboard-event';
 import Animated, {useAnimatedStyle, useDerivedValue, withTiming} from 'react-native-reanimated';
-import {Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView, useSafeAreaInsets} from 'react-native-safe-area-context';
 
 import {getPosts} from '@actions/local/post';
 import {addSearchToTeamSearchHistory} from '@actions/local/team';
@@ -16,22 +17,24 @@ import FreezeScreen from '@components/freeze_screen';
 import Loading from '@components/loading';
 import NavigationHeader from '@components/navigation_header';
 import RoundedHeaderContext from '@components/rounded_header_context';
-import {SearchRef} from '@components/search';
+import {Screens} from '@constants';
 import {BOTTOM_TAB_HEIGHT} from '@constants/view';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {TeamModel} from '@database/models/server';
 import {useKeyboardHeight} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useCollapsibleHeader} from '@hooks/header';
-import {FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
-import {TabTypes, TabType} from '@utils/search';
+import NavigationStore from '@store/navigation_store';
+import {type FileFilter, FileFilters, filterFileExtensions} from '@utils/file';
+import {TabTypes, type TabType} from '@utils/search';
 
 import Initial from './initial';
 import Results from './results';
 import Header from './results/header';
 
+import type {SearchRef} from '@components/search';
 import type PostModel from '@typings/database/models/servers/post';
+import type TeamModel from '@typings/database/models/servers/team';
 
 const EDGES: Edge[] = ['bottom', 'left', 'right'];
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
@@ -187,7 +190,7 @@ const SearchScreen = ({teamId, teams}: Props) => {
 
         setFileInfos(files?.length ? files : emptyFileResults);
         if (postResults.order) {
-            const postModels = await getPosts(serverUrl, postResults.order);
+            const postModels = await getPosts(serverUrl, postResults.order, 'asc');
             setPosts(postModels.length ? postModels : emptyPosts);
         }
         setFileChannelIds(channels?.length ? channels : emptyChannelIds);
@@ -227,12 +230,12 @@ const SearchScreen = ({teamId, teams}: Props) => {
         handleSearch(newTeamId, lastSearchedValue);
     }, [lastSearchedValue, handleSearch]);
 
-    const initialContainerStyle = useMemo(() => {
+    const initialContainerStyle: ViewStyle = useMemo(() => {
         return {
             paddingTop: scrollPaddingTop,
             flexGrow: 1,
             justifyContent: (resultsLoading || loading) ? 'center' : 'flex-start',
-        } as ViewProps;
+        };
     }, [loading, resultsLoading, scrollPaddingTop]);
 
     const renderInitialOrLoadingItem = useCallback(() => {
@@ -316,6 +319,19 @@ const SearchScreen = ({teamId, teams}: Props) => {
             setAutoScroll(false);
         }
     }, [isFocused]);
+
+    useEffect(() => {
+        const listener = HWKeyboardEvent.onHWKeyPressed((keyEvent: {pressedKey: string}) => {
+            const topScreen = NavigationStore.getVisibleScreen();
+            if (topScreen === Screens.HOME && isFocused && keyEvent.pressedKey === 'enter') {
+                searchRef.current?.blur();
+                onSubmit();
+            }
+        });
+        return () => {
+            listener.remove();
+        };
+    }, [onSubmit]);
 
     return (
         <FreezeScreen freeze={!isFocused}>

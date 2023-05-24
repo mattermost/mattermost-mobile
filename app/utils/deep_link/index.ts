@@ -1,20 +1,20 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {createIntl, IntlShape} from 'react-intl';
+import {createIntl, type IntlShape} from 'react-intl';
 import urlParse from 'url-parse';
 
 import {makeDirectChannel, switchToChannelByName} from '@actions/remote/channel';
-import {appEntry} from '@actions/remote/entry';
 import {showPermalink} from '@actions/remote/permalink';
 import {fetchUsersByUsernames} from '@actions/remote/user';
 import {DeepLink, Launch, Screens} from '@constants';
 import {getDefaultThemeByAppearance} from '@context/theme';
 import DatabaseManager from '@database/manager';
 import {DEFAULT_LOCALE, getTranslations} from '@i18n';
+import WebsocketManager from '@managers/websocket_manager';
 import {getActiveServerUrl} from '@queries/app/servers';
 import {getCurrentUser, queryUsersByUsername} from '@queries/servers/user';
-import {dismissAllModalsAndPopToRoot, showModal} from '@screens/navigation';
+import {dismissAllModalsAndPopToRoot} from '@screens/navigation';
 import EphemeralStore from '@store/ephemeral_store';
 import NavigationStore from '@store/navigation_store';
 import {errorBadChannel, errorUnkownUser} from '@utils/draft';
@@ -23,7 +23,10 @@ import {escapeRegex} from '@utils/markdown';
 import {addNewServer} from '@utils/server';
 import {removeProtocol} from '@utils/url';
 
-import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkPlugin, DeepLinkWithData, LaunchProps} from '@typings/launch';
+import type {DeepLinkChannel, DeepLinkDM, DeepLinkGM, DeepLinkPermalink, DeepLinkWithData, LaunchProps} from '@typings/launch';
+import type {AvailableScreens} from '@typings/screens/navigation';
+
+const deepLinkScreens: AvailableScreens[] = [Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD];
 
 export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape, location?: string) {
     try {
@@ -45,7 +48,7 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
         if (existingServerUrl !== currentServerUrl && NavigationStore.getVisibleScreen()) {
             await dismissAllModalsAndPopToRoot();
             DatabaseManager.setActiveServerDatabase(existingServerUrl);
-            appEntry(existingServerUrl, Date.now());
+            WebsocketManager.initializeClient(existingServerUrl);
             await NavigationStore.waitUntilScreenHasLoaded(Screens.HOME);
         }
 
@@ -88,21 +91,25 @@ export async function handleDeepLink(deepLinkUrl: string, intlShape?: IntlShape,
             }
             case DeepLink.Permalink: {
                 const deepLinkData = parsed.data as DeepLinkPermalink;
-                if (NavigationStore.hasModalsOpened() || ![Screens.HOME, Screens.CHANNEL, Screens.GLOBAL_THREADS, Screens.THREAD].includes(NavigationStore.getVisibleScreen())) {
+                if (
+                    NavigationStore.hasModalsOpened() ||
+                    !deepLinkScreens.includes(NavigationStore.getVisibleScreen())
+                ) {
                     await dismissAllModalsAndPopToRoot();
                 }
                 showPermalink(existingServerUrl, deepLinkData.teamName, deepLinkData.postId);
                 break;
             }
             case DeepLink.Plugin: {
-                const deepLinkData = parsed.data as DeepLinkPlugin;
-                showModal('PluginInternal', deepLinkData.id, {link: location});
+                // https://mattermost.atlassian.net/browse/MM-49846
+                // const deepLinkData = parsed.data as DeepLinkPlugin;
+                // showModal('PluginInternal', deepLinkData.id, {link: location});
                 break;
             }
         }
         return {error: false};
     } catch (error) {
-        logError('Failed to open channel from deeplink', error);
+        logError('Failed to open channel from deeplink', error, location);
         return {error: true};
     }
 }
@@ -145,8 +152,10 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
 
     let urlToMatch = url;
     const urlBase = serverURL || siteURL || '';
+    const parsedUrl = urlParse(url);
+    const parsedBase = urlParse(urlBase);
 
-    if (!url.startsWith('mattermost://')) {
+    if (!parsedUrl.protocol) {
         // If url doesn't contain site or server URL, tack it on.
         // e.g. <jump to convo> URLs from autolink plugin.
         const match = new RegExp(escapeRegex(urlBase)).exec(url);
@@ -155,7 +164,18 @@ export function matchDeepLink(url?: string, serverURL?: string, siteURL?: string
         }
     }
 
-    if (urlParse(urlToMatch).hostname === urlParse(urlBase).hostname) {
+    const finalUrl = urlParse(urlToMatch);
+    const baseSubpath = parsedBase.pathname.replace('/', '');
+    const baseHostname = parsedBase.hostname;
+    const urlSubpath = finalUrl.pathname.split('/')[1];
+    const urlHostname = finalUrl.hostname;
+
+    if (baseSubpath) {
+        // if the server is in a subpath
+        if (urlHostname === baseHostname && urlSubpath === baseSubpath) {
+            return urlToMatch;
+        }
+    } else if (urlHostname === baseHostname) {
         return urlToMatch;
     }
 

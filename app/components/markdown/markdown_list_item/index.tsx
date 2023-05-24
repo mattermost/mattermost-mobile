@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode} from 'react';
-import {StyleSheet, Text, TextStyle, View} from 'react-native';
+import React, {type ReactNode} from 'react';
+import {StyleSheet, Text, type TextStyle, View} from 'react-native';
 
 type MarkdownListItemProps = {
     bulletStyle: TextStyle;

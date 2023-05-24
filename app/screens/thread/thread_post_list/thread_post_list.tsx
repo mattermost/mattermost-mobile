@@ -3,7 +3,7 @@
 
 import React, {useCallback, useEffect, useMemo, useRef} from 'react';
 import {ActivityIndicator, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchPostThread} from '@actions/remote/post';
 import {markThreadAsRead} from '@actions/remote/thread';
@@ -13,7 +13,7 @@ import {Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import {debounce} from '@helpers/api/general';
-import {useIsTablet} from '@hooks/device';
+import {useAppState, useIsTablet} from '@hooks/device';
 import {useFetchingThreadState} from '@hooks/fetching_thread';
 import {isMinimumServerVersion} from '@utils/helpers';
 
@@ -43,6 +43,7 @@ const ThreadPostList = ({
     channelLastViewedAt, isCRTEnabled,
     nativeID, posts, rootPost, teamId, thread, version,
 }: Props) => {
+    const appState = useAppState();
     const isTablet = useIsTablet();
     const serverUrl = useServerUrl();
     const theme = useTheme();
@@ -82,11 +83,11 @@ const ThreadPostList = ({
     // If CRT is enabled, When new post arrives and thread modal is open, mark thread as read.
     const oldPostsCount = useRef<number>(posts.length);
     useEffect(() => {
-        if (isCRTEnabled && thread?.isFollowing && oldPostsCount.current < posts.length) {
+        if (isCRTEnabled && thread?.isFollowing && oldPostsCount.current < posts.length && appState === 'active') {
             oldPostsCount.current = posts.length;
-            markThreadAsRead(serverUrl, teamId, rootPost.id);
+            markThreadAsRead(serverUrl, teamId, rootPost.id, false);
         }
-    }, [isCRTEnabled, posts, rootPost, serverUrl, teamId, thread]);
+    }, [isCRTEnabled, posts, rootPost, serverUrl, teamId, thread, appState === 'active']);
 
     const lastViewedAt = isCRTEnabled ? (thread?.viewedAt ?? 0) : channelLastViewedAt;
 

@@ -5,31 +5,31 @@ import React, {useCallback, useMemo, useState} from 'react';
 import {Platform} from 'react-native';
 
 import {updateMe} from '@actions/remote/user';
+import SettingContainer from '@components/settings/container';
+import SettingSeparator from '@components/settings/separator';
 import {useServerUrl} from '@context/server';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useBackNavigation from '@hooks/navigate_back';
 import {popTopScreen} from '@screens/navigation';
-import SettingSeparator from '@screens/settings/settings_separator';
 import {getNotificationProps} from '@utils/user';
-
-import SettingContainer from '../setting_container';
 
 import MobileSendPush from './push_send';
 import MobilePushStatus from './push_status';
 import MobilePushThread from './push_thread';
 
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type NotificationMobileProps = {
-    componentId: string;
-    currentUser: UserModel;
+    componentId: AvailableScreens;
+    currentUser?: UserModel;
     isCRTEnabled: boolean;
     sendPushNotifications: boolean;
 };
 const NotificationPush = ({componentId, currentUser, isCRTEnabled, sendPushNotifications}: NotificationMobileProps) => {
     const serverUrl = useServerUrl();
 
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
 
     const [pushSend, setPushSend] = useState<UserNotifyPropsPush>(notifyProps.push);
     const [pushStatus, setPushStatus] = useState<UserNotifyPropsPushStatus>(notifyProps.push_status);

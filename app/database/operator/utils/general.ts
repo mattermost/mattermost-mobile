@@ -3,6 +3,7 @@
 
 import {MM_TABLES} from '@constants/database';
 
+import type {Model} from '@nozbe/watermelondb';
 import type {IdenticalRecordArgs, RangeOfValueArgs, RecordPair, RetrieveRecordsArgs} from '@typings/database/database';
 import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
@@ -92,6 +93,6 @@ export const getUniqueRawsBy = ({raws, key}: { raws: RawValue[]; key: string}) =
  * @param {Clause} records.condition
  * @returns {Promise<Model[]>}
  */
-export const retrieveRecords = ({database, tableName, condition}: RetrieveRecordsArgs) => {
-    return database.collections.get(tableName).query(condition).fetch();
+export const retrieveRecords = <T extends Model>({database, tableName, condition}: RetrieveRecordsArgs) => {
+    return database.collections.get<T>(tableName).query(condition).fetch();
 };

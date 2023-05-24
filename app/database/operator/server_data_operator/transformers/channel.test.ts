@@ -46,7 +46,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords.collection.modelClass.name).toBe('ChannelModel');
+        expect(preparedRecords.collection.table).toBe('Channel');
     });
 
     it('=> transformMyChannelSettingsRecord: should return an array of type MyChannelSettings', async () => {
@@ -82,7 +82,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('MyChannelSettingsModel');
+        expect(preparedRecords!.collection.table).toBe('MyChannelSettings');
     });
 
     it('=> transformChannelInfoRecord: should return an array of type ChannelInfo', async () => {
@@ -103,13 +103,14 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
                     header: 'channel info header',
                     member_count: 10,
                     pinned_post_count: 3,
+                    files_count: 0,
                     purpose: 'sample channel ',
                 },
             },
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('ChannelInfoModel');
+        expect(preparedRecords!.collection.table).toBe('ChannelInfo');
     });
 
     it('=> transformMyChannelRecord: should return an array of type MyChannel', async () => {
@@ -138,7 +139,7 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('MyChannelModel');
+        expect(preparedRecords!.collection.table).toBe('MyChannel');
     });
 
     it('=> transformChannelMembershipRecord: should return an array of type ChannelMembership', async () => {
@@ -174,6 +175,6 @@ describe('*** CHANNEL Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('ChannelMembershipModel');
+        expect(preparedRecords!.collection.table).toBe('ChannelMembership');
     });
 });

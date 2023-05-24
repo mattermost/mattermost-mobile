@@ -4,292 +4,151 @@ import android.content.Context
 import android.os.Bundle
 import android.util.Log
 import com.facebook.react.bridge.Arguments
+
 import com.facebook.react.bridge.ReadableArray
 import com.facebook.react.bridge.ReadableMap
-import com.facebook.react.bridge.WritableNativeArray
-import com.nozbe.watermelondb.Database
-import java.io.IOException
-import java.util.concurrent.Executors
-import kotlin.coroutines.*
+
+import com.mattermost.helpers.database_extension.*
+import com.mattermost.helpers.push_notification.*
+
 import kotlinx.coroutines.*
+import kotlinx.coroutines.sync.Mutex
+import kotlinx.coroutines.sync.withLock
 
 class PushNotificationDataHelper(private val context: Context) {
-    private var scope = Executors.newSingleThreadExecutor()
-    fun fetchAndStoreDataForPushNotification(initialData: Bundle) {
-        scope.execute(Runnable {
-            runBlocking {
-                PushNotificationDataRunnable.start(context, initialData)
-            }
-        })
+    private var coroutineScope = CoroutineScope(Dispatchers.Default)
+    fun fetchAndStoreDataForPushNotification(initialData: Bundle, isReactInit: Boolean): Bundle? {
+        var result: Bundle? = null
+        val job = coroutineScope.launch(Dispatchers.Default) {
+            result = PushNotificationDataRunnable.start(context, initialData, isReactInit)
+        }
+        runBlocking {
+            job.join()
+        }
+
+        return result
     }
 }
 
 class PushNotificationDataRunnable {
     companion object {
-        private val specialMentions = listOf("all", "here", "channel")
+        internal val specialMentions = listOf("all", "here", "channel")
+        private val dbHelper = DatabaseHelper.instance!!
+        private val mutex = Mutex()
 
-        @Synchronized
-        suspend fun start(context: Context, initialData: Bundle) {
-            try {
-                val serverUrl: String = initialData.getString("server_url") ?: return
-                val channelId = initialData.getString("channel_id")
-                val rootId = initialData.getString("root_id")
-                val isCRTEnabled = initialData.getString("is_crt_enabled") == "true"
-                val db = DatabaseHelper.instance!!.getDatabaseForServer(context, serverUrl)
-                Log.i("ReactNative", "Start fetching notification data in server="+serverUrl+" for channel="+channelId)
+        suspend fun start(context: Context, initialData: Bundle, isReactInit: Boolean): Bundle? {
+            // for more info see: https://blog.danlew.net/2020/01/28/coroutines-and-java-synchronization-dont-mix/
+            mutex.withLock {
+                val serverUrl: String = initialData.getString("server_url") ?: return null
+                val db = dbHelper.getDatabaseForServer(context, serverUrl)
+                var result: Bundle? = null
 
-                if (db != null) {
-                    var postData: ReadableMap?
-                    var posts: ReadableMap? = null
-                    var userIdsToLoad: ReadableArray? = null
-                    var usernamesToLoad: ReadableArray? = null
+                try {
+                    if (db != null) {
+                        val teamId = initialData.getString("team_id")
+                        val channelId = initialData.getString("channel_id")
+                        val postId = initialData.getString("post_id")
+                        val rootId = initialData.getString("root_id")
+                        val isCRTEnabled = initialData.getString("is_crt_enabled") == "true"
 
-                    var threads: ReadableArray? = null
-                    var usersFromThreads: ReadableArray? = null
-                    val receivingThreads = isCRTEnabled && !rootId.isNullOrEmpty()
+                        Log.i("ReactNative", "Start fetching notification data in server=$serverUrl for channel=$channelId")
 
-                    coroutineScope {
-                        if (channelId != null) {
-                            postData = fetchPosts(db, serverUrl, channelId, isCRTEnabled, rootId)
+                        val receivingThreads = isCRTEnabled && !rootId.isNullOrEmpty()
+                        val notificationData = Arguments.createMap()
 
-                            posts = postData?.getMap("posts")
-                            userIdsToLoad = postData?.getArray("userIdsToLoad")
-                            usernamesToLoad = postData?.getArray("usernamesToLoad")
-                            threads = postData?.getArray("threads")
-                            usersFromThreads = postData?.getArray("usersFromThreads")
+                        if (!teamId.isNullOrEmpty()) {
+                            val res = fetchTeamIfNeeded(db, serverUrl, teamId)
+                            res.first?.let { notificationData.putMap("team", it) }
+                            res.second?.let { notificationData.putMap("myTeam", it) }
+                        }
 
-                            if (userIdsToLoad != null && userIdsToLoad!!.size() > 0) {
-                                val users = fetchUsersById(serverUrl, userIdsToLoad!!)
-                                userIdsToLoad = users?.getArray("data")
+                        if (channelId != null && postId != null) {
+                            val channelRes = fetchMyChannel(db, serverUrl, channelId, isCRTEnabled)
+                            channelRes.first?.let { notificationData.putMap("channel", it) }
+                            channelRes.second?.let { notificationData.putMap("myChannel", it) }
+                            val loadedProfiles = channelRes.third
+
+                            // Fetch categories if needed
+                            if (!teamId.isNullOrEmpty() && notificationData.getMap("myTeam") != null) {
+                                // should load all categories
+                                val res = fetchMyTeamCategories(db, serverUrl, teamId)
+                                res?.let { notificationData.putMap("categories", it) }
+                            } else if (notificationData.getMap("channel") != null) {
+                                // check if the channel is in the category for the team
+                                val res = addToDefaultCategoryIfNeeded(db, notificationData.getMap("channel")!!)
+                                res?.let { notificationData.putArray("categoryChannels", it) }
                             }
 
-                            if (usernamesToLoad != null && usernamesToLoad!!.size() > 0) {
-                                val users = fetchUsersByUsernames(serverUrl, usernamesToLoad!!)
-                                usernamesToLoad = users?.getArray("data")
+                            val postData = fetchPosts(db, serverUrl, channelId, isCRTEnabled, rootId, loadedProfiles)
+                            postData?.getMap("posts")?.let { notificationData.putMap("posts", it) }
+
+                            var notificationThread: ReadableMap? = null
+                            if (isCRTEnabled && !rootId.isNullOrEmpty()) {
+                                notificationThread = fetchThread(db, serverUrl, rootId, teamId)
                             }
+
+                            getThreadList(notificationThread, postData?.getArray("threads"))?.let {
+                                val threadsArray = Arguments.createArray()
+                                for(item in it) {
+                                    threadsArray.pushMap(item)
+                                }
+                                notificationData.putArray("threads", threadsArray)
+                            }
+
+                            val userList = fetchNeededUsers(serverUrl, loadedProfiles, postData)
+                            notificationData.putArray("users", ReadableArrayUtils.toWritableArray(userList.toArray()))
                         }
+
+                        result = Arguments.toBundle(notificationData)
+
+                        if (!isReactInit) {
+                            dbHelper.saveToDatabase(db, notificationData, teamId, channelId, receivingThreads)
+                        }
+
+                        Log.i("ReactNative", "Done processing push notification=$serverUrl for channel=$channelId")
                     }
-
-                    db.transaction {
-                        if (posts != null && channelId != null) {
-                            DatabaseHelper.instance!!.handlePosts(db, posts!!.getMap("data"), channelId, receivingThreads)
-                        }
-
-                        if (threads != null) {
-                            DatabaseHelper.instance!!.handleThreads(db, threads!!)
-                        }
-
-                        if (userIdsToLoad != null && userIdsToLoad!!.size() > 0) {
-                            DatabaseHelper.instance!!.handleUsers(db, userIdsToLoad!!)
-                        }
-
-                        if (usernamesToLoad != null && usernamesToLoad!!.size() > 0) {
-                            DatabaseHelper.instance!!.handleUsers(db, usernamesToLoad!!)
-                        }
-
-                        if (usersFromThreads != null) {
-                            DatabaseHelper.instance!!.handleUsers(db, usersFromThreads!!)
-                        }
-                    }
-
-                    db.close()
-                    Log.i("ReactNative", "Done processing push notification="+serverUrl+" for channel="+channelId)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                } finally {
+                    db?.close()
+                    Log.i("ReactNative", "DONE fetching notification data")
                 }
-            } catch (e: Exception) {
-                e.printStackTrace()
+
+                return result
             }
         }
 
-        private suspend fun fetchPosts(db: Database, serverUrl: String, channelId: String, isCRTEnabled: Boolean, rootId: String?): ReadableMap? {
-            val regex = Regex("""\B@(([a-z0-9-._]*[a-z0-9_])[.-]*)""", setOf(RegexOption.IGNORE_CASE))
-            val since = DatabaseHelper.instance!!.queryPostSinceForChannel(db, channelId)
-            val currentUserId = DatabaseHelper.instance!!.queryCurrentUserId(db)?.removeSurrounding("\"")
-            val currentUser = DatabaseHelper.instance!!.find(db, "User", currentUserId)
-            val currentUsername = currentUser?.getString("username")
-
-            var additionalParams = ""
-            if (isCRTEnabled) {
-                additionalParams = "&collapsedThreads=true&collapsedThreadsExtended=true"
-            }
-
-            val receivingThreads = isCRTEnabled && !rootId.isNullOrEmpty()
-            val endpoint = if (receivingThreads) {
-                val queryParams = "?skipFetchThreads=false&perPage=60&fromCreatedAt=0&direction=up"
-                "/api/v4/posts/$rootId/thread$queryParams$additionalParams"
-            } else {
-                val queryParams = if (since == null) "?page=0&per_page=60" else "?since=${since.toLong()}"
-                "/api/v4/channels/$channelId/posts$queryParams$additionalParams"
-            }
-
-            val postsResponse = fetch(serverUrl, endpoint)
-            val results = Arguments.createMap()
-
-            if (postsResponse != null) {
-                val data = ReadableMapUtils.toMap(postsResponse)
-                results.putMap("posts", postsResponse)
-                val postsData = data["data"] as? Map<*, *>
-                if (postsData != null) {
-                    val postsMap = postsData["posts"]
-                    if (postsMap != null) {
-                        val posts = ReadableMapUtils.toWritableMap(postsMap as? Map<String, Any>)
-                        val iterator = posts.keySetIterator()
-                        val userIds = mutableListOf<String>()
-                        val usernames = mutableListOf<String>()
-
-                        val threads = WritableNativeArray()
-                        val threadParticipantUserIds = mutableListOf<String>() // Used to exclude the "userIds" present in the thread participants
-                        val threadParticipantUsernames = mutableListOf<String>() // Used to exclude the "usernames" present in the thread participants
-                        val threadParticipantUsers = HashMap<String, ReadableMap>() // All unique users from thread participants are stored here
-
-                        while(iterator.hasNextKey()) {
-                            val key = iterator.nextKey()
-                            val post = posts.getMap(key)
-                            val userId = post?.getString("user_id")
-                            if (userId != null && userId != currentUserId && !userIds.contains(userId)) {
-                                userIds.add(userId)
-                            }
-                            val message = post?.getString("message")
-                            if (message != null) {
-                                val matchResults = regex.findAll(message)
-                                matchResults.iterator().forEach {
-                                    val username = it.value.removePrefix("@")
-                                    if (!usernames.contains(username) && currentUsername != username && !specialMentions.contains(username)) {
-                                        usernames.add(username)
-                                    }
-                                }
-                            }
-
-                            if (isCRTEnabled) {
-                                // Add root post as a thread
-                                val threadId = post?.getString("root_id")
-                                if (threadId.isNullOrEmpty()) {
-                                    threads.pushMap(post!!)
-                                }
-
-                                // Add participant userIds and usernames to exclude them from getting fetched again
-                                val participants = post.getArray("participants")
-                                if (participants != null) {
-                                    for (i in 0 until participants.size()) {
-                                        val participant = participants.getMap(i)
-
-                                        val participantId = participant.getString("id")
-                                        if (participantId != currentUserId && participantId != null) {
-                                            if (!threadParticipantUserIds.contains(participantId)) {
-                                                threadParticipantUserIds.add(participantId)
-                                            }
-
-                                            if (!threadParticipantUsers.containsKey(participantId)) {
-                                                threadParticipantUsers[participantId] = participant
-                                            }
-                                        }
-
-                                        val username = participant.getString("username")
-                                        if (username != null && username != currentUsername && !threadParticipantUsernames.contains(username)) {
-                                            threadParticipantUsernames.add(username)
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        val existingUserIds = DatabaseHelper.instance!!.queryIds(db, "User", userIds.toTypedArray())
-                        val existingUsernames = DatabaseHelper.instance!!.queryByColumn(db, "User", "username", usernames.toTypedArray())
-                        userIds.removeAll { it in existingUserIds }
-                        usernames.removeAll { it in existingUsernames }
-
-                        if (threadParticipantUserIds.size > 0) {
-                            // Do not fetch users found in thread participants as we get the user's data in the posts response already
-                            userIds.removeAll { it in threadParticipantUserIds }
-                            usernames.removeAll { it in threadParticipantUsernames }
-
-                            // Get users from thread participants
-                            val existingThreadParticipantUserIds = DatabaseHelper.instance!!.queryIds(db, "User", threadParticipantUserIds.toTypedArray())
-
-                            // Exclude the thread participants already present in the DB from getting inserted again
-                            val usersFromThreads = WritableNativeArray()
-                            threadParticipantUsers.forEach{ (userId, user) ->
-                                if (!existingThreadParticipantUserIds.contains(userId)) {
-                                    usersFromThreads.pushMap(user)
-                                }
-                            }
-
-                            if (usersFromThreads.size() > 0) {
-                                results.putArray("usersFromThreads", usersFromThreads)
-                            }
-                        }
-
-                        if (userIds.size > 0) {
-                            results.putArray("userIdsToLoad", ReadableArrayUtils.toWritableArray(userIds.toTypedArray()))
-                        }
-
-                        if (usernames.size > 0) {
-                            results.putArray("usernamesToLoad", ReadableArrayUtils.toWritableArray(usernames.toTypedArray()))
-                        }
-
-                        if (threads.size() > 0) {
-                            results.putArray("threads", threads)
-                        }
-                    }
+        private fun getThreadList(notificationThread: ReadableMap?, threads: ReadableArray?): ArrayList<ReadableMap>? {
+            threads?.let {
+                val threadsArray = ArrayList<ReadableMap>()
+                val threadIds = ArrayList<String>()
+                notificationThread?.let { thread ->
+                    thread.getString("id")?.let { it1 -> threadIds.add(it1) }
+                    threadsArray.add(thread)
                 }
-            }
-            return results
-        }
-
-        private suspend fun fetchUsersById(serverUrl: String, userIds: ReadableArray): ReadableMap? {
-            val endpoint = "api/v4/users/ids"
-            val options = Arguments.createMap()
-            options.putArray("body", ReadableArrayUtils.toWritableArray(ReadableArrayUtils.toArray(userIds)))
-            return fetchWithPost(serverUrl, endpoint, options)
-        }
-
-        private suspend fun fetchUsersByUsernames(serverUrl: String, usernames: ReadableArray): ReadableMap? {
-            val endpoint = "api/v4/users/usernames"
-            val options = Arguments.createMap()
-            options.putArray("body", ReadableArrayUtils.toWritableArray(ReadableArrayUtils.toArray(usernames)))
-            return fetchWithPost(serverUrl, endpoint, options)
-        }
-
-        private suspend fun fetch(serverUrl: String, endpoint: String): ReadableMap? {
-            return suspendCoroutine { cont ->
-                Network.get(serverUrl, endpoint, null, object : ResolvePromise() {
-                    override fun resolve(value: Any?) {
-                        val response = value as ReadableMap?
-                        if (response != null && !response.getBoolean("ok")) {
-                            val error = response.getMap("data")
-                            cont.resumeWith(Result.failure((IOException("Unexpected code ${error?.getInt("status_code")} ${error?.getString("message")}"))))
+                for(i in 0 until it.size()) {
+                    val thread = it.getMap(i)
+                    val threadId = thread.getString("id")
+                    if (threadId != null) {
+                        if (threadIds.contains(threadId)) {
+                         // replace the values for participants and is_following
+                            val index = threadsArray.indexOfFirst { el -> el.getString("id") == threadId }
+                            val prev = threadsArray[index]
+                            val merge = Arguments.createMap()
+                            merge.merge(prev)
+                            merge.putBoolean("is_following", thread.getBoolean("is_following"))
+                            merge.putArray("participants", thread.getArray("participants"))
+                            threadsArray[index] = merge
                         } else {
-                            cont.resumeWith(Result.success(response))
+                            threadsArray.add(thread)
+                            threadIds.add(threadId)
                         }
                     }
-
-                    override fun reject(code: String, message: String) {
-                        cont.resumeWith(Result.failure(IOException("Unexpected code $code $message")))
-                    }
-
-                    override fun reject(reason: Throwable?) {
-                        cont.resumeWith(Result.failure(IOException("Unexpected code $reason")))
-                    }
-                })
+                }
+                return threadsArray
             }
-        }
 
-        private suspend fun fetchWithPost(serverUrl: String, endpoint: String, options: ReadableMap?) : ReadableMap? {
-            return suspendCoroutine { cont ->
-                Network.post(serverUrl, endpoint, options, object : ResolvePromise() {
-                    override fun resolve(value: Any?) {
-                        val response = value as ReadableMap?
-                        cont.resumeWith(Result.success(response))
-                    }
-
-                    override fun reject(code: String, message: String) {
-                        cont.resumeWith(Result.failure(IOException("Unexpected code $code $message")))
-                    }
-
-                    override fun reject(reason: Throwable?) {
-                        cont.resumeWith(Result.failure(IOException("Unexpected code $reason")))
-                    }
-                })
-            }
+            return null
         }
     }
 }

@@ -1,18 +1,24 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
-
-import {Client} from '@client/rest';
-import ClientError from '@client/rest/error';
 import {DOWNLOAD_TIMEOUT} from '@constants/network';
 import NetworkManager from '@managers/network_manager';
+import {getFullErrorMessage} from '@utils/errors';
+import {logDebug} from '@utils/log';
 
 import {forceLogoutIfNecessary} from './session';
+
+import type {Client} from '@client/rest';
+import type {ClientResponse, ClientResponseError} from '@mattermost/react-native-network-client';
 
 export const downloadFile = (serverUrl: string, fileId: string, desitnation: string) => { // Let it throw and handle it accordingly
     const client = NetworkManager.getClient(serverUrl);
     return client.apiClient.download(client.getFileRoute(fileId), desitnation.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
+};
+
+export const downloadProfileImage = (serverUrl: string, userId: string, lastPictureUpdate: number, destination: string) => { // Let it throw and handle it accordingly
+    const client = NetworkManager.getClient(serverUrl);
+    return client.apiClient.download(client.getProfilePictureUrl(userId, lastPictureUpdate), destination.replace('file://', ''), {timeoutInterval: DOWNLOAD_TIMEOUT});
 };
 
 export const uploadFile = (
@@ -24,28 +30,23 @@ export const uploadFile = (
     onError: (response: ClientResponseError) => void = () => {/*Do Nothing*/},
     skipBytes = 0,
 ) => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
+        const client = NetworkManager.getClient(serverUrl);
+        return {cancel: client.uploadPostAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
     } catch (error) {
-        return {error: error as ClientError};
+        logDebug('error on uploadFile', getFullErrorMessage(error));
+        return {error};
     }
-    return {cancel: client.uploadPostAttachment(file, channelId, onProgress, onComplete, onError, skipBytes)};
 };
 
 export const fetchPublicLink = async (serverUrl: string, fileId: string) => {
-    let client: Client;
     try {
-        client = NetworkManager.getClient(serverUrl);
-    } catch (error) {
-        return {error: error as ClientError};
-    }
-
-    try {
+        const client = NetworkManager.getClient(serverUrl);
         const publicLink = await client!.getFilePublicLink(fileId);
         return publicLink;
     } catch (error) {
-        forceLogoutIfNecessary(serverUrl, error as ClientErrorProps);
+        logDebug('error on fetchPublicLink', getFullErrorMessage(error));
+        forceLogoutIfNecessary(serverUrl, error);
         return {error};
     }
 };

@@ -48,7 +48,7 @@ describe('***  POST Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('PostModel');
+        expect(preparedRecords!.collection.table).toBe('Post');
     });
 
     it('=> transformPostInThreadRecord: should return an array of type PostsInThread', async () => {
@@ -72,9 +72,7 @@ describe('***  POST Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe(
-            'PostsInThreadModel',
-        );
+        expect(preparedRecords!.collection.table).toBe('PostsInThread');
     });
 
     it('=> transformFileRecord: should return an array of type File', async () => {
@@ -107,7 +105,7 @@ describe('***  POST Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('FileModel');
+        expect(preparedRecords!.collection.table).toBe('File');
     });
 
     it('=> transformDraftRecord: should return an array of type Draft', async () => {
@@ -132,7 +130,7 @@ describe('***  POST Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe('DraftModel');
+        expect(preparedRecords!.collection.table).toBe('Draft');
     });
 
     it('=> transformPostsInChannelRecord: should return an array of type PostsInChannel', async () => {
@@ -156,8 +154,6 @@ describe('***  POST Prepare Records Test ***', () => {
         });
 
         expect(preparedRecords).toBeTruthy();
-        expect(preparedRecords!.collection.modelClass.name).toBe(
-            'PostsInChannelModel',
-        );
+        expect(preparedRecords!.collection.table).toBe('PostsInChannel');
     });
 });

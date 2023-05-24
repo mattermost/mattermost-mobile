@@ -14,7 +14,21 @@ const RequiredServer = {
 
 const PluginId = 'com.mattermost.calls';
 
-export const REACTION_TIMEOUT = 10000;
-export const REACTION_LIMIT = 20;
+const REACTION_TIMEOUT = 10000;
+const REACTION_LIMIT = 20;
+const CALL_QUALITY_RESET_MS = toMilliseconds({minutes: 1});
 
-export default {RequiredServer, RefreshConfigMillis, PluginId, REACTION_TIMEOUT};
+export enum MessageBarType {
+    Microphone,
+    CallQuality,
+}
+
+export default {
+    RefreshConfigMillis,
+    RequiredServer,
+    PluginId,
+    REACTION_TIMEOUT,
+    REACTION_LIMIT,
+    MessageBarType,
+    CALL_QUALITY_RESET_MS,
+};

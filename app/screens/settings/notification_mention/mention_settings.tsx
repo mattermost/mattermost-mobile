@@ -7,6 +7,9 @@ import {Text} from 'react-native';
 
 import {updateMe} from '@actions/remote/user';
 import FloatingTextInput from '@components/floating_text_input_label';
+import SettingBlock from '@components/settings/block';
+import SettingOption from '@components/settings/option';
+import SettingSeparator from '@components/settings/separator';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
@@ -18,11 +21,8 @@ import {changeOpacity, getKeyboardAppearanceFromTheme, makeStyleSheetFromTheme} 
 import {typography} from '@utils/typography';
 import {getNotificationProps} from '@utils/user';
 
-import SettingBlock from '../setting_block';
-import SettingOption from '../setting_option';
-import SettingSeparator from '../settings_separator';
-
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const mentionHeaderText = {
     id: t('notification_settings.mentions.keywords_mention'),
@@ -52,11 +52,11 @@ const getStyleSheet = makeStyleSheetFromTheme((theme) => {
     };
 });
 
-const getMentionProps = (currentUser: UserModel) => {
+const getMentionProps = (currentUser?: UserModel) => {
     const notifyProps = getNotificationProps(currentUser);
     const mKeys = (notifyProps.mention_keys || '').split(',');
 
-    const usernameMentionIndex = mKeys.indexOf(currentUser.username);
+    const usernameMentionIndex = currentUser ? mKeys.indexOf(currentUser.username) : -1;
     if (usernameMentionIndex > -1) {
         mKeys.splice(usernameMentionIndex, 1);
     }
@@ -72,8 +72,8 @@ const getMentionProps = (currentUser: UserModel) => {
 };
 
 type MentionSectionProps = {
-    componentId: string;
-    currentUser: UserModel;
+    componentId: AvailableScreens;
+    currentUser?: UserModel;
     isCRTEnabled: boolean;
 }
 const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectionProps) => {
@@ -104,6 +104,10 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
     }, [firstNameMentionOn, channelMentionOn, usernameMentionOn, mentionKeywords, notifyProps, replyNotificationType]);
 
     const saveMention = useCallback(() => {
+        if (!currentUser) {
+            return;
+        }
+
         const canSave = canSaveSettings();
 
         if (canSave) {
@@ -166,7 +170,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                         <SettingOption
                             action={onToggleFirstName}
                             description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveName', defaultMessage: 'Your case sensitive first name'})}
-                            label={currentUser.firstName}
+                            label={currentUser!.firstName}
                             selected={firstNameMentionOn}
                             testID='mention_notification_settings.case_sensitive_first_name.option'
                             type='toggle'
@@ -179,7 +183,7 @@ const MentionSettings = ({componentId, currentUser, isCRTEnabled}: MentionSectio
                     <SettingOption
                         action={onToggleUserName}
                         description={intl.formatMessage({id: 'notification_settings.mentions.sensitiveUsername', defaultMessage: 'Your non-case sensitive username'})}
-                        label={currentUser.username}
+                        label={currentUser!.username}
                         selected={usernameMentionOn}
                         testID='mention_notification_settings.non_case_sensitive_username.option'
                         type='toggle'

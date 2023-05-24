@@ -3,12 +3,13 @@
 
 import React, {useCallback} from 'react';
 import {ScrollView, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import ChannelInfoEnableCalls from '@calls/components/channel_info_enable_calls';
 import ChannelActions from '@components/channel_actions';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal} from '@screens/navigation';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
@@ -19,13 +20,16 @@ import Extra from './extra';
 import Options from './options';
 import Title from './title';
 
+import type {AvailableScreens} from '@typings/screens/navigation';
+
 type Props = {
     channelId: string;
     closeButtonId: string;
-    componentId: string;
+    componentId: AvailableScreens;
     type?: ChannelType;
     canEnableDisableCalls: boolean;
     isCallsEnabledInChannel: boolean;
+    canManageMembers: boolean;
 }
 
 const edges: Edge[] = ['bottom', 'left', 'right'];
@@ -52,6 +56,7 @@ const ChannelInfo = ({
     type,
     canEnableDisableCalls,
     isCallsEnabledInChannel,
+    canManageMembers,
 }: Props) => {
     const theme = useTheme();
     const serverUrl = useServerUrl();
@@ -66,6 +71,7 @@ const ChannelInfo = ({
     }, [componentId]);
 
     useNavButtonPressed(closeButtonId, componentId, onPressed, []);
+    useAndroidHardwareBackHandler(componentId, onPressed);
 
     return (
         <SafeAreaView
@@ -96,6 +102,7 @@ const ChannelInfo = ({
                     channelId={channelId}
                     type={type}
                     callsEnabled={callsAvailable}
+                    canManageMembers={canManageMembers}
                 />
                 <View style={styles.separator}/>
                 {canEnableDisableCalls &&

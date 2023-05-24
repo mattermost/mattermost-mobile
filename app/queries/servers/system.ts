@@ -5,7 +5,7 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {of as of$, Observable, combineLatest} from 'rxjs';
 import {switchMap, distinctUntilChanged} from 'rxjs/operators';
 
-import {Config, Preferences} from '@constants';
+import {Preferences} from '@constants';
 import {MM_TABLES, SYSTEM_IDENTIFIERS} from '@constants/database';
 import {PUSH_PROXY_STATUS_UNKNOWN} from '@constants/push_proxy';
 import {isMinimumServerVersion} from '@utils/helpers';
@@ -158,6 +158,50 @@ export const getConfigValue = async (database: Database, key: keyof ClientConfig
     return list.length ? list[0].value : undefined;
 };
 
+export const getLastGlobalDataRetentionRun = async (database: Database) => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.LAST_DATA_RETENTION_RUN);
+        return data?.value || 0;
+    } catch {
+        return undefined;
+    }
+};
+
+export const getGlobalDataRetentionPolicy = async (database: Database) => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.DATA_RETENTION_POLICIES);
+        return (data?.value || {}) as GlobalDataRetentionPolicy;
+    } catch {
+        return undefined;
+    }
+};
+
+export const getGranularDataRetentionPolicies = async (database: Database) => {
+    try {
+        const data = await database.get<SystemModel>(SYSTEM).find(SYSTEM_IDENTIFIERS.GRANULAR_DATA_RETENTION_POLICIES);
+        return (data?.value || {
+            team: [],
+            channel: [],
+        }) as {
+            team: TeamDataRetentionPolicy[];
+            channel: ChannelDataRetentionPolicy[];
+        };
+    } catch {
+        return undefined;
+    }
+};
+
+export const getIsDataRetentionEnabled = async (database: Database) => {
+    const license = await getLicense(database);
+    if (!license || !Object.keys(license)?.length) {
+        return null;
+    }
+
+    const dataRetentionEnableMessageDeletion = await getConfigValue(database, 'DataRetentionEnableMessageDeletion');
+
+    return dataRetentionEnableMessageDeletion === 'true' && license?.IsLicensed === 'true' && license?.DataRetention === 'true';
+};
+
 export const observeConfig = (database: Database): Observable<ClientConfig | undefined> => {
     return database.get<ConfigModel>(CONFIG).query().observeWithColumns(['value']).pipe(
         switchMap((result) => of$(fromModelToClientConfig(result))),
@@ -182,9 +226,9 @@ export const observeIsCustomStatusExpirySupported = (database: Database) => {
     );
 };
 
-export const observeConfigBooleanValue = (database: Database, key: keyof ClientConfig) => {
+export const observeConfigBooleanValue = (database: Database, key: keyof ClientConfig, defaultValue = false) => {
     return observeConfigValue(database, key).pipe(
-        switchMap((v) => of$(v === 'true')),
+        switchMap((v) => of$(v ? v === 'true' : defaultValue)),
         distinctUntilChanged(),
     );
 };
@@ -192,15 +236,6 @@ export const observeConfigBooleanValue = (database: Database, key: keyof ClientC
 export const observeConfigIntValue = (database: Database, key: keyof ClientConfig, defaultValue = 0) => {
     return observeConfigValue(database, key).pipe(
         switchMap((v) => of$((parseInt(v || '0', 10) || defaultValue))),
-    );
-};
-
-export const observeIsPostPriorityEnabled = (database: Database) => {
-    const featureFlag = observeConfigValue(database, 'FeatureFlagPostPriority');
-    const cfg = observeConfigValue(database, 'PostPriority');
-    return combineLatest([featureFlag, cfg]).pipe(
-        switchMap(([ff, c]) => of$(ff === Config.TRUE && c === Config.TRUE)),
-        distinctUntilChanged(),
     );
 };
 
@@ -292,7 +327,8 @@ export const observeWebsocketLastDisconnected = (database: Database) => {
 };
 
 export const resetWebSocketLastDisconnected = async (operator: ServerDataOperator, prepareRecordsOnly = false) => {
-    const lastDisconnectedAt = await getWebSocketLastDisconnected(operator.database);
+    const {database} = operator;
+    const lastDisconnectedAt = await getWebSocketLastDisconnected(database);
 
     if (lastDisconnectedAt) {
         return operator.handleSystem({systems: [{
@@ -372,11 +408,24 @@ export async function prepareCommonSystemValues(
     }
 }
 
+export async function setCurrentUserId(operator: ServerDataOperator, userId: string) {
+    try {
+        const models = await prepareCommonSystemValues(operator, {currentUserId: userId});
+        if (models) {
+            await operator.batchRecords(models, 'setCurrentChannelId');
+        }
+
+        return {currentUserId: userId};
+    } catch (error) {
+        return {error};
+    }
+}
+
 export async function setCurrentChannelId(operator: ServerDataOperator, channelId: string) {
     try {
         const models = await prepareCommonSystemValues(operator, {currentChannelId: channelId});
         if (models) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'setCurrentChannelId');
         }
 
         return {currentChannelId: channelId};
@@ -392,7 +441,7 @@ export async function setCurrentTeamAndChannelId(operator: ServerDataOperator, t
             currentTeamId: teamId,
         });
         if (models) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'setCurrentTeamAndChannelId');
         }
 
         return {currentTeamId: teamId, currentChannelId: channelId};
@@ -467,16 +516,24 @@ export const observeLastDismissedAnnouncement = (database: Database) => {
 };
 
 export const observeCanUploadFiles = (database: Database) => {
-    const enableFileAttachments = observeConfigBooleanValue(database, 'EnableFileAttachments');
-    const enableMobileFileUpload = observeConfigBooleanValue(database, 'EnableMobileFileUpload');
+    const enableFileAttachments = observeConfigBooleanValue(database, 'EnableFileAttachments', true);
+    const enableMobileFileUpload = observeConfigBooleanValue(database, 'EnableMobileFileUpload', true);
     const license = observeLicense(database);
 
     return combineLatest([enableFileAttachments, enableMobileFileUpload, license]).pipe(
         switchMap(([efa, emfu, l]) => of$(
-            efa ||
-                (l?.IsLicensed !== 'true' && l?.Compliance !== 'true' && emfu),
-        ),
-        ),
+            efa &&
+                (l?.IsLicensed !== 'true' || l?.Compliance !== 'true' || emfu),
+        )),
+    );
+};
+
+export const observeCanDownloadFiles = (database: Database) => {
+    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload', true);
+    const license = observeLicense(database);
+
+    return combineLatest([enableMobileFileDownload, license]).pipe(
+        switchMap(([emfd, l]) => of$((l?.IsLicensed !== 'true' || l?.Compliance !== 'true' || emfd))),
     );
 };
 

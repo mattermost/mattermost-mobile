@@ -1,8 +1,8 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useEffect, useMemo, useRef} from 'react';
-import {Platform, useWindowDimensions, View} from 'react-native';
+import React, {useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {Platform, useWindowDimensions, View, type LayoutChangeEvent} from 'react-native';
 import {KeyboardAwareScrollView} from 'react-native-keyboard-aware-scroll-view';
 import {Navigation} from 'react-native-navigation';
 import Animated, {useAnimatedStyle, useSharedValue, withTiming} from 'react-native-reanimated';
@@ -10,10 +10,13 @@ import {SafeAreaView} from 'react-native-safe-area-context';
 
 import FormattedText from '@components/formatted_text';
 import {Screens} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useIsTablet} from '@hooks/device';
+import {useDefaultHeaderHeight} from '@hooks/header';
+import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import NetworkManager from '@managers/network_manager';
 import Background from '@screens/background';
-import {dismissModal, goToScreen, loginAnimationOptions} from '@screens/navigation';
+import {dismissModal, goToScreen, loginAnimationOptions, popTopScreen} from '@screens/navigation';
 import {preventDoubleTap} from '@utils/tap';
 import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
@@ -23,16 +26,17 @@ import LoginOptionsSeparator from './login_options_separator';
 import SsoOptions from './sso_options';
 
 import type {LaunchProps} from '@typings/launch';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 export interface LoginOptionsProps extends LaunchProps {
     closeButtonId?: string;
-    componentId: string;
+    componentId: AvailableScreens;
     config: ClientConfig;
     hasLoginForm: boolean;
     license: ClientLicense;
     serverDisplayName: string;
     serverUrl: string;
-    ssoOptions: Record<string, boolean>;
+    ssoOptions: SsoWithOptions;
     theme: Theme;
 }
 
@@ -79,10 +83,12 @@ const LoginOptions = ({
     const styles = getStyles(theme);
     const keyboardAwareRef = useRef<KeyboardAwareScrollView>(null);
     const dimensions = useWindowDimensions();
+    const defaultHeaderHeight = useDefaultHeaderHeight();
     const isTablet = useIsTablet();
     const translateX = useSharedValue(dimensions.width);
+    const [contentFillScreen, setContentFillScreen] = useState(false);
     const numberSSOs = useMemo(() => {
-        return Object.values(ssoOptions).filter((v) => v).length;
+        return Object.values(ssoOptions).filter((v) => v.enabled).length;
     }, [ssoOptions]);
     const description = useMemo(() => {
         if (hasLoginForm) {
@@ -132,6 +138,19 @@ const LoginOptions = ({
         };
     }, []);
 
+    const dismiss = () => {
+        dismissModal({componentId});
+    };
+
+    const pop = () => {
+        popTopScreen(componentId);
+    };
+
+    const onLayout = useCallback((e: LayoutChangeEvent) => {
+        const {height} = e.nativeEvent.layout;
+        setContentFillScreen(dimensions.height < height + defaultHeaderHeight);
+    }, [dimensions.height, defaultHeaderHeight]);
+
     useEffect(() => {
         const navigationEvents = Navigation.events().registerNavigationButtonPressedListener(({buttonId}) => {
             if (closeButtonId && buttonId === closeButtonId) {
@@ -141,6 +160,10 @@ const LoginOptions = ({
         });
 
         return () => navigationEvents.remove();
+    }, []);
+
+    useEffect(() => {
+        translateX.value = 0;
     }, []);
 
     useEffect(() => {
@@ -157,8 +180,11 @@ const LoginOptions = ({
         return () => unsubscribe.remove();
     }, [dimensions]);
 
+    useNavButtonPressed(closeButtonId || '', componentId, dismiss, []);
+    useAndroidHardwareBackHandler(componentId, pop);
+
     let additionalContainerStyle;
-    if (numberSSOs < 3 || !hasLoginForm || (isTablet && dimensions.height > dimensions.width)) {
+    if (!contentFillScreen && (numberSSOs < 3 || !hasLoginForm || (isTablet && dimensions.height > dimensions.width))) {
         additionalContainerStyle = styles.flex;
     }
 
@@ -193,7 +219,7 @@ const LoginOptions = ({
                 <KeyboardAwareScrollView
                     bounces={true}
                     contentContainerStyle={[styles.innerContainer, additionalContainerStyle]}
-                    enableAutomaticScroll={Platform.OS === 'android'}
+                    enableAutomaticScroll={true}
                     enableOnAndroid={false}
                     enableResetScrollToCoords={true}
                     extraScrollHeight={0}
@@ -203,18 +229,19 @@ const LoginOptions = ({
                     scrollToOverflowEnabled={true}
                     style={styles.flex}
                 >
-                    <View style={styles.centered}>
+                    <View
+                        onLayout={onLayout}
+                        style={styles.centered}
+                    >
                         {title}
                         {description}
                         {hasLoginForm &&
                         <Form
                             config={config}
                             extra={extra}
-                            keyboardAwareRef={keyboardAwareRef}
                             license={license}
                             launchError={launchError}
                             launchType={launchType}
-                            numberSSOs={numberSSOs}
                             theme={theme}
                             serverDisplayName={serverDisplayName}
                             serverUrl={serverUrl}

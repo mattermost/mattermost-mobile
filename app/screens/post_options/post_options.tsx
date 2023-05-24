@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {BottomSheetProps, BottomSheetScrollView} from '@gorhom/bottom-sheet';
+import {type BottomSheetProps, BottomSheetScrollView} from '@gorhom/bottom-sheet';
 import {useManagedConfig} from '@mattermost/react-native-emm';
 import React, {useMemo} from 'react';
 import {ScrollView} from 'react-native';
@@ -28,6 +28,7 @@ import ReactionBar from './reaction_bar';
 
 import type PostModel from '@typings/database/models/servers/post';
 import type ThreadModel from '@typings/database/models/servers/thread';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const POST_OPTIONS_BUTTON = 'close-post-options';
 
@@ -40,10 +41,10 @@ type PostOptionsProps = {
     canReply: boolean;
     combinedPost?: Post | PostModel;
     isSaved: boolean;
-    sourceScreen: typeof Screens[keyof typeof Screens];
+    sourceScreen: AvailableScreens;
     post: PostModel;
     thread?: ThreadModel;
-    componentId: string;
+    componentId: AvailableScreens;
     bindings: AppBinding[];
     serverUrl: string;
 };

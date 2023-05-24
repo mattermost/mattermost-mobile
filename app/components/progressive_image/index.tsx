@@ -1,9 +1,9 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {ReactNode, useEffect, useState} from 'react';
-import {ImageBackground, StyleProp, StyleSheet, View, ViewStyle} from 'react-native';
-import FastImage, {ImageStyle, ResizeMode} from 'react-native-fast-image';
+import React, {type ReactNode, useEffect, useState} from 'react';
+import {ImageBackground, type ImageStyle, type StyleProp, StyleSheet, View, type ViewStyle, Image} from 'react-native';
+import FastImage, {type ResizeMode} from 'react-native-fast-image';
 import Animated, {interpolate, useAnimatedStyle, useDerivedValue, useSharedValue, withTiming} from 'react-native-reanimated';
 
 import {useTheme} from '@context/theme';
@@ -15,6 +15,7 @@ const AnimatedImageBackground = Animated.createAnimatedComponent(ImageBackground
 
 // @ts-expect-error FastImage does work with Animated.createAnimatedComponent
 const AnimatedFastImage = Animated.createAnimatedComponent(FastImage);
+const AnimatedImage = Animated.createAnimatedComponent(Image);
 
 type Props = ProgressiveImageProps & {
     children?: ReactNode | ReactNode[];
@@ -95,7 +96,7 @@ const ProgressiveImage = ({
     if (defaultSource) {
         return (
             <View style={[styles.defaultImageContainer, style]}>
-                <AnimatedFastImage
+                <AnimatedImage
                     ref={forwardRef}
                     source={defaultSource}
                     style={[

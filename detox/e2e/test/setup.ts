@@ -8,11 +8,10 @@ beforeAll(async () => {
     // Login as sysadmin and reset server configuration
     await System.apiCheckSystemHealth(siteOneUrl);
     await User.apiAdminLogin(siteOneUrl);
-    await System.apiUpdateConfig(siteOneUrl);
     await Plugin.apiDisableNonPrepackagedPlugins(siteOneUrl);
 
     await device.launchApp({
-        newInstance: false,
+        newInstance: true,
         launchArgs: {detoxPrintBusyIdleResources: 'YES'},
         permissions: {
             notifications: 'YES',

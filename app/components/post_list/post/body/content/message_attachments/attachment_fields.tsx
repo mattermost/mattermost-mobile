@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React from 'react';
-import {StyleProp, Text, TextStyle, View} from 'react-native';
+import {type StyleProp, Text, type TextStyle, View} from 'react-native';
 
 import Markdown from '@components/markdown';
 import {makeStyleSheetFromTheme} from '@utils/theme';
@@ -15,7 +15,7 @@ type Props = {
     channelId: string;
     fields: MessageAttachmentField[];
     location: string;
-    metadata?: PostMetadata;
+    metadata?: PostMetadata | null;
     textStyles?: MarkdownTextStyles;
     theme: Theme;
 }

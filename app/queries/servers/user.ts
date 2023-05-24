@@ -5,11 +5,11 @@ import {Database, Q} from '@nozbe/watermelondb';
 import {combineLatest, of as of$} from 'rxjs';
 import {distinctUntilChanged, switchMap} from 'rxjs/operators';
 
-import {Preferences} from '@constants';
 import {MM_TABLES} from '@constants/database';
 import {getTeammateNameDisplaySetting} from '@helpers/api/preference';
+import {sanitizeLikeString} from '@helpers/database';
 
-import {queryPreferencesByCategoryAndName} from './preference';
+import {queryDisplayNamePreferences} from './preference';
 import {observeCurrentUserId, observeLicense, getCurrentUserId, getConfig, getLicense, observeConfigValue} from './system';
 
 import type ServerDataOperator from '@database/operator/server_data_operator';
@@ -48,6 +48,13 @@ export const observeCurrentUser = (database: Database) => {
     );
 };
 
+export const observeCurrentUserRoles = (database: Database) => {
+    return observeCurrentUser(database).pipe(
+        switchMap((v) => of$(v?.roles)),
+        distinctUntilChanged(),
+    );
+};
+
 export const queryAllUsers = (database: Database) => {
     return database.get<UserModel>(USER).query();
 };
@@ -68,7 +75,7 @@ export const observeTeammateNameDisplay = (database: Database) => {
     const lockTeammateNameDisplay = observeConfigValue(database, 'LockTeammateNameDisplay');
     const teammateNameDisplay = observeConfigValue(database, 'TeammateNameDisplay');
     const license = observeLicense(database);
-    const preferences = queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).
+    const preferences = queryDisplayNamePreferences(database).
         observeWithColumns(['value']);
     return combineLatest([lockTeammateNameDisplay, teammateNameDisplay, license, preferences]).pipe(
         switchMap(
@@ -80,14 +87,14 @@ export const observeTeammateNameDisplay = (database: Database) => {
 export async function getTeammateNameDisplay(database: Database) {
     const config = await getConfig(database);
     const license = await getLicense(database);
-    const preferences = await queryPreferencesByCategoryAndName(database, Preferences.CATEGORY_DISPLAY_SETTINGS).fetch();
+    const preferences = await queryDisplayNamePreferences(database).fetch();
     return getTeammateNameDisplaySetting(preferences, config?.LockTeammateNameDisplay, config?.TeammateNameDisplay, license);
 }
 
 export const queryUsersLike = (database: Database, likeUsername: string) => {
     return database.get<UserModel>(USER).query(
         Q.where('username', Q.like(
-            `%${Q.sanitizeLikeString(likeUsername)}%`,
+            `%${sanitizeLikeString(likeUsername)}%`,
         )),
     );
 };

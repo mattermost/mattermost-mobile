@@ -1,10 +1,10 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {render} from '@testing-library/react-native';
 import React from 'react';
 
 import {Preferences} from '@constants';
+import {renderWithIntl} from '@test/intl-test-helper';
 
 import ErrorTextComponent from './index';
 
@@ -20,7 +20,7 @@ describe('ErrorText', () => {
     };
 
     test('should match snapshot', () => {
-        const wrapper = render(
+        const wrapper = renderWithIntl(
             <ErrorTextComponent {...baseProps}/>,
         );
 

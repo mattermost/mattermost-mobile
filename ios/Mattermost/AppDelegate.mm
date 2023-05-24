@@ -3,10 +3,8 @@
 #import <AVFoundation/AVFoundation.h>
 
 #import <React/RCTBundleURLProvider.h>
-#import <React/RCTRootView.h>
 #import <React/RCTLinkingManager.h>
 #import <React/RCTAppSetupUtils.h>
-
 #import <RNKeychain/RNKeychainManager.h>
 #import <ReactNativeNavigation/ReactNativeNavigation.h>
 #import <UserNotifications/UserNotifications.h>
@@ -14,26 +12,6 @@
 
 #import "Mattermost-Swift.h"
 #import <os/log.h>
-
-#if RCT_NEW_ARCH_ENABLED
-#import <React/CoreModulesPlugins.h>
-#import <React/RCTCxxBridgeDelegate.h>
-#import <React/RCTFabricSurfaceHostingProxyRootView.h>
-#import <React/RCTSurfacePresenter.h>
-#import <React/RCTSurfacePresenterBridgeAdapter.h>
-#import <ReactCommon/RCTTurboModuleManager.h>
-#import <react/config/ReactNativeConfig.h>
-
-static NSString *const kRNConcurrentRoot = @"concurrentRoot";
-
-@interface AppDelegate () <RCTCxxBridgeDelegate, RCTTurboModuleManagerDelegate> {
-  RCTTurboModuleManager *_turboModuleManager;
-  RCTSurfacePresenterBridgeAdapter *_bridgeAdapter;
-  std::shared_ptr<const facebook::react::ReactNativeConfig> _reactNativeConfig;
-  facebook::react::ContextContainer::Shared _contextContainer;
-}
-@end
-#endif
 
 @implementation AppDelegate
 
@@ -50,8 +28,6 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions
 {
-  RCTAppSetupPrepareApp(application);
-
   if ( UI_USER_INTERFACE_IDIOM() == UIUserInterfaceIdiomPad )
   {
     _allowRotation = YES;
@@ -72,28 +48,16 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
   }
 
   [[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryPlayback error: nil];
+  [[GekidouWrapper default] setPreference:@"true" forKey:@"ApplicationIsRunning"];
 
   [RNNotifications startMonitorNotifications];
+  RCTAppSetupPrepareApp(application, true);
 
-  self.window = [[UIWindow alloc] initWithFrame:[UIScreen mainScreen].bounds];
-  if (@available(iOS 13.0, *)) {
-     self.window.backgroundColor = [UIColor systemBackgroundColor];
-  } else {
-     self.window.backgroundColor = [UIColor whiteColor];
-  }
-  [self.window makeKeyWindow];
-
-  RCTBridge *bridge = [[RCTBridge alloc] initWithDelegate:self launchOptions:launchOptions];
-
-  #if RCT_NEW_ARCH_ENABLED
-   _contextContainer = std::make_shared<facebook::react::ContextContainer const>();
-   _reactNativeConfig = std::make_shared<facebook::react::EmptyReactNativeConfig const>();
-   _contextContainer->insert("ReactNativeConfig", _reactNativeConfig);
-   _bridgeAdapter = [[RCTSurfacePresenterBridgeAdapter alloc] initWithBridge:bridge contextContainer:_contextContainer];
-   bridge.surfacePresenter = _bridgeAdapter.surfacePresenter;
-  #endif
-
-  [ReactNativeNavigation bootstrapWithBridge:bridge];
+  self.moduleName = @"Mattermost";
+  // You can add your custom initial props in the dictionary below.
+  // They will be passed down to the ViewController used by React Native.
+  self.initialProps = @{};
+  [ReactNativeNavigation bootstrapWithDelegate:self launchOptions:launchOptions];
 
   os_log(OS_LOG_DEFAULT, "Mattermost started!!");
 
@@ -129,10 +93,22 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
     // When rootId is nil, clear channel's root post notifications or else clear all thread notifications
     [[NotificationHelper default] clearChannelOrThreadNotificationsWithUserInfo:userInfo];
     [[GekidouWrapper default] postNotificationReceipt:userInfo];
+    [RNNotifications didReceiveBackgroundNotification:userInfo withCompletionHandler:completionHandler];
+    return;
   }
   
-  if (state != UIApplicationStateActive || isClearAction) {
-    [RNNotifications didReceiveBackgroundNotification:userInfo withCompletionHandler:completionHandler];
+  if (state != UIApplicationStateActive) {
+    [[GekidouWrapper default] fetchDataForPushNotification:userInfo withContentHandler:^(NSData * _Nullable data) {
+      NSMutableDictionary *notification = [userInfo mutableCopy];
+      NSError *jsonError;
+      if (data != nil) {
+        id json = [NSJSONSerialization JSONObjectWithData:data options:NULL error:&jsonError];
+        if (!jsonError) {
+          [notification setObject:json forKey:@"data"];
+        }
+      }
+      [RNNotifications didReceiveBackgroundNotification:notification withCompletionHandler:completionHandler];
+    }];
   } else {
     completionHandler(UIBackgroundFetchResultNewData);
   }
@@ -168,6 +144,7 @@ NSString* const NOTIFICATION_TEST_ACTION = @"test";
 
 -(void)applicationWillTerminate:(UIApplication *)application {
   [[GekidouWrapper default] setPreference:@"false" forKey:@"ApplicationIsForeground"];
+  [[GekidouWrapper default] setPreference:@"false" forKey:@"ApplicationIsRunning"];
 }
 
 - (UIInterfaceOrientationMask)application:(UIApplication *)application supportedInterfaceOrientationsForWindow:(UIWindow *)window {
@@ -250,6 +227,7 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
   // Switch this bool to turn on and off the concurrent root
   return false;
 }
+
 - (NSDictionary *)prepareInitialProps
 {
   NSMutableDictionary *initProps = [NSMutableDictionary new];
@@ -267,36 +245,5 @@ RNHWKeyboardEvent *hwKeyEvent = nil;
     return [[NSBundle mainBundle] URLForResource:@"main" withExtension:@"jsbundle"];
   #endif
 }
-
-#if RCT_NEW_ARCH_ENABLED
-#pragma mark - RCTCxxBridgeDelegate
-- (std::unique_ptr<facebook::react::JSExecutorFactory>)jsExecutorFactoryForBridge:(RCTBridge *)bridge
-{
-  _turboModuleManager = [[RCTTurboModuleManager alloc] initWithBridge:bridge
-                                                             delegate:self
-                                                            jsInvoker:bridge.jsCallInvoker];
-  return RCTAppSetupDefaultJsExecutorFactory(bridge, _turboModuleManager);
-}
-#pragma mark RCTTurboModuleManagerDelegate
-- (Class)getModuleClassFromName:(const char *)name
-{
-  return RCTCoreModulesClassProvider(name);
-}
-- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
-                                                      jsInvoker:(std::shared_ptr<facebook::react::CallInvoker>)jsInvoker
-{
-  return nullptr;
-}
-- (std::shared_ptr<facebook::react::TurboModule>)getTurboModule:(const std::string &)name
-                                                     initParams:
-                                                         (const facebook::react::ObjCTurboModule::InitParams &)params
-{
-  return nullptr;
-}
-- (id<RCTTurboModule>)getModuleInstanceFromClass:(Class)moduleClass
-{
-  return RCTAppSetupDefaultModuleFromClass(moduleClass);
-}
-#endif
 
 @end

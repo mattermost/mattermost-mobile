@@ -23,7 +23,7 @@ import {
     PostOptionsScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, isAndroid} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Channels - Channel Post List', () => {
@@ -52,6 +52,10 @@ describe('Channels - Channel Post List', () => {
     it('MM-T4773_1 - should match elements on channel screen', async () => {
         // # Open a channel screen
         await ChannelScreen.open('channels', testChannel.name);
+        if (isAndroid()) {
+            await ChannelScreen.back();
+            await ChannelScreen.open('channels', testChannel.name);
+        }
 
         // * Verify basic elements on channel screen
         await expect(ChannelScreen.backButton).toBeVisible();
@@ -77,6 +81,10 @@ describe('Channels - Channel Post List', () => {
         // # Open a channel screen and post a message
         const message = `Message ${getRandomId()}`;
         await ChannelScreen.open('channels', testChannel.name);
+        if (isAndroid()) {
+            await ChannelScreen.back();
+            await ChannelScreen.open('channels', testChannel.name);
+        }
         await ChannelScreen.postMessage(message);
 
         // * Verify message is added to post list

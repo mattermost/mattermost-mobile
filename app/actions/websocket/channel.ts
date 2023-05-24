@@ -1,8 +1,6 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {Model} from '@nozbe/watermelondb';
-
 import {addChannelToDefaultCategory} from '@actions/local/category';
 import {
     markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt,
@@ -22,20 +20,18 @@ import {getCurrentUser, getTeammateNameDisplay, getUserById} from '@queries/serv
 import EphemeralStore from '@store/ephemeral_store';
 import {logDebug} from '@utils/log';
 
+import type {Model} from '@nozbe/watermelondb';
+
 // Received when current user created a channel in a different client
 export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-    const {database} = operator;
-
     const {team_id: teamId, channel_id: channelId} = msg.data;
     if (EphemeralStore.creatingChannel) {
         return; // We probably don't need to handle this WS because we provoked it
     }
 
     try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const channel = await getChannelById(database, channelId);
         if (channel) {
             return; // We already have this channel
@@ -57,7 +53,7 @@ export async function handleChannelCreatedEvent(serverUrl: string, msg: any) {
                 }
             }
         }
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'handleChannelCreatedEvent');
     } catch {
         // do nothing
     }
@@ -76,12 +72,9 @@ export async function handleChannelUnarchiveEvent(serverUrl: string, msg: any) {
 }
 
 export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
     try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const channelId = msg.data.channel_id;
         if (EphemeralStore.isConvertingChannel(channelId)) {
             return;
@@ -97,19 +90,16 @@ export async function handleChannelConvertedEvent(serverUrl: string, msg: any) {
 }
 
 export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
     try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const updatedChannel = JSON.parse(msg.data.channel);
         const models: Model[] = await operator.handleChannel({channels: [updatedChannel], prepareRecordsOnly: true});
         const infoModel = await updateChannelInfoFromChannel(serverUrl, updatedChannel, true);
         if (infoModel.model) {
             models.push(...infoModel.model);
         }
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'handleChannelUpdatedEvent');
     } catch {
         // Do nothing
     }
@@ -117,10 +107,7 @@ export async function handleChannelUpdatedEvent(serverUrl: string, msg: any) {
 
 export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
     try {
-        const database = DatabaseManager.serverDatabases[serverUrl]?.database;
-        if (!database) {
-            return;
-        }
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
         const {channel_id: channelId} = msg.data;
 
@@ -137,12 +124,9 @@ export async function handleChannelViewedEvent(serverUrl: string, msg: any) {
 
 // This event is triggered by changes in the notify props or in the roles.
 export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: any) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
     try {
+        const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const models: Model[] = [];
 
         const updatedChannelMember: ChannelMembership = JSON.parse(msg.data.channelMember);
@@ -165,20 +149,13 @@ export async function handleChannelMemberUpdatedEvent(serverUrl: string, msg: an
         if (rolesRequest.roles?.length) {
             models.push(...await operator.handleRole({roles: rolesRequest.roles, prepareRecordsOnly: true}));
         }
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'handleChannelMemberUpdatedEvent');
     } catch {
         // do nothing
     }
 }
 
 export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMessage) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
-
-    const {database} = operator;
-
     if (EphemeralStore.creatingDMorGMTeammates.length) {
         let userList: string[] | undefined;
         if ('teammate_ids' in msg.data) { // GM
@@ -199,6 +176,8 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMe
     }
 
     try {
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+
         const {channel_id: channelId} = msg.broadcast;
         const channel = await getChannelById(database, channelId);
         if (channel) {
@@ -235,24 +214,20 @@ export async function handleDirectAddedEvent(serverUrl: string, msg: WebSocketMe
             models.push(...userModels);
         }
 
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'handleDirectAddedEvent');
     } catch {
         // do nothing
     }
 }
 
 export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
-        return;
-    }
+    const userId = msg.data.user_id || msg.broadcast.userId;
+    const channelId = msg.data.channel_id || msg.broadcast.channel_id;
+    const {team_id: teamId} = msg.data;
 
     try {
-        const {database} = operator;
+        const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
         const currentUser = await getCurrentUser(database);
-        const userId = msg.data.user_id || msg.broadcast.userId;
-        const channelId = msg.data.channel_id || msg.broadcast.channel_id;
-        const {team_id: teamId} = msg.data;
         const models: Model[] = [];
 
         if (userId === currentUser?.id) {
@@ -267,7 +242,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
                     const prepareModels = await Promise.all(prepare);
                     const flattenedModels = prepareModels.flat();
                     if (flattenedModels?.length > 0) {
-                        await operator.batchRecords(flattenedModels);
+                        await operator.batchRecords(flattenedModels, 'handleUserAddedToChannelEvent - prepareMyChannelsForTeam');
                     }
                 }
 
@@ -308,7 +283,7 @@ export async function handleUserAddedToChannelEvent(serverUrl: string, msg: any)
         }
 
         if (models.length) {
-            await operator.batchRecords(models);
+            await operator.batchRecords(models, 'handleUserAddedToChannelEvent');
         }
 
         await fetchChannelStats(serverUrl, channelId, false);
@@ -356,38 +331,32 @@ export async function handleUserRemovedFromChannelEvent(serverUrl: string, msg: 
             }
         }
 
-        operator.batchRecords(models);
+        operator.batchRecords(models, 'handleUserRemovedFromChannelEvent');
     } catch (error) {
         logDebug('cannot handle user removed from channel websocket event', error);
     }
 }
 
 export async function handleChannelDeletedEvent(serverUrl: string, msg: WebSocketMessage) {
-    const operator = DatabaseManager.serverDatabases[serverUrl]?.operator;
-    if (!operator) {
+    const {channel_id: channelId, delete_at: deleteAt} = msg.data;
+    if (EphemeralStore.isLeavingChannel(channelId) || EphemeralStore.isArchivingChannel(channelId)) {
         return;
     }
-
     try {
-        const {database} = operator;
-        const {channel_id: channelId, delete_at: deleteAt} = msg.data;
-        if (EphemeralStore.isLeavingChannel(channelId) || EphemeralStore.isArchivingChannel(channelId)) {
-            return;
-        }
+        const {database} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const currentChannel = await getCurrentChannel(database);
         const user = await getCurrentUser(database);
         if (!user) {
             return;
         }
 
-        const config = await getConfig(database);
-
         await setChannelDeleteAt(serverUrl, channelId, deleteAt);
-
         if (user.isGuest) {
             updateUsersNoLongerVisible(serverUrl);
         }
+
+        const currentChannel = await getCurrentChannel(database);
+        const config = await getConfig(database);
 
         if (config?.ExperimentalViewArchivedChannels !== 'true') {
             if (currentChannel && currentChannel.id === channelId) {

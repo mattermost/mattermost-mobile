@@ -1,16 +1,28 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-const Preferences: Record<string, any> = {
-    CATEGORY_CHANNEL_OPEN_TIME: 'channel_open_time',
-    CATEGORY_CHANNEL_APPROXIMATE_VIEW_TIME: 'channel_approximate_view_time',
-    CATEGORY_DIRECT_CHANNEL_SHOW: 'direct_channel_show',
-    CATEGORY_GROUP_CHANNEL_SHOW: 'group_channel_show',
-    CATEGORY_EMOJI: 'emoji',
-    CATEGORY_SAVED_POST: 'flagged_post',
-    CATEGORY_FAVORITE_CHANNEL: 'favorite_channel',
-    CATEGORY_AUTO_RESET_MANUAL_STATUS: 'auto_reset_manual_status',
-    CATEGORY_NOTIFICATIONS: 'notifications',
+export const CATEGORIES_TO_KEEP: Record<string, string> = {
+    ADVANCED_SETTINGS: 'advanced_settings',
+    CHANNEL_APPROXIMATE_VIEW_TIME: 'channel_approximate_view_time',
+    CHANNEL_OPEN_TIME: 'channel_open_time',
+    DIRECT_CHANNEL_SHOW: 'direct_channel_show',
+    GROUP_CHANNEL_SHOW: 'group_channel_show',
+    DISPLAY_SETTINGS: 'display_settings',
+    EMOJI: 'emoji',
+    NOTIFICATIONS: 'notifications',
+    SAVED_POST: 'flagged_post',
+    SIDEBAR_SETTINGS: 'sidebar_settings',
+    TEAMS_ORDER: 'teams_order',
+    THEME: 'theme',
+};
+
+const CATEGORIES: Record<string, string> = {
+    ...CATEGORIES_TO_KEEP,
+    FAVORITE_CHANNEL: 'favorite_channel',
+};
+
+const Preferences = {
+    CATEGORIES,
     COLLAPSED_REPLY_THREADS: 'collapsed_reply_threads',
     COLLAPSED_REPLY_THREADS_OFF: 'off',
     COLLAPSED_REPLY_THREADS_ON: 'on',
@@ -27,7 +39,6 @@ const Preferences: Record<string, any> = {
     // "immediate" is a 30 second interval
     INTERVAL_NEVER: 0,
     INTERVAL_NOT_SET: -1,
-    CATEGORY_DISPLAY_SETTINGS: 'display_settings',
     NAME_NAME_FORMAT: 'name_format',
     DISPLAY_PREFER_NICKNAME: 'nickname_full_name',
     DISPLAY_PREFER_FULL_NAME: 'full_name',
@@ -36,18 +47,14 @@ const Preferences: Record<string, any> = {
     LINK_PREVIEW_DISPLAY: 'link_previews',
     MENTION_KEYS: 'mention_keys',
     USE_MILITARY_TIME: 'use_military_time',
-    CATEGORY_SIDEBAR_SETTINGS: 'sidebar_settings',
     CHANNEL_SIDEBAR_ORGANIZATION: 'channel_sidebar_organization',
     CHANNEL_SIDEBAR_LIMIT_DMS: 'limit_visible_dms_gms',
     CHANNEL_SIDEBAR_LIMIT_DMS_DEFAULT: 20,
     CHANNEL_SIDEBAR_GROUP_UNREADS: 'show_unread_section',
     AUTOCLOSE_DMS_ENABLED: 'after_seven_days',
-    CATEGORY_ADVANCED_SETTINGS: 'advanced_settings',
     ADVANCED_FILTER_JOIN_LEAVE: 'join_leave',
     ADVANCED_CODE_BLOCK_ON_CTRL_ENTER: 'code_block_ctrl_enter',
     ADVANCED_SEND_ON_CTRL_ENTER: 'send_on_ctrl_enter',
-    CATEGORY_THEME: 'theme',
-    TEAMS_ORDER: 'teams_order',
     THEMES: {
         denim: {
             type: 'Denim',

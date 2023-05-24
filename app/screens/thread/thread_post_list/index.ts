@@ -3,7 +3,6 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {AppStateStatus} from 'react-native';
 import {of as of$} from 'rxjs';
 import {switchMap} from 'rxjs/operators';
 
@@ -18,11 +17,10 @@ import type {WithDatabaseArgs} from '@typings/database/database';
 import type PostModel from '@typings/database/models/servers/post';
 
 type Props = WithDatabaseArgs & {
-    forceQueryAfterAppState: AppStateStatus;
     rootPost: PostModel;
 };
 
-const enhanced = withObservables(['forceQueryAfterAppState', 'rootPost'], ({database, rootPost}: Props) => {
+const enhanced = withObservables(['rootPost'], ({database, rootPost}: Props) => {
     return {
         isCRTEnabled: observeIsCRTEnabled(database),
         channelLastViewedAt: observeMyChannel(database, rootPost.channelId).pipe(

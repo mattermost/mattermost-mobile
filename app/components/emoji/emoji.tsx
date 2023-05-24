@@ -5,6 +5,7 @@ import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
 import React from 'react';
 import {
+    Image,
     Platform,
     StyleSheet,
     Text,
@@ -29,12 +30,13 @@ const assetImages = new Map([['mattermost.png', require('@assets/images/emojis/m
 const Emoji = (props: EmojiProps) => {
     const {
         customEmojis,
-        customEmojiStyle,
+        imageStyle,
         displayTextOnly,
         emojiName,
         literal = '',
         testID,
         textStyle,
+        commonStyle,
     } = props;
     const serverUrl = useServerUrl();
     let assetImage = '';
@@ -73,7 +75,7 @@ const Emoji = (props: EmojiProps) => {
     if (displayTextOnly || (!imageUrl && !assetImage && !unicode)) {
         return (
             <Text
-                style={textStyle}
+                style={[commonStyle, textStyle]}
                 testID={testID}
             >
                 {literal}
@@ -91,7 +93,7 @@ const Emoji = (props: EmojiProps) => {
 
         return (
             <Text
-                style={[textStyle, {fontSize: size, color: '#000'}]}
+                style={[commonStyle, textStyle, {fontSize: size, color: '#000'}]}
                 testID={testID}
             >
                 {code}
@@ -107,11 +109,11 @@ const Emoji = (props: EmojiProps) => {
             return null;
         }
         return (
-            <FastImage
+            <Image
                 key={key}
                 source={image}
-                style={[customEmojiStyle, {width, height}]}
-                resizeMode={FastImage.resizeMode.contain}
+                style={[commonStyle, imageStyle, {width, height}]}
+                resizeMode={'contain'}
                 testID={testID}
             />
         );
@@ -128,7 +130,7 @@ const Emoji = (props: EmojiProps) => {
     return (
         <FastImage
             key={key}
-            style={[customEmojiStyle, {width, height}]}
+            style={[commonStyle, imageStyle, {width, height}]}
             source={{uri: imageUrl}}
             resizeMode={FastImage.resizeMode.contain}
             testID={testID}

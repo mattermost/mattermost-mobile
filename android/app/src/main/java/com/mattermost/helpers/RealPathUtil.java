@@ -122,24 +122,37 @@ public class RealPathUtil {
 
 
             File cacheDir = new File(context.getCacheDir(), CACHE_DIR_NAME);
-            if (!cacheDir.exists()) {
-                cacheDir.mkdirs();
+            boolean cacheDirExists = cacheDir.exists();
+            if (!cacheDirExists) {
+                cacheDirExists = cacheDir.mkdirs();
             }
 
-            tmpFile = new File(cacheDir, fileName);
-            tmpFile.createNewFile();
+            if (cacheDirExists) {
+                tmpFile = new File(cacheDir, fileName);
+                boolean fileCreated = tmpFile.createNewFile();
 
-            ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
+                if (fileCreated) {
+                    ParcelFileDescriptor pfd = context.getContentResolver().openFileDescriptor(uri, "r");
 
-            FileChannel src = new FileInputStream(pfd.getFileDescriptor()).getChannel();
-            FileChannel dst = new FileOutputStream(tmpFile).getChannel();
-            dst.transferFrom(src, 0, src.size());
-            src.close();
-            dst.close();
+                    try (FileInputStream inputSrc = new FileInputStream(pfd.getFileDescriptor())) {
+                        FileChannel src = inputSrc.getChannel();
+                        try (FileOutputStream outputDst = new FileOutputStream(tmpFile)) {
+                            FileChannel dst = outputDst.getChannel();
+                            dst.transferFrom(src, 0, src.size());
+                            src.close();
+                            dst.close();
+                        }
+                    }
+
+                    pfd.close();
+                }
+                return tmpFile.getAbsolutePath();
+            }
         } catch (IOException ex) {
-            return null;
+            ex.printStackTrace();
         }
-        return tmpFile.getAbsolutePath();
+
+        return null;
     }
 
     public static String getDataColumn(Context context, Uri uri, String selection,
@@ -245,7 +258,9 @@ public class RealPathUtil {
                 }
         }
 
-        fileOrDirectory.delete();
+        if (!fileOrDirectory.delete()) {
+            Log.i("ReactNative", "Couldn't delete file " + fileOrDirectory.getName());
+        }
     }
 
     private static String sanitizeFilename(String filename) {
@@ -255,23 +270,5 @@ public class RealPathUtil {
 
         File f = new File(filename);
         return f.getName();
-    }
-
-    public static File createDirIfNotExists(String path) {
-        File dir = new File(path);
-        if (dir.exists()) {
-            return dir;
-        }
-
-        try {
-            dir.mkdirs();
-            // Add .nomedia to hide the thumbnail directory from gallery
-            File noMedia = new File(path, ".nomedia");
-            noMedia.createNewFile();
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        return dir;
     }
 }

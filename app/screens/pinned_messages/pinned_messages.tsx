@@ -2,8 +2,8 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
-import {DeviceEventEmitter, FlatList, ListRenderItemInfo, StyleSheet, View} from 'react-native';
-import {Edge, SafeAreaView} from 'react-native-safe-area-context';
+import {DeviceEventEmitter, FlatList, type ListRenderItemInfo, StyleSheet, View} from 'react-native';
+import {type Edge, SafeAreaView} from 'react-native-safe-area-context';
 
 import {fetchPinnedPosts} from '@actions/remote/post';
 import Loading from '@components/loading';
@@ -20,11 +20,12 @@ import EmptyState from './empty';
 
 import type {PostListItem, PostListOtherItem, ViewableItemsChanged} from '@typings/components/post_list';
 import type PostModel from '@typings/database/models/servers/post';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type Props = {
     appsEnabled: boolean;
     channelId: string;
-    componentId: string;
+    componentId: AvailableScreens;
     currentTimezone: string | null;
     customEmojiNames: string[];
     isCRTEnabled: boolean;

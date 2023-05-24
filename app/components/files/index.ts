@@ -3,10 +3,11 @@
 
 import {withDatabase} from '@nozbe/watermelondb/DatabaseProvider';
 import withObservables from '@nozbe/with-observables';
-import {combineLatest, of as of$, from as from$} from 'rxjs';
-import {map, switchMap} from 'rxjs/operators';
+import {of as of$, from as from$} from 'rxjs';
+import {switchMap} from 'rxjs/operators';
 
-import {observeConfigBooleanValue, observeLicense} from '@queries/servers/system';
+import {queryFilesForPost} from '@queries/servers/file';
+import {observeCanDownloadFiles, observeConfigBooleanValue} from '@queries/servers/system';
 import {fileExists} from '@utils/file';
 
 import Files from './files';
@@ -36,23 +37,14 @@ const filesLocalPathValidation = async (files: FileModel[], authorId: string) =>
 };
 
 const enhance = withObservables(['post'], ({database, post}: EnhanceProps) => {
-    const enableMobileFileDownload = observeConfigBooleanValue(database, 'EnableMobileFileDownload');
     const publicLinkEnabled = observeConfigBooleanValue(database, 'EnablePublicLink');
 
-    const complianceDisabled = observeLicense(database).pipe(
-        switchMap((lcs) => of$(lcs?.IsLicensed === 'false' || lcs?.Compliance === 'false')),
-    );
-
-    const canDownloadFiles = combineLatest([enableMobileFileDownload, complianceDisabled]).pipe(
-        map(([download, compliance]) => compliance || download),
-    );
-
-    const filesInfo = post.files.observeWithColumns(['local_path']).pipe(
+    const filesInfo = queryFilesForPost(database, post.id).observeWithColumns(['local_path']).pipe(
         switchMap((fs) => from$(filesLocalPathValidation(fs, post.userId))),
     );
 
     return {
-        canDownloadFiles,
+        canDownloadFiles: observeCanDownloadFiles(database),
         postId: of$(post.id),
         publicLinkEnabled,
         filesInfo,

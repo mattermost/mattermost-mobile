@@ -10,14 +10,16 @@ import {General, Permissions, Post, Screens} from '@constants';
 import {AppBindingLocations} from '@constants/apps';
 import {MAX_ALLOWED_REACTIONS} from '@constants/emoji';
 import AppsManager from '@managers/apps_manager';
+import {observeChannel} from '@queries/servers/channel';
 import {observePost, observePostSaved} from '@queries/servers/post';
+import {observeReactionsForPost} from '@queries/servers/reaction';
 import {observePermissionForChannel, observePermissionForPost} from '@queries/servers/role';
 import {observeConfigBooleanValue, observeConfigIntValue, observeConfigValue, observeLicense} from '@queries/servers/system';
 import {observeIsCRTEnabled, observeThreadById} from '@queries/servers/thread';
 import {observeCurrentUser} from '@queries/servers/user';
 import {toMilliseconds} from '@utils/datetime';
 import {isMinimumServerVersion} from '@utils/helpers';
-import {isSystemMessage} from '@utils/post';
+import {isFromWebhook, isSystemMessage} from '@utils/post';
 import {getPostIdsForCombinedUserActivityPost} from '@utils/post_list';
 import {isSystemAdmin} from '@utils/user';
 
@@ -29,12 +31,13 @@ import type ChannelModel from '@typings/database/models/servers/channel';
 import type PostModel from '@typings/database/models/servers/post';
 import type ReactionModel from '@typings/database/models/servers/reaction';
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 type EnhancedProps = WithDatabaseArgs & {
     combinedPost?: Post | PostModel;
     post: PostModel;
     showAddReaction: boolean;
-    location: string;
+    sourceScreen: AvailableScreens;
     serverUrl: string;
 }
 
@@ -73,8 +76,8 @@ const withPost = withObservables([], ({post, database}: {post: Post | PostModel}
     };
 });
 
-const enhanced = withObservables([], ({combinedPost, post, showAddReaction, location, database, serverUrl}: EnhancedProps) => {
-    const channel = post.channel.observe();
+const enhanced = withObservables([], ({combinedPost, post, showAddReaction, sourceScreen, database, serverUrl}: EnhancedProps) => {
+    const channel = observeChannel(database, post.channelId);
     const channelIsArchived = channel.pipe(switchMap((ch: ChannelModel) => of$(ch.deleteAt !== 0)));
     const currentUser = observeCurrentUser(database);
     const isLicensed = observeLicense(database).pipe(switchMap((lcs) => of$(lcs?.IsLicensed === 'true')));
@@ -95,7 +98,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
         return of$(c?.name === General.DEFAULT_CHANNEL && (u && !isSystemAdmin(u.roles)) && readOnly);
     }));
 
-    const isUnderMaxAllowedReactions = post.reactions.observe().pipe(
+    const isUnderMaxAllowedReactions = observeReactionsForPost(database, post.id).pipe(
         // eslint-disable-next-line max-nested-callbacks
         switchMap((reactions: ReactionModel[]) => of$(new Set(reactions.map((r) => r.emojiName)).size < MAX_ALLOWED_REACTIONS)),
     );
@@ -110,7 +113,7 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     );
 
     const canReply = combineLatest([channelIsArchived, channelIsReadOnly, canPostPermission]).pipe(switchMap(([isArchived, isReadOnly, canPost]) => {
-        return of$(!isArchived && !isReadOnly && location !== Screens.THREAD && !isSystemMessage(post) && canPost);
+        return of$(!isArchived && !isReadOnly && sourceScreen !== Screens.THREAD && !isSystemMessage(post) && canPost);
     }));
 
     const canPin = combineLatest([channelIsArchived, channelIsReadOnly]).pipe(switchMap(([isArchived, isReadOnly]) => {
@@ -132,7 +135,11 @@ const enhanced = withObservables([], ({combinedPost, post, showAddReaction, loca
     );
 
     const canMarkAsUnread = combineLatest([currentUser, channelIsArchived]).pipe(
-        switchMap(([user, isArchived]) => of$(!isArchived && user?.id !== post.userId && !isSystemMessage(post))),
+        switchMap(([user, isArchived]) => of$(
+            !isArchived && (
+                (user?.id !== post.userId && !isSystemMessage(post)) || isFromWebhook(post)
+            ),
+        )),
     );
 
     const canAddReaction = combineLatest([hasAddReactionPermission, channelIsReadOnly, isUnderMaxAllowedReactions, channelIsArchived]).pipe(

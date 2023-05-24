@@ -4,15 +4,17 @@
 import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 
+import SettingContainer from '@components/settings/container';
+import SettingItem from '@components/settings/item';
 import {General, Screens} from '@constants';
+import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {t} from '@i18n';
+import {popTopScreen} from '@screens/navigation';
 import {gotoSettingsScreen} from '@screens/settings/config';
 import {getEmailInterval, getEmailIntervalTexts, getNotificationProps} from '@utils/user';
 
-import SettingContainer from '../setting_container';
-import SettingItem from '../setting_item';
-
 import type UserModel from '@typings/database/models/servers/user';
+import type {AvailableScreens} from '@typings/screens/navigation';
 
 const mentionTexts = {
     crtOn: {
@@ -26,7 +28,8 @@ const mentionTexts = {
 };
 
 type NotificationsProps = {
-    currentUser: UserModel;
+    componentId: AvailableScreens;
+    currentUser?: UserModel;
     emailInterval: string;
     enableAutoResponder: boolean;
     enableEmailBatching: boolean;
@@ -34,6 +37,7 @@ type NotificationsProps = {
     sendEmailNotifications: boolean;
 }
 const Notifications = ({
+    componentId,
     currentUser,
     emailInterval,
     enableAutoResponder,
@@ -42,7 +46,7 @@ const Notifications = ({
     sendEmailNotifications,
 }: NotificationsProps) => {
     const intl = useIntl();
-    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser.notifyProps]);
+    const notifyProps = useMemo(() => getNotificationProps(currentUser), [currentUser?.notifyProps]);
 
     const emailIntervalPref = useMemo(() =>
         getEmailInterval(
@@ -86,6 +90,10 @@ const Notifications = ({
         gotoSettingsScreen(screen, title);
     }, []);
 
+    useAndroidHardwareBackHandler(componentId, () => {
+        popTopScreen(componentId);
+    });
+
     return (
         <SettingContainer testID='notification_settings'>
             <SettingItem
@@ -112,7 +120,7 @@ const Notifications = ({
                 <SettingItem
                     onPress={goToNotificationAutoResponder}
                     optionName='automatic_dm_replies'
-                    info={currentUser.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
+                    info={currentUser?.status === General.OUT_OF_OFFICE && notifyProps.auto_responder_active === 'true' ? 'On' : 'Off'}
                     testID='notification_settings.automatic_replies.option'
                 />
             )}

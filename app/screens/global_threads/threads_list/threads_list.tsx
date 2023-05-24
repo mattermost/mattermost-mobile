@@ -2,7 +2,7 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useEffect, useMemo, useState, useRef} from 'react';
-import {FlatList, ListRenderItemInfo, StyleSheet} from 'react-native';
+import {FlatList, type ListRenderItemInfo, StyleSheet} from 'react-native';
 
 import {loadEarlierThreads, syncTeamThreads} from '@actions/remote/thread';
 import Loading from '@components/loading';

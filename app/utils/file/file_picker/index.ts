@@ -1,21 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import {IntlShape} from 'react-intl';
 import {Alert, NativeModules, Platform, StatusBar} from 'react-native';
 import AndroidOpenSettings from 'react-native-android-open-settings';
 import DeviceInfo from 'react-native-device-info';
-import DocumentPicker, {DocumentPickerResponse} from 'react-native-document-picker';
-import {Asset, CameraOptions, ImageLibraryOptions, ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
+import DocumentPicker, {type DocumentPickerResponse} from 'react-native-document-picker';
+import {type Asset, type CameraOptions, type ImageLibraryOptions, type ImagePickerResponse, launchCamera, launchImageLibrary} from 'react-native-image-picker';
 import Permissions from 'react-native-permissions';
 
 import {dismissBottomSheet} from '@screens/navigation';
 import {extractFileInfo, lookupMimeType} from '@utils/file';
-import {logError} from '@utils/log';
+import {logWarning} from '@utils/log';
+
+import type {IntlShape} from 'react-intl';
 
 const MattermostManaged = NativeModules.MattermostManaged;
 
-type PermissionSource = 'camera' | 'storage' | 'denied_android' | 'denied_ios' | 'photo';
+type PermissionSource = 'camera' | 'storage' | 'photo_android' | 'photo_ios' | 'photo';
 
 export default class FilePickerUtil {
     private readonly uploadFiles: (files: ExtractedFileInfo[]) => void;
@@ -46,7 +47,7 @@ export default class FilePickerUtil {
                     id: 'mobile.camera_photo_permission_denied_description',
                     defaultMessage:
                         'Take photos and upload them to your server or save them to your device. Open Settings to grant {applicationName} read and write access to your camera.',
-                }),
+                }, {applicationName}),
             },
             storage: {
                 title: formatMessage(
@@ -61,9 +62,9 @@ export default class FilePickerUtil {
                     id: 'mobile.storage_permission_denied_description',
                     defaultMessage:
                         'Upload files to your server. Open Settings to grant {applicationName} Read and Write access to files on this device.',
-                }),
+                }, {applicationName}),
             },
-            denied_ios: {
+            photo_ios: {
                 title: formatMessage(
                     {
                         id: 'mobile.ios.photos_permission_denied_title',
@@ -76,9 +77,9 @@ export default class FilePickerUtil {
                     id: 'mobile.ios.photos_permission_denied_description',
                     defaultMessage:
                         'Upload photos and videos to your server or save them to your device. Open Settings to grant {applicationName} Read and Write access to your photo and video library.',
-                }),
+                }, {applicationName}),
             },
-            denied_android: {
+            photo_android: {
                 title: formatMessage(
                     {
                         id: 'mobile.android.photos_permission_denied_title',
@@ -91,7 +92,7 @@ export default class FilePickerUtil {
                     id: 'mobile.android.photos_permission_denied_description',
                     defaultMessage:
                         'Upload photos to your server or save them to your device. Open Settings to grant {applicationName} Read and Write access to your photo library.',
-                }),
+                }, {applicationName}),
             },
         };
 
@@ -108,8 +109,8 @@ export default class FilePickerUtil {
     };
 
     private getPermissionDeniedMessage = (source?: PermissionSource) => {
-        const sources = ['camera', 'storage', 'photo'];
-        const deniedSource: PermissionSource = Platform.select({android: 'denied_android', ios: 'denied_ios'})!;
+        const sources = ['camera', 'storage'];
+        const deniedSource: PermissionSource = Platform.select({android: 'photo_android', ios: 'photo_ios'})!;
         const msgForSource = source && sources.includes(source) ? source : deniedSource;
 
         return this.getPermissionMessages(msgForSource);
@@ -117,7 +118,7 @@ export default class FilePickerUtil {
 
     private getFilesFromResponse = async (response: ImagePickerResponse): Promise<Asset[]> => {
         if (!response?.assets?.length) {
-            logError('no assets in response');
+            logWarning('no assets in response');
             return [];
         }
 
@@ -138,7 +139,7 @@ export default class FilePickerUtil {
                 if (uri) {
                     files.push({...file, fileName, uri, type, width: file.width, height: file.height});
                 } else {
-                    logError('attaching file reponse return empty uri', file);
+                    logWarning('attaching file reponse return empty uri', file);
                 }
             }
         })));
@@ -187,51 +188,90 @@ export default class FilePickerUtil {
     };
 
     private hasStoragePermission = async () => {
-        if (Platform.OS === 'ios') {
-            return true;
-        }
+        if (Platform.OS === 'android' && Platform.Version < 32) {
+            const storagePermission = Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
+            let permissionRequest;
+            const hasPermissionToStorage = await Permissions.check(storagePermission);
+            switch (hasPermissionToStorage) {
+                case Permissions.RESULTS.DENIED:
+                    permissionRequest = await Permissions.request(storagePermission);
+                    return permissionRequest === Permissions.RESULTS.GRANTED;
+                case Permissions.RESULTS.BLOCKED: {
+                    const {title, text} = this.getPermissionDeniedMessage();
 
-        const storagePermission = Permissions.PERMISSIONS.ANDROID.READ_EXTERNAL_STORAGE;
-        let permissionRequest;
-        const hasPermissionToStorage = await Permissions.check(storagePermission);
-        switch (hasPermissionToStorage) {
-            case Permissions.RESULTS.DENIED:
-                permissionRequest = await Permissions.request(storagePermission);
-                return permissionRequest === Permissions.RESULTS.GRANTED;
-                break;
-            case Permissions.RESULTS.BLOCKED: {
-                const {title, text} = this.getPermissionDeniedMessage();
-
-                Alert.alert(title, text, [
-                    {
-                        text: this.intl.formatMessage({
-                            id: 'mobile.permission_denied_dismiss',
-                            defaultMessage: "Don't Allow",
-                        }),
-                    },
-                    {
-                        text: this.intl.formatMessage({
-                            id: 'mobile.permission_denied_retry',
-                            defaultMessage: 'Settings',
-                        }),
-                        onPress: () => AndroidOpenSettings.appDetailsSettings(),
-                    },
-                ]);
-                return false;
+                    Alert.alert(title, text, [
+                        {
+                            text: this.intl.formatMessage({
+                                id: 'mobile.permission_denied_dismiss',
+                                defaultMessage: "Don't Allow",
+                            }),
+                        },
+                        {
+                            text: this.intl.formatMessage({
+                                id: 'mobile.permission_denied_retry',
+                                defaultMessage: 'Settings',
+                            }),
+                            onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                        },
+                    ]);
+                    return false;
+                }
+                default: return true;
             }
-            default: return true;
         }
+
+        return true;
+    };
+
+    private hasWriteStoragePermission = async () => {
+        if (Platform.OS === 'android' && Platform.Version <= 28) {
+            const storagePermission = Permissions.PERMISSIONS.ANDROID.WRITE_EXTERNAL_STORAGE;
+            let permissionRequest;
+            const hasPermissionToStorage = await Permissions.check(storagePermission);
+            switch (hasPermissionToStorage) {
+                case Permissions.RESULTS.DENIED:
+                    permissionRequest = await Permissions.request(storagePermission);
+                    return permissionRequest === Permissions.RESULTS.GRANTED;
+                case Permissions.RESULTS.BLOCKED: {
+                    const {title, text} = this.getPermissionDeniedMessage('storage');
+
+                    Alert.alert(title, text, [
+                        {
+                            text: this.intl.formatMessage({
+                                id: 'mobile.permission_denied_dismiss',
+                                defaultMessage: "Don't Allow",
+                            }),
+                        },
+                        {
+                            text: this.intl.formatMessage({
+                                id: 'mobile.permission_denied_retry',
+                                defaultMessage: 'Settings',
+                            }),
+                            onPress: () => AndroidOpenSettings.appDetailsSettings(),
+                        },
+                    ]);
+                    return false;
+                }
+                default: return true;
+            }
+        }
+
+        return true;
     };
 
     private buildUri = async (doc: DocumentPickerResponse) => {
         let uri: string = doc.uri;
 
         if (Platform.OS === 'android') {
-            // For android we need to retrieve the realPath in case the file being imported is from the cloud
-            const newUri = await MattermostManaged.getFilePath(doc.uri);
-            uri = newUri?.filePath;
-            if (uri === undefined) {
-                return {doc: undefined};
+            if (doc.fileCopyUri) {
+                uri = doc.fileCopyUri;
+            } else {
+                // For android we need to retrieve the realPath in case the file being imported is from the cloud
+                const newUri = await MattermostManaged.getFilePath(doc.uri);
+                uri = newUri?.filePath;
+                if (uri === undefined) {
+                    return {doc: undefined};
+                }
             }
 
             doc.uri = uri;
@@ -252,7 +292,13 @@ export default class FilePickerUtil {
         }
 
         const hasCameraPermission = await this.hasPhotoPermission('camera');
-        if (hasCameraPermission) {
+
+        let hasWriteToStoragePermission = true;
+        if (Platform.OS === 'android' && Platform.Version <= 28) {
+            hasWriteToStoragePermission = await this.hasWriteStoragePermission();
+        }
+
+        if (hasCameraPermission && hasWriteToStoragePermission) {
             launchCamera(options, async (response: ImagePickerResponse) => {
                 StatusBar.setHidden(false);
 
@@ -272,7 +318,7 @@ export default class FilePickerUtil {
 
         if (hasPermission) {
             try {
-                const docResponse = (await DocumentPicker.pick({allowMultiSelection, type: [fileType]}));
+                const docResponse = (await DocumentPicker.pick({allowMultiSelection, type: [fileType], copyTo: 'cachesDirectory'}));
                 const proDocs = docResponse.map(async (d: DocumentPickerResponse) => {
                     const {doc} = await this.buildUri(d);
                     return doc;
@@ -302,7 +348,7 @@ export default class FilePickerUtil {
             launchImageLibrary(options, async (response: ImagePickerResponse) => {
                 StatusBar.setHidden(false);
                 if (response.errorMessage || response.didCancel) {
-                    logError('Attach failed', response.errorMessage || (response.didCancel ? 'cancelled' : ''));
+                    logWarning('Attach failed', response.errorMessage || (response.didCancel ? 'cancelled' : ''));
                     return;
                 }
 

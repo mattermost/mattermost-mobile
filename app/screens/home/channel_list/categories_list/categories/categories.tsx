@@ -17,6 +17,7 @@ import CategoryHeader from './header';
 import UnreadCategories from './unreads';
 
 import type CategoryModel from '@typings/database/models/servers/category';
+import type ChannelModel from '@typings/database/models/servers/channel';
 
 type Props = {
     categories: CategoryModel[];
@@ -27,8 +28,6 @@ type Props = {
 const styles = StyleSheet.create({
     mainList: {
         flex: 1,
-        marginLeft: -18,
-        marginRight: -20,
     },
     loadingView: {
         alignItems: 'center',
@@ -39,17 +38,33 @@ const styles = StyleSheet.create({
 
 const extractKey = (item: CategoryModel | 'UNREADS') => (item === 'UNREADS' ? 'UNREADS' : item.id);
 
-const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
+const Categories = ({
+    categories,
+    onlyUnreads,
+    unreadsOnTop,
+}: Props) => {
     const intl = useIntl();
     const listRef = useRef<FlatList>(null);
     const serverUrl = useServerUrl();
     const isTablet = useIsTablet();
     const switchingTeam = useTeamSwitch();
     const teamId = categories[0]?.teamId;
-    const [initiaLoad, setInitialLoad] = useState(true);
+    const categoriesToShow = useMemo(() => {
+        if (onlyUnreads && !unreadsOnTop) {
+            return ['UNREADS' as const];
+        }
+        const orderedCategories = [...categories];
+        orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
+        if (unreadsOnTop) {
+            return ['UNREADS' as const, ...orderedCategories];
+        }
+        return orderedCategories;
+    }, [categories, onlyUnreads, unreadsOnTop]);
 
-    const onChannelSwitch = useCallback(async (channelId: string) => {
-        switchToChannelById(serverUrl, channelId);
+    const [initiaLoad, setInitialLoad] = useState(!categoriesToShow.length);
+
+    const onChannelSwitch = useCallback(async (c: Channel | ChannelModel) => {
+        switchToChannelById(serverUrl, c.id);
     }, [serverUrl]);
 
     const renderCategory = useCallback((data: {item: CategoryModel | 'UNREADS'}) => {
@@ -75,18 +90,6 @@ const Categories = ({categories, onlyUnreads, unreadsOnTop}: Props) => {
             </>
         );
     }, [teamId, intl.locale, isTablet, onChannelSwitch, onlyUnreads]);
-
-    const categoriesToShow = useMemo(() => {
-        if (onlyUnreads && !unreadsOnTop) {
-            return ['UNREADS' as const];
-        }
-        const orderedCategories = [...categories];
-        orderedCategories.sort((a, b) => a.sortOrder - b.sortOrder);
-        if (unreadsOnTop) {
-            return ['UNREADS' as const, ...orderedCategories];
-        }
-        return orderedCategories;
-    }, [categories, onlyUnreads, unreadsOnTop]);
 
     useEffect(() => {
         const t = setTimeout(() => {

@@ -1,21 +1,22 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {Dispatch, RefObject, SetStateAction, useCallback, useEffect, useMemo, useRef, useState} from 'react';
-import {IntlShape, useIntl} from 'react-intl';
+import React, {type Dispatch, type RefObject, type SetStateAction, useCallback, useEffect, useMemo, useRef, useState} from 'react';
+import {type IntlShape, useIntl} from 'react-intl';
 import {View} from 'react-native';
 import Animated, {useSharedValue, useAnimatedStyle, withTiming} from 'react-native-reanimated';
 
 import FormattedText from '@components/formatted_text';
-import {SearchRef} from '@components/search';
 import {useTheme} from '@context/theme';
-import {TeamModel} from '@database/models/server';
 import TeamPickerIcon from '@screens/home/search/team_picker_icon';
 import {makeStyleSheetFromTheme} from '@utils/theme';
 import {typography} from '@utils/typography';
 
-import Modifier, {ModifierItem} from './modifier';
+import Modifier, {type ModifierItem} from './modifier';
 import ShowMoreButton from './show_more';
+
+import type {SearchRef} from '@components/search';
+import type TeamModel from '@typings/database/models/servers/team';
 
 const MODIFIER_LABEL_HEIGHT = 48;
 const TEAM_PICKER_ICON_SIZE = 32;

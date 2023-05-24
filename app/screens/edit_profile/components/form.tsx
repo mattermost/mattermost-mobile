@@ -2,10 +2,9 @@
 // See LICENSE.txt for license information.
 
 import React, {useCallback, useMemo, useRef} from 'react';
-import {MessageDescriptor, useIntl} from 'react-intl';
+import {type MessageDescriptor, useIntl} from 'react-intl';
 import {Keyboard, StyleSheet, View} from 'react-native';
 
-import {FloatingTextInputRef} from '@components/floating_text_input_label';
 import {useTheme} from '@context/theme';
 import {t} from '@i18n';
 
@@ -13,6 +12,7 @@ import DisabledFields from './disabled_fields';
 import EmailField from './email_field';
 import Field from './field';
 
+import type {FloatingTextInputRef} from '@components/floating_text_input_label';
 import type UserModel from '@typings/database/models/servers/user';
 import type {FieldConfig, FieldSequence, UserInfo} from '@typings/screens/edit_profile';
 
@@ -214,7 +214,7 @@ const ProfileForm = ({
                 fieldRef={nicknameRef}
                 isDisabled={userProfileFields.nickname.isDisabled}
                 label={formatMessage(FIELDS.nickname)}
-                maxLength={22}
+                maxLength={64}
                 testID='edit_profile_form.nickname'
                 value={userInfo.nickname}
                 {...fieldConfig}

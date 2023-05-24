@@ -30,7 +30,7 @@ import {
     LoginScreen,
     ServerScreen,
 } from '@support/ui/screen';
-import {getRandomId} from '@support/utils';
+import {getRandomId, timeouts, wait} from '@support/utils';
 import {expect} from 'detox';
 
 describe('Smoke Test - Channels', () => {
@@ -66,6 +66,7 @@ describe('Smoke Test - Channels', () => {
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await BrowseChannelsScreen.open();
         await BrowseChannelsScreen.searchInput.replaceText(channel.name);
+        await wait(timeouts.ONE_SEC);
         await BrowseChannelsScreen.getChannelItem(channel.name).multiTap(2);
 
         // * Verify on newly joined channel screen
@@ -80,7 +81,6 @@ describe('Smoke Test - Channels', () => {
         // * Verify on the other channel screen
         await ChannelScreen.toBeVisible();
         await expect(ChannelScreen.headerTitle).toHaveText(testChannel.display_name);
-        await expect(ChannelScreen.introDisplayName).toHaveText(testChannel.display_name);
 
         // # Go back to channel list screen
         await ChannelScreen.back();
@@ -106,6 +106,7 @@ describe('Smoke Test - Channels', () => {
         await CreateDirectMessageScreen.open();
         await CreateDirectMessageScreen.closeTutorial();
         await CreateDirectMessageScreen.searchInput.replaceText(newUserDisplayName);
+        await wait(timeouts.ONE_SEC);
         await CreateDirectMessageScreen.getUserItem(newUser.id).tap();
         await CreateDirectMessageScreen.startButton.tap();
 
@@ -137,6 +138,7 @@ describe('Smoke Test - Channels', () => {
         // # Open find channels screen, search for the channel to navigate to, and tap on the target channel item
         await FindChannelsScreen.open();
         await FindChannelsScreen.searchInput.replaceText(testChannel.name);
+        await wait(timeouts.ONE_SEC);
         await FindChannelsScreen.getFilteredChannelItem(testChannel.name).tap();
 
         // * Verify on target channel screen
@@ -146,10 +148,7 @@ describe('Smoke Test - Channels', () => {
         // # Open channel info screen, open edit channel screen, edit channel info, and save changes
         await ChannelInfoScreen.open();
         await CreateOrEditChannelScreen.openEditChannel();
-        await CreateOrEditChannelScreen.headerInput.tapReturnKey();
-        await CreateOrEditChannelScreen.headerInput.typeText('header1');
-        await CreateOrEditChannelScreen.headerInput.tapReturnKey();
-        await CreateOrEditChannelScreen.headerInput.typeText('header2');
+        await CreateOrEditChannelScreen.headerInput.typeText('\nheader1\nheader2');
         await CreateOrEditChannelScreen.saveButton.tap();
 
         // * Verify on channel info screen and changes have been saved
@@ -189,6 +188,7 @@ describe('Smoke Test - Channels', () => {
         // # Open a channel screen, open channel info screen, and tap on archive channel option and confirm
         const {channel} = await Channel.apiCreateChannel(siteOneUrl, {teamId: testTeam.id});
         await Channel.apiAddUserToChannel(siteOneUrl, testUser.id, channel.id);
+        await wait(timeouts.TWO_SEC);
         await device.reloadReactNative();
         await ChannelScreen.open(channelsCategory, channel.name);
         await ChannelInfoScreen.open();

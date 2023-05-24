@@ -37,6 +37,7 @@ type Props = {
 const getStyle = makeStyleSheetFromTheme((theme: Theme) => ({
     background: {
         backgroundColor: theme.sidebarBg,
+        zIndex: 1,
     },
     bannerContainer: {
         flex: 1,
