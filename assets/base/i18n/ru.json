@@ -990,7 +990,7 @@
     "mobile.calls_host_rec_error_title": "Что-то пошло не так с записью",
     "mobile.calls_host_rec_error": "Пожалуйста, попробуйте записать еще раз. Вы также можете обратиться к системному администратору за помощью в устранении неполадок.",
     "notification.no_post": "Сообщение не найдено.",
-    "notification.no_connection": "Сервер недоступен, и мы не смогли получить уведомления канала / команды.",
+    "notification.no_connection": "Сервер недоступен, и не удалось получить информацию о конкретном сообщении для этого уведомления.",
     "invite.summary.back": "Вернуться назад",
     "channel_notification_preferences.unmute_content": "Включить уведомления",
     "channel_notification_preferences.thread_replies": "Ответы на обсуждения",
