@@ -178,11 +178,11 @@ const PostList = ({
     }, [channelId, location, posts, rootId]);
 
     const onScroll = useCallback((event: NativeSyntheticEvent<NativeScrollEvent>) => {
+        const {y} = event.nativeEvent.contentOffset;
         if (Platform.OS === 'android') {
-            const {y} = event.nativeEvent.contentOffset;
             setEnableRefreshControl(y === 0);
-            setShowScrollToEndBtn(y > CONTENT_OFFSET_THRESHOLD);
         }
+        setShowScrollToEndBtn(y > CONTENT_OFFSET_THRESHOLD);
     }, []);
 
     const onScrollToIndexFailed = useCallback((info: ScrollIndexFailed) => {
@@ -278,28 +278,29 @@ const PostList = ({
             }
             default: {
                 const post = item.value;
-                const skipSaveddHeader = (location === Screens.THREAD && post.id === rootId);
-                const postProps = {
-                    appsEnabled,
-                    customEmojiNames,
-                    isCRTEnabled,
-                    isPostAcknowledgementEnabled,
-                    highlight: highlightedId === post.id,
-                    highlightPinnedOrSaved,
-                    isSaved: post.isSaved,
-                    key: post.id,
-                    location,
-                    nextPost: post.nextPost,
-                    post,
-                    previousPost: post.previousPost,
-                    rootId,
-                    shouldRenderReplyButton,
-                    skipSaveddHeader,
-                    style: styles.scale,
-                    testID: `${testID}.post`,
-                };
+                const skipSavedHeader = (location === Screens.THREAD && post.id === rootId);
 
-                return (<Post {...postProps}/>);
+                return (
+                    <Post
+                        appsEnabled={appsEnabled}
+                        customEmojiNames={customEmojiNames}
+                        isCRTEnabled={isCRTEnabled}
+                        isPostAcknowledgementEnabled={isPostAcknowledgementEnabled}
+                        highlight={highlightedId === post.id}
+                        highlightPinnedOrSaved={highlightPinnedOrSaved}
+                        isSaved={post.isSaved}
+                        key={post.id}
+                        location={location}
+                        nextPost={post.nextPost}
+                        post={post}
+                        previousPost={post.previousPost}
+                        rootId={rootId}
+                        shouldRenderReplyButton={shouldRenderReplyButton}
+                        skipSavedHeader={skipSavedHeader}
+                        style={styles.scale}
+                        testID={`${testID}.post`}
+                    />
+                );
             }
         }
     }, [appsEnabled, currentTimezone, customEmojiNames, highlightPinnedOrSaved, isCRTEnabled, isPostAcknowledgementEnabled, isTimezoneEnabled, shouldRenderReplyButton, theme]);
@@ -348,9 +349,6 @@ const PostList = ({
                 <AnimatedFlatList
                     contentContainerStyle={contentContainerStyle}
                     data={orderedPosts}
-                    getItemLayout={(data, index) => (
-                        {length: 50, offset: 50 * index, index}
-                    )}
                     keyboardDismissMode='interactive'
                     keyboardShouldPersistTaps='handled'
                     keyExtractor={keyExtractor}
@@ -361,7 +359,7 @@ const PostList = ({
                     maxToRenderPerBatch={10}
                     nativeID={nativeID}
                     onEndReached={onEndReached}
-                    onEndReachedThreshold={2}
+                    onEndReachedThreshold={0.9}
                     onScroll={onScroll}
                     onScrollToIndexFailed={onScrollToIndexFailed}
                     onViewableItemsChanged={onViewableItemsChanged}
@@ -374,12 +372,14 @@ const PostList = ({
                     testID={`${testID}.flat_list`}
                 />
             </PostListRefreshControl>
+            {location !== Screens.PERMALINK &&
             <ScrollToEndView
                 onScrollToEnd={onScrollToEnd}
                 isNewMessage={initialIndex > -1}
                 showScrollToEndBtn={showScrollToEndBtn}
-                message={location === Screens.THREAD ? 'New replies' : 'New messages'}
+                location={location}
             />
+            }
             {showMoreMessages &&
             <MoreMessages
                 channelId={channelId}

@@ -1,50 +1,54 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
-import React, {useMemo} from 'react';
-import {Pressable, Text} from 'react-native';
+import React, {useMemo, useRef} from 'react';
+import {useIntl} from 'react-intl';
+import {Platform, Pressable, Text, useWindowDimensions, View, type ViewStyle} from 'react-native';
 import Animated, {useAnimatedStyle, withTiming} from 'react-native-reanimated';
+import {useSafeAreaInsets} from 'react-native-safe-area-context';
 
-import {useTheme} from '@app/context/theme';
-import {makeStyleSheetFromTheme} from '@app/utils/theme';
 import CompassIcon from '@components/compass_icon';
+import {Screens} from '@constants';
+import {useTheme} from '@context/theme';
+import {useIsTablet, useKeyboardHeight, useViewPosition} from '@hooks/device';
+import {changeOpacity, makeStyleSheetFromTheme} from '@utils/theme';
+import {typography} from '@utils/typography';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
+    const commonButtonStyle: ViewStyle = {
+        position: 'absolute',
+        alignSelf: 'center',
+        height: 40,
+        bottom: -70,
+        display: 'flex',
+        justifyContent: 'center',
+        alignItems: 'center',
+        flexDirection: 'row',
+        elevation: 4,
+    };
     return {
-        scrollToEndBtn: {
-            position: 'absolute',
-            alignSelf: 'center',
+        scrollToEndButton: {
+            ...commonButtonStyle,
             width: 40,
-            height: 40,
-            borderRadius: 40,
-            bottom: -70,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexDirection: 'row',
-            backgroundColor: theme.buttonColor,
-            elevation: 4,
+            borderRadius: 32,
+            backgroundColor: theme.centerChannelBg,
+            borderColor: changeOpacity(theme.centerChannelColor, 0.16),
+            borderWidth: 1,
         },
         scrollToEndBadge: {
-            position: 'absolute',
-            alignSelf: 'center',
-            height: 40,
+            ...commonButtonStyle,
             borderRadius: 8,
-            bottom: -70,
             paddingHorizontal: 8,
             backgroundColor: theme.buttonBg,
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            flexDirection: 'row',
-            elevation: 4,
         },
         newMessagesText: {
-            color: '#fff',
+            color: theme.buttonColor,
             paddingHorizontal: 8,
             overflow: 'hidden',
+            ...typography('Body', 200, 'SemiBold'),
         },
         pressableBtn: {
             flexDirection: 'row',
+            alignItems: 'center',
         },
     };
 });
@@ -53,51 +57,72 @@ type Props = {
     onScrollToEnd: () => void;
     isNewMessage: boolean;
     showScrollToEndBtn: boolean;
-    message: string;
+    location: string;
 };
 
 const ScrollToEndView = ({
     onScrollToEnd,
     isNewMessage,
     showScrollToEndBtn,
-    message,
+    location,
 }: Props) => {
+    const intl = useIntl();
     const theme = useTheme();
+    const isTablet = useIsTablet();
     const styles = getStyleFromTheme(theme);
+
+    // On iOS we have to take account of the keyboard.
+    // We cannot use `useKeyboardOverlap` here because of the positioning of the element.
+    const guidingViewRef = useRef<View>(null);
+    const keyboardHeight = useKeyboardHeight();
+    const viewPosition = useViewPosition(guidingViewRef, []);
+    const dimensions = useWindowDimensions();
+    const bottomSpace = (dimensions.height - viewPosition);
+    const keyboardOverlap = Platform.select({ios: Math.max(0, keyboardHeight - bottomSpace), default: 0});
+
+    // Thread view on iPads has to take into account the insets
+    const insets = useSafeAreaInsets();
+    const shouldAdjustBottom = (Platform.OS === 'ios') && isTablet && (location === Screens.THREAD) && !keyboardHeight;
+    const bottomAdjustment = shouldAdjustBottom ? insets.bottom : 0;
+
+    const message = location === Screens.THREAD ?
+        intl.formatMessage({id: 'postList.scrollToBottom.newMessages', defaultMessage: 'New messages'}) :
+        intl.formatMessage({id: 'postList.scrollToBottom.newReplies', defaultMessage: 'New replies'});
 
     const animatedStyle = useAnimatedStyle(
         () => ({
             transform: [
                 {
-                    translateY: withTiming(showScrollToEndBtn ? -80 : 0, {duration: 500}),
+                    translateY: withTiming(showScrollToEndBtn ? -80 - keyboardOverlap - bottomAdjustment : 0, {duration: 500}),
                 },
             ],
             maxWidth: withTiming(isNewMessage ? 169 : 40, {duration: 500}),
         }),
-        [showScrollToEndBtn, isNewMessage],
+        [showScrollToEndBtn, isNewMessage, keyboardOverlap, bottomAdjustment],
     );
 
-    const scrollBtnStyles = useMemo(
-        () => (isNewMessage ? styles.scrollToEndBadge : styles.scrollToEndBtn),
-        [isNewMessage],
-    );
+    const scrollButtonStyles = useMemo(() => [
+        isNewMessage ? styles.scrollToEndBadge : styles.scrollToEndButton,
+    ], [isNewMessage, keyboardHeight]);
 
     return (
-        <Animated.View style={[animatedStyle, scrollBtnStyles]}>
-            <Pressable
-                onPress={onScrollToEnd}
-                style={styles.pressableBtn}
-            >
-                <CompassIcon
-                    size={18}
-                    name='arrow-down'
-                    color={isNewMessage ? theme.sidebarHeaderTextColor : theme.centerChannelBg}
-                />
-                {isNewMessage && (
-                    <Text style={styles.newMessagesText}>{message}</Text>
-                )}
-            </Pressable>
-        </Animated.View>
+        <View ref={guidingViewRef}>
+            <Animated.View style={[animatedStyle, scrollButtonStyles]}>
+                <Pressable
+                    onPress={onScrollToEnd}
+                    style={styles.pressableBtn}
+                >
+                    <CompassIcon
+                        size={18}
+                        name='arrow-down'
+                        color={isNewMessage ? theme.buttonColor : changeOpacity(theme.centerChannelColor, 0.56)}
+                    />
+                    {isNewMessage && (
+                        <Text style={styles.newMessagesText}>{message}</Text>
+                    )}
+                </Pressable>
+            </Animated.View>
+        </View>
     );
 };
 

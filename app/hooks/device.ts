@@ -116,7 +116,7 @@ export function useViewPosition(viewRef: RefObject<View>, deps: React.Dependency
     const height = useKeyboardHeight();
 
     useEffect(() => {
-        if (Platform.OS === 'ios' && isTablet) {
+        if (Platform.OS === 'ios') {
             viewRef.current?.measureInWindow((_, y) => {
                 if (y !== modalPosition) {
                     setModalPosition(y);
