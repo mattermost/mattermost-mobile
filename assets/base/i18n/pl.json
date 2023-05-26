@@ -990,7 +990,7 @@
     "mobile.calls_host_rec_error_title": "Coś poszło nie tak z nagraniem",
     "mobile.calls_host_rec_error": "Proszę spróbować nagrać ponownie. Możesz również skontaktować się z administratorem systemu, aby uzyskać pomoc w rozwiązywaniu problemów.",
     "notification.no_post": "Wiadomość nie została odnaleziona.",
-    "notification.no_connection": "Serwer jest nieosiągalny i nie byliśmy w stanie pobrać powiadomienia dla kanału / zespołu.",
+    "notification.no_connection": "Serwer jest nieosiągalny i nie było możliwe pobranie konkretnych informacji o powiadomieniu.",
     "invite.summary.back": "Wróć",
     "channel_notification_preferences.unmute_content": "Wyłącz wyciszenie kanału",
     "channel_notification_preferences.thread_replies": "Odpowiedzi na wątki",
