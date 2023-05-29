@@ -39,10 +39,12 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const canCreatePublicChannels = combineLatest([currentUser, team]).pipe(
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.CREATE_PUBLIC_CHANNEL, true)),
+        distinctUntilChanged(),
     );
 
     const canCreatePrivateChannels = combineLatest([currentUser, team]).pipe(
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.CREATE_PRIVATE_CHANNEL, false)),
+        distinctUntilChanged(),
     );
 
     const canCreateChannels = combineLatest([canCreatePublicChannels, canCreatePrivateChannels]).pipe(
@@ -52,23 +54,26 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
 
     const canAddUserToTeam = combineLatest([currentUser, team]).pipe(
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.ADD_USER_TO_TEAM, false)),
+        distinctUntilChanged(),
     );
 
     const canAddGuestToTeam = combineLatest([currentUser, team]).pipe(
         switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.INVITE_GUEST, false)),
+        distinctUntilChanged(),
     );
 
     const canInviteGuest = combineLatest([teamIsGroupConstrained, enableGuestAccounts, buildEnterpriseReady, canAddGuestToTeam]).pipe(
         switchMap(([isGroupConstrained, guestAccounts, enterpriseReady, addGuestToTeam]) => (
             of$(!isGroupConstrained && guestAccounts && enterpriseReady, addGuestToTeam)
         )),
+        distinctUntilChanged(),
     );
 
     return {
         canCreateChannels,
         canJoinChannels,
-        canInvitePeople: combineLatest([enableOpenServer, canAddUserToTeam, canInviteGuest]).pipe(
-            switchMap(([openServer, addUser, inviteGuest]) => of$(openServer && (addUser || inviteGuest))),
+        canInvitePeople: combineLatest([teamIsGroupConstrained, enableOpenServer, canAddUserToTeam, canInviteGuest]).pipe(
+            switchMap(([isGroupConstrained, openServer, addUser, inviteGuest]) => of$(!isGroupConstrained && openServer && (addUser || inviteGuest))),
             distinctUntilChanged(),
         ),
         displayName: team.pipe(

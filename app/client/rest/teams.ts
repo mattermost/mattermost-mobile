@@ -165,7 +165,7 @@ const ClientTeams = <TBase extends Constructor<ClientBase>>(superclass: TBase) =
     };
 
     sendEmailGuestInvitesToChannelsGracefully = (teamId: string, channelIds: string[], emails: string[], message?: string) => {
-        this.analytics?.trackAPI('api_teams_invite_guests', {team_id: teamId, channel_ids: channelIds, message});
+        this.analytics?.trackAPI('api_teams_invite_guests', {team_id: teamId, channel_ids: channelIds});
 
         return this.doFetch(
             `${this.getTeamRoute(teamId)}/invite-guests/email?graceful=true`,

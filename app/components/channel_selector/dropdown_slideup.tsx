@@ -48,17 +48,17 @@ export default function DropdownSlideup({
 
     const handlePublicPress = useCallback(() => {
         dismissBottomSheet();
-        onPress(Channel.CHANNEL_TYPE_PUBLIC);
+        onPress(Channel.PUBLIC);
     }, [onPress]);
 
     const handleArchivedPress = useCallback(() => {
         dismissBottomSheet();
-        onPress(Channel.CHANNEL_TYPE_ARCHIVED);
+        onPress(Channel.ARCHIVED);
     }, [onPress]);
 
     const handleSharedPress = useCallback(() => {
         dismissBottomSheet();
-        onPress(Channel.CHANNEL_TYPE_SHARED);
+        onPress(Channel.SHARED);
     }, [onPress]);
 
     return (
@@ -72,7 +72,7 @@ export default function DropdownSlideup({
                 onPress={handlePublicPress}
                 testID='browse_channels.dropdown_slideup_item.public_channels'
                 text={intl.formatMessage({id: 'browse_channels.publicChannels', defaultMessage: 'Public Channels'})}
-                icon={selected === Channel.CHANNEL_TYPE_PUBLIC ? 'check' : undefined}
+                icon={selected === Channel.PUBLIC ? 'check' : undefined}
                 {...commonProps}
             />
             {canShowArchivedChannels && (
@@ -80,7 +80,7 @@ export default function DropdownSlideup({
                     onPress={handleArchivedPress}
                     testID='browse_channels.dropdown_slideup_item.archived_channels'
                     text={intl.formatMessage({id: 'browse_channels.archivedChannels', defaultMessage: 'Archived Channels'})}
-                    icon={selected === Channel.CHANNEL_TYPE_ARCHIVED ? 'check' : undefined}
+                    icon={selected === Channel.ARCHIVED ? 'check' : undefined}
                     {...commonProps}
                 />
             )}
@@ -89,7 +89,7 @@ export default function DropdownSlideup({
                     onPress={handleSharedPress}
                     testID='browse_channels.dropdown_slideup_item.shared_channels'
                     text={intl.formatMessage({id: 'browse_channels.sharedChannels', defaultMessage: 'Shared Channels'})}
-                    icon={selected === Channel.CHANNEL_TYPE_SHARED ? 'check' : undefined}
+                    icon={selected === Channel.SHARED ? 'check' : undefined}
                     {...commonProps}
                 />
             )}

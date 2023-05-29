@@ -71,8 +71,6 @@ exports[`components/channel_list_row should be selected 1`] = `
         }
       >
         <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
           style={
             {
               "color": "#3f4350",
@@ -185,8 +183,6 @@ exports[`components/channel_list_row should match snapshot with delete_at filled
         }
       >
         <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
           style={
             {
               "color": "#3f4350",
@@ -277,8 +273,6 @@ exports[`components/channel_list_row should match snapshot with open channel ico
         }
       >
         <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
           style={
             {
               "color": "#3f4350",
@@ -369,8 +363,6 @@ exports[`components/channel_list_row should match snapshot with private channel 
         }
       >
         <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
           style={
             {
               "color": "#3f4350",
@@ -461,8 +453,6 @@ exports[`components/channel_list_row should match snapshot with purpose filled i
         }
       >
         <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
           style={
             {
               "color": "#3f4350",
@@ -568,8 +558,6 @@ exports[`components/channel_list_row should match snapshot with shared filled in
         }
       >
         <Text
-          ellipsizeMode="tail"
-          numberOfLines={1}
           style={
             {
               "color": "#3f4350",

@@ -49,8 +49,13 @@ const enhanced = withObservables([], ({database}: WithDatabaseArgs) => {
         ),
         teammateNameDisplay: observeTeammateNameDisplay(database),
         isOpenServer: observeConfigBooleanValue(database, 'EnableOpenServer'),
-        canInviteUser: combineLatest([currentUser, team]).pipe(
-            switchMap(([u, t]) => observePermissionForTeam(database, t, u, Permissions.ADD_USER_TO_TEAM, false)),
+        canInviteUser: combineLatest([teamIsGroupConstrained, currentUser, team]).pipe(
+            switchMap(([constraint, u, t]) => {
+                if (constraint) {
+                    return of$(false);
+                }
+                return observePermissionForTeam(database, t, u, Permissions.ADD_USER_TO_TEAM, false);
+            }),
         ),
         canInviteGuest: combineLatest([teamIsGroupConstrained, enableGuestAccounts, buildEnterpriseReady, canAddGuestToTeam]).pipe(
             switchMap(([isGroupConstrained, guestAccounts, enterpriseReady, addGuestToTeam]) => (

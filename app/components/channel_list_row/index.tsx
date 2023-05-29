@@ -22,6 +22,13 @@ type Props = {
     selected?: boolean;
 }
 
+const ARCHIVED = 'archive-outline';
+const CHECKED = 'check-circle';
+const GLOBE = 'globe';
+const LOCK = 'lock-outline';
+const SHARED = 'circle-multiple-outline';
+const UNCHECK = 'circle-outline';
+
 const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
     return {
         titleContainer: {
@@ -73,7 +80,7 @@ export default function ChannelListRow({
         return (
             <View>
                 <CompassIcon
-                    name={selected ? 'check-circle' : 'circle-outline'}
+                    name={selected ? CHECKED : UNCHECK}
                     size={28}
                     color={selected ? theme.buttonBg : changeOpacity(theme.centerChannelColor, 0.32)}
                 />
@@ -96,12 +103,12 @@ export default function ChannelListRow({
 
     const itemTestID = `${testID}.${channel.name}`;
     const channelDisplayNameTestID = `${itemTestID}.display_name`;
-    let icon = channel.type === General.PRIVATE_CHANNEL ? 'lock-outline' : 'globe';
+    let icon = channel.type === General.PRIVATE_CHANNEL ? LOCK : GLOBE;
 
     if (channel.delete_at) {
-        icon = 'archive-outline';
+        icon = ARCHIVED;
     } else if (channel.shared) {
-        icon = 'circle-multiple-outline';
+        icon = SHARED;
     }
 
     return (
@@ -122,8 +129,6 @@ export default function ChannelListRow({
                         <Text
                             style={style.displayName}
                             testID={channelDisplayNameTestID}
-                            ellipsizeMode='tail'
-                            numberOfLines={1}
                         >
                             {channel.display_name}
                         </Text>

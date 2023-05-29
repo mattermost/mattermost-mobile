@@ -64,20 +64,20 @@ const getStyleSheet = makeStyleSheetFromTheme((theme: Theme) => ({
 }));
 
 type ChannelSelectorProps = {
-    sharedChannelsEnabled?: boolean;
+    adding?: boolean;
     canShowArchivedChannels?: boolean;
+    channels: Channel[];
+    itemSelectable?: boolean;
+    itemSeparator?: boolean;
+    loading: boolean;
+    noResultsWithoutTerm?: string;
+    selectedChannels?: Channel[];
+    sharedChannelsEnabled?: boolean;
     typeOfChannels?: string;
     term: string;
-    adding?: boolean;
-    loading: boolean;
-    channels: Channel[];
-    selectedChannels?: Channel[];
-    itemSeparator?: boolean;
-    itemSelectable?: boolean;
-    noResultsWithoutTerm?: string;
-    changeChannelType?: (channelType: string) => void;
-    searchChannels: (term: string) => void;
-    stopSearch: () => void;
+    onChannelTypeChanged?: (channelType: string) => void;
+    onSearchChannels: (term: string) => void;
+    onSearchCancel: () => void;
     onEndReached: () => void;
     onSelectChannel: (channel: Channel) => void;
 }
@@ -86,11 +86,11 @@ export default function ChannelSelector(props: ChannelSelectorProps) {
     const {
         sharedChannelsEnabled = false,
         canShowArchivedChannels = false,
-        typeOfChannels = Channel.CHANNEL_TYPE_PUBLIC,
-        changeChannelType: changeTypeOfChannels,
+        typeOfChannels = Channel.PUBLIC,
+        onChannelTypeChanged,
         term,
-        searchChannels,
-        stopSearch,
+        onSearchChannels,
+        onSearchCancel,
         channels,
         selectedChannels = [],
         adding,
@@ -105,9 +105,9 @@ export default function ChannelSelector(props: ChannelSelectorProps) {
     const theme = useTheme();
     const styles = getStyleSheet(theme);
 
-    const onSearch = useCallback(() => {
-        searchChannels(term);
-    }, [term, searchChannels]);
+    const handleSearch = useCallback(() => {
+        onSearchChannels(term);
+    }, [term, onSearchChannels]);
 
     const handleOnRemoveItem = useCallback((channelId: string) => {
         const channel = selectedChannels.find(({id}) => id === channelId);
@@ -166,17 +166,17 @@ export default function ChannelSelector(props: ChannelSelectorProps) {
                             placeholder={formatMessage({id: 'search_bar.search', defaultMessage: 'Search'})}
                             cancelButtonTitle={formatMessage({id: 'mobile.post.cancel', defaultMessage: 'Cancel'})}
                             placeholderTextColor={changeOpacity(theme.centerChannelColor, 0.5)}
-                            onChangeText={searchChannels}
-                            onSubmitEditing={onSearch}
-                            onCancel={stopSearch}
+                            onChangeText={onSearchChannels}
+                            onSubmitEditing={handleSearch}
+                            onCancel={onSearchCancel}
                             autoCapitalize='none'
                             keyboardAppearance={getKeyboardAppearanceFromTheme(theme)}
                             value={term}
                         />
                     </View>
-                    {(canShowArchivedChannels || sharedChannelsEnabled) && changeTypeOfChannels && (
+                    {(canShowArchivedChannels || sharedChannelsEnabled) && onChannelTypeChanged && (
                         <ChannelDropdown
-                            onPress={changeTypeOfChannels}
+                            onPress={onChannelTypeChanged}
                             typeOfChannels={typeOfChannels}
                             canShowArchivedChannels={canShowArchivedChannels}
                             sharedChannelsEnabled={sharedChannelsEnabled}

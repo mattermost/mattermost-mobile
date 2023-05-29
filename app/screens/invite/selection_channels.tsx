@@ -175,8 +175,8 @@ export default function SelectionChannels({
     return (
         <ChannelSelector
             term={term}
-            searchChannels={doSearchChannels}
-            stopSearch={stopSearch}
+            onSearchChannels={doSearchChannels}
+            onSearchCancel={stopSearch}
             channels={visibleChannels}
             selectedChannels={preselectedChannels}
             loading={loading}

@@ -67,14 +67,14 @@ type Props = {
     canShowArchivedChannels: boolean;
 
     // SearchHandler Props
-    typeOfChannels: string;
-    changeChannelType: (channelType: string) => void;
-    term: string;
-    searchChannels: (term: string) => void;
-    stopSearch: () => void;
-    loading: boolean;
-    onEndReached: () => void;
     channels: Channel[];
+    loading: boolean;
+    onChannelTypeChanged: (channelType: string) => void;
+    onEndReached: () => void;
+    onSearchChannels: (term: string) => void;
+    onSearchCancel: () => void;
+    typeOfChannels: string;
+    term: string;
 }
 
 export default function BrowseChannels(props: Props) {
@@ -86,10 +86,10 @@ export default function BrowseChannels(props: Props) {
         currentTeamId,
         canShowArchivedChannels,
         typeOfChannels,
-        changeChannelType: changeTypeOfChannels,
+        onChannelTypeChanged,
         term,
-        searchChannels,
-        stopSearch,
+        onSearchChannels,
+        onSearchCancel,
         channels,
         loading,
         onEndReached,
@@ -113,7 +113,7 @@ export default function BrowseChannels(props: Props) {
         setButtons(componentId, buttons);
     }, [closeButton, canCreateChannels, intl.locale, theme, componentId]);
 
-    const onSelectChannel = useCallback(async (channel: Channel) => {
+    const handleSelectChannel = useCallback(async (channel: Channel) => {
         setHeaderButtons(false);
         setAdding(true);
 
@@ -160,16 +160,16 @@ export default function BrowseChannels(props: Props) {
                 sharedChannelsEnabled={sharedChannelsEnabled}
                 canShowArchivedChannels={canShowArchivedChannels}
                 typeOfChannels={typeOfChannels}
-                changeChannelType={changeTypeOfChannels}
+                onChannelTypeChanged={onChannelTypeChanged}
                 term={term}
-                searchChannels={searchChannels}
-                stopSearch={stopSearch}
+                onSearchChannels={onSearchChannels}
+                onSearchCancel={onSearchCancel}
                 channels={channels}
                 adding={adding}
                 loading={loading}
                 noResultsWithoutTerm={intl.formatMessage({id: 'browse_channels.noMore', defaultMessage: 'No more channels to join'})}
                 onEndReached={onEndReached}
-                onSelectChannel={onSelectChannel}
+                onSelectChannel={handleSelectChannel}
             />
         </SafeAreaView>
     );

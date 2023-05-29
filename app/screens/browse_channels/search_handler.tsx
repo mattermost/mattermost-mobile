@@ -41,13 +41,13 @@ const filterChannelsByType = (channels: Channel[], joinedChannels: MyChannelMode
     const ids = new Set(joinedChannels.map((c) => c.id));
     let filter: (c: Channel) => boolean;
     switch (channelType) {
-        case Channel.CHANNEL_TYPE_ARCHIVED:
+        case Channel.ARCHIVED:
             filter = (c) => c.delete_at !== 0;
             break;
-        case Channel.CHANNEL_TYPE_SHARED:
+        case Channel.SHARED:
             filter = (c) => c.delete_at === 0 && c.shared && !ids.has(c.id);
             break;
-        case Channel.CHANNEL_TYPE_PUBLIC:
+        case Channel.PUBLIC:
         default:
             filter = (c) => c.delete_at === 0 && !c.shared && !ids.has(c.id);
             break;
@@ -80,19 +80,19 @@ const addAction = (t: string, data: Channel[]) => {
 
 const reducer = (state: State, action: Action) => {
     switch (action.type) {
-        case Channel.CHANNEL_TYPE_PUBLIC:
+        case Channel.PUBLIC:
             return {
                 ...state,
                 channels: [...state.channels, ...action.data],
                 loading: false,
             };
-        case Channel.CHANNEL_TYPE_ARCHIVED:
+        case Channel.ARCHIVED:
             return {
                 ...state,
                 archivedChannels: [...state.archivedChannels, ...action.data],
                 loading: false,
             };
-        case Channel.CHANNEL_TYPE_SHARED:
+        case Channel.SHARED:
             return {
                 ...state,
                 sharedChannels: [...state.sharedChannels, ...action.data],
@@ -136,7 +136,7 @@ export default function SearchHandler(props: Props) {
     const [visibleChannels, setVisibleChannels] = useState<Channel[]>([]);
     const [term, setTerm] = useState('');
 
-    const [typeOfChannels, setTypeOfChannels] = useState(Channel.CHANNEL_TYPE_PUBLIC);
+    const [typeOfChannels, setTypeOfChannels] = useState(Channel.PUBLIC);
 
     const publicPage = useRef(-1);
     const sharedPage = useRef(-1);
@@ -157,17 +157,17 @@ export default function SearchHandler(props: Props) {
         let page: (typeof publicPage | typeof sharedPage | typeof archivedPage);
 
         switch (t) {
-            case Channel.CHANNEL_TYPE_SHARED:
+            case Channel.SHARED:
                 next = nextShared;
                 fetch = fetchSharedChannels;
                 page = sharedPage;
                 break;
-            case Channel.CHANNEL_TYPE_ARCHIVED:
+            case Channel.ARCHIVED:
                 next = nextArchived;
                 fetch = fetchArchivedChannels;
                 page = archivedPage;
                 break;
-            case Channel.CHANNEL_TYPE_PUBLIC:
+            case Channel.PUBLIC:
             default:
                 next = nextPublic;
                 fetch = fetchChannels;
@@ -189,7 +189,7 @@ export default function SearchHandler(props: Props) {
         }
     };
 
-    const onEndReached = useCallback(() => {
+    const handleEndReached = useCallback(() => {
         if (!loading && !term) {
             doGetChannels(typeOfChannels);
         }
@@ -197,22 +197,22 @@ export default function SearchHandler(props: Props) {
 
     let activeChannels: Channel[];
     switch (typeOfChannels) {
-        case Channel.CHANNEL_TYPE_ARCHIVED:
+        case Channel.ARCHIVED:
             activeChannels = archivedChannels;
             break;
-        case Channel.CHANNEL_TYPE_SHARED:
+        case Channel.SHARED:
             activeChannels = sharedChannels;
             break;
         default:
             activeChannels = channels;
     }
 
-    const stopSearch = useCallback(() => {
+    const handleSearchCancel = useCallback(() => {
         setSearchResults(defaultSearchResults);
         setTerm('');
     }, [activeChannels]);
 
-    const doSearchChannels = useCallback((text: string) => {
+    const handleSearchChannels = useCallback((text: string) => {
         if (text) {
             setSearchResults(defaultSearchResults);
             if (searchTimeout.current) {
@@ -229,11 +229,11 @@ export default function SearchHandler(props: Props) {
             setVisibleChannels(searchResults);
             dispatch(LoadAction);
         } else {
-            stopSearch();
+            handleSearchCancel();
         }
-    }, [activeChannels, visibleChannels, joinedChannels, stopSearch]);
+    }, [activeChannels, visibleChannels, joinedChannels, handleSearchCancel]);
 
-    const changeChannelType = useCallback((channelType: string) => {
+    const handleChannelTypeChange = useCallback((channelType: string) => {
         setTypeOfChannels(channelType);
     }, []);
 
@@ -243,17 +243,17 @@ export default function SearchHandler(props: Props) {
             let page: (typeof publicPage | typeof sharedPage | typeof archivedPage);
             let shouldFilterJoined: boolean;
             switch (t) {
-                case Channel.CHANNEL_TYPE_SHARED:
+                case Channel.SHARED:
                     page = sharedPage;
                     next = nextShared;
                     shouldFilterJoined = true;
                     break;
-                case Channel.CHANNEL_TYPE_ARCHIVED:
+                case Channel.ARCHIVED:
                     page = archivedPage;
                     next = nextArchived;
                     shouldFilterJoined = false;
                     break;
-                case Channel.CHANNEL_TYPE_PUBLIC:
+                case Channel.PUBLIC:
                 default:
                     page = publicPage;
                     next = nextPublic;
@@ -300,10 +300,10 @@ export default function SearchHandler(props: Props) {
         }
         let next;
         switch (typeOfChannels) {
-            case Channel.CHANNEL_TYPE_PUBLIC:
+            case Channel.PUBLIC:
                 next = nextPublic.current;
                 break;
-            case Channel.CHANNEL_TYPE_SHARED:
+            case Channel.SHARED:
                 next = nextShared.current;
                 break;
             default:
@@ -318,12 +318,12 @@ export default function SearchHandler(props: Props) {
         <BrowseChannels
             {...passProps}
             currentTeamId={currentTeamId}
-            changeChannelType={changeChannelType}
+            onChannelTypeChanged={handleChannelTypeChange}
             channels={visibleChannels}
             loading={loading}
-            onEndReached={onEndReached}
-            searchChannels={doSearchChannels}
-            stopSearch={stopSearch}
+            onEndReached={handleEndReached}
+            onSearchChannels={handleSearchChannels}
+            onSearchCancel={handleSearchCancel}
             term={term}
             typeOfChannels={typeOfChannels}
         />

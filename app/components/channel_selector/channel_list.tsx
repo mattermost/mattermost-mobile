@@ -1,7 +1,7 @@
 // Copyright (c) 2015-present Mattermost, Inc. All Rights Reserved.
 // See LICENSE.txt for license information.
 
-import React, {useCallback, useEffect, useMemo, useState} from 'react';
+import React, {useCallback, useMemo} from 'react';
 import {useIntl} from 'react-intl';
 import {View, FlatList, Text} from 'react-native';
 
@@ -75,17 +75,9 @@ export default function ChannelList({
 }: Props) {
     const {formatMessage} = useIntl();
     const theme = useTheme();
-
-    const [hasLoaded, setHasLoaded] = useState(false);
-
-    useEffect(() => {
-        if (!hasLoaded && loading) {
-            setHasLoaded(true);
-        }
-    }, [!hasLoaded, loading]);
-
     const style = getStyleFromTheme(theme);
     const keyboardHeight = useKeyboardHeight();
+
     const noResutsStyle = useMemo(() => [
         style.noResultContainer,
         {paddingBottom: keyboardHeight},
@@ -96,7 +88,6 @@ export default function ChannelList({
 
         for (const channel of channels) {
             const isSelected = selectedChannels.findIndex(({id}) => id === channel.id) !== -1;
-
             data.push({channel, isSelected});
         }
 
@@ -133,7 +124,7 @@ export default function ChannelList({
     }, [loading, theme]);
 
     const renderNoResults = useCallback(() => {
-        if (!hasLoaded) {
+        if (loading || channelsData.length) {
             return null;
         }
 

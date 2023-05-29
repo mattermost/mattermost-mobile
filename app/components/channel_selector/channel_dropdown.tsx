@@ -31,6 +31,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme: Theme) => {
             ...typography('Body', 100, 'SemiBold'),
             lineHeight: 20,
             color: theme.centerChannelColor,
+            marginTop: 12,
             marginLeft: 20,
             marginBottom: 4,
         },
@@ -83,9 +84,9 @@ export default function ChannelDropdown({
     };
 
     let channelDropdownText = intl.formatMessage({id: 'browse_channels.showPublicChannels', defaultMessage: 'Show: Public Channels'});
-    if (typeOfChannels === Channel.CHANNEL_TYPE_SHARED) {
+    if (typeOfChannels === Channel.SHARED) {
         channelDropdownText = intl.formatMessage({id: 'browse_channels.showSharedChannels', defaultMessage: 'Show: Shared Channels'});
-    } else if (typeOfChannels === Channel.CHANNEL_TYPE_ARCHIVED) {
+    } else if (typeOfChannels === Channel.ARCHIVED) {
         channelDropdownText = intl.formatMessage({id: 'browse_channels.showArchivedChannels', defaultMessage: 'Show: Archived Channels'});
     }
     return (
