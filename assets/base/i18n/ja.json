@@ -990,7 +990,7 @@
     "mobile.manage_members.change_role.error": "ロールを更新する際にエラーが発生しました。接続を確認し、もう一度やり直してください。",
     "mobile.manage_members.cancel": "キャンセル",
     "notification.no_post": "メッセージが見つかりませんでした。",
-    "notification.no_connection": "サーバーに到達できないため、通知のチャンネル/チームを取得できませんでした。",
+    "notification.no_connection": "サーバーに到達できないため、通知のメッセージ情報を取得できませんでした。",
     "invite.summary.back": "戻る",
     "channel_notification_preferences.unmute_content": "チャンネルのミュートを解除",
     "channel_notification_preferences.thread_replies": "スレッドへの返信",
