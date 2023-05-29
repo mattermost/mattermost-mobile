@@ -3,8 +3,7 @@
 
 import React, {useCallback, useEffect, useRef, useState} from 'react';
 import {useIntl} from 'react-intl';
-import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, useWindowDimensions, View} from 'react-native';
-import {useSafeAreaInsets} from 'react-native-safe-area-context';
+import {Alert, Keyboard, type LayoutChangeEvent, Platform, SafeAreaView, View} from 'react-native';
 
 import {deletePost, editPost} from '@actions/remote/post';
 import Autocomplete from '@components/autocomplete';
@@ -13,7 +12,7 @@ import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import useAndroidHardwareBackHandler from '@hooks/android_back_handler';
 import {useAutocompleteDefaultAnimatedValues} from '@hooks/autocomplete';
-import {useIsTablet, useKeyboardHeight, useModalPosition} from '@hooks/device';
+import {useKeyboardOverlap} from '@hooks/device';
 import useDidUpdate from '@hooks/did_update';
 import {useInputPropagation} from '@hooks/input';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
@@ -66,27 +65,15 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     const [propagateValue, shouldProcessEvent] = useInputPropagation();
 
     const mainView = useRef<View>(null);
-    const modalPosition = useModalPosition(mainView);
 
     const postInputRef = useRef<EditPostInputRef>(null);
     const theme = useTheme();
     const intl = useIntl();
     const serverUrl = useServerUrl();
     const styles = getStyleSheet(theme);
-    const keyboardHeight = useKeyboardHeight();
-    const insets = useSafeAreaInsets();
-    const dimensions = useWindowDimensions();
-    const isTablet = useIsTablet();
 
     useEffect(() => {
-        setButtons(componentId, {
-            rightButtons: [{
-                color: theme.sidebarHeaderTextColor,
-                text: intl.formatMessage({id: 'edit_post.save', defaultMessage: 'Save'}),
-                ...RIGHT_BUTTON,
-                enabled: false,
-            }],
-        });
+        toggleSaveButton(false);
     }, []);
 
     useEffect(() => {
@@ -211,11 +198,8 @@ const EditPost = ({componentId, maxPostSize, post, closeButtonId, hasFilesAttach
     useNavButtonPressed(closeButtonId, componentId, onClose, []);
     useAndroidHardwareBackHandler(componentId, onClose);
 
-    const bottomSpace = (dimensions.height - containerHeight - modalPosition);
-    const autocompletePosition = Platform.select({
-        ios: isTablet ? Math.max(0, keyboardHeight - bottomSpace) : keyboardHeight || insets.bottom,
-        default: 0,
-    }) + AUTOCOMPLETE_SEPARATION;
+    const overlap = useKeyboardOverlap(mainView, containerHeight);
+    const autocompletePosition = overlap + AUTOCOMPLETE_SEPARATION;
     const autocompleteAvailableSpace = containerHeight - autocompletePosition;
 
     const [animatedAutocompletePosition, animatedAutocompleteAvailableSpace] = useAutocompleteDefaultAnimatedValues(autocompletePosition, autocompleteAvailableSpace);

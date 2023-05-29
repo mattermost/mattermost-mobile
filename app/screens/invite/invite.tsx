@@ -11,7 +11,7 @@ import CompassIcon from '@components/compass_icon';
 import Loading from '@components/loading';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
-import {useModalPosition} from '@hooks/device';
+import {useKeyboardOverlap} from '@hooks/device';
 import useNavButtonPressed from '@hooks/navigation_button_pressed';
 import {dismissModal, setButtons} from '@screens/navigation';
 import {isEmail} from '@utils/helpers';
@@ -130,8 +130,10 @@ export default function Invite({
     const theme = useTheme();
     const styles = getStyleSheet(theme);
     const serverUrl = useServerUrl();
+
     const mainView = useRef<View>(null);
-    const modalPosition = useModalPosition(mainView);
+    const [wrapperHeight, setWrapperHeight] = useState(0);
+    const keyboardOverlap = useKeyboardOverlap(mainView, wrapperHeight);
 
     const searchTimeoutId = useRef<NodeJS.Timeout | null>(null);
     const retryTimeoutId = useRef<NodeJS.Timeout | null>(null);
@@ -145,7 +147,6 @@ export default function Invite({
     const [selectedChannels, setSelectedChannels] = useState<Channel[]>([]);
     const [loading, setLoading] = useState(false);
     const [result, setResult] = useState<Result>(DEFAULT_RESULT);
-    const [wrapperHeight, setWrapperHeight] = useState(0);
     const [stage, setStage] = useState(Stage.SELECTION);
     const [footerButton, setFooterButton] = useState<React.ReactNode>(null);
     const [sendError, setSendError] = useState('');
@@ -403,7 +404,7 @@ export default function Invite({
                         term={term}
                         searchResults={searchResults}
                         selectedIds={selectedIds}
-                        modalPosition={modalPosition}
+                        keyboardOverlap={keyboardOverlap}
                         wrapperHeight={wrapperHeight}
                         loading={loading}
                         canInviteUser={canInviteUser}
