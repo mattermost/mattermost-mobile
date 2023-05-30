@@ -557,6 +557,13 @@ const CallScreen = ({
             // ignore the error because the call screen has likely already been popped async
             Navigation.pop(componentId).catch(() => null);
         }
+
+        // // If we end a call and return from the Thread screen, the "visible screen" is still the thread.
+        if (NavigationStore.getVisibleScreen() === Screens.THREAD) {
+            popTopScreen();
+            popTopScreen(componentId);
+        }
+
         return null;
     }
 
