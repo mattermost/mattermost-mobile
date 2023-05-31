@@ -7,7 +7,7 @@ import {DeviceEventEmitter} from 'react-native';
 import {addChannelToDefaultCategory, storeCategories} from '@actions/local/category';
 import {markChannelAsViewed, removeCurrentUserFromChannel, setChannelDeleteAt, storeMyChannelsForTeam, switchToChannel} from '@actions/local/channel';
 import {switchToGlobalThreads} from '@actions/local/thread';
-import {updateLocalUser} from '@actions/local/user';
+import {getIsCRTEnabled} from '@app/queries/servers/thread';
 import {loadCallForChannel} from '@calls/actions/calls';
 import {DeepLink, Events, General, Preferences, Screens} from '@constants';
 import DatabaseManager from '@database/manager';
@@ -104,7 +104,7 @@ export async function updateChannelMemberSchemeRoles(serverUrl: string, channelI
         await client.updateChannelMemberSchemeRoles(channelId, userId, isSchemeUser, isSchemeAdmin);
 
         if (!fetchOnly) {
-            return getMemberInChannel(serverUrl, channelId, userId);
+            return fetchMemberInChannel(serverUrl, channelId, userId);
         }
 
         return {};
@@ -115,13 +115,22 @@ export async function updateChannelMemberSchemeRoles(serverUrl: string, channelI
     }
 }
 
-export async function getMemberInChannel(serverUrl: string, channelId: string, userId: string, fetchOnly = false) {
+export async function fetchMemberInChannel(serverUrl: string, channelId: string, userId: string, fetchOnly = false) {
     try {
         const client = NetworkManager.getClient(serverUrl);
         const member = await client.getMemberInChannel(channelId, userId);
 
         if (!fetchOnly) {
-            updateLocalUser(serverUrl, member, userId);
+            const {database, operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
+            const currentUserId = await getCurrentUserId(database);
+            if (userId === currentUserId) {
+                const isCRTEnabled = await getIsCRTEnabled(database);
+                const channel = await client.getChannel(channelId);
+                await fetchRolesIfNeeded(serverUrl, member.roles.split(' '), false, false);
+                await operator.handleMyChannel({channels: [channel], myChannels: [member], isCRTEnabled, prepareRecordsOnly: false});
+            } else {
+                await operator.handleChannelMembership({channelMemberships: [member], prepareRecordsOnly: false});
+            }
         }
         return {member};
     } catch (error) {
