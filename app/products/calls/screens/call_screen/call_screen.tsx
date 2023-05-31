@@ -4,7 +4,6 @@
 import React, {useCallback, useEffect, useMemo, useState} from 'react';
 import {useIntl} from 'react-intl';
 import {
-    DeviceEventEmitter,
     Keyboard,
     type LayoutChangeEvent,
     type LayoutRectangle,
@@ -40,7 +39,7 @@ import {getHandsRaised, makeCallsTheme, sortParticipants} from '@calls/utils';
 import CompassIcon from '@components/compass_icon';
 import FormattedText from '@components/formatted_text';
 import SlideUpPanelItem, {ITEM_HEIGHT} from '@components/slide_up_panel_item';
-import {Calls, Preferences, Screens, WebsocketEvents} from '@constants';
+import {Calls, Preferences, Screens} from '@constants';
 import {useServerUrl} from '@context/server';
 import {useTheme} from '@context/theme';
 import DatabaseManager from '@database/manager';
@@ -56,7 +55,6 @@ import {
     popTopScreen,
     setScreensOrientation,
 } from '@screens/navigation';
-import NavigationStore from '@store/navigation_store';
 import {freezeOtherScreens} from '@utils/gallery';
 import {bottomSheetSnapPoint} from '@utils/helpers';
 import {mergeNavigationOptions} from '@utils/navigation';
@@ -505,16 +503,6 @@ const CallScreen = ({
     });
 
     useEffect(() => {
-        const listener = DeviceEventEmitter.addListener(WebsocketEvents.CALLS_CALL_END, ({channelId}) => {
-            if (channelId === currentCall?.channelId && NavigationStore.getVisibleScreen() === componentId) {
-                Navigation.pop(componentId);
-            }
-        });
-
-        return () => listener.remove();
-    }, []);
-
-    useEffect(() => {
         const didDismissListener = Navigation.events().registerComponentDidDisappearListener(async ({componentId: screen}) => {
             if (componentId === screen) {
                 setScreensOrientation(isTablet);
@@ -550,20 +538,6 @@ const CallScreen = ({
     }, []);
 
     if (!currentCall || !myParticipant) {
-        // Note: this happens because the screen is "rendered", even after the screen has been popped, and the
-        // currentCall will have already been set to null when those extra renders run. We probably don't ever need
-        // to pop, but just in case.
-        if (NavigationStore.getVisibleScreen() === componentId) {
-            // ignore the error because the call screen has likely already been popped async
-            Navigation.pop(componentId).catch(() => null);
-        }
-
-        // // If we end a call and return from the Thread screen, the "visible screen" is still the thread.
-        if (NavigationStore.getVisibleScreen() === Screens.THREAD) {
-            popTopScreen();
-            popTopScreen(componentId);
-        }
-
         return null;
     }
 
