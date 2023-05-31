@@ -151,9 +151,9 @@ const RecentMentionsScreen = ({appsEnabled, customEmojiNames, mentions, currentT
                     <PostWithChannelInfo
                         appsEnabled={appsEnabled}
                         customEmojiNames={customEmojiNames}
-                        key={item.value.id}
+                        key={item.value.currentPost.id}
                         location={Screens.MENTIONS}
-                        post={item.value}
+                        post={item.value.currentPost}
                         testID='recent_mentions.post_list'
                     />
                 );

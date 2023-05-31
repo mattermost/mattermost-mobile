@@ -51,9 +51,9 @@ const PostResults = ({
                     <PostWithChannelInfo
                         appsEnabled={appsEnabled}
                         customEmojiNames={customEmojiNames}
-                        key={item.value.id}
+                        key={item.value.currentPost.id}
                         location={Screens.SEARCH}
-                        post={item.value}
+                        post={item.value.currentPost}
                         testID='search_results.post_list'
                     />
                 );

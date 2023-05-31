@@ -65,7 +65,7 @@ type ScrollIndexFailed = {
 };
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-const keyExtractor = (item: PostListItem | PostListOtherItem) => (item.type === 'post' ? item.value.id : item.value);
+const keyExtractor = (item: PostListItem | PostListOtherItem) => (item.type === 'post' ? item.value.currentPost.id : item.value);
 
 const styles = StyleSheet.create({
     flex: {
@@ -272,7 +272,8 @@ const PostList = ({
                 return (<CombinedUserActivity {...postProps}/>);
             }
             default: {
-                const post = item.value;
+                const post = item.value.currentPost;
+                const {isSaved, nextPost, previousPost} = item.value;
                 const skipSaveddHeader = (location === Screens.THREAD && post.id === rootId);
                 const postProps = {
                     appsEnabled,
@@ -281,12 +282,12 @@ const PostList = ({
                     isPostAcknowledgementEnabled,
                     highlight: highlightedId === post.id,
                     highlightPinnedOrSaved,
-                    isSaved: post.isSaved,
+                    isSaved,
                     key: post.id,
                     location,
-                    nextPost: post.nextPost,
+                    nextPost,
                     post,
-                    previousPost: post.previousPost,
+                    previousPost,
                     rootId,
                     shouldRenderReplyButton,
                     skipSaveddHeader,
@@ -313,7 +314,7 @@ const PostList = ({
             if (highlightedId && orderedPosts && !scrolledToHighlighted.current) {
                 scrolledToHighlighted.current = true;
                 // eslint-disable-next-line max-nested-callbacks
-                const index = orderedPosts.findIndex((p) => p.type === 'post' && p.value.id === highlightedId);
+                const index = orderedPosts.findIndex((p) => p.type === 'post' && p.value.currentPost.id === highlightedId);
                 if (index >= 0 && listRef.current) {
                     listRef.current?.scrollToIndex({
                         animated: true,
