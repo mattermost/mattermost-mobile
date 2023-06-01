@@ -19,7 +19,6 @@ runs:
         echo "::group::install-npm-dependencies"
         npm ci --ignore-scripts
         node node_modules/\@sentry/cli/scripts/install.js
-        node node_modules/react-native-webrtc/tools/downloadWebRTC.js
         echo "::endgroup::"
 
     - name: ci/patch-npm-dependencies
