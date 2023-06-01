@@ -48,12 +48,25 @@ export const fetchMe = async (serverUrl: string, fetchOnly = false): Promise<MyU
         const client = NetworkManager.getClient(serverUrl);
         const {operator} = DatabaseManager.getServerDatabaseAndOperator(serverUrl);
 
-        const [user, userStatus] = await Promise.all<[Promise<UserProfile>, Promise<UserStatus>]>([
-            client.getMe(),
-            client.getStatus('me'),
-        ]);
+        const resultSettled = await Promise.allSettled([client.getMe(), client.getStatus('me')]);
+        let user: UserProfile|undefined;
+        let userStatus: UserStatus|undefined;
+        for (const result of resultSettled) {
+            if (result.status === 'fulfilled') {
+                const {value} = result;
+                if ('email' in value) {
+                    user = value;
+                } else {
+                    userStatus = value;
+                }
+            }
+        }
 
-        user.status = userStatus.status;
+        if (!user) {
+            throw new Error('User not found');
+        }
+
+        user.status = userStatus?.status;
 
         if (!fetchOnly) {
             await operator.handleUsers({users: [user], prepareRecordsOnly: false});
