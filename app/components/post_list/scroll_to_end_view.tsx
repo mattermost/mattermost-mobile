@@ -15,17 +15,22 @@ import {typography} from '@utils/typography';
 
 const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
     const commonButtonStyle: ViewStyle = {
-        position: 'absolute',
-        alignSelf: 'center',
         height: 40,
-        bottom: -70,
-        display: 'flex',
+        flexDirection: 'row',
         justifyContent: 'center',
         alignItems: 'center',
-        flexDirection: 'row',
-        elevation: 4,
     };
     return {
+        buttonStyle: {
+            position: 'absolute',
+            alignSelf: 'center',
+            bottom: -70,
+            flexDirection: 'row',
+            elevation: 4,
+            shadowOpacity: 0.2,
+            shadowOffset: {width: 0, height: 4},
+            shadowRadius: 4,
+        },
         scrollToEndButton: {
             ...commonButtonStyle,
             width: 40,
@@ -37,7 +42,7 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
         scrollToEndBadge: {
             ...commonButtonStyle,
             borderRadius: 8,
-            paddingHorizontal: 8,
+            paddingHorizontal: 12,
             backgroundColor: theme.buttonBg,
         },
         newMessagesText: {
@@ -45,10 +50,6 @@ const getStyleFromTheme = makeStyleSheetFromTheme((theme) => {
             paddingHorizontal: 8,
             overflow: 'hidden',
             ...typography('Body', 200, 'SemiBold'),
-        },
-        pressableBtn: {
-            flexDirection: 'row',
-            alignItems: 'center',
         },
     };
 });
@@ -86,17 +87,17 @@ const ScrollToEndView = ({
     const bottomAdjustment = shouldAdjustBottom ? insets.bottom : 0;
 
     const message = location === Screens.THREAD ?
-        intl.formatMessage({id: 'postList.scrollToBottom.newMessages', defaultMessage: 'New messages'}) :
-        intl.formatMessage({id: 'postList.scrollToBottom.newReplies', defaultMessage: 'New replies'});
+        intl.formatMessage({id: 'postList.scrollToBottom.newReplies', defaultMessage: 'New replies'}) :
+        intl.formatMessage({id: 'postList.scrollToBottom.newMessages', defaultMessage: 'New messages'});
 
     const animatedStyle = useAnimatedStyle(
         () => ({
             transform: [
                 {
-                    translateY: withTiming(showScrollToEndBtn ? -80 - keyboardOverlap - bottomAdjustment : 0, {duration: 500}),
+                    translateY: withTiming(showScrollToEndBtn ? -80 - keyboardOverlap - bottomAdjustment : 0, {duration: 300}),
                 },
             ],
-            maxWidth: withTiming(isNewMessage ? 169 : 40, {duration: 500}),
+            maxWidth: withTiming(isNewMessage ? 169 : 40, {duration: 300}),
         }),
         [showScrollToEndBtn, isNewMessage, keyboardOverlap, bottomAdjustment],
     );
@@ -107,10 +108,10 @@ const ScrollToEndView = ({
 
     return (
         <View ref={guidingViewRef}>
-            <Animated.View style={[animatedStyle, scrollButtonStyles]}>
+            <Animated.View style={[animatedStyle, styles.buttonStyle]}>
                 <Pressable
                     onPress={onScrollToEnd}
-                    style={styles.pressableBtn}
+                    style={scrollButtonStyles}
                 >
                     <CompassIcon
                         size={18}
