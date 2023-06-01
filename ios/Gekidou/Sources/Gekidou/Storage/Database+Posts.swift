@@ -257,8 +257,11 @@ extension Database {
         for post in posts {
             var setter = [Setter]()
             let metadataSetters = createPostMetadataSetters(from: post)
-            let propsJSON = try! JSONSerialization.data(withJSONObject: post.props, options: [])
-            let propsString = String(data: propsJSON, encoding: String.Encoding.utf8)!
+            let propsJSON = try? JSONSerialization.data(withJSONObject: post.props, options: [])
+            var propsString = "{}"
+            if let propsJSON = propsJSON {
+                propsString = String(data: propsJSON, encoding: String.Encoding.utf8) ?? "{}"
+            }
 
             setter.append(id <- post.id)
             setter.append(createAt <- post.createAt)

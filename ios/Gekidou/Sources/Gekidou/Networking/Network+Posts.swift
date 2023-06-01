@@ -85,6 +85,16 @@ extension Network {
         var userIdsToLoad: Set<String> = Set()
         var usernamesToLoad: Set<String> = Set()
         
+        func findNeededUsernames(text: String?) {
+            if let text = text {
+                for username in self.matchUsername(in: text) {
+                    if username != currentUser.username && !threadParticipantUsernames.contains(username) && !usernamesToLoad.contains(username) {
+                        usernamesToLoad.insert(username)
+                    }
+                }
+            }
+        }
+
         if let postsWithKeys = postResponse?.posts {
             let posts = Array(postsWithKeys.values)
             for post in posts {
@@ -118,16 +128,6 @@ extension Network {
                 
                 if (authorId != currentUser.id && !alreadyLoadedUserIds.contains(authorId) && !threadParticipantUserIds.contains(authorId) && !userIdsToLoad.contains(authorId)) {
                     userIdsToLoad.insert(authorId)
-                }
-                
-                func findNeededUsernames(text: String?) {
-                    if let text = text {
-                        for username in self.matchUsername(in: text) {
-                            if username != currentUser.username && !threadParticipantUsernames.contains(username) && !usernamesToLoad.contains(username) {
-                                usernamesToLoad.insert(username)
-                            }
-                        }
-                    }
                 }
 
                 findNeededUsernames(text: message)

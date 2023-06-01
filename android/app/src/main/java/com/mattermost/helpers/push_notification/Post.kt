@@ -66,25 +66,26 @@ internal suspend fun PushNotificationDataRunnable.Companion.fetchPosts(
                         }
                     }
 
+                    fun findNeededUsernames(text: String?) {
+                        if (text == null) {
+                            return
+                        }
+
+                        val matchResults = regex.findAll(text)
+                        matchResults.iterator().forEach {
+                            val username = it.value.removePrefix("@")
+                            if (!usernames.contains(username) && currentUsername != username && !specialMentions.contains(username)) {
+                                usernames.add(username)
+                            }
+                        }
+                    }
+
                     while (iterator.hasNextKey()) {
                         val key = iterator.nextKey()
                         val post = posts.getMap(key)
                         val userId = post?.getString("user_id")
                         if (userId != null && userId != currentUserId && !userIdsAlreadyLoaded.contains(userId) && !userIds.contains(userId)) {
                             userIds.add(userId)
-                        }
-                        fun findNeededUsernames(text: String?) {
-                            if (text == null) {
-                                return
-                            }
-
-                            val matchResults = regex.findAll(text)
-                            matchResults.iterator().forEach {
-                                val username = it.value.removePrefix("@")
-                                if (!usernames.contains(username) && currentUsername != username && !specialMentions.contains(username)) {
-                                    usernames.add(username)
-                                }
-                            }
                         }
 
                         val message = post?.getString("message")
