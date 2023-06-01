@@ -68,7 +68,7 @@ type ScrollIndexFailed = {
 const CONTENT_OFFSET_THRESHOLD = 160;
 
 const AnimatedFlatList = Animated.createAnimatedComponent(FlatList);
-const keyExtractor = (item: PostListItem | PostListOtherItem) => (item.type === 'post' ? item.value.id : item.value);
+const keyExtractor = (item: PostListItem | PostListOtherItem) => (item.type === 'post' ? item.value.currentPost.id : item.value);
 
 const styles = StyleSheet.create({
     flex: {
@@ -277,30 +277,30 @@ const PostList = ({
                 return (<CombinedUserActivity {...postProps}/>);
             }
             default: {
-                const post = item.value;
-                const skipSavedHeader = (location === Screens.THREAD && post.id === rootId);
+                const post = item.value.currentPost;
+                const {isSaved, nextPost, previousPost} = item.value;
+                const skipSaveddHeader = (location === Screens.THREAD && post.id === rootId);
+                const postProps = {
+                    appsEnabled,
+                    customEmojiNames,
+                    isCRTEnabled,
+                    isPostAcknowledgementEnabled,
+                    highlight: highlightedId === post.id,
+                    highlightPinnedOrSaved,
+                    isSaved,
+                    key: post.id,
+                    location,
+                    nextPost,
+                    post,
+                    previousPost,
+                    rootId,
+                    shouldRenderReplyButton,
+                    skipSaveddHeader,
+                    style: styles.scale,
+                    testID: `${testID}.post`,
+                };
 
-                return (
-                    <Post
-                        appsEnabled={appsEnabled}
-                        customEmojiNames={customEmojiNames}
-                        isCRTEnabled={isCRTEnabled}
-                        isPostAcknowledgementEnabled={isPostAcknowledgementEnabled}
-                        highlight={highlightedId === post.id}
-                        highlightPinnedOrSaved={highlightPinnedOrSaved}
-                        isSaved={post.isSaved}
-                        key={post.id}
-                        location={location}
-                        nextPost={post.nextPost}
-                        post={post}
-                        previousPost={post.previousPost}
-                        rootId={rootId}
-                        shouldRenderReplyButton={shouldRenderReplyButton}
-                        skipSavedHeader={skipSavedHeader}
-                        style={styles.scale}
-                        testID={`${testID}.post`}
-                    />
-                );
+                return (<Post {...postProps}/>);
             }
         }
     }, [appsEnabled, currentTimezone, customEmojiNames, highlightPinnedOrSaved, isCRTEnabled, isPostAcknowledgementEnabled, isTimezoneEnabled, shouldRenderReplyButton, theme]);
@@ -319,7 +319,7 @@ const PostList = ({
             if (highlightedId && orderedPosts && !scrolledToHighlighted.current) {
                 scrolledToHighlighted.current = true;
                 // eslint-disable-next-line max-nested-callbacks
-                const index = orderedPosts.findIndex((p) => p.type === 'post' && p.value.id === highlightedId);
+                const index = orderedPosts.findIndex((p) => p.type === 'post' && p.value.currentPost.id === highlightedId);
                 if (index >= 0 && listRef.current) {
                     listRef.current?.scrollToIndex({
                         animated: true,
